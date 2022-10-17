@@ -5,7 +5,7 @@ from django.contrib.gis.gdal.raster.source import GDALRaster
 from base.condition_types import ConditionScoreType
 import eval.compute_conditions as cc
 
-configuration = config.PillarConfig("planscape/src/config/metrics.json")
+configuration = config.PillarConfig("Planscape/src/config/metrics.json")
 metric = configuration.get_metric("tcsi", "forest_resilience", "forest_structure", "structural_heterogeneity")
 if metric is not None:
     print(metric.get('current_conditions_only', False))
