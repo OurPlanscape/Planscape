@@ -1,0 +1,5 @@
+django-filter~=21.1.0
+djangorestframework-gis~=0.18.0
+djangorestframework~=3.13.0
+django~=4.1.1
+psycopg2-binary~=2.9.0
