@@ -1,8 +1,8 @@
-import { CookieService } from 'ngx-cookie-service';
-import { HttpClient, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { Observable, map, catchError, EMPTY, tap, shareReplay, of, Subject } from 'rxjs';
+import { CookieService } from 'ngx-cookie-service';
+import { catchError, map, Observable, of, shareReplay, Subject, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -80,6 +80,8 @@ export class AuthService {
   }
 }
 
+// This AuthGuard can be used to guard any routes that require permissions or a
+// logged in user. Currently it isn't used to guard any routes.
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) { }
