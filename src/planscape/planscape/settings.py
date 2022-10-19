@@ -45,6 +45,11 @@ INSTALLED_APPS = [
     'explore',
     'leaflet',
     'corsheaders',
+    'allauth',
+    'allauth.account',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -144,3 +149,31 @@ SPATIALITE_LIBRARY_PATH = '/opt/homebrew/lib/mod_spatialite.dylib'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
  ]
+CORS_ALLOWED_HOSTS = [
+    "http://localhost:4200",
+]
+CORS_ALLOW_CREDENTIALS = True
+
+# REST Framework settings
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
+    ),
+    'NON_FIELD_ERRORS_KEY': 'global',
+}
+
+# JWT settings
+
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'my-app-auth'
+JWT_AUTH_REFRESH_COOKIE = 'my-refresh-token'
+JWT_AUTH_HTTPONLY = False
+
+# allauth
+
+SITE_ID = 1
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_LOGOUT_ON_GET = True
+

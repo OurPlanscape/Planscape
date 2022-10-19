@@ -1,0 +1,30 @@
+<div style="text-align:center">
+  <h1>
+    Login
+  </h1>
+</div>
+
+<form (ngSubmit)="onSubmit()">
+  <label for="username">Username</label>
+  <input
+        type="text" id="username"
+        required
+        [(ngModel)]="model.username" name="username"
+        #name="ngModel">
+
+  <label for="password">Password</label>
+  <input
+        type="password" id="password"
+        required
+        [(ngModel)]="model.password" name="password"
+        #password="ngModel">
+
+  <button type="submit">Login</button>
+</form>
+
+<div>
+  Don't have an account?
+  <button (click)="signup()">Register</button>
+</div>
+<p>{{ error?.message }}</p>
+<p *ngIf="error">{{ error?.error | json }}</p>
