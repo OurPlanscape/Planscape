@@ -1,5 +1,6 @@
 import config.pillar_config as config
 import matplotlib.pyplot as plt
+from decouple import config
 from django.contrib.gis.gdal.raster.source import GDALRaster
 
 from base.condition_types import ConditionScoreType
@@ -22,7 +23,7 @@ print('array type: ', type(thumbnail))
 print(thumbnail)
 
  
-rst = GDALRaster('/Users/riecke/cnra/env/data/tcsi/ap.tif', write=False)
+rst = GDALRaster(config('TCSI_ap_FILEPATH'), write=False)
 thumbnail = rst.bands[0].data()
 print('array type: ', type(thumbnail))
 
