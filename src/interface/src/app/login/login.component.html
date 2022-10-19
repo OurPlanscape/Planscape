@@ -6,16 +6,18 @@
 
 <form (ngSubmit)="onSubmit()">
   <label for="username">Username</label>
-  <input  type="text" id="username"
-          required
-          [(ngModel)]="model.username" name="username"
-          #name="ngModel">
+  <input
+        type="text" id="username"
+        required
+        [(ngModel)]="model.username" name="username"
+        #name="ngModel">
 
   <label for="password">Password</label>
-  <input  type="password" id="password"
-          required
-          [(ngModel)]="model.password" name="password"
-          #password="ngModel">
+  <input
+        type="password" id="password"
+        required
+        [(ngModel)]="model.password" name="password"
+        #password="ngModel">
 
   <button type="submit">Login</button>
 </form>

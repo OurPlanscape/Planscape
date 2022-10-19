@@ -1,4 +1,5 @@
 from pathlib import Path
+from decouple import config
 from django.contrib.gis.utils.layermapping import LayerMapping
 from .models import TCSI_HUC12
 
@@ -28,7 +29,7 @@ tcsi_huc12_mapping = {
     'geom': 'MULTIPOLYGON',
 }
 
-TCSI_HUC12_shp = '/Users/riecke/cnra/env/data/tcsi/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp'
+TCSI_HUC12_shp = config('TCSI_HUC12_shp_FILEPATH')
 #Path('/Users/riecke/cnra/env/data/tcsi/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp').resolve
 
 def run(verbose=True):
