@@ -30,7 +30,7 @@ import { SignupComponent } from './signup/signup.component';
     LoginComponent,
     SignupComponent,
     NavigationComponent,
-    HomeComponent
+    HomeComponent,
   ],
   imports: [
     BrowserModule,
@@ -44,14 +44,14 @@ import { SignupComponent } from './signup/signup.component';
     MatSidenavModule,
     MatIconModule,
     MatListModule,
-    FormsModule
+    FormsModule,
   ],
   providers: [
     AuthService,
     AuthGuard,
     PopupService,
     BoundaryService,
-    CookieService
+    CookieService,
   ],
   bootstrap: [AppComponent]
 })

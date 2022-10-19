@@ -12,23 +12,19 @@ export class AuthService {
   loggedInStatus$: Subject<boolean> = new Subject();
   isLoggedIn$: Observable<boolean> = this.loggedInStatus$.pipe(shareReplay(1));
 
-  private apiRoot = 'http://localhost:8000/dj-rest-auth/';
+  private readonly API_ROOT = 'http://localhost:8000/dj-rest-auth/';
 
   constructor(
     private http: HttpClient,
     private cookieService: CookieService,
     private router: Router) {
       this.isLoggedIn$.subscribe();
-      if (this.isLoggedIn()) {
-        this.loggedInStatus$.next(true);
-      } else {
-        this.loggedInStatus$.next(false);
-      }
+      this.isLoggedIn() ? this.loggedInStatus$.next(true) : this.loggedInStatus$.next(false);
      }
 
   login(username: string, password: string) {
     return this.http.post(
-      this.apiRoot.concat('login/'),
+      this.API_ROOT.concat('login/'),
       { username, password },
       { withCredentials: true }
     ).pipe(
@@ -40,14 +36,14 @@ export class AuthService {
 
   signup(username: string, email: string, password1: string, password2: string) {
     return this.http.post(
-      this.apiRoot.concat('registration/'),
+      this.API_ROOT.concat('registration/'),
       { username, password1, password2, email }
     );
   }
 
   logout() {
     return this.http.get(
-      this.apiRoot.concat('logout/'),
+      this.API_ROOT.concat('logout/'),
       { withCredentials: true }
     ).pipe(
       tap(response => {
@@ -66,7 +62,7 @@ export class AuthService {
 
   refreshToken() {
     return this.http.post(
-      this.apiRoot.concat('token/refresh/'),
+      this.API_ROOT.concat('token/refresh/'),
       { refresh: this.cookieService.get('my-refresh-token') },
       { withCredentials: true }
     );
@@ -74,7 +70,7 @@ export class AuthService {
 
   getLoggedInUser() {
     return this.http.get(
-      this.apiRoot.concat('user'),
+      this.API_ROOT.concat('user'),
       { withCredentials: true }
     );
   }
