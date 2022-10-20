@@ -4,10 +4,42 @@
   </h1>
 </div>
 
-<input #username type='text' placeholder='username'>
-<input #email type='text' placeholder='email'>
-<input #password1 type='password' placeholder='password1'>
-<input #password2 type='password' placeholder='password2'>
-<button (click)="signup(username.value, email.value, password1.value, password2.value)">signup</button>
+<form (ngSubmit)="onSubmit()">
+  <label for="username">Username</label>
+  <input
+        type="text" id="username"
+        required
+        [(ngModel)]="model.username" name="username"
+        #name="ngModel">
+
+  <label for="email">Email</label>
+  <input
+        type="text" id="email"
+        required
+        [(ngModel)]="model.email" name="email"
+        #name="ngModel">
+
+  <label for="password1">Password</label>
+  <input
+        type="password" id="password1"
+        required
+        [(ngModel)]="model.password" name="password1"
+        #password="ngModel">
+
+  <label for="password2">Repeat password</label>
+  <input
+        type="password" id="password2"
+        required
+        [(ngModel)]="model.password2" name="password2"
+        #password="ngModel">
+
+  <button type="submit">Register</button>
+</form>
+
+<div>
+  Already have an account?
+  <button (click)="login()">Login</button>
+</div>
 <p>{{ error?.message }}</p>
 <p *ngIf="error">{{ error?.error | json }}</p>
+
