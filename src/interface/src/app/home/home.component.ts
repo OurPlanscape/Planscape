@@ -1,3 +1,4 @@
+import { Observable, map, of, Subscription, tap, concatMap } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
 
 import { AuthService } from './../auth.service';
@@ -9,14 +10,13 @@ import { AuthService } from './../auth.service';
 })
 export class HomeComponent implements OnInit {
 
-  user: any;
+  user$: Observable<any> = this.authService.isLoggedIn$.pipe(concatMap(result => {
+    return result ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
+  }));
 
   constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
-    this.authService.getLoggedInUser().subscribe((user => {
-      this.user = user;
-    }));
   }
 
 }

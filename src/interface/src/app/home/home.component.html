@@ -1,1 +1,1 @@
-<p>Welcome to Planscape, {{ user?.username }}!</p>
+<p>Welcome to Planscape, {{ (user$ | async)?.username }}!</p>

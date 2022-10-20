@@ -8,7 +8,7 @@
       <a mat-list-item href="/home">Home</a>
       <a mat-list-item href="/map">Map</a>
       <div *ngIf="isLoggedIn() | async; else showLogin">
-        <a mat-list-item href="#" (click)="logout()">Logout</a>
+        <a mat-list-item (click)="logout()">Logout</a>
       </div>
       <ng-template #showLogin>
         <a mat-list-item href="/login">Login/Signup</a>

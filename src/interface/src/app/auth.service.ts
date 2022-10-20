@@ -2,24 +2,32 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { catchError, map, Observable, of, shareReplay, Subject, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, shareReplay, Subject, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  loggedInStatus$: Subject<boolean> = new Subject();
-  isLoggedIn$: Observable<boolean> = this.loggedInStatus$.pipe(shareReplay(1));
+  loggedInStatus$: Subject<boolean> = new BehaviorSubject(false);
+  isLoggedIn$: Observable<boolean> = this.loggedInStatus$;
 
   private readonly API_ROOT = 'http://localhost:8000/dj-rest-auth/';
 
   constructor(
     private http: HttpClient,
-    private cookieService: CookieService,
-    private router: Router) {
+    private cookieService: CookieService) {
       this.isLoggedIn$.subscribe();
-      this.isLoggedIn() ? this.loggedInStatus$.next(true) : this.loggedInStatus$.next(false);
+      // Try to refresh the user's access token
+      this.refreshToken().pipe(
+        map((response: any) => response.access ? true : false),
+        catchError(err => {
+          console.log(err);
+          return of(false);
+        })
+      ).subscribe(result => {
+        result ? this.loggedInStatus$.next(true) : this.loggedInStatus$.next(false);
+      });
      }
 
   login(username: string, password: string) {
@@ -52,14 +60,6 @@ export class AuthService {
     );
   }
 
-  isLoggedIn(): boolean {
-    return this.cookieService.check('my-refresh-token');
-  }
-
-  isLoggedOut() {
-    return !this.isLoggedIn();
-  }
-
   refreshToken() {
     return this.http.post(
       this.API_ROOT.concat('token/refresh/'),
@@ -83,16 +83,13 @@ export class AuthGuard implements CanActivate {
   constructor(private authService: AuthService, private router: Router) { }
 
   canActivate() {
-    if (this.authService.isLoggedIn()) {
-      return this.authService.refreshToken().pipe(
-        map((response: any) => response.access),
-        catchError(err => {
-          console.log(err);
-          return of(false);
-        })
-      );
-    }
-    return false;
+    return this.authService.refreshToken().pipe(
+      map((response: any) => response.access),
+      catchError(err => {
+        console.log(err);
+        return of(false);
+      })
+    );
 
   }
 }
