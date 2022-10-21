@@ -1,0 +1,11 @@
+// host refers to the whole component
+// turns the app component into a flex box
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+app-navigation {
+  height: 100%;
+}
