@@ -6,7 +6,7 @@ import { PopupService } from '../popup.service';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss'],
+  styleUrls: ['./map.component.css'],
 })
 export class MapComponent implements AfterViewInit {
   private map!: L.Map;
