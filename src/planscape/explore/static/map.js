@@ -3,27 +3,40 @@ const hillshade = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sj
     tileSize: 512,
     zoomOffset: -1
 });
-const map = L.map("map", { layers: [hillshade] });
+
+var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap'
+});
+
+const map = L.map("map", { layers: [hillshade, osm] });
 //map.locate()
 //    .on("locationfound", (e) => map.setView(e.latlng, 8))
 //    .on("locationerror", () => map.setView([0, 0], 5));
+
 // Fit to the TCSI region
 map.fitBounds([
     [38.614, -121.220],
     [39.678, -119.876]
 ]);
 
+var baseMaps = {
+  "OpenStreetMap": osm,
+  "Hillshade": hillshade
+};
+
 // Show overlay controls
-var controlLayers = L.control.layers(null, null, {collapsed:false}).addTo(map);
+var controlLayers = L.control.layers(baseMaps, null, {collapsed:false}).addTo(map);
 controlLayers.setPosition('bottomleft')
-render_calmapper_layer();
 render_huc12();
+render_calmapper_layer();
 
 
 // Render functions
 async function render_calmapper_layer() {
   var data = JSON.parse(existing_projects)
 
+  // I believe this step makes the map less responsive
   var existing_projects_layer = L.geoJSON(data, {
       style: function(feature) {
         return {
