@@ -18,5 +18,4 @@ class TCSI_HUC12ViewSet(viewsets.ReadOnlyModelViewSet):
     #bbox_filter_field = "sourceorig"
     #filter_backends = (filters.InBBoxFilter,)
     queryset = TCSI_HUC12.objects.all()
-    print(queryset)
     serializer_class = TCSI_HUC12Serializer
