@@ -1,4 +1,4 @@
-import config.pillar_config as config
+import config.pillar_config as pillar_config
 import matplotlib.pyplot as plt
 from decouple import config
 from django.contrib.gis.gdal.raster.source import GDALRaster
@@ -6,7 +6,7 @@ from django.contrib.gis.gdal.raster.source import GDALRaster
 from base.condition_types import ConditionScoreType
 import eval.compute_conditions as cc
 
-configuration = config.PillarConfig("Planscape/src/config/metrics.json")
+configuration = pillar_config.PillarConfig("Planscape/src/config/metrics.json")
 metric = configuration.get_metric("tcsi", "forest_resilience", "forest_structure", "structural_heterogeneity")
 if metric is not None:
     print(metric.get('current_conditions_only', False))
