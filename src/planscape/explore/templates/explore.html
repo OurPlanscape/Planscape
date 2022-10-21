@@ -10,6 +10,9 @@
   </head>
   <body>
     <div id="map"></div>
+    <script>
+      var existing_projects = '{{ existing_projects|escapejs }}'
+    </script>
     <script src="{% static 'map.js' %}"></script>
   </body>
 </html>
