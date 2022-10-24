@@ -8,4 +8,12 @@
   </button>
   <span class="top-bar-title">Planscape</span>
   <span class="example-spacer"></span>
+  <button
+    mat-icon-button
+    class="top-bar-account-button"
+    aria-label="account icon button"
+    #accountButton
+    (click)="openAccountDialog()">
+    <mat-icon>account_circle</mat-icon>
+  </button>
 </mat-toolbar>
