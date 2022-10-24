@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -20,13 +21,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthGuard, AuthService } from './auth.service';
 import { BoundaryService } from './boundary.service';
-import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PopupService } from './popup.service';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 
 @NgModule({
   declarations: [
@@ -35,8 +36,8 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     LoginComponent,
     SignupComponent,
     NavigationComponent,
-    HomeComponent,
     TopBarComponent,
+    AccountDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -56,6 +57,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     MatCardModule,
     MatFormFieldModule,
     MatInputModule,
+    MatDialogModule,
   ],
   providers: [
     AuthService,
@@ -64,6 +66,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     BoundaryService,
     CookieService,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [AccountDialogComponent],
 })
 export class AppModule { }
