@@ -28,6 +28,7 @@ export class MapComponent implements AfterViewInit {
       center: [38.646, -120.548],
       zoom: 9,
       layers: [hillshade_tiles, open_street_maps_tiles],
+      zoomControl: false,
     });
 
     // Show overlay controls
@@ -71,6 +72,11 @@ export class MapComponent implements AfterViewInit {
 
     this.map.addLayer(existing_projects_layer);
     layers.addOverlay(existing_projects_layer, "CalMAPPER Projects");
+
+    const zoomControl = L.control.zoom({
+      position: 'bottomright'
+    });
+    zoomControl.addTo(this.map);
   }
 
   private initBoundaryLayer(layers: L.Control.Layers) {

@@ -1,8 +1,40 @@
 .map-container {
   height: 100%;
+  width: 100%;
+  position: relative;
 }
 
 #map {
   height: 100%;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
 }
 
+.controls-container {
+  height: 100%;
+  width: 450px;
+  position: absolute;
+  z-index: 10;
+  padding: 20px;
+}
+
+.layer-controls {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px solid black;
+  height: match-parent;
+  width: match-parent;
+  padding: 20px;
+}
+
+.layer-radio-group {
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+  align-items: flex-start;
+}
+
+.layer-radio-button {
+  margin: 5px;
+}
