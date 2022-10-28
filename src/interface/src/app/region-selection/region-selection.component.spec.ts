@@ -24,7 +24,7 @@ describe('RegionSelectionComponent', () => {
 
   it('should set available region', () => {
     const element: HTMLElement = fixture.nativeElement;
-    const sierraNevadaElement: any = element.querySelectorAll('.region')[0];
+    const sierraNevadaElement: any = element.querySelectorAll('.region-button')[0];
 
     sierraNevadaElement.click();
 
@@ -33,7 +33,7 @@ describe('RegionSelectionComponent', () => {
 
   it('should disable unavailable regions', () => {
     const element: HTMLElement = fixture.nativeElement;
-    const regionElement: any = element.querySelectorAll('.region')[2];
+    const regionElement: any = element.querySelectorAll('.region-button')[2];
 
     regionElement.click();
 
