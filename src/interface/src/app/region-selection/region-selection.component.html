@@ -1,0 +1,18 @@
+<div class="center-block">
+  <section class="image-section">
+    <img src="assets/svg/planscape-image.svg">
+  </section>
+  <section class="content-section">
+    Different regions have varied datasets available.
+    <br>Which region are you working on?
+  </section>
+  <section class="content-section">
+    <div
+      class="region" *ngFor="let region of regionButtons"
+      (click)="setRegion(region)"
+      [class.disabled]="!region.available">
+      <div class="blank-region-icon"></div>
+      <div class="region-label">{{ region.name }}</div>
+    </div>
+  </section>
+</div>
