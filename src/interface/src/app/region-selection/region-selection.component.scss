@@ -1,5 +1,3 @@
-$toolbar-height: 48px;
-
 .center-block {
   align-items: center;
   display: flex;
@@ -18,7 +16,7 @@ $toolbar-height: 48px;
   padding: 30px;
 }
 
-.region {
+.region-button {
   color: #3367D6;
   cursor: pointer;
   font-size: 13px;
@@ -34,8 +32,8 @@ $toolbar-height: 48px;
   border-radius: 50%;
   display: inline-block;
   height: 59px;
-  width: 59px;
   transition: background-color ease 0.3s;
+  width: 59px;
 
   &:hover {
     background-color: #3367D6;

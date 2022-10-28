@@ -25,21 +25,17 @@ const availableRegions = new Set([
   styleUrls: ['./region-selection.component.scss']
 })
 export class RegionSelectionComponent implements OnInit {
-  Region = Region;
   selectedRegion?: Region;
-
   regionButtons: RegionButton[] = [];
 
   constructor() { }
 
   ngOnInit(): void {
     this.regionButtons = regions.map((region) => {
-      const available = availableRegions.has(region);
-
       return {
         type: region,
         name: region,
-        available,
+        available: availableRegions.has(region),
         iconColor: '#838383',
       }
     })
@@ -50,7 +46,6 @@ export class RegionSelectionComponent implements OnInit {
       return;
     }
     this.selectedRegion = regionButton.type;
-    console.log(this.selectedRegion);
   }
 
 }
