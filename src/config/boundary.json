@@ -1,0 +1,17 @@
+{
+    "boundaries": [
+        {
+            "boundary_name": "tcsi_huc12",
+            "region_name": "tcsi",
+            "filepath": "data/tcsi",
+            "display_name": "HUC12",
+            "shapefile_field_mapping": {
+                "shape_name": "Name",
+                "geometry": "MULTIPOLYGON",
+                "states": "States",
+                "acres": "AreaAcres",
+                "hectares": "Hectares"
+            }
+        }
+    ]
+}
