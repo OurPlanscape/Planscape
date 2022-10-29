@@ -1,9 +1,11 @@
+import json
+
 from pathlib import Path
 from decouple import config
 from django.contrib.gis.utils.layermapping import LayerMapping
 from .models import TCSI_HUC12
 
-# Auto-generated `LayerMapping` dictionary for TCSI_HUC12 model
+
 tcsi_huc12_mapping = {
     'objectid': 'OBJECTID',
     'tnmid': 'TNMID',

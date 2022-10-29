@@ -1,17 +1,9 @@
-"""Markers API views."""
 from rest_framework import viewsets
 from rest_framework_gis import filters
 from django.core.serializers import serialize
 
-from .models import Marker, TCSI_HUC12
-from .serializers import MarkerSerializer, TCSI_HUC12Serializer
-
-
-class MarkerViewSet(viewsets.ReadOnlyModelViewSet):
-    bbox_filter_field = "location"
-    filter_backends = (filters.InBBoxFilter,)
-    queryset = Marker.objects.all()
-    serializer_class = MarkerSerializer
+from .models import TCSI_HUC12
+from .serializers import TCSI_HUC12Serializer
 
 
 class TCSI_HUC12ViewSet(viewsets.ReadOnlyModelViewSet):
