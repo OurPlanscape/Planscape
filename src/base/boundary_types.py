@@ -1,10 +1,10 @@
 """Classes (really structs) for describing boundary layers.
 
 Types defined:
-  ShapefileFieldMapping: Mapping from canonical field names to the field names
-    in the shapefile.
+  ShapefileFieldMapping: Mapping from canonical field names in the Django model
+    to the field names in a shapefile.
   Boundary: Metadata about one boundary layer.
-  Boundaries: Multiple boundary layers.
+  Boundaries: A list of one or more boundary layers.
 """
 
 from typing import TypedDict
@@ -12,8 +12,9 @@ from typing_extensions import NotRequired
 
 
 class ShapefileFieldMapping(TypedDict):
-    shape_name: str
     geometry: str
+    shape_name: NotRequired[str]
+    objectid: NotRequired[str]
     states: NotRequired[str]
     acres: NotRequired[str]
     hectares: NotRequired[str]
@@ -21,9 +22,10 @@ class ShapefileFieldMapping(TypedDict):
 
 class Boundary(TypedDict):
     boundary_name: str
-    region_name: str
-    filepath: NotRequired[str]
     display_name: NotRequired[str]
+    region_name: str
+    filepath: str
+    source_srs: int
     shapefile_field_mapping: ShapefileFieldMapping
 
 
