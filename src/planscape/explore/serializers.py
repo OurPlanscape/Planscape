@@ -1,5 +1,3 @@
-"""Markers serializers."""
-
 from rest_framework_gis import serializers
 
 from .models import TCSI_HUC12
