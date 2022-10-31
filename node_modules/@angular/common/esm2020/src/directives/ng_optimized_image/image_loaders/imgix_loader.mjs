@@ -1,0 +1,33 @@
+/**
+ * @license
+ * Copyright Google LLC All Rights Reserved.
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
+import { createImageLoader } from './image_loader';
+/**
+ * Function that generates an ImageLoader for Imgix and turns it into an Angular provider.
+ *
+ * @param path path to the desired Imgix origin,
+ * e.g. https://somepath.imgix.net or https://images.mysite.com
+ * @param options An object with extra configuration:
+ * - `ensurePreconnect`: boolean flag indicating whether the NgOptimizedImage directive
+ *                       should verify that there is a corresponding `<link rel="preconnect">`
+ *                       present in the document's `<head>`.
+ * @returns Set of providers to configure the Imgix loader.
+ *
+ * @publicApi
+ * @developerPreview
+ */
+export const provideImgixLoader = createImageLoader(createImgixUrl, ngDevMode ? ['https://somepath.imgix.net/'] : undefined);
+function createImgixUrl(path, config) {
+    const url = new URL(`${path}/${config.src}`);
+    // This setting ensures the smallest allowable format is set.
+    url.searchParams.set('auto', 'format');
+    if (config.width) {
+        url.searchParams.set('w', config.width.toString());
+    }
+    return url.href;
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW1naXhfbG9hZGVyLmpzIiwic291cmNlUm9vdCI6IiIsInNvdXJjZXMiOlsiLi4vLi4vLi4vLi4vLi4vLi4vLi4vLi4vLi4vcGFja2FnZXMvY29tbW9uL3NyYy9kaXJlY3RpdmVzL25nX29wdGltaXplZF9pbWFnZS9pbWFnZV9sb2FkZXJzL2ltZ2l4X2xvYWRlci50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQTs7Ozs7O0dBTUc7QUFFSCxPQUFPLEVBQUMsaUJBQWlCLEVBQW9CLE1BQU0sZ0JBQWdCLENBQUM7QUFFcEU7Ozs7Ozs7Ozs7Ozs7R0FhRztBQUNILE1BQU0sQ0FBQyxNQUFNLGtCQUFrQixHQUMzQixpQkFBaUIsQ0FBQyxjQUFjLEVBQUUsU0FBUyxDQUFDLENBQUMsQ0FBQyxDQUFDLDZCQUE2QixDQUFDLENBQUMsQ0FBQyxDQUFDLFNBQVMsQ0FBQyxDQUFDO0FBRS9GLFNBQVMsY0FBYyxDQUFDLElBQVksRUFBRSxNQUF5QjtJQUM3RCxNQUFNLEdBQUcsR0FBRyxJQUFJLEdBQUcsQ0FBQyxHQUFHLElBQUksSUFBSSxNQUFNLENBQUMsR0FBRyxFQUFFLENBQUMsQ0FBQztJQUM3Qyw2REFBNkQ7SUFDN0QsR0FBRyxDQUFDLFlBQVksQ0FBQyxHQUFHLENBQUMsTUFBTSxFQUFFLFFBQVEsQ0FBQyxDQUFDO0lBQ3ZDLElBQUksTUFBTSxDQUFDLEtBQUssRUFBRTtRQUNoQixHQUFHLENBQUMsWUFBWSxDQUFDLEdBQUcsQ0FBQyxHQUFHLEVBQUUsTUFBTSxDQUFDLEtBQUssQ0FBQyxRQUFRLEVBQUUsQ0FBQyxDQUFDO0tBQ3BEO0lBQ0QsT0FBTyxHQUFHLENBQUMsSUFBSSxDQUFDO0FBQ2xCLENBQUMiLCJzb3VyY2VzQ29udGVudCI6WyIvKipcbiAqIEBsaWNlbnNlXG4gKiBDb3B5cmlnaHQgR29vZ2xlIExMQyBBbGwgUmlnaHRzIFJlc2VydmVkLlxuICpcbiAqIFVzZSBvZiB0aGlzIHNvdXJjZSBjb2RlIGlzIGdvdmVybmVkIGJ5IGFuIE1JVC1zdHlsZSBsaWNlbnNlIHRoYXQgY2FuIGJlXG4gKiBmb3VuZCBpbiB0aGUgTElDRU5TRSBmaWxlIGF0IGh0dHBzOi8vYW5ndWxhci5pby9saWNlbnNlXG4gKi9cblxuaW1wb3J0IHtjcmVhdGVJbWFnZUxvYWRlciwgSW1hZ2VMb2FkZXJDb25maWd9IGZyb20gJy4vaW1hZ2VfbG9hZGVyJztcblxuLyoqXG4gKiBGdW5jdGlvbiB0aGF0IGdlbmVyYXRlcyBhbiBJbWFnZUxvYWRlciBmb3IgSW1naXggYW5kIHR1cm5zIGl0IGludG8gYW4gQW5ndWxhciBwcm92aWRlci5cbiAqXG4gKiBAcGFyYW0gcGF0aCBwYXRoIHRvIHRoZSBkZXNpcmVkIEltZ2l4IG9yaWdpbixcbiAqIGUuZy4gaHR0cHM6Ly9zb21lcGF0aC5pbWdpeC5uZXQgb3IgaHR0cHM6Ly9pbWFnZXMubXlzaXRlLmNvbVxuICogQHBhcmFtIG9wdGlvbnMgQW4gb2JqZWN0IHdpdGggZXh0cmEgY29uZmlndXJhdGlvbjpcbiAqIC0gYGVuc3VyZVByZWNvbm5lY3RgOiBib29sZWFuIGZsYWcgaW5kaWNhdGluZyB3aGV0aGVyIHRoZSBOZ09wdGltaXplZEltYWdlIGRpcmVjdGl2ZVxuICogICAgICAgICAgICAgICAgICAgICAgIHNob3VsZCB2ZXJpZnkgdGhhdCB0aGVyZSBpcyBhIGNvcnJlc3BvbmRpbmcgYDxsaW5rIHJlbD1cInByZWNvbm5lY3RcIj5gXG4gKiAgICAgICAgICAgICAgICAgICAgICAgcHJlc2VudCBpbiB0aGUgZG9jdW1lbnQncyBgPGhlYWQ+YC5cbiAqIEByZXR1cm5zIFNldCBvZiBwcm92aWRlcnMgdG8gY29uZmlndXJlIHRoZSBJbWdpeCBsb2FkZXIuXG4gKlxuICogQHB1YmxpY0FwaVxuICogQGRldmVsb3BlclByZXZpZXdcbiAqL1xuZXhwb3J0IGNvbnN0IHByb3ZpZGVJbWdpeExvYWRlciA9XG4gICAgY3JlYXRlSW1hZ2VMb2FkZXIoY3JlYXRlSW1naXhVcmwsIG5nRGV2TW9kZSA/IFsnaHR0cHM6Ly9zb21lcGF0aC5pbWdpeC5uZXQvJ10gOiB1bmRlZmluZWQpO1xuXG5mdW5jdGlvbiBjcmVhdGVJbWdpeFVybChwYXRoOiBzdHJpbmcsIGNvbmZpZzogSW1hZ2VMb2FkZXJDb25maWcpIHtcbiAgY29uc3QgdXJsID0gbmV3IFVSTChgJHtwYXRofS8ke2NvbmZpZy5zcmN9YCk7XG4gIC8vIFRoaXMgc2V0dGluZyBlbnN1cmVzIHRoZSBzbWFsbGVzdCBhbGxvd2FibGUgZm9ybWF0IGlzIHNldC5cbiAgdXJsLnNlYXJjaFBhcmFtcy5zZXQoJ2F1dG8nLCAnZm9ybWF0Jyk7XG4gIGlmIChjb25maWcud2lkdGgpIHtcbiAgICB1cmwuc2VhcmNoUGFyYW1zLnNldCgndycsIGNvbmZpZy53aWR0aC50b1N0cmluZygpKTtcbiAgfVxuICByZXR1cm4gdXJsLmhyZWY7XG59XG4iXX0=

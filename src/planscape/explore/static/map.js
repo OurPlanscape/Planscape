@@ -4,32 +4,13 @@ const hillshade = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sj
     zoomOffset: -1
 });
 
-var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap'
-});
-
 const map = L.map("map", { layers: [hillshade, osm] });
-//map.locate()
-//    .on("locationfound", (e) => map.setView(e.latlng, 8))
-//    .on("locationerror", () => map.setView([0, 0], 5));
 
 // Fit to the TCSI region
 map.fitBounds([
     [38.614, -121.220],
     [39.678, -119.876]
 ]);
-
-var baseMaps = {
-  "OpenStreetMap": osm,
-  "Hillshade": hillshade
-};
-
-// Show overlay controls
-var controlLayers = L.control.layers(baseMaps, null, {collapsed:false}).addTo(map);
-controlLayers.setPosition('bottomleft')
-render_huc12();
-render_calmapper_layer();
 
 
 // Render functions
