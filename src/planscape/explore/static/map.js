@@ -36,7 +36,7 @@ render_calmapper_layer();
 async function render_calmapper_layer() {
   var data = JSON.parse(existing_projects)
 
-  // I believe this step makes the map less responsive
+  // [elsieling] This step makes the map less responsive
   var existing_projects_layer = L.geoJSON(data, {
       style: function(feature) {
         return {
