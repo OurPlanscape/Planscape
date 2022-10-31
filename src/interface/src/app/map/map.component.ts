@@ -27,6 +27,7 @@ export class MapComponent implements AfterViewInit {
     );
     tiles.addTo(this.map);
   }
+
   constructor(private boundaryService: BoundaryService, private popupService: PopupService) {}
 
   private initBoundaryLayer() {
