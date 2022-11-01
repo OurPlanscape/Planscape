@@ -4,37 +4,13 @@ const hillshade = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sj
     zoomOffset: -1
 });
 
-const map = L.map("map", { layers: [hillshade, osm] });
+const map = L.map("map", { layers: [hillshade] });
 
 // Fit to the TCSI region
 map.fitBounds([
     [38.614, -121.220],
     [39.678, -119.876]
 ]);
-
-
-// Render functions
-async function render_calmapper_layer() {
-  var data = JSON.parse(existing_projects)
-
-  // [elsieling] This step makes the map less responsive
-  var existing_projects_layer = L.geoJSON(data, {
-      style: function(feature) {
-        return {
-          "color": "#000000",
-          "weight": 3,
-          "opacity": 0.9
-        }
-      },
-      onEachFeature: function(feature, layer) {
-        layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' + 
-        'Status: ' + feature.properties.PROJECT_STATUS);
-      }
-    }
-  ).addTo(map);
-  
-  controlLayers.addOverlay(existing_projects_layer, 'CalMAPPER projects');
-}
 
 async function load_markers() {
   const markers_url = `/api/markers/?in_bbox=${map
@@ -70,8 +46,6 @@ async function render_huc12() {
         layer.bindPopup(content);
     }}).addTo(map);
     */
-
-    controlLayers.addOverlay(huc12_layer, 'HUC-12');
 }
 
 
