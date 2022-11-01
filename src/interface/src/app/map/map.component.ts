@@ -41,28 +41,37 @@ export class MapComponent implements AfterViewInit {
 
   constructor(private boundaryService: BoundaryService, private popupService: PopupService) {}
 
-  // // TODO(elsieling) Port data from django backend to this component
-  // private initCalMapperLayer() {
-  //   var data = JSON.parse(existing_projects)
+  // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering. Renders the project boundaries + metadata in a popup in an optional layer.
+  private async initCalMapperLayer(layers: L.Control.Layers) {
+    const params = {
+        'where': '1=1',
+        'outFields' : 'PROJECT_NAME,PROJECT_STATUS',
+        'f': 'GEOJSON'
+    }
 
-  //   // [elsieling] This step makes the map less responsive
-  //   var existing_projects_layer = L.geoJSON(data, {
-  //       style: function(feature) {
-  //         return {
-  //           "color": "#000000",
-  //           "weight": 3,
-  //           "opacity": 0.9
-  //         }
-  //       },
-  //       onEachFeature: function(feature, layer) {
-  //         layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' +
-  //         'Status: ' + feature.properties.PROJECT_STATUS);
-  //       }
-  //     }
-  //   ).addTo(this.map);
+    const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
+    const response = await fetch(url);
+    const data = await response.json();
 
-  //   this.map.addLayer(existing_projects_layer);
-  // }
+    // [elsieling] This step makes the map less responsive
+    var existing_projects_layer = L.geoJSON(data, {
+        style: function(feature) {
+          return {
+            "color": "#000000",
+            "weight": 3,
+            "opacity": 0.9
+          }
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' +
+          'Status: ' + feature.properties.PROJECT_STATUS);
+        }
+      }
+    ).addTo(this.map);
+
+    this.map.addLayer(existing_projects_layer);
+    layers.addOverlay(existing_projects_layer, "CalMAPPER Projects");
+  }
 
   private initBoundaryLayer(layers: L.Control.Layers) {
     const boundaryLayer = L.geoJSON(this.boundary, {
@@ -80,11 +89,11 @@ export class MapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    const control_layers = this.initMap();
+    var control_layers = this.initMap();
+    this.initCalMapperLayer(control_layers);
     this.boundaryService.getBoundaryShapes().subscribe((boundary) => {
       this.boundary = boundary;
       this.initBoundaryLayer(control_layers);
     });
-
   }
 }
