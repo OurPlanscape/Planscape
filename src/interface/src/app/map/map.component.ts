@@ -41,6 +41,7 @@ export class MapComponent implements AfterViewInit {
 
   constructor(private boundaryService: BoundaryService, private popupService: PopupService) {}
 
+  // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering. Renders the project boundaries + metadata in a popup in an optional layer.
   private async initCalMapperLayer(layers: L.Control.Layers) {
     const params = {
         'where': '1=1',
@@ -48,9 +49,7 @@ export class MapComponent implements AfterViewInit {
         'f': 'GEOJSON'
     }
 
-    const searchParams = new URLSearchParams(params).toString();
-    var url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + searchParams;
-    console.log(url)
+    const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
     const response = await fetch(url);
     const data = await response.json();
 
