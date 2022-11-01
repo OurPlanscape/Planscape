@@ -34,8 +34,8 @@ def run(verbose=True):
         print("Creating Boundary " + boundary_name)
         query = Boundary.objects.filter(boundary_name__exact=boundary_name)
         if len(query) > 0:
-            print("Boundary " + boundary_name + " already exists; skipping.")
-            continue
+            print("Boundary " + boundary_name + " already exists; deleting.")
+            query.delete()
         boundary_obj = Boundary(boundary_name=boundary_name)
         boundary_obj.save()
 
