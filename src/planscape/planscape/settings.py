@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_gis',
-    'explore',
     'boundary',
     'leaflet',
     'corsheaders',
@@ -92,14 +91,6 @@ DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "HOST": "localhost",
-        "NAME": "planscape",
-        "PASSWORD": "pass",
-        "PORT": 5432,
-        "USER": "planscape",
-    },
-    "clearcreek": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "HOST": "localhost.corp.google.com",
         "NAME": "planscape",
         "PASSWORD": "pass",
         "PORT": 5432,
