@@ -41,28 +41,32 @@ export class MapComponent implements AfterViewInit {
 
   constructor(private boundaryService: BoundaryService, private popupService: PopupService) {}
 
-  // // TODO(elsieling) Port data from django backend to this component
-  // private initCalMapperLayer() {
-  //   var data = JSON.parse(existing_projects)
+  // Retrives existing projects from backend server. Renders the project boundaries + metadata in a popup in an optional layer.
+  private async initCalMapperLayer(layers: L.Control.Layers) {
+    const url = "http://127.0.0.1:8000/explore/projects?format=json";
+    const response = await fetch(url);
+    const data = await response.json();
+    const parsed_geojson = JSON.parse(data);
 
-  //   // [elsieling] This step makes the map less responsive
-  //   var existing_projects_layer = L.geoJSON(data, {
-  //       style: function(feature) {
-  //         return {
-  //           "color": "#000000",
-  //           "weight": 3,
-  //           "opacity": 0.9
-  //         }
-  //       },
-  //       onEachFeature: function(feature, layer) {
-  //         layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' +
-  //         'Status: ' + feature.properties.PROJECT_STATUS);
-  //       }
-  //     }
-  //   ).addTo(this.map);
+    // [elsieling] This step makes the map less responsive
+    var existing_projects_layer = L.geoJSON(parsed_geojson, {
+        style: function(feature) {
+          return {
+            "color": "#000000",
+            "weight": 3,
+            "opacity": 0.9
+          }
+        },
+        onEachFeature: function(feature, layer) {
+          layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' +
+          'Status: ' + feature.properties.PROJECT_STATUS);
+        }
+      }
+    ).addTo(this.map);
 
-  //   this.map.addLayer(existing_projects_layer);
-  // }
+    this.map.addLayer(existing_projects_layer);
+    layers.addOverlay(existing_projects_layer, "CalMAPPER Projects");
+  }
 
   private initBoundaryLayer(layers: L.Control.Layers) {
     const boundaryLayer = L.geoJSON(this.boundary, {
@@ -80,11 +84,11 @@ export class MapComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    const control_layers = this.initMap();
+    var control_layers = this.initMap();
+    this.initCalMapperLayer(control_layers);
     this.boundaryService.getBoundaryShapes().subscribe((boundary) => {
       this.boundary = boundary;
       this.initBoundaryLayer(control_layers);
     });
-
   }
 }
