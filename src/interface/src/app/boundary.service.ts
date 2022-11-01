@@ -9,6 +9,6 @@ export class BoundaryService {
 
   getBoundaryShapes() {
     // Get the shapes from the REST server.
-    return this.http.get('http://127.0.0.1:8000/api/tcsi_huc12');
+    return this.http.get('http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12');
   }
 }
