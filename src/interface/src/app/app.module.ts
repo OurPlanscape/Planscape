@@ -24,6 +24,7 @@ import { NavigationComponent } from './navigation/navigation.component';
 import { PopupService } from './popup.service';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { RegionSelectionComponent } from './region-selection/region-selection.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +35,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     NavigationComponent,
     HomeComponent,
     TopBarComponent,
+    RegionSelectionComponent,
   ],
   imports: [
     BrowserModule,
