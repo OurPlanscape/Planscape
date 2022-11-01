@@ -3,50 +3,76 @@ const hillshade = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sj
     tileSize: 512,
     zoomOffset: -1
 });
-const map = L.map("map", { layers: [hillshade] });
-//map.locate()
-//    .on("locationfound", (e) => map.setView(e.latlng, 8))
-//    .on("locationerror", () => map.setView([0, 0], 5));
+
+const map = L.map("map", { layers: [hillshade, osm] });
+
 // Fit to the TCSI region
 map.fitBounds([
     [38.614, -121.220],
     [39.678, -119.876]
 ]);
 
+
+// Render functions
+async function render_calmapper_layer() {
+  var data = JSON.parse(existing_projects)
+
+  // [elsieling] This step makes the map less responsive
+  var existing_projects_layer = L.geoJSON(data, {
+      style: function(feature) {
+        return {
+          "color": "#000000",
+          "weight": 3,
+          "opacity": 0.9
+        }
+      },
+      onEachFeature: function(feature, layer) {
+        layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' + 
+        'Status: ' + feature.properties.PROJECT_STATUS);
+      }
+    }
+  ).addTo(map);
+  
+  controlLayers.addOverlay(existing_projects_layer, 'CalMAPPER projects');
+}
+
 async function load_markers() {
-    const markers_url = `/api/markers/?in_bbox=${map
-        .getBounds()
-        .toBBoxString()}`;
-    const response = await fetch(markers_url);
-    const geojson = await response.json();
-    return geojson;
+  const markers_url = `/api/markers/?in_bbox=${map
+      .getBounds()
+      .toBBoxString()}`;
+  const response = await fetch(markers_url);
+  const geojson = await response.json();
+  return geojson;
 }
 
 async function load_tcsi_huc12() {
-    const tcsi_huc12_url = `/api/tcsi_huc12/?in_bbox=${map
-        .getBounds()
-        .toBBoxString()}`;
-    const response = await fetch(tcsi_huc12_url);
-    const geojson = await response.json();
-    return geojson;
+  const tcsi_huc12_url = `/api/tcsi_huc12/?in_bbox=${map
+      .getBounds()
+      .toBBoxString()}`;
+  const response = await fetch(tcsi_huc12_url);
+  const geojson = await response.json();
+  return geojson;
 }
 async function render_markers() {
-    const markers = await load_markers();
-    L.geoJSON(markers)
-        .bindPopup((layer) => layer.feature.properties.name)
-        .addTo(map);
+  const markers = await load_markers();
+  L.geoJSON(markers)
+      .bindPopup((layer) => layer.feature.properties.name)
+      .addTo(map);
 }
 async function render_huc12() {
-    const boundaries = await load_tcsi_huc12();
-    L.geoJSON(boundaries).layers().addTo(map);
+  const boundaries = await load_tcsi_huc12();
+  var huc12_layer = L.geoJSON(boundaries).addTo(map);
 /*
-    {
-        onEachFeature: function onEachFeature(feature, layer) {
-          var props = feature.properties;
-          var content = `<img width="300" src="${props.picture_url}"/><h3>${props.title}</h3><p>${props.description}</p>`;
-          layer.bindPopup(content);
-      }}).addTo(map);
-      */
+  {
+      onEachFeature: function onEachFeature(feature, layer) {
+        var props = feature.properties;
+        var content = `<img width="300" src="${props.picture_url}"/><h3>${props.title}</h3><p>${props.description}</p>`;
+        layer.bindPopup(content);
+    }}).addTo(map);
+    */
+
+    controlLayers.addOverlay(huc12_layer, 'HUC-12');
 }
 
-map.on("moveend", render_huc12);
+
+
