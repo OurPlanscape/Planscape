@@ -8,7 +8,6 @@ class ExploreView(TemplateView):
     template_name = "explore.html"
 
 class CalMAPPERView(APIView):
-
     def get(self, request):
         params = {
             'where': 'PROJECT_STATUS=\'Active\'',
