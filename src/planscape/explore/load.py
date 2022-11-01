@@ -32,7 +32,6 @@ tcsi_huc12_mapping = {
 }
 
 TCSI_HUC12_shp = config('TCSI_HUC12_shp_FILEPATH')
-#Path('/Users/riecke/cnra/env/data/tcsi/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp').resolve
 
 def run(verbose=True):
     # NB: 3310 is the California coordinate system https://epsg.io/3310
