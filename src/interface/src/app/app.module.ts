@@ -1,6 +1,7 @@
 import { LayoutModule } from '@angular/cdk/layout';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,6 +23,8 @@ import { MapComponent } from './map/map.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PopupService } from './popup.service';
 import { SignupComponent } from './signup/signup.component';
+import { TopBarComponent } from './top-bar/top-bar.component';
+import { RegionSelectionComponent } from './region-selection/region-selection.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +34,8 @@ import { SignupComponent } from './signup/signup.component';
     SignupComponent,
     NavigationComponent,
     HomeComponent,
+    TopBarComponent,
+    RegionSelectionComponent,
   ],
   imports: [
     BrowserModule,
@@ -45,6 +50,8 @@ import { SignupComponent } from './signup/signup.component';
     MatIconModule,
     MatListModule,
     FormsModule,
+    CommonModule,
+    MatIconModule,
   ],
   providers: [
     AuthService,

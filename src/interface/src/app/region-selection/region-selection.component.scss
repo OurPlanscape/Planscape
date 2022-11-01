@@ -1,0 +1,41 @@
+.center-block {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  position: absolute;
+  text-align: center;
+  top: 127px;
+  width: 100%;
+}
+
+.content-section {
+  display: flex;
+  flex-direction: row;
+  gap: 30px;
+  padding: 30px;
+}
+
+.region-button {
+  color: #3367D6;
+  cursor: pointer;
+  font-size: 13px;
+
+  &.disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+}
+
+.blank-region-icon {
+  background-color: #838383;
+  border-radius: 50%;
+  display: inline-block;
+  height: 59px;
+  transition: background-color ease 0.3s;
+  width: 59px;
+
+  &:hover {
+    background-color: #3367D6;
+  }
+}
