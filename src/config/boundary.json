@@ -25,6 +25,17 @@
                 "geometry": "MULTIPOLYGON",
                 "hectares": "Hectares"
             }
+        },
+        {
+            "boundary_name": "task_force_regions",
+            "display_name": "Wildfire Task Force Regions",
+            "region_name": "none",
+            "filepath": "boundary/RFFC_Regions_2022/tier1_rffc_areas_jan2022.shp",
+            "source_srs": 3310,
+            "shapefile_field_mapping": {
+                "shape_name": "RFFC_tier1",
+                "geometry": "MULTIPOLYGON"
+            }
         }
     ]
 }
