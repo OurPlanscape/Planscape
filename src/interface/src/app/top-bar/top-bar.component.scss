@@ -1,0 +1,21 @@
+$toolbar-height: 48px;
+
+.mat-toolbar {
+  font-family: "Google Sans", "Open Sans", sans-serif;
+  font-size: 19px;
+  font-style: normal;
+  font-weight: 400;
+  height: $toolbar-height;
+  letter-spacing: 0.5px;
+  padding: 0 12px;
+  position: relative;
+  z-index: 2;
+}
+
+.menu-button {
+  margin-right: 10px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}

@@ -1,2 +1,3 @@
-
-<app-navigation></app-navigation>
+<!-- Toolbar -->
+<top-bar (toggleEvent)="toggleSidebar($event)"></top-bar>
+<app-navigation [sidebarOpen]="sidebarOpen"></app-navigation>
