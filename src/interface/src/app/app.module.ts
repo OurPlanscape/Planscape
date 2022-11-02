@@ -12,6 +12,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CookieService } from 'ngx-cookie-service';
+import { StoreModule } from '@ngrx/store';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -25,6 +26,7 @@ import { PopupService } from './popup.service';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
+import { appReducerMap } from './state';
 
 @NgModule({
   declarations: [
@@ -52,6 +54,12 @@ import { RegionSelectionComponent } from './region-selection/region-selection.co
     FormsModule,
     CommonModule,
     MatIconModule,
+    StoreModule.forRoot(appReducerMap, {
+      runtimeChecks: {
+        strictActionImmutability: true,
+        strictStateImmutability: true,
+      }
+    })
   ],
   providers: [
     AuthService,
