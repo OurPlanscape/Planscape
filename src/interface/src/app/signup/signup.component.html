@@ -1,13 +1,64 @@
-<div style="text-align:center">
-  <h1>
-    Signup
-  </h1>
-</div>
+<mat-card>
+  <mat-card-title>Register</mat-card-title>
 
-<input #username type='text' placeholder='username'>
-<input #email type='text' placeholder='email'>
-<input #password1 type='password' placeholder='password1'>
-<input #password2 type='password' placeholder='password2'>
-<button (click)="signup(username.value, email.value, password1.value, password2.value)">signup</button>
+  <form (ngSubmit)="onSubmit()">
+    <mat-card-content>
+      <div>
+        <mat-form-field>
+          <input
+                type="text" id="username"
+                required
+                placeholder="Username"
+                [(ngModel)]="model.username" name="username"
+                #name="ngModel"
+                matInput>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <mat-form-field>
+          <input
+                type="text" id="email"
+                required
+                placeholder="Email address"
+                [(ngModel)]="model.email" name="email"
+                #name="ngModel"
+                matInput>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <mat-form-field>
+          <input
+                type="password" id="password1"
+                required
+                placeholder="Password"
+                [(ngModel)]="model.password1" name="password1"
+                #password="ngModel"
+                matInput>
+        </mat-form-field>
+      </div>
+
+      <div>
+        <mat-form-field>
+          <input
+                type="password" id="password2"
+                required
+                placeholder="Repeat password"
+                [(ngModel)]="model.password2" name="password2"
+                #password="ngModel"
+                matInput>
+        </mat-form-field>
+      </div>
+
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-raised-button (click)="login()" type="button">Login</button>
+      <button mat-raised-button color="primary" type="submit">Register</button>
+    </mat-card-actions>
+  </form>
+</mat-card>
+
 <p>{{ error?.message }}</p>
 <p *ngIf="error">{{ error?.error | json }}</p>
