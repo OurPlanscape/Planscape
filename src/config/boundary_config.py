@@ -10,7 +10,7 @@ Example usage:
 import json
 from typing import List, Optional
 
-from base.boundary_types import Boundary
+from base.boundary_types import Boundary, GeometryType
 
 
 class BoundaryConfig:
@@ -40,18 +40,18 @@ class BoundaryConfig:
         def check_boundary(boundary) -> bool:
             return (isinstance(boundary, dict) and
                     boundary.keys() <= set(['boundary_name', 'display_name', 'region_name', 'filepath', 'source_srs', 
-                                            'shapefile_field_mapping']) and
+                                            'geometry_type', 'shapefile_field_mapping']) and
                     isinstance(boundary['boundary_name'], str) and
                     isinstance(boundary.get('display_name', ''), str) and
                     isinstance(boundary['region_name'], str) and
                     isinstance(boundary['filepath'], str) and
                     isinstance(boundary['source_srs'], int) and
+                    isinstance(GeometryType(boundary['geometry_type']), GeometryType) and 
                     check_shapefile_field_mapping(boundary['shapefile_field_mapping']))
 
         def check_shapefile_field_mapping(mapping) -> bool:
             return (isinstance(mapping, dict) and
-                    mapping.keys() <= set(['geometry', 'shape_name', 'objectid', 'states', 'acres', 'hectares']) and
-                    isinstance(mapping['geometry'], str) and
+                    mapping.keys() <= set(['shape_name', 'objectid', 'states', 'acres', 'hectares']) and
                     isinstance(mapping.get('shape_name', ''), str) and
                     isinstance(mapping.get('objectid', ''), str) and
                     isinstance(mapping.get('states', ''), str) and

@@ -34,12 +34,13 @@ def run(verbose=True):
         print("Creating Boundary " + boundary_name)
         query = Boundary.objects.filter(boundary_name__exact=boundary_name)
         if len(query) > 0:
-            print("Boundary " + boundary_name + " already exists; skipping.")
-            continue
+            print("Boundary " + boundary_name + " already exists; deleting.")
+            query.delete()
         boundary_obj = Boundary(boundary_name=boundary_name)
         boundary_obj.save()
 
         shapefile_field_mapping = dict(boundary['shapefile_field_mapping'])
+        shapefile_field_mapping['geometry'] = boundary['geometry_type']
         filepath = Path(os.path.join(data_path, boundary['filepath']))
         srs = boundary['source_srs']
         lm = LayerMapping(BoundaryDetails, filepath,
