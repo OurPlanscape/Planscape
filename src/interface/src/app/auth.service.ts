@@ -2,7 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { BehaviorSubject, catchError, map, Observable, of, shareReplay, Subject, tap } from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, Subject, tap } from 'rxjs';
+
+export interface User {
+  username: string,
+}
 
 @Injectable({
   providedIn: 'root'
@@ -20,13 +24,13 @@ export class AuthService {
       this.isLoggedIn$.subscribe();
       // Try to refresh the user's access token
       this.refreshToken().pipe(
-        map((response: any) => response.access ? true : false),
+        map((response: any) => !!(response.access)),
         catchError(err => {
           console.log(err);
           return of(false);
         })
       ).subscribe(result => {
-        result ? this.loggedInStatus$.next(true) : this.loggedInStatus$.next(false);
+        this.loggedInStatus$.next(result);
       });
      }
 
@@ -68,11 +72,16 @@ export class AuthService {
     );
   }
 
-  getLoggedInUser() {
+  getLoggedInUser(): Observable<User> {
     return this.http.get(
       this.API_ROOT.concat('user'),
       { withCredentials: true }
-    );
+    ).pipe(map((response: any) => {
+      const user: User = {
+        username: response.username
+      }
+      return user;
+    }));
   }
 }
 
