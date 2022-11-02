@@ -11,6 +11,7 @@ import json
 from typing import Optional
 
 from base.condition_types import Region, Pillar, Element, Metric
+from base.region_name import RegionName
 
 
 class PillarConfig:
@@ -40,7 +41,7 @@ class PillarConfig:
         def check_region(region) -> bool:
             return (isinstance(region, dict) and
                     region.keys() <= set(['region_name', 'pillars', 'filepath', 'display_name']) and
-                    isinstance(region['region_name'], str) and
+                    isinstance(RegionName(region['region_name']), RegionName) and 
                     isinstance(region['pillars'], list) and
                     all([check_pillar(pillar) for pillar in region['pillars']]))
 
