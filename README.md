@@ -53,7 +53,7 @@ python3 -m venv env
 more env/pyvenv.cfg
 
 
-# Change to the dev env:
+# Change to the dev env
 cd ~/cnra; source env/bin/activate
 
 # Add alias to your ~/.profile
@@ -116,29 +116,6 @@ In VS Code, install the Python and Pylance extensions (⇧⌘X).
 To test: click on the "beaker" on the left side of VSCode.  The unit tests should run and should pass!  You might have to click twice.
 
 ### Usage
-
-#### Set up the database connection
-```bash
-gcert
-ssh -L 5432:localhost:5432 clearcreek.c.googlers.com
-```
-**In the case of:**
-```console
-bind [::1]:5432: Address already in use
-channel_setup_fwd_listener_tcpip: cannot listen to port: 5432
-Could not request local forwarding.
-```
-then Postgres is running on your laptop.  Find it with
-
-`ps -u $USER | grep postgres`
-
-and look for a line like
-```console
-479528  3027 ?? 0:17.22 /opt/homebrew/Cellar/postgresql@14/…
-```
-and kill the process (for the above example, kill 3027).
-
-#### Run Planscape
 
 In one shell, start the Django backend:
 
