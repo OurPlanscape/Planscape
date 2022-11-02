@@ -10,6 +10,7 @@ Types defined:
 import enum
 from typing import TypedDict
 from typing_extensions import NotRequired
+from base.region_name import RegionName
 
 
 class GeometryType(str, enum.Enum):
@@ -34,7 +35,7 @@ class ShapefileFieldMapping(TypedDict):
 class Boundary(TypedDict):
     boundary_name: str
     display_name: NotRequired[str]
-    region_name: str
+    region_name: RegionName
     filepath: str
     source_srs: int  # Spatial Reference System code; see https://en.wikipedia.org/wiki/Spatial_reference_system
     geometry_type: GeometryType
