@@ -82,7 +82,7 @@ export class MapComponent implements AfterViewInit {
         fillOpacity: 0.2,
         fillColor: '#6DB65B',
       }),
-      onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.name))
+      onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
     });
     this.map.addLayer(boundaryLayer);
     layers.addOverlay(boundaryLayer, "HUC-12");
