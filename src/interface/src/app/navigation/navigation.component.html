@@ -4,6 +4,7 @@
       [mode]="(isHandset$ | async) ? 'over' : 'side'"
       [opened]="!(isHandset$ | async) && sidebarOpen">
     <mat-nav-list>
+      <a mat-list-item routerLink="/region">Select Region</a>
       <a mat-list-item routerLink="/map">Map</a>
       <div *ngIf="isLoggedIn$ | async; else showLogin">
         <a mat-list-item (click)="logout()">Logout</a>

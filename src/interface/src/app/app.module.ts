@@ -28,6 +28,7 @@ import { PopupService } from './popup.service';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { AccountDialogComponent } from './account-dialog/account-dialog.component';
+import { RegionSelectionComponent } from './region-selection/region-selection.component';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,7 @@ import { AccountDialogComponent } from './account-dialog/account-dialog.componen
     NavigationComponent,
     TopBarComponent,
     AccountDialogComponent,
+    RegionSelectionComponent,
   ],
   imports: [
     BrowserModule,
