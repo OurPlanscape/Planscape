@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { concatMap, Observable, of } from 'rxjs';
 
-import { AuthService } from './../auth.service';
+import { AuthService, User } from './../auth.service';
 
 @Component({
   selector: 'app-account-dialog',
@@ -10,8 +10,8 @@ import { AuthService } from './../auth.service';
 })
 export class AccountDialogComponent implements OnInit {
 
-  user$: Observable<any> = this.authService.isLoggedIn$.pipe(concatMap(result => {
-    return result ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
+  user$: Observable<User> = this.authService.isLoggedIn$.pipe(concatMap(loggedIn => {
+    return loggedIn ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
   }));
 
   constructor(private authService: AuthService) { }

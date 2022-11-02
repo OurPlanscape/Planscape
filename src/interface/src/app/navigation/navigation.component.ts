@@ -21,15 +21,13 @@ export class NavigationComponent implements OnInit {
       shareReplay()
     );
 
+  isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
+
   constructor(
     private breakpointObserver: BreakpointObserver,
     private authService: AuthService) {}
 
   ngOnInit() {
-  }
-
-  isLoggedIn(): Observable<boolean> {
-    return this.authService.isLoggedIn$;
   }
 
   logout() {
