@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
+import { select, Store } from '@ngrx/store';
+
 import { Region } from '../types';
+import { AppState, userRegionSelector, userUpdateRegionAction } from '../state';
 
 interface RegionButton {
-  type: Region;
+  region: Region;
   name: string;
   available: boolean;
   iconColor?: string;
@@ -25,15 +28,15 @@ const availableRegions = new Set([
   styleUrls: ['./region-selection.component.scss']
 })
 export class RegionSelectionComponent implements OnInit {
-  selectedRegion?: Region;
+  selectedRegion$ = this.store.pipe(select(userRegionSelector));
   regionButtons: RegionButton[] = [];
 
-  constructor() { }
+  constructor(private store: Store<AppState>) { }
 
   ngOnInit(): void {
     this.regionButtons = regions.map((region) => {
       return {
-        type: region,
+        region: region,
         name: region,
         available: availableRegions.has(region),
         iconColor: '#838383',
@@ -45,7 +48,7 @@ export class RegionSelectionComponent implements OnInit {
     if (!regionButton.available) {
       return;
     }
-    this.selectedRegion = regionButton.type;
+    this.store.dispatch(userUpdateRegionAction({region: regionButton.region}));
   }
 
 }
