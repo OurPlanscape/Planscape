@@ -6,9 +6,9 @@
             "region_name": "tcsi",
             "filepath": "boundary/tcsi/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp",
             "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
                 "shape_name": "Name",
-                "geometry": "MULTIPOLYGON",
                 "states": "States",
                 "acres": "AreaAcres",
                 "hectares": "Hectares"
@@ -20,9 +20,9 @@
             "region_name": "tcsi",
             "filepath": "boundary/tcsi/fire_perims_1970_2021/fire_perim_1970_2021_final.shp",
             "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
                 "shape_name": "Name",
-                "geometry": "MULTIPOLYGON",
                 "hectares": "Hectares"
             }
         },
@@ -32,9 +32,9 @@
             "region_name": "none",
             "filepath": "boundary/RFFC_Regions_2022/tier1_rffc_areas_jan2022.shp",
             "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
-                "shape_name": "RFFC_tier1",
-                "geometry": "MULTIPOLYGON"
+                "shape_name": "RFFC_tier1"
             }
         }
     ]

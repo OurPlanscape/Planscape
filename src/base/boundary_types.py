@@ -7,12 +7,23 @@ Types defined:
   Boundaries: A list of one or more boundary layers.
 """
 
+import enum
 from typing import TypedDict
 from typing_extensions import NotRequired
 
 
+class GeometryType(str, enum.Enum):
+    """Valid geometry types for shapefiles."""
+    POINT = 'POINT'
+    LINESTRING = 'LINESTRING'
+    POLYGON = 'POLYGON'
+    MULTIPOINT = 'MULTIPOINT'
+    MULTILINESTRING = 'MULTILINESTRING'
+    MULTIPOLYGON = 'MULTIPOLYGON'
+    GEOMETRYCOLLECTION = 'GEOMETRYCOLLECTION'
+
+
 class ShapefileFieldMapping(TypedDict):
-    geometry: str
     shape_name: NotRequired[str]
     objectid: NotRequired[str]
     states: NotRequired[str]
@@ -26,6 +37,7 @@ class Boundary(TypedDict):
     region_name: str
     filepath: str
     source_srs: int
+    geometry_type: GeometryType
     shapefile_field_mapping: ShapefileFieldMapping
 
 

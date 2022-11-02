@@ -6,6 +6,7 @@ the metadata of this hierarchy.
 
 Types defined:
   Condition:          2-dimensional matrix of values in the [-1, 1] range.
+  ConditionLevel:     Level of the PROMOTe hierarchy.
   ConditionScoreType: Different types of conditions.
   Metric:             Base conditions from the PROMOTe framework.
   Element:            A condition that is the result of combining metrics.
@@ -21,6 +22,14 @@ from typing import Any, Optional, TypedDict
 from typing_extensions import NotRequired
 
 Condition = npt.NDArray[np.uint16]
+
+
+class ConditionLevel(enum.IntEnum):
+    """Level of the hierarchy of the condition."""
+    ECOSYSTEM = 0  # An average of the Pillar condition scores.
+    PILLAR = 1
+    ELEMENT = 2
+    METRIC = 3
 
 
 class ConditionScoreType(enum.IntEnum):
