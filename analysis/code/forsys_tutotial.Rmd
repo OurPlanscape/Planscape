@@ -2,10 +2,18 @@
 title: "ForSysR Tutorial"
 author: "Laurens Geffert"
 date: "2022-11-03"
-output: github_document
-knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output/") })
+output: rmarkdown::github_document
 ---
+
+<!-- forsys_tutotial.md is generated from forsys_tutotial.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = '##',
+  fig.retina = 2,
+  fig.path = '../output/forsys_tutotial_files/forsys_tutorial_')
+```
 
 ## ForSysR Tutorial
 
