@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_gis',
     'boundary',
+    'conditions',
     'leaflet',
     'corsheaders',
     'allauth',
