@@ -41,15 +41,20 @@ export class MapComponent implements AfterViewInit {
 
   constructor(private boundaryService: BoundaryService, private popupService: PopupService) {}
 
-  // Retrives existing projects from backend server. Renders the project boundaries + metadata in a popup in an optional layer.
+  // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering. Renders the project boundaries + metadata in a popup in an optional layer.
   private async initCalMapperLayer(layers: L.Control.Layers) {
-    const url = "http://127.0.0.1:8000/explore/projects?format=json";
+    const params = {
+        'where': '1=1',
+        'outFields' : 'PROJECT_NAME,PROJECT_STATUS',
+        'f': 'GEOJSON'
+    }
+
+    const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
     const response = await fetch(url);
     const data = await response.json();
-    const parsed_geojson = JSON.parse(data);
 
     // [elsieling] This step makes the map less responsive
-    var existing_projects_layer = L.geoJSON(parsed_geojson, {
+    var existing_projects_layer = L.geoJSON(data, {
         style: function(feature) {
           return {
             "color": "#000000",
