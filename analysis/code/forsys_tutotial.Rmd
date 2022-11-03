@@ -87,7 +87,7 @@ plot_grid(
 ```
 
 
-### 1 - Running a ForSys Scenario ----------------------------------------------
+### 1 - Running a ForSys Scenario
 
 Forsys prioritizes projects by maximizing an objective given one or more
 constraints. The objectives represent one or more management priorities while
@@ -143,10 +143,9 @@ test_forest %>%
   left_join(
     y = select(run_outputs_1$project_output, proj_id, treatment_rank),
     by = 'proj_id') %>%
-  ggplot(aes(fill = 100 - treatment_rank)) +
-  geom_sf(color = NA) +
-  scale_fill_distiller(palette = 'Spectral') +
-  theme_minimal()
+  # invert color scale to make it more intuitive
+  mutate(treatment_rank = 100 - treatment_rank) %>%
+  plot_test_forest('treatment_rank')
 ```
 
 Below we plot the stands rather than the project rank and only retain
@@ -157,28 +156,18 @@ test_forest %>%
   select(stand_id, proj_id) %>%
   inner_join(select(run_outputs_1$stand_output, stand_id)) %>%
   left_join(select(run_outputs_1$project_output, proj_id, treatment_rank)) %>%
-  ggplot(aes(fill = 100 - treatment_rank)) +
-  geom_sf(color = NA) +
-  scale_fill_distiller(palette = 'Spectral') +
-  theme_minimal()
+  mutate(treatment_rank = 100 - treatment_rank) %>%
+  plot_test_forest('treatment_rank')
 ```
 
-## 2 - Multiple priorities -----------------------------------------------------
+## 2 - Multiple priorities
 
 Next we look at multiple priorities. Plotting priorities 1 and 2 shows that
 areas where priority 1 are highest tend to be lower for priority 2.
 
 ```{r two_priorities, echo=FALSE}
-test_forest %>%
-  ggplot(aes(fill = priority1)) +
-  geom_sf(color = NA) +
-  scale_fill_distiller(palette = 'Spectral') +
-  theme_minimal()
-test_forest %>%
-  ggplot(aes(fill = priority2)) +
-  geom_sf(color = NA) +
-  scale_fill_distiller(palette = 'Spectral') +
-  theme_minimal()
+plot_test_forest(test_forest, 'priority1')
+plot_test_forest(test_forest, 'priority2')
 ```
 
 Let’s see if forsys can find locations where we can achieve both objectives.
@@ -188,7 +177,7 @@ We then filter the results to observe the outcome of the scenario where the
 two objectives are equally weighted. The project rank graph represents areas
 that are highest in both priorities.
 
-```{r run2, echo=FALSE}
+```{r run2, echo=FALSE, message=FALSE, warning=FALSE}
 run_outputs_2 <- forsys::run(
   return_outputs = TRUE,
   scenario_name = 'test_forest_run2_scenarios',
@@ -212,18 +201,19 @@ test_forest %>%
     filter(Pr_1_priority1 == 1 & Pr_2_priority2 == 1) %>%
     select(proj_id, treatment_rank),
     by = 'proj_id') %>%
-  ggplot(aes(fill = treatment_rank)) +
-  geom_sf(color = NA) +
-  scale_fill_distiller(palette = 'Spectral') +
-  theme_minimal()
+  mutate(treatment_rank = 100 - treatment_rank) %>%
+  plot_test_forest('treatment_rank')
 ```
 
-## 3 - With Thresholds ---------------------------------------------------------
+You can see that the projects with the highest treatment ranks are those where
+the two priorities are both high, e.g. in the bottom-right of the planning area.
+
+## 3 - With Thresholds
 
 We expand on this scenario further by limiting stand selection by ownership
 and threshold2. Any stands that don't meet the criteria are excluded.
 
-```{r run3, echo=FALSE}
+```{r run3, echo=FALSE, message=FALSE, warning=FALSE}
 run_outputs_3 <- forsys::run(
   return_outputs = TRUE,
   scenario_name = 'test_forest_run3_threshold',
@@ -245,18 +235,22 @@ test_forest %>%
   select(stand_id, proj_id) %>%
   inner_join(select(run_outputs_3$stand_output, stand_id), by = 'stand_id') %>%
   left_join(select(run_outputs_3$project_output, proj_id, treatment_rank), by = 'proj_id') %>%
-  ggplot(aes(fill = 100 - treatment_rank)) +
-  geom_sf(color = NA) +
-  scale_fill_distiller(palette = 'Spectral') +
-  theme_minimal()
+  mutate(treatment_rank = 100 - treatment_rank) %>%
+  plot_test_forest('treatment_rank')
 ```
 
-## 4 - Exploring different project prioritization methods ----------------------
+In the plot above you can see that areas without "ownership = 2" have been
+excluded altogether. The project areas that fall completely outside of
+ownership2 have no stands designated for treatment. Furthermore, the threshold2
+values also influence which stands in the other project areas are selected for
+treatment
+
+## 4 - Exploring different project prioritization methods
 
 Forsys can build projects dynamically using a package called Patchmax,
 which requires some additional arguments.
 
-```{r run4, echo=FALSE}
+```{r run4, echo=FALSE, message=FALSE, warning=FALSE}
 library(Patchmax)
 
 # first we need to create an object describing stand adjacency and for gridded data, distance
@@ -308,3 +302,5 @@ test_forest %>%
   theme_minimal()
 ```
 
+You see that Patchmax created projects for us. Instead of the a-priori defined
+square projects of 10x10 stands we now have dynamically created project areas.
