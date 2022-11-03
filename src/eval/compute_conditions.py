@@ -35,7 +35,7 @@ from config.pillar_config import PillarConfig
 class ConditionReader():
     """Class to read conditions from files."""
 
-    def __init__(self, root_directory: str = '/Users/riecke/cnra/env'):
+    def __init__(self, root_directory: str = '/Users/elsieling/cnra/env'):
         self._root_directory = root_directory
 
     def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[Condition]:
@@ -75,6 +75,7 @@ def _summarize(input: list[Optional[Condition]], operation: str) -> Optional[Con
         elif operation == 'MIN':
             output = functools.reduce(np.minimum, conditions)
         else:
+            # MEAN
             output = np.divide(functools.reduce(
                 np.add, conditions), len(conditions))
     return output
