@@ -1,3 +1,4 @@
+import { Router } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, Input, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
@@ -20,15 +21,13 @@ export class NavigationComponent implements OnInit {
       shareReplay()
     );
 
+  isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
+
   constructor(
     private breakpointObserver: BreakpointObserver,
     private authService: AuthService) {}
 
   ngOnInit() {
-  }
-
-  isLoggedIn(): Observable<boolean> {
-    return this.authService.isLoggedIn$;
   }
 
   logout() {
