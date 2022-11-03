@@ -12,7 +12,6 @@
 }
 
 .controls-container {
-  height: 100%;
   width: 450px;
   position: absolute;
   z-index: 10;
@@ -37,4 +36,8 @@
 
 .layer-radio-button {
   margin: 5px;
+}
+
+.layer-checkbox {
+  margin: 0px 5px 15px;
 }
