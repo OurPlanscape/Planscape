@@ -35,7 +35,7 @@ format. Each polygon represents a different treatment unit.
 Let’s visualize the data
 <img src="../output/forsys_tutotial_files/forsys_tutorial_input_data_plot-1.png" width="672" />
 
-### 1 - Running a ForSys Scenario ———————————————-
+### 1 - Running a ForSys Scenario
 
 Forsys prioritizes projects by maximizing an objective given one or more
 constraints. The objectives represent one or more management priorities
@@ -58,8 +58,7 @@ writes its outputs to csv files saved within the output folder, but we
 can optionally set it to write that data out to a list which has three
 elements containing the outputs.
 
-    ## Output directory, /Users/geffert/Planscape/analysis/code/output/test_forest_run1_simple/, already exists
-    ## ...Overwriting previous files
+    ## Making output directory: /Users/geffert/Planscape/analysis/code/output/test_forest_run1_simple/
     ## Forsys Shiny data detected.
     ## 
     ## 
@@ -83,7 +82,7 @@ those stands that were treated.
 
 <img src="../output/forsys_tutotial_files/forsys_tutorial_run1_plot_stands-1.png" width="672" />
 
-## 2 - Multiple priorities —————————————————–
+## 2 - Multiple priorities
 
 Next we look at multiple priorities. Plotting priorities 1 and 2 shows
 that areas where priority 1 are highest tend to be lower for priority 2.
@@ -97,228 +96,31 @@ scenarios. We then filter the results to observe the outcome of the
 scenario where the two objectives are equally weighted. The project rank
 graph represents areas that are highest in both priorities.
 
-    ## Output directory, /Users/geffert/Planscape/analysis/code/output/test_forest_run2_scenarios/, already exists
-    ## ...Overwriting previous files
-    ## Forsys Shiny data detected.
-    ## 
-    ## 
-    ## ---------------
-    ## Weighting scenario 1 of 21: 0-1
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 2 of 21: 1-0
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 3 of 21: 1-1
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 4 of 21: 1-2
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 5 of 21: 1-3
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 6 of 21: 1-4
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 7 of 21: 1-5
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 8 of 21: 2-1
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 9 of 21: 2-3
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 10 of 21: 2-5
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 11 of 21: 3-1
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 12 of 21: 3-2
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 13 of 21: 3-4
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 14 of 21: 3-5
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 15 of 21: 4-1
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 16 of 21: 4-3
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 17 of 21: 4-5
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 18 of 21: 5-1
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 19 of 21: 5-2
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 20 of 21: 5-3
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-    ## 
-    ## ---------------
-    ## Weighting scenario 21 of 21: 5-4
-    ## 
-    ## Assuming unlimited annual target
-    ## 2000 stands (20% of total) treated in 100 projects
-
 <img src="../output/forsys_tutotial_files/forsys_tutorial_run2-1.png" width="672" />
 
-## 3 - With Thresholds ———————————————————
+You can see that the projects with the highest treatment ranks are those
+where the two priorities are both high, e.g. in the bottom-right of the
+planning area.
+
+## 3 - With Thresholds
 
 We expand on this scenario further by limiting stand selection by
 ownership and threshold2. Any stands that don’t meet the criteria are
 excluded.
 
-    ## Output directory, /Users/geffert/Planscape/analysis/code/output/test_forest_run3_threshold/, already exists
-    ## ...Overwriting previous files
-    ## Forsys Shiny data detected.
-    ## 
-    ## 
-    ## ---------------
-    ## Weighting scenario 1 of 1: 1
-    ## ----------
-    ## Filtering stands where: threshold2 == 1 & ownership == 2 (71.66% excluded)
-    ## -----------
-    ## Assuming unlimited annual target
-    ## 1065 stands (10.65% of total) treated in 61 projects
-
 <img src="../output/forsys_tutotial_files/forsys_tutorial_run3-1.png" width="672" />
 
-## 4 - Exploring different project prioritization methods ———————-
+In the plot above you can see that areas without “ownership = 2” have
+been excluded altogether. The project areas that fall completely outside
+of ownership2 have no stands designated for treatment. Furthermore, the
+threshold2 values also influence which stands in the other project areas
+are selected for treatment
+
+## 4 - Exploring different project prioritization methods
 
 Forsys can build projects dynamically using a package called Patchmax,
 which requires some additional arguments.
 
-    ## Loading required package: igraph
-    ## 
-    ## Attaching package: 'igraph'
-    ## The following objects are masked from 'package:dplyr':
-    ## 
-    ##     as_data_frame, groups, union
-    ## The following objects are masked from 'package:purrr':
-    ## 
-    ##     compose, simplify
-    ## The following object is masked from 'package:tidyr':
-    ## 
-    ##     crossing
-    ## The following object is masked from 'package:tibble':
-    ## 
-    ##     as_data_frame
-    ## The following object is masked from 'package:rlang':
-    ## 
-    ##     is_named
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     decompose, spectrum
-    ## The following object is masked from 'package:base':
-    ## 
-    ##     union
-    ## Loading required package: data.table
-    ## 
-    ## Attaching package: 'data.table'
-    ## The following objects are masked from 'package:dplyr':
-    ## 
-    ##     between, first, last
-    ## The following object is masked from 'package:purrr':
-    ## 
-    ##     transpose
-    ## The following object is masked from 'package:rlang':
-    ## 
-    ##     :=
-    ## Loading required package: spdep
-    ## Loading required package: sp
-    ## Loading required package: spData
-    ## To access larger datasets in this package, install the spDataLarge
-    ## package with: `install.packages('spDataLarge',
-    ## repos='https://nowosad.github.io/drat/', type='source')`
-    ## Loading required package: doParallel
-    ## Loading required package: foreach
-    ## 
-    ## Attaching package: 'foreach'
-    ## The following objects are masked from 'package:purrr':
-    ## 
-    ##     accumulate, when
-    ## Loading required package: iterators
-    ## Loading required package: parallel
-    ## Loading required package: pbapply
-    ## Warning in st_centroid.sf(Shapefile): st_centroid assumes attributes are
-    ## constant over geometries of x
-    ## Output directory, /Users/geffert/Planscape/analysis/code/output/test_forest_run4_patchmax/, already exists
-    ## ...Overwriting previous files
-    ## Forsys Shiny data detected.
-    ## Forsys stand adjacency data detected
-    ## 
-    ## 
-    ## ---------------
-    ## Weighting scenario 1 of 1: 1
-    ## PatchMax assumes project stand threshold operator is ">="
     ## Running PatchMax using 11 cores
     ## 
     ## Project #1
@@ -331,9 +133,9 @@ which requires some additional arguments.
     ##   treated area: 25000; total selected area:25000; objective value: 18536.88; constraint: ; project type: 0
     ## Project #5
     ##   treated area: 25000; total selected area:25100; objective value: 21466.78; constraint: ; project type: 0
-    ## 
-    ## Project count reached
-    ## Assuming unlimited annual target
-    ## 1211 stands (12.11% of total) treated in 5 projects
 
 <img src="../output/forsys_tutotial_files/forsys_tutorial_run4-1.png" width="672" />
+
+You see that Patchmax created projects for us. Instead of the a-priori
+defined square projects of 10x10 stands we now have dynamically created
+project areas.
