@@ -4,7 +4,11 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSliderModule } from '@angular/material/slider';
@@ -17,13 +21,13 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthGuard, AuthService } from './auth.service';
 import { BoundaryService } from './boundary.service';
-import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PopupService } from './popup.service';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 
 @NgModule({
@@ -33,8 +37,8 @@ import { RegionSelectionComponent } from './region-selection/region-selection.co
     LoginComponent,
     SignupComponent,
     NavigationComponent,
-    HomeComponent,
     TopBarComponent,
+    AccountDialogComponent,
     RegionSelectionComponent,
   ],
   imports: [
@@ -52,6 +56,10 @@ import { RegionSelectionComponent } from './region-selection/region-selection.co
     FormsModule,
     CommonModule,
     MatIconModule,
+    MatCardModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatDialogModule,
   ],
   providers: [
     AuthService,
@@ -60,6 +68,7 @@ import { RegionSelectionComponent } from './region-selection/region-selection.co
     BoundaryService,
     CookieService,
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [AccountDialogComponent],
 })
 export class AppModule { }
