@@ -1,0 +1,41 @@
+{
+    "boundaries": [
+        {
+            "boundary_name": "tcsi_huc12",
+            "display_name": "HUC12",
+            "region_name": "tcsi",
+            "filepath": "boundary/tcsi/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "Name",
+                "states": "States",
+                "acres": "AreaAcres",
+                "hectares": "Hectares"
+            }
+        },
+        {
+            "boundary_name": "tcsi_fire_perimeters",
+            "display_name": "Previous Fires",
+            "region_name": "tcsi",
+            "filepath": "boundary/tcsi/fire_perims_1970_2021/fire_perim_1970_2021_final.shp",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "Name",
+                "hectares": "Hectares"
+            }
+        },
+        {
+            "boundary_name": "task_force_regions",
+            "display_name": "Wildfire Task Force Regions",
+            "region_name": "none",
+            "filepath": "boundary/RFFC_Regions_2022/tier1_rffc_areas_jan2022.shp",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "RFFC_tier1"
+            }
+        }
+    ]
+}

@@ -1,30 +1,39 @@
-<div style="text-align:center">
-  <h1>
-    Login
-  </h1>
-</div>
+<mat-card>
+  <mat-card-title>Login</mat-card-title>
 
-<form (ngSubmit)="onSubmit()">
-  <label for="username">Username</label>
-  <input
-        type="text" id="username"
-        required
-        [(ngModel)]="model.username" name="username"
-        #name="ngModel">
+  <form (ngSubmit)="onSubmit()">
+    <mat-card-content>
+      <div>
+        <mat-form-field>
+          <input
+            type="text" id="username"
+            required
+            placeholder="Username"
+            [(ngModel)]="model.username" name="username"
+            #name="ngModel"
+            matInput>
+        </mat-form-field>
+      </div>
 
-  <label for="password">Password</label>
-  <input
-        type="password" id="password"
-        required
-        [(ngModel)]="model.password" name="password"
-        #password="ngModel">
+      <div>
+        <mat-form-field>
+          <input
+            type="password" id="password"
+            required
+            placeholder="Password"
+            [(ngModel)]="model.password" name="password"
+            #password="ngModel"
+            matInput>
+        </mat-form-field>
+      </div>
+    </mat-card-content>
 
-  <button type="submit">Login</button>
-</form>
+    <mat-card-actions align="end">
+      <button mat-raised-button (click)="signup()" type="button">Register</button>
+      <button mat-raised-button color="primary" type="submit">Login</button>
+    </mat-card-actions>
+  </form>
+</mat-card>
 
-<div>
-  Don't have an account?
-  <button (click)="signup()">Register</button>
-</div>
 <p>{{ error?.message }}</p>
-<p *ngIf="error">{{ error?.error | json }}</p>
+    <p *ngIf="error">{{ error?.error | json }}</p>

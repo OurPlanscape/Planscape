@@ -1,4 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
+
+import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 
 @Component({
   selector: 'top-bar',
@@ -11,7 +14,14 @@ export class TopBarComponent implements OnInit {
 
   readonly color = 'primary';
 
+  constructor(private dialog: MatDialog) {}
+
   ngOnInit(): void {}
+
+  /** Opens the account management dialog. */
+  openAccountDialog() {
+    this.dialog.open(AccountDialogComponent);
+  }
 
   /** Toggles the sidebar in the navigation component. */
   sendToggle(event: Event) {
