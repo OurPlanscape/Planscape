@@ -10,7 +10,7 @@ from django.contrib.gis.gdal.raster.source import GDALRaster
 from base.condition_types import ConditionLevel, ConditionScoreType
 from base.region_name import RegionName
 from config.conditions_config import PillarConfig
-from .models import ConditionDataset, Condition
+from .models import BaseCondition, Condition
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
 
@@ -35,8 +35,8 @@ def run(verbose=True):
     print("Loading...")
     raster = GDALRaster(os.path.join(
         data_path, 'conditions/tcsi/forest_resilience/current.tif'), write=True)
-    dataset = ConditionDataset(condition_name='forest_resilience', condition_level=ConditionLevel.PILLAR,
-                               region_name=RegionName.TCSI)
+    dataset = BaseCondition(condition_name='forest_resilience', condition_level=ConditionLevel.PILLAR,
+                            region_name=RegionName.TCSI)
     print("Saving")
     dataset.save()
     condition = Condition(condition_dataset=dataset, geometry=raster,
