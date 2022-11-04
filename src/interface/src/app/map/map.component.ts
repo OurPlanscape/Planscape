@@ -103,10 +103,10 @@ export class MapComponent implements AfterViewInit {
 
   // Toggle which base layer is shown.
   changeBaseLayer() {
-    if (this.baseLayerType == BaseLayerType.Terrain) {
+    if (this.baseLayerType === BaseLayerType.Terrain) {
       this.map.removeLayer(MapComponent.open_street_maps_tiles);
       this.map.addLayer(MapComponent.hillshade_tiles);
-    } else if (this.baseLayerType == BaseLayerType.Road) {
+    } else if (this.baseLayerType === BaseLayerType.Road) {
       this.map.removeLayer(MapComponent.hillshade_tiles);
       this.map.addLayer(MapComponent.open_street_maps_tiles);
     }
