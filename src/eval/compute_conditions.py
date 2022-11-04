@@ -20,7 +20,7 @@ or on paths, with a PillarConfig as input, like
 where a path is a file-like path of region/pillar/element/metric or sub-paths thereof.
 """
 
-import config.pillar_config as config
+import config.conditions_config as config
 import functools
 import numpy as np
 import os
@@ -29,7 +29,7 @@ from typing import Optional, cast
 
 from base.conditions import weighted_average_condition
 from base.condition_types import Condition, ConditionScoreType, Region, Pillar, Element, Metric
-from config.pillar_config import PillarConfig
+from config.conditions_config import PillarConfig
 
 
 class ConditionReader():

@@ -5,7 +5,7 @@ from typing import Optional
 import unittest
 
 from base.condition_types import Condition, ConditionScoreType, Region, Pillar, Element, Metric
-import config.pillar_config as pc
+import config.conditions_config as pc
 import eval.compute_conditions as cc
 
 
