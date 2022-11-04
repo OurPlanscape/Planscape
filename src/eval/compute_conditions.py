@@ -20,7 +20,6 @@ or on paths, with a PillarConfig as input, like
 where a path is a file-like path of region/pillar/element/metric or sub-paths thereof.
 """
 
-import config.conditions_config as config
 import functools
 import numpy as np
 import os
