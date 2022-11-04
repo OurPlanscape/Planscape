@@ -9,7 +9,7 @@ from django.contrib.gis.gdal.raster.source import GDALRaster
 
 from base.condition_types import ConditionLevel, ConditionScoreType
 from base.region_name import RegionName
-from config.pillar_config import PillarConfig
+from config.conditions_config import PillarConfig
 from .models import ConditionDataset, Condition
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
