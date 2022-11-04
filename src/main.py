@@ -1,4 +1,4 @@
-import config.pillar_config as pillar_config
+import config.conditions_config as pillar_config
 import matplotlib.pyplot as plt
 from decouple import config
 from django.contrib.gis.gdal.raster.source import GDALRaster
