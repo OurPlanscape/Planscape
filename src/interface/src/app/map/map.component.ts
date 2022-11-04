@@ -1,4 +1,3 @@
-import { keyframes } from '@angular/animations';
 import { AfterViewInit, Component } from '@angular/core';
 import * as L from 'leaflet';
 
@@ -16,7 +15,7 @@ export enum BaseLayerType {
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit {
-  private map!: L.Map;
+  public map!: L.Map;
 
   baseLayerType: BaseLayerType = BaseLayerType.Road;
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
@@ -41,15 +40,18 @@ export class MapComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initMap();
-    this.boundaryService.getBoundaryShapes().subscribe((boundary) => {
+    this.boundaryService.getBoundaryShapes().subscribe((boundary: GeoJSON.GeoJSON) => {
+      console.log('boundary', boundary);
       this.initBoundaryLayer(boundary);
     });
-    this.boundaryService.getExistingProjects().subscribe((existingProjects) => {
+    this.boundaryService.getExistingProjects().subscribe((existingProjects: GeoJSON.GeoJSON) => {
+      console.log('existing projects', existingProjects);
       this.initCalMapperLayer(existingProjects);
     })
   }
 
   private initMap(): void {
+    if (this.map != undefined) this.map.remove();
     this.map = L.map('map', {
       center: [38.646, -120.548],
       zoom: 9,
@@ -65,7 +67,7 @@ export class MapComponent implements AfterViewInit {
   }
 
   // Renders the existing project boundaries + metadata in a popup in an optional layer.
-  private initCalMapperLayer(existingProjects: any) {
+  private initCalMapperLayer(existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
     this.existingProjectsLayer = L.geoJSON(existingProjects, {
         style: function(feature) {
@@ -85,7 +87,7 @@ export class MapComponent implements AfterViewInit {
     this.map.addLayer(this.existingProjectsLayer);
   }
 
-  private initBoundaryLayer(boundary: any) {
+  private initBoundaryLayer(boundary: GeoJSON.GeoJSON) {
     this.HUC12BoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
