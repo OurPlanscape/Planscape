@@ -24,7 +24,6 @@ export class MapService {
     }
 
     const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
-    console.log(url);
     return this.http.get<GeoJSON.GeoJSON>(url);
   }
 }

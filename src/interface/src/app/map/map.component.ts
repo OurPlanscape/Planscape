@@ -41,11 +41,9 @@ export class MapComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.initMap();
     this.boundaryService.getBoundaryShapes().subscribe((boundary: GeoJSON.GeoJSON) => {
-      console.log('boundary', boundary);
       this.initBoundaryLayer(boundary);
     });
     this.boundaryService.getExistingProjects().subscribe((existingProjects: GeoJSON.GeoJSON) => {
-      console.log('existing projects', existingProjects);
       this.initCalMapperLayer(existingProjects);
     })
   }
