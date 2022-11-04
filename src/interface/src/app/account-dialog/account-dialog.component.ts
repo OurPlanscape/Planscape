@@ -10,9 +10,7 @@ import { AuthService, User } from './../auth.service';
 })
 export class AccountDialogComponent implements OnInit, OnDestroy {
 
-  user$: Observable<User> = this.authService.isLoggedIn$.pipe(concatMap(loggedIn => {
-    return loggedIn ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
-  }));
+  user$!: Observable<User>;
 
   private isLoggedInSubscription!: Subscription;
 
@@ -20,6 +18,9 @@ export class AccountDialogComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoggedInSubscription = this.authService.isLoggedIn$.subscribe();
+    this.user$ = this.authService.isLoggedIn$.pipe(concatMap(loggedIn => {
+      return loggedIn ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
+    }));
   }
 
   ngOnDestroy(): void {
