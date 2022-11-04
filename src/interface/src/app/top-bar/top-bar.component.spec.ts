@@ -1,9 +1,11 @@
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
 
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
+import { MatIcon, MatIconModule } from '@angular/material/icon';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -17,7 +19,7 @@ describe('TopBarComponent', () => {
       },
       {});
     await TestBed.configureTestingModule({
-      imports: [ MatDialogModule ],
+      imports: [ MatDialogModule, MatIconModule, MatToolbarModule ],
       declarations: [ TopBarComponent ],
       providers: [ { provide: MatDialog, useValue: fakeMatDialog }],
     })
