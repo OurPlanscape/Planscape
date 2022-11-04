@@ -5,7 +5,7 @@ from typing import Optional
 import unittest
 
 from base.condition_types import Region, Pillar, Element, Metric
-from config.pillar_config import PillarConfig
+from config.conditions_config import PillarConfig
 
 TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'metrics.json')
 

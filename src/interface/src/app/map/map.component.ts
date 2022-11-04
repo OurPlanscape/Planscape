@@ -1,7 +1,13 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import * as L from 'leaflet';
-import { BoundaryService } from '../boundary.service';
+
+import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
+
+export enum BaseLayerType {
+  Road,
+  Terrain,
+}
 
 @Component({
   selector: 'app-map',
@@ -9,52 +15,61 @@ import { PopupService } from '../popup.service';
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit {
-  private map!: L.Map;
-  private boundary!: any;
+  public map!: L.Map;
 
-  private initMap(): L.Control.Layers {
-    const hillshade_tiles = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
+  baseLayerType: BaseLayerType = BaseLayerType.Road;
+  baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
+  BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  showExistingProjectsLayer: boolean = true;
+  showHUC12BoundariesLayer: boolean = true;
+  existingProjectsLayer!: L.GeoJSON;
+  HUC12BoundariesLayer!: L.GeoJSON;
+
+  static hillshade_tiles = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
       zIndex: 0,
       tileSize: 512,
       zoomOffset: -1
     });
 
-    const open_street_maps_tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-    });
+  static open_street_maps_tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+  });
 
+  constructor(private boundaryService: MapService, private popupService: PopupService) {}
+
+  ngAfterViewInit(): void {
+    this.initMap();
+    this.boundaryService.getBoundaryShapes().subscribe((boundary: GeoJSON.GeoJSON) => {
+      console.log('boundary', boundary);
+      this.initBoundaryLayer(boundary);
+    });
+    this.boundaryService.getExistingProjects().subscribe((existingProjects: GeoJSON.GeoJSON) => {
+      console.log('existing projects', existingProjects);
+      this.initCalMapperLayer(existingProjects);
+    })
+  }
+
+  private initMap(): void {
+    if (this.map != undefined) this.map.remove();
     this.map = L.map('map', {
       center: [38.646, -120.548],
       zoom: 9,
-      layers: [hillshade_tiles, open_street_maps_tiles],
+      layers: [MapComponent.hillshade_tiles, MapComponent.open_street_maps_tiles],
+      zoomControl: false,
     });
 
-    // Show overlay controls
-    var controlLayers = L.control.layers({}, {}, {collapsed:false}).addTo(this.map);
-    controlLayers.setPosition('bottomleft')
-
-    controlLayers.addBaseLayer(hillshade_tiles, "Hillshade");
-    controlLayers.addBaseLayer(open_street_maps_tiles, "OpenStreetMap");
-    return controlLayers;
+    // Add zoom controls to bottom right corner
+    const zoomControl = L.control.zoom({
+      position: 'bottomright'
+    });
+    zoomControl.addTo(this.map);
   }
 
-  constructor(private boundaryService: BoundaryService, private popupService: PopupService) {}
-
-  // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering. Renders the project boundaries + metadata in a popup in an optional layer.
-  private async initCalMapperLayer(layers: L.Control.Layers) {
-    const params = {
-        'where': '1=1',
-        'outFields' : 'PROJECT_NAME,PROJECT_STATUS',
-        'f': 'GEOJSON'
-    }
-
-    const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
-    const response = await fetch(url);
-    const data = await response.json();
-
+  // Renders the existing project boundaries + metadata in a popup in an optional layer.
+  private initCalMapperLayer(existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
-    var existing_projects_layer = L.geoJSON(data, {
+    this.existingProjectsLayer = L.geoJSON(existingProjects, {
         style: function(feature) {
           return {
             "color": "#000000",
@@ -67,14 +82,13 @@ export class MapComponent implements AfterViewInit {
           'Status: ' + feature.properties.PROJECT_STATUS);
         }
       }
-    ).addTo(this.map);
+    );
 
-    this.map.addLayer(existing_projects_layer);
-    layers.addOverlay(existing_projects_layer, "CalMAPPER Projects");
+    this.map.addLayer(this.existingProjectsLayer);
   }
 
-  private initBoundaryLayer(layers: L.Control.Layers) {
-    const boundaryLayer = L.geoJSON(this.boundary, {
+  private initBoundaryLayer(boundary: GeoJSON.GeoJSON) {
+    this.HUC12BoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
         opacity: 0.5,
@@ -84,16 +98,35 @@ export class MapComponent implements AfterViewInit {
       }),
       onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
     });
-    this.map.addLayer(boundaryLayer);
-    layers.addOverlay(boundaryLayer, "HUC-12");
+    this.map.addLayer(this.HUC12BoundariesLayer);
   }
 
-  ngAfterViewInit(): void {
-    var control_layers = this.initMap();
-    this.initCalMapperLayer(control_layers);
-    this.boundaryService.getBoundaryShapes().subscribe((boundary) => {
-      this.boundary = boundary;
-      this.initBoundaryLayer(control_layers);
-    });
+  // Toggle which base layer is shown.
+  changeBaseLayer() {
+    if (this.baseLayerType === BaseLayerType.Terrain) {
+      this.map.removeLayer(MapComponent.open_street_maps_tiles);
+      this.map.addLayer(MapComponent.hillshade_tiles);
+    } else if (this.baseLayerType === BaseLayerType.Road) {
+      this.map.removeLayer(MapComponent.hillshade_tiles);
+      this.map.addLayer(MapComponent.open_street_maps_tiles);
+    }
+  }
+
+  // Toggle whether HUC-12 boundaries are shown.
+  toggleHUC12BoundariesLayer() {
+    if (this.showHUC12BoundariesLayer) {
+      this.map.addLayer(this.HUC12BoundariesLayer);
+    } else {
+      this.map.removeLayer(this.HUC12BoundariesLayer);
+    }
+  }
+
+  // Toggle whether existing projects from CalMapper are shown.
+  toggleExistingProjectsLayer() {
+    if (this.showExistingProjectsLayer) {
+      this.map.addLayer(this.existingProjectsLayer);
+    } else {
+      this.map.removeLayer(this.existingProjectsLayer);
+    }
   }
 }
