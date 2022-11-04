@@ -1,9 +1,9 @@
 from django.contrib.gis.db import models
 
 
-class ConditionDataset(models.Model):
+class BaseCondition(models.Model):
     """
-    A ConditionDataset has a name and level, and an optional display/region name and level.
+    A BaseCondition has a name and level, and an optional display/region name and level.
     """
     # The name of the condition.
     condition_name: models.CharField = models.CharField(max_length=120)
@@ -27,7 +27,7 @@ class Condition(models.Model):
     describing the raster.
     """
     condition_dataset = models.ForeignKey(
-        ConditionDataset, on_delete=models.CASCADE)  # type: ignore
+        BaseCondition, on_delete=models.CASCADE)  # type: ignore
 
     # The raster data associated with the condition.
     geometry = models.RasterField()
