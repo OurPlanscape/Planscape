@@ -1,8 +1,10 @@
 from django.contrib.gis.db import models
 
 
-class AbstractCondition(models.Model):
-    """An AbstractCondition has a name, and an optional display/region name and level."""
+class ConditionDataset(models.Model):
+    """
+    A ConditionDataset has a name and level, and an optional display/region name and level.
+    """
     # The name of the condition.
     condition_name: models.CharField = models.CharField(max_length=120)
 
@@ -17,14 +19,15 @@ class AbstractCondition(models.Model):
     # The region associated with the condition, drawn from the RegionName enum in
     # base/region_name.py.
     region_name: models.CharField = models.CharField(max_length=120, null=True)
-  
+
 
 class Condition(models.Model):
     """
-    A Condition is a single raster, referencing the AbstractCondition, with additional metadata.
+    A Condition is a single raster, referencing the ConditionDataset, with additional metadata
+    describing the raster.
     """
-    condition = models.ForeignKey(
-        AbstractCondition, on_delete=models.CASCADE)  # type: ignore
+    condition_dataset = models.ForeignKey(
+        ConditionDataset, on_delete=models.CASCADE)  # type: ignore
 
     # The raster data associated with the condition.
     geometry = models.RasterField()
@@ -36,4 +39,4 @@ class Condition(models.Model):
     # True if the Condition represents raw, uninterpreted data.  This is appropriate only
     # when condition_score_type = CURRENT and condition_level = METRIC, and is ignored
     # otherwise.
-    is_raw:models.BooleanField = models.BooleanField(null=True)
+    is_raw: models.BooleanField = models.BooleanField(null=True)
