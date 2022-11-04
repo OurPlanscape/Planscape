@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CanActivate, Router } from '@angular/router';
+import { CanActivate } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, catchError, map, Observable, of, Subject, tap } from 'rxjs';
 
@@ -20,19 +20,7 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private cookieService: CookieService) {
-      this.isLoggedIn$.subscribe();
-      // Try to refresh the user's access token
-      this.refreshToken().pipe(
-        map((response: any) => !!(response.access)),
-        catchError(err => {
-          console.log(err);
-          return of(false);
-        })
-      ).subscribe(result => {
-        this.loggedInStatus$.next(result);
-      });
-     }
+    private cookieService: CookieService) { }
 
   login(username: string, password: string) {
     return this.http.post(
@@ -40,9 +28,7 @@ export class AuthService {
       { username, password },
       { withCredentials: true }
     ).pipe(
-      tap(response => {
-        this.loggedInStatus$.next(true);
-      })
+      tap(_ => this.loggedInStatus$.next(true))
     );
   }
 
@@ -58,9 +44,7 @@ export class AuthService {
       this.API_ROOT.concat('logout/'),
       { withCredentials: true }
     ).pipe(
-      tap(response => {
-        this.loggedInStatus$.next(false);
-      })
+      tap(_ => this.loggedInStatus$.next(false))
     );
   }
 
@@ -69,12 +53,14 @@ export class AuthService {
       this.API_ROOT.concat('token/refresh/'),
       { refresh: this.cookieService.get('my-refresh-token') },
       { withCredentials: true }
-    );
+    ).pipe(tap((response: any) => {
+      this.loggedInStatus$.next(!!(response.access));
+    }));
   }
 
   getLoggedInUser(): Observable<User> {
     return this.http.get(
-      this.API_ROOT.concat('user'),
+      this.API_ROOT.concat('user/'),
       { withCredentials: true }
     ).pipe(map((response: any) => {
       const user: User = {
@@ -89,9 +75,9 @@ export class AuthService {
 // logged in user. Currently it isn't used to guard any routes.
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService) { }
 
-  canActivate() {
+  canActivate(): Observable<boolean> {
     return this.authService.refreshToken().pipe(
       map((response: any) => response.access),
       catchError(err => {

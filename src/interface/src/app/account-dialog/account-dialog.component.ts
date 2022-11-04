@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { concatMap, Observable, of } from 'rxjs';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { concatMap, Observable, of, Subscription } from 'rxjs';
 
 import { AuthService, User } from './../auth.service';
 
@@ -8,15 +8,22 @@ import { AuthService, User } from './../auth.service';
   templateUrl: './account-dialog.component.html',
   styleUrls: ['./account-dialog.component.scss']
 })
-export class AccountDialogComponent implements OnInit {
+export class AccountDialogComponent implements OnInit, OnDestroy {
 
   user$: Observable<User> = this.authService.isLoggedIn$.pipe(concatMap(loggedIn => {
     return loggedIn ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
   }));
 
+  private isLoggedInSubscription!: Subscription;
+
   constructor(private authService: AuthService) { }
 
   ngOnInit(): void {
+    this.isLoggedInSubscription = this.authService.isLoggedIn$.subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.isLoggedInSubscription.unsubscribe();
   }
 
 }
