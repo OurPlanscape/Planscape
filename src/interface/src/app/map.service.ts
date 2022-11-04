@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -7,13 +8,15 @@ import { Injectable } from '@angular/core';
 export class MapService {
   constructor(private http: HttpClient) {}
 
-  getBoundaryShapes() {
+  getBoundaryShapes(): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
-    return this.http.get('http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12');
+    return this.http.get<GeoJSON.GeoJSON>(
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12'
+    );
   }
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
-  getExistingProjects() {
+  getExistingProjects(): Observable<GeoJSON.GeoJSON> {
     const params = {
       'where': '1=1',
       'outFields' : 'PROJECT_NAME,PROJECT_STATUS',
@@ -21,6 +24,7 @@ export class MapService {
     }
 
     const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
-    return this.http.get(url);
+    console.log(url);
+    return this.http.get<GeoJSON.GeoJSON>(url);
   }
 }
