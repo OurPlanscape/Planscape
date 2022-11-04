@@ -15,18 +15,11 @@ export class NavigationComponent implements OnInit, OnDestroy {
   @Input()
   sidebarOpen = false;
 
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
-    .pipe(
-      map(result => result.matches),
-      shareReplay()
-    );
-
   isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
 
   private isLoggedInSubscription!: Subscription;
 
   constructor(
-    private breakpointObserver: BreakpointObserver,
     private authService: AuthService) {}
 
   ngOnInit() {
