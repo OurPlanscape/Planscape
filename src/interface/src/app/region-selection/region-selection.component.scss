@@ -30,6 +30,7 @@
 .blank-region-icon {
   background-color: #838383;
   border-radius: 50%;
+  box-sizing: border-box;
   display: inline-block;
   height: 59px;
   transition: background-color ease 0.3s;
@@ -38,4 +39,9 @@
   &:hover {
     background-color: #3367D6;
   }
+
+  &.selected {
+    border: 3px solid #91b4ff;
+  }
+
 }
