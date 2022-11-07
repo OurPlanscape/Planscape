@@ -8,6 +8,16 @@ import { Observable } from 'rxjs';
 export class MapService {
   constructor(private http: HttpClient) {}
 
+  /**
+   * Gets boundaries for four regions: Sierra Nevada, Southern California,
+   * Central Coast, Northern California. (For reference, currently unused)
+   * */
+  getRegionBoundary(): Observable<GeoJSON.GeoJSON> {
+    return this.http.get<GeoJSON.GeoJSON>(
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=task_force_regions'
+    );
+  }
+
   getBoundaryShapes(): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     return this.http.get<GeoJSON.GeoJSON>(
