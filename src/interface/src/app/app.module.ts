@@ -1,3 +1,4 @@
+import { SessionService } from './session.service';
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -71,6 +72,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     PopupService,
     MapService,
     CookieService,
+    SessionService,
   ],
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],
