@@ -1,3 +1,5 @@
+import { Region } from './../types/region.types';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -7,11 +9,12 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
-import { of } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { BaseLayerType, MapComponent } from './map.component';
+import { SessionService } from './../session.service';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -31,14 +34,18 @@ describe('MapComponent', () => {
       },
       {},
     );
+    const mockSessionService = {
+      region$: new BehaviorSubject<Region|null>(Region.SIERRA_NEVADA),
+    };
     const popupServiceStub = () => ({ makeDetailsPopup: (shape_name: any) => ({}) });
     TestBed.configureTestingModule({
-      imports: [FormsModule, MatCheckboxModule, MatRadioModule],
+      imports: [FormsModule, HttpClientTestingModule, MatCheckboxModule, MatRadioModule],
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [MapComponent],
       providers: [
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
+        { provide: SessionService, useValue: mockSessionService },
       ]
     });
     fixture = TestBed.createComponent(MapComponent);
@@ -76,7 +83,6 @@ describe('MapComponent', () => {
         MapService
       );
       component.ngAfterViewInit();
-      expect(component.map).toBeTruthy();
       expect(mapServiceStub.getBoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
