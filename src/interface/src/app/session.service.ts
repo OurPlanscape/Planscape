@@ -16,7 +16,7 @@ export class SessionService {
     this.region$.next(localStorage.getItem('region') as Region|null);
   }
 
-  /** Saves the region in local storage. */
+  /** Emits the region and saves it in local storage. */
   setRegion(value: Region) {
     if (Object.values(Region).includes(value)) {
       localStorage.setItem('region', value);
