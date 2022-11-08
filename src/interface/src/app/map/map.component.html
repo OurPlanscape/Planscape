@@ -1,3 +1,40 @@
 <div class="map-container">
   <div id="map"></div>
+  <div id="controls" class="controls-container">
+    <div class="layer-controls">
+      <h2>Layers</h2>
+      <h3>Base layer</h3>
+      <mat-radio-group
+        name="base-layer-select"
+        aria-label="Select an option"
+        class="layer-radio-group"
+        [(ngModel)]="baseLayerType"
+        (change)="changeBaseLayer()">
+        <mat-radio-button
+          *ngFor="let baseLayerType of baseLayerTypes"
+          [value]="baseLayerType"
+          class="layer-radio-button">
+          {{ BaseLayerType[baseLayerType] }}
+        </mat-radio-button>
+      </mat-radio-group>
+      <h3>Boundaries</h3>
+      <mat-checkbox
+        name="huc12-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showHUC12BoundariesLayer"
+        (change)="toggleHUC12BoundariesLayer()">
+        HUC-12
+      </mat-checkbox>
+      <h3>Projects</h3>
+      <mat-checkbox
+        name="existing-projects-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showExistingProjectsLayer"
+        (change)="toggleExistingProjectsLayer()">
+        Existing projects
+      </mat-checkbox>
+    </div>
+  </div>
 </div>

@@ -14,7 +14,7 @@ from base.condition_types import Region, Pillar, Element, Metric
 from base.region_name import RegionName
 
 
-class PillarConfig:
+class ConditionConfig:
     """
     Class wrapping the configuration of regions, pillars, elements, and metrics.
     """
