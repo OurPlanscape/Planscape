@@ -1,11 +1,14 @@
+import { SessionService } from './../session.service';
 import { Component, OnInit } from '@angular/core';
 import { Region } from '../types';
 
+/**
+ * The main region selection view component.
+ */
 interface RegionButton {
   type: Region;
   name: string;
   available: boolean;
-  iconColor?: string;
 }
 
 const regions: Region[] = [
@@ -25,10 +28,10 @@ const availableRegions = new Set([
   styleUrls: ['./region-selection.component.scss']
 })
 export class RegionSelectionComponent implements OnInit {
-  selectedRegion?: Region;
+  selectedRegion$ = this.sessionService.region$;
   regionButtons: RegionButton[] = [];
 
-  constructor() { }
+  constructor(private sessionService: SessionService) {}
 
   ngOnInit(): void {
     this.regionButtons = regions.map((region) => {
@@ -36,16 +39,16 @@ export class RegionSelectionComponent implements OnInit {
         type: region,
         name: region,
         available: availableRegions.has(region),
-        iconColor: '#838383',
       }
-    })
+    });
   }
 
+  /** Sets the region. */
   setRegion(regionButton: RegionButton) {
     if (!regionButton.available) {
       return;
     }
-    this.selectedRegion = regionButton.type;
+    this.sessionService.setRegion(regionButton.type);
   }
 
 }
