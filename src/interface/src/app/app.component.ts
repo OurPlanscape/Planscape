@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { take } from 'rxjs';
 
 import { AuthService } from './auth.service';
 
@@ -18,7 +19,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // Refresh the user's logged in status when the app initializes.
-    this.authService.refreshToken().subscribe().unsubscribe();
+    this.authService.refreshToken().pipe(take(1)).subscribe();
   }
 
 }
