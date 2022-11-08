@@ -1,4 +1,5 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { take } from 'rxjs';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import * as L from 'leaflet';
 
 import { MapService } from '../map.service';
@@ -14,7 +15,7 @@ export enum BaseLayerType {
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-export class MapComponent implements AfterViewInit {
+export class MapComponent implements AfterViewInit, OnDestroy {
   public map!: L.Map;
 
   baseLayerType: BaseLayerType = BaseLayerType.Road;
@@ -40,12 +41,16 @@ export class MapComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.initMap();
-    this.boundaryService.getBoundaryShapes().subscribe((boundary: GeoJSON.GeoJSON) => {
+    this.boundaryService.getBoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
       this.initBoundaryLayer(boundary);
     });
-    this.boundaryService.getExistingProjects().subscribe((existingProjects: GeoJSON.GeoJSON) => {
+    this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
       this.initCalMapperLayer(existingProjects);
-    })
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.map.remove();
   }
 
   private initMap(): void {
