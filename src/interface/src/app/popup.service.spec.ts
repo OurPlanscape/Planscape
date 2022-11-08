@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+
 import { PopupService } from './popup.service';
 
 describe('PopupService', () => {
@@ -18,6 +19,7 @@ describe('PopupService', () => {
       const data = 'Test data';
       const expectedHtml = `` +
       `<div>Name: Test data</div>`
+
       expect(service.makeDetailsPopup(data)).toEqual(expectedHtml);
     });
   });

@@ -1,11 +1,11 @@
-import { MatToolbarModule } from '@angular/material/toolbar';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
+import { MatToolbarModule } from '@angular/material/toolbar';
 import { By } from '@angular/platform-browser';
 
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
-import { MatIcon, MatIconModule } from '@angular/material/icon';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -36,10 +36,12 @@ describe('TopBarComponent', () => {
 
   it('should toggle sidenav', () => {
     spyOn(component.toggleEvent, 'emit');
+
     // Act: click on the menu icon
     const menuButton = fixture.debugElement.query(By.css('[data-testid="menu-button"]'));
     const clickEvent = new MouseEvent('click');
     menuButton.triggerEventHandler('click', clickEvent);
+
     // Assert: expect that the toggleEvent emits the Event
     expect(component.toggleEvent.emit).toHaveBeenCalledOnceWith(clickEvent);
   });
@@ -48,10 +50,12 @@ describe('TopBarComponent', () => {
     const fakeMatDialog: MatDialog = fixture.debugElement.injector.get(
       MatDialog
     );
+
     // Act: click on the account icon
     const accountButton = fixture.debugElement.query(By.css('[data-testid="account-button"]'));
     const clickEvent = new MouseEvent('click');
     accountButton.triggerEventHandler('click', clickEvent);
+
     // Assert: expect that the dialog opens
     expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(AccountDialogComponent);
   });

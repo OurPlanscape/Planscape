@@ -1,8 +1,9 @@
-import { of, BehaviorSubject, Subject } from 'rxjs';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { AuthService } from './../auth.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { BehaviorSubject, of, Subject } from 'rxjs';
+
+import { AuthService } from './../auth.service';
 import { NavigationComponent } from './navigation.component';
 
 describe('NavigationComponent', () => {

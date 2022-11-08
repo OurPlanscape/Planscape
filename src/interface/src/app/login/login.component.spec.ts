@@ -36,18 +36,22 @@ describe('LoginComponent', () => {
   });
 
   describe('onSubmit', () => {
-    it('makes expected calls', () => {
+    it('calls login()', () => {
       spyOn(component, 'login').and.callThrough();
+
       component.onSubmit();
+
       expect(component.login).toHaveBeenCalled();
     });
   });
 
   describe('signup', () => {
-    it('makes expected calls', () => {
+    it('navigates to signup page', () => {
       const routerStub: Router = fixture.debugElement.injector.get(Router);
       spyOn(routerStub, 'navigate').and.callThrough();
+
       component.signup();
+
       expect(routerStub.navigate).toHaveBeenCalled();
     });
   });
