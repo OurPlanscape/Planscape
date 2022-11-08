@@ -23,6 +23,7 @@
     "leaflet": "^1.9.1",
     "material": "^0.4.3",
     "moment": "^2.29.4",
+    "ng-mocks": "^14.3.2",
     "ngx-cookie-service": "^14.0.1",
     "rxjs": "~7.5.0",
     "tslib": "^2.3.0",

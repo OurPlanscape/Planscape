@@ -1,8 +1,8 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #drawer class="sidenav"
-      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="(isHandset$ | async) ? 'over' : 'side'"
-      [opened]="!(isHandset$ | async) && sidebarOpen">
+      [attr.role]="'navigation'"
+      [mode]="'side'"
+      [opened]="sidebarOpen">
     <mat-nav-list>
       <a mat-list-item routerLink="/region">Select Region</a>
       <a mat-list-item routerLink="/map">Map</a>
