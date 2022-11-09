@@ -1,9 +1,11 @@
-import { take } from 'rxjs';
+import { Subject, take, takeUntil, Observable } from 'rxjs';
+import { Region } from './../types/region.types';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import * as L from 'leaflet';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
+import { SessionService } from '../session.service';
 
 export enum BaseLayerType {
   Road,
@@ -16,8 +18,8 @@ export enum BaseLayerType {
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
-  public map!: L.Map;
-
+  map!: L.Map;
+  selectedRegion$: Observable<Region|null>
   baseLayerType: BaseLayerType = BaseLayerType.Road;
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
@@ -37,10 +39,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       attribution: '© OpenStreetMap'
   });
 
-  constructor(private boundaryService: MapService, private popupService: PopupService) {}
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private boundaryService: MapService,
+    private popupService: PopupService,
+    private sessionService: SessionService) {
+      this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
+    }
 
   ngAfterViewInit(): void {
     this.initMap();
+    this.selectedRegion$.subscribe((selectedRegion) => {
+      this.displayRegionBoundary(selectedRegion);
+    });
     this.boundaryService.getBoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
       this.initBoundaryLayer(boundary);
     });
@@ -51,8 +63,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.map.remove();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
+  /** Initializes the map with the base layers and controls. */
   private initMap(): void {
     if (this.map != undefined) this.map.remove();
     this.map = L.map('map', {
@@ -69,7 +84,34 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     zoomControl.addTo(this.map);
   }
 
-  // Renders the existing project boundaries + metadata in a popup in an optional layer.
+  /** Gets the selected region geojson and renders it on the map. */
+  private displayRegionBoundary(selectedRegion: Region | null) {
+    if (!selectedRegion) return;
+    this.boundaryService.getRegionBoundary(selectedRegion).subscribe(
+      (boundary: GeoJSON.GeoJSON) => {
+        this.maskOutsideRegion(boundary);
+    });
+  }
+
+  /**
+   * Darkens everything outside of the region boundary.
+   * Type 'any' is used in order to access coordinates.
+   * */
+  private maskOutsideRegion(boundary: any) {
+    // Add corners of the map to invert the polygon
+    boundary.features[0].geometry.coordinates[0].unshift([[180, -90], [180, 90], [-180, 90], [-180, -90]]);
+    L.geoJSON(boundary, {
+      style: (feature) => ({
+        "color": "#ffffff",
+        "weight": 2,
+        "opacity": 1,
+        "fillColor": "#000000",
+        "fillOpacity": 0.4,
+      })
+    }).addTo(this.map);
+  }
+
+  /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
   private initCalMapperLayer(existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
     this.existingProjectsLayer = L.geoJSON(existingProjects, {
@@ -104,7 +146,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map.addLayer(this.HUC12BoundariesLayer);
   }
 
-  // Toggle which base layer is shown.
+  /** Toggles which base layer is shown. */
   changeBaseLayer() {
     if (this.baseLayerType === BaseLayerType.Terrain) {
       this.map.removeLayer(MapComponent.open_street_maps_tiles);
@@ -115,7 +157,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // Toggle whether HUC-12 boundaries are shown.
+  /** Toggles whether HUC-12 boundaries are shown. */
   toggleHUC12BoundariesLayer() {
     if (this.showHUC12BoundariesLayer) {
       this.map.addLayer(this.HUC12BoundariesLayer);
@@ -124,7 +166,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // Toggle whether existing projects from CalMapper are shown.
+  /** Toggles whether existing projects from CalMapper are shown. */
   toggleExistingProjectsLayer() {
     if (this.showExistingProjectsLayer) {
       this.map.addLayer(this.existingProjectsLayer);
