@@ -1,3 +1,4 @@
+import { Legend } from './../shared/legend/legend.component';
 import { Subject, take, takeUntil, Observable } from 'rxjs';
 import { Region } from './../types/region.types';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
@@ -27,6 +28,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   showHUC12BoundariesLayer: boolean = true;
   existingProjectsLayer!: L.GeoJSON;
   HUC12BoundariesLayer!: L.GeoJSON;
+
+  legend: Legend = {
+    labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
+    colors: ['#f65345', '#e9884f', '#e5ab64', '#e6c67a', '#cccfa7', '#a5c5a6', '#74afa5', '#508295'],
+  };
 
   static hillshade_tiles = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
       zIndex: 0,
