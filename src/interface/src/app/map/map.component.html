@@ -1,5 +1,12 @@
 <div class="map-container">
-  <div id="map"></div>
+  <div class="map-row">
+    <div id="map1" class="map" [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount == 1 ? '100%' : '50%'}"></div>
+    <div id="map2" class="map" [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2"></div>
+  </div>
+  <div class="map-row">
+    <div id="map3" class="map" [hidden]="mapCount < 4"></div>
+    <div id="map4" class="map" [hidden]="mapCount < 4"></div>
+  </div>
   <div id="controls" class="controls-container">
     <div class="layer-controls">
       <h2>Layers</h2>
@@ -54,6 +61,20 @@
       </mat-checkbox>
       <h3>Legend</h3>
       <app-legend [legend]="legend"></app-legend>
+      <h3>Map count</h3>
+      <mat-radio-group
+        name="map-count-select"
+        aria-label="Select an option"
+        class="layer-radio-group"
+        [(ngModel)]="mapCount"
+        (change)="changeMapCount()">
+        <mat-radio-button
+          *ngFor="let mapCountOption of mapCountOptions"
+          [value]="mapCountOption"
+          class="layer-radio-button">
+          {{ mapCountOption }}
+        </mat-radio-button>
+      </mat-radio-group>
     </div>
   </div>
 </div>

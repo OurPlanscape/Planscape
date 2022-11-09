@@ -4,6 +4,7 @@ import { Feature, Geometry } from 'geojson';
 import { switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import 'leaflet-draw';
+import 'leaflet.sync';
 
 import { MapService } from '../map.service';
 import { PlanState, PlanService } from '../plan.service';
@@ -20,6 +21,11 @@ import { ProjectCardComponent } from './project-card/project-card.component';
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
   map!: L.Map;
+  map2!: L.Map;
+  map3!: L.Map;
+  map4!: L.Map;
+  mapCount: number = 2;
+  mapCountOptions: number[] = [1, 2, 4];
   selectedRegion$: Observable<Region|null>
   planState$: Observable<PlanState>
   baseLayerType: BaseLayerType = BaseLayerType.Road;
@@ -38,16 +44,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     colors: ['#f65345', '#e9884f', '#e5ab64', '#e6c67a', '#cccfa7', '#a5c5a6', '#74afa5', '#508295'],
   };
 
-  static hillshade_tiles = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
+  static hillshade_tiles() {
+    return L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
       zIndex: 0,
       tileSize: 512,
       zoomOffset: -1
     });
+  }
 
-  static open_street_maps_tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  static open_street_maps_tiles() {
+    return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
-  });
+    });
+  }
 
   static data_layer_tiles = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
    crs:L.CRS.EPSG4326,
@@ -73,7 +83,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
 
   ngAfterViewInit(): void {
-    this.initMap();
+    this.map = this.initMap(this.map, 'map1');
+    this.map2 = this.initMap(this.map2, 'map2');
+    this.map3 = this.initMap(this.map3, 'map3');
+    this.map4 = this.initMap(this.map4, 'map4');
+
+    this.syncAllMaps();
+
+    this.addDrawingControls(this.map);
+
     this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
       this.displayRegionBoundary(selectedRegion);
     });
@@ -105,12 +123,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Initializes the map with the base layers and controls. */
-  private initMap(): void {
-    if (this.map != undefined) this.map.remove();
-    this.map = L.map('map', {
+  private initMap(map: L.Map, id: string): L.Map {
+    if (map != undefined) map.remove();
+    map = L.map(id, {
       center: [38.646, -120.548],
       zoom: 9,
-      layers: [MapComponent.hillshade_tiles, MapComponent.open_street_maps_tiles],
+      layers: [MapComponent.hillshade_tiles(), MapComponent.open_street_maps_tiles()],
       zoomControl: false,
     });
 
@@ -118,15 +136,25 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     const zoomControl = L.control.zoom({
       position: 'bottomright'
     });
-    zoomControl.addTo(this.map);
+    zoomControl.addTo(map);
 
-    this.addDrawingControls();
+    return map;
+  }
+
+  private syncAllMaps() {
+    [this.map, this.map2, this.map3, this.map4].forEach((mapA) => {
+      [this.map, this.map2, this.map3, this.map4].forEach((mapB) => {
+        if (mapA !== mapB) {
+          (mapA as any).sync(mapB);
+        }
+      });
+    })
   }
 
   /** Adds drawing controls and handles drawing events. */
-  private addDrawingControls() {
+  private addDrawingControls(map: L.Map) {
     const drawingLayer = new L.FeatureGroup();
-    this.map.addLayer(drawingLayer);
+    map.addLayer(drawingLayer);
 
     const drawOptions: L.Control.DrawConstructorOptions = {
         position: 'topright',
@@ -156,9 +184,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     };
 
     const drawControl = new L.Control.Draw(drawOptions);
-    this.map.addControl(drawControl);
+    map.addControl(drawControl);
 
-    this.map.on('draw:created', (event) => {
+    map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       drawingLayer.addLayer(layer);
 
@@ -260,11 +288,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Toggles which base layer is shown. */
   changeBaseLayer() {
     if (this.baseLayerType === BaseLayerType.Terrain) {
-      this.map.removeLayer(MapComponent.open_street_maps_tiles);
-      this.map.addLayer(MapComponent.hillshade_tiles);
+      this.map.removeLayer(MapComponent.open_street_maps_tiles());
+      this.map.addLayer(MapComponent.hillshade_tiles());
     } else if (this.baseLayerType === BaseLayerType.Road) {
-      this.map.removeLayer(MapComponent.hillshade_tiles);
-      this.map.addLayer(MapComponent.open_street_maps_tiles);
+      this.map.removeLayer(MapComponent.hillshade_tiles());
+      this.map.addLayer(MapComponent.open_street_maps_tiles());
     }
   }
 
@@ -301,5 +329,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     } else {
       this.map.removeLayer(this.existingProjectsLayer);
     }
+  }
+
+  changeMapCount() {
+    setTimeout(() => {
+      this.map.invalidateSize();
+      this.map2.invalidateSize();
+      this.map3.invalidateSize();
+      this.map4.invalidateSize();
+    }, 0);
   }
 }

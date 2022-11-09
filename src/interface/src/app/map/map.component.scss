@@ -1,14 +1,38 @@
 .map-container {
+  flex-direction: column;
   height: 100%;
   width: 100%;
   position: relative;
 }
 
-#map {
+.map-row {
+  flex-direction: row;
+}
+
+.map {
+  border: 1px solid black;
   height: 100%;
   position: absolute;
   width: 100%;
   z-index: 1;
+}
+
+#map2 {
+  left: 50%;
+  width: 50%;
+}
+
+#map3 {
+  height: 50%;
+  top: 50%;
+  width: 50%;
+}
+
+#map4 {
+  height: 50%;
+  left: 50%;
+  top: 50%;
+  width: 50%;
 }
 
 .controls-container {
