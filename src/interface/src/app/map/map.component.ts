@@ -31,9 +31,19 @@ export class MapComponent implements AfterViewInit {
       zoomOffset: -1
     });
 
-  static open_street_maps_tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  static open_street_maps_tiles1 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
+  });
+  static southWest = L.latLng(40.712, -74.227);
+  static northEast = L.latLng(40.774, -74.125);
+  static bounds = L.latLngBounds(MapComponent.southWest, MapComponent.northEast);
+
+  static open_street_maps_tiles = L.tileLayer.wms('http://localhost:8000/wms', {
+   //bounds: MapComponent.bounds,
+   //crs:L.CRS.EPSG4326,
+   minZoom: 7,
+   maxZoom: 15
   });
 
   constructor(private boundaryService: MapService, private popupService: PopupService) {}
