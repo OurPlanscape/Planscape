@@ -15,15 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from wms import views
-
-from existing_projects.views import CalMAPPER
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('boundary/', include('boundary.api')),
-    path('projects/', CalMAPPER.as_view()),
-    path('wms/', views.wms),
+    path('projects/', include('existing_projects.urls')),
+    path('wms/', include('wms.urls')),
     # Auth URLs
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
