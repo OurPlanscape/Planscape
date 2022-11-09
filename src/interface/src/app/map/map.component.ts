@@ -52,6 +52,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.initBoundaryLayer(boundary);
     });
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
+      console.log('existing projects', existingProjects);
       this.initCalMapperLayer(existingProjects);
     });
   }
