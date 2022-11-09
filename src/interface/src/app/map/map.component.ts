@@ -59,7 +59,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       attribution: '© OpenStreetMap'
     });
   }
-
   static data_layer_tiles = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
    crs:L.CRS.EPSG4326,
    minZoom: 7,
