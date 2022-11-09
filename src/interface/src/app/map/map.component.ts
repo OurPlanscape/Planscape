@@ -1,4 +1,4 @@
-import { Subject, takeUntil, Observable } from 'rxjs';
+import { Subject, take, takeUntil, Observable } from 'rxjs';
 import { Region } from './../types/region.types';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import * as L from 'leaflet';
@@ -52,16 +52,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.initMap();
     this.selectedRegion$.subscribe((selectedRegion) => {
       this.displayRegionBoundary(selectedRegion);
-    })
-    this.boundaryService.getBoundaryShapes().subscribe((boundary: GeoJSON.GeoJSON) => {
+    });
+    this.boundaryService.getBoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
       this.initBoundaryLayer(boundary);
     });
-    this.boundaryService.getExistingProjects().subscribe((existingProjects: GeoJSON.GeoJSON) => {
+    this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
       this.initCalMapperLayer(existingProjects);
     });
   }
 
   ngOnDestroy(): void {
+    this.map.remove();
     this.destroy$.next();
     this.destroy$.complete();
   }
