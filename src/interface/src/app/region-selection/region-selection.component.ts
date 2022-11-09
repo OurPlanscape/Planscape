@@ -1,6 +1,8 @@
-import { SessionService } from './../session.service';
 import { Component, OnInit } from '@angular/core';
+
+import { Router } from '@angular/router';
 import { Region } from '../types';
+import { SessionService } from './../session.service';
 
 /**
  * The main region selection view component.
@@ -31,7 +33,10 @@ export class RegionSelectionComponent implements OnInit {
   selectedRegion$ = this.sessionService.region$;
   regionButtons: RegionButton[] = [];
 
-  constructor(private sessionService: SessionService) {}
+  constructor(
+    private sessionService: SessionService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.regionButtons = regions.map((region) => {
@@ -43,12 +48,13 @@ export class RegionSelectionComponent implements OnInit {
     });
   }
 
-  /** Sets the region. */
+  /** Sets the region and navigates to explore. */
   setRegion(regionButton: RegionButton) {
     if (!regionButton.available) {
       return;
     }
     this.sessionService.setRegion(regionButton.type);
+    this.router.navigateByUrl('/map');
   }
 
 }
