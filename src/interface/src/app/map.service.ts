@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { EMPTY, Observable } from 'rxjs';
+import { EMPTY, Observable, map } from 'rxjs';
 
 import { Region } from './types';
 
@@ -55,6 +55,8 @@ export class MapService {
     }
 
     const url = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + new URLSearchParams(params).toString();
-    return this.http.get<GeoJSON.GeoJSON>(url);
+    return this.http.get<string>('http://127.0.0.1:8000/projects').pipe(map((response: string) => {
+      return JSON.parse(response);
+    }));
   }
 }
