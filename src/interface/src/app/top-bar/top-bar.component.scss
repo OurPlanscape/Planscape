@@ -10,6 +10,11 @@ $toolbar-height: 48px;
   padding: 0 12px;
   position: relative;
   z-index: 2;
+
+  .site-link {
+    color: #ffffff;
+    text-decoration: none;
+  }
 }
 
 .menu-button {
