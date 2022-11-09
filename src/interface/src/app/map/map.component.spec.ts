@@ -130,14 +130,14 @@ describe('MapComponent', () => {
 
     // Assert: expect that the map contains the terrain base layer
     expect(component.changeBaseLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(MapComponent.hillshade_tiles));
+    expect(component.map.hasLayer(MapComponent.hillshade_tiles()));
 
     // Act: select the road base layer
     await radioButtonGroup.checkRadioButton({ label: 'Road' });
 
     // Assert: expect that the map contains the road base layer
     expect(component.changeBaseLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(MapComponent.open_street_maps_tiles));
+    expect(component.map.hasLayer(MapComponent.open_street_maps_tiles()));
   });
 
   it('should toggle HUC-12 boundaries', async () => {
