@@ -63,6 +63,7 @@ describe('MapComponent', () => {
     fixture = TestBed.createComponent(MapComponent);
     loader = TestbedHarnessEnvironment.loader(fixture);
     component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
   it('can load instance', () => {
