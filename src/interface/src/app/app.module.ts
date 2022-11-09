@@ -1,3 +1,4 @@
+import { SharedModule } from './shared/shared.module';
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -34,14 +35,15 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     RegionSelectionComponent,
   ],
   imports: [
-    BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule,
+    BrowserModule,
+    CommonModule,
+    FormsModule,
     HttpClientModule,
     LayoutModule,
-    FormsModule,
-    CommonModule,
     MaterialModule,
+    SharedModule,
   ],
   providers: [
     AuthService,
