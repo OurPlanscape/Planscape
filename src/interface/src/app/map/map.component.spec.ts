@@ -1,5 +1,4 @@
 import { Region } from './../types/region.types';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -20,26 +19,39 @@ describe('MapComponent', () => {
   let component: MapComponent;
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
+  let mockSessionService: Partial<SessionService>
 
   beforeEach(() => {
     const fakeGeoJSON: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
-      features: [],
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "MultiPolygon",
+            coordinates: [[[[10, 20], [10, 30], [15, 15]]]],
+          },
+          properties: {
+            shape_name: "Test"
+          }
+        }
+      ],
     };
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
         getBoundaryShapes: of(fakeGeoJSON),
         getExistingProjects: of(fakeGeoJSON),
+        getRegionBoundary: of(fakeGeoJSON),
       },
       {},
     );
-    const mockSessionService = {
+    mockSessionService = {
       region$: new BehaviorSubject<Region|null>(Region.SIERRA_NEVADA),
     };
     const popupServiceStub = () => ({ makeDetailsPopup: (shape_name: any) => ({}) });
     TestBed.configureTestingModule({
-      imports: [FormsModule, HttpClientTestingModule, MatCheckboxModule, MatRadioModule],
+      imports: [FormsModule, MatCheckboxModule, MatRadioModule],
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [MapComponent],
       providers: [
@@ -78,11 +90,14 @@ describe('MapComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    it('makes expected calls', () => {
+    it('initializes the map', () => {
       const mapServiceStub: MapService = fixture.debugElement.injector.get(
         MapService
       );
+
       component.ngAfterViewInit();
+
+      expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
       expect(mapServiceStub.getBoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
