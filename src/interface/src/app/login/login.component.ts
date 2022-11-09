@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthService } from './../auth.service';
@@ -8,7 +8,7 @@ import { AuthService } from './../auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
+export class LoginComponent {
 
   error: any;
 
@@ -19,16 +19,13 @@ export class LoginComponent implements OnInit {
     private router: Router,
   ) { }
 
-  ngOnInit(): void {
-  }
-
   onSubmit() {
     this.login(this.model.username, this.model.password);
   }
 
   login(username: string, password: string) {
     this.authService.login(username, password).subscribe(
-      success => this.router.navigate(['map']),
+      _ => this.router.navigate(['map']),
       error => this.error = error
     );
   }

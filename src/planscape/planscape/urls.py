@@ -17,9 +17,12 @@ from django.contrib import admin
 from django.urls import path, include
 from wms import views
 
+from existing_projects.views import CalMAPPER
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('boundary/', include('boundary.api')),
+    path('projects/', CalMAPPER.as_view()),
     path('wms/', views.wms),
     # Auth URLs
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
