@@ -1,7 +1,6 @@
 import { Subject, takeUntil, Observable } from 'rxjs';
 import { Region } from './../types/region.types';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import * as L from 'leaflet';
 
 import { MapService } from '../map.service';
@@ -11,14 +10,6 @@ import { SessionService } from '../session.service';
 export enum BaseLayerType {
   Road,
   Terrain,
-}
-
-/** A map of Region to its corresponding geojson path. */
-const regionToGeojsonMap: Record<Region, string> = {
-  [Region.SIERRA_NEVADA]: 'assets/geojson/sierra_nevada_region.geojson',
-  [Region.CENTRAL_COAST]: '',
-  [Region.NORTHERN_CALIFORNIA]: '',
-  [Region.SOUTHERN_CALIFORNIA]: '',
 }
 
 @Component({
@@ -52,7 +43,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     private boundaryService: MapService,
-    private http: HttpClient,
     private popupService: PopupService,
     private sessionService: SessionService) {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
@@ -97,20 +87,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   /** Gets the selected region geojson and renders it on the map. */
   private displayRegionBoundary(selectedRegion: Region | null) {
-    console.log({selectedRegion});
-    if (selectedRegion) {
-      const path = regionToGeojsonMap[selectedRegion];
-      if (!path) {
-        return;
-      }
-      // Type 'any' is used in order to access coordinates
-      this.http.get(path).subscribe((boundary: any) => {
+    if (!selectedRegion) return;
+    this.boundaryService.getRegionBoundary(selectedRegion).subscribe(
+      (boundary: GeoJSON.GeoJSON) => {
         this.maskOutsideRegion(boundary);
-      });
-    }
+    });
   }
 
-  /** Grays out the area outside of the region boundary. */
+  /**
+   * Darkens everything outside of the region boundary.
+   * Type 'any' is used in order to access coordinates.
+   * */
   private maskOutsideRegion(boundary: any) {
     // Add corners of the map to invert the polygon
     boundary.features[0].geometry.coordinates[0].unshift([[180, -90], [180, 90], [-180, 90], [-180, -90]]);
