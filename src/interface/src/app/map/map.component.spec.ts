@@ -1,3 +1,4 @@
+import { Region } from './../types/region.types';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
@@ -7,30 +8,47 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
-import { of } from 'rxjs';
+import { of, BehaviorSubject } from 'rxjs';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { BaseLayerType, MapComponent } from './map.component';
+import { SessionService } from './../session.service';
 
 describe('MapComponent', () => {
   let component: MapComponent;
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
+  let mockSessionService: Partial<SessionService>
 
   beforeEach(() => {
     const fakeGeoJSON: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
-      features: [],
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "MultiPolygon",
+            coordinates: [[[[10, 20], [10, 30], [15, 15]]]],
+          },
+          properties: {
+            shape_name: "Test"
+          }
+        }
+      ],
     };
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
         getBoundaryShapes: of(fakeGeoJSON),
         getExistingProjects: of(fakeGeoJSON),
+        getRegionBoundary: of(fakeGeoJSON),
       },
       {},
     );
+    mockSessionService = {
+      region$: new BehaviorSubject<Region|null>(Region.SIERRA_NEVADA),
+    };
     const popupServiceStub = () => ({ makeDetailsPopup: (shape_name: any) => ({}) });
     TestBed.configureTestingModule({
       imports: [FormsModule, MatCheckboxModule, MatRadioModule],
@@ -39,6 +57,7 @@ describe('MapComponent', () => {
       providers: [
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
+        { provide: SessionService, useValue: mockSessionService },
       ]
     });
     fixture = TestBed.createComponent(MapComponent);
@@ -71,12 +90,14 @@ describe('MapComponent', () => {
   });
 
   describe('ngAfterViewInit', () => {
-    it('makes expected calls', () => {
+    it('initializes the map', () => {
       const mapServiceStub: MapService = fixture.debugElement.injector.get(
         MapService
       );
+
       component.ngAfterViewInit();
-      expect(component.map).toBeTruthy();
+
+      expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
       expect(mapServiceStub.getBoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
