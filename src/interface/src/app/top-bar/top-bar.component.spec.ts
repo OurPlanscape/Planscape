@@ -80,7 +80,7 @@ describe('TopBarComponent', () => {
       regionDropdown.dispatchEvent(new Event('change'));
       fixture.detectChanges();
 
-      expect(setRegionSpy).toHaveBeenCalled();
+      expect(setRegionSpy).toHaveBeenCalledOnceWith(regionDropdown.value);
     });
   });
 
