@@ -7,7 +7,7 @@ import unittest
 from base.condition_types import Region, Pillar, Element, Metric
 from config.conditions_config import PillarConfig
 
-TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'metrics.json')
+TESTDATA_FILENAME = os.path.join(os.path.dirname(__file__), 'conditions.json')
 
 
 class PillarConfigTest(unittest.TestCase):
