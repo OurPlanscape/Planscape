@@ -1,9 +1,9 @@
 import { BehaviorSubject } from 'rxjs';
-import { SessionService } from './../session.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Region } from '../types';
 
+import { Region } from '../types';
 import { RegionSelectionComponent } from './region-selection.component';
+import { SessionService } from './../session.service';
 
 // selector names for getting DOM elements
 enum CssSelector {
