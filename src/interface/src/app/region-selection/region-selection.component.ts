@@ -1,28 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-
 import { Router } from '@angular/router';
-import { Region } from '../types';
+
+import { RegionOption, regionOptions } from '../types';
 import { SessionService } from './../session.service';
 
 /**
  * The main region selection view component.
  */
-interface RegionButton {
-  type: Region;
-  name: string;
-  available: boolean;
-}
-
-const regions: Region[] = [
-  Region.SIERRA_NEVADA,
-  Region.SOUTHERN_CALIFORNIA,
-  Region.CENTRAL_COAST,
-  Region.NORTHERN_CALIFORNIA,
-]
-
-const availableRegions = new Set([
-  Region.SIERRA_NEVADA,
-])
 
 @Component({
   selector: 'app-region-selection',
@@ -31,29 +15,21 @@ const availableRegions = new Set([
 })
 export class RegionSelectionComponent implements OnInit {
   selectedRegion$ = this.sessionService.region$;
-  regionButtons: RegionButton[] = [];
+  readonly regionOptions: RegionOption[] = regionOptions;
 
   constructor(
     private sessionService: SessionService,
     private router: Router,
   ) {}
 
-  ngOnInit(): void {
-    this.regionButtons = regions.map((region) => {
-      return {
-        type: region,
-        name: region,
-        available: availableRegions.has(region),
-      }
-    });
-  }
+  ngOnInit(): void {}
 
-  /** Sets the region and navigates to explore. */
-  setRegion(regionButton: RegionButton) {
-    if (!regionButton.available) {
+  /** Sets the region and navigates to the map. */
+  setRegion(regionOption: RegionOption) {
+    if (!regionOption.available) {
       return;
     }
-    this.sessionService.setRegion(regionButton.type);
+    this.sessionService.setRegion(regionOption.type);
     this.router.navigateByUrl('/map');
   }
 
