@@ -183,7 +183,7 @@
         }
     ,
         {
-            "region_name": "sierra_nevada",
+            "region_name": "sierra_cascade_inyo",
             "filepath": "data/sierra_nevada",
             "display_name": "Sierra Nevada",
             "pillars": [
