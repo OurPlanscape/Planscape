@@ -1,4 +1,4 @@
-import { of, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { SessionService } from './../session.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Region } from '../types';
