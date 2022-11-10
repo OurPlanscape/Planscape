@@ -1,5 +1,5 @@
 """
-
+Valid region names.
 """
 
 import enum
