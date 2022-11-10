@@ -20,9 +20,9 @@
     <select class="region-dropdown" (change)="setRegion($event)">
       <option [selected]="!(selectedRegion$ | async)" disabled>Select a region</option>
       <option *ngFor="let region of regionOptions"
-              [value]="region.type"
-              [disabled]="!region.available"
-              [selected]="(selectedRegion$ | async) === region.type">{{ region.name }}</option>
+        [value]="region.type"
+        [disabled]="!region.available"
+        [selected]="(selectedRegion$ | async) === region.type">{{ region.name }}</option>
     </select>
   </div>
 

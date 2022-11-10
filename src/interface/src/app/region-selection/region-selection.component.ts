@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-
 import { Router } from '@angular/router';
-import { Region, RegionOption, regionOptions } from '../types';
+
+import { RegionOption, regionOptions } from '../types';
 import { SessionService } from './../session.service';
 
 /**
