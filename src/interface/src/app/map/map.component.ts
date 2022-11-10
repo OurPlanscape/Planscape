@@ -1,16 +1,11 @@
-import { Subject, take, takeUntil, Observable } from 'rxjs';
-import { Region } from './../types/region.types';
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import * as L from 'leaflet';
+import { Observable, Subject, take, takeUntil } from 'rxjs';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-
-export enum BaseLayerType {
-  Road,
-  Terrain,
-}
+import { BaseLayerType, Region } from '../types';
 
 @Component({
   selector: 'app-map',
@@ -57,6 +52,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.initBoundaryLayer(boundary);
     });
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
+      console.log('existing projects', existingProjects);
       this.initCalMapperLayer(existingProjects);
     });
   }

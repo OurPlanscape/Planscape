@@ -44,16 +44,17 @@ describe('MapService', () => {
   describe('getExistingProjects', () => {
     it('makes request to endpoint', () => {
       const httpTestingController = TestBed.inject(HttpTestingController);
+      const fakeGeoJsonText: string = JSON.stringify(fakeGeoJson);
 
       service.getExistingProjects().subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
 
       const req = httpTestingController.expectOne(
-        'https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?where=1%3D1&outFields=PROJECT_NAME%2CPROJECT_STATUS&f=GEOJSON'
+        'http://127.0.0.1:8000/projects'
       );
       expect(req.request.method).toEqual('GET');
-      req.flush(fakeGeoJson);
+      req.flush(fakeGeoJsonText);
       httpTestingController.verify();
     });
   });
