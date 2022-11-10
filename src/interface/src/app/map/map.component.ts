@@ -1,5 +1,7 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import * as L from 'leaflet';
+import * as moment from 'moment';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
 
 import { MapService } from '../map.service';
@@ -28,6 +30,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
     colors: ['#f65345', '#e9884f', '#e5ab64', '#e6c67a', '#cccfa7', '#a5c5a6', '#74afa5', '#508295'],
   };
+
+  existingProjectsStartDate = new FormControl(moment([2022, 10, 10]));
 
   static hillshade_tiles = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
       zIndex: 0,

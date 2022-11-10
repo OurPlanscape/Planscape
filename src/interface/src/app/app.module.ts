@@ -3,7 +3,8 @@ import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CookieService } from 'ngx-cookie-service';
@@ -44,6 +45,8 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     LayoutModule,
     MaterialModule,
     SharedModule,
+    MatMomentDateModule,
+    ReactiveFormsModule,
   ],
   providers: [
     AuthService,
