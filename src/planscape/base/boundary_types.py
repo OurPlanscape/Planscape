@@ -10,7 +10,7 @@ Types defined:
 import enum
 from typing import TypedDict
 from typing_extensions import NotRequired
-from base.region_name import RegionName
+from .region_name import RegionName
 
 
 class GeometryType(str, enum.Enum):
