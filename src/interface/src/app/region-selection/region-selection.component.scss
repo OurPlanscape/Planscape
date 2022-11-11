@@ -1,3 +1,4 @@
+// The main section of the view
 .center-block {
   align-items: center;
   display: flex;
@@ -9,6 +10,7 @@
   width: 100%;
 }
 
+// A section within the main section
 .content-section {
   display: flex;
   flex-direction: row;
@@ -16,6 +18,7 @@
   padding: 30px;
 }
 
+// Region button styling
 .region-button {
   color: #3367D6;
   cursor: pointer;
