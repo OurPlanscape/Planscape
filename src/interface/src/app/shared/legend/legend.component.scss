@@ -1,0 +1,30 @@
+.legend {
+  width: fit-content;
+}
+
+.labels {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.label {
+  margin-top: 5px;
+  min-width: 24px;
+  writing-mode: vertical-lr;
+}
+
+.colors {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.colorbox {
+  flex: 1 1 auto;
+  height: 24px;
+  min-width: 24px;
+}
