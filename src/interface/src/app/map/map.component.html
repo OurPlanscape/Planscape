@@ -17,6 +17,15 @@
           {{ BaseLayerType[baseLayerType] }}
         </mat-radio-button>
       </mat-radio-group>
+      <h3>Data</h3>
+      <mat-checkbox
+        name="data-layer-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showDataLayer"
+        (change)="toggleDataLayer()">
+        Data
+      </mat-checkbox>
       <h3>Boundaries</h3>
       <mat-checkbox
         name="huc12-toggle"

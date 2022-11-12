@@ -18,6 +18,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   baseLayerType: BaseLayerType = BaseLayerType.Road;
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  showDataLayer: boolean = false;
   showExistingProjectsLayer: boolean = true;
   showHUC12BoundariesLayer: boolean = true;
   existingProjectsLayer!: L.GeoJSON;
@@ -29,19 +30,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       zoomOffset: -1
     });
 
-  static open_street_maps_tiles1 = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  static open_street_maps_tiles = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '© OpenStreetMap'
   });
-  static southWest = L.latLng(40.712, -74.227);
-  static northEast = L.latLng(40.774, -74.125);
-  static bounds = L.latLngBounds(MapComponent.southWest, MapComponent.northEast);
 
-  static open_street_maps_tiles = L.tileLayer.wms('http://localhost:8000/wms', {
-   //bounds: MapComponent.bounds,
-   //crs:L.CRS.EPSG4326,
+  static data_layer_tiles = L.tileLayer.wms('http://localhost:8000/wms', {
+   crs:L.CRS.EPSG4326,
    minZoom: 7,
-   maxZoom: 15
+   maxZoom: 15,
+   format:'image/png',
+   transparent: true,
   });
 
   private readonly destroy$ = new Subject<void>();
@@ -163,6 +162,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** Toggles whether data layer is shown. */
+  toggleDataLayer() {
+    if (this.showDataLayer) {
+      this.map.addLayer(MapComponent.data_layer_tiles);
+    } else {
+      this.map.removeLayer(MapComponent.data_layer_tiles);
+    }
+  }
   /** Toggles whether HUC-12 boundaries are shown. */
   toggleHUC12BoundariesLayer() {
     if (this.showHUC12BoundariesLayer) {
