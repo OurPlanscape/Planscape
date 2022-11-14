@@ -30,7 +30,7 @@ def get_wms(params: QueryDict):
         cursor.callproc('get_rast_tile', (params['format'], width, height, srid,
                         bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3],
                         colormap, 'public', RASTER_TABLE, RASTER_COLUMN, RASTER_NAME_COLUMN,
-                        'AvailableBiomass_2021_300m_base.tif'))
+                        params['layers']))
         row = cursor.fetchone()
     return row
 
