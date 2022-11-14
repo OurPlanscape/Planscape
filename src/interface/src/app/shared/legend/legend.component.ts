@@ -6,7 +6,7 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./legend.component.scss']
 })
 export class LegendComponent {
-  @Input() legend!: Legend;
+  @Input() legend: Legend = { labels: [], colors: [] };
 }
 
 export type Legend = {
