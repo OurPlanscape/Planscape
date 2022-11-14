@@ -46,7 +46,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
    minZoom: 7,
    maxZoom: 15,
    format:'image/png',
-   transparent: true,
+   opacity: 0.7,
+   layers: 'AvailableBiomass_2021_300m_base.tif'
   });
 
   private readonly destroy$ = new Subject<void>();
