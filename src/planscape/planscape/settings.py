@@ -45,7 +45,6 @@ INSTALLED_APPS = [
     'boundary',
     'conditions',
     'leaflet',
-    'wms',
     'corsheaders',
     'allauth',
     'allauth.account',
