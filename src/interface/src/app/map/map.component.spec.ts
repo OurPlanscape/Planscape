@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentRef, NO_ERRORS_SCHEMA, ViewContainerRef } from '@angular/core';
+import { ComponentRef, NO_ERRORS_SCHEMA, ViewContainerRef, ApplicationRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -105,15 +105,13 @@ describe('MapComponent', () => {
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
 
-    it('creates project detail card with geojson feature', () => {
-      const viewContainerRef: ViewContainerRef = fixture.componentInstance.viewContainerRef;
-      const projectCardComponent: ComponentRef<ProjectCardComponent> = viewContainerRef.createComponent(ProjectCardComponent);
-      spyOn(viewContainerRef, 'createComponent').and.returnValue(projectCardComponent);
+    it('creates project detail card', () => {
+      const applicationRef: ApplicationRef = fixture.componentInstance.applicationRef;
+      spyOn(applicationRef, 'attachView').and.callThrough;
 
       component.ngAfterViewInit();
 
-      expect(viewContainerRef.createComponent).toHaveBeenCalled();
-      expect(projectCardComponent.instance.feature).toBe(fakeGeoJSON.features[0]);
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
     });
   });
 
