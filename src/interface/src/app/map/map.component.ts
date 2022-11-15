@@ -21,8 +21,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
   showExistingProjectsLayer: boolean = true;
   showHUC12BoundariesLayer: boolean = true;
+  showCountyBoundariesLayer: boolean = false;
   existingProjectsLayer!: L.GeoJSON;
   HUC12BoundariesLayer!: L.GeoJSON;
+  CountyBoundariesLayer!: L.GeoJSON;
 
   legend: Legend = {
     labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
@@ -54,8 +56,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.selectedRegion$.subscribe((selectedRegion) => {
       this.displayRegionBoundary(selectedRegion);
     });
-    this.boundaryService.getBoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
-      this.initBoundaryLayer(boundary);
+    this.boundaryService.getHUC12BoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
+      this.initHUC12BoundaryLayer(boundary);
+    });
+    this.boundaryService.getCountyBoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
+      this.initCountyBoundaryLayer(boundary);
     });
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
       console.log('existing projects', existingProjects);
@@ -134,7 +139,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map.addLayer(this.existingProjectsLayer);
   }
 
-  private initBoundaryLayer(boundary: GeoJSON.GeoJSON) {
+  private initHUC12BoundaryLayer(boundary: GeoJSON.GeoJSON) {
     this.HUC12BoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
@@ -146,6 +151,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
     });
     this.map.addLayer(this.HUC12BoundariesLayer);
+  }
+
+  private initCountyBoundaryLayer(boundary: GeoJSON.GeoJSON) {
+    this.CountyBoundariesLayer = L.geoJSON(boundary, {
+      style: (feature) => ({
+        weight: 3,
+        opacity: 0.5,
+        color: '#0000ff',
+        fillOpacity: 0.2,
+        fillColor: '#6DB65B',
+      }),
+      onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
+    });
   }
 
   /** Toggles which base layer is shown. */
@@ -165,6 +183,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.map.addLayer(this.HUC12BoundariesLayer);
     } else {
       this.map.removeLayer(this.HUC12BoundariesLayer);
+    }
+  }
+
+   /** Toggles whether county boundaries are shown. */
+   toggleCountyBoundariesLayer() {
+    if (this.showCountyBoundariesLayer) {
+      this.map.addLayer(this.CountyBoundariesLayer);
+    } else {
+      this.map.removeLayer(this.CountyBoundariesLayer);
     }
   }
 

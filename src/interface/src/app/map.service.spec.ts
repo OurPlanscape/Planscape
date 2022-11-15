@@ -24,16 +24,33 @@ describe('MapService', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getBoundaryShapes', () => {
+  describe('getHUC12BoundaryShapes', () => {
     it('makes request to backend', () => {
       const httpTestingController = TestBed.inject(HttpTestingController);
 
-      service.getBoundaryShapes().subscribe(res => {
+      service.getHUC12BoundaryShapes().subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
 
       const req = httpTestingController.expectOne(
         'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12'
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(fakeGeoJson);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getCountyBoundaryShapes', () => {
+    it('makes request to backend', () => {
+      const httpTestingController = TestBed.inject(HttpTestingController);
+
+      service.getCountyBoundaryShapes().subscribe(res => {
+        expect(res).toEqual(fakeGeoJson);
+      });
+
+      const req = httpTestingController.expectOne(
+        'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);

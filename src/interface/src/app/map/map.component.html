@@ -26,6 +26,14 @@
         (change)="toggleHUC12BoundariesLayer()">
         HUC-12
       </mat-checkbox>
+      <mat-checkbox
+        name="county-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showCountyBoundariesLayer"
+        (change)="toggleCountyBoundariesLayer()">
+        Counties
+    </mat-checkbox>
       <h3>Projects</h3>
       <mat-checkbox
         name="existing-projects-toggle"

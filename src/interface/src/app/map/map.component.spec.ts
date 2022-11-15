@@ -40,7 +40,8 @@ describe('MapComponent', () => {
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
-        getBoundaryShapes: of(fakeGeoJSON),
+        getHUC12BoundaryShapes: of(fakeGeoJSON),
+        getCountyBoundaryShapes: of(fakeGeoJSON),
         getExistingProjects: of(fakeGeoJSON),
         getRegionBoundary: of(fakeGeoJSON),
       },
@@ -99,7 +100,8 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
 
       expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
-      expect(mapServiceStub.getBoundaryShapes).toHaveBeenCalled();
+      expect(mapServiceStub.getHUC12BoundaryShapes).toHaveBeenCalled();
+      expect(mapServiceStub.getCountyBoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
   });
@@ -128,6 +130,7 @@ describe('MapComponent', () => {
     component.ngAfterViewInit();
     spyOn(component, 'toggleHUC12BoundariesLayer').and.callThrough();
     const checkbox = await loader.getHarness(MatCheckboxHarness.with({ name: 'huc12-toggle' }));
+    expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeTrue();
 
     // Act: uncheck the HUC-12 checkbox
     await checkbox.uncheck();
@@ -142,6 +145,27 @@ describe('MapComponent', () => {
     // Assert: expect that the map contains the HUC-12 layer
     expect(component.toggleHUC12BoundariesLayer).toHaveBeenCalled();
     expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeTrue();
+  });
+
+  it('should toggle county boundaries', async () => {
+    component.ngAfterViewInit();
+    spyOn(component, 'toggleCountyBoundariesLayer').and.callThrough();
+    const checkbox = await loader.getHarness(MatCheckboxHarness.with({ name: 'county-toggle' }));
+    expect(component.map.hasLayer(component.CountyBoundariesLayer)).toBeFalse();
+
+    // Act: check the county checkbox
+    await checkbox.check();
+
+    // Assert: expect that the map does not contain the county layer
+    expect(component.toggleCountyBoundariesLayer).toHaveBeenCalled();
+    expect(component.map.hasLayer(component.CountyBoundariesLayer)).toBeTrue();
+
+    // Act: check the county checkbox
+    await checkbox.uncheck();
+
+    // Assert: expect that the map contains the county layer
+    expect(component.toggleCountyBoundariesLayer).toHaveBeenCalled();
+    expect(component.map.hasLayer(component.CountyBoundariesLayer)).toBeFalse();
   });
 
   it('should toggle existing projects layer', async () => {

@@ -36,6 +36,17 @@
             "shapefile_field_mapping": {
                 "shape_name": "RFFC_tier1"
             }
+        },
+        {
+            "boundary_name": "counties",
+            "display_name": "California Counties",
+            "region_name": "none",
+            "filepath": "boundary/California_County_Boundaries/cnty19_1.shp",
+            "source_srs": 3857,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "COUNTY_NAM"
+            }
         }
     ]
 }
