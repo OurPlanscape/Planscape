@@ -1,5 +1,4 @@
-import { AppModule } from './../app.module';
-import { AfterViewInit, ApplicationRef, Component, createComponent, createEnvironmentInjector, EnvironmentInjector, OnDestroy, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
