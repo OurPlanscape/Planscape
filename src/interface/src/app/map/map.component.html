@@ -35,17 +35,6 @@
         (change)="toggleExistingProjectsLayer()">
         Existing projects
       </mat-checkbox>
-      <div *ngIf="showExistingProjectsLayer">
-        <div>
-          <mat-form-field appearance="standard">
-            <mat-label>MM/DD/YYYY</mat-label>
-            <span matPrefix>Show projects since:&nbsp;</span>
-            <input matInput [matDatepicker]="projectsdp" [formControl]="existingProjectsStartDate">
-            <mat-datepicker-toggle matSuffix [for]="projectsdp"></mat-datepicker-toggle>
-            <mat-datepicker #projectsdp></mat-datepicker>
-          </mat-form-field>
-        </div>
-      </div>
       <h3>Legend</h3>
       <app-legend [legend]="legend"></app-legend>
     </div>
