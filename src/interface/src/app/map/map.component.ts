@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, OnDestroy, ViewContainerRef } from '@angular/core';
+import { AppModule } from './../app.module';
+import { AfterViewInit, ApplicationRef, Component, createComponent, createEnvironmentInjector, EnvironmentInjector, OnDestroy, ViewContainerRef } from '@angular/core';
 import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
@@ -45,10 +46,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   constructor(
+    public applicationRef: ApplicationRef,
     private boundaryService: MapService,
+    private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
-    private sessionService: SessionService,
-    public viewContainerRef: ViewContainerRef) {
+    private sessionService: SessionService) {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
     }
 
@@ -127,8 +129,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
           }
         },
         onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-          let component = this.viewContainerRef.createComponent(ProjectCardComponent);
+          let component = createComponent(ProjectCardComponent, { environmentInjector: this.environmentInjector });
           component.instance.feature = feature;
+          this.applicationRef.attachView(component.hostView);
           layer.bindPopup(component.location.nativeElement);
         },
       }
