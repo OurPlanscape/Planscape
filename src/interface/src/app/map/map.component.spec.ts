@@ -88,7 +88,11 @@ describe('MapComponent', () => {
   });
 
   it(`showHUC12BoundariesLayer has default value`, () => {
-    expect(component.showHUC12BoundariesLayer).toEqual(true);
+    expect(component.showHUC12BoundariesLayer).toEqual(false);
+  });
+
+  it(`showCountyBoundariesLayer has default value`, () => {
+    expect(component.showCountyBoundariesLayer).toEqual(false);
   });
 
   describe('ngAfterViewInit', () => {
@@ -130,21 +134,21 @@ describe('MapComponent', () => {
     component.ngAfterViewInit();
     spyOn(component, 'toggleHUC12BoundariesLayer').and.callThrough();
     const checkbox = await loader.getHarness(MatCheckboxHarness.with({ name: 'huc12-toggle' }));
-    expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeTrue();
-
-    // Act: uncheck the HUC-12 checkbox
-    await checkbox.uncheck();
-
-    // Assert: expect that the map does not contain the HUC-12 layer
-    expect(component.toggleHUC12BoundariesLayer).toHaveBeenCalled();
     expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeFalse();
 
     // Act: check the HUC-12 checkbox
     await checkbox.check();
 
-    // Assert: expect that the map contains the HUC-12 layer
+    // Assert: expect that the map does not contain the HUC-12 layer
     expect(component.toggleHUC12BoundariesLayer).toHaveBeenCalled();
     expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeTrue();
+
+    // Act: uncheck the HUC-12 checkbox
+    await checkbox.uncheck();
+
+    // Assert: expect that the map contains the HUC-12 layer
+    expect(component.toggleHUC12BoundariesLayer).toHaveBeenCalled();
+    expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeFalse();
   });
 
   it('should toggle county boundaries', async () => {
