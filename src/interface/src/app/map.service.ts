@@ -39,10 +39,17 @@ export class MapService {
     );
   }
 
-  getBoundaryShapes(): Observable<GeoJSON.GeoJSON> {
+  getHUC12BoundaryShapes(): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     return this.http.get<GeoJSON.GeoJSON>(
       'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12'
+    );
+  }
+
+  getCountyBoundaryShapes(): Observable<GeoJSON.GeoJSON> {
+    // Get the shapes from the REST server.
+    return this.http.get<GeoJSON.GeoJSON>(
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties'
     );
   }
 
