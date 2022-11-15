@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentRef, NO_ERRORS_SCHEMA, ViewContainerRef, ApplicationRef } from '@angular/core';
+import { ApplicationRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -21,10 +21,9 @@ describe('MapComponent', () => {
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
   let mockSessionService: Partial<SessionService>
-  let fakeGeoJSON: GeoJSON.GeoJSON | any;
 
   beforeEach(() => {
-    fakeGeoJSON = {
+    const fakeGeoJSON: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
       features: [
         {
