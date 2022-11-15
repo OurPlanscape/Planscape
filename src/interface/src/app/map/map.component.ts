@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, OnDestroy } from '@angular/core';
-import * as L from 'leaflet';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
+import * as L from 'leaflet';
+import 'leaflet-draw';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
@@ -84,6 +85,48 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       position: 'bottomright'
     });
     zoomControl.addTo(this.map);
+
+    this.addDrawingControls();
+  }
+
+  /** Adds drawing controls. */
+  private addDrawingControls() {
+    const drawingLayer = new L.FeatureGroup();
+    this.map.addLayer(drawingLayer);
+
+    const drawOptions: L.Control.DrawConstructorOptions = {
+        position: 'topright',
+        draw: {
+            polygon: {
+                allowIntersection: false,
+                showArea: true,
+                metric: false, // Set measurement units to acres
+                repeatMode: true, // Stays in polygon mode after completing a shape
+                shapeOptions: {
+                  color: '#7b61ff',
+                },
+                drawError: {
+                    color: '#ff7b61',
+                    message: 'Can\'t draw polygons with intersections!',
+                },
+            }, // Set to false to disable each tool
+            polyline: false,
+            circle: false,
+            rectangle: false,
+            marker: false,
+        },
+        edit: {
+            featureGroup: drawingLayer, // Required and declares which layer is editable
+        }
+    };
+
+    const drawControl = new L.Control.Draw(drawOptions);
+    this.map.addControl(drawControl);
+
+    this.map.on('draw:created', (event) => {
+      const layer = (event as L.DrawEvents.Created).layer;
+      drawingLayer.addLayer(layer);
+    });
   }
 
   /** Gets the selected region geojson and renders it on the map. */
