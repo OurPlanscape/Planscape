@@ -1,14 +1,14 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { AfterViewInit, Component, OnDestroy, ViewContainerRef } from '@angular/core';
+import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
-import * as moment from 'moment';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import { Legend } from './../shared/legend/legend.component';
 import { BaseLayerType, Region } from '../types';
+import { Legend } from './../shared/legend/legend.component';
+import { ProjectCardComponent } from './project-card/project-card.component';
 
 @Component({
   selector: 'app-map',
@@ -31,8 +31,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     colors: ['#f65345', '#e9884f', '#e5ab64', '#e6c67a', '#cccfa7', '#a5c5a6', '#74afa5', '#508295'],
   };
 
-  existingProjectsStartDate = new FormControl(moment([2022, 10, 10]));
-
   static hillshade_tiles = L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
       zIndex: 0,
       tileSize: 512,
@@ -49,7 +47,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   constructor(
     private boundaryService: MapService,
     private popupService: PopupService,
-    private sessionService: SessionService) {
+    private sessionService: SessionService,
+    public viewContainerRef: ViewContainerRef) {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
     }
 
@@ -62,7 +61,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.initBoundaryLayer(boundary);
     });
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
-      console.log('existing projects', existingProjects);
       this.initCalMapperLayer(existingProjects);
     });
   }
@@ -121,17 +119,18 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private initCalMapperLayer(existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
     this.existingProjectsLayer = L.geoJSON(existingProjects, {
-        style: function(feature) {
+        style: function(_) {
           return {
             "color": "#000000",
             "weight": 3,
             "opacity": 0.9
           }
         },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' +
-          'Status: ' + feature.properties.PROJECT_STATUS);
-        }
+        onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
+          let component = this.viewContainerRef.createComponent(ProjectCardComponent);
+          component.instance.feature = feature;
+          layer.bindPopup(component.location.nativeElement);
+        },
       }
     );
 

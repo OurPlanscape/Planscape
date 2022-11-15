@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ComponentRef, NO_ERRORS_SCHEMA, ViewContainerRef } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -14,15 +14,17 @@ import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
 import { BaseLayerType, Region } from './../types';
 import { MapComponent } from './map.component';
+import { ProjectCardComponent } from './project-card/project-card.component';
 
 describe('MapComponent', () => {
   let component: MapComponent;
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
   let mockSessionService: Partial<SessionService>
+  let fakeGeoJSON: GeoJSON.GeoJSON | any;
 
   beforeEach(() => {
-    const fakeGeoJSON: GeoJSON.GeoJSON = {
+    fakeGeoJSON = {
       type: 'FeatureCollection',
       features: [
         {
@@ -53,7 +55,7 @@ describe('MapComponent', () => {
     TestBed.configureTestingModule({
       imports: [FormsModule, MatCheckboxModule, MatRadioModule],
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [MapComponent],
+      declarations: [MapComponent, ProjectCardComponent],
       providers: [
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
@@ -101,6 +103,17 @@ describe('MapComponent', () => {
       expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
       expect(mapServiceStub.getBoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
+    });
+
+    it('creates project detail card with geojson feature', () => {
+      const viewContainerRef: ViewContainerRef = fixture.componentInstance.viewContainerRef;
+      const projectCardComponent: ComponentRef<ProjectCardComponent> = viewContainerRef.createComponent(ProjectCardComponent);
+      spyOn(viewContainerRef, 'createComponent').and.returnValue(projectCardComponent);
+
+      component.ngAfterViewInit();
+
+      expect(viewContainerRef.createComponent).toHaveBeenCalled();
+      expect(projectCardComponent.instance.feature).toBe(fakeGeoJSON.features[0]);
     });
   });
 
