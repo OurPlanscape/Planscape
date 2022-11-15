@@ -20,7 +20,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
   showExistingProjectsLayer: boolean = true;
-  showHUC12BoundariesLayer: boolean = true;
+  showHUC12BoundariesLayer: boolean = false;
   showCountyBoundariesLayer: boolean = false;
   existingProjectsLayer!: L.GeoJSON;
   HUC12BoundariesLayer!: L.GeoJSON;
@@ -52,14 +52,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
 
   ngAfterViewInit(): void {
+    var region: Region|null = null;
     this.initMap();
     this.selectedRegion$.subscribe((selectedRegion) => {
       this.displayRegionBoundary(selectedRegion);
+      region = selectedRegion;
     });
-    this.boundaryService.getHUC12BoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
+    this.boundaryService.getHUC12BoundaryShapes(region).pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
       this.initHUC12BoundaryLayer(boundary);
     });
-    this.boundaryService.getCountyBoundaryShapes().pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
+    this.boundaryService.getCountyBoundaryShapes(region).pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
       this.initCountyBoundaryLayer(boundary);
     });
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
@@ -150,7 +152,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }),
       onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
     });
-    this.map.addLayer(this.HUC12BoundariesLayer);
   }
 
   private initCountyBoundaryLayer(boundary: GeoJSON.GeoJSON) {
