@@ -49,7 +49,7 @@ class ConditionRaster(models.Model):
     rows per condition, because rasters are more efficiently stored and queried in
     tiles.  The table is not managed by Django but populated by raster2psql, e.g.,
 
-       raster2pgsql -s 9822 -a -I -C -Y –n raster_name -f raster -t 256x256 \
+       raster2pgsql -s 9822 -a -I -C -Y -F –n raster_name -f raster -t 256x256 \
           ~/Downloads/wood/AvailableBiomass_2021_300m_base.tif \
           public.condition_raster | \
           psql -U planscape -d planscape -h localhost -p 5432 
