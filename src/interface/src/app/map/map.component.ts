@@ -107,7 +107,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
                 },
                 drawError: {
                     color: '#ff7b61',
-                    message: 'Can\'t draw intersections!',
+                    message: 'Can\'t draw polygons with intersections!',
                 },
             }, // Set to false to disable each tool
             polyline: false,
