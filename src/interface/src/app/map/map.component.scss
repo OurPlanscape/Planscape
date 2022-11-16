@@ -35,6 +35,12 @@
   width: 50%;
 }
 
+// Workaround for unresolved Angular bug re: tab width on desktop
+// (https://github.com/angular/components/issues/2829).
+::ng-deep .mat-tab-label {
+  min-width: 60px !important;
+}
+
 .controls-container {
   padding: 20px;
   position: absolute;
