@@ -31,11 +31,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   map2!: L.Map;
   map3!: L.Map;
   map4!: L.Map;
+  maps: L.Map[] = [];
   mapCount: number = 2;
   mapCountOptions: number[] = [1, 2, 4];
 
-  selectedRegion$: Observable<Region | null>
-  planState$: Observable<PlanState>
+  selectedRegion$: Observable<Region | null>;
+  planState$: Observable<PlanState>;
 
   baseLayerType: BaseLayerType = BaseLayerType.Road;
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
@@ -83,18 +84,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       {
         zIndex: 0,
         tileSize: 512,
-        zoomOffset: -1
+        zoomOffset: -1,
       }
     );
   }
 
   static open_street_maps_tiles() {
-    return L.tileLayer(
-      'https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }
-    );
+    return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap',
+    });
   }
 
   static data_layer_tiles = L.tileLayer.wms(
@@ -132,13 +131,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map2 = this.initMap(this.map2, 'map2');
     this.map3 = this.initMap(this.map3, 'map3');
     this.map4 = this.initMap(this.map4, 'map4');
+    this.maps = [this.map, this.map2, this.map3, this.map4];
 
     this.syncAllMaps();
 
     this.addDrawingControls(this.map);
 
     this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
-      this.displayRegionBoundary(selectedRegion);
+      this.maps.forEach((map: L.Map) => {
+        this.displayRegionBoundary(map, selectedRegion);
+      });
     });
 
     this.selectedRegion$
@@ -151,7 +153,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
       )
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.initHUC12BoundaryLayer(boundary);
+        this.initHUC12BoundaryLayer(this.map, boundary);
       });
     this.selectedRegion$
       .pipe(
@@ -163,7 +165,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
       )
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.initHUC10BoundaryLayer(boundary);
+        this.initHUC10BoundaryLayer(this.map, boundary);
       });
     this.selectedRegion$
       .pipe(
@@ -175,7 +177,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
       )
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.initCountyBoundaryLayer(boundary);
+        this.initCountyBoundaryLayer(this.map, boundary);
       });
     this.selectedRegion$
       .pipe(
@@ -187,13 +189,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
       )
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.initUSForestBoundaryLayer(boundary);
+        this.initUSForestBoundaryLayer(this.map, boundary);
       });
     this.boundaryService
       .getExistingProjects()
       .pipe(take(1))
       .subscribe((existingProjects: GeoJSON.GeoJSON) => {
-        this.initCalMapperLayer(existingProjects);
+        this.initCalMapperLayer(this.map, existingProjects);
       });
   }
 
@@ -211,7 +213,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       zoom: 9,
       layers: [
         MapComponent.hillshade_tiles(),
-        MapComponent.open_street_maps_tiles()
+        MapComponent.open_street_maps_tiles(),
       ],
       zoomControl: false,
     });
@@ -226,13 +228,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private syncAllMaps() {
-    [this.map, this.map2, this.map3, this.map4].forEach((mapA) => {
-      [this.map, this.map2, this.map3, this.map4].forEach((mapB) => {
+    this.maps.forEach((mapA) => {
+      this.maps.forEach((mapB) => {
         if (mapA !== mapB) {
           (mapA as any).sync(mapB);
         }
       });
-    })
+    });
   }
 
   /** Adds drawing controls and handles drawing events. */
@@ -296,12 +298,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Gets the selected region geojson and renders it on the map. */
-  private displayRegionBoundary(selectedRegion: Region | null) {
+  private displayRegionBoundary(map: L.Map, selectedRegion: Region | null) {
     if (!selectedRegion) return;
     this.boundaryService
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.maskOutsideRegion(boundary);
+        this.maskOutsideRegion(map, boundary);
       });
   }
 
@@ -309,7 +311,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
    * Darkens everything outside of the region boundary.
    * Type 'any' is used in order to access coordinates.
    * */
-  private maskOutsideRegion(boundary: any) {
+  private maskOutsideRegion(map: L.Map, boundary: any) {
     // Add corners of the map to invert the polygon
     boundary.features[0].geometry.coordinates[0].unshift([
       [180, -90],
@@ -325,11 +327,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         fillColor: '#000000',
         fillOpacity: 0.4,
       }),
-    }).addTo(this.map);
+    }).addTo(map);
   }
 
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
-  private initCalMapperLayer(existingProjects: GeoJSON.GeoJSON) {
+  private initCalMapperLayer(map: L.Map, existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
     this.existingProjectsLayer = L.geoJSON(existingProjects, {
       style: function (_) {
@@ -349,10 +351,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       },
     });
 
-    this.map.addLayer(this.existingProjectsLayer);
+    map.addLayer(this.existingProjectsLayer);
   }
 
-  private initHUC12BoundaryLayer(boundary: GeoJSON.GeoJSON) {
+  private initHUC12BoundaryLayer(map: L.Map, boundary: GeoJSON.GeoJSON) {
     this.HUC12BoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
@@ -368,7 +370,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private initHUC10BoundaryLayer(boundary: GeoJSON.GeoJSON) {
+  private initHUC10BoundaryLayer(map: L.Map, boundary: GeoJSON.GeoJSON) {
     this.HUC10BoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
@@ -383,7 +385,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         ),
     });
   }
-  private initCountyBoundaryLayer(boundary: GeoJSON.GeoJSON) {
+
+  private initCountyBoundaryLayer(map: L.Map, boundary: GeoJSON.GeoJSON) {
     this.CountyBoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
@@ -399,7 +402,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  private initUSForestBoundaryLayer(boundary: GeoJSON.GeoJSON) {
+  private initUSForestBoundaryLayer(map: L.Map, boundary: GeoJSON.GeoJSON) {
     this.USForestBoundariesLayer = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
@@ -443,14 +446,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-    /** Toggles whether HUC-10 boundaries are shown. */
-    toggleHUC10BoundariesLayer() {
-      if (this.showHUC10BoundariesLayer) {
-        this.map.addLayer(this.HUC10BoundariesLayer);
-      } else {
-        this.map.removeLayer(this.HUC10BoundariesLayer);
-      }
+  /** Toggles whether HUC-10 boundaries are shown. */
+  toggleHUC10BoundariesLayer() {
+    if (this.showHUC10BoundariesLayer) {
+      this.map.addLayer(this.HUC10BoundariesLayer);
+    } else {
+      this.map.removeLayer(this.HUC10BoundariesLayer);
     }
+  }
 
   /** Toggles whether county boundaries are shown. */
   toggleCountyBoundariesLayer() {
