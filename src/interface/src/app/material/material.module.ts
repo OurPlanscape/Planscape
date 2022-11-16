@@ -10,6 +10,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatSliderModule } from '@angular/material/slider';
+import { MatTabsModule } from '@angular/material/tabs';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
 
@@ -26,6 +27,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatRadioModule,
     MatSidenavModule,
     MatSliderModule,
+    MatTabsModule,
     MatToolbarModule,
   ]
 })
