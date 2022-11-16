@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from decouple import config
 from typing import cast
+import sys
 
 from django.contrib.gis.utils.layermapping import LayerMapping
 from django.db.models.signals import pre_save
@@ -12,55 +13,38 @@ from base.region_name import RegionName
 from config.conditions_config import PillarConfig
 from .models import BaseCondition, Condition
 
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
+PLANSCAPE_ROOT_DIRECTORY = '/Users/elsieling/cnra/env'
 
 
 def run(verbose=True):
-    """Loads the rasters defined by the configuration into the database."""
-    # Function that connects a  object with a Boundary object
-    # in the database.
-    def presave_callback_generator(fkey):
-        def cb(sender, instance, *args, **kwargs):
-            instance.boundary = fkey
-        return cb
+   """Loads the rasters defined by the configuration into the database."""
 
-    # Build the configuration object.
-    config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/config/metrics.json')
-    config = PillarConfig(config_path)
+   print("LC loading conditions")
+   print(__name__)
+   print(sys.path)
 
-    # Read the shapefiles and add Boundary and BoundaryDetail objects.
-    data_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'data')
+   config_path = os.path.join(
+       PLANSCAPE_ROOT_DIRECTORY, 'Planscape/src/planscape/config/conditions.json')
+   print(config_path)
 
-    print("Loading...")
-    raster = GDALRaster(os.path.join(
-        data_path, 'conditions/tcsi/forest_resilience/current.tif'), write=True)
-    dataset = BaseCondition(condition_name='forest_resilience', condition_level=ConditionLevel.PILLAR,
-                            region_name=RegionName.TCSI)
-    print("Saving")
-    dataset.save()
-    condition = Condition(condition_dataset=dataset, geometry=raster,
-                          condition_score_type=ConditionScoreType.CURRENT)
-    condition.save()                      
+   config = PillarConfig(config_path)
 
-    # for boundary in config.get_metric('tcsi', '')
-    #    # Create the new top-level Boundary
-    #    boundary_name = boundary['boundary_name']
-    #    print("Creating Boundary " + boundary_name)
-    #    query = Boundary.objects.filter(boundary_name__exact=boundary_name)
-    #    if len(query) > 0:
-    #        print("Boundary " + boundary_name + " already exists; deleting.")
-    #        query.delete()
-    #    boundary_obj = Boundary(boundary_name=boundary_name)
-    #    boundary_obj.save()
+   data_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'data')
+   print(data_path)
 
-    #    shapefile_field_mapping = dict(boundary['shapefile_field_mapping'])
-    #    shapefile_field_mapping['geometry'] = boundary['geometry_type']
-    #    filepath = Path(os.path.join(data_path, boundary['filepath']))
-    #    srs = boundary['source_srs']
-    #    lm = LayerMapping(BoundaryDetails, filepath,
-    #                      shapefile_field_mapping, source_srs=srs, transform=True)
-    #    presave_callback = presave_callback_generator(boundary_obj)
-    #    pre_save.connect(presave_callback, sender=BoundaryDetails)
-    #    lm.save(strict=True, verbose=verbose)
-    #    pre_save.disconnect(presave_callback, sender=BoundaryDetails)
+   metric_path = os.path.join(
+       data_path, 'sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m_base.tif')
+   print(metric_path)
+   print("Loading...")
+   raster = GDALRaster(metric_path, write=True)
+   print(raster.info)
+   print("Done loading")
+   dataset = BaseCondition(condition_name="high_severity_potential_smoke_emissions", condition_level=ConditionLevel.METRIC,
+                           region_name=RegionName.SIERRA_CASCADE_INYO)
+   print("Saving")
+   dataset.save()
+   # condition = Condition(condition_dataset=dataset, geometry=raster,
+   #                       condition_score_type=ConditionScoreType.CURRENT)
+   # condition.save()                     
+
+
