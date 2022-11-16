@@ -9,75 +9,6 @@
   </div>
   <div id="controls" class="controls-container">
     <div class="layer-controls">
-      <h2>Layers</h2>
-      <h3>Base layer</h3>
-      <mat-radio-group
-        name="base-layer-select"
-        aria-label="Select an option"
-        class="layer-radio-group"
-        [(ngModel)]="baseLayerType"
-        (change)="changeBaseLayer()">
-        <mat-radio-button
-          *ngFor="let baseLayerType of baseLayerTypes"
-          [value]="baseLayerType"
-          class="layer-radio-button">
-          {{ BaseLayerType[baseLayerType] }}
-        </mat-radio-button>
-      </mat-radio-group>
-      <h3>Data</h3>
-      <mat-checkbox
-        name="data-layer-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showDataLayer"
-        (change)="toggleDataLayer()">
-        Data
-      </mat-checkbox>
-      <h3>Boundaries</h3>
-      <mat-checkbox
-        name="huc12-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showHUC12BoundariesLayer"
-        (change)="toggleHUC12BoundariesLayer()">
-        HUC-12
-      </mat-checkbox>
-      <mat-checkbox
-        name="huc10-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showHUC10BoundariesLayer"
-        (change)="toggleHUC10BoundariesLayer()">
-        HUC-10
-      </mat-checkbox>
-
-      <mat-checkbox
-        name="county-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showCountyBoundariesLayer"
-        (change)="toggleCountyBoundariesLayer()">
-        Counties
-    </mat-checkbox>
-    <mat-checkbox
-      name="usfs-toggle"
-      aria-label="Select or deselect"
-      class="layer-checkbox"
-      [(ngModel)]="showUSForestBoundariesLayer"
-      (change)="toggleUSForestsBoundariesLayer()">
-      US Forests
-      </mat-checkbox>
-      <h3>Projects</h3>
-      <mat-checkbox
-        name="existing-projects-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showExistingProjectsLayer"
-        (change)="toggleExistingProjectsLayer()">
-        Existing projects
-      </mat-checkbox>
-      <h3>Legend</h3>
-      <app-legend [legend]="legend"></app-legend>
       <h3>Map count</h3>
       <mat-radio-group
         name="map-count-select"
@@ -92,6 +23,81 @@
           {{ mapCountOption }}
         </mat-radio-button>
       </mat-radio-group>
+
+      <h3>Legend</h3>
+      <app-legend [legend]="legend"></app-legend>
+
+      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true">
+        <mat-tab label="Map 1">
+          <h3>Base layer</h3>
+          <mat-radio-group
+            name="base-layer-select"
+            aria-label="Select an option"
+            class="layer-radio-group"
+            [(ngModel)]="baseLayerType"
+            (change)="changeBaseLayer()">
+            <mat-radio-button
+              *ngFor="let baseLayerType of baseLayerTypes"
+              [value]="baseLayerType"
+              class="layer-radio-button">
+              {{ BaseLayerType[baseLayerType] }}
+            </mat-radio-button>
+          </mat-radio-group><h3>Data</h3>
+          <mat-checkbox
+            name="data-layer-toggle"
+            aria-label="Select or deselect"
+            class="layer-checkbox"
+            [(ngModel)]="showDataLayer"
+            (change)="toggleDataLayer()">
+            Data
+          </mat-checkbox>
+          <h3>Boundaries</h3>
+          <mat-checkbox
+            name="huc12-toggle"
+            aria-label="Select or deselect"
+            class="layer-checkbox"
+            [(ngModel)]="showHUC12BoundariesLayer"
+            (change)="toggleHUC12BoundariesLayer()">
+            HUC-12
+          </mat-checkbox>
+          <mat-checkbox
+            name="huc10-toggle"
+            aria-label="Select or deselect"
+            class="layer-checkbox"
+            [(ngModel)]="showHUC10BoundariesLayer"
+            (change)="toggleHUC10BoundariesLayer()">
+            HUC-10
+          </mat-checkbox>
+          <mat-checkbox
+            name="county-toggle"
+            aria-label="Select or deselect"
+            class="layer-checkbox"
+            [(ngModel)]="showCountyBoundariesLayer"
+            (change)="toggleCountyBoundariesLayer()">
+            Counties
+          </mat-checkbox>
+          <mat-checkbox
+            name="usfs-toggle"
+            aria-label="Select or deselect"
+            class="layer-checkbox"
+            [(ngModel)]="showUSForestBoundariesLayer"
+            (change)="toggleUSForestsBoundariesLayer()">
+            US Forests
+          </mat-checkbox>
+          <h3>Projects</h3>
+          <mat-checkbox
+            name="existing-projects-toggle"
+            aria-label="Select or deselect"
+            class="layer-checkbox"
+            [(ngModel)]="showExistingProjectsLayer"
+            (change)="toggleExistingProjectsLayer()">
+            Existing projects
+          </mat-checkbox>
+        </mat-tab>
+        <mat-tab label="Map 2" disabled="{{ mapCount < 2 }}"></mat-tab>
+        <mat-tab label="Map 3" disabled="{{ mapCount < 3 }}"></mat-tab>
+        <mat-tab label="Map 4" disabled="{{ mapCount < 4 }}"></mat-tab>
+      </mat-tab-group>
     </div>
   </div>
 </div>
