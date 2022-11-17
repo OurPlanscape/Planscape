@@ -29,59 +29,57 @@
       <app-legend [legend]="legend"></app-legend>
 
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true">
-        <mat-tab label="Map 1">
+        <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
           <h3>Base layer</h3>
           <mat-radio-group
-            name="base-layer-select"
+            name="{{ map.id + '-base-layer-select' }}"
             aria-label="Select an option"
             class="layer-radio-group"
-            [(ngModel)]="baseLayerType"
-            (change)="changeBaseLayer()">
+            [(ngModel)]="map.config.baseLayerType"
+            (change)="changeBaseLayer(map)">
             <mat-radio-button
               *ngFor="let baseLayerType of baseLayerTypes"
               [value]="baseLayerType"
+              checked="{{ baseLayerType == map.config.baseLayerType }}"
               class="layer-radio-button">
               {{ BaseLayerType[baseLayerType] }}
             </mat-radio-button>
           </mat-radio-group><h3>Data</h3>
           <mat-checkbox
-            name="data-layer-toggle"
+            name="{{ map.id + 'data-layer-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
-            [(ngModel)]="showDataLayer"
-            (change)="toggleDataLayer()">
+            [(ngModel)]="map.config.showDataLayer"
+            (change)="toggleDataLayer(map)">
             Data
           </mat-checkbox>
           <h3>Boundaries</h3>
           <mat-checkbox
-            name="huc12-toggle"
+            name="{{ map.id + 'huc12-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
-            [(ngModel)]="showHUC12BoundariesLayer"
-            (change)="toggleHUC12BoundariesLayer()">
+            [(ngModel)]="map.config.showHUC12BoundariesLayer"
+            (change)="toggleHUC12BoundariesLayer(map)">
             HUC-12
           </mat-checkbox>
           <mat-checkbox
-            name="county-toggle"
+            name="{{ map.id + 'county-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
-            [(ngModel)]="showCountyBoundariesLayer"
-            (change)="toggleCountyBoundariesLayer()">
+            [(ngModel)]="map.config.showCountyBoundariesLayer"
+            (change)="toggleCountyBoundariesLayer(map)">
             Counties
         </mat-checkbox>
           <h3>Projects</h3>
           <mat-checkbox
-            name="existing-projects-toggle"
+            name="{{ map.id + 'existing-projects-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
-            [(ngModel)]="showExistingProjectsLayer"
-            (change)="toggleExistingProjectsLayer()">
+            [(ngModel)]="map.config.showExistingProjectsLayer"
+            (change)="toggleExistingProjectsLayer(map)">
             Existing projects
           </mat-checkbox>
         </mat-tab>
-        <mat-tab label="Map 2" disabled="{{ mapCount < 2 }}"></mat-tab>
-        <mat-tab label="Map 3" disabled="{{ mapCount < 3 }}"></mat-tab>
-        <mat-tab label="Map 4" disabled="{{ mapCount < 4 }}"></mat-tab>
       </mat-tab-group>
     </div>
   </div>

@@ -1,16 +1,16 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
-import { Observable, Subject, take, takeUntil } from 'rxjs';
 import { Feature, Geometry } from 'geojson';
-import { switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
+import { Observable, Subject, take, takeUntil } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
 import { PlanState, PlanService } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import { BaseLayerType, Region } from '../types';
+import { BaseLayerType, Map, MapConfig, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
@@ -20,25 +20,19 @@ import { ProjectCardComponent } from './project-card/project-card.component';
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnDestroy {
-  map!: L.Map;
-  map2!: L.Map;
-  map3!: L.Map;
-  map4!: L.Map;
-  maps: L.Map[] = [];
+  maps: Map[];
   mapCount: number = 2;
   mapCountOptions: number[] = [1, 2, 4];
+
   selectedRegion$: Observable<Region|null>
   planState$: Observable<PlanState>
-  baseLayerType: BaseLayerType = BaseLayerType.Road;
+
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
-  showDataLayer: boolean = false;
-  showExistingProjectsLayer: boolean = true;
-  showHUC12BoundariesLayer: boolean = false;
-  showCountyBoundariesLayer: boolean = false;
-  existingProjectsLayer!: L.GeoJSON;
-  HUC12BoundariesLayer!: L.GeoJSON;
-  CountyBoundariesLayer!: L.GeoJSON;
+
+  HUC12BoundaryGeoJson$: Observable<GeoJSON.GeoJSON>;
+  countyBoundaryGeoJson$: Observable<GeoJSON.GeoJSON>;
+  existingProjectsGeoJson$: Observable<GeoJSON.GeoJSON>;
 
   legend: Legend = {
     labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
@@ -59,14 +53,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       attribution: '© OpenStreetMap'
     });
   }
-  static data_layer_tiles = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-   crs:L.CRS.EPSG4326,
-   minZoom: 7,
-   maxZoom: 15,
-   format:'image/png',
-   opacity: 0.7,
-   layers: 'AvailableBiomass_2021_300m_base.tif'
-  });
+
+  static data_layer_tiles() {
+    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+      crs: L.CRS.EPSG4326,
+      minZoom: 7,
+      maxZoom: 15,
+      format: 'image/png',
+      opacity: 0.7,
+      layers: 'AvailableBiomass_2021_300m_base.tif'
+    });
+  }
 
   private readonly destroy$ = new Subject<void>();
 
@@ -80,59 +77,58 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     ) {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
       this.planState$ = this.planService.planState$.pipe(takeUntil(this.destroy$));
-    }
+
+      this.HUC12BoundaryGeoJson$ = this.selectedRegion$.pipe(
+        take(1),
+        switchMap((selectedRegion) => {
+          return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$));
+      }));
+      this.countyBoundaryGeoJson$ = this.selectedRegion$.pipe(
+        take(1),
+        switchMap((selectedRegion) => {
+          return this.boundaryService.getCountyBoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$));
+      }));
+      this.existingProjectsGeoJson$ = this.boundaryService.getExistingProjects().pipe(takeUntil(this.destroy$));
+
+      this.maps = ['map1', 'map2', 'map3', 'map4'].map((id: string, index: number) => {
+        return {
+          id: id,
+          name: 'Map ' + (index + 1),
+          config: this.defaultMapConfig()
+        };
+      });
+  }
 
   ngAfterViewInit(): void {
-    this.map = this.initMap(this.map, 'map1');
-    this.map2 = this.initMap(this.map2, 'map2');
-    this.map3 = this.initMap(this.map3, 'map3');
-    this.map4 = this.initMap(this.map4, 'map4');
-    this.maps = [this.map, this.map2, this.map3, this.map4];
+    this.maps.forEach((map: Map) => {
+      this.initMap(map, map.id);
+    });
 
     this.syncAllMaps();
 
-    this.addDrawingControls(this.map);
-
-    this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
-      this.maps.forEach((map: L.Map) => {
-        this.displayRegionBoundary(map, selectedRegion);
-      });
-    });
-
-    this.selectedRegion$.pipe(
-      take(1),
-      switchMap((selectedRegion) => {
-        return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(take(1));
-    })).subscribe((boundary:GeoJSON.GeoJSON) => {
-        this.initHUC12BoundaryLayer(this.map, boundary);
-    });
-
-    this.selectedRegion$.pipe(
-      take(1),
-      switchMap((selectedRegion) => {
-        return this.boundaryService.getCountyBoundaryShapes(selectedRegion).pipe(take(1));
-    })).subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.initCountyBoundaryLayer(this.map, boundary);
-    });
-
-    this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
-      this.initCalMapperLayer(this.map, existingProjects);
-    });
+    this.addDrawingControls(this.maps[0].instance!);
   }
 
   ngOnDestroy(): void {
-    this.map.remove();
+    this.maps.forEach((map: Map) => map.instance?.remove());
     this.destroy$.next();
     this.destroy$.complete();
   }
 
-  /** Initializes the map with the base layers and controls. */
-  private initMap(map: L.Map, id: string): L.Map {
-    if (map != undefined) map.remove();
-    map = L.map(id, {
+  /** Initializes the map with controls and the layer options specified in its config. */
+  private initMap(map: Map, id: string): L.Map {
+    if (map.instance != undefined) map.instance.remove();
+
+    if (map.config.baseLayerType == BaseLayerType.Road) {
+      map.baseLayerRef = MapComponent.open_street_maps_tiles();
+    } else {
+      map.baseLayerRef = MapComponent.hillshade_tiles();
+    }
+
+    map.instance = L.map(id, {
       center: [38.646, -120.548],
       zoom: 9,
-      layers: [MapComponent.hillshade_tiles(), MapComponent.open_street_maps_tiles()],
+      layers: [map.baseLayerRef],
       zoomControl: false,
     });
 
@@ -140,16 +136,45 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     const zoomControl = L.control.zoom({
       position: 'bottomright'
     });
-    zoomControl.addTo(map);
+    zoomControl.addTo(map.instance);
 
-    return map;
+    // Init layers, but only add them to the map instance if specified in the map config.
+    this.HUC12BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON) => {
+      this.initHUC12BoundaryLayer(map, boundary);
+    });
+    this.countyBoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON) => {
+      this.initCountyBoundaryLayer(map, boundary);
+    });
+    this.existingProjectsGeoJson$.subscribe((existingProjects: GeoJSON.GeoJSON) => {
+      this.initCalMapperLayer(map, existingProjects);
+    });
+    this.initDataLayer(map);
+
+    // Renders the selected region on the map.
+    this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
+      this.displayRegionBoundary(map.instance!, selectedRegion);
+    });
+
+    return map.instance;
   }
 
+  /** Default starting config for a map. */
+  private defaultMapConfig(): MapConfig {
+    return {
+      baseLayerType: BaseLayerType.Road,
+      showExistingProjectsLayer: true,
+      showHUC12BoundariesLayer: true,
+      showCountyBoundariesLayer: false,
+      showDataLayer: false
+    };
+  }
+
+  /** Sync pan, zoom, etc. between all maps. */
   private syncAllMaps() {
     this.maps.forEach((mapA) => {
       this.maps.forEach((mapB) => {
         if (mapA !== mapB) {
-          (mapA as any).sync(mapB);
+          (mapA.instance as any).sync(mapB.instance);
         }
       });
     })
@@ -241,9 +266,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
-  private initCalMapperLayer(map: L.Map, existingProjects: GeoJSON.GeoJSON) {
+  private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
-    this.existingProjectsLayer = L.geoJSON(existingProjects, {
+    map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
         style: function(_) {
           return {
             "color": "#000000",
@@ -260,11 +285,33 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }
     );
 
-    map.addLayer(this.existingProjectsLayer);
+    if (map.config.showExistingProjectsLayer) {
+      map.instance?.addLayer(map.existingProjectsLayerRef);
+    }
   }
 
-  private initHUC12BoundaryLayer(map: L.Map, boundary: GeoJSON.GeoJSON) {
-    this.HUC12BoundariesLayer = L.geoJSON(boundary, {
+
+  /** Renders the HUC-12 boundaries in an optional layer. */
+  private initHUC12BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
+    map.HUC12BoundaryLayerRef = L.geoJSON(boundary, {
+      style: (_) => ({
+        weight: 3,
+        opacity: 0.5,
+        color: '#0000ff',
+        fillOpacity: 0.2,
+        fillColor: '#6DB65B',
+      }),
+      onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
+    });
+
+    if (map.config.showHUC12BoundariesLayer) {
+      map.instance?.addLayer(map.HUC12BoundaryLayerRef);
+    }
+  }
+
+  /** Renders the county boundaries in an optional layer. */
+  private initCountyBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
+    map.countyBoundaryLayerRef = L.geoJSON(boundary, {
       style: (feature) => ({
         weight: 3,
         opacity: 0.5,
@@ -274,73 +321,79 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       }),
       onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
     });
+
+    if (map.config.showCountyBoundariesLayer) {
+      map.instance?.addLayer(map.countyBoundaryLayerRef);
+    }
   }
 
-  private initCountyBoundaryLayer(map: L.Map, boundary: GeoJSON.GeoJSON) {
-    this.CountyBoundariesLayer = L.geoJSON(boundary, {
-      style: (feature) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) => layer.bindPopup(this.popupService.makeDetailsPopup(feature.properties.shape_name))
-    });
+  private initDataLayer(map: Map) {
+    map.dataLayerRef = MapComponent.data_layer_tiles();
+
+    if (map.config.showDataLayer) {
+      map.instance?.addLayer(map.dataLayerRef);
+    }
   }
 
   /** Toggles which base layer is shown. */
-  changeBaseLayer() {
-    if (this.baseLayerType === BaseLayerType.Terrain) {
-      this.map.removeLayer(MapComponent.open_street_maps_tiles());
-      this.map.addLayer(MapComponent.hillshade_tiles());
-    } else if (this.baseLayerType === BaseLayerType.Road) {
-      this.map.removeLayer(MapComponent.hillshade_tiles());
-      this.map.addLayer(MapComponent.open_street_maps_tiles());
+  changeBaseLayer(map: Map) {
+    let baseLayerType = map.config.baseLayerType;
+    map.baseLayerRef?.remove();
+    if (baseLayerType === BaseLayerType.Terrain) {
+      map.baseLayerRef = MapComponent.hillshade_tiles();
+    } else if (baseLayerType === BaseLayerType.Road) {
+      map.baseLayerRef = MapComponent.open_street_maps_tiles();
     }
+    map.instance?.addLayer(map.baseLayerRef!);
   }
 
-  /** Toggles whether data layer is shown. */
-  toggleDataLayer() {
-    if (this.showDataLayer) {
-      this.map.addLayer(MapComponent.data_layer_tiles);
-    } else {
-      this.map.removeLayer(MapComponent.data_layer_tiles);
-    }
-  }
   /** Toggles whether HUC-12 boundaries are shown. */
-  toggleHUC12BoundariesLayer() {
-    if (this.showHUC12BoundariesLayer) {
-      this.map.addLayer(this.HUC12BoundariesLayer);
+  toggleHUC12BoundariesLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    if (map.config.showHUC12BoundariesLayer) {
+      map.HUC12BoundaryLayerRef?.addTo(map.instance);
     } else {
-      this.map.removeLayer(this.HUC12BoundariesLayer);
+      map.HUC12BoundaryLayerRef?.remove();
     }
   }
 
    /** Toggles whether county boundaries are shown. */
-   toggleCountyBoundariesLayer() {
-    if (this.showCountyBoundariesLayer) {
-      this.map.addLayer(this.CountyBoundariesLayer);
+   toggleCountyBoundariesLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    if (map.config.showCountyBoundariesLayer) {
+      map.countyBoundaryLayerRef?.addTo(map.instance);
     } else {
-      this.map.removeLayer(this.CountyBoundariesLayer);
+      map.countyBoundaryLayerRef?.remove();
     }
   }
 
   /** Toggles whether existing projects from CalMapper are shown. */
-  toggleExistingProjectsLayer() {
-    if (this.showExistingProjectsLayer) {
-      this.map.addLayer(this.existingProjectsLayer);
+  toggleExistingProjectsLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    if (map.config.showExistingProjectsLayer) {
+      map.existingProjectsLayerRef?.addTo(map.instance);
     } else {
-      this.map.removeLayer(this.existingProjectsLayer);
+      map.existingProjectsLayerRef?.remove();
+    }
+  }
+
+  /** Toggles whether data layer is shown. */
+  toggleDataLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    if (map.config.showDataLayer) {
+      map.dataLayerRef?.addTo(map.instance);
+    } else {
+      map.dataLayerRef?.remove();
     }
   }
 
   changeMapCount() {
     setTimeout(() => {
-      this.map.invalidateSize();
-      this.map2.invalidateSize();
-      this.map3.invalidateSize();
-      this.map4.invalidateSize();
+      this.maps.forEach((map: Map) => map.instance?.invalidateSize());
     }, 0);
   }
 }
