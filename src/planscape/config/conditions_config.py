@@ -8,7 +8,7 @@ Example usage:
     print(err)
 """
 import json
-from typing import Optional
+from typing import Optional, List
 
 from base.condition_types import Region, Pillar, Element, Metric
 from base.region_name import RegionName
@@ -79,6 +79,19 @@ class PillarConfig:
             if region['region_name'] == region_name:
                 return region
         return None
+
+    def get_regions(self) -> List[Region]:
+        return self._config['regions']
+
+    def get_pillars(self, region : Region) -> List[Pillar]:  
+        return region['pillars']
+
+    def get_elements(self, pillar : Pillar) -> List[Element]:   
+        return pillar['elements']      
+
+    def get_metrics(self, element : Element) -> List[Metric]:   
+        return element['metrics']      
+
 
     def get_pillar(self, region_name: str, pillar_name: str) -> Optional[Pillar]:
         """Gets a pillar from the configuration.
