@@ -1,15 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  catchError,
-  EMPTY,
-  map,
-  Observable,
-  of,
-  take,
-  tap,
-} from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, take, tap } from 'rxjs';
 
 import { BasePlan, Plan } from './types';
 
