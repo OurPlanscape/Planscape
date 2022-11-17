@@ -135,6 +135,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
                 allowIntersection: false,
                 showArea: true,
                 metric: false, // Set measurement units to acres
+                repeatMode: true, // Stays in polygon mode after completing a shape
                 shapeOptions: {
                   color: '#7b61ff',
                 },
