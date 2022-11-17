@@ -200,9 +200,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     // Mark the map as selected when the user clicks anywhere on it.
     map.instance.addEventListener('click', () => {
-      console.log('Clicked on ' + map.name);
       this.selectedMapId = id;
-      console.log(this.selectedMapId);
     });
 
     return map.instance;
@@ -213,7 +211,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     return {
       baseLayerType: BaseLayerType.Road,
       showExistingProjectsLayer: true,
-      showHUC12BoundariesLayer: true,
+      showHUC12BoundariesLayer: false,
       showHuc10BoundaryLayer: false,
       showCountyBoundariesLayer: false,
       showUsForestBoundaryLayer: false,
