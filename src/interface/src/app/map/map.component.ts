@@ -148,6 +148,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             circle: false,
             rectangle: false,
             marker: false,
+            circlemarker: false,
         },
         edit: {
             featureGroup: drawingLayer, // Required and declares which layer is editable
