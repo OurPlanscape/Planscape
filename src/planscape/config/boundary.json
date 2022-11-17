@@ -47,6 +47,17 @@
             "shapefile_field_mapping": {
                 "shape_name": "COUNTY_NAM"
             }
+        },
+        {
+            "boundary_name": "huc12",
+            "display_name": "HUC12",
+            "region_name": "none",
+            "filepath": "boundary/Watersheds_HUC12/ACE_HUC12s_WebMerc_1mXY.shp",
+            "source_srs": 4326,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "Name"
+            }
         }
     ]
 }

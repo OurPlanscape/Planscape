@@ -28,12 +28,12 @@ describe('MapService', () => {
     it('makes request to backend', () => {
       const httpTestingController = TestBed.inject(HttpTestingController);
 
-      service.getHUC12BoundaryShapes().subscribe(res => {
+      service.getHUC12BoundaryShapes(Region.SIERRA_NEVADA).subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
 
       const req = httpTestingController.expectOne(
-        'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12'
+        'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12&region_name=SierraNevada'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);
@@ -45,12 +45,12 @@ describe('MapService', () => {
     it('makes request to backend', () => {
       const httpTestingController = TestBed.inject(HttpTestingController);
 
-      service.getCountyBoundaryShapes().subscribe(res => {
+      service.getCountyBoundaryShapes(Region.NORTHERN_CALIFORNIA).subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
 
       const req = httpTestingController.expectOne(
-        'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties'
+        'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties&region_name=NorthernCalifornia'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);

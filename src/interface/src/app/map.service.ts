@@ -39,17 +39,34 @@ export class MapService {
     );
   }
 
-  getHUC12BoundaryShapes(): Observable<GeoJSON.GeoJSON> {
+  regionToString(region: Region): string {
+    switch (region) {
+      case Region.SIERRA_NEVADA: return "SierraNevada";
+      case Region.CENTRAL_COAST: return "CentralCoast";
+      case Region.NORTHERN_CALIFORNIA: return "NorthernCalifornia";
+      case Region.SOUTHERN_CALIFORNIA: return "SouthernCalifornia";
+    }
+  }
+
+  getHUC12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
+    var regionString: string = '';
+    if (region != null) {
+      regionString = '&region_name=' + this.regionToString(region);
+    }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=tcsi_huc12'
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12' + regionString
     );
   }
 
-  getCountyBoundaryShapes(): Observable<GeoJSON.GeoJSON> {
+  getCountyBoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
+    var regionString: string = '';
+    if (region != null) {
+      regionString = '&region_name=' + this.regionToString(region);
+    }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties'
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties' + regionString
     );
   }
 
