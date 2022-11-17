@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { ApplicationRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -14,6 +14,7 @@ import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
 import { BaseLayerType, Region } from './../types';
 import { MapComponent } from './map.component';
+import { ProjectCardComponent } from './project-card/project-card.component';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -54,7 +55,7 @@ describe('MapComponent', () => {
     TestBed.configureTestingModule({
       imports: [FormsModule, MatCheckboxModule, MatRadioModule],
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [MapComponent],
+      declarations: [MapComponent, ProjectCardComponent],
       providers: [
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
@@ -107,6 +108,15 @@ describe('MapComponent', () => {
       expect(mapServiceStub.getHUC12BoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getCountyBoundaryShapes).toHaveBeenCalled();
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
+    });
+
+    it('creates project detail card', () => {
+      const applicationRef: ApplicationRef = fixture.componentInstance.applicationRef;
+      spyOn(applicationRef, 'attachView').and.callThrough;
+
+      component.ngAfterViewInit();
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
     });
   });
 

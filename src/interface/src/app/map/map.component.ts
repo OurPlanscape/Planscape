@@ -1,5 +1,6 @@
-import { AfterViewInit, Component, OnDestroy } from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
+import { Feature, Geometry } from 'geojson';
 import { switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import 'leaflet-draw';
@@ -7,8 +8,9 @@ import 'leaflet-draw';
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import { Legend } from './../shared/legend/legend.component';
 import { BaseLayerType, Region } from '../types';
+import { Legend } from './../shared/legend/legend.component';
+import { ProjectCardComponent } from './project-card/project-card.component';
 
 @Component({
   selector: 'app-map',
@@ -57,7 +59,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   constructor(
+    public applicationRef: ApplicationRef,
     private boundaryService: MapService,
+    private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService) {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
@@ -85,7 +89,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
 
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
-      console.log('existing projects', existingProjects);
       this.initCalMapperLayer(existingProjects);
     });
   }
@@ -186,17 +189,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private initCalMapperLayer(existingProjects: GeoJSON.GeoJSON) {
     // [elsieling] This step makes the map less responsive
     this.existingProjectsLayer = L.geoJSON(existingProjects, {
-        style: function(feature) {
+        style: function(_) {
           return {
             "color": "#000000",
             "weight": 3,
             "opacity": 0.9
           }
         },
-        onEachFeature: function(feature, layer) {
-          layer.bindPopup('Name: ' + feature.properties.PROJECT_NAME + '<br>' +
-          'Status: ' + feature.properties.PROJECT_STATUS);
-        }
+        onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
+          let component = createComponent(ProjectCardComponent, { environmentInjector: this.environmentInjector });
+          component.instance.feature = feature;
+          this.applicationRef.attachView(component.hostView);
+          layer.bindPopup(component.location.nativeElement);
+        },
       }
     );
 
