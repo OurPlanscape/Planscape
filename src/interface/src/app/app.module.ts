@@ -1,4 +1,3 @@
-import { SharedModule } from './shared/shared.module';
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
@@ -15,11 +14,13 @@ import { AuthGuard, AuthService } from './auth.service';
 import { LoginComponent } from './login/login.component';
 import { MapService } from './map.service';
 import { MapComponent } from './map/map.component';
+import { ProjectCardComponent } from './map/project-card/project-card.component';
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PopupService } from './popup.service';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import { SessionService } from './session.service';
+import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 
@@ -33,6 +34,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     TopBarComponent,
     AccountDialogComponent,
     RegionSelectionComponent,
+    ProjectCardComponent,
   ],
   imports: [
     AppRoutingModule,
