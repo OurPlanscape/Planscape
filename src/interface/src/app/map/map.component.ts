@@ -1,6 +1,7 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { Observable, Subject, take, takeUntil } from 'rxjs';
 import { Feature, Geometry } from 'geojson';
+import { switchMap } from 'rxjs/operators';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 
@@ -67,18 +68,26 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
 
   ngAfterViewInit(): void {
-    var region: Region|null = null;
     this.initMap();
-    this.selectedRegion$.subscribe((selectedRegion) => {
+    this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
       this.displayRegionBoundary(selectedRegion);
-      region = selectedRegion;
     });
-    this.boundaryService.getHUC12BoundaryShapes(region).pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
-      this.initHUC12BoundaryLayer(boundary);
+
+    this.selectedRegion$.pipe(
+      take(1),
+      switchMap((selectedRegion) => {
+        return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(take(1));
+    })).subscribe((boundary:GeoJSON.GeoJSON) => {
+        this.initHUC12BoundaryLayer(boundary);
     });
-    this.boundaryService.getCountyBoundaryShapes(region).pipe(take(1)).subscribe((boundary: GeoJSON.GeoJSON) => {
-      this.initCountyBoundaryLayer(boundary);
+    this.selectedRegion$.pipe(
+      take(1),
+      switchMap((selectedRegion) => {
+        return this.boundaryService.getCountyBoundaryShapes(selectedRegion).pipe(take(1));
+    })).subscribe((boundary: GeoJSON.GeoJSON) => {
+        this.initCountyBoundaryLayer(boundary);
     });
+
     this.boundaryService.getExistingProjects().pipe(take(1)).subscribe((existingProjects: GeoJSON.GeoJSON) => {
       this.initCalMapperLayer(existingProjects);
     });
