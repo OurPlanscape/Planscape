@@ -1,14 +1,27 @@
 <div class="map-container">
+  <!-- Display containers for leaflet maps (up to 4) -->
   <div class="map-row">
-    <div id="map1" class="map" [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount == 1 ? '100%' : '50%'}"></div>
-    <div id="map2" class="map" [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2"></div>
+    <div id="map1" class="map" [ngClass]="{'selected': selectedMapId === 'map1'}"
+      [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount === 1 ? '100%' : '50%'}">
+    </div>
+    <div id="map2" class="map" [ngClass]="{'selected': selectedMapId === 'map2'}"
+      [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2">
+    </div>
   </div>
   <div class="map-row">
-    <div id="map3" class="map" [hidden]="mapCount < 4"></div>
-    <div id="map4" class="map" [hidden]="mapCount < 4"></div>
+    <div id="map3" class="map" [ngClass]="{'selected': selectedMapId === 'map3'}"
+      [hidden]="mapCount < 4">
+    </div>
+    <div id="map4" class="map" [ngClass]="{'selected': selectedMapId === 'map4'}"
+      [hidden]="mapCount < 4">
+    </div>
   </div>
+
+  <!-- Map control panel -->
   <div id="controls" class="controls-container">
     <div class="layer-controls">
+
+      <!-- Controls for specifying how many maps should be shown -->
       <h3>Map count</h3>
       <mat-radio-group
         name="map-count-select"
@@ -24,9 +37,11 @@
         </mat-radio-button>
       </mat-radio-group>
 
+      <!-- Legend for the currently shown map -->
       <h3>Legend</h3>
       <app-legend [legend]="legend"></app-legend>
 
+      <!-- Layer controls for each map, displayed in tabs -->
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
           <h3>Base layer</h3>
