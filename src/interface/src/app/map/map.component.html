@@ -46,7 +46,7 @@
       <app-legend [legend]="legend"></app-legend>
 
       <!-- Layer controls for each map, displayed in tabs -->
-      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIdx">
+      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIdx" [dynamicHeight]="true">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
           <h3>Base layer</h3>
           <mat-radio-group
