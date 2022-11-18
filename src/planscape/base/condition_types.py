@@ -21,7 +21,7 @@ import numpy.typing as npt
 from typing import Any, Optional, TypedDict
 from typing_extensions import NotRequired
 
-Condition = npt.NDArray[np.float64]
+Condition = npt.NDArray[np.float32]
 
 
 class ConditionLevel(enum.IntEnum):
