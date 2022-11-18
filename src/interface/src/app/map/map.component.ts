@@ -3,7 +3,7 @@ import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil, map } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
@@ -34,6 +34,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   HUC12BoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null> = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   countyBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null> = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null> = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
+
+  HUC12BoundaryGeoJsonLoaded: boolean = false;
+  countyBoundaryGeoJsonLoaded: boolean = false;
+  existingProjectsGeoJsonLoaded: boolean = false;
 
   legend: Legend = {
     labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
@@ -79,11 +83,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
       this.planState$ = this.planService.planState$.pipe(takeUntil(this.destroy$));
 
-      // this.HUC12BoundaryGeoJson$ = this.selectedRegion$.pipe(
-      //   take(1),
-      //   switchMap((selectedRegion) => {
-      //     return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$));
-      // }));
       this.selectedRegion$.pipe(
         take(1),
         switchMap((selectedRegion) => {
@@ -91,6 +90,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
       ).subscribe((boundary: GeoJSON.GeoJSON) => {
         this.HUC12BoundaryGeoJson$.next(boundary);
+        this.HUC12BoundaryGeoJsonLoaded = true;
       });
       this.selectedRegion$.pipe(
         take(1),
@@ -99,11 +99,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         })
       ).subscribe((boundary: GeoJSON.GeoJSON) => {
         this.countyBoundaryGeoJson$.next(boundary);
+        this.countyBoundaryGeoJsonLoaded = true;
       });
       this.boundaryService.getExistingProjects().pipe(
         takeUntil(this.destroy$)
       ).subscribe((projects: GeoJSON.GeoJSON) => {
         this.existingProjectsGeoJson$.next(projects);
+        this.existingProjectsGeoJsonLoaded = true;
       });
 
       this.maps = ['map1', 'map2', 'map3', 'map4'].map((id: string, index: number) => {

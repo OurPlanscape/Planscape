@@ -72,31 +72,40 @@
             Data
           </mat-checkbox>
           <h3>Boundaries</h3>
-          <mat-checkbox
-            name="{{ map.id + '-huc12-toggle' }}"
-            aria-label="Select or deselect"
-            class="layer-checkbox"
-            [(ngModel)]="map.config.showHUC12BoundariesLayer"
-            (change)="toggleHUC12BoundariesLayer(map)">
-            HUC-12
-          </mat-checkbox>
-          <mat-checkbox
-            name="{{ map.id + '-county-toggle' }}"
-            aria-label="Select or deselect"
-            class="layer-checkbox"
-            [(ngModel)]="map.config.showCountyBoundariesLayer"
-            (change)="toggleCountyBoundariesLayer(map)">
-            Counties
-        </mat-checkbox>
+          <div class="layer-control-container">
+            <mat-checkbox
+              name="{{ map.id + '-huc12-toggle' }}"
+              aria-label="Select or deselect"
+              class="layer-checkbox"
+              [(ngModel)]="map.config.showHUC12BoundariesLayer"
+              (change)="toggleHUC12BoundariesLayer(map)">
+              HUC-12
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!HUC12BoundaryGeoJsonLoaded"></mat-spinner>
+          </div>
+          <div class="layer-control-container">
+            <mat-checkbox
+              name="{{ map.id + '-county-toggle' }}"
+              aria-label="Select or deselect"
+              class="layer-checkbox"
+              [(ngModel)]="map.config.showCountyBoundariesLayer"
+              (change)="toggleCountyBoundariesLayer(map)">
+              Counties
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!countyBoundaryGeoJsonLoaded"></mat-spinner>
+          </div>
           <h3>Projects</h3>
-          <mat-checkbox
-            name="{{ map.id + '-existing-projects-toggle' }}"
-            aria-label="Select or deselect"
-            class="layer-checkbox"
-            [(ngModel)]="map.config.showExistingProjectsLayer"
-            (change)="toggleExistingProjectsLayer(map)">
-            Existing projects
-          </mat-checkbox>
+          <div class="layer-control-container">
+            <mat-checkbox
+              name="{{ map.id + '-existing-projects-toggle' }}"
+              aria-label="Select or deselect"
+              class="layer-checkbox"
+              [(ngModel)]="map.config.showExistingProjectsLayer"
+              (change)="toggleExistingProjectsLayer(map)">
+              Existing projects
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!existingProjectsGeoJsonLoaded"></mat-spinner>
+          </div>
         </mat-tab>
       </mat-tab-group>
     </div>
