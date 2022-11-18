@@ -7,8 +7,8 @@ from typing import Optional, cast
 from base.condition_types import Condition, ConditionScoreType
 
 
-def weighted_average_condition(conditions_with_weights: list[tuple[Condition, float]]) -> Optional[Condition]:
-    """Computes the weighted average condition.
+def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[Condition, float]]) -> Optional[Condition]:
+    """Computes the weighted average condition, ignoring the given NoData value.
 
     Args:
       conditions_with_weights: List of Conditions and their weights.  The conditions must have
@@ -16,6 +16,8 @@ def weighted_average_condition(conditions_with_weights: list[tuple[Condition, fl
 
     Returns:
       A Condition such that each pixel value is the weighted average of the pixels in the input conditions.
+      Output pixels with NoData have the value np.nan.
+      
       Note that a pixel in the input may be nan representing "no value", and that can affect the weights.
       For example, if the condition values at a pixel are 0.5, nan, and 0.25, and the weights are 1, 2, 3,
       then the weighted average will be (0.5 * 1 + 0.25 * 3)/(1 + 3), not divided by (1 + 2 + 3).
@@ -26,15 +28,23 @@ def weighted_average_condition(conditions_with_weights: list[tuple[Condition, fl
     sum = None
     total_weight = None
     for (condition, weight) in conditions_with_weights:
-        weighted_path = ~np.isnan(condition) * weight
+      # Convert all conditions to float. This allows us to output NoData values as np.nan.
+        condition = condition.astype('float32')
+        condition_is_nodata = np.isnan(condition) if np.isnan(no_data_value) else (condition == no_data_value)
+        weighted_path = ~condition_is_nodata * weight
+
         if sum is None or total_weight is None:
-            sum = condition * weight
+            condition[condition_is_nodata] = np.nan
+            sum = np.nan_to_num(condition, nan=0) * weight
             total_weight = weighted_path
         else:
-            raw = (np.nan_to_num(sum, nan=0) +
-                   np.nan_to_num(condition, nan=0) * weight)
-            raw = np.ma.masked_array(raw, np.isnan(sum) & np.isnan(condition))
-            sum = np.ma.filled(raw, np.nan)
+            # Set NoData values to 0, then add condition*weight to rolling sum.
+            condition[condition_is_nodata] = 0
+            raw = (np.nan_to_num(sum, nan=0) + condition * weight)
+            # Masked array is True if both sum and condition arrays have NoData value.
+            raw = np.ma.masked_array(raw, np.isnan(sum) & condition_is_nodata)
+            # Set True value to Nan.
+            sum = np.ma.filled(raw, no_data_value)
             total_weight = total_weight + weighted_path
     if sum is None or total_weight is None:
         return None
@@ -42,7 +52,7 @@ def weighted_average_condition(conditions_with_weights: list[tuple[Condition, fl
         return cast(Condition, sum / total_weight)
 
 
-def average_condition(conditions: list[Condition]) -> Optional[Condition]:
+def average_condition(no_data_value: float, conditions: list[np.array]) -> Optional[Condition]:
     """Computes the (unweighted) average condition.
 
     Args:
@@ -54,7 +64,7 @@ def average_condition(conditions: list[Condition]) -> Optional[Condition]:
     Raises:
       ValueError if the conditions do not have the same shape.
     """
-    return weighted_average_condition(list(zip(conditions, [1.0] * len(conditions))))
+    return weighted_average_condition(no_data_value, list(zip(conditions, [1.0] * len(conditions))))
 
 
 def management_condition(current: Condition, future: Condition, type: ConditionScoreType) -> Condition:
