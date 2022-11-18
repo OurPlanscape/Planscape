@@ -6,6 +6,7 @@ import * as L from 'leaflet';
 import 'leaflet-draw';
 
 import { MapService } from '../map.service';
+import { PlanState, PlanService } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
 import { BaseLayerType, Region } from '../types';
@@ -20,6 +21,7 @@ import { ProjectCardComponent } from './project-card/project-card.component';
 export class MapComponent implements AfterViewInit, OnDestroy {
   map!: L.Map;
   selectedRegion$: Observable<Region|null>
+  planState$: Observable<PlanState>
   baseLayerType: BaseLayerType = BaseLayerType.Road;
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
@@ -63,8 +65,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     private boundaryService: MapService,
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
-    private sessionService: SessionService) {
+    private sessionService: SessionService,
+    private planService: PlanService,
+    ) {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
+      this.planState$ = this.planService.planState$.pipe(takeUntil(this.destroy$));
     }
 
   ngAfterViewInit(): void {
@@ -118,7 +123,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.addDrawingControls();
   }
 
-  /** Adds drawing controls. */
+  /** Adds drawing controls and handles drawing events. */
   private addDrawingControls() {
     const drawingLayer = new L.FeatureGroup();
     this.map.addLayer(drawingLayer);
@@ -143,6 +148,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             circle: false,
             rectangle: false,
             marker: false,
+            circlemarker: false,
         },
         edit: {
             featureGroup: drawingLayer, // Required and declares which layer is editable
@@ -155,6 +161,23 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       drawingLayer.addLayer(layer);
+
+      this.createPlan(layer.toGeoJSON());
+    });
+  }
+
+  private createPlan(shape: GeoJSON.GeoJSON) {
+    this.selectedRegion$.subscribe((selectedRegion) => {
+      if (!selectedRegion) return;
+
+      this.planService.createPlan({
+        name: 'tempName',
+        ownerId: 'tempUserId',
+        region: selectedRegion,
+        planningArea: shape,
+      }).subscribe(result => {
+        console.log(result);
+      });
     });
   }
 
