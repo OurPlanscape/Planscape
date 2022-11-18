@@ -58,6 +58,11 @@
   width: match-parent;
 }
 
+.layer-control-container {
+  display: flex;
+  flex-direction: row;
+}
+
 .layer-radio-group {
   align-items: flex-start;
   display: flex;
