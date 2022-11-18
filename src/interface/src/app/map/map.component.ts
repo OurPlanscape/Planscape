@@ -23,7 +23,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   maps: Map[];
   mapCount: number = 2;
   mapCountOptions: number[] = [1, 2, 4];
-  selectedMapId: string = 'map1';
+  selectedMapIdx: number = 0;
 
   selectedRegion$: Observable<Region|null>
   planState$: Observable<PlanState>
@@ -158,7 +158,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     // Mark the map as selected when the user clicks anywhere on it.
     map.instance.addEventListener('click', () => {
-      this.selectedMapId = id;
+      this.selectedMapIdx = this.maps.indexOf(map);
     });
 
     return map.instance;
