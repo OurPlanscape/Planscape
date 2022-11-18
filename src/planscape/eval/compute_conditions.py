@@ -66,7 +66,6 @@ class ConditionReader():
             return src.read(1, out_shape=(1, int(src.height), int(src.width)))
 
 def _summarize(no_data_value: float, input: list[Optional[Condition]], operation: str) -> Optional[Condition]:
-    print("...SUMMARIZE...")
     conditions = [condition for condition in input if condition is not None]
     output = None
     if conditions:
@@ -106,7 +105,6 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
     Returns:
       The condition score of the element, or None if it could not be computed.
     """
-    print("...SCORE METRICS...")
     if not recompute:
         if not 'filepath' in element:
             return None
@@ -143,7 +141,8 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
             element_score = score_element(condition_reader, element, condition_type, False)
         element_conditions.append(element_score)    
     operation = pillar.get('operation', 'MEAN')
-    return _summarize(element_conditions, operation if operation else 'MEAN')
+    # TODO: Parameterize the NoData value
+    return _summarize(np.finfo(np.float32).min,element_conditions, operation if operation else 'MEAN')
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
