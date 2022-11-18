@@ -17,6 +17,15 @@
           {{ BaseLayerType[baseLayerType] }}
         </mat-radio-button>
       </mat-radio-group>
+      <h3>Data</h3>
+      <mat-checkbox
+        name="data-layer-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showDataLayer"
+        (change)="toggleDataLayer()">
+        Data
+      </mat-checkbox>
       <h3>Boundaries</h3>
       <mat-checkbox
         name="huc12-toggle"
@@ -26,6 +35,14 @@
         (change)="toggleHUC12BoundariesLayer()">
         HUC-12
       </mat-checkbox>
+      <mat-checkbox
+        name="county-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showCountyBoundariesLayer"
+        (change)="toggleCountyBoundariesLayer()">
+        Counties
+    </mat-checkbox>
       <h3>Projects</h3>
       <mat-checkbox
         name="existing-projects-toggle"
@@ -35,6 +52,8 @@
         (change)="toggleExistingProjectsLayer()">
         Existing projects
       </mat-checkbox>
+      <h3>Legend</h3>
+      <app-legend [legend]="legend"></app-legend>
     </div>
   </div>
 </div>

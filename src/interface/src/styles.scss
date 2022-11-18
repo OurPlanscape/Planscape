@@ -106,3 +106,6 @@ $planscape-frontend-theme: mat.define-light-theme((
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+// Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
+@import "~leaflet-draw/dist/leaflet.draw.css";

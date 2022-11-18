@@ -23,7 +23,7 @@ def run(verbose=True):
 
     # Build the configuration object.
     config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/config/boundary.json')
+        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/boundary.json')
     config = BoundaryConfig(config_path)
 
     # Read the shapefiles and add Boundary and BoundaryDetail objects.

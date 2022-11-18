@@ -1,0 +1,8 @@
+<div class="legend">
+  <div class="colors">
+    <div class="colorbox" *ngFor="let color of legend.colors" [ngStyle]="{'background-color': color}"></div>
+  </div>
+  <div class="labels">
+    <div class="label" *ngFor="let label of legend.labels">{{ label }}</div>
+  </div>
+</div>
