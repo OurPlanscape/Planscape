@@ -3,7 +3,7 @@ import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { Observable, Subject, take, takeUntil } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
@@ -31,9 +31,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
 
-  HUC12BoundaryGeoJson$: Observable<GeoJSON.GeoJSON>;
-  countyBoundaryGeoJson$: Observable<GeoJSON.GeoJSON>;
-  existingProjectsGeoJson$: Observable<GeoJSON.GeoJSON>;
+  HUC12BoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null> = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
+  countyBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null> = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
+  existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null> = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
   legend: Legend = {
     labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
@@ -79,17 +79,32 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       this.selectedRegion$ = this.sessionService.region$.pipe(takeUntil(this.destroy$));
       this.planState$ = this.planService.planState$.pipe(takeUntil(this.destroy$));
 
-      this.HUC12BoundaryGeoJson$ = this.selectedRegion$.pipe(
+      // this.HUC12BoundaryGeoJson$ = this.selectedRegion$.pipe(
+      //   take(1),
+      //   switchMap((selectedRegion) => {
+      //     return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$));
+      // }));
+      this.selectedRegion$.pipe(
         take(1),
         switchMap((selectedRegion) => {
-          return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$));
-      }));
-      this.countyBoundaryGeoJson$ = this.selectedRegion$.pipe(
+          return this.boundaryService.getHUC12BoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$))
+        })
+      ).subscribe((boundary: GeoJSON.GeoJSON) => {
+        this.HUC12BoundaryGeoJson$.next(boundary);
+      });
+      this.selectedRegion$.pipe(
         take(1),
         switchMap((selectedRegion) => {
           return this.boundaryService.getCountyBoundaryShapes(selectedRegion).pipe(takeUntil(this.destroy$));
-      }));
-      this.existingProjectsGeoJson$ = this.boundaryService.getExistingProjects().pipe(takeUntil(this.destroy$));
+        })
+      ).subscribe((boundary: GeoJSON.GeoJSON) => {
+        this.countyBoundaryGeoJson$.next(boundary);
+      });
+      this.boundaryService.getExistingProjects().pipe(
+        takeUntil(this.destroy$)
+      ).subscribe((projects: GeoJSON.GeoJSON) => {
+        this.existingProjectsGeoJson$.next(projects);
+      });
 
       this.maps = ['map1', 'map2', 'map3', 'map4'].map((id: string, index: number) => {
         return {
@@ -140,14 +155,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     zoomControl.addTo(map.instance);
 
     // Init layers, but only add them to the map instance if specified in the map config.
-    this.HUC12BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON) => {
-      this.initHUC12BoundaryLayer(map, boundary);
+    this.HUC12BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
+      if (boundary != null) {
+        this.initHUC12BoundaryLayer(map, boundary);
+      }
     });
-    this.countyBoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON) => {
-      this.initCountyBoundaryLayer(map, boundary);
+    this.countyBoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
+      if (boundary != null) {
+        this.initCountyBoundaryLayer(map, boundary);
+      }
     });
-    this.existingProjectsGeoJson$.subscribe((existingProjects: GeoJSON.GeoJSON) => {
-      this.initCalMapperLayer(map, existingProjects);
+    this.existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
+      if (projects != null) {
+        this.initCalMapperLayer(map, projects);
+      }
     });
     this.initDataLayer(map);
 
