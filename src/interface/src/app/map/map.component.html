@@ -2,18 +2,22 @@
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="map-row">
     <div id="map1" class="map" [ngClass]="{'selected': selectedMapIdx === 0}"
-      [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount === 1 ? '100%' : '50%'}">
+      [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount === 1 ? '100%' : '50%'}"
+      data-testid="map1">
     </div>
     <div id="map2" class="map" [ngClass]="{'selected': selectedMapIdx === 1}"
-      [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2">
+      [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2"
+      data-testid="map2">
     </div>
   </div>
   <div class="map-row">
     <div id="map3" class="map" [ngClass]="{'selected': selectedMapIdx === 2}"
-      [hidden]="mapCount < 4">
+      [hidden]="mapCount < 4"
+      data-testid="map3">
     </div>
     <div id="map4" class="map" [ngClass]="{'selected': selectedMapIdx === 3}"
-      [hidden]="mapCount < 4">
+      [hidden]="mapCount < 4"
+      data-testid="map4">
     </div>
   </div>
 
@@ -60,7 +64,7 @@
             </mat-radio-button>
           </mat-radio-group><h3>Data</h3>
           <mat-checkbox
-            name="{{ map.id + 'data-layer-toggle' }}"
+            name="{{ map.id + '-data-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
             [(ngModel)]="map.config.showDataLayer"
@@ -69,7 +73,7 @@
           </mat-checkbox>
           <h3>Boundaries</h3>
           <mat-checkbox
-            name="{{ map.id + 'huc12-toggle' }}"
+            name="{{ map.id + '-huc12-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
             [(ngModel)]="map.config.showHUC12BoundariesLayer"
@@ -77,7 +81,7 @@
             HUC-12
           </mat-checkbox>
           <mat-checkbox
-            name="{{ map.id + 'huc10-toggle' }}"
+            name="{{ map.id + '-huc10-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
             [(ngModel)]="map.config.showHuc10BoundaryLayer"
@@ -85,7 +89,7 @@
             HUC-10
           </mat-checkbox>
           <mat-checkbox
-            name="{{ map.id + 'county-toggle' }}"
+            name="{{ map.id + '-county-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
             [(ngModel)]="map.config.showCountyBoundariesLayer"
@@ -102,7 +106,7 @@
           </mat-checkbox>
           <h3>Projects</h3>
           <mat-checkbox
-            name="{{ map.id + 'existing-projects-toggle' }}"
+            name="{{ map.id + '-existing-projects-toggle' }}"
             aria-label="Select or deselect"
             class="layer-checkbox"
             [(ngModel)]="map.config.showExistingProjectsLayer"
