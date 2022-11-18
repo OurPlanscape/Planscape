@@ -1,18 +1,18 @@
 <div class="map-container">
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="map-row">
-    <div id="map1" class="map" [ngClass]="{'selected': selectedMapId === 'map1'}"
+    <div id="map1" class="map" [ngClass]="{'selected': selectedMapIdx === 0}"
       [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount === 1 ? '100%' : '50%'}">
     </div>
-    <div id="map2" class="map" [ngClass]="{'selected': selectedMapId === 'map2'}"
+    <div id="map2" class="map" [ngClass]="{'selected': selectedMapIdx === 1}"
       [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2">
     </div>
   </div>
   <div class="map-row">
-    <div id="map3" class="map" [ngClass]="{'selected': selectedMapId === 'map3'}"
+    <div id="map3" class="map" [ngClass]="{'selected': selectedMapIdx === 2}"
       [hidden]="mapCount < 4">
     </div>
-    <div id="map4" class="map" [ngClass]="{'selected': selectedMapId === 'map4'}"
+    <div id="map4" class="map" [ngClass]="{'selected': selectedMapIdx === 3}"
       [hidden]="mapCount < 4">
     </div>
   </div>
@@ -42,7 +42,7 @@
       <app-legend [legend]="legend"></app-legend>
 
       <!-- Layer controls for each map, displayed in tabs -->
-      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true">
+      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIdx">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
           <h3>Base layer</h3>
           <mat-radio-group
