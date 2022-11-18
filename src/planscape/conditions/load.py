@@ -2,8 +2,6 @@ import os
 from pathlib import Path
 from decouple import config
 from typing import cast
-import sys
-import numpy
 
 from django.contrib.gis.utils.layermapping import LayerMapping
 from django.db.models.signals import pre_save
@@ -66,4 +64,24 @@ def run(region: str):
     # print(query.geometry.srid)
 
 
+    # for boundary in config.get_metric('tcsi', '')
+    #    # Create the new top-level Boundary
+    #    boundary_name = boundary['boundary_name']
+    #    print("Creating Boundary " + boundary_name)
+    #    query = Boundary.objects.filter(boundary_name__exact=boundary_name)
+    #    if len(query) > 0:
+    #        print("Boundary " + boundary_name + " already exists; deleting.")
+    #        query.delete()
+    #    boundary_obj = Boundary(boundary_name=boundary_name)
+    #    boundary_obj.save()
 
+    #    shapefile_field_mapping = dict(boundary['shapefile_field_mapping'])
+    #    shapefile_field_mapping['geometry'] = boundary['geometry_type']
+    #    filepath = Path(os.path.join(data_path, boundary['filepath']))
+    #    srs = boundary['source_srs']
+    #    lm = LayerMapping(BoundaryDetails, filepath,
+    #                      shapefile_field_mapping, source_srs=srs, transform=True)
+    #    presave_callback = presave_callback_generator(boundary_obj)
+    #    pre_save.connect(presave_callback, sender=BoundaryDetails)
+    #    lm.save(strict=True, verbose=verbose)
+    #    pre_save.disconnect(presave_callback, sender=BoundaryDetails)

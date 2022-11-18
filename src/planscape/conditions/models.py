@@ -29,8 +29,9 @@ class Condition(models.Model):
     condition_dataset = models.ForeignKey(
         BaseCondition, on_delete=models.CASCADE)  # type: ignore
 
-    # The raster data associated with the condition.
-    geometry = models.RasterField()
+    # The name of the raster, used for accessing the tiles of the raster data
+    # stored in the ConditionRaster table.
+    raster_name: models.TextField = models.TextField(null=True)
 
     # The type of condition, drawn from the ConditionScoreType enum defined in
     # base/condition_types.py (CURRENT, FUTURE, ADAPT, etc).
@@ -40,3 +41,28 @@ class Condition(models.Model):
     # when condition_score_type = CURRENT and condition_level = METRIC, and is ignored
     # otherwise.
     is_raw: models.BooleanField = models.BooleanField(null=True)
+
+
+class ConditionRaster(models.Model):
+    """
+    A ConditionRaster is a raster associated with a condition.  There may be multiple
+    rows per condition, because rasters are more efficiently stored and queried in
+    tiles.  The table is not managed by Django but populated by raster2psql, e.g.,
+
+       raster2pgsql -s 9822 -a -I -C -Y -F –n raster_name -f raster -t 256x256 \
+          ~/Downloads/wood/AvailableBiomass_2021_300m_base.tif \
+          public.condition_raster | \
+          psql -U planscape -d planscape -h localhost -p 5432 
+
+    When this command is run, the string stored in the column 'raster_name' will be the
+    name of the file, i.e., 'AvailableBiomass_2021_300m_base.tif'. 
+    """
+    # The name of the raster, which must match the raster_name in the Condition.
+    raster_name: models.TextField = models.TextField(null=True)
+
+    # A tile in the raster.
+    raster = models.RasterField(null=True)
+
+    # Turn off management by Django.
+    class Meta:
+        managed = False

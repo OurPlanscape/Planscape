@@ -8,7 +8,7 @@ class CalMAPPER(APIView):
     def get(self, request):
         params = {
             'where': 'PROJECT_STATUS=\'Active\'',
-            'outFields' : 'PROJECT_NAME,PROJECT_STATUS',
+            'outFields' : 'PROJECT_NAME,PROJECT_STATUS,REGION,UNIT,TREATMENT_NAME,TREATMENT_OBJECTIVE,PROJECT_TYPE,ACTIVITY_STATUS,PROJECT_START_DATE,PROJECT_END_DATE,LAST_UPDATED',
             'f': 'GEOJSON'
         }
         url_final = "https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2/query?" + urllib.parse.urlencode(params)

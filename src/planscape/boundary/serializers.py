@@ -9,7 +9,9 @@ class BoundarySerializer(serializers.ModelSerializer):
 
 
 class BoundaryDetailsSerializer(serializers.GeoFeatureModelSerializer):
+    clipped_geometry = serializers.GeometryField()
+
     class Meta:
         fields = ("id", "shape_name")
-        geo_field = "geometry"
+        geo_field = "clipped_geometry"
         model = BoundaryDetails
