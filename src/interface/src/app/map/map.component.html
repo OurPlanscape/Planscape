@@ -36,6 +36,15 @@
         HUC-12
       </mat-checkbox>
       <mat-checkbox
+        name="huc10-toggle"
+        aria-label="Select or deselect"
+        class="layer-checkbox"
+        [(ngModel)]="showHUC10BoundariesLayer"
+        (change)="toggleHUC10BoundariesLayer()">
+        HUC-10
+      </mat-checkbox>
+
+      <mat-checkbox
         name="county-toggle"
         aria-label="Select or deselect"
         class="layer-checkbox"
@@ -43,6 +52,14 @@
         (change)="toggleCountyBoundariesLayer()">
         Counties
     </mat-checkbox>
+    <mat-checkbox
+      name="usfs-toggle"
+      aria-label="Select or deselect"
+      class="layer-checkbox"
+      [(ngModel)]="showUSForestBoundariesLayer"
+      (change)="toggleUSForestsBoundariesLayer()">
+      US Forests
+      </mat-checkbox>
       <h3>Projects</h3>
       <mat-checkbox
         name="existing-projects-toggle"
