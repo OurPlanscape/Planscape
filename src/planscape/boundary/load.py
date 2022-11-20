@@ -12,7 +12,7 @@ from .models import Boundary, BoundaryDetails
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
 
 
-def run(verbose=True):
+def run(boundary_to_load=None, verbose=True):
     """Loads the shapefiles defined by the configuration into the database."""
     # Function that connects a BoundaryDetails object with a Boundary object
     # in the database.
@@ -29,8 +29,12 @@ def run(verbose=True):
     # Read the shapefiles and add Boundary and BoundaryDetail objects.
     data_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'data')
     for boundary in config.get_boundaries():
-        # Create the new top-level Boundary
+        # Check if need to load just one boundary
         boundary_name = boundary['boundary_name']
+        if boundary_to_load is not None and boundary_to_load != boundary_name:
+            continue
+
+        # Create the new top-level Boundary
         print("Creating Boundary " + boundary_name)
         query = Boundary.objects.filter(boundary_name__exact=boundary_name)
         if len(query) > 0:
