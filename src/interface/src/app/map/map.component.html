@@ -112,7 +112,7 @@
               class="layer-checkbox"
               [(ngModel)]="map.config.showUsForestBoundaryLayer"
               (change)="toggleUSForestsBoundariesLayer(map)">
-              Counties
+              US Forests
             </mat-checkbox>
             <mat-spinner [diameter]="24" *ngIf="!usForestBoundaryGeoJsonLoaded"></mat-spinner>
           </div>

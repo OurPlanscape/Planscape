@@ -1,27 +1,13 @@
-import {
-  AfterViewInit,
-  ApplicationRef,
-  Component,
-  createComponent,
-  EnvironmentInjector,
-  OnDestroy,
-} from '@angular/core';
-import { Feature, Geometry, GeoJsonGeometryTypes } from 'geojson';
+import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
+import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import {
-  BehaviorSubject,
-  Observable,
-  Subject,
-  take,
-  takeUntil,
-  map,
-} from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
-import { PlanState, PlanService } from '../plan.service';
+import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
 import { BaseLayerType, Map, MapConfig, Region } from '../types';
@@ -113,7 +99,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   constructor(
     public applicationRef: ApplicationRef,
-    private boundaryService: MapService,
+    private mapService: MapService,
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
@@ -130,7 +116,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .pipe(
         take(1),
         switchMap((selectedRegion) => {
-          return this.boundaryService
+          return this.mapService
             .getHuc12BoundaryShapes(selectedRegion)
             .pipe(takeUntil(this.destroy$));
         })
@@ -143,8 +129,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .pipe(
         take(1),
         switchMap((selectedRegion) => {
-          return this.boundaryService
-            .getHUC10BoundaryShapes(selectedRegion)
+          return this.mapService
+            .getHuc10BoundaryShapes(selectedRegion)
             .pipe(takeUntil(this.destroy$));
         })
       )
@@ -156,7 +142,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .pipe(
         take(1),
         switchMap((selectedRegion) => {
-          return this.boundaryService
+          return this.mapService
             .getCountyBoundaryShapes(selectedRegion)
             .pipe(takeUntil(this.destroy$));
         })
@@ -169,8 +155,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       .pipe(
         take(1),
         switchMap((selectedRegion) => {
-          return this.boundaryService
-            .getUSForestBoundaryShapes(selectedRegion)
+          return this.mapService
+            .getUsForestBoundaryShapes(selectedRegion)
             .pipe(takeUntil(this.destroy$));
         })
       )
@@ -178,7 +164,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         this.usForestBoundaryGeoJson$.next(boundary);
         this.usForestBoundaryGeoJsonLoaded = true;
       });
-    this.boundaryService
+    this.mapService
       .getExistingProjects()
       .pipe(takeUntil(this.destroy$))
       .subscribe((projects: GeoJSON.GeoJSON) => {
@@ -370,7 +356,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Gets the selected region geojson and renders it on the map. */
   private displayRegionBoundary(map: L.Map, selectedRegion: Region | null) {
     if (!selectedRegion) return;
-    this.boundaryService
+    this.mapService
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
         this.maskOutsideRegion(map, boundary);
