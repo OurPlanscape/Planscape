@@ -125,7 +125,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         take(1),
         switchMap((selectedRegion) => {
           return this.boundaryService
-            .getHUC12BoundaryShapes(selectedRegion)
+            .getHUC12BoundaryShapes(selectedRegion, this.map.getBounds().toBBoxString())
             .pipe(take(1));
         })
       )

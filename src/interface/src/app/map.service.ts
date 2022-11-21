@@ -48,14 +48,18 @@ export class MapService {
     }
   }
 
-  getHUC12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getHUC12BoundaryShapes(region: Region|null, bbox: string): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
+    var bboxString: string = '';
     if (region != null) {
       regionString = '&region_name=' + this.regionToString(region);
     }
+    if (bbox != '') {
+      bboxString = '&bbox=' + bbox
+    }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12' + regionString
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12' + regionString + bboxString
     );
   }
 
