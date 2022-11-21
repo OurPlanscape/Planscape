@@ -48,7 +48,7 @@ export class MapService {
     }
   }
 
-  getHUC12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getHuc12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
