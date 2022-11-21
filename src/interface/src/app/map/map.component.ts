@@ -14,6 +14,11 @@ import { BaseLayerType, Map, MapConfig, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
+export interface PlanOption {
+  value: string;
+  viewValue: string;
+  icon: any;
+}
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -43,6 +48,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     labels: ['Highest', 'Higher', 'High', 'Mid-high', 'Mid-low', 'Low', 'Lower', 'Lowest'],
     colors: ['#f65345', '#e9884f', '#e5ab64', '#e6c67a', '#cccfa7', '#a5c5a6', '#74afa5', '#508295'],
   };
+
+  planOptions: PlanOption[] = [
+    {value: 'draw-plan', icon: 'edit', viewValue: 'Draw an area'},
+  ];
+  selectedPlanOption: PlanOption | null = null;
+  showCreatePlanButton: boolean = false;
 
   static hillshade_tiles() {
     return L.tileLayer('https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA', {
@@ -215,20 +226,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     map.addLayer(drawingLayer);
 
     const drawOptions: L.Control.DrawConstructorOptions = {
-        position: 'topright',
+        position: 'bottomright',
         draw: {
             polygon: {
-                allowIntersection: false,
-                showArea: true,
-                metric: false, // Set measurement units to acres
-                repeatMode: true, // Stays in polygon mode after completing a shape
-                shapeOptions: {
-                  color: '#7b61ff',
-                },
-                drawError: {
-                    color: '#ff7b61',
-                    message: 'Can\'t draw polygons with intersections!',
-                },
+              allowIntersection: false,
+              showArea: true,
+              metric: false, // Set measurement units to acres
+              shapeOptions: {
+                color: '#7b61ff',
+              },
+              drawError: {
+                  color: '#ff7b61',
+                  message: 'Can\'t draw polygons with intersections!',
+              },
             }, // Set to false to disable each tool
             polyline: false,
             circle: false,
@@ -244,15 +254,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     const drawControl = new L.Control.Draw(drawOptions);
     map.addControl(drawControl);
 
+    this.setUpDrawingHandlers(map, drawingLayer);
+  }
+
+  private setUpDrawingHandlers(map: L.Map, drawingLayer: L.FeatureGroup) {
     map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       drawingLayer.addLayer(layer);
-
+      this.showCreatePlanButton = true;
+      // open create plan dialog
       this.createPlan(layer.toGeoJSON());
     });
   }
 
-  private createPlan(shape: GeoJSON.GeoJSON) {
+  createPlan(shape: GeoJSON.GeoJSON) {
     this.selectedRegion$.subscribe((selectedRegion) => {
       if (!selectedRegion) return;
 
@@ -265,6 +280,24 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         console.log(result);
       });
     });
+  }
+
+  onPlanOptionChange(option: PlanOption) {
+    if (option.value === 'draw-plan') {
+      const polygonDrawer = new L.Draw.Polygon(this.maps[0].instance as L.DrawMap, {
+        allowIntersection: false,
+        showArea: true,
+        metric: false,
+        shapeOptions: {
+          color: '#7b61ff',
+        },
+        drawError: {
+            color: '#ff7b61',
+            message: 'Can\'t draw polygons with intersections!',
+        },
+      });
+    polygonDrawer.enable();
+    }
   }
 
   /** Gets the selected region geojson and renders it on the map. */
