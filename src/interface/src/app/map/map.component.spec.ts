@@ -24,7 +24,7 @@ describe('MapComponent', () => {
   let mockSessionService: Partial<SessionService>;
 
   beforeEach(() => {
-    const fakeGeoJSON: GeoJSON.GeoJSON = {
+    const fakeGeoJson: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
       features: [
         {
@@ -50,10 +50,12 @@ describe('MapComponent', () => {
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
-        getHuc12BoundaryShapes: of(fakeGeoJSON),
-        getCountyBoundaryShapes: of(fakeGeoJSON),
-        getExistingProjects: of(fakeGeoJSON),
-        getRegionBoundary: of(fakeGeoJSON),
+        getHuc12BoundaryShapes: of(fakeGeoJson),
+        getHuc10BoundaryShapes: of(fakeGeoJson),
+        getCountyBoundaryShapes: of(fakeGeoJson),
+        getUsForestBoundaryShapes: of(fakeGeoJson),
+        getExistingProjects: of(fakeGeoJson),
+        getRegionBoundary: of(fakeGeoJson),
       },
       {}
     );
