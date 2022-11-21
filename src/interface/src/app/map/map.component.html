@@ -1,21 +1,21 @@
 <div class="map-container">
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="map-row">
-    <div id="map1" class="map" [ngClass]="{'selected': selectedMapIdx === 0}"
+    <div id="map1" class="map" [ngClass]="{'selected': selectedMapIndex === 0}"
       [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%', 'width': mapCount === 1 ? '100%' : '50%'}"
       data-testid="map1">
     </div>
-    <div id="map2" class="map" [ngClass]="{'selected': selectedMapIdx === 1}"
+    <div id="map2" class="map" [ngClass]="{'selected': selectedMapIndex === 1}"
       [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}" [hidden]="mapCount < 2"
       data-testid="map2">
     </div>
   </div>
   <div class="map-row">
-    <div id="map3" class="map" [ngClass]="{'selected': selectedMapIdx === 2}"
+    <div id="map3" class="map" [ngClass]="{'selected': selectedMapIndex === 2}"
       [hidden]="mapCount < 4"
       data-testid="map3">
     </div>
-    <div id="map4" class="map" [ngClass]="{'selected': selectedMapIdx === 3}"
+    <div id="map4" class="map" [ngClass]="{'selected': selectedMapIndex === 3}"
       [hidden]="mapCount < 4"
       data-testid="map4">
     </div>
@@ -46,7 +46,7 @@
       <app-legend [legend]="legend"></app-legend>
 
       <!-- Layer controls for each map, displayed in tabs -->
-      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIdx" [dynamicHeight]="true">
+      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIndex" [dynamicHeight]="true">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
           <h3>Base layer</h3>
           <mat-radio-group
@@ -77,11 +77,11 @@
               name="{{ map.id + '-huc12-toggle' }}"
               aria-label="Select or deselect"
               class="layer-checkbox"
-              [(ngModel)]="map.config.showHUC12BoundariesLayer"
-              (change)="toggleHUC12BoundariesLayer(map)">
+              [(ngModel)]="map.config.showHuc12BoundaryLayer"
+              (change)="toggleHuc12BoundariesLayer(map)">
               HUC-12
             </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!HUC12BoundaryGeoJsonLoaded"></mat-spinner>
+            <mat-spinner [diameter]="24" *ngIf="!huc12BoundaryGeoJsonLoaded"></mat-spinner>
           </div>
           <div class="layer-control-container">
             <mat-checkbox
@@ -99,7 +99,7 @@
               name="{{ map.id + '-county-toggle' }}"
               aria-label="Select or deselect"
               class="layer-checkbox"
-              [(ngModel)]="map.config.showCountyBoundariesLayer"
+              [(ngModel)]="map.config.showCountyBoundaryLayer"
               (change)="toggleCountyBoundariesLayer(map)">
               Counties
             </mat-checkbox>

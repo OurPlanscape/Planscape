@@ -28,7 +28,7 @@ describe('MapService', () => {
     it('makes request to backend', () => {
       const httpTestingController = TestBed.inject(HttpTestingController);
 
-      service.getHUC12BoundaryShapes(Region.SIERRA_NEVADA).subscribe(res => {
+      service.getHuc12BoundaryShapes(Region.SIERRA_NEVADA).subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
 
