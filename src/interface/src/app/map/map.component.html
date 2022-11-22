@@ -4,52 +4,38 @@
     <div class="layer-controls">
       <h2>Layers</h2>
       <h3>Base layer</h3>
-      <mat-radio-group
-        name="base-layer-select"
-        aria-label="Select an option"
-        class="layer-radio-group"
-        [(ngModel)]="baseLayerType"
-        (change)="changeBaseLayer()">
-        <mat-radio-button
-          *ngFor="let baseLayerType of baseLayerTypes"
-          [value]="baseLayerType"
+      <mat-radio-group name="base-layer-select" aria-label="Select an option" class="layer-radio-group"
+        [(ngModel)]="baseLayerType" (change)="changeBaseLayer()">
+        <mat-radio-button *ngFor="let baseLayerType of baseLayerTypes" [value]="baseLayerType"
           class="layer-radio-button">
           {{ BaseLayerType[baseLayerType] }}
         </mat-radio-button>
       </mat-radio-group>
       <h3>Data</h3>
-      <mat-checkbox
-        name="data-layer-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showDataLayer"
-        (change)="toggleDataLayer()">
-        Data
+      <mat-checkbox name="data-layer-toggle" aria-label="Select or deselect" class="layer-checkbox"
+        [(ngModel)]="showDataLayer" (change)="toggleDataLayer()">
+        AvailableBiomass_2021_300m_base
+      </mat-checkbox>
+      <mat-checkbox name="data-layer-toggle" aria-label="Select or deselect" class="layer-checkbox"
+        [(ngModel)]="showDataLayer2" (change)="toggleDataLayer2()">
+        AvailableBiomass_2021_300m
+      </mat-checkbox>
+      <mat-checkbox name="data-layer-toggle" aria-label="Select or deselect" class="layer-checkbox"
+        [(ngModel)]="showDataLayer3" (change)="toggleDataLayer3()">
+        AvailableBiomass_2021_300m_normalized
       </mat-checkbox>
       <h3>Boundaries</h3>
-      <mat-checkbox
-        name="huc12-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showHUC12BoundariesLayer"
-        (change)="toggleHUC12BoundariesLayer()">
+      <mat-checkbox name="huc12-toggle" aria-label="Select or deselect" class="layer-checkbox"
+        [(ngModel)]="showHUC12BoundariesLayer" (change)="toggleHUC12BoundariesLayer()">
         HUC-12
       </mat-checkbox>
-      <mat-checkbox
-        name="county-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showCountyBoundariesLayer"
-        (change)="toggleCountyBoundariesLayer()">
+      <mat-checkbox name="county-toggle" aria-label="Select or deselect" class="layer-checkbox"
+        [(ngModel)]="showCountyBoundariesLayer" (change)="toggleCountyBoundariesLayer()">
         Counties
-    </mat-checkbox>
+      </mat-checkbox>
       <h3>Projects</h3>
-      <mat-checkbox
-        name="existing-projects-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showExistingProjectsLayer"
-        (change)="toggleExistingProjectsLayer()">
+      <mat-checkbox name="existing-projects-toggle" aria-label="Select or deselect" class="layer-checkbox"
+        [(ngModel)]="showExistingProjectsLayer" (change)="toggleExistingProjectsLayer()">
         Existing projects
       </mat-checkbox>
       <h3>Legend</h3>
