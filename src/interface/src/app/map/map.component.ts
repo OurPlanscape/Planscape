@@ -1,9 +1,16 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ApplicationRef,
+  Component,
+  createComponent,
+  EnvironmentInjector,
+  OnDestroy,
+} from '@angular/core';
 import { Feature, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';

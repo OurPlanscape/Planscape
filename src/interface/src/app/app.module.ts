@@ -13,6 +13,7 @@ import { AppComponent } from './app.component';
 import { AuthGuard, AuthService } from './auth.service';
 import { LoginComponent } from './login/login.component';
 import { MapService } from './map.service';
+import { MapNameplateComponent } from './map/map-nameplate/map-nameplate.component';
 import { MapComponent } from './map/map.component';
 import { ProjectCardComponent } from './map/project-card/project-card.component';
 import { MaterialModule } from './material/material.module';
@@ -22,6 +23,7 @@ import { RegionSelectionComponent } from './region-selection/region-selection.co
 import { SessionService } from './session.service';
 import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
+import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
 
 @NgModule({
@@ -35,6 +37,8 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     AccountDialogComponent,
     RegionSelectionComponent,
     ProjectCardComponent,
+    StringifyMapConfigPipe,
+    MapNameplateComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -58,4 +62,4 @@ import { TopBarComponent } from './top-bar/top-bar.component';
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],
 })
-export class AppModule { }
+export class AppModule {}
