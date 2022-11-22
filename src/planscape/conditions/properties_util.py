@@ -60,7 +60,3 @@ def print_nodata_values(region: str):
                                 print("number of Nan pixels: " + str(count[12345567]))
                             else:
                                 print("number of NoData pixels: " + str(count[nodatavalue]))
-
-                            # array[array == nodatavalue] = 0 
-                            # count = dict(zip(*numpy.unique(array, return_counts=True)))
-                            # print(nodatavalue in count)
