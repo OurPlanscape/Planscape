@@ -1,5 +1,6 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
-import { Feature, Geometry } from 'geojson';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
@@ -7,6 +8,7 @@ import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
@@ -14,7 +16,7 @@ import { BaseLayerType, Map, MapConfig, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
-export interface PlanOption {
+export interface PlanCreationOption {
   value: string;
   viewValue: string;
   icon: any;
@@ -71,11 +73,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     ],
   };
 
-  planOptions: PlanOption[] = [
-    {value: 'draw-plan', icon: 'edit', viewValue: 'Draw an area'},
+  planCreationOptions: PlanCreationOption[] = [
+    {value: 'draw-area', icon: 'edit', viewValue: 'Draw an area'},
   ];
-  selectedPlanOption: PlanOption | null = null;
+  selectedPlanCreationOption: PlanCreationOption | null = null;
   showCreatePlanButton: boolean = false;
+  drawnPlanningArea: GeoJSON.GeoJSON = {
+      "type": "FeatureCollection",
+      "features": [],
+  }
 
   static hillshadeTiles() {
     return L.tileLayer(
@@ -111,6 +117,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   constructor(
     public applicationRef: ApplicationRef,
     private mapService: MapService,
+    private dialog: MatDialog,
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
@@ -345,31 +352,76 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       drawingLayer.addLayer(layer);
+
+      this.drawnPlanningArea = this.convertToPlanningArea(drawingLayer);
       this.showCreatePlanButton = true;
-      // open create plan dialog
-      this.createPlan(layer.toGeoJSON());
     });
   }
 
-  createPlan(shape: GeoJSON.GeoJSON) {
+  /**
+   * Converts drawingLayer to GeoJSON. If there are many polygons drawn, creates
+   * and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon type GeoJSON.
+   */
+  convertToPlanningArea(drawingLayer: L.FeatureGroup): GeoJSON.GeoJSON {
+    const drawnGeoJson = drawingLayer.toGeoJSON() as FeatureCollection;
+      // Case: Single polygon
+      if (drawnGeoJson.features.length <= 1) return drawnGeoJson;
+
+      // Case: Multipolygon
+      const newFeature: GeoJSON.Feature = {
+        type: 'Feature',
+        geometry: {
+          type: 'MultiPolygon',
+          coordinates: [],
+        },
+        properties: {},
+      };
+      drawnGeoJson.features.forEach((feature) => {
+        (newFeature.geometry as MultiPolygon).coordinates.push(
+            (feature.geometry as Polygon).coordinates)
+      });
+
+      return {
+        "type": "FeatureCollection",
+        "features": [newFeature],
+      } as FeatureCollection;
+  }
+
+  /** Configures and opens the Create Plan dialog */
+  openCreatePlanDialog() {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.maxWidth = '560px';
+
+    const openedDialog = this.dialog.open(PlanCreateDialogComponent, dialogConfig);
+
+    openedDialog.afterClosed().subscribe((result) => {
+      if (result) {
+        this.createPlan(result.value, this.drawnPlanningArea);
+      }
+    });
+  }
+
+  private createPlan(name: string, shape: GeoJSON.GeoJSON) {
     this.selectedRegion$.subscribe((selectedRegion) => {
       if (!selectedRegion) return;
 
-      this.planService
-        .createPlan({
-          name: 'tempName',
-          ownerId: 'tempUserId',
-          region: selectedRegion,
-          planningArea: shape,
-        })
-        .subscribe((result) => {
-          console.log(result);
-        });
+      this.planService.createPlan({
+        name: name,
+        ownerId: 'tempUserId',
+        region: selectedRegion,
+        planningArea: shape,
+      }).subscribe(result => {
+        console.log(result);
+      });
     });
   }
 
-  onPlanOptionChange(option: PlanOption) {
-    if (option.value === 'draw-plan') {
+  /**
+   * On PlanCreationOption selection change, enables the polygon tool if
+   * 'draw an area' is selected.
+   */
+  onPlanCreationOptionChange(option: PlanCreationOption) {
+    if (option.value === 'draw-area') {
       const polygonDrawer = new L.Draw.Polygon(this.maps[0].instance as L.DrawMap, {
         allowIntersection: false,
         showArea: true,
@@ -399,7 +451,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /**
    * Darkens everything outside of the region boundary.
    * Type 'any' is used in order to access coordinates.
-   * */
+   */
   private maskOutsideRegion(map: L.Map, boundary: any) {
     // Add corners of the map to invert the polygon
     boundary.features[0].geometry.coordinates[0].unshift([
