@@ -1,22 +1,30 @@
 <div class="map-container">
   <!-- Info bar above the maps -->
   <div class="map-options-bar">
+
+    <!-- Dropdown for creating a planning area -->
     <button mat-raised-button type="button" name="button" class="plan-options-button roundedButton">
-    <mat-select
-      [(value)]="selectedPlanOption"
-      placeholder="Create a plan"
-      class="plan-options-button"
-      (selectionChange)="onPlanOptionChange($event.value)">
-      <mat-select-trigger *ngIf="selectedPlanOption">
-        <mat-icon class="selection-icon">{{selectedPlanOption.icon}}</mat-icon>{{selectedPlanOption.viewValue}}
-      </mat-select-trigger>
-      <mat-option *ngFor="let option of planOptions" [value]="option">
-        <mat-icon>{{option.icon}}</mat-icon>{{option.viewValue}}
-      </mat-option>
-    </mat-select>
+      <mat-select
+        [(value)]="selectedPlanCreationOption"
+        placeholder="Create a plan"
+        class="plan-options-button"
+        (selectionChange)="onPlanCreationOptionChange($event.value)">
+        <mat-select-trigger *ngIf="selectedPlanCreationOption">
+          <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
+          {{selectedPlanCreationOption.viewValue}}
+        </mat-select-trigger>
+        <mat-option *ngFor="let option of planCreationOptions" [value]="option">
+          <mat-icon>{{option.icon}}</mat-icon>{{option.viewValue}}
+        </mat-option>
+      </mat-select>
     </button>
 
-    <button *ngIf="showCreatePlanButton" mat-button type="button" name="button" class="create-plan-button roundedButton">
+    <!-- Create plan button -->
+    <button *ngIf="showCreatePlanButton"
+      mat-button type="button"
+      name="button"
+      class="create-plan-button roundedButton"
+      (click)="openCreatePlanDialog()">
       <mat-icon>add</mat-icon>CREATE
     </button>
   </div>
