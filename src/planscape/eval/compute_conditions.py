@@ -66,7 +66,7 @@ class ConditionReader():
             return src.read(1, out_shape=(1, int(src.height), int(src.width)))
 
 
-def _summarize(input: list[Optional[ConditionMatrix]], operation: str) -> Optional[ConditionMatrix]:
+def _summarize(no_data_value: float, input: list[Optional[ConditionMatrix]], operation: str) -> Optional[ConditionMatrix]:
     conditions = [condition for condition in input if condition is not None]
     output = None
     if conditions:
