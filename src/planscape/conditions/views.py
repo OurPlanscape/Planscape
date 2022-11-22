@@ -3,7 +3,7 @@ from django.db import connection
 
 
 # Name of the table and column from models.py.
-RASTER_TABLE = 'condition_raster'
+RASTER_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
