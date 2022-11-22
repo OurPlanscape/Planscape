@@ -27,7 +27,7 @@ import rasterio
 from typing import Optional, cast
 
 from base.conditions import weighted_average_condition
-from base.condition_types import Condition, ConditionScoreType, Region, Pillar, Element, Metric
+from base.condition_types import ConditionMatrix, ConditionScoreType, Region, Pillar, Element, Metric
 from config.conditions_config import PillarConfig
 
 
@@ -37,7 +37,7 @@ class ConditionReader():
     def __init__(self, root_directory: str = '/Users/elsieling/cnra/env'):
         self._root_directory = root_directory
 
-    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[Condition]:
+    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[ConditionMatrix]:
         """Reads a condition score from the filepath.
 
         Args:
@@ -65,7 +65,7 @@ class ConditionReader():
             return src.read(1, out_shape=(1, int(src.height), int(src.width)))
 
 
-def _summarize(input: list[Optional[Condition]], operation: str) -> Optional[Condition]:
+def _summarize(input: list[Optional[ConditionMatrix]], operation: str) -> Optional[ConditionMatrix]:
     conditions = [condition for condition in input if condition is not None]
     output = None
     if conditions:
@@ -80,7 +80,7 @@ def _summarize(input: list[Optional[Condition]], operation: str) -> Optional[Con
     return output
 
 
-def score_metric(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType) -> Optional[Condition]:
+def score_metric(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType) -> Optional[ConditionMatrix]:
     """Scores the metric by reading the condition from the file. 
 
     Args:
@@ -96,7 +96,7 @@ def score_metric(condition_reader: ConditionReader, metric: Metric, condition_ty
 
 
 def score_element(condition_reader: ConditionReader, element: Element, condition_type: ConditionScoreType,
-                  recompute: bool = False) -> Optional[Condition]:
+                  recompute: bool = False) -> Optional[ConditionMatrix]:
     """Computes the element score.
 
     Args:
@@ -118,7 +118,7 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
 
 
 def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_type: ConditionScoreType,
-                 recompute: bool = False) -> Optional[Condition]:
+                 recompute: bool = False) -> Optional[ConditionMatrix]:
     """Computes the pillar score.
 
     Args:
@@ -135,18 +135,20 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
         if not 'filepath' in pillar:
             return None
         return condition_reader.read(pillar['filepath'], condition_type) if pillar['filepath'] else None
-    element_conditions:list[Optional[Condition]] = []
+    element_conditions: list[Optional[Condition]] = []
     for element in pillar['elements']:
-        element_score = score_element(condition_reader, element, condition_type, True)
+        element_score = score_element(
+            condition_reader, element, condition_type, True)
         if element_score is None:
-            element_score = score_element(condition_reader, element, condition_type, False)
-        element_conditions.append(element_score)    
+            element_score = score_element(
+                condition_reader, element, condition_type, False)
+        element_conditions.append(element_score)
     operation = pillar.get('operation', 'MEAN')
     return _summarize(element_conditions, operation if operation else 'MEAN')
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
-                 recompute: bool = False) -> Optional[Condition]:
+                 recompute: bool = False) -> Optional[ConditionMatrix]:
     """Computes the region score.
 
     This computes the "Evaluation Score", which does a weighted average of the 
@@ -167,7 +169,7 @@ def score_region(condition_reader: ConditionReader, region: Region, condition_ty
 
 
 def score_condition(config: PillarConfig, condition_reader: ConditionReader, condition_path: str,
-                    condition_type: ConditionScoreType, recompute: bool = False) -> Optional[Condition]:
+                    condition_type: ConditionScoreType, recompute: bool = False) -> Optional[ConditionMatrix]:
     """Computes the condition from a path.
 
     The path should be of one of the following forms, with "/" as the separator:
@@ -213,7 +215,7 @@ def score_condition(config: PillarConfig, condition_reader: ConditionReader, con
 
 
 def average_weighted_scores(config: PillarConfig, condition_reader: ConditionReader, weights: dict[str, float],
-                            condition_type: ConditionScoreType, recompute=False) -> Optional[Condition]:
+                            condition_type: ConditionScoreType, recompute=False) -> Optional[ConditionMatrix]:
     conditions = [(score_condition(config, condition_reader, path, condition_type,
                    recompute), weights[path]) for path in weights.keys()]
     for (condition, _) in conditions:
