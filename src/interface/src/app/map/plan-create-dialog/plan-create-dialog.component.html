@@ -1,0 +1,26 @@
+<h1 mat-dialog-title>Start a new plan in this planning area?</h1>
+<mat-dialog-content>
+    <mat-form-field [ngStyle]="{'min-width': '480px'}">
+      <mat-label>Plan name</mat-label>
+      <input matInput [formControl]="planNameControl">
+    </mat-form-field>
+  <p>
+    Once a plan is created, you can choose focuses & constraints, create scenarios,
+    and develop your proposal as well as share with collaborators.
+  </p>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button
+    mat-raised-button
+    class="cancel-button roundedButton"
+    (click)="cancel()">
+    Cancel
+  </button>
+  <button
+    mat-raised-button
+    class="submit-button roundedButton"
+    type="submit"
+    (click)="submit()">
+    Confirm
+  </button>
+</mat-dialog-actions>

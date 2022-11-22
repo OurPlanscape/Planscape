@@ -23,6 +23,7 @@ import { SessionService } from './session.service';
 import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-dialog.component';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     AccountDialogComponent,
     RegionSelectionComponent,
     ProjectCardComponent,
+    PlanCreateDialogComponent,
   ],
   imports: [
     AppRoutingModule,
