@@ -1,14 +1,45 @@
 .map-container {
+  flex-direction: column;
   height: 100%;
   width: 100%;
   position: relative;
 }
 
-#map {
+.map-row {
+  flex-direction: row;
+}
+
+.map {
+  border: 1px solid black;
+  box-sizing: border-box;
   height: 100%;
   position: absolute;
   width: 100%;
   z-index: 1;
+}
+
+#map2 {
+  left: 50%;
+  width: 50%;
+}
+
+#map3 {
+  height: 50%;
+  top: 50%;
+  width: 50%;
+}
+
+#map4 {
+  height: 50%;
+  left: 50%;
+  top: 50%;
+  width: 50%;
+}
+
+// Workaround for unresolved Angular bug re: tab width on desktop
+// (https://github.com/angular/components/issues/2829).
+::ng-deep .mat-tab-label {
+  min-width: 60px !important;
 }
 
 .controls-container {
@@ -27,6 +58,11 @@
   width: match-parent;
 }
 
+.layer-control-container {
+  display: flex;
+  flex-direction: row;
+}
+
 .layer-radio-group {
   align-items: flex-start;
   display: flex;
@@ -40,4 +76,8 @@
 
 .layer-checkbox {
   margin: 0px 5px 0px;
+}
+
+.selected {
+  border: 4px solid #EF008C;
 }
