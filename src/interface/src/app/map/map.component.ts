@@ -78,10 +78,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
   showCreatePlanButton: boolean = false;
-  drawnPlanningArea: GeoJSON.GeoJSON = {
-      "type": "FeatureCollection",
-      "features": [],
-  }
+  drawingLayer = new L.FeatureGroup();
 
   static hillshadeTiles() {
     return L.tileLayer(
@@ -313,8 +310,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   /** Adds drawing controls and handles drawing events. */
   private addDrawingControls(map: L.Map) {
-    const drawingLayer = new L.FeatureGroup();
-    map.addLayer(drawingLayer);
+    map.addLayer(this.drawingLayer);
 
     const drawOptions: L.Control.DrawConstructorOptions = {
         position: 'bottomright',
@@ -338,32 +334,32 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             circlemarker: false,
         },
         edit: {
-            featureGroup: drawingLayer, // Required and declares which layer is editable
+            featureGroup: this.drawingLayer, // Required and declares which layer is editable
         }
     };
 
     const drawControl = new L.Control.Draw(drawOptions);
     map.addControl(drawControl);
 
-    this.setUpDrawingHandlers(map, drawingLayer);
+    this.setUpDrawingHandlers(map);
   }
 
-  private setUpDrawingHandlers(map: L.Map, drawingLayer: L.FeatureGroup) {
+  private setUpDrawingHandlers(map: L.Map) {
     map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
-      drawingLayer.addLayer(layer);
+      this.drawingLayer.addLayer(layer);
 
-      this.drawnPlanningArea = this.convertToPlanningArea(drawingLayer);
       this.showCreatePlanButton = true;
     });
   }
 
   /**
-   * Converts drawingLayer to GeoJSON. If there are many polygons drawn, creates
-   * and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon type GeoJSON.
+   * Converts drawingLayer to GeoJSON. If there are multiple polygons drawn,
+   * creates and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon
+   * type GeoJSON.
    */
-  convertToPlanningArea(drawingLayer: L.FeatureGroup): GeoJSON.GeoJSON {
-    const drawnGeoJson = drawingLayer.toGeoJSON() as FeatureCollection;
+  private convertToPlanningArea(): GeoJSON.GeoJSON {
+    const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;
       // Case: Single polygon
       if (drawnGeoJson.features.length <= 1) return drawnGeoJson;
 
@@ -396,7 +392,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     openedDialog.afterClosed().subscribe((result) => {
       if (result) {
-        this.createPlan(result.value, this.drawnPlanningArea);
+        this.createPlan(result.value, this.convertToPlanningArea());
       }
     });
   }
@@ -418,7 +414,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   /**
    * On PlanCreationOption selection change, enables the polygon tool if
-   * 'draw an area' is selected.
+   * the drawing option is selected.
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
@@ -434,7 +430,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
             message: 'Can\'t draw polygons with intersections!',
         },
       });
-    polygonDrawer.enable();
+      polygonDrawer.enable();
     }
   }
 
