@@ -44,7 +44,7 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
             raw = (np.nan_to_num(sum, nan=0) +
                    np.nan_to_num(condition, nan=0) * weight)
             # Masked array is True if both sum and condition arrays have NoData value.
-            raw = np.ma.masked_array(raw, np.isnan(sum)) & condition_is_nodata
+            raw = np.ma.masked_array(raw, np.isnan(sum) & condition_is_nodata)
             # Set True value to Nan.
             sum = np.ma.filled(raw, no_data_value)
             total_weight = total_weight + weighted_path
