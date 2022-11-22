@@ -17,7 +17,7 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
     Returns:
       A Condition such that each pixel value is the weighted average of the pixels in the input conditions.
       Output pixels with NoData have the value np.nan.
-      
+
       Note that a pixel in the input may be nan representing "no value", and that can affect the weights.
       For example, if the condition values at a pixel are 0.5, nan, and 0.25, and the weights are 1, 2, 3,
       then the weighted average will be (0.5 * 1 + 0.25 * 3)/(1 + 3), not divided by (1 + 2 + 3).
@@ -44,14 +44,12 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
             raw = (np.nan_to_num(sum, nan=0) +
                    np.nan_to_num(condition, nan=0) * weight)
             # Masked array is True if both sum and condition arrays have NoData value.
-            raw = np.ma.masked_array(raw, np.isnan(sum) & np.isnan(condition))
+            raw = np.ma.masked_array(raw, np.isnan(sum)) & condition_is_nodata
             # Set True value to Nan.
-            sum = np.ma.filled(raw, np.nan)
+            sum = np.ma.filled(raw, no_data_value)
             total_weight = total_weight + weighted_path
     if sum is None or total_weight is None:
         return None
-    if not(np.isnan(no_data_value)):
-        sum = np.nan_to_num(sum, nan=no_data_value)
     with np.errstate(divide='ignore', invalid='ignore'):
         return cast(Condition, sum / total_weight)
 
