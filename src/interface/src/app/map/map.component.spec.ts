@@ -3,18 +3,25 @@ import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ApplicationRef, DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSelectHarness } from '@angular/material/select/testing';
 import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
+import * as L from 'leaflet';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
 import { BaseLayerType, Map, Region } from './../types';
 import { MapComponent } from './map.component';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
 describe('MapComponent', () => {
@@ -62,14 +69,25 @@ describe('MapComponent', () => {
     mockSessionService = {
       region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
     };
-    const popupServiceStub = () => ({
-      makeDetailsPopup: (shape_name: any) => ({}),
-    });
+    const fakeMatDialog = jasmine.createSpyObj<MatDialog>(
+      'MatDialog',
+      {
+        open: {
+          afterClosed: () => of({
+            value: 'test name'
+          })
+        } as MatDialogRef<any>,
+      },
+      {});
+      const popupServiceStub = () => ({
+        makeDetailsPopup: (shape_name: any) => ({}),
+      });
     TestBed.configureTestingModule({
-      imports: [FormsModule, MatCheckboxModule, MatRadioModule],
+      imports: [FormsModule, MatCheckboxModule, MatRadioModule, MatSelectModule, BrowserAnimationsModule],
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [MapComponent, ProjectCardComponent],
+      declarations: [MapComponent, ProjectCardComponent, PlanCreateDialogComponent],
       providers: [
+        { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: mockSessionService },
@@ -361,4 +379,51 @@ describe('MapComponent', () => {
       });
     });
   });
+  describe('Plan creation dropdown', () => {
+    beforeEach(async () => {
+      component.ngAfterViewInit();
+    });
+
+    it('enables polygon tool when drawing option is selected', async () => {
+      spyOn(component, 'onPlanCreationOptionChange').and.callThrough();
+      const polygonSpy = spyOn(L.Draw, 'Polygon').and.callThrough();
+      const select = await loader.getHarness(MatSelectHarness);
+      await select.open();
+      const option = await select.getOptions();
+
+      await option[0].click(); // 'draw-area' option
+
+      expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
+      expect(polygonSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('Create plan', () => {
+    it('opens create plan dialog', async () => {
+      const fakeMatDialog: MatDialog = fixture.debugElement.injector.get(
+        MatDialog
+      );
+      fixture.componentInstance.showCreatePlanButton = true;
+      const button = await loader.getHarness(MatButtonHarness.with({
+        'selector': '.create-plan-button'
+      }));
+
+      await button.click();
+
+      expect(fakeMatDialog.open).toHaveBeenCalled();
+    });
+
+    it('dialog calls create plan with name and planning area ', async () => {
+      const emptyGeoJson: GeoJSON.GeoJSON = {
+        type: 'FeatureCollection',
+        features: [],
+      };
+      const createPlanSpy = spyOn<any>(component, 'createPlan').and.callThrough();
+
+      fixture.componentInstance.openCreatePlanDialog();
+
+      expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+    });
+  });
+
 });

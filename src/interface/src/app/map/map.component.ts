@@ -18,7 +18,7 @@ import { ProjectCardComponent } from './project-card/project-card.component';
 
 export interface PlanCreationOption {
   value: string;
-  viewValue: string;
+  display: string;
   icon: any;
 }
 @Component({
@@ -74,7 +74,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   };
 
   planCreationOptions: PlanCreationOption[] = [
-    {value: 'draw-area', icon: 'edit', viewValue: 'Draw an area'},
+    {value: 'draw-area', icon: 'edit', display: 'Draw an area'},
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
   showCreatePlanButton: boolean = false;
@@ -413,7 +413,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * On PlanCreationOption selection change, enables the polygon tool if
+   * On PlanCreationOptions selection change, enables the polygon tool if
    * the drawing option is selected.
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
