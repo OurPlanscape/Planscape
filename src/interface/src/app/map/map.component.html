@@ -3,7 +3,7 @@
   <div class="map-options-bar">
 
     <!-- Dropdown for creating a planning area -->
-    <button mat-raised-button type="button" name="plan-options-button" class="plan-options-button roundedButton">
+    <button mat-raised-button type="button" class="plan-options-button roundedButton">
       <mat-select
         [(value)]="selectedPlanCreationOption"
         placeholder="Create a plan"
@@ -11,10 +11,10 @@
         (selectionChange)="onPlanCreationOptionChange($event.value)">
         <mat-select-trigger *ngIf="selectedPlanCreationOption">
           <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
-          {{selectedPlanCreationOption.viewValue}}
+          {{selectedPlanCreationOption.display}}
         </mat-select-trigger>
         <mat-option *ngFor="let option of planCreationOptions" [value]="option">
-          <mat-icon>{{option.icon}}</mat-icon>{{option.viewValue}}
+          <mat-icon>{{option.icon}}</mat-icon>{{option.display}}
         </mat-option>
       </mat-select>
     </button>
@@ -22,7 +22,6 @@
     <!-- Create plan button -->
     <button *ngIf="showCreatePlanButton"
       mat-button type="button"
-      name="create-plan-button"
       class="create-plan-button roundedButton"
       (click)="openCreatePlanDialog()">
       <mat-icon>add</mat-icon>CREATE
