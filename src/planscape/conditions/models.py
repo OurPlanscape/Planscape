@@ -51,7 +51,7 @@ class ConditionRaster(models.Model):
 
        raster2pgsql -s 9822 -a -I -C -Y -F –n name -f raster -t 256x256 \
           ~/Downloads/wood/AvailableBiomass_2021_300m_base.tif \
-          public.condition_raster | \
+          public.conditions_conditionraster | \
           psql -U planscape -d planscape -h localhost -p 5432 
 
     When this command is run, the string stored in the column 'name' will be the
