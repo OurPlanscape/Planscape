@@ -1,7 +1,6 @@
 """ Tests for the conditions.py file. """
 
 import numpy as np
-from typing import Optional
 import unittest
 
 from base.conditions import average_condition, weighted_average_condition, management_condition
@@ -13,7 +12,7 @@ class AverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [14, 15, 16]])
         expected = np.array([[6, 7, 8], [9, 10, 11]])
-        average = average_condition([condition1, condition2])
+        average = average_condition(np.nan,[condition1, condition2])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
 
@@ -21,7 +20,15 @@ class AverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.nan, 15, 16]])
         expected = np.array([[6, 7, 8], [4, 10, 11]])
-        average = average_condition([condition1, condition2])
+        average = average_condition(np.nan, [condition1, condition2])
+        self.assertIsNotNone(average)
+        self.assertTrue(np.all(average == expected))
+
+    def test_average_ignores_other_nodata(self):
+        condition1 = np.array([[1, 2, 3], [4, 5, 6]])
+        condition2 = np.array([[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
+        expected = np.array([[6, 7, 8], [4, 10, 11]])
+        average = average_condition(np.finfo(np.float32).min, [condition1, condition2])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
 
@@ -29,8 +36,19 @@ class AverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [np.nan, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.nan, 15, 16]])
         expected = np.array([[6, 7, 8], [np.nan, 10, 11]])
-        average = average_condition([condition1, condition2])
+        average = average_condition(np.nan,[condition1, condition2])
         self.assertIsNotNone(average)
+        if average is not None:
+            self.assertTrue(np.all(np.nan_to_num(average)
+                            == np.nan_to_num(expected)))
+
+    def test_average_propagates_other_nodata(self):
+        condition1 = np.array([[1, 2, 3], [np.finfo(np.float32).min, 5, 6]])
+        condition2 = np.array([[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
+        expected = np.array([[6, 7, 8], [np.nan, 10, 11]])
+        average = average_condition(np.finfo(np.float32).min,[condition1, condition2])
+        self.assertIsNotNone(average)
+
         if average is not None:
             self.assertTrue(np.all(np.nan_to_num(average)
                             == np.nan_to_num(expected)))
@@ -41,7 +59,7 @@ class WeightedAverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [14, 15, 16]])
         expected = np.array([[6, 7, 8], [9, 10, 11]])
-        average = weighted_average_condition(
+        average = weighted_average_condition(np.nan,
             [(condition1, 0.5), (condition2, 0.5)])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
@@ -50,7 +68,7 @@ class WeightedAverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.nan, 15, 16]])
         expected = np.array([[6, 7, 8], [4, 10, 11]])
-        average = weighted_average_condition(
+        average = weighted_average_condition(np.nan,
             [(condition1, 0.5), (condition2, 0.5)])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
@@ -59,7 +77,7 @@ class WeightedAverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [np.nan, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.nan, 15, 16]])
         expected = np.array([[6, 7, 8], [np.nan, 10, 11]])
-        average = weighted_average_condition(
+        average = weighted_average_condition(np.nan,
             [(condition1, 0.5), (condition2, 0.5)])
         self.assertIsNotNone(average)
         if average is not None:
@@ -70,7 +88,7 @@ class WeightedAverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [14, 15, 16]])
         expected = np.array([[8.5, 9.5, 10.5], [11.5, 12.5, 13.5]])
-        average = weighted_average_condition(
+        average = weighted_average_condition(np.nan,
             [(condition1, 0.25), (condition2, 0.75)])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
@@ -79,7 +97,7 @@ class WeightedAverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.nan, 15, 16]])
         expected = np.array([[8.5, 9.5, 10.5], [4, 12.5, 13.5]])
-        average = weighted_average_condition(
+        average = weighted_average_condition(np.nan,
             [(condition1, 0.25), (condition2, 0.75)])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
@@ -88,7 +106,7 @@ class WeightedAverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [np.nan, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.nan, 15, 16]])
         expected = np.array([[8.5, 9.5, 10.5], [np.nan, 12.5, 13.5]])
-        average = weighted_average_condition(
+        average = weighted_average_condition(np.nan,
             [(condition1, 0.25), (condition2, 0.75)])
         self.assertIsNotNone(average)
         if average is not None:

@@ -49,20 +49,21 @@ class ConditionRaster(models.Model):
     rows per condition, because rasters are more efficiently stored and queried in
     tiles.  The table is not managed by Django but populated by raster2psql, e.g.,
 
-       raster2pgsql -s 9822 -a -I -C -Y -F –n raster_name -f raster -t 256x256 \
+       raster2pgsql -s 9822 -a -I -C -Y -F –n name -f raster -t 256x256 \
           ~/Downloads/wood/AvailableBiomass_2021_300m_base.tif \
-          public.condition_raster | \
+          public.conditions_conditionraster | \
           psql -U planscape -d planscape -h localhost -p 5432 
 
-    When this command is run, the string stored in the column 'raster_name' will be the
+    When this command is run, the string stored in the column 'name' will be the
     name of the file, i.e., 'AvailableBiomass_2021_300m_base.tif'. 
     """
-    # The name of the raster, which must match the raster_name in the Condition. To run raster2pgsql, this must be a string without any underscores.
+    # The name of the raster, which must match the raster_name in the Condition. 
+    # WARNING: raster2pgsql does not work if the field name has any _ chars. 
     name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.
     raster = models.RasterField(null=True)
 
-    # Turn off management by Django.
     class Meta:
+        # Turn off management by Django.
         managed = False

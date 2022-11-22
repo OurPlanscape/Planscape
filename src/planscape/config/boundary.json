@@ -1,20 +1,6 @@
 {
     "boundaries": [
         {
-            "boundary_name": "tcsi_huc12",
-            "display_name": "HUC12",
-            "region_name": "tcsi",
-            "filepath": "boundary/tcsi/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "Name",
-                "states": "States",
-                "acres": "AreaAcres",
-                "hectares": "Hectares"
-            }
-        },
-        {
             "boundary_name": "tcsi_fire_perimeters",
             "display_name": "Previous Fires",
             "region_name": "tcsi",
@@ -57,6 +43,29 @@
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
                 "shape_name": "Name"
+            }
+        },
+        {
+            "boundary_name": "huc10",
+            "display_name": "HUC10",
+            "region_name": "none",
+            "filepath": "boundary/watersheds_HUC10_CA/WBD_USGS_HUC10_CA.shp",
+            "source_srs": 6414,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "Name",
+                "acres": "AreaAcres"
+            }
+        },
+        {
+            "boundary_name": "USFS",
+            "display_name": "US Forests",
+            "region_name": "none",
+            "filepath": "boundary/California_USFS/California_USFS.shp",
+            "source_srs": 4269,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "FORESTNAME"
             }
         }
     ]

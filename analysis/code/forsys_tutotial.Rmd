@@ -51,6 +51,7 @@ test_forest <- test_forest %>%
 ```
 
 Let's visualize the data
+
 ```{r input_data_plot, echo=FALSE}
 # plotting helper function
 plot_test_forest <- function(sf, var_name) {
