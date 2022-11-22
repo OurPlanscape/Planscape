@@ -64,6 +64,6 @@ class ConditionRaster(models.Model):
     # A tile in the raster.
     raster = models.RasterField(null=True)
 
-    # Turn off management by Django.
     class Meta:
+        # Turn off management by Django.
         managed = False
