@@ -95,6 +95,17 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  static dataLayerTilesNormalized() {
+    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+      crs: L.CRS.EPSG4326,
+      minZoom: 7,
+      maxZoom: 15,
+      format: 'image/png',
+      opacity: 0.7,
+      layers: 'AvailableBiomass_2021_300m_normalized.tif',
+    });
+  }
+
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -279,8 +290,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       showCountyBoundaryLayer: false,
       showUsForestBoundaryLayer: false,
       showDataLayer: false,
-    };
-  }
+      showDataLayerNormalized: false,
+    }
+  };
 
   /** Sync pan, zoom, etc. between all maps. */
   private syncAllMaps() {
@@ -572,8 +584,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Toggles whether data layer is shown. */
   toggleDataLayer(map: Map) {
     if (map.instance === undefined) return;
+    map.dataLayerRef = MapComponent.dataLayerTiles();
 
     if (map.config.showDataLayer) {
+      map.dataLayerRef?.addTo(map.instance);
+    } else {
+      map.dataLayerRef?.remove();
+    }
+  }
+  toggleDataLayerNormalized(map: Map) {
+    if (map.instance === undefined) return;
+    map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
+
+    if (map.config.showDataLayerNormalized) {
       map.dataLayerRef?.addTo(map.instance);
     } else {
       map.dataLayerRef?.remove();
