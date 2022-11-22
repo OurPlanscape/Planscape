@@ -6,7 +6,7 @@ from typing import Optional, cast
 from base.condition_types import ConditionMatrix, ConditionScoreType
 
 
-def weighted_average_condition(conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
+def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
     """Computes the weighted average condition.
 
     Args:
@@ -51,10 +51,10 @@ def weighted_average_condition(conditions_with_weights: list[tuple[ConditionMatr
     if sum is None or total_weight is None:
         return None
     with np.errstate(divide='ignore', invalid='ignore'):
-        return cast(Condition, sum / total_weight)
+        return cast(ConditionMatrix, sum / total_weight)
 
 
-def average_condition(conditions: list[ConditionMatrix]) -> Optional[ConditionMatrix]:
+def average_condition(no_data_value: float, conditions: list[ConditionMatrix]) -> Optional[ConditionMatrix]:
     """Computes the (unweighted) average condition.
 
     Args:
