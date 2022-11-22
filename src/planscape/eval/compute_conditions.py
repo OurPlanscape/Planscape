@@ -26,7 +26,7 @@ import os
 import rasterio
 from typing import Optional, cast
 
-from base.conditions import *
+from base.conditions import average_condition, weighted_average_condition
 from base.condition_types import Condition, ConditionScoreType, Region, Pillar, Element, Metric
 from config.conditions_config import PillarConfig
 
@@ -65,6 +65,7 @@ class ConditionReader():
         with rasterio.open(os.path.join(self._root_directory, filepath) + file) as src:
             return src.read(1, out_shape=(1, int(src.height), int(src.width)))
 
+
 def _summarize(no_data_value: float, input: list[Optional[Condition]], operation: str) -> Optional[Condition]:
     conditions = [condition for condition in input if condition is not None]
     output = None
@@ -73,8 +74,8 @@ def _summarize(no_data_value: float, input: list[Optional[Condition]], operation
             output = conditions[0]
         elif operation == 'MIN':
             output = functools.reduce(np.minimum, conditions)
-        else: # MEAN
-            output = average_condition(no_data_value, input)
+        else:  # MEAN
+            output = average_condition(no_data_value, conditions)
     return output
 
 
@@ -113,7 +114,7 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
                          for metric in element['metrics']]
     operation = element.get('operation', 'MEAN')
     # TODO: Parameterize the NoData value
-    return _summarize(np.finfo(np.float32).min, metric_conditions, operation if operation else 'MEAN')
+    return _summarize(float(np.finfo(np.float32).min), metric_conditions, operation if operation else 'MEAN')
 
 
 def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_type: ConditionScoreType,
@@ -134,15 +135,17 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
         if not 'filepath' in pillar:
             return None
         return condition_reader.read(pillar['filepath'], condition_type) if pillar['filepath'] else None
-    element_conditions:list[Optional[Condition]] = []
+    element_conditions: list[Optional[Condition]] = []
     for element in pillar['elements']:
-        element_score = score_element(condition_reader, element, condition_type, True)
+        element_score = score_element(
+            condition_reader, element, condition_type, True)
         if element_score is None:
-            element_score = score_element(condition_reader, element, condition_type, False)
-        element_conditions.append(element_score)    
+            element_score = score_element(
+                condition_reader, element, condition_type, False)
+        element_conditions.append(element_score)
     operation = pillar.get('operation', 'MEAN')
     # TODO: Parameterize the NoData value
-    return _summarize(np.finfo(np.float32).min,element_conditions, operation if operation else 'MEAN')
+    return _summarize(float(np.finfo(np.float32).min), element_conditions, operation if operation else 'MEAN')
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
@@ -219,4 +222,4 @@ def average_weighted_scores(config: PillarConfig, condition_reader: ConditionRea
     for (condition, _) in conditions:
         if condition is None:
             return None
-    return weighted_average_condition(cast(list[tuple[Condition, float]], conditions))
+    return weighted_average_condition(np.nan, cast(list[tuple[Condition, float]], conditions))
