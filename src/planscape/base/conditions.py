@@ -54,7 +54,7 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
         return cast(Condition, sum / total_weight)
 
 
-def average_condition(no_data_value: float, conditions: list[np.array]) -> Optional[Condition]:
+def average_condition(no_data_value: float, conditions: list[Condition]) -> Optional[Condition]:
     """Computes the (unweighted) average condition.
 
     Args:
