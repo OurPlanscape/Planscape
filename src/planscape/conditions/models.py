@@ -57,8 +57,8 @@ class ConditionRaster(models.Model):
     When this command is run, the string stored in the column 'raster_name' will be the
     name of the file, i.e., 'AvailableBiomass_2021_300m_base.tif'. 
     """
-    # The name of the raster, which must match the raster_name in the Condition.
-    raster_name: models.TextField = models.TextField(null=True)
+    # The name of the raster, which must match the raster_name in the Condition. To run raster2pgsql, this must be a string without any underscores.
+    name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.
     raster = models.RasterField(null=True)

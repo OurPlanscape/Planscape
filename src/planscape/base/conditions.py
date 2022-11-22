@@ -4,10 +4,10 @@
 import numpy as np
 from typing import Optional, cast
 
-from base.condition_types import Condition, ConditionScoreType
+from base.condition_types import ConditionMatrix, ConditionScoreType
 
 
-def weighted_average_condition(conditions_with_weights: list[tuple[Condition, float]]) -> Optional[Condition]:
+def weighted_average_condition(conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
     """Computes the weighted average condition.
 
     Args:
@@ -42,7 +42,7 @@ def weighted_average_condition(conditions_with_weights: list[tuple[Condition, fl
         return cast(Condition, sum / total_weight)
 
 
-def average_condition(conditions: list[Condition]) -> Optional[Condition]:
+def average_condition(conditions: list[ConditionMatrix]) -> Optional[ConditionMatrix]:
     """Computes the (unweighted) average condition.
 
     Args:
@@ -57,7 +57,7 @@ def average_condition(conditions: list[Condition]) -> Optional[Condition]:
     return weighted_average_condition(list(zip(conditions, [1.0] * len(conditions))))
 
 
-def management_condition(current: Condition, future: Condition, type: ConditionScoreType) -> Condition:
+def management_condition(current: ConditionMatrix, future: ConditionMatrix, type: ConditionScoreType) -> ConditionMatrix:
     """Computes a management condition from the current and future conditions.
 
     See the PROMOTe framework for the meanings of these condition.
@@ -73,7 +73,7 @@ def management_condition(current: Condition, future: Condition, type: ConditionS
     Raises:
       ValueError if the conditions do not have the same shape.
     """
-    def scaled_distance(x: int, y: int) -> Condition:
+    def scaled_distance(x: int, y: int) -> ConditionMatrix:
         root2 = np.sqrt(2)
         distance = np.sqrt((current - x) * (current - x) +
                            (future - y) * (future - y))
