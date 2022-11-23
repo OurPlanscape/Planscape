@@ -246,8 +246,8 @@ class ScoreConditionTest(unittest.TestCase):
         self.assertIsNotNone(score)
         self.assertIsNotNone(element)
         if element is not None:
-            expected = cc.score_element(FakeConditionReader(
-            ), element, ConditionScoreType.IMPACT, recompute=True)
+            expected = cc.score_element(
+                FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
             self.assertTrue(np.all(score == expected))
 
     def test_score_condition_unknown_metric_returns_none(self):
