@@ -7,8 +7,10 @@ export interface Map {
   config: MapConfig;
   instance?: L.Map | undefined;
   baseLayerRef?: L.Layer | undefined;
-  HUC12BoundaryLayerRef?: L.Layer | undefined;
+  huc12BoundaryLayerRef?: L.Layer | undefined;
+  huc10BoundaryLayerRef?: L.Layer | undefined;
   countyBoundaryLayerRef?: L.Layer | undefined;
+  usForestBoundaryLayerRef?: L.Layer | undefined;
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
 }
@@ -16,7 +18,9 @@ export interface Map {
 export interface MapConfig {
   baseLayerType: BaseLayerType;
   showExistingProjectsLayer: boolean;
-  showHUC12BoundariesLayer: boolean;
-  showCountyBoundariesLayer: boolean;
+  showHuc12BoundaryLayer: boolean;
+  showHuc10BoundaryLayer: boolean;
+  showCountyBoundaryLayer: boolean;
+  showUsForestBoundaryLayer: boolean;
   showDataLayer: boolean;
 }

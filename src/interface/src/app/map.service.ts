@@ -48,7 +48,7 @@ export class MapService {
     }
   }
 
-  getHUC12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getHuc12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
@@ -56,6 +56,17 @@ export class MapService {
     }
     return this.http.get<GeoJSON.GeoJSON>(
       'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12' + regionString
+    );
+  }
+
+  getHuc10BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+    // Get the shapes from the REST server.
+    var regionString: string = '';
+    if (region != null) {
+      regionString = '&region_name=' + this.regionToString(region);
+    }
+    return this.http.get<GeoJSON.GeoJSON>(
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc10' + regionString
     );
   }
 
@@ -67,6 +78,17 @@ export class MapService {
     }
     return this.http.get<GeoJSON.GeoJSON>(
       'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties' + regionString
+    );
+  }
+
+  getUsForestBoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+    // Get the shapes from the REST server.
+    var regionString: string = '';
+    if (region != null) {
+      regionString = '&region_name=' + this.regionToString(region);
+    }
+    return this.http.get<GeoJSON.GeoJSON>(
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=USFS' + regionString
     );
   }
 

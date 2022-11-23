@@ -21,7 +21,7 @@ class BoundaryTypesTest(unittest.TestCase):
         self.assertTrue(self._config.check_config())
 
     def test_get_boundary(self):
-        boundary: Optional[Boundary] = self._config.get_boundary("tcsi_huc12")
+        boundary: Optional[Boundary] = self._config.get_boundary("huc12")
         self.assertIsNotNone(boundary)
         boundary = self._config.get_boundary("foo")
         self.assertIsNone(boundary)
