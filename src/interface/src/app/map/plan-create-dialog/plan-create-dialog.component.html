@@ -1,6 +1,6 @@
 <h1 mat-dialog-title>Start a new plan in this planning area?</h1>
 <mat-dialog-content>
-    <mat-form-field [ngStyle]="{'min-width': '480px'}">
+    <mat-form-field>
       <mat-label>Plan name</mat-label>
       <input matInput [formControl]="planNameControl">
     </mat-form-field>
@@ -12,13 +12,13 @@
 <mat-dialog-actions>
   <button
     mat-raised-button
-    class="cancel-button roundedButton"
+    class="cancel-button"
     (click)="cancel()">
     Cancel
   </button>
   <button
     mat-raised-button
-    class="submit-button roundedButton"
+    class="submit-button"
     type="submit"
     (click)="submit()">
     Confirm
