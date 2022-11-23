@@ -3,11 +3,11 @@
 import numpy as np
 from typing import Optional, cast
 
-from base.condition_types import Condition, ConditionScoreType
+from base.condition_types import ConditionMatrix, ConditionScoreType
 
 
-def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[Condition, float]]) -> Optional[Condition]:
-    """Computes the weighted average condition, ignoring the given NoData value.
+def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
+    """Computes the weighted average condition.
 
     Args:
       no_data_value: The specified NoData value of the original raster. This value will be ignored in calcuation.
@@ -51,10 +51,10 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
     if sum is None or total_weight is None:
         return None
     with np.errstate(divide='ignore', invalid='ignore'):
-        return cast(Condition, sum / total_weight)
+        return cast(ConditionMatrix, sum / total_weight)
 
 
-def average_condition(no_data_value: float, conditions: list[np.array]) -> Optional[Condition]:
+def average_condition(no_data_value: float, conditions: list[ConditionMatrix]) -> Optional[ConditionMatrix]:
     """Computes the (unweighted) average condition.
 
     Args:
@@ -69,7 +69,7 @@ def average_condition(no_data_value: float, conditions: list[np.array]) -> Optio
     return weighted_average_condition(no_data_value, list(zip(conditions, [1.0] * len(conditions))))
 
 
-def management_condition(current: Condition, future: Condition, type: ConditionScoreType) -> Condition:
+def management_condition(current: ConditionMatrix, future: ConditionMatrix, type: ConditionScoreType) -> ConditionMatrix:
     """Computes a management condition from the current and future conditions.
 
     See the PROMOTe framework for the meanings of these condition.
@@ -85,7 +85,7 @@ def management_condition(current: Condition, future: Condition, type: ConditionS
     Raises:
       ValueError if the conditions do not have the same shape.
     """
-    def scaled_distance(x: int, y: int) -> Condition:
+    def scaled_distance(x: int, y: int) -> ConditionMatrix:
         root2 = np.sqrt(2)
         distance = np.sqrt((current - x) * (current - x) +
                            (future - y) * (future - y))

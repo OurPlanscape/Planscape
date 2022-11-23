@@ -66,6 +66,18 @@ class PillarConfig:
 
         return 'regions' in self._config and check_regions(self._config['regions'])
 
+    def get_regions(self) -> List[Region]:
+        return self._config['regions']
+
+    def get_pillars(self, region : Region) -> List[Pillar]:  
+        return region['pillars']
+
+    def get_elements(self, pillar : Pillar) -> List[Element]:   
+        return pillar['elements']      
+
+    def get_metrics(self, element : Element) -> List[Metric]:   
+        return element['metrics']  
+
     def get_region(self, region_name: str) -> Optional[Region]:
         """Gets the named region from the configuration.
 
