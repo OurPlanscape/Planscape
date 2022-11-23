@@ -13,7 +13,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
-import { BaseLayerType, Map, Region } from './../types';
+import { BaseLayerType, DataLayerType, Map, Region } from './../types';
 import { MapComponent } from './map.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
@@ -91,12 +91,12 @@ describe('MapComponent', () => {
       component.maps.forEach((map: Map) => {
         expect(map.config).toEqual({
           baseLayerType: BaseLayerType.Road,
+          dataLayerType: DataLayerType.None,
           showExistingProjectsLayer: true,
           showHuc12BoundaryLayer: false,
           showHuc10BoundaryLayer: false,
           showCountyBoundaryLayer: false,
           showUsForestBoundaryLayer: false,
-          showDataLayer: false,
         });
       });
     });
@@ -337,26 +337,36 @@ describe('MapComponent', () => {
           ).toBeTrue();
         });
 
-        it(`map-${testCase + 1} should toggle data layer`, async () => {
+        it(`map-${testCase + 1} should change data layer`, async () => {
           let map = component.maps[testCase];
-          spyOn(component, 'toggleDataLayer').and.callThrough();
-          const checkbox = await loader.getHarness(
-            MatCheckboxHarness.with({ name: `${map.id}-data-toggle` })
+          spyOn(component, 'changeDataLayer').and.callThrough();
+          const radioButtonGroup = await loader.getHarness(
+            MatRadioGroupHarness.with({ name: `${map.id}-data-layer-select` })
           );
 
-          // Act: check the data checkbox
-          await checkbox.check();
+          // Act: select raw data
+          await radioButtonGroup.checkRadioButton({ label: 'Raw' });
 
-          // Assert: expect that the map contains the data layer
-          expect(component.toggleDataLayer).toHaveBeenCalled();
+          // Assert: expect that the map contains the raw data layer
+          expect(component.changeDataLayer).toHaveBeenCalled();
+          expect(map.config.dataLayerType).toEqual(DataLayerType.Raw);
           expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeTrue();
 
-          // Act: uncheck the data checkbox
-          await checkbox.uncheck();
+          // Act: select normalized data
+          await radioButtonGroup.checkRadioButton({ label: 'Normalized' });
 
-          // Assert: expect that the map does not contain the data layer
-          expect(component.toggleDataLayer).toHaveBeenCalled();
-          expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeFalse();
+          // Assert: expect that the map contains the normalized data layer
+          expect(component.changeDataLayer).toHaveBeenCalled();
+          expect(map.config.dataLayerType).toEqual(DataLayerType.Normalized);
+          expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeTrue();
+
+          // Act: select no data
+          await radioButtonGroup.checkRadioButton({ label: 'None' });
+
+          // Assert: expect that the map contains no data layer
+          expect(component.changeDataLayer).toHaveBeenCalled();
+          expect(map.config.dataLayerType).toEqual(DataLayerType.None);
+          expect(map.dataLayerRef).toBeUndefined();
         });
       });
     });
