@@ -81,3 +81,26 @@
 .selected {
   border: 4px solid #EF008C;
 }
+
+// Styling for the info bar above the maps
+.map-options-bar {
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 50px;
+  position: absolute;
+  pointer-events: none;
+  width: 100%;
+  z-index: 2;
+}
+
+.plan-options-button {
+  left: 480px;
+  pointer-events: auto;
+  top: 10px;
+}
+
+.create-plan-button {
+  color: #ffffff;
+  left: 500px;
+  pointer-events: auto;
+  top: 10px;
+}
