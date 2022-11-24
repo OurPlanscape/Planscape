@@ -1,0 +1,35 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.10.8]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        cd src/planscape
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: Run Tests
+      env:
+        SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
+      run: |
+        cd src/planscape
+        python manage.py test
+        
