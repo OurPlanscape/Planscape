@@ -104,7 +104,6 @@ $$;
 class Migration(migrations.Migration):
 
     dependencies: list[Tuple[str, str]] = [
-        ('conditions', '0003_rename_conditiondataset_basecondition'),
     ]
 
     operations = [migrations.RunSQL(SQL)]
