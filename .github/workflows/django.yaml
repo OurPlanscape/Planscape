@@ -44,8 +44,8 @@ jobs:
         pip install djangorestframework-simplejwt django-leaflet 
         pip install -r requirements.txt 
     - name: Set up PostGIS
-        run: psql -d postgresql://postgres@localhost/template1 -f postgis_setup.sql
-        working-directory: ./src/planscape/testing/
+        run: |
+          psql -d postgresql://postgres@localhost/template1 -f src/planscape/testing/postgis_setup.sql
         env:
           PGPASSWORD: password
     - name: Run Tests
