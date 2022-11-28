@@ -4,13 +4,13 @@ import numpy as np
 from typing import Optional
 import unittest
 
-from base.condition_types import Condition, ConditionScoreType, Region, Pillar, Element, Metric
+from base.condition_types import ConditionMatrix, ConditionScoreType, Region, Pillar, Element, Metric
 import config.conditions_config as pc
 import eval.compute_conditions as cc
 
 
 class FakeConditionReader(cc.ConditionReader):
-    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[Condition]:
+    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[ConditionMatrix]:
         match condition_type:
             case ConditionScoreType.CURRENT:
                 return np.array([[1, 2, 3], [4, 5, 6]])
@@ -230,9 +230,9 @@ class ScoreConditionTest(unittest.TestCase):
         self.assertIsNotNone(score)
         self.assertIsNotNone(pillar)
         if pillar is not None:
-           expected = cc.score_pillar(FakeConditionReader(), pillar, ConditionScoreType.ADAPT)
-           self.assertTrue(np.all(score == expected))
-    
+            expected = cc.score_pillar(
+                FakeConditionReader(), pillar, ConditionScoreType.ADAPT)
+            self.assertTrue(np.all(score == expected))
 
     def test_score_condition_unknown_element_returns_none(self):
         self.assertIsNone(cc.score_condition(self.FakePillarConfig(""),
@@ -246,8 +246,9 @@ class ScoreConditionTest(unittest.TestCase):
         self.assertIsNotNone(score)
         self.assertIsNotNone(element)
         if element is not None:
-           expected = cc.score_element(FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
-           self.assertTrue(np.all(score == expected))
+            expected = cc.score_element(
+                FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
+            self.assertTrue(np.all(score == expected))
 
     def test_score_condition_unknown_metric_returns_none(self):
         self.assertIsNone(cc.score_condition(self.FakePillarConfig(""),
@@ -255,11 +256,13 @@ class ScoreConditionTest(unittest.TestCase):
 
     def test_score_condition_known_metric_returns_value(self):
         pillar_config = self.FakePillarConfig("")
-        metric = pillar_config.get_metric("region", "pillar", "element2", "metric1")
+        metric = pillar_config.get_metric(
+            "region", "pillar", "element2", "metric1")
         score = cc.score_condition(pillar_config,
                                    FakeConditionReader(), "region/pillar/element2/metric1", ConditionScoreType.ADAPT)
         self.assertIsNotNone(score)
         self.assertIsNotNone(metric)
         if metric is not None:
-           expected = cc.score_metric(FakeConditionReader(), metric, ConditionScoreType.ADAPT)
-           self.assertTrue(np.all(score == expected))
+            expected = cc.score_metric(
+                FakeConditionReader(), metric, ConditionScoreType.ADAPT)
+            self.assertTrue(np.all(score == expected))

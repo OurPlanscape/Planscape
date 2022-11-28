@@ -1,66 +1,97 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ApplicationRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ApplicationRef, DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSelectHarness } from '@angular/material/select/testing';
+import { By } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
+import * as L from 'leaflet';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
-import { BaseLayerType, Region } from './../types';
+import { BaseLayerType, Map, Region } from './../types';
 import { MapComponent } from './map.component';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
 describe('MapComponent', () => {
   let component: MapComponent;
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
-  let mockSessionService: Partial<SessionService>
+  let mockSessionService: Partial<SessionService>;
 
   beforeEach(() => {
-    const fakeGeoJSON: GeoJSON.GeoJSON = {
+    const fakeGeoJson: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
       features: [
         {
-          type: "Feature",
+          type: 'Feature',
           geometry: {
-            type: "MultiPolygon",
-            coordinates: [[[[10, 20], [10, 30], [15, 15]]]],
+            type: 'MultiPolygon',
+            coordinates: [
+              [
+                [
+                  [10, 20],
+                  [10, 30],
+                  [15, 15],
+                ],
+              ],
+            ],
           },
           properties: {
-            shape_name: "Test"
-          }
-        }
+            shape_name: 'Test',
+          },
+        },
       ],
     };
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
-        getHUC12BoundaryShapes: of(fakeGeoJSON),
-        getCountyBoundaryShapes: of(fakeGeoJSON),
-        getExistingProjects: of(fakeGeoJSON),
-        getRegionBoundary: of(fakeGeoJSON),
+        getHuc12BoundaryShapes: of(fakeGeoJson),
+        getHuc10BoundaryShapes: of(fakeGeoJson),
+        getCountyBoundaryShapes: of(fakeGeoJson),
+        getUsForestBoundaryShapes: of(fakeGeoJson),
+        getExistingProjects: of(fakeGeoJson),
+        getRegionBoundary: of(fakeGeoJson),
       },
-      {},
+      {}
     );
     mockSessionService = {
-      region$: new BehaviorSubject<Region|null>(Region.SIERRA_NEVADA),
+      region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
     };
-    const popupServiceStub = () => ({ makeDetailsPopup: (shape_name: any) => ({}) });
+    const fakeMatDialog = jasmine.createSpyObj<MatDialog>(
+      'MatDialog',
+      {
+        open: {
+          afterClosed: () => of({
+            value: 'test name'
+          })
+        } as MatDialogRef<any>,
+      },
+      {});
+      const popupServiceStub = () => ({
+        makeDetailsPopup: (shape_name: any) => ({}),
+      });
     TestBed.configureTestingModule({
-      imports: [FormsModule, MatCheckboxModule, MatRadioModule],
+      imports: [FormsModule, MatCheckboxModule, MatRadioModule, MatSelectModule, BrowserAnimationsModule],
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [MapComponent, ProjectCardComponent],
+      declarations: [MapComponent, ProjectCardComponent, PlanCreateDialogComponent],
       providers: [
+        { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: mockSessionService },
-      ]
+      ],
     });
     fixture = TestBed.createComponent(MapComponent);
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -72,133 +103,327 @@ describe('MapComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it(`baseLayerType has default value`, () => {
-    expect(component.baseLayerType).toEqual(BaseLayerType.Road);
-  });
+  describe('Map initialization', () => {
+    it('initializes 4 maps with default config options', () => {
+      expect(component.maps.length).toEqual(4);
+      component.maps.forEach((map: Map) => {
+        expect(map.config).toEqual({
+          baseLayerType: BaseLayerType.Road,
+          showExistingProjectsLayer: true,
+          showHuc12BoundaryLayer: false,
+          showHuc10BoundaryLayer: false,
+          showCountyBoundaryLayer: false,
+          showUsForestBoundaryLayer: false,
+          showDataLayer: false,
+        });
+      });
+    });
 
-  it(`baseLayerTypes has default value`, () => {
-    expect(component.baseLayerTypes).toEqual([BaseLayerType.Road,BaseLayerType.Terrain]);
-  });
+    it('calls the MapService for geojson', () => {
+      const mapServiceStub: MapService =
+        fixture.debugElement.injector.get(MapService);
 
-  it(`BaseLayerType has default value`, () => {
-    expect(component.BaseLayerType).toEqual(BaseLayerType);
-  });
-
-  it(`showExistingProjectsLayer has default value`, () => {
-    expect(component.showExistingProjectsLayer).toEqual(true);
-  });
-
-  it(`showHUC12BoundariesLayer has default value`, () => {
-    expect(component.showHUC12BoundariesLayer).toEqual(false);
-  });
-
-  it(`showCountyBoundariesLayer has default value`, () => {
-    expect(component.showCountyBoundariesLayer).toEqual(false);
+      expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(
+        Region.SIERRA_NEVADA
+      );
+      expect(mapServiceStub.getHuc12BoundaryShapes).toHaveBeenCalledWith(
+        Region.SIERRA_NEVADA
+      );
+      expect(mapServiceStub.getCountyBoundaryShapes).toHaveBeenCalledWith(
+        Region.SIERRA_NEVADA
+      );
+      expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
+    });
   });
 
   describe('ngAfterViewInit', () => {
-    it('initializes the map', () => {
-      const mapServiceStub: MapService = fixture.debugElement.injector.get(
-        MapService
-      );
-
+    it('initializes the leaflet maps', () => {
       component.ngAfterViewInit();
 
-      expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
-      expect(mapServiceStub.getHUC12BoundaryShapes).toHaveBeenCalled();
-      expect(mapServiceStub.getCountyBoundaryShapes).toHaveBeenCalled();
-      expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
+      component.maps.forEach((map: Map) => {
+        expect(map.instance).toBeDefined();
+        expect(map.baseLayerRef).toBeDefined();
+        expect(map.huc12BoundaryLayerRef).toBeDefined();
+        expect(map.countyBoundaryLayerRef).toBeDefined();
+        expect(map.existingProjectsLayerRef).toBeDefined();
+      });
     });
 
     it('creates project detail card', () => {
-      const applicationRef: ApplicationRef = fixture.componentInstance.applicationRef;
+      const applicationRef: ApplicationRef =
+        fixture.componentInstance.applicationRef;
       spyOn(applicationRef, 'attachView').and.callThrough;
 
       component.ngAfterViewInit();
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
+      // We expect a project detail card to be attached 4 times, 1x for each map
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(4);
     });
   });
 
-  it('should change base layer', async () => {
-    component.ngAfterViewInit();
-    spyOn(component, 'changeBaseLayer').and.callThrough();
-    const radioButtonGroup = await loader.getHarness(MatRadioGroupHarness.with({ name: 'base-layer-select' }));
+  describe('Map control panel', () => {
+    let map1: DebugElement;
+    let map2: DebugElement;
+    let map3: DebugElement;
+    let map4: DebugElement;
+    let matCountRadioButtonGroup: MatRadioGroupHarness;
 
-    // Act: select the terrain base layer
-    await radioButtonGroup.checkRadioButton({ label: 'Terrain' });
+    beforeEach(async () => {
+      map1 = fixture.debugElement.query(
+        By.css('[data-testid="map1"]')
+      ).nativeElement;
+      map2 = fixture.debugElement.query(
+        By.css('[data-testid="map2"]')
+      ).nativeElement;
+      map3 = fixture.debugElement.query(
+        By.css('[data-testid="map3"]')
+      ).nativeElement;
+      map4 = fixture.debugElement.query(
+        By.css('[data-testid="map4"]')
+      ).nativeElement;
+      matCountRadioButtonGroup = await loader.getHarness(
+        MatRadioGroupHarness.with({ name: 'map-count-select' })
+      );
+    });
 
-    // Assert: expect that the map contains the terrain base layer
-    expect(component.changeBaseLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(MapComponent.hillshade_tiles));
+    it('shows 2 maps by default', () => {
+      expect(component.mapCount).toBe(2);
+      matCountRadioButtonGroup
+        .getCheckedValue()
+        .then((value: string | null) => {
+          expect(value).toBe('2');
+        });
 
-    // Act: select the road base layer
-    await radioButtonGroup.checkRadioButton({ label: 'Road' });
+      expect(map1.attributes['hidden']).toBeUndefined();
+      expect(map2.attributes['hidden']).toBeUndefined();
+      expect(map3.attributes['hidden']).toBeDefined();
+      expect(map4.attributes['hidden']).toBeDefined();
+    });
 
-    // Assert: expect that the map contains the road base layer
-    expect(component.changeBaseLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(MapComponent.open_street_maps_tiles));
+    it('toggles to show 1 map', async () => {
+      await matCountRadioButtonGroup.checkRadioButton({ label: '1' });
+
+      expect(component.mapCount).toBe(1);
+      expect(map1.attributes['hidden']).toBeUndefined();
+      expect(map2.attributes['hidden']).toBeDefined();
+      expect(map3.attributes['hidden']).toBeDefined();
+      expect(map4.attributes['hidden']).toBeDefined();
+    });
+
+    it('toggles to show 4 maps', async () => {
+      await matCountRadioButtonGroup.checkRadioButton({ label: '4' });
+
+      expect(component.mapCount).toBe(4);
+      expect(map1.attributes['hidden']).toBeUndefined();
+      expect(map2.attributes['hidden']).toBeUndefined();
+      expect(map3.attributes['hidden']).toBeUndefined();
+      expect(map4.attributes['hidden']).toBeUndefined();
+    });
   });
 
-  it('should toggle HUC-12 boundaries', async () => {
-    component.ngAfterViewInit();
-    spyOn(component, 'toggleHUC12BoundariesLayer').and.callThrough();
-    const checkbox = await loader.getHarness(MatCheckboxHarness.with({ name: 'huc12-toggle' }));
-    expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeFalse();
+  describe('Map selection', () => {
+    it('first map is selected by default', () => {
+      expect(component.selectedMapIndex).toBe(0);
+    });
 
-    // Act: check the HUC-12 checkbox
-    await checkbox.check();
+    it('can select another map', () => {
+      component.ngAfterViewInit();
 
-    // Assert: expect that the map does not contain the HUC-12 layer
-    expect(component.toggleHUC12BoundariesLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeTrue();
+      // Clicking the initialized map should select it
+      component.maps[2].instance?.fireEvent('click');
 
-    // Act: uncheck the HUC-12 checkbox
-    await checkbox.uncheck();
-
-    // Assert: expect that the map contains the HUC-12 layer
-    expect(component.toggleHUC12BoundariesLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(component.HUC12BoundariesLayer)).toBeFalse();
+      expect(component.selectedMapIndex).toBe(2);
+    });
   });
 
-  it('should toggle county boundaries', async () => {
-    component.ngAfterViewInit();
-    spyOn(component, 'toggleCountyBoundariesLayer').and.callThrough();
-    const checkbox = await loader.getHarness(MatCheckboxHarness.with({ name: 'county-toggle' }));
-    expect(component.map.hasLayer(component.CountyBoundariesLayer)).toBeFalse();
+  describe('Layer control panels', () => {
+    const testCases = [0, 1, 2, 3];
 
-    // Act: check the county checkbox
-    await checkbox.check();
+    beforeEach(() => {
+      component.ngAfterViewInit();
+    });
 
-    // Assert: expect that the map does not contain the county layer
-    expect(component.toggleCountyBoundariesLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(component.CountyBoundariesLayer)).toBeTrue();
+    testCases.forEach((testCase) => {
+      describe(`map-${testCase + 1} should toggle layers`, () => {
+        it(`map-${testCase + 1} should change base layer`, async () => {
+          let map = component.maps[testCase];
+          spyOn(component, 'changeBaseLayer').and.callThrough();
+          const radioButtonGroup = await loader.getHarness(
+            MatRadioGroupHarness.with({ name: `${map.id}-base-layer-select` })
+          );
 
-    // Act: check the county checkbox
-    await checkbox.uncheck();
+          // Act: select the terrain base layer
+          await radioButtonGroup.checkRadioButton({ label: 'Terrain' });
 
-    // Assert: expect that the map contains the county layer
-    expect(component.toggleCountyBoundariesLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(component.CountyBoundariesLayer)).toBeFalse();
+          // Assert: expect that the map contains the terrain base layer
+          expect(component.changeBaseLayer).toHaveBeenCalled();
+          expect(map.config.baseLayerType).toBe(BaseLayerType.Terrain);
+          expect(map.instance?.hasLayer(map.baseLayerRef!));
+
+          // Act: select the road base layer
+          await radioButtonGroup.checkRadioButton({ label: 'Road' });
+
+          // Assert: expect that the map contains the road base layer
+          expect(component.changeBaseLayer).toHaveBeenCalled();
+          expect(map.config.baseLayerType).toBe(BaseLayerType.Road);
+          expect(map.instance?.hasLayer(map.baseLayerRef!));
+        });
+
+        it(`map-${testCase + 1} should toggle HUC-12 boundaries`, async () => {
+          let map = component.maps[testCase];
+          spyOn(component, 'toggleHuc12BoundariesLayer').and.callThrough();
+          const checkbox = await loader.getHarness(
+            MatCheckboxHarness.with({ name: `${map.id}-huc12-toggle` })
+          );
+          expect(
+            map.instance?.hasLayer(map.huc12BoundaryLayerRef!)
+          ).toBeFalse();
+
+          // Act: check the HUC-12 checkbox
+          await checkbox.check();
+
+          // Assert: expect that the map does not contain the HUC-12 layer
+          expect(component.toggleHuc12BoundariesLayer).toHaveBeenCalled();
+          expect(map.instance?.hasLayer(map.huc12BoundaryLayerRef!)).toBeTrue();
+
+          // Act: uncheck the HUC-12 checkbox
+          await checkbox.uncheck();
+
+          // Assert: expect that the map contains the HUC-12 layer
+          expect(component.toggleHuc12BoundariesLayer).toHaveBeenCalled();
+          expect(
+            map.instance?.hasLayer(map.huc12BoundaryLayerRef!)
+          ).toBeFalse();
+        });
+
+        it(`map-${testCase + 1} should toggle county boundaries`, async () => {
+          let map = component.maps[testCase];
+          spyOn(component, 'toggleCountyBoundariesLayer').and.callThrough();
+          const checkbox = await loader.getHarness(
+            MatCheckboxHarness.with({ name: `${map.id}-county-toggle` })
+          );
+          expect(
+            map.instance?.hasLayer(map.countyBoundaryLayerRef!)
+          ).toBeFalse();
+
+          // Act: check the county checkbox
+          await checkbox.check();
+
+          // Assert: expect that the map does not contain the county layer
+          expect(component.toggleCountyBoundariesLayer).toHaveBeenCalled();
+          expect(
+            map.instance?.hasLayer(map.countyBoundaryLayerRef!)
+          ).toBeTrue();
+
+          // Act: check the county checkbox
+          await checkbox.uncheck();
+
+          // Assert: expect that the map contains the county layer
+          expect(component.toggleCountyBoundariesLayer).toHaveBeenCalled();
+          expect(
+            map.instance?.hasLayer(map.countyBoundaryLayerRef!)
+          ).toBeFalse();
+        });
+
+        it(`map-${
+          testCase + 1
+        } should toggle existing projects layer`, async () => {
+          let map = component.maps[testCase];
+          spyOn(component, 'toggleExistingProjectsLayer').and.callThrough();
+
+          // Act: uncheck the existing projects checkbox
+          const checkbox = await loader.getHarness(
+            MatCheckboxHarness.with({
+              name: `${map.id}-existing-projects-toggle`,
+            })
+          );
+          await checkbox.uncheck();
+
+          // Assert: expect that the map removes the existing projects layer
+          expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
+          expect(
+            map.instance?.hasLayer(map.existingProjectsLayerRef!)
+          ).toBeFalse();
+
+          // Act: check the existing projects checkbox
+          await checkbox.check();
+
+          // Assert: expect that the map adds the existing projects layer
+          expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
+          expect(
+            map.instance?.hasLayer(map.existingProjectsLayerRef!)
+          ).toBeTrue();
+        });
+
+        it(`map-${testCase + 1} should toggle data layer`, async () => {
+          let map = component.maps[testCase];
+          spyOn(component, 'toggleDataLayer').and.callThrough();
+          const checkbox = await loader.getHarness(
+            MatCheckboxHarness.with({ name: `${map.id}-data-toggle` })
+          );
+
+          // Act: check the data checkbox
+          await checkbox.check();
+
+          // Assert: expect that the map contains the data layer
+          expect(component.toggleDataLayer).toHaveBeenCalled();
+          expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeTrue();
+
+          // Act: uncheck the data checkbox
+          await checkbox.uncheck();
+
+          // Assert: expect that the map does not contain the data layer
+          expect(component.toggleDataLayer).toHaveBeenCalled();
+          expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeFalse();
+        });
+      });
+    });
+  });
+  describe('Plan creation dropdown', () => {
+    beforeEach(async () => {
+      component.ngAfterViewInit();
+    });
+
+    it('enables polygon tool when drawing option is selected', async () => {
+      spyOn(component, 'onPlanCreationOptionChange').and.callThrough();
+      const polygonSpy = spyOn(L.Draw, 'Polygon').and.callThrough();
+      const select = await loader.getHarness(MatSelectHarness);
+      await select.open();
+      const option = await select.getOptions();
+
+      await option[0].click(); // 'draw-area' option
+
+      expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
+      expect(polygonSpy).toHaveBeenCalled();
+    });
   });
 
-  it('should toggle existing projects layer', async () => {
-    component.ngAfterViewInit();
-    spyOn(component, 'toggleExistingProjectsLayer').and.callThrough();
+  describe('Create plan', () => {
+    it('opens create plan dialog', async () => {
+      const fakeMatDialog: MatDialog = fixture.debugElement.injector.get(
+        MatDialog
+      );
+      fixture.componentInstance.showCreatePlanButton = true;
+      const button = await loader.getHarness(MatButtonHarness.with({
+        'selector': '.create-plan-button'
+      }));
 
-    // Act: uncheck the existing projects checkbox
-    const checkbox = await loader.getHarness(MatCheckboxHarness.with({ name: 'existing-projects-toggle' }));
-    await checkbox.uncheck();
+      await button.click();
 
-    // Assert: expect that the map removes the existing projects layer
-    expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(component.existingProjectsLayer)).toBeFalse();
+      expect(fakeMatDialog.open).toHaveBeenCalled();
+    });
 
-    // Act: check the existing projects checkbox
-    await checkbox.check();
+    it('dialog calls create plan with name and planning area ', async () => {
+      const emptyGeoJson: GeoJSON.GeoJSON = {
+        type: 'FeatureCollection',
+        features: [],
+      };
+      const createPlanSpy = spyOn<any>(component, 'createPlan').and.callThrough();
 
-    // Assert: expect that the map adds the existing projects layer
-    expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
-    expect(component.map.hasLayer(component.existingProjectsLayer)).toBeTrue();
+      fixture.componentInstance.openCreatePlanDialog();
+
+      expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+    });
   });
+
 });
