@@ -51,19 +51,37 @@
   <div id="controls" class="controls-container">
     <div class="layer-controls">
 
-      <!-- Controls for specifying how many maps should be shown -->
-      <h3>Map count</h3>
-      <mat-radio-group name="map-count-select" aria-label="Select an option" class="layer-radio-group"
-        [(ngModel)]="mapCount" (change)="changeMapCount()">
-        <mat-radio-button *ngFor="let mapCountOption of mapCountOptions" [value]="mapCountOption"
-          class="layer-radio-button">
-          {{ mapCountOption }}
-        </mat-radio-button>
-      </mat-radio-group>
-
       <!-- Legend for the currently shown map -->
       <h3>Legend</h3>
       <app-legend [legend]="legend"></app-legend>
+
+      <mat-divider class="layer-controls-divider"></mat-divider>
+
+      <!-- Controls for specifying how many maps should be shown -->
+      <div class="map-count-button-row">
+        <button mat-button class="map-count-button" (click)="changeMapCount(1)" aria-label="Show 1 map"
+        [ngClass]="{'selected': mapCount === 1}">
+          <div class="map-count-button-grid-cell"></div>
+        </button>
+        <button mat-button class="map-count-button" (click)="changeMapCount(2)" aria-label="Show 2 maps"
+        [ngClass]="{'selected': mapCount === 2}">
+          <div class="map-count-button-grid-row">
+            <div class="map-count-button-grid-cell"></div>
+            <div class="map-count-button-grid-cell"></div>
+          </div>
+        </button>
+        <button mat-button class="map-count-button" (click)="changeMapCount(4)" aria-label="Show 4 maps"
+        [ngClass]="{'selected': mapCount === 4}">
+        <div class="map-count-button-grid-row">
+          <div class="map-count-button-grid-cell"></div>
+          <div class="map-count-button-grid-cell"></div>
+        </div>
+        <div class="map-count-button-grid-row">
+          <div class="map-count-button-grid-cell"></div>
+          <div class="map-count-button-grid-cell"></div>
+        </div>
+        </button>
+      </div>
 
       <!-- Layer controls for each map, displayed in tabs -->
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIndex"

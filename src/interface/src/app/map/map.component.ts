@@ -684,7 +684,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  changeMapCount() {
+  /* Change how many maps are displayed in the viewport. */
+  changeMapCount(mapCount: number) {
+    this.mapCount = mapCount;
     setTimeout(() => {
       this.maps.forEach((map: Map) => map.instance?.invalidateSize());
     }, 0);
