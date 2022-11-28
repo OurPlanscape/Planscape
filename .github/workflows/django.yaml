@@ -33,6 +33,7 @@ jobs:
     - name: Run Tests
       env:
         SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
+        PLANSCAPE_ROOT_DIRECTORY: .
       run: |
         cd src/planscape
         python manage.py test
