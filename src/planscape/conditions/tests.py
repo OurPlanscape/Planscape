@@ -20,7 +20,7 @@ class ConditionTest(TestCase):
     @classmethod
     def setUpClass(cls):
         # Read the test data; this is a GeoTIFF with CRS 9822, ready to load into the
-        # CnditionRaster table.  See testing/create_random_geotiff.py for details.
+        # ConditionRaster table.  See testing/create_random_geotiff.py for details.
         geotiff_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, RASTER_TEST_FILE)
         with open(geotiff_path) as f:
             geotiff = f.read()
