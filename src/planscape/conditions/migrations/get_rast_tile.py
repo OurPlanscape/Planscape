@@ -24,9 +24,21 @@ create or replace function get_rast_tile(
 as
 $$
 DECLARE
-    var_sql text; var_result raster; var_srid integer;
+    var_count integer; var_sql text; var_result raster; var_srid integer;
     var_env geometry; var_env_buf geometry; var_erast raster;
 BEGIN
+    /* Check that there is data for the raster requested */
+    EXECUTE
+       'SELECT count(*) As count' ||
+        ' FROM ' || quote_ident(param_schema) || '.' || quote_ident(param_table) ||
+        ' WHERE ' || quote_ident(param_raster_name_column) || ' = $1'
+    INTO var_count
+    USING param_raster_name;
+
+    IF var_count = 0 THEN
+       RETURN NULL;
+    END IF;
+
     /* var_env := bounding box as a polygon in the output reference geometry. */
     EXECUTE
        'SELECT ST_MakeEnvelope($1, $2, $3, $4, $5)'
@@ -72,7 +84,7 @@ BEGIN
     EXECUTE FORMAT(var_sql, param_raster_column, param_raster_name_column)
     INTO var_result
     USING
-        var_env,  /* was var_env */
+        var_env,
         var_erast,
         var_env_buf,
         param_srid,

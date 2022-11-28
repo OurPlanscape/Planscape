@@ -178,3 +178,8 @@ SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
 
+# PostGIS values
+CRS_FOR_RASTERS = 9822
+CRS_9822_PROJ4 = (
+    '+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 '
+    '+datum=WGS84 +units=m +no_defs')
