@@ -68,5 +68,4 @@ class ConditionTest(TestCase):
         response = self.client.get(
             '/conditions/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
             '&format=image/jpeg&layers=random_test.tif')
-        print(response.content)
         self.assertEqual(response.status_code, 200)

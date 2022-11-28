@@ -57,6 +57,9 @@ class ConditionRaster(models.Model):
 
     When this command is run, the string stored in the column 'name' will be the
     name of the file, i.e., 'AvailableBiomass_2021_300m_base.tif'. 
+
+    WARNING: This model has been tailored to match the output of raster2pgsql;
+    any changes should be carefully considered.
     """
     # Primary key; predetermined by raster2pgsql
     rid: models.AutoField = models.AutoField(primary_key=True)
