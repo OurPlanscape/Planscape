@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CookieService } from 'ngx-cookie-service';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -25,6 +26,7 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-dialog.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +41,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     ProjectCardComponent,
     StringifyMapConfigPipe,
     MapNameplateComponent,
+    PlanCreateDialogComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -50,6 +53,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     LayoutModule,
     MaterialModule,
     SharedModule,
+    ReactiveFormsModule,
   ],
   providers: [
     AuthService,

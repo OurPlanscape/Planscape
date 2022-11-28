@@ -21,6 +21,11 @@
   flex-direction: row;
 }
 
+.layer-controls-divider {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
 .layer-radio-group {
   align-items: flex-start;
   display: flex;
@@ -72,4 +77,65 @@
 // (https://github.com/angular/components/issues/2829).
 ::ng-deep .mat-tab-label {
   min-width: 60px !important;
+}
+
+// Styling for the buttons to switch between 1, 2, and 4 maps
+.map-count-button-row {
+  display: flex;
+  justify-content: center;
+}
+
+.map-count-button {
+  align-items: center;
+  background-color: #f1eff2;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  height: 28px;
+  justify-content: center;
+  margin-left: 2px;
+  margin-right: 2px;
+  width: 72px;
+}
+
+.map-count-button.selected {
+  background-color: #e4e2e5;
+}
+
+.map-count-button-grid-row {
+  display: flex;
+  justify-content: center;
+}
+
+.map-count-button-grid-cell {
+  border: 1px solid #656367;
+  border-radius: 1px;
+  box-sizing: border-box;
+  height: 8px;
+  margin-right: 1px;
+  margin-bottom: 1px;
+  width: 8px;
+}
+
+// Styling for the info bar above the maps
+.map-options-bar {
+  background-color: rgba(0, 0, 0, 0.5);
+  height: 50px;
+  position: absolute;
+  pointer-events: none;
+  width: 100%;
+  z-index: 2;
+}
+
+.plan-options-button {
+  left: 480px;
+  pointer-events: auto;
+  top: 10px;
+}
+
+.create-plan-button {
+  color: #ffffff;
+  left: 500px;
+  pointer-events: auto;
+  top: 10px;
 }
