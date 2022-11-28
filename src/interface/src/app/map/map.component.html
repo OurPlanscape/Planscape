@@ -1,32 +1,4 @@
 <div class="root-container">
-  <!-- Info bar above the maps -->
-  <div class="map-options-bar">
-
-    <!-- Dropdown for creating a planning area -->
-    <button mat-raised-button type="button" class="plan-options-button">
-      <mat-select
-        [(value)]="selectedPlanCreationOption"
-        placeholder="Create a plan"
-        class="plan-options-select"
-        (selectionChange)="onPlanCreationOptionChange($event.value)">
-        <mat-select-trigger *ngIf="selectedPlanCreationOption">
-          <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
-          {{selectedPlanCreationOption.display}}
-        </mat-select-trigger>
-        <mat-option *ngFor="let option of planCreationOptions" [value]="option">
-          <mat-icon>{{option.icon}}</mat-icon>{{option.display}}
-        </mat-option>
-      </mat-select>
-    </button>
-
-    <!-- Create plan button -->
-    <button *ngIf="showCreatePlanButton"
-      mat-button type="button"
-      class="create-plan-button"
-      (click)="openCreatePlanDialog()">
-      <mat-icon>add</mat-icon>CREATE
-    </button>
-  </div>
 
   <!-- Map control panel -->
   <div id="controls" class="controls-container">
@@ -130,6 +102,35 @@
 
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="maps-container">
+    <!-- Info bar above the maps -->
+    <div class="map-options-bar">
+      <!-- Dropdown for creating a planning area -->
+      <button mat-raised-button type="button" class="plan-options-button">
+        <mat-select
+          [(value)]="selectedPlanCreationOption"
+          placeholder="Create a plan"
+          class="plan-options-select"
+          (selectionChange)="onPlanCreationOptionChange($event.value)">
+          <mat-select-trigger *ngIf="selectedPlanCreationOption">
+            <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
+            {{selectedPlanCreationOption.display}}
+          </mat-select-trigger>
+          <mat-option *ngFor="let option of planCreationOptions" [value]="option">
+            <mat-icon>{{option.icon}}</mat-icon>{{option.display}}
+          </mat-option>
+        </mat-select>
+      </button>
+
+      <!-- Create plan button -->
+      <button *ngIf="showCreatePlanButton"
+        mat-button type="button"
+        class="create-plan-button"
+        (click)="openCreatePlanDialog()">
+        <mat-icon>add</mat-icon>CREATE
+      </button>
+    </div>
+
+    <!-- Maps (1, 2, or 4) -->
     <div class="map-row" [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}">
       <div class="map-box" [ngClass]="{'selected': selectedMapIndex === 0}"
         data-testid="map1">
