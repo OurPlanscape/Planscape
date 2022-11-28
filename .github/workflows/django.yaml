@@ -14,6 +14,19 @@ jobs:
       max-parallel: 4
       matrix:
         python-version: [3.10.8]
+    
+    services:
+      postgres:
+        image: postgis/postgis:14-3.3
+        env:
+          # must specify password for PG Docker container image
+          # see: https://registry.hub.docker.com/_/postgres?tab=description&page=1&name=10
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: planscape
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - uses: actions/checkout@v3
@@ -29,12 +42,12 @@ jobs:
         pip install numpy rasterio typing_extensions
         pip install djangorestframework django-cors-headers dj_rest_auth django-allauth django-filter
         pip install djangorestframework-simplejwt django-leaflet 
-        pip install -r requirements.txt
+        pip install -r requirements.txt 
     - name: Run Tests
       env:
         SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
         PLANSCAPE_ROOT_DIRECTORY: ${GITHUB_WORKSPACE} 
       run: |
         cd src/planscape
-        python manage.py test
+        python manage.py test -p "*test.py"
         
