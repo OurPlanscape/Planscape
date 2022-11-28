@@ -4,7 +4,7 @@ import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geo
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
@@ -684,7 +684,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  changeMapCount() {
+  /* Change how many maps are displayed in the viewport. */
+  changeMapCount(mapCount: number) {
+    this.mapCount = mapCount;
     setTimeout(() => {
       this.maps.forEach((map: Map) => map.instance?.invalidateSize());
     }, 0);

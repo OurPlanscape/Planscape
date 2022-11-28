@@ -1,6 +1,12 @@
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, QueryDict
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse, QueryDict
 from django.db import connection
 
+from decouple import config
+from typing import cast
+
+import json, os
+
+PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
 
 # Name of the table and column from models.py.
 RASTER_TABLE = 'conditions_conditionraster'
@@ -45,6 +51,22 @@ def get_wms(params: QueryDict):
             raise ValueError("No data; check 'layers' parameter")
     return row
 
+def get_config(params: QueryDict):
+    # Get region name
+    assert isinstance(params['region_name'], str)
+    region_name = params['region_name']
+
+    # Read from conditions config
+    config_path = os.path.join(
+       PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    conditions_config = json.load(open(config_path, 'r'))
+
+    # Extract specific region data from JSON
+    for region in conditions_config['regions']:
+        if region_name == region['region_name']:
+            return region
+
+    return None
 
 def wms(request: HttpRequest) -> HttpResponse:
     try:
@@ -52,3 +74,7 @@ def wms(request: HttpRequest) -> HttpResponse:
         return HttpResponse(image, content_type=request.GET['format'])
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+def config(request: HttpRequest) -> HttpResponse :
+    region = get_config(request.GET)
+    return JsonResponse(region)
