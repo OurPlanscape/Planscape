@@ -26,7 +26,7 @@ jobs:
         cd src/planscape
         python -m pip install --upgrade pip
         sudo apt-get install gdal-bin libgdal-dev
-        pip install numpy rasterio
+        pip install numpy rasterio typing_extensions
         pip install djangorestframework django-cors-headers dj_rest_auth django-allauth django-filter
         pip install djangorestframework-simplejwt django-leaflet 
         pip install -r requirements.txt
