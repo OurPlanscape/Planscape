@@ -4,7 +4,7 @@ import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geo
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
