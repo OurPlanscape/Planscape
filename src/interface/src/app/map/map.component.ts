@@ -1,5 +1,6 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
-import { Feature, Geometry } from 'geojson';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
@@ -7,6 +8,7 @@ import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
@@ -14,6 +16,11 @@ import { BaseLayerType, Map, MapConfig, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
+export interface PlanCreationOption {
+  value: string;
+  display: string;
+  icon: any;
+}
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -66,6 +73,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     ],
   };
 
+  planCreationOptions: PlanCreationOption[] = [
+    {value: 'draw-area', icon: 'edit', display: 'Draw an area'},
+  ];
+  selectedPlanCreationOption: PlanCreationOption | null = null;
+  showCreatePlanButton: boolean = false;
+  drawingLayer = new L.FeatureGroup();
+
   static hillshadeTiles() {
     return L.tileLayer(
       'https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA',
@@ -77,10 +91,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  static openStreetMapsTiles() {
-    return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  static stadiaAlidadeTiles() {
+    return L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
-      attribution: '© OpenStreetMap',
+      attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
     });
   }
 
@@ -95,11 +109,23 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  static dataLayerTilesNormalized() {
+    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+      crs: L.CRS.EPSG4326,
+      minZoom: 7,
+      maxZoom: 15,
+      format: 'image/png',
+      opacity: 0.7,
+      layers: 'AvailableBiomass_2021_300m_normalized.tif',
+    });
+  }
+
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     public applicationRef: ApplicationRef,
     private mapService: MapService,
+    private dialog: MatDialog,
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
@@ -204,7 +230,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     if (map.instance != undefined) map.instance.remove();
 
     if (map.config.baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = MapComponent.openStreetMapsTiles();
+      map.baseLayerRef = MapComponent.stadiaAlidadeTiles();
     } else {
       map.baseLayerRef = MapComponent.hillshadeTiles();
     }
@@ -279,8 +305,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       showCountyBoundaryLayer: false,
       showUsForestBoundaryLayer: false,
       showDataLayer: false,
-    };
-  }
+      showDataLayerNormalized: false,
+    }
+  };
 
   /** Sync pan, zoom, etc. between all maps. */
   private syncAllMaps() {
@@ -295,62 +322,128 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   /** Adds drawing controls and handles drawing events. */
   private addDrawingControls(map: L.Map) {
-    const drawingLayer = new L.FeatureGroup();
-    map.addLayer(drawingLayer);
+    map.addLayer(this.drawingLayer);
 
     const drawOptions: L.Control.DrawConstructorOptions = {
-      position: 'topright',
-      draw: {
-        polygon: {
-          allowIntersection: false,
-          showArea: true,
-          metric: false, // Set measurement units to acres
-          repeatMode: true, // Stays in polygon mode after completing a shape
-          shapeOptions: {
-            color: '#7b61ff',
-          },
-          drawError: {
-            color: '#ff7b61',
-            message: "Can't draw polygons with intersections!",
-          },
-        }, // Set to false to disable each tool
-        polyline: false,
-        circle: false,
-        rectangle: false,
-        marker: false,
-        circlemarker: false,
-      },
-      edit: {
-        featureGroup: drawingLayer, // Required and declares which layer is editable
-      },
+        position: 'bottomright',
+        draw: {
+            polygon: {
+              allowIntersection: false,
+              showArea: true,
+              metric: false, // Set measurement units to acres
+              shapeOptions: {
+                color: '#7b61ff',
+              },
+              drawError: {
+                  color: '#ff7b61',
+                  message: 'Can\'t draw polygons with intersections!',
+              },
+            }, // Set to false to disable each tool
+            polyline: false,
+            circle: false,
+            rectangle: false,
+            marker: false,
+            circlemarker: false,
+        },
+        edit: {
+            featureGroup: this.drawingLayer, // Required and declares which layer is editable
+        }
     };
 
     const drawControl = new L.Control.Draw(drawOptions);
     map.addControl(drawControl);
 
+    this.setUpDrawingHandlers(map);
+  }
+
+  private setUpDrawingHandlers(map: L.Map) {
     map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
-      drawingLayer.addLayer(layer);
+      this.drawingLayer.addLayer(layer);
 
-      this.createPlan(layer.toGeoJSON());
+      this.showCreatePlanButton = true;
     });
   }
 
-  private createPlan(shape: GeoJSON.GeoJSON) {
+  /**
+   * Converts drawingLayer to GeoJSON. If there are multiple polygons drawn,
+   * creates and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon
+   * type GeoJSON.
+   */
+  private convertToPlanningArea(): GeoJSON.GeoJSON {
+    const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;
+      // Case: Single polygon
+      if (drawnGeoJson.features.length <= 1) return drawnGeoJson;
+
+      // Case: Multipolygon
+      const newFeature: GeoJSON.Feature = {
+        type: 'Feature',
+        geometry: {
+          type: 'MultiPolygon',
+          coordinates: [],
+        },
+        properties: {},
+      };
+      drawnGeoJson.features.forEach((feature) => {
+        (newFeature.geometry as MultiPolygon).coordinates.push(
+            (feature.geometry as Polygon).coordinates)
+      });
+
+      return {
+        "type": "FeatureCollection",
+        "features": [newFeature],
+      } as FeatureCollection;
+  }
+
+  /** Configures and opens the Create Plan dialog */
+  openCreatePlanDialog() {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.maxWidth = '560px';
+
+    const openedDialog = this.dialog.open(PlanCreateDialogComponent, dialogConfig);
+
+    openedDialog.afterClosed().subscribe((result) => {
+      if (result) {
+        this.createPlan(result.value, this.convertToPlanningArea());
+      }
+    });
+  }
+
+  private createPlan(name: string, shape: GeoJSON.GeoJSON) {
     this.selectedRegion$.subscribe((selectedRegion) => {
       if (!selectedRegion) return;
 
-      this.planService
-        .createPlan({
-          name: 'tempName',
-          ownerId: 'tempUserId',
-          region: selectedRegion,
-          planningArea: shape,
-        })
-        .subscribe((result) => {
-          console.log(result);
-        });
+      this.planService.createPlan({
+        name: name,
+        ownerId: 'tempUserId',
+        region: selectedRegion,
+        planningArea: shape,
+      }).subscribe(result => {
+        console.log(result);
+      });
     });
+  }
+
+  /**
+   * On PlanCreationOptions selection change, enables the polygon tool if
+   * the drawing option is selected.
+   */
+  onPlanCreationOptionChange(option: PlanCreationOption) {
+    if (option.value === 'draw-area') {
+      const polygonDrawer = new L.Draw.Polygon(this.maps[0].instance as L.DrawMap, {
+        allowIntersection: false,
+        showArea: true,
+        metric: false,
+        shapeOptions: {
+          color: '#7b61ff',
+        },
+        drawError: {
+            color: '#ff7b61',
+            message: 'Can\'t draw polygons with intersections!',
+        },
+      });
+      polygonDrawer.enable();
+    }
   }
 
   /** Gets the selected region geojson and renders it on the map. */
@@ -366,7 +459,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /**
    * Darkens everything outside of the region boundary.
    * Type 'any' is used in order to access coordinates.
-   * */
+   */
   private maskOutsideRegion(map: L.Map, boundary: any) {
     // Add corners of the map to invert the polygon
     boundary.features[0].geometry.coordinates[0].unshift([
@@ -509,7 +602,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     if (baseLayerType === BaseLayerType.Terrain) {
       map.baseLayerRef = MapComponent.hillshadeTiles();
     } else if (baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = MapComponent.openStreetMapsTiles();
+      map.baseLayerRef = MapComponent.stadiaAlidadeTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
   }
@@ -572,8 +665,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Toggles whether data layer is shown. */
   toggleDataLayer(map: Map) {
     if (map.instance === undefined) return;
+    map.dataLayerRef = MapComponent.dataLayerTiles();
 
     if (map.config.showDataLayer) {
+      map.dataLayerRef?.addTo(map.instance);
+    } else {
+      map.dataLayerRef?.remove();
+    }
+  }
+  toggleDataLayerNormalized(map: Map) {
+    if (map.instance === undefined) return;
+    map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
+
+    if (map.config.showDataLayerNormalized) {
       map.dataLayerRef?.addTo(map.instance);
     } else {
       map.dataLayerRef?.remove();

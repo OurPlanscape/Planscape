@@ -23,4 +23,5 @@ export interface MapConfig {
   showCountyBoundaryLayer: boolean;
   showUsForestBoundaryLayer: boolean;
   showDataLayer: boolean;
+  showDataLayerNormalized: boolean;
 }
