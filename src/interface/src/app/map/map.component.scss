@@ -1,58 +1,16 @@
-.map-container {
-  flex-direction: column;
-  height: 100%;
-  width: 100%;
-  position: relative;
-}
-
-.map-row {
+.root-container {
+  display: flex;
   flex-direction: row;
-}
-
-.map {
-  border: 1px solid black;
-  box-sizing: border-box;
   height: 100%;
-  position: absolute;
   width: 100%;
-  z-index: 1;
-}
-
-#map2 {
-  left: 50%;
-  width: 50%;
-}
-
-#map3 {
-  height: 50%;
-  top: 50%;
-  width: 50%;
-}
-
-#map4 {
-  height: 50%;
-  left: 50%;
-  top: 50%;
-  width: 50%;
-}
-
-// Workaround for unresolved Angular bug re: tab width on desktop
-// (https://github.com/angular/components/issues/2829).
-::ng-deep .mat-tab-label {
-  min-width: 60px !important;
 }
 
 .controls-container {
-  padding: 20px;
-  position: absolute;
   width: 450px;
-  z-index: 10;
 }
 
 .layer-controls {
   background-color: white;
-  border: 1px solid black;
-  border-radius: 8px;
   height: match-parent;
   padding: 20px;
   width: match-parent;
@@ -83,6 +41,46 @@
   margin: 0px 5px 0px;
 }
 
+.maps-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  width: 100%;
+}
+
+.map-row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.map-box {
+  border: 1px solid black;
+  box-sizing: border-box;
+  height: 100%;
+  position: relative;
+  width: 100%;
+  z-index: 1;
+}
+
+.map-box.selected {
+  border: 4px solid #ef008c;
+}
+
+.map {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+// Workaround for unresolved Angular bug re: tab width on desktop
+// (https://github.com/angular/components/issues/2829).
+::ng-deep .mat-tab-label {
+  min-width: 60px !important;
+}
+
+// Styling for the buttons to switch between 1, 2, and 4 maps
 .map-count-button-row {
   display: flex;
   justify-content: center;
@@ -120,10 +118,6 @@
   width: 8px;
 }
 
-.map.selected {
-  border: 4px solid #EF008C;
-}
-
 // Styling for the info bar above the maps
 .map-options-bar {
   background-color: rgba(0, 0, 0, 0.5);
@@ -135,14 +129,14 @@
 }
 
 .plan-options-button {
-  left: 480px;
+  left: 20px;
   pointer-events: auto;
   top: 10px;
 }
 
 .create-plan-button {
   color: #ffffff;
-  left: 500px;
+  left: 100px;
   pointer-events: auto;
   top: 10px;
 }

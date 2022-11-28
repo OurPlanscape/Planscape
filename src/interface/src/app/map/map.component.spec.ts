@@ -166,9 +166,8 @@ describe('MapComponent', () => {
     let map2: DebugElement;
     let map3: DebugElement;
     let map4: DebugElement;
-    let matCountRadioButtonGroup: MatRadioGroupHarness;
 
-    beforeEach(async () => {
+    beforeEach(() => {
       map1 = fixture.debugElement.query(
         By.css('[data-testid="map1"]')
       ).nativeElement;
@@ -181,18 +180,17 @@ describe('MapComponent', () => {
       map4 = fixture.debugElement.query(
         By.css('[data-testid="map4"]')
       ).nativeElement;
-      matCountRadioButtonGroup = await loader.getHarness(
-        MatRadioGroupHarness.with({ name: 'map-count-select' })
-      );
     });
 
-    it('shows 2 maps by default', () => {
+    it('shows 2 maps by default', async () => {
       expect(component.mapCount).toBe(2);
-      matCountRadioButtonGroup
-        .getCheckedValue()
-        .then((value: string | null) => {
-          expect(value).toBe('2');
-        });
+
+      const radioButtonGroup = await loader.getHarness(
+        MatRadioGroupHarness.with({ name: 'map-count-select' })
+      );
+      radioButtonGroup.getCheckedValue().then((value: string | null) => {
+        expect(value).toBe('2');
+      });
 
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
@@ -201,7 +199,10 @@ describe('MapComponent', () => {
     });
 
     it('toggles to show 1 map', async () => {
-      await matCountRadioButtonGroup.checkRadioButton({ label: '1' });
+      const radioButtonGroup = await loader.getHarness(
+        MatRadioGroupHarness.with({ name: 'map-count-select' })
+      );
+      await radioButtonGroup.checkRadioButton({ label: '1' });
 
       expect(component.mapCount).toBe(1);
       expect(map1.attributes['hidden']).toBeUndefined();
@@ -211,7 +212,10 @@ describe('MapComponent', () => {
     });
 
     it('toggles to show 4 maps', async () => {
-      await matCountRadioButtonGroup.checkRadioButton({ label: '4' });
+      const radioButtonGroup = await loader.getHarness(
+        MatRadioGroupHarness.with({ name: 'map-count-select' })
+      );
+      await radioButtonGroup.checkRadioButton({ label: '4' });
 
       expect(component.mapCount).toBe(4);
       expect(map1.attributes['hidden']).toBeUndefined();
