@@ -43,11 +43,16 @@ jobs:
         pip install djangorestframework django-cors-headers dj_rest_auth django-allauth django-filter
         pip install djangorestframework-simplejwt django-leaflet 
         pip install -r requirements.txt 
+    - name: Set up PostGIS
+        run: psql -d postgresql://postgres@localhost/template1 -f postgis_setup.sql
+        working-directory: ./src/planscape/testing/
+        env:
+          PGPASSWORD: password
     - name: Run Tests
       env:
         SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
         PLANSCAPE_ROOT_DIRECTORY: ${GITHUB_WORKSPACE} 
       run: |
         cd src/planscape
-        python manage.py test -p "*test.py"
+        python manage.py test -p "*test*.py"
         
