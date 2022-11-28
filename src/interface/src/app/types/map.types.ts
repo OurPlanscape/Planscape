@@ -1,4 +1,4 @@
-import { BaseLayerType } from './layer.types';
+import { BaseLayerType, DataLayerType } from './layer.types';
 import * as L from 'leaflet';
 
 export interface Map {
@@ -17,11 +17,10 @@ export interface Map {
 
 export interface MapConfig {
   baseLayerType: BaseLayerType;
+  dataLayerType: DataLayerType;
   showExistingProjectsLayer: boolean;
   showHuc12BoundaryLayer: boolean;
   showHuc10BoundaryLayer: boolean;
   showCountyBoundaryLayer: boolean;
   showUsForestBoundaryLayer: boolean;
-  showDataLayer: boolean;
-  showDataLayerNormalized: boolean;
 }
