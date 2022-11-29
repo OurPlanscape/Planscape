@@ -199,11 +199,13 @@
                             "metrics": [
                                 {
                                     "metric_name": "high_severity_potential_smoke_emissions",
-                                    "filepath": "data/sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m"
+                                    "filepath": "data/sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
+                                    "display_name": "High Severity Potential Smoke Emissions"
                                 },
                                 {
                                     "metric_name": "moderate_severity_potential_smoke_emissions",
-                                    "filepath": "data/sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m"
+                                    "filepath": "data/sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
+                                    "display_name": "Moderate Severity Potential Smoke Emissions"
                                 }
                             ]
                         }
@@ -223,7 +225,8 @@
                             "metrics": [
                                 {
                                     "metric_name": "habitat_connectivity",
-                                    "filepath": "data/sierra_nevada/biodiversity/community_integrity/ACCEL_habitatConnectivity_values_300m"
+                                    "filepath": "data/sierra_nevada/biodiversity/community_integrity/ACCEL_habitatConnectivity_values_300m",
+                                    "display_name": "Habitat Connectivity"
 
                                 }
                             ]
@@ -236,19 +239,23 @@
                             "metrics": [
                                 {
                                     "metric_name": "california_spotted_owl",
-                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/CSO_suitablehabitat_combined_300m"
+                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/CSO_suitablehabitat_combined_300m",
+                                    "display_name": "California Spotted Owl Habitats"
                                 },
                                 {
                                     "metric_name": "pacific_fisher",
-                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/fisher_suitablehabitat_combined_300m"
+                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/fisher_suitablehabitat_combined_300m",
+                                    "display_name": "Pacific Fisher Habitats"
                                 },
                                 {
                                     "metric_name": "endangered_vertebrate",
-                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/t_e_species_richness_300m"
+                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/t_e_species_richness_300m",
+                                    "display_name": "Endangered Vertebrate Richness"
                                 },
                                 {
                                     "metric_name": "black_oak_stands",
-                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/CA_Black_Oak_Stand_Distribution_2016to2020_300m"
+                                    "filepath": "data/sierra_nevada/biodiversity/focal_species/CA_Black_Oak_Stand_Distribution_2016to2020_300m",
+                                    "display_name": "Black Oak Stands"
                                 }
                             ]
                         },
@@ -260,7 +267,8 @@
                             "metrics": [
                                 {
                                     "metric_name": "species_richness",
-                                    "filepath": "data/sierra_nevada/biodiversity/species_diversity/wildlife_species_richness_300m"
+                                    "filepath": "data/sierra_nevada/biodiversity/species_diversity/wildlife_species_richness_300m",
+                                    "display_name": "Species Richness"
                                 }
                             ]
                         }
@@ -279,7 +287,8 @@
                             "metrics": [
                                 {
                                     "metric_name": "large_tree_carbon",
-                                    "filepath": "data/sierra_nevada/carbon_sequestration/stability/LargeTreeCarbon_2021_300m"
+                                    "filepath": "data/sierra_nevada/carbon_sequestration/stability/LargeTreeCarbon_2021_300m",
+                                    "display_name": "Large Tree Carbon"
                                 }
                             ]
                         },
@@ -290,7 +299,8 @@
                             "metrics": [
                                 {
                                     "metric_name": "total_carbon",
-                                    "filepath": "data/sierra_nevada/carbon_sequestration/storage/CECS_TotalCarbon_300m"
+                                    "filepath": "data/sierra_nevada/carbon_sequestration/storage/CECS_TotalCarbon_300m",
+                                    "display_name": "Total Carbon"
                                 }
                             ]
                         }
@@ -307,15 +317,18 @@
                             "metrics": [
                                 {
                                     "metric_name": "skidder_bio_cost",
-                                    "filepath": "data/sierra_nevada/economic_diversity/wood/skidder_bio_cost_proj_clip_300m"
+                                    "filepath": "data/sierra_nevada/economic_diversity/wood/skidder_bio_cost_proj_clip_300m",
+                                    "display_name": "Skidder Bio Cost"
                                 },
                                 {
                                     "metric_name": "skidder_saw_cost",
-                                    "filepath": "data/sierra_nevada/economic_diversity/wood/skidder_saw_cost_proj_clip2_300m"
+                                    "filepath": "data/sierra_nevada/economic_diversity/wood/skidder_saw_cost_proj_clip2_300m",
+                                    "display_name": "Skidder Saw Cost"
                                 },
                                 {
                                     "metric_name": "available_biomass",
-                                    "filepath": "data/sierra_nevada/economic_diversity/wood/AvailableBiomass_2021_300m"
+                                    "filepath": "data/sierra_nevada/economic_diversity/wood/AvailableBiomass_2021_300m",
+                                    "display_name": "Available Biomass"
                                 }
                             ]
                         }
@@ -334,11 +347,13 @@
                             "metrics": [
                                 {
                                     "metric_name": "structure_exposure",
-                                    "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m"
+                                    "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
+                                    "display_name": "Structure Exposure"
                                 },
                                 {
                                     "metric_name": "damage_potential_wui",
-                                    "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m"
+                                    "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m",
+                                    "display_name": "WUI Damage Potential"
                                 }
                             ]
                         }
@@ -358,15 +373,18 @@
                             "metrics": [
                                 {
                                     "metric_name": "mean_percent_fire_return_interval_departure",
-                                    "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/meanPFRID_300m"
+                                    "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/meanPFRID_300m",
+                                    "display_name": "Mean PFRID"
                                 },
                                 {
                                     "metric_name": "probability_high_fire_severity",
-                                    "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m"
+                                    "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
+                                    "display_name": "Probability High Fire Severity"
                                 },
                                 {
                                     "metric_name": "annual_burn_probability",
-                                    "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/BurnProbability_2022_300m"
+                                    "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/BurnProbability_2022_300m",
+                                    "display_name": "Annual Burn Probability"
                                 }
                             ]
                         }
@@ -386,19 +404,23 @@
                             "metrics": [
                                 {
                                     "metric_name": "tree_density_gt1",
-                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m",
+                                    "display_name": "Tree Density > 1"
                                 },
                                 {
                                     "metric_name": "large_tree_density_gt30",
-                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m",
+                                    "display_name": "Tree Density < 30"
                                 },
                                 {
                                     "metric_name": "basal_area",
-                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/BASATOT_2021_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/BASATOT_2021_300m",
+                                    "display_name": "Basal Area"
                                 },
                                 {
                                     "metric_name": "max_sdi",
-                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
+                                    "display_name": "Max SDI"
                                 }
                             ]
                         },
@@ -410,11 +432,13 @@
                             "metrics": [
                                 {
                                     "metric_name": "seral_stage",
-                                    "filepath": "data/sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
+                                    "display_name": "Seral Stage"
                                 },
                                 {
                                     "metric_name": "tree_to_shrub_cover_ratio",
-                                    "filepath": "data/sierra_nevada/forest_resilience/forest_composition/CECS_TreeToShrubRatio_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/forest_composition/CECS_TreeToShrubRatio_300m",
+                                    "display_name": "Tree:Shrub Cover"
                                 }
                             ]
                         },
@@ -426,7 +450,8 @@
                             "metrics": [
                                 {
                                     "metric_name": "tree_mortality",
-                                    "filepath": "data/sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m"
+                                    "filepath": "data/sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m",
+                                    "display_name": "Tree Mortality"
                                 }
                             ]
                         }
