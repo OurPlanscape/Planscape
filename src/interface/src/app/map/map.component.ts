@@ -28,10 +28,8 @@ import { SessionService } from '../session.service';
 import {
   BaseLayerType,
   ConditionsConfig,
-  DataLayerType,
   defaultMapConfig,
   Map,
-  MapConfig,
   Region,
 } from '../types';
 import { Legend } from './../shared/legend/legend.component';
@@ -59,13 +57,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
-
-  dataLayerTypes: number[] = [
-    DataLayerType.None,
-    DataLayerType.Raw,
-    DataLayerType.Normalized,
-  ];
-  DataLayerType: typeof DataLayerType = DataLayerType;
 
   huc12BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   huc10BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
@@ -668,6 +659,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     map.dataLayerRef?.remove();
 
     let filepath = map.config.dataLayerConfig.filepath;
+    if (filepath.length === 0) return;
     if (map.config.normalizeDataLayer) {
       filepath = filepath.concat('_normalized');
     }
