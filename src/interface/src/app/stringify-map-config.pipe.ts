@@ -18,6 +18,9 @@ export class StringifyMapConfigPipe implements PipeTransform {
 
     let str: string = '';
     let labels: string[] = [];
+    if (mapConfig.showDataLayer) {
+      labels.push(mapConfig.dataLayerConfig.metric_name);
+    }
     if (mapConfig.showExistingProjectsLayer) {
       labels.push('Existing Projects');
     }
@@ -32,12 +35,6 @@ export class StringifyMapConfigPipe implements PipeTransform {
     }
     if (mapConfig.showUsForestBoundaryLayer) {
       labels.push('US Forest Boundaries');
-    }
-    if (mapConfig.dataLayerType === DataLayerType.Raw) {
-      labels.push('Data');
-    }
-    if (mapConfig.dataLayerType === DataLayerType.Normalized) {
-      labels.push('Normalized Data');
     }
     labels.forEach((label, index) => {
       if (index > 0) {

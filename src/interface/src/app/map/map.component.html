@@ -2,7 +2,6 @@
 
   <!-- Map control panel -->
   <div id="controls" class="controls-container">
-    <div class="layer-controls">
 
       <!-- Legend for the currently shown map -->
       <h3>Legend</h3>
@@ -38,8 +37,9 @@
 
       <!-- Layer controls for each map, displayed in tabs -->
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIndex"
-        [dynamicHeight]="true">
+        class="layer-controls-tab-group">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
+
           <h3>Base layer</h3>
           <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
             class="layer-radio-group" [(ngModel)]="map.config.baseLayerType" (change)="changeBaseLayer(map)">
@@ -48,14 +48,7 @@
               {{ BaseLayerType[baseLayerType] }}
             </mat-radio-button>
           </mat-radio-group>
-          <h3>Data</h3>
-          <mat-radio-group name="{{ map.id + '-data-layer-select' }}" aria-label="Select an option"
-            class="layer-radio-group" [(ngModel)]="map.config.dataLayerType" (change)="changeDataLayer(map)">
-            <mat-radio-button *ngFor="let dataLayerType of dataLayerTypes" [value]="dataLayerType"
-              checked="{{ dataLayerType === map.config.dataLayerType }}" class="layer-radio-button">
-              {{ DataLayerType[dataLayerType] }}
-            </mat-radio-button>
-          </mat-radio-group>
+
           <h3>Boundaries</h3>
           <div class="layer-control-container">
             <mat-checkbox name="{{ map.id + '-huc12-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
@@ -85,6 +78,7 @@
             </mat-checkbox>
             <mat-spinner [diameter]="24" *ngIf="!usForestBoundaryGeoJsonLoaded"></mat-spinner>
           </div>
+
           <h3>Projects</h3>
           <div class="layer-control-container">
             <mat-checkbox name="{{ map.id + '-existing-projects-toggle' }}" aria-label="Select or deselect"
@@ -94,9 +88,32 @@
             </mat-checkbox>
             <mat-spinner [diameter]="24" *ngIf="!existingProjectsGeoJsonLoaded"></mat-spinner>
           </div>
+
+          <h3>Conditions</h3>
+          <mat-checkbox name="{{ map.id + '-conditions-toggle' }}" aria-label="Select or deselect"
+            class="layer-checkbox" [(ngModel)]="map.config.showDataLayer"
+            (change)="toggleConditionsLayer(map)">
+            Show conditions
+          </mat-checkbox>
+
+          <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
+            class="layer-radio-group" *ngIf="map.config.showDataLayer"
+            [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
+            <div *ngFor="let pillar of (conditionsConfig$ | async)?.pillars">
+              <h4>{{ pillar.display_name }}</h4>
+              <div *ngFor="let element of pillar.elements">
+                <h5>{{ element.display_name ? element.display_name : element.element_name }}</h5>
+                <div *ngFor="let metric of element.metrics">
+                  <mat-radio-button class="layer-radio-button" [value]="metric">
+                    {{ metric.metric_name }}
+                  </mat-radio-button>
+                </div>
+              </div>
+            </div>
+          </mat-radio-group>
+
         </mat-tab>
       </mat-tab-group>
-    </div>
   </div>
 
   <!-- Display containers for leaflet maps (up to 4) -->
