@@ -662,22 +662,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  toggleConditionsLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showDataLayer) {
-      map.dataLayerRef?.addTo(map.instance);
-    } else {
-      map.dataLayerRef?.remove();
-    }
-  }
-
   changeConditionsLayer(map: Map) {
     if (map.instance === undefined) return;
 
     map.dataLayerRef?.remove();
 
     let filepath = map.config.dataLayerConfig.filepath;
+    if (map.config.normalizeDataLayer) {
+      filepath = filepath.concat('_normalized');
+    }
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
     console.log(filepath);
 
@@ -690,7 +683,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       layers: filepath,
     });
 
-    map.dataLayerRef.addTo(map.instance);
+    if (map.config.showDataLayer) {
+      map.dataLayerRef.addTo(map.instance);
+    }
   }
 
   /* Change how many maps are displayed in the viewport. */
