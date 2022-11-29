@@ -1,19 +1,6 @@
-import {
-  AfterViewInit,
-  ApplicationRef,
-  Component,
-  createComponent,
-  EnvironmentInjector,
-  OnDestroy,
-} from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import {
-  Feature,
-  FeatureCollection,
-  Geometry,
-  MultiPolygon,
-  Polygon,
-} from 'geojson';
+import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
@@ -24,13 +11,7 @@ import { MapService } from '../map.service';
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import {
-  BaseLayerType,
-  ConditionsConfig,
-  defaultMapConfig,
-  Map,
-  Region,
-} from '../types';
+import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
