@@ -1,5 +1,6 @@
 import { BaseLayerType, DataLayerType } from './layer.types';
 import * as L from 'leaflet';
+import { MetricConfig } from './data.types';
 
 export interface Map {
   id: string;
@@ -17,10 +18,28 @@ export interface Map {
 
 export interface MapConfig {
   baseLayerType: BaseLayerType;
-  dataLayerType: DataLayerType;
+  dataLayerConfig: MetricConfig;
+  showDataLayer: boolean;
   showExistingProjectsLayer: boolean;
   showHuc12BoundaryLayer: boolean;
   showHuc10BoundaryLayer: boolean;
   showCountyBoundaryLayer: boolean;
   showUsForestBoundaryLayer: boolean;
+}
+
+export function defaultMapConfig(): MapConfig {
+  return {
+    baseLayerType: BaseLayerType.Road,
+    dataLayerConfig: {
+      metric_name: '',
+      filepath: '',
+      display_name: '',
+    },
+    showDataLayer: false,
+    showExistingProjectsLayer: false,
+    showHuc12BoundaryLayer: false,
+    showHuc10BoundaryLayer: false,
+    showCountyBoundaryLayer: false,
+    showUsForestBoundaryLayer: false,
+  };
 }

@@ -7,17 +7,17 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
+import {
+  Feature,
+  FeatureCollection,
+  Geometry,
+  MultiPolygon,
+  Polygon,
+} from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import {
-  BehaviorSubject,
-  Observable,
-  Subject,
-  take,
-  takeUntil,
-} from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
@@ -25,7 +25,15 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import { BaseLayerType, DataLayerType, Map, MapConfig, Region } from '../types';
+import {
+  BaseLayerType,
+  ConditionsConfig,
+  DataLayerType,
+  defaultMapConfig,
+  Map,
+  MapConfig,
+  Region,
+} from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
@@ -45,6 +53,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   mapCountOptions: number[] = [1, 2, 4];
   selectedMapIndex: number = 0;
 
+  conditionsConfig$: Observable<ConditionsConfig | null>;
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
 
@@ -94,7 +103,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   };
 
   planCreationOptions: PlanCreationOption[] = [
-    {value: 'draw-area', icon: 'edit', display: 'Draw an area'},
+    { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
   showCreatePlanButton: boolean = false;
@@ -122,28 +131,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  static dataLayerTiles() {
-    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-      crs: L.CRS.EPSG4326,
-      minZoom: 7,
-      maxZoom: 15,
-      format: 'image/png',
-      opacity: 0.7,
-      layers: 'AvailableBiomass_2021_300m_base.tif',
-    });
-  }
-
-  static dataLayerTilesNormalized() {
-    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-      crs: L.CRS.EPSG4326,
-      minZoom: 7,
-      maxZoom: 15,
-      format: 'image/png',
-      opacity: 0.7,
-      layers: 'AvailableBiomass_2021_300m_normalized.tif',
-    });
-  }
-
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -155,6 +142,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     private sessionService: SessionService,
     private planService: PlanService
   ) {
+    this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
+      takeUntil(this.destroy$)
+    );
     this.selectedRegion$ = this.sessionService.region$.pipe(
       takeUntil(this.destroy$)
     );
@@ -227,7 +217,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         return {
           id: id,
           name: 'Map ' + (index + 1),
-          config: this.defaultMapConfig(),
+          config: defaultMapConfig(),
         };
       }
     );
@@ -304,7 +294,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         }
       }
     );
-    this.initDataLayer(map);
 
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
@@ -317,19 +306,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
 
     return map.instance;
-  }
-
-  /** Default starting config for a map. */
-  private defaultMapConfig(): MapConfig {
-    return {
-      baseLayerType: BaseLayerType.Road,
-      dataLayerType: DataLayerType.None,
-      showExistingProjectsLayer: true,
-      showHuc12BoundaryLayer: false,
-      showHuc10BoundaryLayer: false,
-      showCountyBoundaryLayer: false,
-      showUsForestBoundaryLayer: false,
-    };
   }
 
   /** Sync pan, zoom, etc. between all maps. */
@@ -348,29 +324,29 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     map.addLayer(this.drawingLayer);
 
     const drawOptions: L.Control.DrawConstructorOptions = {
-        position: 'bottomright',
-        draw: {
-            polygon: {
-              allowIntersection: false,
-              showArea: true,
-              metric: false, // Set measurement units to acres
-              shapeOptions: {
-                color: '#7b61ff',
-              },
-              drawError: {
-                  color: '#ff7b61',
-                  message: 'Can\'t draw polygons with intersections!',
-              },
-            }, // Set to false to disable each tool
-            polyline: false,
-            circle: false,
-            rectangle: false,
-            marker: false,
-            circlemarker: false,
-        },
-        edit: {
-            featureGroup: this.drawingLayer, // Required and declares which layer is editable
-        }
+      position: 'bottomright',
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          metric: false, // Set measurement units to acres
+          shapeOptions: {
+            color: '#7b61ff',
+          },
+          drawError: {
+            color: '#ff7b61',
+            message: "Can't draw polygons with intersections!",
+          },
+        }, // Set to false to disable each tool
+        polyline: false,
+        circle: false,
+        rectangle: false,
+        marker: false,
+        circlemarker: false,
+      },
+      edit: {
+        featureGroup: this.drawingLayer, // Required and declares which layer is editable
+      },
     };
 
     const drawControl = new L.Control.Draw(drawOptions);
@@ -395,27 +371,28 @@ export class MapComponent implements AfterViewInit, OnDestroy {
    */
   private convertToPlanningArea(): GeoJSON.GeoJSON {
     const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;
-      // Case: Single polygon
-      if (drawnGeoJson.features.length <= 1) return drawnGeoJson;
+    // Case: Single polygon
+    if (drawnGeoJson.features.length <= 1) return drawnGeoJson;
 
-      // Case: Multipolygon
-      const newFeature: GeoJSON.Feature = {
-        type: 'Feature',
-        geometry: {
-          type: 'MultiPolygon',
-          coordinates: [],
-        },
-        properties: {},
-      };
-      drawnGeoJson.features.forEach((feature) => {
-        (newFeature.geometry as MultiPolygon).coordinates.push(
-            (feature.geometry as Polygon).coordinates)
-      });
+    // Case: Multipolygon
+    const newFeature: GeoJSON.Feature = {
+      type: 'Feature',
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [],
+      },
+      properties: {},
+    };
+    drawnGeoJson.features.forEach((feature) => {
+      (newFeature.geometry as MultiPolygon).coordinates.push(
+        (feature.geometry as Polygon).coordinates
+      );
+    });
 
-      return {
-        "type": "FeatureCollection",
-        "features": [newFeature],
-      } as FeatureCollection;
+    return {
+      type: 'FeatureCollection',
+      features: [newFeature],
+    } as FeatureCollection;
   }
 
   /** Configures and opens the Create Plan dialog */
@@ -423,7 +400,10 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     const dialogConfig = new MatDialogConfig();
     dialogConfig.maxWidth = '560px';
 
-    const openedDialog = this.dialog.open(PlanCreateDialogComponent, dialogConfig);
+    const openedDialog = this.dialog.open(
+      PlanCreateDialogComponent,
+      dialogConfig
+    );
 
     openedDialog.afterClosed().subscribe((result) => {
       if (result) {
@@ -436,14 +416,16 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     this.selectedRegion$.subscribe((selectedRegion) => {
       if (!selectedRegion) return;
 
-      this.planService.createPlan({
-        name: name,
-        ownerId: 'tempUserId',
-        region: selectedRegion,
-        planningArea: shape,
-      }).subscribe(result => {
-        console.log(result);
-      });
+      this.planService
+        .createPlan({
+          name: name,
+          ownerId: 'tempUserId',
+          region: selectedRegion,
+          planningArea: shape,
+        })
+        .subscribe((result) => {
+          console.log(result);
+        });
     });
   }
 
@@ -453,18 +435,21 @@ export class MapComponent implements AfterViewInit, OnDestroy {
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
-      const polygonDrawer = new L.Draw.Polygon(this.maps[0].instance as L.DrawMap, {
-        allowIntersection: false,
-        showArea: true,
-        metric: false,
-        shapeOptions: {
-          color: '#7b61ff',
-        },
-        drawError: {
+      const polygonDrawer = new L.Draw.Polygon(
+        this.maps[0].instance as L.DrawMap,
+        {
+          allowIntersection: false,
+          showArea: true,
+          metric: false,
+          shapeOptions: {
+            color: '#7b61ff',
+          },
+          drawError: {
             color: '#ff7b61',
-            message: 'Can\'t draw polygons with intersections!',
-        },
-      });
+            message: "Can't draw polygons with intersections!",
+          },
+        }
+      );
       polygonDrawer.enable();
     }
   }
@@ -610,20 +595,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private initDataLayer(map: Map) {
-    let dataLayerType = map.config.dataLayerType;
-
-    if (dataLayerType === DataLayerType.Normalized) {
-      map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
-    } else if (dataLayerType === DataLayerType.Raw) {
-      map.dataLayerRef = MapComponent.dataLayerTiles();
-    }
-
-    if (map.dataLayerRef) {
-      map.instance?.addLayer(map.dataLayerRef);
-    }
-  }
-
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
     let baseLayerType = map.config.baseLayerType;
@@ -634,23 +605,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       map.baseLayerRef = MapComponent.stadiaAlidadeTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
-  }
-
-  /** Toggles which data layer is shown. */
-  changeDataLayer(map: Map) {
-    let dataLayerType = map.config.dataLayerType;
-    map.dataLayerRef?.remove();
-
-    map.dataLayerRef = undefined;
-    if (dataLayerType === DataLayerType.Normalized) {
-      map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
-    } else if (dataLayerType === DataLayerType.Raw) {
-      map.dataLayerRef = MapComponent.dataLayerTiles();
-    }
-
-    if (map.dataLayerRef) {
-      map.instance?.addLayer(map.dataLayerRef);
-    }
   }
 
   /** Toggles whether HUC-12 boundaries are shown. */
@@ -706,6 +660,37 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     } else {
       map.existingProjectsLayerRef?.remove();
     }
+  }
+
+  toggleConditionsLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    if (map.config.showDataLayer) {
+      map.dataLayerRef?.addTo(map.instance);
+    } else {
+      map.dataLayerRef?.remove();
+    }
+  }
+
+  changeConditionsLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    map.dataLayerRef?.remove();
+
+    let filepath = map.config.dataLayerConfig.filepath;
+    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
+    console.log(filepath);
+
+    map.dataLayerRef = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+      crs: L.CRS.EPSG4326,
+      minZoom: 7,
+      maxZoom: 15,
+      format: 'image/png',
+      opacity: 0.7,
+      layers: filepath,
+    });
+
+    map.dataLayerRef.addTo(map.instance);
   }
 
   /* Change how many maps are displayed in the viewport. */
