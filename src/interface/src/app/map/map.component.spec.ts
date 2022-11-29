@@ -19,7 +19,7 @@ import * as L from 'leaflet';
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
-import { BaseLayerType, DataLayerType, Map, Region } from './../types';
+import { BaseLayerType, DataLayerType, defaultMapConfig, Map, Region } from './../types';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -107,15 +107,7 @@ describe('MapComponent', () => {
     it('initializes 4 maps with default config options', () => {
       expect(component.maps.length).toEqual(4);
       component.maps.forEach((map: Map) => {
-        expect(map.config).toEqual({
-          baseLayerType: BaseLayerType.Road,
-          dataLayerType: DataLayerType.None,
-          showExistingProjectsLayer: true,
-          showHuc12BoundaryLayer: false,
-          showHuc10BoundaryLayer: false,
-          showCountyBoundaryLayer: false,
-          showUsForestBoundaryLayer: false,
-        });
+        expect(map.config).toEqual(defaultMapConfig());
       });
     });
 

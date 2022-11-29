@@ -19,7 +19,11 @@ export class StringifyMapConfigPipe implements PipeTransform {
     let str: string = '';
     let labels: string[] = [];
     if (mapConfig.showDataLayer) {
-      labels.push(mapConfig.dataLayerConfig.metric_name);
+      let dataLabel = mapConfig.dataLayerConfig.display_name;
+      if (mapConfig.normalizeDataLayer) {
+        dataLabel = dataLabel.concat(' (Normalized)');
+      }
+      labels.push(dataLabel);
     }
     if (mapConfig.showExistingProjectsLayer) {
       labels.push('Existing Projects');

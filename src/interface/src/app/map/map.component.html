@@ -92,8 +92,15 @@
           <h3>Conditions</h3>
           <mat-checkbox name="{{ map.id + '-conditions-toggle' }}" aria-label="Select or deselect"
             class="layer-checkbox" [(ngModel)]="map.config.showDataLayer"
-            (change)="toggleConditionsLayer(map)">
+            (change)="changeConditionsLayer(map)">
             Show conditions
+          </mat-checkbox>
+
+          <mat-checkbox name="{{ map.id + '-normalized-conditions-toggle' }}"
+            aria-label="Select or deselect" class="layer-checkbox"
+            *ngIf="map.config.showDataLayer" [(ngModel)]="map.config.normalizeDataLayer"
+            (change)="changeConditionsLayer(map)">
+            Normalize conditions data
           </mat-checkbox>
 
           <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
@@ -102,10 +109,10 @@
             <div *ngFor="let pillar of (conditionsConfig$ | async)?.pillars">
               <h4>{{ pillar.display_name }}</h4>
               <div *ngFor="let element of pillar.elements">
-                <h5>{{ element.display_name ? element.display_name : element.element_name }}</h5>
+                <h5>{{ element.display_name }}</h5>
                 <div *ngFor="let metric of element.metrics">
                   <mat-radio-button class="layer-radio-button" [value]="metric">
-                    {{ metric.metric_name }}
+                    {{ metric.display_name ? metric.display_name : metric.metric_name }}
                   </mat-radio-button>
                 </div>
               </div>

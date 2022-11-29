@@ -20,6 +20,7 @@ export interface MapConfig {
   baseLayerType: BaseLayerType;
   dataLayerConfig: MetricConfig;
   showDataLayer: boolean;
+  normalizeDataLayer: boolean;
   showExistingProjectsLayer: boolean;
   showHuc12BoundaryLayer: boolean;
   showHuc10BoundaryLayer: boolean;
@@ -36,6 +37,7 @@ export function defaultMapConfig(): MapConfig {
       display_name: '',
     },
     showDataLayer: false,
+    normalizeDataLayer: false,
     showExistingProjectsLayer: false,
     showHuc12BoundaryLayer: false,
     showHuc10BoundaryLayer: false,
