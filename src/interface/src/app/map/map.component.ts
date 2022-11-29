@@ -1,10 +1,23 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ApplicationRef,
+  Component,
+  createComponent,
+  EnvironmentInjector,
+  OnDestroy,
+} from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  take,
+  takeUntil,
+} from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
@@ -12,7 +25,7 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import { BaseLayerType, Map, MapConfig, Region } from '../types';
+import { BaseLayerType, DataLayerType, Map, MapConfig, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
@@ -37,6 +50,13 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
+
+  dataLayerTypes: number[] = [
+    DataLayerType.None,
+    DataLayerType.Raw,
+    DataLayerType.Normalized,
+  ];
+  DataLayerType: typeof DataLayerType = DataLayerType;
 
   huc12BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   huc10BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
@@ -92,10 +112,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   static stadiaAlidadeTiles() {
-    return L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-    });
+    return L.tileLayer(
+      'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+      }
+    );
   }
 
   static dataLayerTiles() {
@@ -299,15 +323,14 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   private defaultMapConfig(): MapConfig {
     return {
       baseLayerType: BaseLayerType.Road,
+      dataLayerType: DataLayerType.None,
       showExistingProjectsLayer: true,
       showHuc12BoundaryLayer: false,
       showHuc10BoundaryLayer: false,
       showCountyBoundaryLayer: false,
       showUsForestBoundaryLayer: false,
-      showDataLayer: false,
-      showDataLayerNormalized: false,
-    }
-  };
+    };
+  }
 
   /** Sync pan, zoom, etc. between all maps. */
   private syncAllMaps() {
@@ -588,9 +611,15 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private initDataLayer(map: Map) {
-    map.dataLayerRef = MapComponent.dataLayerTiles();
+    let dataLayerType = map.config.dataLayerType;
 
-    if (map.config.showDataLayer) {
+    if (dataLayerType === DataLayerType.Normalized) {
+      map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
+    } else if (dataLayerType === DataLayerType.Raw) {
+      map.dataLayerRef = MapComponent.dataLayerTiles();
+    }
+
+    if (map.dataLayerRef) {
       map.instance?.addLayer(map.dataLayerRef);
     }
   }
@@ -605,6 +634,23 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       map.baseLayerRef = MapComponent.stadiaAlidadeTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
+  }
+
+  /** Toggles which data layer is shown. */
+  changeDataLayer(map: Map) {
+    let dataLayerType = map.config.dataLayerType;
+    map.dataLayerRef?.remove();
+
+    map.dataLayerRef = undefined;
+    if (dataLayerType === DataLayerType.Normalized) {
+      map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
+    } else if (dataLayerType === DataLayerType.Raw) {
+      map.dataLayerRef = MapComponent.dataLayerTiles();
+    }
+
+    if (map.dataLayerRef) {
+      map.instance?.addLayer(map.dataLayerRef);
+    }
   }
 
   /** Toggles whether HUC-12 boundaries are shown. */
@@ -659,28 +705,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       map.existingProjectsLayerRef?.addTo(map.instance);
     } else {
       map.existingProjectsLayerRef?.remove();
-    }
-  }
-
-  /** Toggles whether data layer is shown. */
-  toggleDataLayer(map: Map) {
-    if (map.instance === undefined) return;
-    map.dataLayerRef = MapComponent.dataLayerTiles();
-
-    if (map.config.showDataLayer) {
-      map.dataLayerRef?.addTo(map.instance);
-    } else {
-      map.dataLayerRef?.remove();
-    }
-  }
-  toggleDataLayerNormalized(map: Map) {
-    if (map.instance === undefined) return;
-    map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
-
-    if (map.config.showDataLayerNormalized) {
-      map.dataLayerRef?.addTo(map.instance);
-    } else {
-      map.dataLayerRef?.remove();
     }
   }
 

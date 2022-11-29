@@ -49,14 +49,13 @@
             </mat-radio-button>
           </mat-radio-group>
           <h3>Data</h3>
-          <mat-checkbox name="{{ map.id + '-data-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
-            [(ngModel)]="map.config.showDataLayer" (change)="toggleDataLayer(map)">
-            Data
-          </mat-checkbox>
-          <mat-checkbox name="{{ map.id + '-data-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
-            [(ngModel)]="map.config.showDataLayerNormalized" (change)="toggleDataLayerNormalized(map)">
-            Data Normalized
-          </mat-checkbox>
+          <mat-radio-group name="{{ map.id + '-data-layer-select' }}" aria-label="Select an option"
+            class="layer-radio-group" [(ngModel)]="map.config.dataLayerType" (change)="changeDataLayer(map)">
+            <mat-radio-button *ngFor="let dataLayerType of dataLayerTypes" [value]="dataLayerType"
+              checked="{{ dataLayerType === map.config.dataLayerType }}" class="layer-radio-button">
+              {{ DataLayerType[dataLayerType] }}
+            </mat-radio-button>
+          </mat-radio-group>
           <h3>Boundaries</h3>
           <div class="layer-control-container">
             <mat-checkbox name="{{ map.id + '-huc12-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
