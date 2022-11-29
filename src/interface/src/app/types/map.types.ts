@@ -34,7 +34,6 @@ export function defaultMapConfig(): MapConfig {
     dataLayerConfig: {
       metric_name: '',
       filepath: '',
-      display_name: '',
     },
     showDataLayer: false,
     normalizeDataLayer: false,
