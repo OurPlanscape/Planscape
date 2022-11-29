@@ -1,4 +1,4 @@
-import { BaseLayerType, DataLayerType } from './layer.types';
+import { BaseLayerType } from './layer.types';
 import * as L from 'leaflet';
 import { MetricConfig } from './data.types';
 
