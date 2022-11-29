@@ -47,7 +47,7 @@ class PillarConfig:
 
         def check_pillar(pillar) -> bool:
             return (isinstance(pillar, dict) and
-                    pillar.keys() <= {'pillar_name', 'elements', 'operation', 'filepath', 'display_name'} and
+                    pillar.keys() <= {'pillar_name', 'elements', 'operation', 'filepath', 'display_name','display'} and
                     isinstance(pillar['pillar_name'], str) and
                     isinstance(pillar['elements'], list) and
                     all([check_element(element) for element in pillar['elements']]))
