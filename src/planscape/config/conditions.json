@@ -191,6 +191,7 @@
                     "pillar_name": "air_quality",
                     "filepath": "data/sierra_nevada/air_quality",
                     "display_name": "Air Quality",
+                    "display": "False",
                     "elements": [
                         {
                             "element_name": "particulate_matter",
@@ -215,7 +216,8 @@
                     "pillar_name": "biodiversity",
                     "filepath": "data/sierra_nevada/biodiversity",
                     "display_name": "Biodiversity",  
-                    "operation" : "MEAN",      
+                    "operation" : "MEAN",  
+                    "display": "True",    
                     "elements": [
                         {
                             "element_name": "community_integrity",
@@ -278,7 +280,8 @@
                     "pillar_name": "carbon_sequestration",
                     "filepath": "data/sierra_nevada/carbon_sequestration",
                     "display_name": "Carbon Sequestration",    
-                    "operation" : "MEAN",     
+                    "operation" : "MEAN", 
+                    "display": "True",    
                     "elements": [
                         {
                             "element_name": "stability",
@@ -309,7 +312,8 @@
                 {
                     "pillar_name": "economic_diversity",
                     "filepath": "data/sierra_nevada/economic_diversity",
-                    "display_name": "Economic Diversity",        
+                    "display_name": "Economic Diversity",   
+                    "display": "False",       
                     "elements": [
                         {
                             "element_name": "wood",
@@ -337,7 +341,8 @@
                 {
                     "pillar_name": "fire_adapted_communities",
                     "filepath": "data/sierra_nevada/fire_adapted_communities",
-                    "display_name": "Fire-Adapted Communities",       
+                    "display_name": "Fire-Adapted Communities",    
+                    "display": "True",     
                     "operation" : "MEAN",  
                     "elements": [
                         {
@@ -363,7 +368,8 @@
                     "pillar_name": "fire_dynamics",
                     "filepath": "data/sierra_nevada/fire_dynamics",
                     "display_name": "Fire Dynamics", 
-                    "operation" : "MEAN",        
+                    "operation" : "MEAN",   
+                    "display": "True",       
                     "elements": [
                         {
                             "element_name": "functional_fire",
@@ -395,6 +401,7 @@
                     "filepath": "data/sierra_nevada/forest_resilience",
                     "display_name": "Forest Resilience",
                     "operation" : "MEAN", 
+                    "display": "True",  
                     "elements": [
                         {
                             "element_name": "forest_structure",
@@ -460,7 +467,8 @@
                 {
                     "pillar_name": "social_cultural_wellbeing",
                     "filepath": "data/sierra_nevada/social_cultural_wellbeing",
-                    "display_name": "Social and Cultural Wellbeing",        
+                    "display_name": "Social and Cultural Wellbeing",    
+                    "display": "False",      
                     "elements": [
                         {
                             "element_name": "environmental_justice",
@@ -486,7 +494,8 @@
                 {
                     "pillar_name": "water_security",
                     "filepath": "data/sierra_nevada/water_security",
-                    "display_name": "Water Security",        
+                    "display_name": "Water Security",   
+                    "display": "False",       
                     "elements": [
                         {
                             "element_name": "quantity",
@@ -508,7 +517,8 @@
                 {
                     "pillar_name": "wetland_integrity",
                     "filepath": "data/sierra_nevada/wetland_integrity",
-                    "display_name": "Wetland Integrity",        
+                    "display_name": "Wetland Integrity",     
+                    "display": "False",     
                     "elements": [
                         {
                             "element_name": "hydrologic",
