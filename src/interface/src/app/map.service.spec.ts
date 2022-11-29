@@ -3,10 +3,16 @@ import { TestBed } from '@angular/core/testing';
 
 import { MapService } from './map.service';
 import { Region } from './types';
+import { ConditionsConfig } from './types/data.types';
 
 describe('MapService', () => {
+  let httpTestingController: HttpTestingController;
   let service: MapService;
   let fakeGeoJson: GeoJSON.GeoJSON;
+
+  const conditionsConfig: ConditionsConfig = {
+    pillars: []
+  };
 
   beforeEach(() => {
     fakeGeoJson = {
@@ -18,6 +24,14 @@ describe('MapService', () => {
       providers: [MapService]
     });
     service = TestBed.inject(MapService);
+    httpTestingController = TestBed.inject(HttpTestingController);
+
+    // Must flush the request in the constructor for httpTestingController.verify()
+    // to pass in other tests.
+    const req = httpTestingController.expectOne(
+      'http://127.0.0.1:8000/conditions/config/?region_name=sierra_cascade_inyo'
+    );
+    req.flush(conditionsConfig);
   });
 
   it('can load instance', () => {
@@ -26,8 +40,6 @@ describe('MapService', () => {
 
   describe('getHUC12BoundaryShapes', () => {
     it('makes request to backend', () => {
-      const httpTestingController = TestBed.inject(HttpTestingController);
-
       service.getHuc12BoundaryShapes(Region.SIERRA_NEVADA).subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
@@ -43,8 +55,6 @@ describe('MapService', () => {
 
   describe('getCountyBoundaryShapes', () => {
     it('makes request to backend', () => {
-      const httpTestingController = TestBed.inject(HttpTestingController);
-
       service.getCountyBoundaryShapes(Region.NORTHERN_CALIFORNIA).subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });
@@ -60,7 +70,6 @@ describe('MapService', () => {
 
   describe('getExistingProjects', () => {
     it('makes request to endpoint', () => {
-      const httpTestingController = TestBed.inject(HttpTestingController);
       const fakeGeoJsonText: string = JSON.stringify(fakeGeoJson);
 
       service.getExistingProjects().subscribe(res => {
@@ -78,8 +87,6 @@ describe('MapService', () => {
 
   describe('getRegionBoundary', () => {
     it('uses the correct path to the corresponding geoJSON file', () => {
-      const httpTestingController = TestBed.inject(HttpTestingController);
-
       service.getRegionBoundary(Region.SIERRA_NEVADA).subscribe(res => {
         expect(res).toEqual(fakeGeoJson);
       });

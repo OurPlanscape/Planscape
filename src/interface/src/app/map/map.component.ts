@@ -1,19 +1,6 @@
-import {
-  AfterViewInit,
-  ApplicationRef,
-  Component,
-  createComponent,
-  EnvironmentInjector,
-  OnDestroy,
-} from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import {
-  Feature,
-  FeatureCollection,
-  Geometry,
-  MultiPolygon,
-  Polygon,
-} from 'geojson';
+import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
@@ -21,18 +8,12 @@ import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
-import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import {
-  BaseLayerType,
-  ConditionsConfig,
-  defaultMapConfig,
-  Map,
-  Region,
-} from '../types';
+import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
 export interface PlanCreationOption {
@@ -659,7 +640,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     map.dataLayerRef?.remove();
 
     let filepath = map.config.dataLayerConfig.filepath;
-    if (filepath.length === 0) return;
+    if (filepath?.length === 0 || !filepath) return;
     if (map.config.normalizeDataLayer) {
       filepath = filepath.concat('_normalized');
     }

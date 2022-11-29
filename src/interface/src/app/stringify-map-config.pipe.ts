@@ -19,7 +19,9 @@ export class StringifyMapConfigPipe implements PipeTransform {
     let str: string = '';
     let labels: string[] = [];
     if (mapConfig.showDataLayer) {
-      let dataLabel = mapConfig.dataLayerConfig.display_name;
+      let dataLabel = mapConfig.dataLayerConfig.display_name
+        ? mapConfig.dataLayerConfig.display_name
+        : mapConfig.dataLayerConfig.metric_name;
       if (mapConfig.normalizeDataLayer) {
         dataLabel = dataLabel.concat(' (Normalized)');
       }
