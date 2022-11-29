@@ -212,12 +212,14 @@
                 {
                     "pillar_name": "biodiversity",
                     "filepath": "data/sierra_nevada/biodiversity",
-                    "display_name": "Biodiversity",        
+                    "display_name": "Biodiversity",  
+                    "operation" : "MEAN",      
                     "elements": [
                         {
                             "element_name": "community_integrity",
                             "filepath": "data/sierra_nevada/biodiversity/community_integrity",
-                            "display_name": "Community Integrity",                
+                            "display_name": "Community Integrity", 
+                            "operation" : "MEAN",                 
                             "metrics": [
                                 {
                                     "metric_name": "habitat_connectivity",
@@ -229,7 +231,8 @@
                         {
                             "element_name": "focal_species",
                             "filepath": "data/sierra_nevada/biodiversity/focal_species",
-                            "display_name": "Focal Species",                
+                            "display_name": "Focal Species",   
+                            "operation" : "MEAN",              
                             "metrics": [
                                 {
                                     "metric_name": "california_spotted_owl",
@@ -252,7 +255,8 @@
                         {
                             "element_name": "species_diversity",
                             "filepath": "data/sierra_nevada/biodiversity/species_diversity",
-                            "display_name": "Species Diversity",                                           
+                            "display_name": "Species Diversity",
+                            "operation" : "MEAN",                                                 
                             "metrics": [
                                 {
                                     "metric_name": "species_richness",
@@ -265,10 +269,13 @@
                 {
                     "pillar_name": "carbon_sequestration",
                     "filepath": "data/sierra_nevada/carbon_sequestration",
-                    "display_name": "Carbon Sequestration",        
+                    "display_name": "Carbon Sequestration",    
+                    "operation" : "MEAN",     
                     "elements": [
                         {
                             "element_name": "stability",
+                            "display_name": "Stability",
+                            "operation" : "MEAN", 
                             "metrics": [
                                 {
                                     "metric_name": "large_tree_carbon",
@@ -278,6 +285,8 @@
                         },
                         {
                             "element_name": "storage",
+                            "display_name": "Storage",
+                            "operation" : "MEAN", 
                             "metrics": [
                                 {
                                     "metric_name": "total_carbon",
@@ -294,6 +303,7 @@
                     "elements": [
                         {
                             "element_name": "wood",
+                            "display_name": "Wood",
                             "metrics": [
                                 {
                                     "metric_name": "skidder_bio_cost",
@@ -314,10 +324,13 @@
                 {
                     "pillar_name": "fire_adapted_communities",
                     "filepath": "data/sierra_nevada/fire_adapted_communities",
-                    "display_name": "Fire-Adapted Communities",        
+                    "display_name": "Fire-Adapted Communities",       
+                    "operation" : "MEAN",  
                     "elements": [
                         {
                             "element_name": "hazard",
+                            "display_name": "Hazard",
+                            "operation" : "MEAN", 
                             "metrics": [
                                 {
                                     "metric_name": "structure_exposure",
@@ -334,12 +347,14 @@
                 {
                     "pillar_name": "fire_dynamics",
                     "filepath": "data/sierra_nevada/fire_dynamics",
-                    "display_name": "Fire Dynamics",        
+                    "display_name": "Fire Dynamics", 
+                    "operation" : "MEAN",        
                     "elements": [
                         {
                             "element_name": "functional_fire",
                             "filepath": "data/sierra_nevada/fire_dynamics/functional_fire",
                             "display_name": "Functional Fire",        
+                            "operation" : "MEAN", 
                             "metrics": [
                                 {
                                     "metric_name": "mean_percent_fire_return_interval_departure",
@@ -361,11 +376,13 @@
                     "pillar_name": "forest_resilience",
                     "filepath": "data/sierra_nevada/forest_resilience",
                     "display_name": "Forest Resilience",
+                    "operation" : "MEAN", 
                     "elements": [
                         {
                             "element_name": "forest_structure",
                             "filepath": "data/sierra_nevada/forest_resilience/forest_structure",
-                            "display_name": "Forest Structure",        
+                            "display_name": "Forest Structure",     
+                            "operation" : "MEAN",    
                             "metrics": [
                                 {
                                     "metric_name": "tree_density_gt1",
@@ -388,7 +405,8 @@
                         {
                             "element_name": "forest_composition",
                             "filepath": "data/sierra_nevada/forest_resilience/forest_composition",
-                            "display_name": "Forest Composition",        
+                            "display_name": "Forest Composition",    
+                            "operation" : "MEAN",    
                             "metrics": [
                                 {
                                     "metric_name": "seral_stage",
@@ -403,7 +421,8 @@
                         {
                             "element_name": "disturbance",
                             "filepath": "data/sierra_nevada/forest_resilience/disturbance",
-                            "display_name": "Disturbance",        
+                            "display_name": "Disturbance",   
+                            "operation" : "MEAN",      
                             "metrics": [
                                 {
                                     "metric_name": "tree_mortality",

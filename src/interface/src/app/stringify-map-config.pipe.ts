@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-import { MapConfig } from './types';
+import { DataLayerType, MapConfig } from './types';
 
 /*
  *  Transforms a MapConfig object into a human-readable string
@@ -33,8 +33,11 @@ export class StringifyMapConfigPipe implements PipeTransform {
     if (mapConfig.showUsForestBoundaryLayer) {
       labels.push('US Forest Boundaries');
     }
-    if (mapConfig.showDataLayer) {
+    if (mapConfig.dataLayerType === DataLayerType.Raw) {
       labels.push('Data');
+    }
+    if (mapConfig.dataLayerType === DataLayerType.Normalized) {
+      labels.push('Normalized Data');
     }
     labels.forEach((label, index) => {
       if (index > 0) {
