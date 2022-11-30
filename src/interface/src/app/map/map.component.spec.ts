@@ -13,8 +13,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject, of } from 'rxjs';
 import * as L from 'leaflet';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
@@ -73,19 +73,31 @@ describe('MapComponent', () => {
       'MatDialog',
       {
         open: {
-          afterClosed: () => of({
-            value: 'test name'
-          })
+          afterClosed: () =>
+            of({
+              value: 'test name',
+            }),
         } as MatDialogRef<any>,
       },
-      {});
-      const popupServiceStub = () => ({
-        makeDetailsPopup: (shape_name: any) => ({}),
-      });
+      {}
+    );
+    const popupServiceStub = () => ({
+      makeDetailsPopup: (shape_name: any) => ({}),
+    });
     TestBed.configureTestingModule({
-      imports: [FormsModule, MatCheckboxModule, MatRadioModule, MatSelectModule, BrowserAnimationsModule],
+      imports: [
+        FormsModule,
+        MatCheckboxModule,
+        MatRadioModule,
+        MatSelectModule,
+        BrowserAnimationsModule,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
-      declarations: [MapComponent, ProjectCardComponent, PlanCreateDialogComponent],
+      declarations: [
+        MapComponent,
+        ProjectCardComponent,
+        PlanCreateDialogComponent,
+      ],
       providers: [
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
@@ -237,6 +249,66 @@ describe('MapComponent', () => {
       component.maps[2].instance?.fireEvent('click');
 
       expect(component.selectedMapIndex).toBe(2);
+    });
+
+    it('selected map is always visible', () => {
+      [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
+        component.selectedMapIndex = selectedMapIndex;
+        [1, 2, 4].forEach((mapCount: number) => {
+          component.mapCount = mapCount;
+
+          expect(component.isMapVisible(component.selectedMapIndex)).toBeTrue();
+        });
+      });
+    });
+
+    it('all maps are visible in 4-map view', () => {
+      component.mapCount = 4;
+
+      [0, 1, 2, 3].forEach((mapIndex: number) => {
+        expect(component.isMapVisible(mapIndex)).toBeTrue();
+      });
+    });
+
+    it('only selected map is visible in 1-map view', () => {
+      component.mapCount = 1;
+
+      [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
+        component.selectedMapIndex = selectedMapIndex;
+        [0, 1, 2, 3].forEach((mapIndex: number) => {
+          if (selectedMapIndex === mapIndex) {
+            expect(component.isMapVisible(mapIndex)).toBeTrue();
+          } else {
+            expect(component.isMapVisible(mapIndex)).toBeFalse();
+          }
+        });
+      });
+    });
+
+    it('row containing selected map height is 100% in 1-map view', () => {
+      component.mapCount = 1;
+
+      [0, 1].forEach((selectedMapIndex: number) => {
+        component.selectedMapIndex = selectedMapIndex;
+
+        expect(component.mapRowHeight(0)).toEqual('100%');
+        expect(component.mapRowHeight(1)).toEqual('0%');
+      });
+
+      [2, 3].forEach((selectedMapIndex: number) => {
+        component.selectedMapIndex = selectedMapIndex;
+
+        expect(component.mapRowHeight(0)).toEqual('0%');
+        expect(component.mapRowHeight(1)).toEqual('100%');
+      });
+    });
+
+    it('all row heights are 50% in 4-map view', () => {
+      component.mapCount = 4;
+
+      [0, 1].forEach((mapRowIndex: number) => {
+        expect(component.mapRowHeight(mapRowIndex)).toEqual('50%');
+      });
     });
   });
 
@@ -414,13 +486,14 @@ describe('MapComponent', () => {
 
   describe('Create plan', () => {
     it('opens create plan dialog', async () => {
-      const fakeMatDialog: MatDialog = fixture.debugElement.injector.get(
-        MatDialog
-      );
+      const fakeMatDialog: MatDialog =
+        fixture.debugElement.injector.get(MatDialog);
       fixture.componentInstance.showCreatePlanButton = true;
-      const button = await loader.getHarness(MatButtonHarness.with({
-        'selector': '.create-plan-button'
-      }));
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.create-plan-button',
+        })
+      );
 
       await button.click();
 
@@ -432,12 +505,14 @@ describe('MapComponent', () => {
         type: 'FeatureCollection',
         features: [],
       };
-      const createPlanSpy = spyOn<any>(component, 'createPlan').and.callThrough();
+      const createPlanSpy = spyOn<any>(
+        component,
+        'createPlan'
+      ).and.callThrough();
 
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
     });
   });
-
 });
