@@ -640,6 +640,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     if (map.instance === undefined) return;
 
