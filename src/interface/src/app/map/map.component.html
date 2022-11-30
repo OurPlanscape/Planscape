@@ -39,7 +39,7 @@
       <!-- Layer controls for each map, displayed in tabs -->
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="selectedMapIndex"
         [dynamicHeight]="true">
-        <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="i > (mapCount - 1)">
+        <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="!isMapVisible(i)">
           <h3>Base layer</h3>
           <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
             class="layer-radio-group" [(ngModel)]="map.config.baseLayerType" (change)="changeBaseLayer(map)">
@@ -130,27 +130,26 @@
     </div>
 
     <!-- Maps (1, 2, or 4) -->
-    <div class="map-row" [ngStyle]="{'height': mapCount > 2 ? '50%' : '100%'}">
+    <div class="map-row" [ngStyle]="{'height': mapRowHeight(0)}">
       <div class="map-box" [ngClass]="{'selected': selectedMapIndex === 0}"
-        data-testid="map1">
+        [hidden]="!isMapVisible(0)" data-testid="map1">
         <app-map-nameplate [map]="maps[0]" [selected]="selectedMapIndex === 0"></app-map-nameplate>
         <div id="map1" class="map"></div>
       </div>
       <div class="map-box" [ngClass]="{'selected': selectedMapIndex === 1}"
-        [hidden]="mapCount < 2"
-        data-testid="map2">
+        [hidden]="!isMapVisible(1)" data-testid="map2">
         <app-map-nameplate [map]="maps[1]" [selected]="selectedMapIndex === 1"></app-map-nameplate>
         <div id="map2" class="map"></div>
       </div>
     </div>
-    <div class="map-row" [ngStyle]="{'height': mapCount > 2 ? '50%' : '0%'}">
+    <div class="map-row" [ngStyle]="{'height': mapRowHeight(1)}">
       <div class="map-box" [ngClass]="{'selected': selectedMapIndex === 2}"
-        [hidden]="mapCount < 4" data-testid="map3">
+        [hidden]="!isMapVisible(2)" data-testid="map3">
         <app-map-nameplate [map]="maps[2]" [selected]="selectedMapIndex === 2"></app-map-nameplate>
         <div id="map3" class="map"></div>
       </div>
       <div class="map-box" [ngClass]="{'selected': selectedMapIndex === 3}"
-        [hidden]="mapCount < 4" data-testid="map4">
+        [hidden]="!isMapVisible(3)" data-testid="map4">
         <app-map-nameplate [map]="maps[3]" [selected]="selectedMapIndex === 3"></app-map-nameplate>
         <div id="map4" class="map"></div>
       </div>
