@@ -1,6 +1,12 @@
 import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
-import { Feature, FeatureCollection, Geometry, MultiPolygon, Polygon } from 'geojson';
+import {
+  Feature,
+  FeatureCollection,
+  Geometry,
+  MultiPolygon,
+  Polygon,
+} from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
@@ -667,5 +673,44 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     setTimeout(() => {
       this.maps.forEach((map: Map) => map.instance?.invalidateSize());
     }, 0);
+  }
+
+  /** Whether the map at given index should be visible. */
+  isMapVisible(index: number): boolean {
+    if (index === this.selectedMapIndex) return true;
+
+    switch (this.mapCount) {
+      case 4:
+        return true;
+      case 1:
+        // Only 1 map is visible and this one is not selected
+        return false;
+      case 2:
+      default:
+        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
+        if (index === 0 || index === 1) {
+          // TODO: 2 map view might go away or the logic here might change
+          return true;
+        }
+        return false;
+    }
+  }
+
+  /** Computes the height for the map row at given index (0%, 50%, or 100%). */
+  mapRowHeight(index: number): string {
+    switch (this.mapCount) {
+      case 4:
+        return '50%';
+      case 2:
+        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
+        // TODO: 2 map view might go away or the logic here might change
+        return index === 0 ? '100%' : '0%';
+      case 1:
+      default:
+        if (Math.floor(this.selectedMapIndex / 2) === index) {
+          return '100%';
+        }
+        return '0%';
+    }
   }
 }
