@@ -1,12 +1,14 @@
-from django.db.models import F, Subquery
-from rest_framework import viewsets
-from rest_framework_gis import filters
-from django.core.serializers import serialize
-from typing import Optional
 from django.contrib.gis.db.models.functions import Intersection
+from django.db.models import F, Subquery
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
+from rest_framework import viewsets
 
 from .models import Boundary, BoundaryDetails
-from .serializers import BoundarySerializer, BoundaryDetailsSerializer
+from .serializers import BoundaryDetailsSerializer, BoundarySerializer
+
+# Time to cache the boundary responses, in seconds.
+CACHE_TIME_IN_SECONDS = 60*60*2
 
 
 class BoundaryViewSet(viewsets.ReadOnlyModelViewSet):
@@ -53,3 +55,9 @@ class BoundaryDetailsViewSet(viewsets.ReadOnlyModelViewSet):
                     .annotate(clipped_geometry=Intersection(F('geometry'), F('region_boundary'))))
 
         return BoundaryDetails.objects.none()
+
+    # The requests take O(10s) often to serialize, and boundaries don't change much.
+    # Cache the results for CACHE_TIME_IN_SECONDS seconds.
+    @method_decorator(cache_page(CACHE_TIME_IN_SECONDS))
+    def list(self, request, *args, **kwargs):
+        return super().list(self, request, *args, **kwargs)

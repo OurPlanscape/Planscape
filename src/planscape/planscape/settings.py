@@ -178,3 +178,19 @@ SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
 
+# PostGIS constants.  All raster data should be ingested with a common
+# Coordinate Reference System (CRS).  The values below are those for the
+# Regional Resource Kits: the CRS code used for the rasters, and the proj4
+# representation of that coordinate system.
+CRS_FOR_RASTERS = 9822
+CRS_9822_PROJ4 = (
+    '+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 '
+    '+datum=WGS84 +units=m +no_defs')
+
+# Caching; this improves loading times especially for the boundary app.
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'planscape-cache',
+    }
+}
