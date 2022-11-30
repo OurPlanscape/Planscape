@@ -1,4 +1,4 @@
-$toolbar-height: 48px;
+@import "../shared/_variables.scss";
 
 // Region select dropdown arrow
 @mixin arrow {

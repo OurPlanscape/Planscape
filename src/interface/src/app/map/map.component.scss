@@ -6,14 +6,13 @@
 }
 
 .controls-container {
-  width: 450px;
-}
-
-.layer-controls {
   background-color: white;
-  height: match-parent;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding: 20px;
-  width: match-parent;
+  width: 450px;
 }
 
 .layer-control-container {
@@ -24,6 +23,11 @@
 .layer-controls-divider {
   margin-bottom: 20px;
   margin-top: 20px;
+}
+
+.layer-controls-tab-group {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .layer-radio-group {
