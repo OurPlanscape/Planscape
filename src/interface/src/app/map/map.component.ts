@@ -130,6 +130,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       format: 'image/png',
       opacity: 0.7,
       layers: 'AvailableBiomass_2021_300m_base.tif',
+      styles: 'viridis',
     });
   }
 
@@ -141,6 +142,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       format: 'image/png',
       opacity: 0.7,
       layers: 'AvailableBiomass_2021_300m_normalized.tif',
+      styles: 'viridis',
     });
   }
 
