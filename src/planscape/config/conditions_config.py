@@ -41,13 +41,13 @@ class PillarConfig:
         def check_region(region) -> bool:
             return (isinstance(region, dict) and
                     region.keys() <= set(['region_name', 'pillars', 'filepath', 'display_name']) and
-                    isinstance(RegionName(region['region_name']), RegionName) and 
+                    isinstance(RegionName(region['region_name']), RegionName) and
                     isinstance(region['pillars'], list) and
                     all([check_pillar(pillar) for pillar in region['pillars']]))
 
         def check_pillar(pillar) -> bool:
             return (isinstance(pillar, dict) and
-                    pillar.keys() <= {'pillar_name', 'elements', 'operation', 'filepath', 'display_name'} and
+                    pillar.keys() <= {'pillar_name', 'elements', 'operation', 'filepath', 'display_name', 'display'} and
                     isinstance(pillar['pillar_name'], str) and
                     isinstance(pillar['elements'], list) and
                     all([check_element(element) for element in pillar['elements']]))
@@ -69,14 +69,14 @@ class PillarConfig:
     def get_regions(self) -> List[Region]:
         return self._config['regions']
 
-    def get_pillars(self, region : Region) -> List[Pillar]:  
+    def get_pillars(self, region: Region) -> List[Pillar]:
         return region['pillars']
 
-    def get_elements(self, pillar : Pillar) -> List[Element]:   
-        return pillar['elements']      
+    def get_elements(self, pillar: Pillar) -> List[Element]:
+        return pillar['elements']
 
-    def get_metrics(self, element : Element) -> List[Metric]:   
-        return element['metrics']  
+    def get_metrics(self, element: Element) -> List[Metric]:
+        return element['metrics']
 
     def get_region(self, region_name: str) -> Optional[Region]:
         """Gets the named region from the configuration.
@@ -95,15 +95,14 @@ class PillarConfig:
     def get_regions(self) -> List[Region]:
         return self._config['regions']
 
-    def get_pillars(self, region : Region) -> List[Pillar]:  
+    def get_pillars(self, region: Region) -> List[Pillar]:
         return region['pillars']
 
-    def get_elements(self, pillar : Pillar) -> List[Element]:   
-        return pillar['elements']      
+    def get_elements(self, pillar: Pillar) -> List[Element]:
+        return pillar['elements']
 
-    def get_metrics(self, element : Element) -> List[Metric]:   
-        return element['metrics']      
-
+    def get_metrics(self, element: Element) -> List[Metric]:
+        return element['metrics']
 
     def get_pillar(self, region_name: str, pillar_name: str) -> Optional[Pillar]:
         """Gets a pillar from the configuration.
