@@ -2,6 +2,7 @@ import json
 import os
 from typing import cast
 
+from conditions.colormap import get_colormap
 from decouple import config as cfg
 from django.db import connection
 from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
@@ -12,27 +13,6 @@ PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 RASTER_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
-
-
-def get_colormap(colormap: str | None):
-    if colormap == 'viridis':
-        return (
-            '100% 68    1  84\n'
-            ' 75% 59   82 139\n'
-            ' 50% 33  145 140\n'
-            ' 25% 94  201  98\n'
-            '  0% 253 231  37\n'
-            'nv 0 0 0 0')
-    elif colormap == 'wistia':
-        return (
-            '100% 252 127   0\n'
-            ' 75% 255 160   0\n'
-            ' 50% 255 189   0\n'
-            ' 25% 255 232  26\n'
-            '  0% 228 255 122\n'
-            'nv 0 0 0 0')
-    else:
-        return 'fire'
 
 
 def get_wms(params: QueryDict):
@@ -52,8 +32,10 @@ def get_wms(params: QueryDict):
         assert isinstance(params['srs'], str)
         srid = int(params['srs'].removeprefix('EPSG:'))
 
-        # See ST_ColorMap documentation for format.
-        colormap = get_colormap('viridis')
+        # Get the style, which is the colormap
+        assert isinstance(params['styles'], str)
+        styles = params.get('styles', 'viridis')
+        colormap = get_colormap(styles)
         cursor.callproc('get_rast_tile', (params['format'], width, height, srid,
                         bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3],
                         colormap, 'public', RASTER_TABLE, RASTER_COLUMN, RASTER_NAME_COLUMN,
