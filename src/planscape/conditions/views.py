@@ -1,12 +1,12 @@
 from django.http import HttpRequest, HttpResponse, JsonResponse, QueryDict
 from django.db import connection
 
-from decouple import config
+from decouple import config as cfg
 from typing import cast
 
 import json, os
 
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
+PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 
 # Name of the table and column from models.py.
 RASTER_TABLE = 'conditions_conditionraster'
