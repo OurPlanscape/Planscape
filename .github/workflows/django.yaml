@@ -1,0 +1,58 @@
+name: Django CI
+
+on:
+  push:
+    branches: [ "riecke_tests" ]
+  pull_request:
+    branches: [  ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.10.8]
+    
+    services:
+      postgres:
+        image: postgis/postgis:14-3.3
+        env:
+          # must specify password for PG Docker container image
+          # see: https://registry.hub.docker.com/_/postgres?tab=description&page=1&name=10
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: planscape
+        ports:
+          - 5432:5432
+        # needed because the postgres container does not provide a healthcheck
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        cd src/planscape
+        python -m pip install --upgrade pip
+        sudo apt-get install gdal-bin libgdal-dev
+        pip install numpy rasterio typing_extensions
+        pip install djangorestframework django-cors-headers dj_rest_auth django-allauth django-filter
+        pip install djangorestframework-simplejwt django-leaflet 
+        pip install -r requirements.txt 
+    - name: Set up PostGIS
+      env:
+        PGPASSWORD: password
+      run: |
+        psql -d postgresql://postgres@localhost/template1 -f src/planscape/testing/postgis_setup.sql
+    - name: Run Tests
+      env:
+        SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
+        PLANSCAPE_ROOT_DIRECTORY: ${{ github.workspace }}
+      run: |
+        cd src/planscape
+        python manage.py test -p "*test*.py"
+        
