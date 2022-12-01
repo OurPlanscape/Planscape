@@ -20,6 +20,7 @@ export interface MetricConfig {
 
 export interface PillarConfig {
   display_name?: string;
+  display?: boolean;
   pillar_name?: string;
   filepath?: string;
   elements?: ElementConfig[];
