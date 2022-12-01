@@ -13,6 +13,7 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import { BackendConstants } from '../backend-constants';
 import { MapService } from '../map.service';
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
@@ -654,7 +655,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
     console.log(filepath);
 
-    map.dataLayerRef = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+    map.dataLayerRef = L.tileLayer.wms(BackendConstants.Host + '/conditions/wms', {
       crs: L.CRS.EPSG4326,
       minZoom: 7,
       maxZoom: 15,
