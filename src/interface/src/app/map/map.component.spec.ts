@@ -69,6 +69,7 @@ describe('MapComponent', () => {
         conditionsConfig$: new BehaviorSubject<ConditionsConfig | null>({
           pillars: [
             {
+              display: true,
               elements: [
                 {
                   metrics: [
