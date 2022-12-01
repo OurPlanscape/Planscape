@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { RegionOption, regionOptions } from '../types';
-import { SessionService } from './../session.service';
+import { SessionService } from '../services';
 
 /**
  * The main region selection view component.

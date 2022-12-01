@@ -16,9 +16,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import * as L from 'leaflet';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { MapService } from '../map.service';
-import { PopupService } from '../popup.service';
-import { SessionService } from './../session.service';
+import { MapService, PopupService, SessionService } from '../services';
 import { BaseLayerType, defaultMapConfig, Map, Region } from './../types';
 import { ConditionsConfig } from './../types/data.types';
 import { MapComponent } from './map.component';

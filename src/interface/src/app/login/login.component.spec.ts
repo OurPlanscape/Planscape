@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
-import { AuthService } from './../auth.service';
+import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
 
 describe('LoginComponent', () => {
