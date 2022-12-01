@@ -19,7 +19,8 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MapService } from '../map.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from './../session.service';
-import { BaseLayerType, DataLayerType, Map, Region } from './../types';
+import { BaseLayerType, defaultMapConfig, Map, Region } from './../types';
+import { ConditionsConfig } from './../types/data.types';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -64,7 +65,24 @@ describe('MapComponent', () => {
         getExistingProjects: of(fakeGeoJson),
         getRegionBoundary: of(fakeGeoJson),
       },
-      {}
+      {
+        conditionsConfig$: new BehaviorSubject<ConditionsConfig | null>({
+          pillars: [
+            {
+              elements: [
+                {
+                  metrics: [
+                    {
+                      metric_name: 'test_metric_1',
+                      filepath: 'test_metric_1',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      }
     );
     mockSessionService = {
       region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
@@ -119,15 +137,7 @@ describe('MapComponent', () => {
     it('initializes 4 maps with default config options', () => {
       expect(component.maps.length).toEqual(4);
       component.maps.forEach((map: Map) => {
-        expect(map.config).toEqual({
-          baseLayerType: BaseLayerType.Road,
-          dataLayerType: DataLayerType.None,
-          showExistingProjectsLayer: true,
-          showHuc12BoundaryLayer: false,
-          showHuc10BoundaryLayer: false,
-          showCountyBoundaryLayer: false,
-          showUsForestBoundaryLayer: false,
-        });
+        expect(map.config).toEqual(defaultMapConfig());
       });
     });
 
@@ -197,13 +207,6 @@ describe('MapComponent', () => {
     it('shows 2 maps by default', async () => {
       expect(component.mapCount).toBe(2);
 
-      const radioButtonGroup = await loader.getHarness(
-        MatRadioGroupHarness.with({ name: 'map-count-select' })
-      );
-      radioButtonGroup.getCheckedValue().then((value: string | null) => {
-        expect(value).toBe('2');
-      });
-
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
       expect(map3.attributes['hidden']).toBeDefined();
@@ -211,10 +214,9 @@ describe('MapComponent', () => {
     });
 
     it('toggles to show 1 map', async () => {
-      const radioButtonGroup = await loader.getHarness(
-        MatRadioGroupHarness.with({ name: 'map-count-select' })
-      );
-      await radioButtonGroup.checkRadioButton({ label: '1' });
+      const childLoader = await loader.getChildLoader('.map-count-button-row');
+      const buttonHarnesses = await childLoader.getAllHarnesses(MatButtonHarness);
+      await buttonHarnesses[0].click();
 
       expect(component.mapCount).toBe(1);
       expect(map1.attributes['hidden']).toBeUndefined();
@@ -224,10 +226,9 @@ describe('MapComponent', () => {
     });
 
     it('toggles to show 4 maps', async () => {
-      const radioButtonGroup = await loader.getHarness(
-        MatRadioGroupHarness.with({ name: 'map-count-select' })
-      );
-      await radioButtonGroup.checkRadioButton({ label: '4' });
+      const childLoader = await loader.getChildLoader('.map-count-button-row');
+      const buttonHarnesses = await childLoader.getAllHarnesses(MatButtonHarness);
+      await buttonHarnesses[2].click();
 
       expect(component.mapCount).toBe(4);
       expect(map1.attributes['hidden']).toBeUndefined();
@@ -406,20 +407,11 @@ describe('MapComponent', () => {
         } should toggle existing projects layer`, async () => {
           let map = component.maps[testCase];
           spyOn(component, 'toggleExistingProjectsLayer').and.callThrough();
-
-          // Act: uncheck the existing projects checkbox
           const checkbox = await loader.getHarness(
             MatCheckboxHarness.with({
               name: `${map.id}-existing-projects-toggle`,
             })
           );
-          await checkbox.uncheck();
-
-          // Assert: expect that the map removes the existing projects layer
-          expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
-          expect(
-            map.instance?.hasLayer(map.existingProjectsLayerRef!)
-          ).toBeFalse();
 
           // Act: check the existing projects checkbox
           await checkbox.check();
@@ -429,38 +421,59 @@ describe('MapComponent', () => {
           expect(
             map.instance?.hasLayer(map.existingProjectsLayerRef!)
           ).toBeTrue();
+
+          // Act: uncheck the existing projects checkbox
+          await checkbox.uncheck();
+
+          // Assert: expect that the map removes the existing projects layer
+          expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
+          expect(
+            map.instance?.hasLayer(map.existingProjectsLayerRef!)
+          ).toBeFalse();
         });
 
-        it(`map-${testCase + 1} should change data layer`, async () => {
+        it(`map-${testCase + 1} should change conditions layer`, async () => {
           let map = component.maps[testCase];
-          spyOn(component, 'changeDataLayer').and.callThrough();
-          const radioButtonGroup = await loader.getHarness(
-            MatRadioGroupHarness.with({ name: `${map.id}-data-layer-select` })
+          spyOn(component, 'changeConditionsLayer').and.callThrough();
+          const showConditionsCheckbox = await loader.getHarness(
+            MatCheckboxHarness.with({
+              name: `${map.id}-conditions-toggle`
+            })
           );
 
-          // Act: select raw data
-          await radioButtonGroup.checkRadioButton({ label: 'Raw' });
+          // Act: toggle on conditions
+          await showConditionsCheckbox.check();
 
-          // Assert: expect that the map contains the raw data layer
-          expect(component.changeDataLayer).toHaveBeenCalled();
-          expect(map.config.dataLayerType).toEqual(DataLayerType.Raw);
+          // Assert: expect that map config is updated but data layer ref is undefined
+          expect(component.changeConditionsLayer).toHaveBeenCalled();
+          expect(map.config.showDataLayer).toBeTrue();
+          expect(map.dataLayerRef).toBeUndefined();
+
+          // Act: select test metric 1
+          const radioButtonGroup = await loader.getHarness(
+            MatRadioGroupHarness.with({ name: `${map.id}-conditions-select` })
+          );
+          await radioButtonGroup.checkRadioButton({ label: 'test_metric_1' });
+
+          // Assert: expect that the map contains test metric 1
+          expect(component.changeConditionsLayer).toHaveBeenCalled();
+          expect(map.config.dataLayerConfig.metric_name).toEqual('test_metric_1');
+          expect(map.dataLayerRef).toBeDefined();
           expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeTrue();
 
-          // Act: select normalized data
-          await radioButtonGroup.checkRadioButton({ label: 'Normalized' });
+          // Act: toggle on normalized data
+          const normalizeCheckbox = await loader.getHarness(
+            MatCheckboxHarness.with({
+              name: `${map.id}-normalized-conditions-toggle`
+            })
+          );
+          await normalizeCheckbox.check();
 
           // Assert: expect that the map contains the normalized data layer
-          expect(component.changeDataLayer).toHaveBeenCalled();
-          expect(map.config.dataLayerType).toEqual(DataLayerType.Normalized);
+          expect(component.changeConditionsLayer).toHaveBeenCalled();
+          expect(map.config.normalizeDataLayer).toBeTrue;
+          expect(map.dataLayerRef).toBeDefined();
           expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeTrue();
-
-          // Act: select no data
-          await radioButtonGroup.checkRadioButton({ label: 'None' });
-
-          // Assert: expect that the map contains no data layer
-          expect(component.changeDataLayer).toHaveBeenCalled();
-          expect(map.config.dataLayerType).toEqual(DataLayerType.None);
-          expect(map.dataLayerRef).toBeUndefined();
         });
       });
     });

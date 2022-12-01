@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { EMPTY, Observable, map } from 'rxjs';
+import { BehaviorSubject, EMPTY, map, Observable, take } from 'rxjs';
 
-import { Region } from './types';
+import { ConditionsConfig, Region } from './types';
 
 /** A map of Region to its corresponding geojson path. */
 const regionToGeojsonMap: Record<Region, string> = {
@@ -16,7 +16,18 @@ const regionToGeojsonMap: Record<Region, string> = {
   providedIn: 'root',
 })
 export class MapService {
-  constructor(private http: HttpClient) {}
+  readonly conditionsConfig$ = new BehaviorSubject<ConditionsConfig | null>(null);
+
+  constructor(private http: HttpClient) {
+    this.http
+      .get<ConditionsConfig>(
+        'http://127.0.0.1:8000/conditions/config/?region_name=sierra_cascade_inyo'
+      )
+      .pipe(take(1))
+      .subscribe((config: ConditionsConfig) => {
+        this.conditionsConfig$.next(config);
+      });
+  }
 
   /**
    * Gets the GeoJSON for the given region, or an empty observable
@@ -41,61 +52,73 @@ export class MapService {
 
   regionToString(region: Region): string {
     switch (region) {
-      case Region.SIERRA_NEVADA: return "SierraNevada";
-      case Region.CENTRAL_COAST: return "CentralCoast";
-      case Region.NORTHERN_CALIFORNIA: return "NorthernCalifornia";
-      case Region.SOUTHERN_CALIFORNIA: return "SouthernCalifornia";
+      case Region.SIERRA_NEVADA:
+        return 'SierraNevada';
+      case Region.CENTRAL_COAST:
+        return 'CentralCoast';
+      case Region.NORTHERN_CALIFORNIA:
+        return 'NorthernCalifornia';
+      case Region.SOUTHERN_CALIFORNIA:
+        return 'SouthernCalifornia';
     }
   }
 
-  getHuc12BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getHuc12BoundaryShapes(region: Region | null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12' + regionString
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc12' +
+        regionString
     );
   }
 
-  getHuc10BoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getHuc10BoundaryShapes(region: Region | null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc10' + regionString
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=huc10' +
+        regionString
     );
   }
 
-  getCountyBoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getCountyBoundaryShapes(region: Region | null): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties' + regionString
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=counties' +
+        regionString
     );
   }
 
-  getUsForestBoundaryShapes(region: Region|null): Observable<GeoJSON.GeoJSON> {
+  getUsForestBoundaryShapes(
+    region: Region | null
+  ): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=USFS' + regionString
+      'http://127.0.0.1:8000/boundary/boundary_details/?boundary_name=USFS' +
+        regionString
     );
   }
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
   getExistingProjects(): Observable<GeoJSON.GeoJSON> {
-    return this.http.get<string>('http://127.0.0.1:8000/projects').pipe(map((response: string) => {
-      return JSON.parse(response);
-    }));
+    return this.http.get<string>('http://127.0.0.1:8000/projects').pipe(
+      map((response: string) => {
+        return JSON.parse(response);
+      })
+    );
   }
 }
