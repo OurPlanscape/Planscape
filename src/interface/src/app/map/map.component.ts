@@ -13,10 +13,7 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { MapService } from '../map.service';
-import { PlanService, PlanState } from '../plan.service';
-import { PopupService } from '../popup.service';
-import { SessionService } from '../session.service';
+import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
 import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
