@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { Region, RegionOption, regionOptions } from '../types';
-import { SessionService } from '../session.service';
+import { SessionService } from '../services';
 
 @Component({
   selector: 'top-bar',

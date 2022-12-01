@@ -1,10 +1,7 @@
-import { Router } from '@angular/router';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
 
-import { AuthService } from './../auth.service';
+import { AuthService } from '../services';
 
 @Component({
   selector: 'app-navigation',
