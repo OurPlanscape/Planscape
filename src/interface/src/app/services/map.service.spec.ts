@@ -2,8 +2,8 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { TestBed } from '@angular/core/testing';
 
 import { MapService } from './map.service';
-import { Region } from './types';
-import { ConditionsConfig } from './types/data.types';
+import { Region } from '../types';
+import { ConditionsConfig } from '../types/data.types';
 
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
