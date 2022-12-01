@@ -1,11 +1,4 @@
-import {
-  AfterViewInit,
-  ApplicationRef,
-  Component,
-  createComponent,
-  EnvironmentInjector,
-  OnDestroy,
-} from '@angular/core';
+import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import {
   Feature,
@@ -17,22 +10,16 @@ import {
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import {
-  BehaviorSubject,
-  Observable,
-  Subject,
-  take,
-  takeUntil,
-} from 'rxjs';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
 import { MapService } from '../map.service';
-import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { PlanService, PlanState } from '../plan.service';
 import { PopupService } from '../popup.service';
 import { SessionService } from '../session.service';
-import { BaseLayerType, DataLayerType, Map, MapConfig, Region } from '../types';
+import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
 export interface PlanCreationOption {
@@ -51,18 +38,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   mapCountOptions: number[] = [1, 2, 4];
   selectedMapIndex: number = 0;
 
+  conditionsConfig$: Observable<ConditionsConfig | null>;
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
 
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
-
-  dataLayerTypes: number[] = [
-    DataLayerType.None,
-    DataLayerType.Raw,
-    DataLayerType.Normalized,
-  ];
-  DataLayerType: typeof DataLayerType = DataLayerType;
 
   huc12BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   huc10BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
@@ -128,30 +109,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     );
   }
 
-  static dataLayerTiles() {
-    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-      crs: L.CRS.EPSG4326,
-      minZoom: 7,
-      maxZoom: 15,
-      format: 'image/png',
-      opacity: 0.7,
-      layers: 'AvailableBiomass_2021_300m_base.tif',
-      styles: 'viridis',
-    });
-  }
-
-  static dataLayerTilesNormalized() {
-    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-      crs: L.CRS.EPSG4326,
-      minZoom: 7,
-      maxZoom: 15,
-      format: 'image/png',
-      opacity: 0.7,
-      layers: 'AvailableBiomass_2021_300m_normalized.tif',
-      styles: 'viridis',
-    });
-  }
-
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -163,6 +120,9 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     private sessionService: SessionService,
     private planService: PlanService
   ) {
+    this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
+      takeUntil(this.destroy$)
+    );
     this.selectedRegion$ = this.sessionService.region$.pipe(
       takeUntil(this.destroy$)
     );
@@ -235,7 +195,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         return {
           id: id,
           name: 'Map ' + (index + 1),
-          config: this.defaultMapConfig(),
+          config: defaultMapConfig(),
         };
       }
     );
@@ -312,7 +272,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         }
       }
     );
-    this.initDataLayer(map);
 
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
@@ -325,19 +284,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
 
     return map.instance;
-  }
-
-  /** Default starting config for a map. */
-  private defaultMapConfig(): MapConfig {
-    return {
-      baseLayerType: BaseLayerType.Road,
-      dataLayerType: DataLayerType.None,
-      showExistingProjectsLayer: true,
-      showHuc12BoundaryLayer: false,
-      showHuc10BoundaryLayer: false,
-      showCountyBoundaryLayer: false,
-      showUsForestBoundaryLayer: false,
-    };
   }
 
   /** Sync pan, zoom, etc. between all maps. */
@@ -627,20 +573,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  private initDataLayer(map: Map) {
-    let dataLayerType = map.config.dataLayerType;
-
-    if (dataLayerType === DataLayerType.Normalized) {
-      map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
-    } else if (dataLayerType === DataLayerType.Raw) {
-      map.dataLayerRef = MapComponent.dataLayerTiles();
-    }
-
-    if (map.dataLayerRef) {
-      map.instance?.addLayer(map.dataLayerRef);
-    }
-  }
-
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
     let baseLayerType = map.config.baseLayerType;
@@ -651,23 +583,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       map.baseLayerRef = MapComponent.stadiaAlidadeTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
-  }
-
-  /** Toggles which data layer is shown. */
-  changeDataLayer(map: Map) {
-    let dataLayerType = map.config.dataLayerType;
-    map.dataLayerRef?.remove();
-
-    map.dataLayerRef = undefined;
-    if (dataLayerType === DataLayerType.Normalized) {
-      map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
-    } else if (dataLayerType === DataLayerType.Raw) {
-      map.dataLayerRef = MapComponent.dataLayerTiles();
-    }
-
-    if (map.dataLayerRef) {
-      map.instance?.addLayer(map.dataLayerRef);
-    }
   }
 
   /** Toggles whether HUC-12 boundaries are shown. */
@@ -722,6 +637,34 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       map.existingProjectsLayerRef?.addTo(map.instance);
     } else {
       map.existingProjectsLayerRef?.remove();
+    }
+  }
+
+  /** Changes which condition scores layer (if any) is shown. */
+  changeConditionsLayer(map: Map) {
+    if (map.instance === undefined) return;
+
+    map.dataLayerRef?.remove();
+
+    let filepath = map.config.dataLayerConfig.filepath;
+    if (filepath?.length === 0 || !filepath) return;
+    if (map.config.normalizeDataLayer) {
+      filepath = filepath.concat('_normalized');
+    }
+    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
+    console.log(filepath);
+
+    map.dataLayerRef = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+      crs: L.CRS.EPSG4326,
+      minZoom: 7,
+      maxZoom: 15,
+      format: 'image/png',
+      opacity: 0.7,
+      layers: filepath,
+    });
+
+    if (map.config.showDataLayer) {
+      map.dataLayerRef.addTo(map.instance);
     }
   }
 
