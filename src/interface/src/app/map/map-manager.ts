@@ -141,19 +141,7 @@ export class MapManager {
 
   /** Renders the HUC-12 boundaries in an optional layer. */
   private initHuc12BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.huc12BoundaryLayerRef = L.geoJSON(boundary, {
-      style: (_) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
+    map.huc12BoundaryLayerRef = this.boundaryLayer(boundary);
 
     if (map.config.showHuc12BoundaryLayer) {
       map.instance?.addLayer(map.huc12BoundaryLayerRef);
@@ -161,19 +149,7 @@ export class MapManager {
   }
 
   private initHUC10BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.huc10BoundaryLayerRef = L.geoJSON(boundary, {
-      style: (feature) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
+    map.huc10BoundaryLayerRef = this.boundaryLayer(boundary);
 
     if (map.config.showHuc10BoundaryLayer) {
       map.instance?.addLayer(map.huc10BoundaryLayerRef);
@@ -182,19 +158,7 @@ export class MapManager {
 
   /** Renders the county boundaries in an optional layer. */
   private initCountyBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.countyBoundaryLayerRef = L.geoJSON(boundary, {
-      style: (feature) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
+    map.countyBoundaryLayerRef = this.boundaryLayer(boundary);
 
     if (map.config.showCountyBoundaryLayer) {
       map.instance?.addLayer(map.countyBoundaryLayerRef);
@@ -202,8 +166,16 @@ export class MapManager {
   }
 
   private initUSForestBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.usForestBoundaryLayerRef = L.geoJSON(boundary, {
-      style: (feature) => ({
+    map.usForestBoundaryLayerRef = this.boundaryLayer(boundary);
+
+    if (map.config.showUsForestBoundaryLayer) {
+      map.instance?.addLayer(map.usForestBoundaryLayerRef);
+    }
+  }
+
+  private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
+    return L.geoJSON(boundary, {
+      style: (_) => ({
         weight: 3,
         opacity: 0.5,
         color: '#0000ff',
@@ -211,14 +183,10 @@ export class MapManager {
         fillColor: '#6DB65B',
       }),
       onEachFeature: (feature, layer) =>
-        layer.bindPopup(
+        layer.bindTooltip(
           this.popupService.makeDetailsPopup(feature.properties.shape_name)
         ),
     });
-
-    if (map.config.showUsForestBoundaryLayer) {
-      map.instance?.addLayer(map.usForestBoundaryLayerRef);
-    }
   }
 
   /**
