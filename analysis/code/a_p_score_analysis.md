@@ -46,7 +46,7 @@ stack(
   plot()
 ```
 
-<img src="../output/forsys_tcsi_testing_files/tcsi_a_p_score_analysisunnamed-chunk-3-1.png" width="672" />
+<img src="../output/tcsi_a_p_score_analysis_files/tcsi_a_p_score_analysisunnamed-chunk-3-1.png" width="672" />
 
 It looks like there is a lot of overlap. We will calculate what
 percentage of cells in the Adapt-Protect-score case is selected because
@@ -76,7 +76,7 @@ stack(
   plot()
 ```
 
-<img src="../output/forsys_tcsi_testing_files/tcsi_a_p_score_analysisunnamed-chunk-4-1.png" width="672" />
+<img src="../output/tcsi_a_p_score_analysis_files/tcsi_a_p_score_analysisunnamed-chunk-4-1.png" width="672" />
 
 Comparing the areas selected using the Adapt-Protect-score to the areas
 selected by **just** Adapt and Protect respectively, we can see that
