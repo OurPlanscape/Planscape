@@ -100,3 +100,4 @@ percent of cells are selected because of their Adapt score, while only
 `r calculate_proportion(n_cells_protect, n_cells_adapt)`
 percent of cells are selected because of their Protect score!
 
+
