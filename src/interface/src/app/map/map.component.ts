@@ -661,6 +661,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       format: 'image/png',
       opacity: 0.7,
       layers: filepath,
+      styles: 'viridis',
     });
 
     if (map.config.showDataLayer) {
