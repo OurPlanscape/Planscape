@@ -26,12 +26,10 @@ export class SessionService {
   constructor() {
     let storedMapConfigs = localStorage.getItem('mapConfigs');
     if (storedMapConfigs) {
-      console.log(storedMapConfigs);
       this.mapConfigs$.next(JSON.parse(storedMapConfigs));
     }
     let storedMapViewOptions = localStorage.getItem('mapViewOptions');
     if (storedMapViewOptions) {
-      console.log(storedMapViewOptions);
       this.mapViewOptions$.next(JSON.parse(storedMapViewOptions));
     }
     this.region$.next(localStorage.getItem('region') as Region | null);

@@ -17,8 +17,15 @@ import * as L from 'leaflet';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { MapService, PopupService, SessionService } from '../services';
-import { BaseLayerType, defaultMapConfig, Map, Region } from './../types';
-import { ConditionsConfig } from './../types/data.types';
+import {
+  BaseLayerType,
+  Map,
+  MapConfig,
+  MapViewOptions,
+  Region,
+  defaultMapConfig,
+  ConditionsConfig,
+} from './../types';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -27,7 +34,7 @@ describe('MapComponent', () => {
   let component: MapComponent;
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
-  let mockSessionService: Partial<SessionService>;
+  let sessionInterval = new BehaviorSubject<number>(0);
 
   beforeEach(() => {
     const fakeGeoJson: GeoJSON.GeoJSON = {
@@ -82,9 +89,16 @@ describe('MapComponent', () => {
         }),
       }
     );
-    mockSessionService = {
-      region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
-    };
+    const fakeSessionService = jasmine.createSpyObj<SessionService>(
+      'SessionService',
+      ['setMapConfigs', 'setMapViewOptions'],
+      {
+        mapViewOptions$: new BehaviorSubject<MapViewOptions | null>(null),
+        mapConfigs$: new BehaviorSubject<MapConfig[] | null>(null),
+        region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
+        sessionInterval$: sessionInterval,
+      }
+    );
     const fakeMatDialog = jasmine.createSpyObj<MatDialog>(
       'MatDialog',
       {
@@ -118,7 +132,7 @@ describe('MapComponent', () => {
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
-        { provide: SessionService, useValue: mockSessionService },
+        { provide: SessionService, useValue: fakeSessionService },
       ],
     });
     fixture = TestBed.createComponent(MapComponent);
@@ -203,7 +217,7 @@ describe('MapComponent', () => {
     });
 
     it('shows 2 maps by default', async () => {
-      expect(component.mapCount).toBe(2);
+      expect(component.mapViewOptions.numVisibleMaps).toBe(2);
 
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
@@ -213,10 +227,12 @@ describe('MapComponent', () => {
 
     it('toggles to show 1 map', async () => {
       const childLoader = await loader.getChildLoader('.map-count-button-row');
-      const buttonHarnesses = await childLoader.getAllHarnesses(MatButtonHarness);
+      const buttonHarnesses = await childLoader.getAllHarnesses(
+        MatButtonHarness
+      );
       await buttonHarnesses[0].click();
 
-      expect(component.mapCount).toBe(1);
+      expect(component.mapViewOptions.numVisibleMaps).toBe(1);
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeDefined();
       expect(map3.attributes['hidden']).toBeDefined();
@@ -225,10 +241,12 @@ describe('MapComponent', () => {
 
     it('toggles to show 4 maps', async () => {
       const childLoader = await loader.getChildLoader('.map-count-button-row');
-      const buttonHarnesses = await childLoader.getAllHarnesses(MatButtonHarness);
+      const buttonHarnesses = await childLoader.getAllHarnesses(
+        MatButtonHarness
+      );
       await buttonHarnesses[2].click();
 
-      expect(component.mapCount).toBe(4);
+      expect(component.mapViewOptions.numVisibleMaps).toBe(4);
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
       expect(map3.attributes['hidden']).toBeUndefined();
@@ -238,7 +256,7 @@ describe('MapComponent', () => {
 
   describe('Map selection', () => {
     it('first map is selected by default', () => {
-      expect(component.selectedMapIndex).toBe(0);
+      expect(component.mapViewOptions.selectedMapIndex).toBe(0);
     });
 
     it('can select another map', () => {
@@ -247,22 +265,24 @@ describe('MapComponent', () => {
       // Clicking the initialized map should select it
       component.maps[2].instance?.fireEvent('click');
 
-      expect(component.selectedMapIndex).toBe(2);
+      expect(component.mapViewOptions.selectedMapIndex).toBe(2);
     });
 
     it('selected map is always visible', () => {
       [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
-        component.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
         [1, 2, 4].forEach((mapCount: number) => {
-          component.mapCount = mapCount;
+          component.mapViewOptions.numVisibleMaps = mapCount;
 
-          expect(component.isMapVisible(component.selectedMapIndex)).toBeTrue();
+          expect(
+            component.isMapVisible(component.mapViewOptions.selectedMapIndex)
+          ).toBeTrue();
         });
       });
     });
 
     it('all maps are visible in 4-map view', () => {
-      component.mapCount = 4;
+      component.mapViewOptions.numVisibleMaps = 4;
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(component.isMapVisible(mapIndex)).toBeTrue();
@@ -270,10 +290,10 @@ describe('MapComponent', () => {
     });
 
     it('only selected map is visible in 1-map view', () => {
-      component.mapCount = 1;
+      component.mapViewOptions.numVisibleMaps = 1;
 
       [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
-        component.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
         [0, 1, 2, 3].forEach((mapIndex: number) => {
           if (selectedMapIndex === mapIndex) {
             expect(component.isMapVisible(mapIndex)).toBeTrue();
@@ -285,17 +305,17 @@ describe('MapComponent', () => {
     });
 
     it('row containing selected map height is 100% in 1-map view', () => {
-      component.mapCount = 1;
+      component.mapViewOptions.numVisibleMaps = 1;
 
       [0, 1].forEach((selectedMapIndex: number) => {
-        component.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
 
         expect(component.mapRowHeight(0)).toEqual('100%');
         expect(component.mapRowHeight(1)).toEqual('0%');
       });
 
       [2, 3].forEach((selectedMapIndex: number) => {
-        component.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
 
         expect(component.mapRowHeight(0)).toEqual('0%');
         expect(component.mapRowHeight(1)).toEqual('100%');
@@ -303,7 +323,7 @@ describe('MapComponent', () => {
     });
 
     it('all row heights are 50% in 4-map view', () => {
-      component.mapCount = 4;
+      component.mapViewOptions.numVisibleMaps = 4;
 
       [0, 1].forEach((mapRowIndex: number) => {
         expect(component.mapRowHeight(mapRowIndex)).toEqual('50%');
@@ -435,7 +455,7 @@ describe('MapComponent', () => {
           spyOn(component, 'changeConditionsLayer').and.callThrough();
           const showConditionsCheckbox = await loader.getHarness(
             MatCheckboxHarness.with({
-              name: `${map.id}-conditions-toggle`
+              name: `${map.id}-conditions-toggle`,
             })
           );
 
@@ -455,14 +475,16 @@ describe('MapComponent', () => {
 
           // Assert: expect that the map contains test metric 1
           expect(component.changeConditionsLayer).toHaveBeenCalled();
-          expect(map.config.dataLayerConfig.metric_name).toEqual('test_metric_1');
+          expect(map.config.dataLayerConfig.metric_name).toEqual(
+            'test_metric_1'
+          );
           expect(map.dataLayerRef).toBeDefined();
           expect(map.instance?.hasLayer(map.dataLayerRef!)).toBeTrue();
 
           // Act: toggle on normalized data
           const normalizeCheckbox = await loader.getHarness(
             MatCheckboxHarness.with({
-              name: `${map.id}-normalized-conditions-toggle`
+              name: `${map.id}-normalized-conditions-toggle`,
             })
           );
           await normalizeCheckbox.check();
@@ -524,6 +546,46 @@ describe('MapComponent', () => {
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+    });
+  });
+
+  describe('Map session management', () => {
+    it('saves map settings to session on an interval', () => {
+      component.ngOnInit();
+      const sessionServiceStub: SessionService =
+        fixture.debugElement.injector.get(SessionService);
+
+      sessionInterval.next(1);
+
+      expect(sessionServiceStub.setMapConfigs).toHaveBeenCalled();
+      expect(sessionServiceStub.setMapViewOptions).toHaveBeenCalled();
+    });
+
+    it('restores map configs from session', () => {
+      const sessionServiceStub: SessionService =
+        fixture.debugElement.injector.get(SessionService);
+      const mapConfig = defaultMapConfig();
+      mapConfig.showCountyBoundaryLayer = true;
+      const savedMapConfigs: MapConfig[] = Array(4).fill(mapConfig);
+
+      sessionServiceStub.mapConfigs$.next(savedMapConfigs);
+      component.ngOnInit();
+
+      expect(component.maps.map((map) => map.config)).toEqual(savedMapConfigs);
+    });
+
+    it('restores map view options from session', () => {
+      const sessionServiceStub: SessionService =
+        fixture.debugElement.injector.get(SessionService);
+      const mapViewOptions: MapViewOptions = {
+        numVisibleMaps: 4,
+        selectedMapIndex: 1,
+      };
+
+      sessionServiceStub.mapViewOptions$.next(mapViewOptions);
+      component.ngOnInit();
+
+      expect(component.mapViewOptions).toEqual(mapViewOptions);
     });
   });
 });

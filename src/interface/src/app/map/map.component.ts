@@ -1,4 +1,12 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ApplicationRef,
+  Component,
+  createComponent,
+  EnvironmentInjector,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import {
   Feature,
@@ -13,8 +21,22 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
-import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, MapConfig, MapViewOptions, Region } from '../types';
+import {
+  MapService,
+  PlanService,
+  PlanState,
+  PopupService,
+  SessionService,
+} from '../services';
+import {
+  BaseLayerType,
+  ConditionsConfig,
+  defaultMapConfig,
+  Map,
+  MapConfig,
+  MapViewOptions,
+  Region,
+} from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -29,7 +51,7 @@ export interface PlanCreationOption {
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-export class MapComponent implements AfterViewInit, OnDestroy {
+export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   maps: Map[];
   mapViewOptions: MapViewOptions = {
     selectedMapIndex: 0,
@@ -197,13 +219,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         };
       }
     );
+  }
 
+  ngOnInit(): void {
     this.restoreSession();
     /** Save map configurations in the user's session every X ms. */
-    this.sessionService.sessionInterval$.pipe(takeUntil(this.destroy$)).subscribe((_) => {
-      this.sessionService.setMapViewOptions(this.mapViewOptions);
-      this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
-    });
+    this.sessionService.sessionInterval$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((_) => {
+        this.sessionService.setMapViewOptions(this.mapViewOptions);
+        this.sessionService.setMapConfigs(
+          this.maps.map((map: Map) => map.config)
+        );
+      });
   }
 
   ngAfterViewInit(): void {
@@ -224,18 +252,22 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   }
 
   private restoreSession() {
-    this.sessionService.mapViewOptions$.pipe(take(1)).subscribe((mapViewOptions: MapViewOptions | null) => {
-      if (mapViewOptions) {
-        this.mapViewOptions = mapViewOptions;
-      }
-    });
-    this.sessionService.mapConfigs$.pipe(take(1)).subscribe((mapConfigs: MapConfig[] | null) => {
-      if (mapConfigs) {
-        mapConfigs.forEach((mapConfig, index) => {
-          this.maps[index].config = mapConfig;
-        });
-      }
-    });
+    this.sessionService.mapViewOptions$
+      .pipe(take(1))
+      .subscribe((mapViewOptions: MapViewOptions | null) => {
+        if (mapViewOptions) {
+          this.mapViewOptions = mapViewOptions;
+        }
+      });
+    this.sessionService.mapConfigs$
+      .pipe(take(1))
+      .subscribe((mapConfigs: MapConfig[] | null) => {
+        if (mapConfigs) {
+          mapConfigs.forEach((mapConfig, index) => {
+            this.maps[index].config = mapConfig;
+          });
+        }
+      });
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -674,7 +706,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       filepath = filepath.concat('_normalized');
     }
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
-    console.log(filepath);
 
     map.dataLayerRef = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
       crs: L.CRS.EPSG4326,
@@ -701,7 +732,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
   /** Whether the map at given index should be visible.
    *
    *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
-  */
+   */
   isMapVisible(index: number): boolean {
     if (index === this.mapViewOptions.selectedMapIndex) return true;
 
