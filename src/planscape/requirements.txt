@@ -4,3 +4,8 @@ djangorestframework~=3.13.0
 django~=4.1.1
 psycopg2-binary~=2.9.0
 python-decouple==3.6
+leaflet
+django-cors-headers
+django-allauth
+dj-rest-auth
+djangorestframework-simplejwt
