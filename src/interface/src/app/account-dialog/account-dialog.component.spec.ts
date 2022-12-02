@@ -1,7 +1,7 @@
 import { of, BehaviorSubject, Subject } from 'rxjs';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
-import { AuthService, User } from './../auth.service';
+import { AuthService } from '../services';
 import { AccountDialogComponent } from './account-dialog.component';
 
 describe('AccountDialogComponent', () => {

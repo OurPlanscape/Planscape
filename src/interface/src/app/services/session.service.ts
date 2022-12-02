@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { Region } from './types/region.types';
+import { Region } from '../types/region.types';
 import { Injectable } from '@angular/core';
 
 /**

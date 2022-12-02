@@ -7,7 +7,7 @@ import { By } from '@angular/platform-browser';
 
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
-import { SessionService } from './../session.service';
+import { SessionService } from '../services';
 import { Region } from '../types';
 
 describe('TopBarComponent', () => {
