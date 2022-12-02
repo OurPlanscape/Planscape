@@ -652,6 +652,11 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
     console.log(filepath);
 
+    let colormap = map.config.dataLayerConfig.colormap;
+    if (colormap?.length === 0 || !colormap) {
+      colormap = 'viridis';
+    }
+
     map.dataLayerRef = L.tileLayer.wms(BackendConstants.END_POINT + '/conditions/wms', {
       crs: L.CRS.EPSG4326,
       minZoom: 7,
@@ -659,6 +664,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       format: 'image/png',
       opacity: 0.7,
       layers: filepath,
+      styles: colormap,
     });
 
     if (map.config.showDataLayer) {
