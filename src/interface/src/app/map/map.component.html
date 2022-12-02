@@ -106,13 +106,15 @@
             class="layer-radio-group" *ngIf="map.config.showDataLayer"
             [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
             <div *ngFor="let pillar of (conditionsConfig$ | async)?.pillars">
-              <h4>{{ pillar.display_name }}</h4>
-              <div *ngFor="let element of pillar.elements">
-                <h5>{{ element.display_name }}</h5>
-                <div *ngFor="let metric of element.metrics">
-                  <mat-radio-button class="layer-radio-button" [value]="metric">
-                    {{ metric.display_name ? metric.display_name : metric.metric_name }}
-                  </mat-radio-button>
+              <div *ngIf="pillar.display">
+                <h4>{{ pillar.display_name }}</h4>
+                <div *ngFor="let element of pillar.elements">
+                  <h5>{{ element.display_name }}</h5>
+                  <div *ngFor="let metric of element.metrics">
+                    <mat-radio-button class="layer-radio-button" [value]="metric">
+                      {{ metric.display_name ? metric.display_name : metric.metric_name }}
+                    </mat-radio-button>
+                  </div>
                 </div>
               </div>
             </div>
