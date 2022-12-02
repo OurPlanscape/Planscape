@@ -28,6 +28,12 @@ export interface MapConfig {
   showUsForestBoundaryLayer: boolean;
 }
 
+
+export interface MapViewOptions {
+  selectedMapIndex: number;
+  numVisibleMaps: number;
+}
+
 export function defaultMapConfig(): MapConfig {
   return {
     baseLayerType: BaseLayerType.Road,

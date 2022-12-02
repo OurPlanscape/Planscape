@@ -1,4 +1,12 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
+import {
+  AfterViewInit,
+  ApplicationRef,
+  Component,
+  createComponent,
+  EnvironmentInjector,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import {
   Feature,
@@ -13,9 +21,23 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
+import {
+  MapService,
+  PlanService,
+  PlanState,
+  PopupService,
+  SessionService,
+} from '../services';
+import {
+  BaseLayerType,
+  ConditionsConfig,
+  defaultMapConfig,
+  Map,
+  MapConfig,
+  MapViewOptions,
+  Region,
+} from '../types';
 import { BackendConstants } from '../backend-constants';
-import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
-import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -30,11 +52,12 @@ export interface PlanCreationOption {
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-export class MapComponent implements AfterViewInit, OnDestroy {
+export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   maps: Map[];
-  mapCount: number = 2;
-  mapCountOptions: number[] = [1, 2, 4];
-  selectedMapIndex: number = 0;
+  mapViewOptions: MapViewOptions = {
+    selectedMapIndex: 0,
+    numVisibleMaps: 2,
+  };
 
   conditionsConfig$: Observable<ConditionsConfig | null>;
   selectedRegion$: Observable<Region | null>;
@@ -199,6 +222,19 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     );
   }
 
+  ngOnInit(): void {
+    this.restoreSession();
+    /** Save map configurations in the user's session every X ms. */
+    this.sessionService.sessionInterval$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((_) => {
+        this.sessionService.setMapViewOptions(this.mapViewOptions);
+        this.sessionService.setMapConfigs(
+          this.maps.map((map: Map) => map.config)
+        );
+      });
+  }
+
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
@@ -211,8 +247,28 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.maps.forEach((map: Map) => map.instance?.remove());
+    this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private restoreSession() {
+    this.sessionService.mapViewOptions$
+      .pipe(take(1))
+      .subscribe((mapViewOptions: MapViewOptions | null) => {
+        if (mapViewOptions) {
+          this.mapViewOptions = mapViewOptions;
+        }
+      });
+    this.sessionService.mapConfigs$
+      .pipe(take(1))
+      .subscribe((mapConfigs: MapConfig[] | null) => {
+        if (mapConfigs) {
+          mapConfigs.forEach((mapConfig, index) => {
+            this.maps[index].config = mapConfig;
+          });
+        }
+      });
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -278,7 +334,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
     // Mark the map as selected when the user clicks anywhere on it.
     map.instance.addEventListener('click', () => {
-      this.selectedMapIndex = this.maps.indexOf(map);
+      this.mapViewOptions.selectedMapIndex = this.maps.indexOf(map);
+      this.sessionService.setMapViewOptions(this.mapViewOptions);
     });
 
     return map.instance;
@@ -650,7 +707,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       filepath = filepath.concat('_normalized');
     }
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
-    console.log(filepath);
 
     let colormap = map.config.dataLayerConfig.colormap;
     if (colormap?.length === 0 || !colormap) {
@@ -674,17 +730,20 @@ export class MapComponent implements AfterViewInit, OnDestroy {
 
   /* Change how many maps are displayed in the viewport. */
   changeMapCount(mapCount: number) {
-    this.mapCount = mapCount;
+    this.mapViewOptions.numVisibleMaps = mapCount;
     setTimeout(() => {
       this.maps.forEach((map: Map) => map.instance?.invalidateSize());
     }, 0);
   }
 
-  /** Whether the map at given index should be visible. */
+  /** Whether the map at given index should be visible.
+   *
+   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
+   */
   isMapVisible(index: number): boolean {
-    if (index === this.selectedMapIndex) return true;
+    if (index === this.mapViewOptions.selectedMapIndex) return true;
 
-    switch (this.mapCount) {
+    switch (this.mapViewOptions.numVisibleMaps) {
       case 4:
         return true;
       case 1:
@@ -701,9 +760,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  /** Computes the height for the map row at given index (0%, 50%, or 100%). */
+  /** Computes the height for the map row at given index (0%, 50%, or 100%).
+   *
+   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
+   */
   mapRowHeight(index: number): string {
-    switch (this.mapCount) {
+    switch (this.mapViewOptions.numVisibleMaps) {
       case 4:
         return '50%';
       case 2:
@@ -712,7 +774,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         return index === 0 ? '100%' : '0%';
       case 1:
       default:
-        if (Math.floor(this.selectedMapIndex / 2) === index) {
+        if (Math.floor(this.mapViewOptions.selectedMapIndex / 2) === index) {
           return '100%';
         }
         return '0%';
