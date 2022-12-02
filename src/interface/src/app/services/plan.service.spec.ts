@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { PlanService } from './plan.service';
-import { BasePlan, Plan, Region } from './types';
+import { BasePlan, Plan, Region } from '../types';
 
 describe('PlanService', () => {
   let service: PlanService;

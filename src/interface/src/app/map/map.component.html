@@ -1,76 +1,183 @@
-<div class="map-container">
-  <div id="map"></div>
-  <div id="controls" class="controls-container">
-    <div class="layer-controls">
-      <h2>Layers</h2>
-      <h3>Base layer</h3>
-      <mat-radio-group
-        name="base-layer-select"
-        aria-label="Select an option"
-        class="layer-radio-group"
-        [(ngModel)]="baseLayerType"
-        (change)="changeBaseLayer()">
-        <mat-radio-button
-          *ngFor="let baseLayerType of baseLayerTypes"
-          [value]="baseLayerType"
-          class="layer-radio-button">
-          {{ BaseLayerType[baseLayerType] }}
-        </mat-radio-button>
-      </mat-radio-group>
-      <h3>Data</h3>
-      <mat-checkbox
-        name="data-layer-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showDataLayer"
-        (change)="toggleDataLayer()">
-        Data
-      </mat-checkbox>
-      <h3>Boundaries</h3>
-      <mat-checkbox
-        name="huc12-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showHUC12BoundariesLayer"
-        (change)="toggleHUC12BoundariesLayer()">
-        HUC-12
-      </mat-checkbox>
-      <mat-checkbox
-        name="huc10-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showHUC10BoundariesLayer"
-        (change)="toggleHUC10BoundariesLayer()">
-        HUC-10
-      </mat-checkbox>
+<div class="root-container">
 
-      <mat-checkbox
-        name="county-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showCountyBoundariesLayer"
-        (change)="toggleCountyBoundariesLayer()">
-        Counties
-    </mat-checkbox>
-    <mat-checkbox
-      name="usfs-toggle"
-      aria-label="Select or deselect"
-      class="layer-checkbox"
-      [(ngModel)]="showUSForestBoundariesLayer"
-      (change)="toggleUSForestsBoundariesLayer()">
-      US Forests
-      </mat-checkbox>
-      <h3>Projects</h3>
-      <mat-checkbox
-        name="existing-projects-toggle"
-        aria-label="Select or deselect"
-        class="layer-checkbox"
-        [(ngModel)]="showExistingProjectsLayer"
-        (change)="toggleExistingProjectsLayer()">
-        Existing projects
-      </mat-checkbox>
+  <!-- Map control panel -->
+  <div id="controls" class="controls-container">
+
+      <!-- Legend for the currently shown map -->
       <h3>Legend</h3>
       <app-legend [legend]="legend"></app-legend>
+
+      <mat-divider class="layer-controls-divider"></mat-divider>
+
+      <!-- Controls for specifying how many maps should be shown -->
+      <div class="map-count-button-row">
+        <button mat-button class="map-count-button" (click)="changeMapCount(1)" aria-label="Show 1 map"
+        [ngClass]="{'selected': mapViewOptions.numVisibleMaps === 1}">
+          <div class="map-count-button-grid-cell"></div>
+        </button>
+        <button mat-button class="map-count-button" (click)="changeMapCount(2)" aria-label="Show 2 maps"
+        [ngClass]="{'selected': mapViewOptions.numVisibleMaps === 2}">
+          <div class="map-count-button-grid-row">
+            <div class="map-count-button-grid-cell"></div>
+            <div class="map-count-button-grid-cell"></div>
+          </div>
+        </button>
+        <button mat-button class="map-count-button" (click)="changeMapCount(4)" aria-label="Show 4 maps"
+        [ngClass]="{'selected': mapViewOptions.numVisibleMaps === 4}">
+        <div class="map-count-button-grid-row">
+          <div class="map-count-button-grid-cell"></div>
+          <div class="map-count-button-grid-cell"></div>
+        </div>
+        <div class="map-count-button-grid-row">
+          <div class="map-count-button-grid-cell"></div>
+          <div class="map-count-button-grid-cell"></div>
+        </div>
+        </button>
+      </div>
+
+      <!-- Layer controls for each map, displayed in tabs -->
+      <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="mapViewOptions.selectedMapIndex"
+        class="layer-controls-tab-group">
+        <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="!isMapVisible(i)">
+          <h3>Base layer</h3>
+          <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
+            class="layer-radio-group" [(ngModel)]="map.config.baseLayerType" (change)="changeBaseLayer(map)">
+            <mat-radio-button *ngFor="let baseLayerType of baseLayerTypes" [value]="baseLayerType"
+              checked="{{ baseLayerType == map.config.baseLayerType }}" class="layer-radio-button">
+              {{ BaseLayerType[baseLayerType] }}
+            </mat-radio-button>
+          </mat-radio-group>
+
+          <h3>Boundaries</h3>
+          <div class="layer-control-container">
+            <mat-checkbox name="{{ map.id + '-huc12-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
+              [(ngModel)]="map.config.showHuc12BoundaryLayer" (change)="toggleHuc12BoundariesLayer(map)">
+              HUC-12
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!huc12BoundaryGeoJsonLoaded"></mat-spinner>
+          </div>
+          <div class="layer-control-container">
+            <mat-checkbox name="{{ map.id + '-huc10-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
+              [(ngModel)]="map.config.showHuc10BoundaryLayer" (change)="toggleHUC10BoundariesLayer(map)">
+              HUC-10
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!huc10BoundaryGeoJsonLoaded"></mat-spinner>
+          </div>
+          <div class="layer-control-container">
+            <mat-checkbox name="{{ map.id + '-county-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
+              [(ngModel)]="map.config.showCountyBoundaryLayer" (change)="toggleCountyBoundariesLayer(map)">
+              Counties
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!countyBoundaryGeoJsonLoaded"></mat-spinner>
+          </div>
+          <div class="layer-control-container">
+            <mat-checkbox name="{{ map.id + '-usfs-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
+              [(ngModel)]="map.config.showUsForestBoundaryLayer" (change)="toggleUSForestsBoundariesLayer(map)">
+              US Forests
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!usForestBoundaryGeoJsonLoaded"></mat-spinner>
+          </div>
+
+          <h3>Projects</h3>
+          <div class="layer-control-container">
+            <mat-checkbox name="{{ map.id + '-existing-projects-toggle' }}" aria-label="Select or deselect"
+              class="layer-checkbox" [(ngModel)]="map.config.showExistingProjectsLayer"
+              (change)="toggleExistingProjectsLayer(map)">
+              Existing projects
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="!existingProjectsGeoJsonLoaded"></mat-spinner>
+          </div>
+
+          <h3>Conditions</h3>
+          <mat-checkbox name="{{ map.id + '-conditions-toggle' }}" aria-label="Select or deselect"
+            class="layer-checkbox" [(ngModel)]="map.config.showDataLayer"
+            (change)="changeConditionsLayer(map)">
+            Show conditions
+          </mat-checkbox>
+
+          <mat-checkbox name="{{ map.id + '-normalized-conditions-toggle' }}"
+            aria-label="Select or deselect" class="layer-checkbox"
+            *ngIf="map.config.showDataLayer" [(ngModel)]="map.config.normalizeDataLayer"
+            (change)="changeConditionsLayer(map)">
+            Normalize conditions data
+          </mat-checkbox>
+
+          <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
+            class="layer-radio-group" *ngIf="map.config.showDataLayer"
+            [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
+            <div *ngFor="let pillar of (conditionsConfig$ | async)?.pillars">
+              <div *ngIf="pillar.display">
+                <h4>{{ pillar.display_name }}</h4>
+                <div *ngFor="let element of pillar.elements">
+                  <h5>{{ element.display_name }}</h5>
+                  <div *ngFor="let metric of element.metrics">
+                    <mat-radio-button class="layer-radio-button" [value]="metric">
+                      {{ metric.display_name ? metric.display_name : metric.metric_name }}
+                    </mat-radio-button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </mat-radio-group>
+
+        </mat-tab>
+      </mat-tab-group>
+  </div>
+
+  <!-- Display containers for leaflet maps (up to 4) -->
+  <div class="maps-container">
+    <!-- Info bar above the maps -->
+    <div class="map-options-bar">
+      <!-- Dropdown for creating a planning area -->
+      <button mat-raised-button type="button" class="plan-options-button">
+        <mat-select
+          [(value)]="selectedPlanCreationOption"
+          placeholder="Create a plan"
+          class="plan-options-select"
+          (selectionChange)="onPlanCreationOptionChange($event.value)">
+          <mat-select-trigger *ngIf="selectedPlanCreationOption">
+            <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
+            {{selectedPlanCreationOption.display}}
+          </mat-select-trigger>
+          <mat-option *ngFor="let option of planCreationOptions" [value]="option">
+            <mat-icon>{{option.icon}}</mat-icon>{{option.display}}
+          </mat-option>
+        </mat-select>
+      </button>
+
+      <!-- Create plan button -->
+      <button *ngIf="showCreatePlanButton"
+        mat-button type="button"
+        class="create-plan-button"
+        (click)="openCreatePlanDialog()">
+        <mat-icon>add</mat-icon>CREATE
+      </button>
+    </div>
+
+    <!-- Maps (1, 2, or 4) -->
+    <div class="map-row" [ngStyle]="{'height': mapRowHeight(0)}">
+      <div class="map-box" [ngClass]="{'selected': mapViewOptions.selectedMapIndex === 0}"
+        [hidden]="!isMapVisible(0)" data-testid="map1">
+        <app-map-nameplate [map]="maps[0]" [selected]="mapViewOptions.selectedMapIndex === 0"></app-map-nameplate>
+        <div id="map1" class="map"></div>
+      </div>
+      <div class="map-box" [ngClass]="{'selected': mapViewOptions.selectedMapIndex === 1}"
+        [hidden]="!isMapVisible(1)" data-testid="map2">
+        <app-map-nameplate [map]="maps[1]" [selected]="mapViewOptions.selectedMapIndex === 1"></app-map-nameplate>
+        <div id="map2" class="map"></div>
+      </div>
+    </div>
+    <div class="map-row" [ngStyle]="{'height': mapRowHeight(1)}">
+      <div class="map-box" [ngClass]="{'selected': mapViewOptions.selectedMapIndex === 2}"
+        [hidden]="!isMapVisible(2)" data-testid="map3">
+        <app-map-nameplate [map]="maps[2]" [selected]="mapViewOptions.selectedMapIndex === 2"></app-map-nameplate>
+        <div id="map3" class="map"></div>
+      </div>
+      <div class="map-box" [ngClass]="{'selected': mapViewOptions.selectedMapIndex === 3}"
+        [hidden]="!isMapVisible(3)" data-testid="map4">
+        <app-map-nameplate [map]="maps[3]" [selected]="mapViewOptions.selectedMapIndex === 3"></app-map-nameplate>
+        <div id="map4" class="map"></div>
+      </div>
     </div>
   </div>
 </div>

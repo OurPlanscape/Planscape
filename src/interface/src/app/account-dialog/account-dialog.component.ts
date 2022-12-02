@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { concatMap, Observable, of, Subscription } from 'rxjs';
 
-import { AuthService, User } from './../auth.service';
+import { AuthService, User } from '../services';
 
 @Component({
   selector: 'app-account-dialog',
