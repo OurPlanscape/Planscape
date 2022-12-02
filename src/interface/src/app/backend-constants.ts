@@ -1,3 +1,3 @@
-export class BackendConstants {
-  public static Host: string = "http://localhost:8000"
-}
+export const BackendConstants {
+  END_POINT: 'http://localhost:8000',
+} as const;

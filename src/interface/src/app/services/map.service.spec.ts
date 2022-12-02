@@ -30,7 +30,7 @@ describe('MapService', () => {
     // Must flush the request in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req = httpTestingController.expectOne(
-      BackendConstants.Host + '/conditions/config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT + '/conditions/config/?region_name=sierra_cascade_inyo'
     );
     req.flush(conditionsConfig);
   });
@@ -46,7 +46,7 @@ describe('MapService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.Host + '/boundary/boundary_details/?boundary_name=huc12&region_name=SierraNevada'
+        BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=huc12&region_name=SierraNevada'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);
@@ -61,7 +61,7 @@ describe('MapService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.Host + '/boundary/boundary_details/?boundary_name=counties&region_name=NorthernCalifornia'
+        BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=counties&region_name=NorthernCalifornia'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);
@@ -78,7 +78,7 @@ describe('MapService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.Host + '/projects'
+        BackendConstants.END_POINT + '/projects'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJsonText);

@@ -18,7 +18,7 @@ export class AuthService {
   loggedInStatus$: Subject<boolean> = new BehaviorSubject(false);
   isLoggedIn$: Observable<boolean> = this.loggedInStatus$;
 
-  private readonly API_ROOT = BackendConstants.Host + '/dj-rest-auth/';
+  private readonly API_ROOT = BackendConstants.END_POINT + '/dj-rest-auth/';
 
   constructor(
     private http: HttpClient,
