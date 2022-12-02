@@ -52,20 +52,13 @@
           <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
             class="layer-radio-group"
             [(ngModel)]="map.config.boundaryLayerName" (change)="toggleBoundaryLayer(map)">
-            <div *ngFor="let boundary of (boundaryConfig$ | async)">
+            <div *ngFor="let boundary of (boundaryConfig$ | async)" class="layer-control-container">
               <mat-radio-button class="layer-radio-button" [value]="boundary.boundary_name">
                 {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
               </mat-radio-button>
+              <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]"></mat-spinner>
             </div>
           </mat-radio-group>
-
-          <!-- <div class="layer-control-container">
-            <mat-checkbox name="{{ map.id + '-usfs-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
-              [(ngModel)]="map.config.showUsForestBoundaryLayer" (change)="toggleUSForestsBoundariesLayer(map)">
-              US Forests
-            </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!usForestBoundaryGeoJsonLoaded"></mat-spinner>
-          </div> -->
 
           <h3>Projects</h3>
           <div class="layer-control-container">
@@ -74,7 +67,7 @@
               (change)="toggleExistingProjectsLayer(map)">
               Existing projects
             </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!existingProjectsGeoJsonLoaded"></mat-spinner>
+            <mat-spinner [diameter]="24" *ngIf="!loadingIndicators['existing_projects']"></mat-spinner>
           </div>
 
           <h3>Conditions</h3>
