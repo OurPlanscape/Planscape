@@ -655,7 +655,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
     console.log(filepath);
 
-    map.dataLayerRef = L.tileLayer.wms(BackendConstants.Host + '/conditions/wms', {
+    map.dataLayerRef = L.tileLayer.wms(BackendConstants.END_POINT + '/conditions/wms', {
       crs: L.CRS.EPSG4326,
       minZoom: 7,
       maxZoom: 15,
