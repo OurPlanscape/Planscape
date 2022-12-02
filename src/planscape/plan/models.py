@@ -16,10 +16,10 @@ class Plan(models.Model):
     region_name: models.CharField = models.CharField(max_length=120)
 
     # Whether the plan has been made "public".
-    public: models.BooleanField = models.BooleanField(null=True)
+    public: models.BooleanField = models.BooleanField(null=True, default=False)
 
     # Whether the plan has been "locked".
-    locked: models.BooleanField = models.BooleanField(null=True)
+    locked: models.BooleanField = models.BooleanField(null=True, default=False)
 
     # The planning area of the plan.
     geometry = models.MultiPolygonField(srid=4269, null=True)
