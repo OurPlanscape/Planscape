@@ -24,11 +24,11 @@ export class SessionService {
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
   constructor() {
-    let storedMapConfigs = localStorage.getItem('mapConfigs');
+    const storedMapConfigs = localStorage.getItem('mapConfigs');
     if (storedMapConfigs) {
       this.mapConfigs$.next(JSON.parse(storedMapConfigs));
     }
-    let storedMapViewOptions = localStorage.getItem('mapViewOptions');
+    const storedMapViewOptions = localStorage.getItem('mapViewOptions');
     if (storedMapViewOptions) {
       this.mapViewOptions$.next(JSON.parse(storedMapViewOptions));
     }
