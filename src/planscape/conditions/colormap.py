@@ -3,14 +3,12 @@
 
 def get_colormap(colormap: str) -> str | None:
     match colormap:
-        case 'viridis':
-            return (
-                '100% 68    1  84\n'
-                ' 75% 59   82 139\n'
-                ' 50% 33  145 140\n'
-                ' 25% 94  201  98\n'
-                '  0% 253 231  37\n'
-                'nv 0 0 0 0')
+        case 'bluered':
+            return 'bluered'
+        case 'greyscale':
+            return 'greyscale'
+        case 'fire':
+            return 'fire'
         case 'wistia':
             return (
                 '100% 252 127   0\n'
@@ -27,11 +25,11 @@ def get_colormap(colormap: str) -> str | None:
                 '25% 249 142   9\n'
                 ' 0% 252 255 164\n'
                 'nv 0 0 0 0')
-        case 'bluered':
-            return 'bluered'
-        case 'greyscale':
-            return 'greyscale'
-        case 'fire':
-            return 'fire'
-        case _:
-            return 'fire'
+        case 'viridis' | _:
+          return (
+                '100% 68    1  84\n'
+                ' 75% 59   82 139\n'
+                ' 50% 33  145 140\n'
+                ' 25% 94  201  98\n'
+                '  0% 253 231  37\n'
+                'nv 0 0 0 0')
