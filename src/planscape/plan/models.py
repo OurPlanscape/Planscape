@@ -9,6 +9,9 @@ class Plan(models.Model):
     """
     owner = models.ForeignKey(User, on_delete=models.CASCADE)  # type: ignore
 
+    # The name of the plan.
+    name: models.CharField = models.CharField(max_length=120)
+
     # The region_name for the plan; should be one of the valid region names in base.region_names.
     region_name: models.CharField = models.CharField(max_length=120)
 
