@@ -22,7 +22,7 @@ export class MapService {
   constructor(private http: HttpClient) {
     this.http
       .get<ConditionsConfig>(
-        BackendConstants.Host + '/conditions/config/?region_name=sierra_cascade_inyo'
+        BackendConstants.END_POINT + '/conditions/config/?region_name=sierra_cascade_inyo'
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -47,7 +47,7 @@ export class MapService {
    * */
   getRegionBoundaries(): Observable<GeoJSON.GeoJSON> {
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.Host + '/boundary/boundary_details/?boundary_name=task_force_regions'
+      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=task_force_regions'
     );
   }
 
@@ -71,7 +71,7 @@ export class MapService {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.Host + '/boundary/boundary_details/?boundary_name=huc12' +
+      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=huc12' +
         regionString
     );
   }
@@ -83,7 +83,7 @@ export class MapService {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.Host + '/boundary/boundary_details/?boundary_name=huc10' +
+      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=huc10' +
         regionString
     );
   }
@@ -95,7 +95,7 @@ export class MapService {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.Host + '/boundary/boundary_details/?boundary_name=counties' +
+      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=counties' +
         regionString
     );
   }
@@ -109,14 +109,14 @@ export class MapService {
       regionString = '&region_name=' + this.regionToString(region);
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.Host + '/boundary/boundary_details/?boundary_name=USFS' +
+      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=USFS' +
         regionString
     );
   }
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
   getExistingProjects(): Observable<GeoJSON.GeoJSON> {
-    return this.http.get<string>(BackendConstants.Host + '/projects').pipe(
+    return this.http.get<string>(BackendConstants.END_POINT + '/projects').pipe(
       map((response: string) => {
         return JSON.parse(response);
       })
