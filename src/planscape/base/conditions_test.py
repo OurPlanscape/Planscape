@@ -28,7 +28,7 @@ class AverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [4, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
         expected = np.array([[6, 7, 8], [4, 10, 11]])
-        average = average_condition(np.finfo(np.float32).min, [condition1, condition2])
+        average = average_condition(float(np.finfo(np.float32).min), [condition1, condition2])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
 
@@ -46,7 +46,7 @@ class AverageTest(unittest.TestCase):
         condition1 = np.array([[1, 2, 3], [np.finfo(np.float32).min, 5, 6]])
         condition2 = np.array([[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
         expected = np.array([[6, 7, 8], [np.nan, 10, 11]])
-        average = average_condition(np.finfo(np.float32).min,[condition1, condition2])
+        average = average_condition(float(np.finfo(np.float32).min),[condition1, condition2])
         self.assertIsNotNone(average)
 
         if average is not None:

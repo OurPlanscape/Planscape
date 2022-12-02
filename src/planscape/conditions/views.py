@@ -43,8 +43,8 @@ def get_wms(params: QueryDict):
             raise ValueError("Must specify layers to select data layer")
 
         # Get the style, which is the colormap
-        assert isinstance(params['styles'], str)
         styles = params.get('styles', 'viridis')
+        assert isinstance(styles, str)
         colormap = get_colormap(styles)
         cursor.callproc('get_rast_tile', (format, width, height, srid,
                         bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3],

@@ -48,6 +48,7 @@ class Metric(TypedDict):
     filepath: NotRequired[str]
     display_name: NotRequired[str]
     current_conditions_only: NotRequired[boolean]
+    colormap: NotRequired[str]
 
 
 class Element(TypedDict):
@@ -56,6 +57,7 @@ class Element(TypedDict):
     operation: NotRequired[str]
     filepath: NotRequired[str]
     display_name: NotRequired[str]
+    colormap: NotRequired[str]
 
 
 class Pillar(TypedDict):
@@ -64,6 +66,7 @@ class Pillar(TypedDict):
     operation: NotRequired[str]
     filepath: NotRequired[str]
     display_name: NotRequired[str]
+    colormap: NotRequired[str]
 
 
 class Region(TypedDict):
@@ -71,3 +74,5 @@ class Region(TypedDict):
     pillars: list[Pillar]
     filepath: NotRequired[str]
     display_name: NotRequired[str]
+    colormap: NotRequired[str]
+    
