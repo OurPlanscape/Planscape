@@ -42,24 +42,17 @@ class BoundaryDetailsViewSet(viewsets.ReadOnlyModelViewSet):
         boundary_name = self.request.GET.get("boundary_name", None)
         shape_name = self.regionNameToShapeName(
             self.request.GET.get("region_name", None))
-        bbox = self.request.GET.get("bbox", None)
-        bbox_polygon = None
-        if bbox is not None:
-            bbox_polygon = Polygon.from_bbox([float(v) for v in bbox.split(',')])
         if boundary_name is not None:
             if shape_name is None:
                 return (BoundaryDetails.objects.filter(boundary__boundary_name=boundary_name)
                         .annotate(clipped_geometry=F('geometry')))
 
-            region = (BoundaryDetails.objects.filter(boundary__boundary_name='task_force_regions')
-                      .filter(shape_name=shape_name))
-            boundaries = (BoundaryDetails.objects.filter(boundary__boundary_name=boundary_name)
+            region = BoundaryDetails.objects.filter(
+                boundary__boundary_name='task_force_regions').filter(shape_name=shape_name)
+            return (BoundaryDetails.objects.filter(boundary__boundary_name=boundary_name)
                     .annotate(region_boundary=Subquery(region.values('geometry')[:1]))
                     .filter(geometry__intersects=F('region_boundary'))
                     .annotate(clipped_geometry=Intersection(F('geometry'), F('region_boundary'))))
-            if bbox is not None:
-                boundaries = boundaries.filter(geometry__bboverlaps=bbox_polygon)
-            return boundaries
 
         return BoundaryDetails.objects.none()
 
