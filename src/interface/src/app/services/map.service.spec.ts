@@ -1,7 +1,7 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { BackendConstants } from './backend-constants';
+import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
 import { Region } from '../types';
 import { ConditionsConfig } from '../types/data.types';

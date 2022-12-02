@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, map, Observable, take } from 'rxjs';
 
-import { BackendConstants } from './backend-constants';
+import { BackendConstants } from '../backend-constants';
 import { ConditionsConfig, Region } from '../types';
 
 /** A map of Region to its corresponding geojson path. */
