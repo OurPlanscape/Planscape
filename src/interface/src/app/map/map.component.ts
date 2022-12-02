@@ -63,11 +63,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
-  huc12BoundaryGeoJsonLoaded: boolean = false;
-  huc10BoundaryGeoJsonLoaded: boolean = false;
-  countyBoundaryGeoJsonLoaded: boolean = false;
-  usForestBoundaryGeoJsonLoaded: boolean = false;
-  existingProjectsGeoJsonLoaded: boolean = false;
+  loadingIndicators: { [layerName: string]: boolean } = {
+    'existing_projects': true
+  };
 
   legend: Legend = {
     labels: [
@@ -127,7 +125,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe((projects: GeoJSON.GeoJSON) => {
         this.existingProjectsGeoJson$.next(projects);
-        this.existingProjectsGeoJsonLoaded = true;
+        this.loadingIndicators['existing_projects'] = false;
       });
 
     this.maps = ['map1', 'map2', 'map3', 'map4'].map(
@@ -140,7 +138,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     );
 
-    this.mapManager = new MapManager(this.maps, popupService);
+    this.mapManager = new MapManager(
+      this.maps,
+      popupService,
+      this.startLoadingLayerCallback.bind(this),
+      this.doneLoadingLayerCallback.bind(this)
+    );
   }
 
   ngOnInit(): void {
@@ -230,6 +233,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.mapViewOptions.selectedMapIndex = this.maps.indexOf(map);
       this.sessionService.setMapViewOptions(this.mapViewOptions);
     });
+  }
+
+  private startLoadingLayerCallback(layerName: string) {
+    this.loadingIndicators[layerName] = true;
+  }
+  private doneLoadingLayerCallback(layerName: string) {
+    this.loadingIndicators[layerName] = false;
   }
 
   private getBoundaryLayerGeoJson(

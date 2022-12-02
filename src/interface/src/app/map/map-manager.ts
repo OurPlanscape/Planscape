@@ -27,9 +27,19 @@ export class MapManager {
 
   drawingLayer = new L.FeatureGroup();
 
-  constructor(maps: Map[], popupService: PopupService) {
+  startLoadingLayerCallback: (layerName: string) => void;
+  doneLoadingLayerCallback: (layerName: string) => void;
+
+  constructor(
+    maps: Map[],
+    popupService: PopupService,
+    startLoadingLayerCallback: (layerName: string) => void,
+    doneLoadingLayerCallback: (layerName: string) => void
+  ) {
     this.maps = maps;
     this.popupService = popupService;
+    this.startLoadingLayerCallback = startLoadingLayerCallback;
+    this.doneLoadingLayerCallback = doneLoadingLayerCallback;
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -291,24 +301,22 @@ export class MapManager {
   ) {
     if (map.instance === undefined) return;
 
-    console.log(map.config.boundaryLayerName);
-
     map.boundaryLayerRef?.remove();
 
     const boundaryLayerName = map.config.boundaryLayerName;
 
     if (boundaryLayerName !== null) {
       if (this.boundaryGeoJsonCache.has(boundaryLayerName)) {
-        console.log('got from cache');
         map.boundaryLayerRef = this.boundaryLayer(
           this.boundaryGeoJsonCache.get(boundaryLayerName)!
         );
         map.boundaryLayerRef.addTo(map.instance);
       } else {
+        this.startLoadingLayerCallback(boundaryLayerName);
         getBoundaryLayerGeoJsonCallback(boundaryLayerName)
           .pipe(take(1))
           .subscribe((geojson) => {
-            console.log('loaded geojson');
+            this.doneLoadingLayerCallback(boundaryLayerName);
             this.boundaryGeoJsonCache.set(boundaryLayerName, geojson);
             map.boundaryLayerRef = this.boundaryLayer(geojson);
             map.boundaryLayerRef.addTo(map.instance!);
