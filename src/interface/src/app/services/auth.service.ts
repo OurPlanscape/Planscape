@@ -4,6 +4,8 @@ import { CanActivate } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, catchError, map, Observable, of, Subject, tap } from 'rxjs';
 
+import { BackendConstants } from '../backend-constants';
+
 export interface User {
   username: string,
 }
@@ -16,7 +18,7 @@ export class AuthService {
   loggedInStatus$: Subject<boolean> = new BehaviorSubject(false);
   isLoggedIn$: Observable<boolean> = this.loggedInStatus$;
 
-  private readonly API_ROOT = 'http://localhost:8000/dj-rest-auth/';
+  private readonly API_ROOT = BackendConstants.END_POINT + '/dj-rest-auth/';
 
   constructor(
     private http: HttpClient,
