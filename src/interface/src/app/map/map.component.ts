@@ -37,6 +37,7 @@ import {
   MapViewOptions,
   Region,
 } from '../types';
+import { BackendConstants } from '../backend-constants';
 import { Legend } from './../shared/legend/legend.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -707,13 +708,19 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     }
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
 
-    map.dataLayerRef = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+    let colormap = map.config.dataLayerConfig.colormap;
+    if (colormap?.length === 0 || !colormap) {
+      colormap = 'viridis';
+    }
+
+    map.dataLayerRef = L.tileLayer.wms(BackendConstants.END_POINT + '/conditions/wms', {
       crs: L.CRS.EPSG4326,
       minZoom: 7,
       maxZoom: 15,
       format: 'image/png',
       opacity: 0.7,
       layers: filepath,
+      styles: colormap,
     });
 
     if (map.config.showDataLayer) {

@@ -1,10 +1,12 @@
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse, QueryDict
-from django.db import connection
-
-from decouple import config as cfg
+import json
+import os
 from typing import cast
 
-import json, os
+from conditions.colormap import get_colormap
+from decouple import config as cfg
+from django.db import connection
+from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse, QueryDict)
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 
@@ -12,7 +14,7 @@ PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 RASTER_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
-  
+
 
 def get_wms(params: QueryDict):
     with connection.cursor() as cursor:
@@ -40,8 +42,10 @@ def get_wms(params: QueryDict):
         if layers is None:
             raise ValueError("Must specify layers to select data layer")
 
-        # See ST_ColorMap documentation for format of colormap
-        colormap = 'fire'
+        # Get the style, which is the colormap
+        styles = params.get('styles', 'viridis')
+        assert isinstance(styles, str)
+        colormap = get_colormap(styles)
         cursor.callproc('get_rast_tile', (format, width, height, srid,
                         bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3],
                         colormap, 'public', RASTER_TABLE, RASTER_COLUMN, RASTER_NAME_COLUMN,
@@ -51,6 +55,7 @@ def get_wms(params: QueryDict):
             raise ValueError("No data; check 'layers' parameter")
     return row
 
+
 def get_config(params: QueryDict):
     # Get region name
     assert isinstance(params['region_name'], str)
@@ -58,7 +63,7 @@ def get_config(params: QueryDict):
 
     # Read from conditions config
     config_path = os.path.join(
-       PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
     conditions_config = json.load(open(config_path, 'r'))
 
     # Extract specific region data from JSON
@@ -68,6 +73,7 @@ def get_config(params: QueryDict):
 
     return None
 
+
 def wms(request: HttpRequest) -> HttpResponse:
     try:
         image = get_wms(request.GET)
@@ -75,6 +81,7 @@ def wms(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-def config(request: HttpRequest) -> HttpResponse :
+
+def config(request: HttpRequest) -> HttpResponse:
     region = get_config(request.GET)
     return JsonResponse(region)
