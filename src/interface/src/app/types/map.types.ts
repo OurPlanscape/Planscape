@@ -8,10 +8,7 @@ export interface Map {
   config: MapConfig;
   instance?: L.Map | undefined;
   baseLayerRef?: L.Layer | undefined;
-  huc12BoundaryLayerRef?: L.Layer | undefined;
-  huc10BoundaryLayerRef?: L.Layer | undefined;
-  countyBoundaryLayerRef?: L.Layer | undefined;
-  usForestBoundaryLayerRef?: L.Layer | undefined;
+  boundaryLayerRef?: L.Layer | undefined;
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
 }
@@ -22,10 +19,7 @@ export interface MapConfig {
   showDataLayer: boolean;
   normalizeDataLayer: boolean;
   showExistingProjectsLayer: boolean;
-  showHuc12BoundaryLayer: boolean;
-  showHuc10BoundaryLayer: boolean;
-  showCountyBoundaryLayer: boolean;
-  showUsForestBoundaryLayer: boolean;
+  boundaryLayerName: string | null;
 }
 
 
@@ -44,9 +38,6 @@ export function defaultMapConfig(): MapConfig {
     showDataLayer: false,
     normalizeDataLayer: false,
     showExistingProjectsLayer: false,
-    showHuc12BoundaryLayer: false,
-    showHuc10BoundaryLayer: false,
-    showCountyBoundaryLayer: false,
-    showUsForestBoundaryLayer: false,
+    boundaryLayerName: null,
   };
 }

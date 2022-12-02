@@ -49,34 +49,23 @@
           </mat-radio-group>
 
           <h3>Boundaries</h3>
-          <div class="layer-control-container">
-            <mat-checkbox name="{{ map.id + '-huc12-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
-              [(ngModel)]="map.config.showHuc12BoundaryLayer" (change)="toggleHuc12BoundariesLayer(map)">
-              HUC-12
-            </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!huc12BoundaryGeoJsonLoaded"></mat-spinner>
-          </div>
-          <div class="layer-control-container">
-            <mat-checkbox name="{{ map.id + '-huc10-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
-              [(ngModel)]="map.config.showHuc10BoundaryLayer" (change)="toggleHUC10BoundariesLayer(map)">
-              HUC-10
-            </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!huc10BoundaryGeoJsonLoaded"></mat-spinner>
-          </div>
-          <div class="layer-control-container">
-            <mat-checkbox name="{{ map.id + '-county-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
-              [(ngModel)]="map.config.showCountyBoundaryLayer" (change)="toggleCountyBoundariesLayer(map)">
-              Counties
-            </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!countyBoundaryGeoJsonLoaded"></mat-spinner>
-          </div>
-          <div class="layer-control-container">
+          <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
+            class="layer-radio-group"
+            [(ngModel)]="map.config.boundaryLayerName" (change)="toggleBoundaryLayer(map)">
+            <div *ngFor="let boundary of (boundaryConfig$ | async)">
+              <mat-radio-button class="layer-radio-button" [value]="boundary.boundary_name">
+                {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
+              </mat-radio-button>
+            </div>
+          </mat-radio-group>
+
+          <!-- <div class="layer-control-container">
             <mat-checkbox name="{{ map.id + '-usfs-toggle' }}" aria-label="Select or deselect" class="layer-checkbox"
               [(ngModel)]="map.config.showUsForestBoundaryLayer" (change)="toggleUSForestsBoundariesLayer(map)">
               US Forests
             </mat-checkbox>
             <mat-spinner [diameter]="24" *ngIf="!usForestBoundaryGeoJsonLoaded"></mat-spinner>
-          </div>
+          </div> -->
 
           <h3>Projects</h3>
           <div class="layer-control-container">
