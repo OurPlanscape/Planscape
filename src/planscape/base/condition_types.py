@@ -15,10 +15,11 @@ Types defined:
 """
 
 import enum
+from typing import Any, Optional, TypedDict
 from xmlrpc.client import boolean
+
 import numpy as np
 import numpy.typing as npt
-from typing import Any, Optional, TypedDict
 from typing_extensions import NotRequired
 
 ConditionMatrix = npt.NDArray[np.float32]
@@ -75,4 +76,3 @@ class Region(TypedDict):
     filepath: NotRequired[str]
     display_name: NotRequired[str]
     colormap: NotRequired[str]
-    
