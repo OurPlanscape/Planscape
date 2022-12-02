@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "riecke_tests" ]
   pull_request:
-    branches: [  ]
+    branches: [ "main" ]
 
 jobs:
   build:
