@@ -4,7 +4,7 @@ import { CanActivate } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, catchError, map, Observable, of, Subject, tap } from 'rxjs';
 
-import { BackendConstants } from './backend-constants';
+import { BackendConstants } from '../backend-constants';
 
 export interface User {
   username: string,
