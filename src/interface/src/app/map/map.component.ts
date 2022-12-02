@@ -653,7 +653,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     console.log(filepath);
 
     let colormap = map.config.dataLayerConfig.colormap;
-    if (filepath?.length === 0 || !filepath) {
+    if (colormap?.length === 0 || !colormap) {
       colormap = 'viridis';
     }
 
