@@ -13,7 +13,11 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
-import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
+import { BackendConstants } from '../backend-constants';
+import { MapService } from '../map.service';
+import { PlanService, PlanState } from '../plan.service';
+import { PopupService } from '../popup.service';
+import { SessionService } from '../session.service';
 import { BaseLayerType, ConditionsConfig, defaultMapConfig, Map, Region } from '../types';
 import { Legend } from './../shared/legend/legend.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
@@ -651,7 +655,7 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
     console.log(filepath);
 
-    map.dataLayerRef = L.tileLayer.wms('http://localhost:8000/conditions/wms', {
+    map.dataLayerRef = L.tileLayer.wms(BackendConstants.END_POINT + '/conditions/wms', {
       crs: L.CRS.EPSG4326,
       minZoom: 7,
       maxZoom: 15,

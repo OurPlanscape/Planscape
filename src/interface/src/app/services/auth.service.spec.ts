@@ -5,6 +5,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
 
 import { AuthGuard, AuthService } from './auth.service';
+import { BackendConstants } from './backend-constants';
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -40,7 +41,7 @@ describe('AuthService', () => {
         expect(res).toEqual(mockResponse);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/login/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/login/');
       expect(req.request.method).toEqual('POST');
       req.flush(mockResponse);
       httpTestingController.verify();
@@ -57,7 +58,7 @@ describe('AuthService', () => {
         expect(service.loggedInStatus$.next).toHaveBeenCalledOnceWith(true);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/login/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/login/');
       req.flush(mockResponse);
     });
   });
@@ -73,7 +74,7 @@ describe('AuthService', () => {
         expect(res).toEqual(mockResponse);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/registration/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/registration/');
       expect(req.request.method).toEqual('POST');
       req.flush(mockResponse);
       httpTestingController.verify();
@@ -91,7 +92,7 @@ describe('AuthService', () => {
         expect(res).toEqual(mockResponse);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/logout/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/logout/');
       expect(req.request.method).toEqual('GET');
       req.flush(mockResponse);
       httpTestingController.verify();
@@ -108,7 +109,7 @@ describe('AuthService', () => {
         expect(service.loggedInStatus$.next).toHaveBeenCalledOnceWith(false);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/logout/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/logout/');
       req.flush(mockResponse);
     });
   });
@@ -124,7 +125,7 @@ describe('AuthService', () => {
         expect(res).toEqual(mockResponse);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/token/refresh/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/');
       expect(req.request.method).toEqual('POST');
       expect(cookieServiceStub.get).toHaveBeenCalled();
       req.flush(mockResponse);
@@ -140,7 +141,7 @@ describe('AuthService', () => {
         expect(service.loggedInStatus$.next).toHaveBeenCalledOnceWith(true);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/token/refresh/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/');
       req.flush(mockResponse);
     });
 
@@ -156,7 +157,7 @@ describe('AuthService', () => {
         expect(service.loggedInStatus$.next).toHaveBeenCalledOnceWith(false);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/token/refresh/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/');
       req.flush(errorResponse);
     });
   });
@@ -170,7 +171,7 @@ describe('AuthService', () => {
         expect(res).toEqual(mockResponse);
       });
 
-      const req = httpTestingController.expectOne('http://localhost:8000/dj-rest-auth/user/');
+      const req = httpTestingController.expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/');
       expect(req.request.method).toEqual('GET');
       req.flush(mockResponse);
       httpTestingController.verify();
