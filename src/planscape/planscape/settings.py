@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework_gis',
     'boundary',
     'conditions',
+    'plan',
     'leaflet',
     'corsheaders',
     'allauth',
