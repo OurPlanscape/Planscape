@@ -4,8 +4,8 @@ import { TestBed } from '@angular/core/testing';
 import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
 
+import { BackendConstants } from '../backend-constants';
 import { AuthGuard, AuthService } from './auth.service';
-import { BackendConstants } from './backend-constants';
 
 describe('AuthService', () => {
   let service: AuthService;
