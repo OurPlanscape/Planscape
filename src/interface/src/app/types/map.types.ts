@@ -1,6 +1,6 @@
 import { BaseLayerType } from './layer.types';
 import * as L from 'leaflet';
-import { MetricConfig } from './data.types';
+import { BoundaryConfig, MetricConfig } from './data.types';
 
 export interface Map {
   id: string;
@@ -15,11 +15,11 @@ export interface Map {
 
 export interface MapConfig {
   baseLayerType: BaseLayerType;
+  boundaryLayerConfig: BoundaryConfig;
   dataLayerConfig: MetricConfig;
   showDataLayer: boolean;
   normalizeDataLayer: boolean;
   showExistingProjectsLayer: boolean;
-  boundaryLayerName: string | null;
 }
 
 
@@ -31,6 +31,9 @@ export interface MapViewOptions {
 export function defaultMapConfig(): MapConfig {
   return {
     baseLayerType: BaseLayerType.Road,
+    boundaryLayerConfig: {
+      boundary_name: '',
+    },
     dataLayerConfig: {
       metric_name: '',
       filepath: '',
@@ -38,6 +41,5 @@ export function defaultMapConfig(): MapConfig {
     showDataLayer: false,
     normalizeDataLayer: false,
     showExistingProjectsLayer: false,
-    boundaryLayerName: null,
   };
 }

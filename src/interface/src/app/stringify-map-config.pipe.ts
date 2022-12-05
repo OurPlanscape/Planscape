@@ -30,8 +30,11 @@ export class StringifyMapConfigPipe implements PipeTransform {
     if (mapConfig.showExistingProjectsLayer) {
       labels.push('Existing Projects');
     }
-    if (mapConfig.boundaryLayerName !== null) {
-      labels.push(mapConfig.boundaryLayerName);
+    if (mapConfig.boundaryLayerConfig.boundary_name !== '') {
+      let boundaryLabel = mapConfig.boundaryLayerConfig.display_name
+        ? mapConfig.boundaryLayerConfig.display_name
+        : mapConfig.boundaryLayerConfig.boundary_name;
+      labels.push(boundaryLabel);
     }
     labels.forEach((label, index) => {
       if (index > 0) {

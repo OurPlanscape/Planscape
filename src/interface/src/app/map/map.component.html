@@ -51,9 +51,9 @@
           <h3>Boundaries</h3>
           <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
             class="layer-radio-group"
-            [(ngModel)]="map.config.boundaryLayerName" (change)="toggleBoundaryLayer(map)">
+            [(ngModel)]="map.config.boundaryLayerConfig" (change)="toggleBoundaryLayer(map)">
             <div *ngFor="let boundary of (boundaryConfig$ | async)" class="layer-control-container">
-              <mat-radio-button class="layer-radio-button" [value]="boundary.boundary_name">
+              <mat-radio-button class="layer-radio-button" [value]="boundary">
                 {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
               </mat-radio-button>
               <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]"></mat-spinner>
