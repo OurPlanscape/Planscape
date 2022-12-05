@@ -303,9 +303,9 @@ export class MapManager {
 
     map.boundaryLayerRef?.remove();
 
-    const boundaryLayerName = map.config.boundaryLayerName;
+    const boundaryLayerName = map.config.boundaryLayerConfig.boundary_name;
 
-    if (boundaryLayerName !== null) {
+    if (boundaryLayerName !== '') {
       if (this.boundaryGeoJsonCache.has(boundaryLayerName)) {
         map.boundaryLayerRef = this.boundaryLayer(
           this.boundaryGeoJsonCache.get(boundaryLayerName)!

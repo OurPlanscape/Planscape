@@ -522,7 +522,9 @@ describe('MapComponent', () => {
       const sessionServiceStub: SessionService =
         fixture.debugElement.injector.get(SessionService);
       const mapConfig = defaultMapConfig();
-      mapConfig.boundaryLayerName = 'huc-12';
+      mapConfig.boundaryLayerConfig = {
+        boundary_name: 'huc-12',
+      };
       const savedMapConfigs: MapConfig[] = Array(4).fill(mapConfig);
 
       sessionServiceStub.mapConfigs$.next(savedMapConfigs);
