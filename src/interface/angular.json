@@ -86,7 +86,7 @@
             "development": {
               "browserTarget": "interface:build:development"
             }
-         },
+          },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
