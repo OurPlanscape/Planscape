@@ -21,6 +21,7 @@ urlpatterns = [
     path('boundary/', include('boundary.api')),
     path('projects/', include('existing_projects.urls')),
     path('conditions/', include('conditions.urls')),
+    path('plan/', include('plan.urls')),
     # Auth URLs
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
     path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
