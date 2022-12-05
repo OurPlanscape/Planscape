@@ -76,6 +76,9 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "browserTarget": "interface:build:production"
@@ -83,7 +86,7 @@
             "development": {
               "browserTarget": "interface:build:development"
             }
-          },
+         },
           "defaultConfiguration": "development"
         },
         "extract-i18n": {
