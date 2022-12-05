@@ -212,9 +212,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
 
     this.mapManager.syncAllMaps();
-    this.mapManager.addDrawingControls(this.maps[0].instance!, () => {
-      this.showCreatePlanButton = true;
-    });
+    this.mapManager.addDrawingControls(
+      this.maps[0].instance!,
+      this.onDrawCreatedCallback.bind(this),
+      this.onDrawDeletedCallback.bind(this)
+    );
   }
 
   ngOnDestroy(): void {
@@ -222,6 +224,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private onDrawCreatedCallback() {
+    this.showCreatePlanButton = true;
+  }
+
+  private onDrawDeletedCallback() {
+    this.showCreatePlanButton = false;
   }
 
   private restoreSession() {

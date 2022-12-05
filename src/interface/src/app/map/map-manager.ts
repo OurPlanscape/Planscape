@@ -213,7 +213,11 @@ export class MapManager {
   }
 
   /** Adds drawing controls and handles drawing events. */
-  addDrawingControls(map: L.Map, onDrawCreatedCallback: () => void) {
+  addDrawingControls(
+    map: L.Map,
+    onDrawCreatedCallback: () => void,
+    onDrawDeletedCallback: () => void
+  ) {
     map.addLayer(this.drawingLayer);
 
     const drawOptions: L.Control.DrawConstructorOptions = {
@@ -245,15 +249,31 @@ export class MapManager {
     const drawControl = new L.Control.Draw(drawOptions);
     map.addControl(drawControl);
 
-    this.setUpDrawingHandlers(map, onDrawCreatedCallback);
+    this.setUpDrawingHandlers(
+      map,
+      onDrawCreatedCallback,
+      onDrawDeletedCallback
+    );
   }
 
-  private setUpDrawingHandlers(map: L.Map, onDrawCreatedCallback: () => void) {
+  private setUpDrawingHandlers(
+    map: L.Map,
+    onDrawCreatedCallback: () => void,
+    onDrawDeletedCallback: () => void
+  ) {
+    // Show the create button when a polygon is completed
     map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
 
       onDrawCreatedCallback();
+    });
+
+    // When there are no more polygons, hide the create button
+    map.on('draw:deleted', (_) => {
+      if (this.drawingLayer.getLayers().length <= 0) {
+        onDrawDeletedCallback();
+      }
     });
   }
 
