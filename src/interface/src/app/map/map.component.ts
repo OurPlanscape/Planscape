@@ -94,7 +94,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
-  showCreatePlanButton: boolean = false;
+  showCreatePlanButton$ = new BehaviorSubject(false);
 
   private readonly destroy$ = new Subject<void>();
 
@@ -144,6 +144,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this)
     );
+    this.mapManager.polygonsCreated$.pipe(takeUntil(this.destroy$)).subscribe(this.showCreatePlanButton$);
   }
 
   ngOnInit(): void {
@@ -162,14 +163,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
+      const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
+      // Only add drawing controls to the selected map
+      if (selectedMapIndex === this.maps.indexOf(map)) {
+        this.mapManager.addDrawingControl(this.maps[selectedMapIndex].instance!);
+      }
+      else { // Show a copy of the drawing layer on the other maps
+        this.mapManager.showClonedDrawing(map);
+      }
     });
 
     this.mapManager.syncAllMaps();
-    this.mapManager.addDrawingControls(
-      this.maps[0].instance!,
-      this.onDrawCreatedCallback.bind(this),
-      this.onDrawDeletedCallback.bind(this)
-    );
   }
 
   ngOnDestroy(): void {
@@ -177,14 +181,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private onDrawCreatedCallback() {
-    this.showCreatePlanButton = true;
-  }
-
-  private onDrawDeletedCallback() {
-    this.showCreatePlanButton = false;
   }
 
   private restoreSession() {
@@ -228,10 +224,24 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.displayRegionBoundary(map, selectedRegion);
     });
 
-    // Mark the map as selected when the user clicks anywhere on it.
+    // Mark the map as selected when the user clicks anywhere on it
+    // and updates which map can be drawn on.
     map.instance?.addEventListener('click', () => {
-      this.mapViewOptions.selectedMapIndex = this.maps.indexOf(map);
-      this.sessionService.setMapViewOptions(this.mapViewOptions);
+      const previousMapIndex = this.mapViewOptions.selectedMapIndex;
+      const currentMapIndex = this.maps.indexOf(map);
+
+    // Toggle the cloned layer on if the map is not the current selected map.
+    // Toggle on the drawing layer and control on the selected map.
+      if (previousMapIndex !== currentMapIndex) {
+        this.mapManager.removeDrawingControl(this.maps[previousMapIndex].instance!);
+        this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
+
+        this.mapViewOptions.selectedMapIndex = currentMapIndex;
+        this.sessionService.setMapViewOptions(this.mapViewOptions);
+
+        this.mapManager.addDrawingControl(this.maps[currentMapIndex].instance!);
+        this.mapManager.hideClonedDrawing(this.maps[currentMapIndex]);
+      }
     });
   }
 
@@ -292,7 +302,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
-      this.mapManager.enablePolygonDrawingTool(this.maps[0].instance!);
+      this.mapManager.enablePolygonDrawingTool(this.maps[this.mapViewOptions.selectedMapIndex].instance!);
+      this.changeMapCount(1);
     }
   }
 
@@ -330,7 +341,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.mapManager.changeConditionsLayer(map);
   }
 
-  /* Change how many maps are displayed in the viewport. */
+  /** Change how many maps are displayed in the viewport. */
   changeMapCount(mapCount: number) {
     this.mapViewOptions.numVisibleMaps = mapCount;
     setTimeout(() => {
@@ -338,7 +349,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     }, 0);
   }
 
-  /** Whether the map at given index should be visible.
+  /**
+   * Whether the map at given index should be visible.
    *
    *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
    */

@@ -11,6 +11,8 @@ export interface Map {
   boundaryLayerRef?: L.Layer | undefined;
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
+  clonedDrawingRef?: L.FeatureGroup | undefined;
+  drawnPolygonLookup?: {[key: string]:L.Layer};
 }
 
 export interface MapConfig {
