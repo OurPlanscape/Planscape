@@ -372,19 +372,9 @@ export class MapManager {
    * Enables the polygon drawing tool on a map.
    */
   enablePolygonDrawingTool(map: L.Map) {
-    const polygonDrawer = new L.Draw.Polygon(map as L.DrawMap, {
-      allowIntersection: false,
-      showArea: true,
-      metric: false,
-      shapeOptions: {
-        color: '#7b61ff',
-      },
-      drawError: {
-        color: '#ff7b61',
-        message: "Can't draw polygons with intersections!",
-      },
-    });
-    polygonDrawer.enable();
+    this.addDrawingControl(map);
+    const polygonButton = document.querySelector(".leaflet-draw-draw-polygon") as HTMLElement | null;
+    polygonButton?.click();
   }
 
   /** Sync pan, zoom, etc. between all maps. */
