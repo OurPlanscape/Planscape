@@ -39,6 +39,7 @@ def create(request: HttpRequest) -> HttpResponse:
             raise ValueError("Could not parse geometry")
 
         # Create the plan
+        # TODO(https://github.com/OurPlanscape/Planscape/issues/183) Fix region_name parameter 
         plan = Plan.objects.create(
             owner=owner, name=name, region_name='SierraNevada', geometry=geometry)
         plan.save()
