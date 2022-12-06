@@ -29,3 +29,13 @@ export interface PillarConfig extends DataLayerConfig {
   pillar_name?: string;
   elements?: ElementConfig[];
 }
+
+export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
+  boundary_name: '',
+  display_name: 'None',
+};
+
+export const NONE_DATA_LAYER_CONFIG: DataLayerConfig = {
+  display_name: 'None',
+  filepath: '',
+};

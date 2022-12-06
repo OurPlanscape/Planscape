@@ -1,6 +1,11 @@
 import { BaseLayerType } from './layer.types';
 import * as L from 'leaflet';
-import { BoundaryConfig, DataLayerConfig } from './data.types';
+import {
+  BoundaryConfig,
+  DataLayerConfig,
+  NONE_BOUNDARY_CONFIG,
+  NONE_DATA_LAYER_CONFIG,
+} from './data.types';
 
 export interface Map {
   id: string;
@@ -22,7 +27,6 @@ export interface MapConfig {
   showExistingProjectsLayer: boolean;
 }
 
-
 export interface MapViewOptions {
   selectedMapIndex: number;
   numVisibleMaps: number;
@@ -31,13 +35,8 @@ export interface MapViewOptions {
 export function defaultMapConfig(): MapConfig {
   return {
     baseLayerType: BaseLayerType.Road,
-    boundaryLayerConfig: {
-      boundary_name: '',
-    },
-    dataLayerConfig: {
-      display_name: 'None',
-      filepath: '',
-    },
+    boundaryLayerConfig: NONE_BOUNDARY_CONFIG,
+    dataLayerConfig: NONE_DATA_LAYER_CONFIG,
     showExistingProjectsLayer: false,
   };
 }
