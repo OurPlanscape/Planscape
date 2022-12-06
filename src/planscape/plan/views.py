@@ -25,7 +25,7 @@ def create(request: HttpRequest) -> HttpResponse:
         # Get the geometry of the plan and convert to a MultiPolygon
         geometry = body.get('geometry', None)
         if geometry is None:
-            raise ValueError("Must specify geometry") 
+            raise ValueError("Must specify geometry")
         features = geometry.get('features', [])
         if len(features) > 1 or len(features) == 0:
             raise ValueError("Must send exactly one feature.")
