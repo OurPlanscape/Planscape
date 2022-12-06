@@ -22,10 +22,10 @@ import { BaseLayerType, Map } from '../types';
 export class MapManager {
   maps: Map[];
   popupService: PopupService;
-
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
-
-  drawingLayer = new L.FeatureGroup();
+  polygonsCreated$ = new BehaviorSubject<boolean>(false);
+  private drawingLayer = new L.FeatureGroup();
+  private drawControl: L.Control.Draw;
 
   startLoadingLayerCallback: (layerName: string) => void;
   doneLoadingLayerCallback: (layerName: string) => void;
@@ -40,6 +40,37 @@ export class MapManager {
     this.popupService = popupService;
     this.startLoadingLayerCallback = startLoadingLayerCallback;
     this.doneLoadingLayerCallback = doneLoadingLayerCallback;
+    this.drawControl = this.initDrawControl();
+  }
+
+  initDrawControl() {
+    const drawOptions: L.Control.DrawConstructorOptions = {
+      position: 'bottomright',
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          metric: false, // Set measurement units to acres
+          shapeOptions: {
+            color: '#7b61ff',
+          },
+          drawError: {
+            color: '#ff7b61',
+            message: "Can't draw polygons with intersections!",
+          },
+        }, // Set to false to disable each tool
+        polyline: false,
+        circle: false,
+        rectangle: false,
+        marker: false,
+        circlemarker: false,
+      },
+      edit: {
+        featureGroup: this.drawingLayer, // Required and declares which layer is editable
+      },
+    };
+
+    return new L.Control.Draw(drawOptions);
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -81,6 +112,13 @@ export class MapManager {
       }
     });
     this.changeConditionsLayer(map);
+
+    // Each map has its own cloned drawing layer because the same layer object cannot
+    // be added to multiple maps at the same time. Note this.drawingLayer is only added
+    // to one map at a time.
+    map.clonedDrawingRef = new L.FeatureGroup();
+    map.drawnPolygonLookup = {};
+    this.setUpDrawingHandlers(map.instance!);
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -155,68 +193,83 @@ export class MapManager {
     }).addTo(map);
   }
 
-  /** Adds drawing controls and handles drawing events. */
-  addDrawingControls(
-    map: L.Map,
-    onDrawCreatedCallback: () => void,
-    onDrawDeletedCallback: () => void
-  ) {
-    map.addLayer(this.drawingLayer);
-
-    const drawOptions: L.Control.DrawConstructorOptions = {
-      position: 'bottomright',
-      draw: {
-        polygon: {
-          allowIntersection: false,
-          showArea: true,
-          metric: false, // Set measurement units to acres
-          shapeOptions: {
-            color: '#7b61ff',
-          },
-          drawError: {
-            color: '#ff7b61',
-            message: "Can't draw polygons with intersections!",
-          },
-        }, // Set to false to disable each tool
-        polyline: false,
-        circle: false,
-        rectangle: false,
-        marker: false,
-        circlemarker: false,
-      },
-      edit: {
-        featureGroup: this.drawingLayer, // Required and declares which layer is editable
-      },
-    };
-
-    const drawControl = new L.Control.Draw(drawOptions);
-    map.addControl(drawControl);
-
-    this.setUpDrawingHandlers(
-      map,
-      onDrawCreatedCallback,
-      onDrawDeletedCallback
-    );
+  /** Adds the cloned drawing layer to the map. */
+  showClonedDrawing(map: Map) {
+    map.clonedDrawingRef?.addTo(map.instance!);
   }
 
-  private setUpDrawingHandlers(
-    map: L.Map,
-    onDrawCreatedCallback: () => void,
-    onDrawDeletedCallback: () => void
-  ) {
-    // Show the create button when a polygon is completed
-    map.on('draw:created', (event) => {
+  /** Removes the cloned drawing layer from the map. */
+  hideClonedDrawing(map: Map) {
+    map.clonedDrawingRef?.removeFrom(map.instance!);
+  }
+
+  /** Removes drawing control and layer from the map. */
+  removeDrawingControl(map: L.Map) {
+    map.removeControl(this.drawControl);
+    map.removeLayer(this.drawingLayer);
+  }
+
+  /** Adds drawing control and drawing layer to the map. */
+  addDrawingControl(map: L.Map) {
+    map.addLayer(this.drawingLayer);
+    map.addControl(this.drawControl);
+  }
+
+  private setUpDrawingHandlers(map: L.Map) {
+    map.on(L.Draw.Event.CREATED, (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
+      const originalId = L.Util.stamp(layer);
 
-      onDrawCreatedCallback();
+      // sync newly drawn polygons to all maps
+      this.maps.forEach((currMap) => {
+        // Hacky way to clone, but it removes the reference to the origin layer
+        const clonedLayer = L.geoJson(layer.toGeoJSON()).setStyle({
+            color: '#ffde9e',
+            fillColor: '#ffde9e',
+          });
+          currMap.clonedDrawingRef?.addLayer(clonedLayer);
+          currMap.drawnPolygonLookup![originalId] = clonedLayer;
+      });
+
+      this.polygonsCreated$.next(true);
     });
 
-    // When there are no more polygons, hide the create button
-    map.on('draw:deleted', (_) => {
+    map.on(L.Draw.Event.DELETED, (event) => {
+      // sync deleted polygons to all maps
+      const layers = (event as L.DrawEvents.Deleted).layers;
+      layers.eachLayer((feature) => {
+        this.maps.forEach((currMap) => {
+          const originalPolygonKey = L.Util.stamp(feature);
+          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+          delete currMap.drawnPolygonLookup![originalPolygonKey];
+        });
+      });
+
+      // When there are no more polygons
       if (this.drawingLayer.getLayers().length <= 0) {
-        onDrawDeletedCallback();
+        this.polygonsCreated$.next(false);
       }
+    });
+
+    map.on(L.Draw.Event.EDITED, (event) => {
+      // sync edited polygons to all maps
+      const layers = (event as L.DrawEvents.Edited).layers;
+      layers.eachLayer((feature) => {
+        this.maps.forEach((currMap) => {
+          const originalPolygonKey = L.Util.stamp(feature);
+          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+
+          const updatedPolygon = L.geoJson((feature as L.Polygon).toGeoJSON()).setStyle({
+            color: '#ffde9e',
+            fillColor: '#ffde9e',
+          });
+          currMap.clonedDrawingRef?.addLayer(updatedPolygon);
+          currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
+        });
+      });
     });
   }
 
@@ -255,19 +308,9 @@ export class MapManager {
    * Enables the polygon drawing tool on a map.
    */
   enablePolygonDrawingTool(map: L.Map) {
-    const polygonDrawer = new L.Draw.Polygon(map as L.DrawMap, {
-      allowIntersection: false,
-      showArea: true,
-      metric: false,
-      shapeOptions: {
-        color: '#7b61ff',
-      },
-      drawError: {
-        color: '#ff7b61',
-        message: "Can't draw polygons with intersections!",
-      },
-    });
-    polygonDrawer.enable();
+    this.addDrawingControl(map);
+    const polygonButton = document.querySelector(".leaflet-draw-draw-polygon") as HTMLElement | null;
+    polygonButton?.click();
   }
 
   /** Sync pan, zoom, etc. between all maps. */
