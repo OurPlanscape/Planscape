@@ -18,8 +18,13 @@ export class StringifyMapConfigPipe implements PipeTransform {
 
     let str: string = '';
     let labels: string[] = [];
-    if (!!mapConfig.dataLayerConfig.display_name) {
-      let dataLabel = mapConfig.dataLayerConfig.display_name;
+    if (
+      !!mapConfig.dataLayerConfig.filepath &&
+      mapConfig.dataLayerConfig.filepath.length > 0
+    ) {
+      let dataLabel = mapConfig.dataLayerConfig.display_name
+        ? mapConfig.dataLayerConfig.display_name
+        : mapConfig.dataLayerConfig.filepath;
       if (mapConfig.dataLayerConfig.normalized) {
         dataLabel = dataLabel.concat(' (Normalized)');
       }
@@ -28,7 +33,10 @@ export class StringifyMapConfigPipe implements PipeTransform {
     if (mapConfig.showExistingProjectsLayer) {
       labels.push('Existing Projects');
     }
-    if (mapConfig.boundaryLayerConfig.boundary_name !== '') {
+    if (
+      !!mapConfig.boundaryLayerConfig.boundary_name &&
+      mapConfig.boundaryLayerConfig.boundary_name.length > 0
+    ) {
       let boundaryLabel = mapConfig.boundaryLayerConfig.display_name
         ? mapConfig.boundaryLayerConfig.display_name
         : mapConfig.boundaryLayerConfig.boundary_name;

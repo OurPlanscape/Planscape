@@ -58,7 +58,7 @@ describe('MapService', () => {
 
       const req = httpTestingController.expectOne(
         BackendConstants.END_POINT +
-          '/boundary/boundary_details/?boundary_name=huc12&region_name=SierraNevada'
+          '/boundary/boundary_details/?boundary_name=huc12&region_name=sierra_cascade_inyo'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);

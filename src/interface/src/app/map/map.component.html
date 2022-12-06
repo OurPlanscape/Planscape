@@ -40,6 +40,7 @@
         class="layer-controls-tab-group">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="!isMapVisible(i)">
           <mat-accordion multi displayMode="flat">
+
             <mat-expansion-panel expanded="true">
               <mat-expansion-panel-header>
                 Basemaps
@@ -53,13 +54,18 @@
               </mat-radio-group>
             </mat-expansion-panel>
 
-            <mat-expansion-panel expanded="false">
+            <mat-expansion-panel expanded="true">
               <mat-expansion-panel-header>
                 Boundaries
               </mat-expansion-panel-header>
               <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
                 class="layer-radio-group"
                 [(ngModel)]="map.config.boundaryLayerConfig" (change)="toggleBoundaryLayer(map)">
+                <div class="layer-control-container">
+                  <mat-radio-button class="layer-radio-button" [value]="noneBoundaryConfig">
+                    None
+                  </mat-radio-button>
+                </div>
                 <div *ngFor="let boundary of (boundaryConfig$ | async)" class="layer-control-container">
                   <mat-radio-button class="layer-radio-button" [value]="boundary">
                     {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
@@ -91,7 +97,7 @@
               </mat-expansion-panel-header>
             </mat-expansion-panel>
 
-            <mat-expansion-panel expanded="true">
+            <mat-expansion-panel expanded="false">
               <mat-expansion-panel-header>
                 Recent treatment areas
               </mat-expansion-panel-header>
@@ -133,7 +139,7 @@
               </mat-expansion-panel-header>
 
               <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
-                [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
+              [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
                 <mat-tree [dataSource]="conditionDataSource" [treeControl]="conditionTreeControl" class="condition-tree">
                   <!-- This is the tree node template for leaf nodes -->
                   <!-- There is inline padding applied to this node using styles.
@@ -165,33 +171,6 @@
                   </mat-nested-tree-node>
                 </mat-tree>
               </mat-radio-group>
-
-              <!-- <h3>Current condition</h3>
-
-              <mat-checkbox name="{{ map.id + '-normalized-conditions-toggle' }}"
-                aria-label="Select or deselect" class="layer-checkbox"
-                [(ngModel)]="map.config.normalizeDataLayer"
-                (change)="changeConditionsLayer(map)">
-                Normalize conditions data
-              </mat-checkbox>
-
-              <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
-                class="layer-radio-group"
-                [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
-                <div *ngFor="let pillar of (conditionsConfig$ | async)?.pillars">
-                  <div *ngIf="pillar.display">
-                    <h4>{{ pillar.display_name }}</h4>
-                    <div *ngFor="let element of pillar.elements">
-                      <h5>{{ element.display_name }}</h5>
-                      <div *ngFor="let metric of element.metrics">
-                        <mat-radio-button class="layer-radio-button" [value]="metric">
-                          {{ metric.display_name ? metric.display_name : metric.metric_name }}
-                        </mat-radio-button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </mat-radio-group> -->
             </mat-expansion-panel>
 
           </mat-accordion>

@@ -46,6 +46,15 @@ interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
 }
 
+const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
+  boundary_name: '',
+};
+
+const NONE_CONDITIONS_NODE: ConditionsNode = {
+  display_name: 'None',
+  filepath: '',
+};
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -65,8 +74,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
 
-  baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
-  BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
+
+  readonly baseLayerTypes: number[] = [
+    BaseLayerType.Road,
+    BaseLayerType.Terrain,
+  ];
+  readonly BaseLayerType: typeof BaseLayerType = BaseLayerType;
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
@@ -160,6 +174,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe(this.showCreatePlanButton$);
 
+    this.conditionDataSource.data = [NONE_CONDITIONS_NODE];
     this.conditionsConfig$
       .pipe(filter((config) => !!config))
       .subscribe((config) => {
@@ -427,6 +442,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
     return [
+      NONE_CONDITIONS_NODE,
       {
         ...config,
         display_name: 'Current condition',
