@@ -280,12 +280,12 @@ export class MapManager {
     onDrawCreatedCallback: () => void,
     onDrawDeletedCallback: () => void
   ) {
-    // Show the create button when a polygon is completed
     map.on(L.Draw.Event.CREATED, (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
       const originalId = L.Util.stamp(layer);
 
+      // sync newly drawn polygons to all maps
       this.maps.forEach((currMap) => {
         // Hacky way to clone, but it removes the reference to the origin layer
         const clonedLayer = L.geoJson(layer.toGeoJSON()).setStyle({
@@ -299,8 +299,8 @@ export class MapManager {
       onDrawCreatedCallback();
     });
 
-    // When there are no more polygons, hide the create button
     map.on(L.Draw.Event.DELETED, (event) => {
+      // sync deleted polygons to all maps
       var layers = (event as L.DrawEvents.Deleted).layers;
       layers.eachLayer((feature) => {
         this.maps.forEach((currMap) => {
@@ -311,9 +311,29 @@ export class MapManager {
         });
       });
 
+      // When there are no more polygons
       if (this.drawingLayer.getLayers().length <= 0) {
         onDrawDeletedCallback();
       }
+    });
+
+    map.on(L.Draw.Event.EDITED, (event) => {
+      // sync edited polygons to all maps
+      var layers = (event as L.DrawEvents.Edited).layers;
+      layers.eachLayer((feature) => {
+        this.maps.forEach((currMap) => {
+          const originalPolygonKey = L.Util.stamp(feature);
+          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+
+          const updatedPolygon = L.geoJson((feature as L.Polygon).toGeoJSON()).setStyle({
+            color: '#ffde9e',
+            fillColor: '#ffde9e',
+          });
+          currMap.clonedDrawingRef?.addLayer(updatedPolygon);
+          currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
+        });
+      });
     });
   }
 
