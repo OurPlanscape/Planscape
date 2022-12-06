@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, map, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { ConditionsConfig, Region } from '../types';
+import { BoundaryConfig, ConditionsConfig, Region } from '../types';
 
 /** A map of Region to its corresponding geojson path. */
 const regionToGeojsonMap: Record<Region, string> = {
@@ -11,18 +11,28 @@ const regionToGeojsonMap: Record<Region, string> = {
   [Region.CENTRAL_COAST]: '',
   [Region.NORTHERN_CALIFORNIA]: '',
   [Region.SOUTHERN_CALIFORNIA]: '',
-}
+};
 
 @Injectable({
   providedIn: 'root',
 })
 export class MapService {
-  readonly conditionsConfig$ = new BehaviorSubject<ConditionsConfig | null>(null);
+  readonly boundaryConfig$ = new BehaviorSubject<BoundaryConfig[] | null>(null);
+  readonly conditionsConfig$ = new BehaviorSubject<ConditionsConfig | null>(
+    null
+  );
 
   constructor(private http: HttpClient) {
     this.http
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/boundary')
+      .pipe(take(1))
+      .subscribe((config: BoundaryConfig[]) => {
+        this.boundaryConfig$.next(config);
+      });
+    this.http
       .get<ConditionsConfig>(
-        BackendConstants.END_POINT + '/conditions/config/?region_name=sierra_cascade_inyo'
+        BackendConstants.END_POINT +
+          '/conditions/config/?region_name=sierra_cascade_inyo'
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -47,7 +57,8 @@ export class MapService {
    * */
   getRegionBoundaries(): Observable<GeoJSON.GeoJSON> {
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=task_force_regions'
+      BackendConstants.END_POINT +
+        '/boundary/boundary_details/?boundary_name=task_force_regions'
     );
   }
 
@@ -64,52 +75,19 @@ export class MapService {
     }
   }
 
-  getHuc12BoundaryShapes(region: Region | null): Observable<GeoJSON.GeoJSON> {
-    // Get the shapes from the REST server.
-    var regionString: string = '';
-    if (region != null) {
-      regionString = '&region_name=' + this.regionToString(region);
-    }
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=huc12' +
-        regionString
-    );
-  }
-
-  getHuc10BoundaryShapes(region: Region | null): Observable<GeoJSON.GeoJSON> {
-    // Get the shapes from the REST server.
-    var regionString: string = '';
-    if (region != null) {
-      regionString = '&region_name=' + this.regionToString(region);
-    }
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=huc10' +
-        regionString
-    );
-  }
-
-  getCountyBoundaryShapes(region: Region | null): Observable<GeoJSON.GeoJSON> {
-    // Get the shapes from the REST server.
-    var regionString: string = '';
-    if (region != null) {
-      regionString = '&region_name=' + this.regionToString(region);
-    }
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=counties' +
-        regionString
-    );
-  }
-
-  getUsForestBoundaryShapes(
+  /** Get shapes for a boundary from the REST server, within a region if region is non-null. */
+  getBoundaryShapes(
+    boundaryName: string,
     region: Region | null
   ): Observable<GeoJSON.GeoJSON> {
     // Get the shapes from the REST server.
     var regionString: string = '';
     if (region != null) {
-      regionString = '&region_name=' + this.regionToString(region);
+      regionString = `&region_name=${this.regionToString(region)}`;
     }
     return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=USFS' +
+      BackendConstants.END_POINT +
+        `/boundary/boundary_details/?boundary_name=${boundaryName}` +
         regionString
     );
   }
