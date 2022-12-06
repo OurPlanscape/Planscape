@@ -14,6 +14,7 @@ export interface Map {
   usForestBoundaryLayerRef?: L.Layer | undefined;
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
+  clonedDrawingRef?: L.FeatureGroup | undefined;
 }
 
 export interface MapConfig {
