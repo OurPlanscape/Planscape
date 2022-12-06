@@ -343,6 +343,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
       this.mapManager.enablePolygonDrawingTool(this.maps[this.mapViewOptions.selectedMapIndex].instance!);
+      this.changeMapCount(1);
     }
   }
 
@@ -392,7 +393,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.mapManager.changeConditionsLayer(map);
   }
 
-  /* Change how many maps are displayed in the viewport. */
+  /** Change how many maps are displayed in the viewport. */
   changeMapCount(mapCount: number) {
     this.mapViewOptions.numVisibleMaps = mapCount;
     setTimeout(() => {
@@ -400,7 +401,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     }, 0);
   }
 
-  /** Whether the map at given index should be visible.
+  /**
+   * Whether the map at given index should be visible.
    *
    *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
    */
