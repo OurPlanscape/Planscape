@@ -97,7 +97,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
-  showCreatePlanButton: boolean = false;
+  showCreatePlanButton$ = new BehaviorSubject(false);
 
   private readonly destroy$ = new Subject<void>();
 
@@ -191,6 +191,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     );
 
     this.mapManager = new MapManager(this.maps, popupService);
+    this.mapManager.polygonsCreated$.pipe(takeUntil(this.destroy$)).subscribe(this.showCreatePlanButton$);
   }
 
   ngOnInit(): void {
@@ -229,14 +230,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.destroy$.complete();
   }
 
-  private onDrawCreatedCallback() {
-    this.showCreatePlanButton = true;
-  }
-
-  private onDrawDeletedCallback() {
-    this.showCreatePlanButton = false;
-  }
-
   private restoreSession() {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -273,9 +266,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         component.instance.feature = feature;
         this.applicationRef.attachView(component.hostView);
         return component.location.nativeElement;
-      },
-      this.onDrawCreatedCallback.bind(this),
-      this.onDrawDeletedCallback.bind(this)
+      }
     );
 
     // Renders the selected region on the map.

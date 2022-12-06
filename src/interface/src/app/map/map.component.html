@@ -146,7 +146,7 @@
       </button>
 
       <!-- Create plan button -->
-      <button *ngIf="showCreatePlanButton"
+      <button *ngIf="showCreatePlanButton$ | async"
         mat-button type="button"
         class="create-plan-button"
         (click)="openCreatePlanDialog()">
