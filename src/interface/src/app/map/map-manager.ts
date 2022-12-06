@@ -22,8 +22,7 @@ import { BaseLayerType, Map } from '../types';
 export class MapManager {
   maps: Map[];
   popupService: PopupService;
-  drawingLayer = new L.FeatureGroup();
-
+  private drawingLayer = new L.FeatureGroup();
   private drawControl: L.Control.Draw;
 
   constructor(maps: Map[], popupService: PopupService) {
@@ -120,6 +119,8 @@ export class MapManager {
         this.initCalMapperLayer(map, projects, createDetailCardCallback);
       }
     });
+
+    map.clonedDrawingRef = new L.FeatureGroup();
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -244,14 +245,24 @@ export class MapManager {
     }).addTo(map);
   }
 
+  /** Adds the cloned drawing layer to the map. */
+  showClonedDrawing(map: Map) {
+    map.clonedDrawingRef?.addTo(map.instance!);
+  }
+
+  /** Removes the cloned drawing layer from the map. */
+  hideClonedDrawing(map: Map) {
+    map.clonedDrawingRef?.removeFrom(map.instance!);
+  }
+
   /** Removes drawing control and layer from the map. */
-  removeDrawing(map: L.Map) {
+  removeDrawingControl(map: L.Map) {
     map.removeControl(this.drawControl);
     map.removeLayer(this.drawingLayer);
   }
 
   /** Adds drawing control, drawing layer, and handles drawing events. */
-  addDrawing(
+  addDrawingControl(
     map: L.Map,
     onDrawCreatedCallback: () => void,
     onDrawDeletedCallback: () => void
@@ -275,6 +286,15 @@ export class MapManager {
     map.on('draw:created', (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
+
+      this.maps.forEach((map) => {
+        // Hacky way to clone, but it removes the reference to the origin layer
+        const clonedLayer = L.geoJson(layer.toGeoJSON()).setStyle({
+            color: '#ffde9e',
+            fillColor: '#ffde9e',
+          })
+        map.clonedDrawingRef?.addLayer(clonedLayer);
+      });
 
       onDrawCreatedCallback();
     });

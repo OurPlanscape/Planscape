@@ -210,12 +210,16 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
       const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
+      // Only add drawing controls to the selected map
       if (selectedMapIndex === this.maps.indexOf(map)) {
-        this.mapManager.addDrawing(
+        this.mapManager.addDrawingControl(
           this.maps[selectedMapIndex].instance!,
           this.onDrawCreatedCallback.bind(this),
           this.onDrawDeletedCallback.bind(this)
         );
+      }
+      else { // Show a copy of the drawing layer on the other maps
+        this.mapManager.showClonedDrawing(map);
       }
     });
 
@@ -281,18 +285,21 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.displayRegionBoundary(map, selectedRegion);
     });
 
-    // Mark the map as selected when the user clicks anywhere on it.
+    // Mark the map as selected when the user clicks anywhere on it
+    // and updates which map can be drawn on.
     map.instance?.addEventListener('click', () => {
       const previousMapIndex = this.mapViewOptions.selectedMapIndex;
       const currentMapIndex = this.maps.indexOf(map);
 
       if (previousMapIndex !== currentMapIndex) {
-        this.mapManager.removeDrawing(this.maps[previousMapIndex].instance!);
+        this.mapManager.removeDrawingControl(this.maps[previousMapIndex].instance!);
+        this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
 
         this.mapViewOptions.selectedMapIndex = currentMapIndex;
         this.sessionService.setMapViewOptions(this.mapViewOptions);
 
-        this.mapManager.addDrawing(
+        this.mapManager.hideClonedDrawing(this.maps[currentMapIndex]);
+        this.mapManager.addDrawingControl(
           this.maps[currentMapIndex].instance!,
           this.onDrawCreatedCallback.bind(this),
           this.onDrawDeletedCallback.bind(this)
