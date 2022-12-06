@@ -209,14 +209,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
+      const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
+      if (selectedMapIndex === this.maps.indexOf(map)) {
+        this.mapManager.addDrawing(
+          this.maps[selectedMapIndex].instance!,
+          this.onDrawCreatedCallback.bind(this),
+          this.onDrawDeletedCallback.bind(this)
+        );
+      }
     });
 
     this.mapManager.syncAllMaps();
-    this.mapManager.addDrawingControls(
-      this.maps[0].instance!,
-      this.onDrawCreatedCallback.bind(this),
-      this.onDrawDeletedCallback.bind(this)
-    );
   }
 
   ngOnDestroy(): void {
@@ -280,8 +283,21 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
     // Mark the map as selected when the user clicks anywhere on it.
     map.instance?.addEventListener('click', () => {
-      this.mapViewOptions.selectedMapIndex = this.maps.indexOf(map);
-      this.sessionService.setMapViewOptions(this.mapViewOptions);
+      const previousMapIndex = this.mapViewOptions.selectedMapIndex;
+      const currentMapIndex = this.maps.indexOf(map);
+
+      if (previousMapIndex !== currentMapIndex) {
+        this.mapManager.removeDrawing(this.maps[previousMapIndex].instance!);
+
+        this.mapViewOptions.selectedMapIndex = currentMapIndex;
+        this.sessionService.setMapViewOptions(this.mapViewOptions);
+
+        this.mapManager.addDrawing(
+          this.maps[currentMapIndex].instance!,
+          this.onDrawCreatedCallback.bind(this),
+          this.onDrawDeletedCallback.bind(this)
+        );
+      }
     });
   }
 
