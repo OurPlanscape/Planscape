@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from typing import cast
 
@@ -7,6 +8,8 @@ from decouple import config as cfg
 from django.db import connection
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+
+logger = logging.getLogger(__name__)
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 
@@ -79,6 +82,7 @@ def wms(request: HttpRequest) -> HttpResponse:
         image = get_wms(request.GET)
         return HttpResponse(image, content_type=request.GET['format'])
     except Exception as e:
+        logger.error('WMS error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
