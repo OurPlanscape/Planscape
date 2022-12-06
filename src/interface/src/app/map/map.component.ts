@@ -29,6 +29,8 @@ import {
   Map,
   MapConfig,
   MapViewOptions,
+  NONE_BOUNDARY_CONFIG,
+  NONE_DATA_LAYER_CONFIG,
   Region,
 } from '../types';
 import { Legend } from './../shared/legend/legend.component';
@@ -45,15 +47,6 @@ export interface PlanCreationOption {
 interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
 }
-
-const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
-  boundary_name: '',
-};
-
-const NONE_CONDITIONS_NODE: ConditionsNode = {
-  display_name: 'None',
-  filepath: '',
-};
 
 @Component({
   selector: 'app-map',
@@ -174,7 +167,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe(this.showCreatePlanButton$);
 
-    this.conditionDataSource.data = [NONE_CONDITIONS_NODE];
+    this.conditionDataSource.data = [NONE_DATA_LAYER_CONFIG];
     this.conditionsConfig$
       .pipe(filter((config) => !!config))
       .subscribe((config) => {
@@ -236,6 +229,21 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
             this.maps[index].config = mapConfig;
           });
         }
+        this.boundaryConfig$
+          .pipe(filter((config) => !!config))
+          .subscribe((config) => {
+            // Ensure the radio button corresponding to the saved selection is selected.
+            this.maps.forEach((map) => {
+              const boundaryConfig = config?.find(
+                (boundary) =>
+                  boundary.boundary_name ===
+                  map.config.boundaryLayerConfig.boundary_name
+              );
+              if (!!boundaryConfig) {
+                map.config.boundaryLayerConfig = boundaryConfig;
+              }
+            });
+          });
       });
   }
 
@@ -442,7 +450,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
     return [
-      NONE_CONDITIONS_NODE,
+      NONE_DATA_LAYER_CONFIG,
       {
         ...config,
         display_name: 'Current condition',
