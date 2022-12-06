@@ -70,7 +70,9 @@ export class MapManager {
     countyBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
     usForestBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any
+    createDetailCardCallback: (feature: Feature<Geometry, any>) => any,
+    onDrawCreatedCallback: () => void,
+    onDrawDeletedCallback: () => void,
   ) {
     if (map.instance != undefined) map.instance.remove();
 
@@ -121,6 +123,12 @@ export class MapManager {
     });
 
     map.clonedDrawingRef = new L.FeatureGroup();
+    map.drawnPolygonLookup = {};
+    this.setUpDrawingHandlers(
+      map.instance!,
+      onDrawCreatedCallback,
+      onDrawDeletedCallback
+    );
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -261,20 +269,10 @@ export class MapManager {
     map.removeLayer(this.drawingLayer);
   }
 
-  /** Adds drawing control, drawing layer, and handles drawing events. */
-  addDrawingControl(
-    map: L.Map,
-    onDrawCreatedCallback: () => void,
-    onDrawDeletedCallback: () => void
-  ) {
+  /** Adds drawing control and drawing layer to the map. */
+  addDrawingControl(map: L.Map) {
     map.addLayer(this.drawingLayer);
     map.addControl(this.drawControl);
-
-    this.setUpDrawingHandlers(
-      map,
-      onDrawCreatedCallback,
-      onDrawDeletedCallback
-    );
   }
 
   private setUpDrawingHandlers(
@@ -283,24 +281,36 @@ export class MapManager {
     onDrawDeletedCallback: () => void
   ) {
     // Show the create button when a polygon is completed
-    map.on('draw:created', (event) => {
+    map.on(L.Draw.Event.CREATED, (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
+      const originalId = L.Util.stamp(layer);
 
-      this.maps.forEach((map) => {
+      this.maps.forEach((currMap) => {
         // Hacky way to clone, but it removes the reference to the origin layer
         const clonedLayer = L.geoJson(layer.toGeoJSON()).setStyle({
             color: '#ffde9e',
             fillColor: '#ffde9e',
-          })
-        map.clonedDrawingRef?.addLayer(clonedLayer);
+          });
+          currMap.clonedDrawingRef?.addLayer(clonedLayer);
+          currMap.drawnPolygonLookup![originalId] = clonedLayer;
       });
 
       onDrawCreatedCallback();
     });
 
     // When there are no more polygons, hide the create button
-    map.on('draw:deleted', (_) => {
+    map.on(L.Draw.Event.DELETED, (event) => {
+      var layers = (event as L.DrawEvents.Deleted).layers;
+      layers.eachLayer((feature) => {
+        this.maps.forEach((currMap) => {
+          const originalPolygonKey = L.Util.stamp(feature);
+          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+          delete currMap.drawnPolygonLookup![originalPolygonKey];
+        });
+      });
+
       if (this.drawingLayer.getLayers().length <= 0) {
         onDrawDeletedCallback();
       }
