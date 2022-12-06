@@ -35,6 +35,7 @@ export function defaultMapConfig(): MapConfig {
       boundary_name: '',
     },
     dataLayerConfig: {
+      display_name: 'None',
       filepath: '',
     },
     showExistingProjectsLayer: false,
