@@ -280,6 +280,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       const previousMapIndex = this.mapViewOptions.selectedMapIndex;
       const currentMapIndex = this.maps.indexOf(map);
 
+    // Toggle the cloned layer on if the map is not the current selected map.
+    // Toggle on the drawing layer and control on the selected map.
       if (previousMapIndex !== currentMapIndex) {
         this.mapManager.removeDrawingControl(this.maps[previousMapIndex].instance!);
         this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);

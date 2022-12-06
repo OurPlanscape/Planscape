@@ -121,6 +121,9 @@ export class MapManager {
       }
     });
 
+    // Each map has its own cloned drawing layer because the same layer object cannot
+    // be added to multiple maps at the same time. Note this.drawingLayer is only added
+    // to one map at a time.
     map.clonedDrawingRef = new L.FeatureGroup();
     map.drawnPolygonLookup = {};
     this.setUpDrawingHandlers(map.instance!);
@@ -292,7 +295,7 @@ export class MapManager {
 
     map.on(L.Draw.Event.DELETED, (event) => {
       // sync deleted polygons to all maps
-      var layers = (event as L.DrawEvents.Deleted).layers;
+      const layers = (event as L.DrawEvents.Deleted).layers;
       layers.eachLayer((feature) => {
         this.maps.forEach((currMap) => {
           const originalPolygonKey = L.Util.stamp(feature);
@@ -310,7 +313,7 @@ export class MapManager {
 
     map.on(L.Draw.Event.EDITED, (event) => {
       // sync edited polygons to all maps
-      var layers = (event as L.DrawEvents.Edited).layers;
+      const layers = (event as L.DrawEvents.Edited).layers;
       layers.eachLayer((feature) => {
         this.maps.forEach((currMap) => {
           const originalPolygonKey = L.Util.stamp(feature);
