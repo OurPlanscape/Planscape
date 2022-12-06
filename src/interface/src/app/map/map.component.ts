@@ -212,11 +212,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
       // Only add drawing controls to the selected map
       if (selectedMapIndex === this.maps.indexOf(map)) {
-        this.mapManager.addDrawingControl(
-          this.maps[selectedMapIndex].instance!,
-          this.onDrawCreatedCallback.bind(this),
-          this.onDrawDeletedCallback.bind(this)
-        );
+        this.mapManager.addDrawingControl(this.maps[selectedMapIndex].instance!);
       }
       else { // Show a copy of the drawing layer on the other maps
         this.mapManager.showClonedDrawing(map);
@@ -277,7 +273,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         component.instance.feature = feature;
         this.applicationRef.attachView(component.hostView);
         return component.location.nativeElement;
-      }
+      },
+      this.onDrawCreatedCallback.bind(this),
+      this.onDrawDeletedCallback.bind(this)
     );
 
     // Renders the selected region on the map.
@@ -298,12 +296,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         this.mapViewOptions.selectedMapIndex = currentMapIndex;
         this.sessionService.setMapViewOptions(this.mapViewOptions);
 
+        this.mapManager.addDrawingControl(this.maps[currentMapIndex].instance!);
         this.mapManager.hideClonedDrawing(this.maps[currentMapIndex]);
-        this.mapManager.addDrawingControl(
-          this.maps[currentMapIndex].instance!,
-          this.onDrawCreatedCallback.bind(this),
-          this.onDrawDeletedCallback.bind(this)
-        );
       }
     });
   }
