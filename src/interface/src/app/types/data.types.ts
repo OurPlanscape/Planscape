@@ -3,34 +3,29 @@ export interface BoundaryConfig {
   boundary_name: string;
 }
 
-export interface ConditionsConfig {
-  display_name?: string;
-  filepath?: string;
+export interface ConditionsConfig extends DataLayerConfig {
   region_name?: string;
   pillars?: PillarConfig[];
-  colormap?: string;
 }
 
-export interface ElementConfig {
+export interface DataLayerConfig {
   display_name?: string;
-  element_name?: string;
   filepath?: string;
+  colormap?: string;
+  normalized?: boolean;
+}
+
+export interface ElementConfig extends DataLayerConfig {
+  element_name?: string;
   metrics?: MetricConfig[];
-  colormap?: string;
 }
 
-export interface MetricConfig {
+export interface MetricConfig extends DataLayerConfig {
   metric_name: string;
-  filepath: string;
-  display_name?: string;
-  colormap?: string;
 }
 
-export interface PillarConfig {
-  display_name?: string;
+export interface PillarConfig extends DataLayerConfig {
   display?: boolean;
   pillar_name?: string;
-  filepath?: string;
   elements?: ElementConfig[];
-  colormap?: string;
 }

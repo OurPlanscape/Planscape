@@ -410,19 +410,6 @@ describe('MapComponent', () => {
         it(`map-${testCase + 1} should change conditions layer`, async () => {
           let map = component.maps[testCase];
           spyOn(component, 'changeConditionsLayer').and.callThrough();
-          const showConditionsCheckbox = await loader.getHarness(
-            MatCheckboxHarness.with({
-              name: `${map.id}-conditions-toggle`,
-            })
-          );
-
-          // Act: toggle on conditions
-          await showConditionsCheckbox.check();
-
-          // Assert: expect that map config is updated but data layer ref is undefined
-          expect(component.changeConditionsLayer).toHaveBeenCalled();
-          expect(map.config.showDataLayer).toBeTrue();
-          expect(map.dataLayerRef).toBeUndefined();
 
           // Act: select test metric 1
           const radioButtonGroup = await loader.getHarness(
