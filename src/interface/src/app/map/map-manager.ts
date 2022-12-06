@@ -8,7 +8,7 @@ import {
 import * as L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet.sync';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
@@ -22,13 +22,24 @@ import { BaseLayerType, Map } from '../types';
 export class MapManager {
   maps: Map[];
   popupService: PopupService;
+  boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   private drawingLayer = new L.FeatureGroup();
   private drawControl: L.Control.Draw;
 
-  constructor(maps: Map[], popupService: PopupService) {
+  startLoadingLayerCallback: (layerName: string) => void;
+  doneLoadingLayerCallback: (layerName: string) => void;
+
+  constructor(
+    maps: Map[],
+    popupService: PopupService,
+    startLoadingLayerCallback: (layerName: string) => void,
+    doneLoadingLayerCallback: (layerName: string) => void
+  ) {
     this.maps = maps;
     this.popupService = popupService;
+    this.startLoadingLayerCallback = startLoadingLayerCallback;
+    this.doneLoadingLayerCallback = doneLoadingLayerCallback;
     this.drawControl = this.initDrawControl();
   }
 
@@ -66,12 +77,11 @@ export class MapManager {
   initLeafletMap(
     map: Map,
     mapId: string,
-    huc12BoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    huc10BoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    countyBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    usForestBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any
+    createDetailCardCallback: (feature: Feature<Geometry, any>) => any,
+    getBoundaryLayerGeoJsonCallback: (
+      boundaryName: string
+    ) => Observable<GeoJSON.GeoJSON>
   ) {
     if (map.instance != undefined) map.instance.remove();
 
@@ -95,31 +105,13 @@ export class MapManager {
     zoomControl.addTo(map.instance);
 
     // Init layers, but only add them to the map instance if specified in the map config.
-    huc12BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
-      if (boundary) {
-        this.initHuc12BoundaryLayer(map, boundary);
-      }
-    });
-    huc10BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
-      if (boundary != null) {
-        this.initHUC10BoundaryLayer(map, boundary);
-      }
-    });
-    countyBoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
-      if (boundary) {
-        this.initCountyBoundaryLayer(map, boundary);
-      }
-    });
-    usForestBoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
-      if (boundary != null) {
-        this.initUSForestBoundaryLayer(map, boundary);
-      }
-    });
+    this.toggleBoundaryLayer(map, getBoundaryLayerGeoJsonCallback);
     existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
       if (projects) {
         this.initCalMapperLayer(map, projects, createDetailCardCallback);
       }
     });
+    this.changeConditionsLayer(map);
 
     // Each map has its own cloned drawing layer because the same layer object cannot
     // be added to multiple maps at the same time. Note this.drawingLayer is only added
@@ -176,56 +168,6 @@ export class MapManager {
     if (map.config.showExistingProjectsLayer) {
       map.instance?.addLayer(map.existingProjectsLayerRef);
     }
-  }
-
-  /** Renders the HUC-12 boundaries in an optional layer. */
-  private initHuc12BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.huc12BoundaryLayerRef = this.boundaryLayer(boundary);
-
-    if (map.config.showHuc12BoundaryLayer) {
-      map.instance?.addLayer(map.huc12BoundaryLayerRef);
-    }
-  }
-
-  private initHUC10BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.huc10BoundaryLayerRef = this.boundaryLayer(boundary);
-
-    if (map.config.showHuc10BoundaryLayer) {
-      map.instance?.addLayer(map.huc10BoundaryLayerRef);
-    }
-  }
-
-  /** Renders the county boundaries in an optional layer. */
-  private initCountyBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.countyBoundaryLayerRef = this.boundaryLayer(boundary);
-
-    if (map.config.showCountyBoundaryLayer) {
-      map.instance?.addLayer(map.countyBoundaryLayerRef);
-    }
-  }
-
-  private initUSForestBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.usForestBoundaryLayerRef = this.boundaryLayer(boundary);
-
-    if (map.config.showUsForestBoundaryLayer) {
-      map.instance?.addLayer(map.usForestBoundaryLayerRef);
-    }
-  }
-
-  private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
-    return L.geoJSON(boundary, {
-      style: (_) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
   }
 
   /**
@@ -394,48 +336,53 @@ export class MapManager {
     map.instance?.addLayer(map.baseLayerRef!);
   }
 
-  /** Toggles whether HUC-12 boundaries are shown. */
-  toggleHuc12BoundariesLayer(map: Map) {
+  /** Toggles which boundary layer is shown. */
+  toggleBoundaryLayer(
+    map: Map,
+    getBoundaryLayerGeoJsonCallback: (
+      boundaryName: string
+    ) => Observable<GeoJSON.GeoJSON>
+  ) {
     if (map.instance === undefined) return;
 
-    if (map.config.showHuc12BoundaryLayer) {
-      map.huc12BoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.huc12BoundaryLayerRef?.remove();
+    map.boundaryLayerRef?.remove();
+
+    const boundaryLayerName = map.config.boundaryLayerConfig.boundary_name;
+
+    if (boundaryLayerName !== '') {
+      if (this.boundaryGeoJsonCache.has(boundaryLayerName)) {
+        map.boundaryLayerRef = this.boundaryLayer(
+          this.boundaryGeoJsonCache.get(boundaryLayerName)!
+        );
+        map.boundaryLayerRef.addTo(map.instance);
+      } else {
+        this.startLoadingLayerCallback(boundaryLayerName);
+        getBoundaryLayerGeoJsonCallback(boundaryLayerName)
+          .pipe(take(1))
+          .subscribe((geojson) => {
+            this.doneLoadingLayerCallback(boundaryLayerName);
+            this.boundaryGeoJsonCache.set(boundaryLayerName, geojson);
+            map.boundaryLayerRef = this.boundaryLayer(geojson);
+            map.boundaryLayerRef.addTo(map.instance!);
+          });
+      }
     }
   }
 
-  /** Toggles whether HUC-10 boundaries are shown. */
-  toggleHUC10BoundariesLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showHuc10BoundaryLayer) {
-      map.huc10BoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.huc10BoundaryLayerRef?.remove();
-    }
-  }
-
-  /** Toggles whether county boundaries are shown. */
-  toggleCountyBoundariesLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showCountyBoundaryLayer) {
-      map.countyBoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.countyBoundaryLayerRef?.remove();
-    }
-  }
-
-  /** Toggles whether US Forest boundaries are shown. */
-  toggleUSForestsBoundariesLayer(map: Map) {
-    if (map.instance == undefined) return;
-
-    if (map.config.showUsForestBoundaryLayer) {
-      map.usForestBoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.usForestBoundaryLayerRef?.remove();
-    }
+  private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
+    return L.geoJSON(boundary, {
+      style: (_) => ({
+        weight: 3,
+        opacity: 0.5,
+        color: '#0000ff',
+        fillOpacity: 0.2,
+        fillColor: '#6DB65B',
+      }),
+      onEachFeature: (feature, layer) =>
+        layer.bindTooltip(
+          this.popupService.makeDetailsPopup(feature.properties.shape_name)
+        ),
+    });
   }
 
   /** Toggles whether existing projects from CalMapper are shown. */
