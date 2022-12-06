@@ -1,6 +1,6 @@
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -47,10 +47,6 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
     CommonModule,
     FormsModule,
     HttpClientModule,
-    HttpClientXsrfModule.withOptions({
-      cookieName: 'csrftoken',
-      headerName: 'X-CSRFTOKEN'
-      }),
     LayoutModule,
     MaterialModule,
     SharedModule,

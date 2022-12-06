@@ -155,11 +155,6 @@ CORS_ALLOWED_HOSTS = [
     "http://localhost:4200",
 ]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = [
-  "http://localhost:4200",
-]
 
 # REST Framework settings
 
