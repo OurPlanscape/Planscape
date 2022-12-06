@@ -24,7 +24,7 @@ describe('StringifyMapConfigPipe', () => {
         baseLayerType: BaseLayerType.Road,
         boundaryLayerConfig: {
           display_name: 'HUC-12',
-          boundary_name: 'huc12'
+          boundary_name: 'huc12',
         },
         dataLayerConfig: {
           display_name: 'Habitat Connectivity',
