@@ -22,12 +22,44 @@ import { BaseLayerType, Map } from '../types';
 export class MapManager {
   maps: Map[];
   popupService: PopupService;
-
   drawingLayer = new L.FeatureGroup();
+
+  private drawControl: L.Control.Draw;
 
   constructor(maps: Map[], popupService: PopupService) {
     this.maps = maps;
     this.popupService = popupService;
+    this.drawControl = this.initDrawControl();
+  }
+
+  initDrawControl() {
+    const drawOptions: L.Control.DrawConstructorOptions = {
+      position: 'bottomright',
+      draw: {
+        polygon: {
+          allowIntersection: false,
+          showArea: true,
+          metric: false, // Set measurement units to acres
+          shapeOptions: {
+            color: '#7b61ff',
+          },
+          drawError: {
+            color: '#ff7b61',
+            message: "Can't draw polygons with intersections!",
+          },
+        }, // Set to false to disable each tool
+        polyline: false,
+        circle: false,
+        rectangle: false,
+        marker: false,
+        circlemarker: false,
+      },
+      edit: {
+        featureGroup: this.drawingLayer, // Required and declares which layer is editable
+      },
+    };
+
+    return new L.Control.Draw(drawOptions);
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -212,42 +244,20 @@ export class MapManager {
     }).addTo(map);
   }
 
-  /** Adds drawing controls and handles drawing events. */
-  addDrawingControls(
+  /** Removes drawing control and layer from the map. */
+  removeDrawing(map: L.Map) {
+    map.removeControl(this.drawControl);
+    map.removeLayer(this.drawingLayer);
+  }
+
+  /** Adds drawing control, drawing layer, and handles drawing events. */
+  addDrawing(
     map: L.Map,
     onDrawCreatedCallback: () => void,
     onDrawDeletedCallback: () => void
   ) {
     map.addLayer(this.drawingLayer);
-
-    const drawOptions: L.Control.DrawConstructorOptions = {
-      position: 'bottomright',
-      draw: {
-        polygon: {
-          allowIntersection: false,
-          showArea: true,
-          metric: false, // Set measurement units to acres
-          shapeOptions: {
-            color: '#7b61ff',
-          },
-          drawError: {
-            color: '#ff7b61',
-            message: "Can't draw polygons with intersections!",
-          },
-        }, // Set to false to disable each tool
-        polyline: false,
-        circle: false,
-        rectangle: false,
-        marker: false,
-        circlemarker: false,
-      },
-      edit: {
-        featureGroup: this.drawingLayer, // Required and declares which layer is editable
-      },
-    };
-
-    const drawControl = new L.Control.Draw(drawOptions);
-    map.addControl(drawControl);
+    map.addControl(this.drawControl);
 
     this.setUpDrawingHandlers(
       map,
