@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CookieService } from 'ngx-cookie-service';
+import { NgxGoogleAnalyticsModule, NgxGoogleAnalyticsRouterModule } from 'ngx-google-analytics';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { AccountDialogComponent } from './account-dialog/account-dialog.component';
@@ -49,6 +50,8 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
     HttpClientModule,
     LayoutModule,
     MaterialModule,
+    NgxGoogleAnalyticsModule,
+    NgxGoogleAnalyticsRouterModule,
     SharedModule,
     ReactiveFormsModule,
   ],
