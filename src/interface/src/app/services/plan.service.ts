@@ -1,30 +1,14 @@
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import {
-  BehaviorSubject,
-  catchError,
-  map,
-  Observable,
-  of,
-  take,
-  tap,
-} from 'rxjs';
+import { BehaviorSubject, catchError, map, Observable, of, take, tap } from 'rxjs';
 
-import { BasePlan, Plan, Region } from '../types';
+import { BasePlan, Plan } from '../types';
 
 export interface PlanState {
   all: {
     [planId: string]: Plan;
   };
   currentPlanId: Plan['id'] | null;
-}
-
-export interface BackendPlan {
-  id?: number;
-  name: string;
-  owner?: number;
-  region: Region;
-  geometry: GeoJSON.GeoJSON;
 }
 
 @Injectable({
@@ -38,13 +22,13 @@ export class PlanService {
   });
   tempPlanId = 0;
 
-  constructor(private http: HttpClient) {}
+  constructor() {}
 
   /** Makes a request to the backend to create a plan and updates state. */
-  createPlan(
-    basePlan: BasePlan
-  ): Observable<{ success: boolean; result?: Plan }> {
-    return of(this.createPlanApi(basePlan)).pipe(
+  createPlan(basePlan: BasePlan): Observable<{ success: boolean; result?: Plan }> {
+    const createPlanRequest = this.convertToDbPlan(basePlan);
+    // TODO: Update when actual endpoint is known
+    return of(this.createPlanMockApi(createPlanRequest)).pipe(
       take(1),
       map((createdPlan) => {
         // Call convertToPlan here
@@ -64,13 +48,9 @@ export class PlanService {
     );
   }
 
-  private convertToDbPlan(plan: BasePlan): BackendPlan {
-    return {
-      owner: Number(plan.ownerId),
-      name: plan.name,
-      region: plan.region,
-      geometry: plan.planningArea,
-    };
+  private convertToDbPlan(plan: BasePlan) {
+    // TODO: Implement when backend contract is known
+    return plan;
   }
 
   private convertToPlan() {
@@ -91,20 +71,12 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-  private createPlanApi(plan: BasePlan): Plan {
-    const createPlanRequest = this.convertToDbPlan(plan);
+  /** Temporary stub for the api. */
+  private createPlanMockApi(plan: BasePlan): Plan {
     this.tempPlanId = ++this.tempPlanId;
-    var planId:number = this.tempPlanId;
-    this.http
-      .post('/plan/create/', createPlanRequest, { withCredentials: true })
-      .subscribe((result) => {
-        console.log(result);
-        planId = Number(result.toString());
-      });
-
     return {
       ...plan,
-      id: String(planId),
+      id: this.tempPlanId.toString(),
     };
   }
 }
