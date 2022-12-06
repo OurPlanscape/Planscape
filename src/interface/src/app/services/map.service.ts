@@ -62,16 +62,17 @@ export class MapService {
     );
   }
 
+  /* Note: these are the names used by the configurations and backend */
   regionToString(region: Region): string {
     switch (region) {
       case Region.SIERRA_NEVADA:
-        return 'SierraNevada';
+        return 'sierra_cascade_inyo';
       case Region.CENTRAL_COAST:
-        return 'CentralCoast';
+        return 'central_coast';
       case Region.NORTHERN_CALIFORNIA:
-        return 'NorthernCalifornia';
+        return 'north_coast_inland';
       case Region.SOUTHERN_CALIFORNIA:
-        return 'SouthernCalifornia';
+        return 'southern_california';
     }
   }
 
