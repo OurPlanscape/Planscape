@@ -1,18 +1,22 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import {
+  HttpClientTestingModule,
+  HttpTestingController,
+} from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
-import { Region } from '../types';
-import { ConditionsConfig } from '../types/data.types';
+import { BoundaryConfig, ConditionsConfig, Region } from '../types';
 
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
   let service: MapService;
   let fakeGeoJson: GeoJSON.GeoJSON;
 
+  const boundaryConfigs: BoundaryConfig[] = [];
+
   const conditionsConfig: ConditionsConfig = {
-    pillars: []
+    pillars: [],
   };
 
   beforeEach(() => {
@@ -22,46 +26,39 @@ describe('MapService', () => {
     };
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [MapService]
+      providers: [MapService],
     });
     service = TestBed.inject(MapService);
     httpTestingController = TestBed.inject(HttpTestingController);
 
-    // Must flush the request in the constructor for httpTestingController.verify()
+    // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
-    const req = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/conditions/config/?region_name=sierra_cascade_inyo'
+    const req1 = httpTestingController.expectOne(
+      BackendConstants.END_POINT + '/boundary/boundary'
     );
-    req.flush(conditionsConfig);
+    req1.flush(conditionsConfig);
+    const req2 = httpTestingController.expectOne(
+      BackendConstants.END_POINT +
+        '/conditions/config/?region_name=sierra_cascade_inyo'
+    );
+    req2.flush(conditionsConfig);
   });
 
   it('can load instance', () => {
     expect(service).toBeTruthy();
   });
 
-  describe('getHUC12BoundaryShapes', () => {
+  describe('getBoundaryShapes', () => {
     it('makes request to backend', () => {
-      service.getHuc12BoundaryShapes(Region.SIERRA_NEVADA).subscribe(res => {
-        expect(res).toEqual(fakeGeoJson);
-      });
+      service
+        .getBoundaryShapes('huc12', Region.SIERRA_NEVADA)
+        .subscribe((res) => {
+          expect(res).toEqual(fakeGeoJson);
+        });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=huc12&region_name=SierraNevada'
-      );
-      expect(req.request.method).toEqual('GET');
-      req.flush(fakeGeoJson);
-      httpTestingController.verify();
-    });
-  });
-
-  describe('getCountyBoundaryShapes', () => {
-    it('makes request to backend', () => {
-      service.getCountyBoundaryShapes(Region.NORTHERN_CALIFORNIA).subscribe(res => {
-        expect(res).toEqual(fakeGeoJson);
-      });
-
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/boundary/boundary_details/?boundary_name=counties&region_name=NorthernCalifornia'
+        BackendConstants.END_POINT +
+          '/boundary/boundary_details/?boundary_name=huc12&region_name=SierraNevada'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);
@@ -73,7 +70,7 @@ describe('MapService', () => {
     it('makes request to endpoint', () => {
       const fakeGeoJsonText: string = JSON.stringify(fakeGeoJson);
 
-      service.getExistingProjects().subscribe(res => {
+      service.getExistingProjects().subscribe((res) => {
         expect(res).toEqual(fakeGeoJson);
       });
 
@@ -88,7 +85,7 @@ describe('MapService', () => {
 
   describe('getRegionBoundary', () => {
     it('uses the correct path to the corresponding geoJSON file', () => {
-      service.getRegionBoundary(Region.SIERRA_NEVADA).subscribe(res => {
+      service.getRegionBoundary(Region.SIERRA_NEVADA).subscribe((res) => {
         expect(res).toEqual(fakeGeoJson);
       });
 

@@ -1,6 +1,6 @@
 import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { MapConfig, MapViewOptions, Region } from '../types';
+import { defaultMapConfig, MapConfig, MapViewOptions, Region } from '../types';
 
 /** How often the user's session should be saved to local storage (in ms). */
 const SESSION_SAVE_INTERVAL = 60000;
@@ -25,7 +25,7 @@ export class SessionService {
 
   constructor() {
     const storedMapConfigs = localStorage.getItem('mapConfigs');
-    if (storedMapConfigs) {
+    if (storedMapConfigs && this.validateSavedMapConfigs(storedMapConfigs)) {
       this.mapConfigs$.next(JSON.parse(storedMapConfigs));
     }
     const storedMapViewOptions = localStorage.getItem('mapViewOptions');
@@ -53,5 +53,17 @@ export class SessionService {
       localStorage.setItem('region', value);
       this.region$.next(value);
     }
+  }
+
+  /** Validates the map configs loaded from local storage to ensure all required fields
+   *  are present. */
+  private validateSavedMapConfigs(data: string): boolean {
+    const configs: any[] = JSON.parse(data);
+    return configs.every(val => this.instanceOfMapConfig(val));
+  }
+
+  private instanceOfMapConfig(data: any): boolean {
+    const mapConfigExample: MapConfig = defaultMapConfig();
+    return Object.keys(data).sort().join(',') === Object.keys(mapConfigExample).sort().join(',');
   }
 }

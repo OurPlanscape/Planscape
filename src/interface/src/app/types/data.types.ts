@@ -1,3 +1,8 @@
+export interface BoundaryConfig {
+  display_name?: string;
+  boundary_name: string;
+}
+
 export interface ConditionsConfig {
   display_name?: string;
   filepath?: string;
