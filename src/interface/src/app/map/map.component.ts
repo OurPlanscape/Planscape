@@ -348,7 +348,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
-      this.mapManager.enablePolygonDrawingTool(this.maps[0].instance!);
+      this.mapManager.enablePolygonDrawingTool(this.maps[this.mapViewOptions.selectedMapIndex].instance!);
     }
   }
 
