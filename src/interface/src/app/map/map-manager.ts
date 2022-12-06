@@ -80,6 +80,7 @@ export class MapManager {
         this.initCalMapperLayer(map, projects, createDetailCardCallback);
       }
     });
+    this.changeConditionsLayer(map);
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
