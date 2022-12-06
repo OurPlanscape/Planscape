@@ -22,6 +22,7 @@ import { BaseLayerType, Map } from '../types';
 export class MapManager {
   maps: Map[];
   popupService: PopupService;
+  polygonsCreated$ = new BehaviorSubject<boolean>(false);
   private drawingLayer = new L.FeatureGroup();
   private drawControl: L.Control.Draw;
 
@@ -70,9 +71,7 @@ export class MapManager {
     countyBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
     usForestBoundaryGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any,
-    onDrawCreatedCallback: () => void,
-    onDrawDeletedCallback: () => void,
+    createDetailCardCallback: (feature: Feature<Geometry, any>) => any
   ) {
     if (map.instance != undefined) map.instance.remove();
 
@@ -124,11 +123,7 @@ export class MapManager {
 
     map.clonedDrawingRef = new L.FeatureGroup();
     map.drawnPolygonLookup = {};
-    this.setUpDrawingHandlers(
-      map.instance!,
-      onDrawCreatedCallback,
-      onDrawDeletedCallback
-    );
+    this.setUpDrawingHandlers(map.instance!);
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -275,11 +270,7 @@ export class MapManager {
     map.addControl(this.drawControl);
   }
 
-  private setUpDrawingHandlers(
-    map: L.Map,
-    onDrawCreatedCallback: () => void,
-    onDrawDeletedCallback: () => void
-  ) {
+  private setUpDrawingHandlers(map: L.Map) {
     map.on(L.Draw.Event.CREATED, (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
@@ -296,7 +287,7 @@ export class MapManager {
           currMap.drawnPolygonLookup![originalId] = clonedLayer;
       });
 
-      onDrawCreatedCallback();
+      this.polygonsCreated$.next(true);
     });
 
     map.on(L.Draw.Event.DELETED, (event) => {
@@ -313,7 +304,7 @@ export class MapManager {
 
       // When there are no more polygons
       if (this.drawingLayer.getLayers().length <= 0) {
-        onDrawDeletedCallback();
+        this.polygonsCreated$.next(false);
       }
     });
 

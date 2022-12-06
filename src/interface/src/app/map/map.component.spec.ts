@@ -522,7 +522,7 @@ describe('MapComponent', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
-      fixture.componentInstance.showCreatePlanButton = true;
+      fixture.componentInstance.showCreatePlanButton$ = new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.create-plan-button',
