@@ -1,3 +1,4 @@
+import { NestedTreeControl } from '@angular/cdk/tree';
 import {
   AfterViewInit,
   ApplicationRef,
@@ -8,8 +9,9 @@ import {
   OnInit,
 } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 
 import {
   MapService,
@@ -22,10 +24,13 @@ import {
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
+  DataLayerConfig,
   defaultMapConfig,
   Map,
   MapConfig,
   MapViewOptions,
+  NONE_BOUNDARY_CONFIG,
+  NONE_DATA_LAYER_CONFIG,
   Region,
 } from '../types';
 import { Legend } from './../shared/legend/legend.component';
@@ -37,6 +42,10 @@ export interface PlanCreationOption {
   value: string;
   display: string;
   icon: any;
+}
+
+interface ConditionsNode extends DataLayerConfig {
+  children?: ConditionsNode[];
 }
 
 @Component({
@@ -58,13 +67,18 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
 
-  baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
-  BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
+
+  readonly baseLayerTypes: number[] = [
+    BaseLayerType.Road,
+    BaseLayerType.Terrain,
+  ];
+  readonly BaseLayerType: typeof BaseLayerType = BaseLayerType;
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
   loadingIndicators: { [layerName: string]: boolean } = {
-    'existing_projects': true
+    existing_projects: true,
   };
 
   legend: Legend = {
@@ -95,6 +109,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
   showCreatePlanButton$ = new BehaviorSubject(false);
+
+  conditionTreeControl = new NestedTreeControl<ConditionsNode>(
+    (node) => node.children
+  );
+  conditionDataSource = new MatTreeNestedDataSource<ConditionsNode>();
 
   private readonly destroy$ = new Subject<void>();
 
@@ -144,7 +163,16 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this)
     );
-    this.mapManager.polygonsCreated$.pipe(takeUntil(this.destroy$)).subscribe(this.showCreatePlanButton$);
+    this.mapManager.polygonsCreated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(this.showCreatePlanButton$);
+
+    this.conditionDataSource.data = [NONE_DATA_LAYER_CONFIG];
+    this.conditionsConfig$
+      .pipe(filter((config) => !!config))
+      .subscribe((config) => {
+        this.conditionDataSource.data = this.conditionsConfigToData(config!);
+      });
   }
 
   ngOnInit(): void {
@@ -166,9 +194,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
       // Only add drawing controls to the selected map
       if (selectedMapIndex === this.maps.indexOf(map)) {
-        this.mapManager.addDrawingControl(this.maps[selectedMapIndex].instance!);
-      }
-      else { // Show a copy of the drawing layer on the other maps
+        this.mapManager.addDrawingControl(
+          this.maps[selectedMapIndex].instance!
+        );
+      } else {
+        // Show a copy of the drawing layer on the other maps
         this.mapManager.showClonedDrawing(map);
       }
     });
@@ -199,6 +229,21 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
             this.maps[index].config = mapConfig;
           });
         }
+        this.boundaryConfig$
+          .pipe(filter((config) => !!config))
+          .subscribe((config) => {
+            // Ensure the radio button corresponding to the saved selection is selected.
+            this.maps.forEach((map) => {
+              const boundaryConfig = config?.find(
+                (boundary) =>
+                  boundary.boundary_name ===
+                  map.config.boundaryLayerConfig.boundary_name
+              );
+              if (!!boundaryConfig) {
+                map.config.boundaryLayerConfig = boundaryConfig;
+              }
+            });
+          });
       });
   }
 
@@ -230,10 +275,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       const previousMapIndex = this.mapViewOptions.selectedMapIndex;
       const currentMapIndex = this.maps.indexOf(map);
 
-    // Toggle the cloned layer on if the map is not the current selected map.
-    // Toggle on the drawing layer and control on the selected map.
+      // Toggle the cloned layer on if the map is not the current selected map.
+      // Toggle on the drawing layer and control on the selected map.
       if (previousMapIndex !== currentMapIndex) {
-        this.mapManager.removeDrawingControl(this.maps[previousMapIndex].instance!);
+        this.mapManager.removeDrawingControl(
+          this.maps[previousMapIndex].instance!
+        );
         this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
 
         this.mapViewOptions.selectedMapIndex = currentMapIndex;
@@ -302,7 +349,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
-      this.mapManager.enablePolygonDrawingTool(this.maps[this.mapViewOptions.selectedMapIndex].instance!);
+      this.mapManager.enablePolygonDrawingTool(
+        this.maps[this.mapViewOptions.selectedMapIndex].instance!
+      );
       this.changeMapCount(1);
     }
   }
@@ -393,5 +442,61 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         }
         return '0%';
     }
+  }
+
+  /** Used to compute whether a node in the condition layer tree has children. */
+  hasChild = (_: number, node: ConditionsNode) =>
+    !!node.children && node.children.length > 0;
+
+  private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
+    return [
+      NONE_DATA_LAYER_CONFIG,
+      {
+        ...config,
+        display_name: 'Current condition',
+        children: config.pillars
+          ?.filter((pillar) => pillar.display)
+          .map((pillar): ConditionsNode => {
+            return {
+              ...pillar,
+              children: pillar.elements?.map((element): ConditionsNode => {
+                return {
+                  ...element,
+                  children: element.metrics,
+                };
+              }),
+            };
+          }),
+      },
+      {
+        display_name: 'Current condition (normalized)',
+        filepath: config.filepath?.concat('_normalized'),
+        colormap: config.colormap,
+        normalized: true,
+        children: config.pillars
+          ?.filter((pillar) => pillar.display)
+          .map((pillar): ConditionsNode => {
+            return {
+              ...pillar,
+              filepath: pillar.filepath?.concat('_normalized'),
+              normalized: true,
+              children: pillar.elements?.map((element): ConditionsNode => {
+                return {
+                  ...element,
+                  filepath: element.filepath?.concat('_normalized'),
+                  normalized: true,
+                  children: element.metrics?.map((metric): ConditionsNode => {
+                    return {
+                      ...metric,
+                      filepath: metric.filepath?.concat('_normalized'),
+                      normalized: true,
+                    };
+                  }),
+                };
+              }),
+            };
+          }),
+      },
+    ];
   }
 }
