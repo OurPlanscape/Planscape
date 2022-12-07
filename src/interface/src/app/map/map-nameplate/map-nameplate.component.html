@@ -1,4 +1,4 @@
-<div class="map-nameplate" [ngClass]="{'selected': selected}">
+<div class="map-nameplate" [style.max-width]="widthInPx" [class.selected]="selected">
   <div class="map-name">{{ map?.name }}</div>
   <div class="map-config-string">{{ map?.config | stringifyMapConfig }}</div>
 </div>
