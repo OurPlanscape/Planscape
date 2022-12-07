@@ -1,6 +1,6 @@
 import { BaseLayerType } from './layer.types';
 import * as L from 'leaflet';
-import { MetricConfig } from './data.types';
+import { BoundaryConfig, MetricConfig } from './data.types';
 
 export interface Map {
   id: string;
@@ -8,24 +8,20 @@ export interface Map {
   config: MapConfig;
   instance?: L.Map | undefined;
   baseLayerRef?: L.Layer | undefined;
-  huc12BoundaryLayerRef?: L.Layer | undefined;
-  huc10BoundaryLayerRef?: L.Layer | undefined;
-  countyBoundaryLayerRef?: L.Layer | undefined;
-  usForestBoundaryLayerRef?: L.Layer | undefined;
+  boundaryLayerRef?: L.Layer | undefined;
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
+  clonedDrawingRef?: L.FeatureGroup | undefined;
+  drawnPolygonLookup?: {[key: string]:L.Layer};
 }
 
 export interface MapConfig {
   baseLayerType: BaseLayerType;
+  boundaryLayerConfig: BoundaryConfig;
   dataLayerConfig: MetricConfig;
   showDataLayer: boolean;
   normalizeDataLayer: boolean;
   showExistingProjectsLayer: boolean;
-  showHuc12BoundaryLayer: boolean;
-  showHuc10BoundaryLayer: boolean;
-  showCountyBoundaryLayer: boolean;
-  showUsForestBoundaryLayer: boolean;
 }
 
 
@@ -37,6 +33,9 @@ export interface MapViewOptions {
 export function defaultMapConfig(): MapConfig {
   return {
     baseLayerType: BaseLayerType.Road,
+    boundaryLayerConfig: {
+      boundary_name: '',
+    },
     dataLayerConfig: {
       metric_name: '',
       filepath: '',
@@ -44,9 +43,5 @@ export function defaultMapConfig(): MapConfig {
     showDataLayer: false,
     normalizeDataLayer: false,
     showExistingProjectsLayer: false,
-    showHuc12BoundaryLayer: false,
-    showHuc10BoundaryLayer: false,
-    showCountyBoundaryLayer: false,
-    showUsForestBoundaryLayer: false,
   };
 }

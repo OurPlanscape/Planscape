@@ -22,6 +22,10 @@ describe('StringifyMapConfigPipe', () => {
     it('should return formatted config string', () => {
       let mapConfig: MapConfig = {
         baseLayerType: BaseLayerType.Road,
+        boundaryLayerConfig: {
+          display_name: 'HUC-12',
+          boundary_name: 'huc12',
+        },
         dataLayerConfig: {
           display_name: 'Habitat Connectivity',
           metric_name: '',
@@ -30,12 +34,9 @@ describe('StringifyMapConfigPipe', () => {
         showDataLayer: true,
         normalizeDataLayer: true,
         showExistingProjectsLayer: true,
-        showHuc12BoundaryLayer: true,
-        showHuc10BoundaryLayer: false,
-        showUsForestBoundaryLayer: false,
-        showCountyBoundaryLayer: false,
       };
-      let mapConfigStr = 'Habitat Connectivity (Normalized) | Existing Projects | HUC-12 Boundaries';
+      let mapConfigStr =
+        'Habitat Connectivity (Normalized) | Existing Projects | HUC-12';
 
       let transformedStr = pipe.transform(mapConfig);
 

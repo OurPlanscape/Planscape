@@ -20,6 +20,7 @@ import {
 } from '../services';
 import {
   BaseLayerType,
+  BoundaryConfig,
   ConditionsConfig,
   defaultMapConfig,
   Map,
@@ -37,6 +38,7 @@ export interface PlanCreationOption {
   display: string;
   icon: any;
 }
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
@@ -51,6 +53,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     numVisibleMaps: 2,
   };
 
+  boundaryConfig$: Observable<BoundaryConfig[] | null>;
   conditionsConfig$: Observable<ConditionsConfig | null>;
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
@@ -58,17 +61,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
   BaseLayerType: typeof BaseLayerType = BaseLayerType;
 
-  huc12BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-  huc10BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-  countyBoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-  usForestBoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
-  huc12BoundaryGeoJsonLoaded: boolean = false;
-  huc10BoundaryGeoJsonLoaded: boolean = false;
-  countyBoundaryGeoJsonLoaded: boolean = false;
-  usForestBoundaryGeoJsonLoaded: boolean = false;
-  existingProjectsGeoJsonLoaded: boolean = false;
+  loadingIndicators: { [layerName: string]: boolean } = {
+    'existing_projects': true
+  };
 
   legend: Legend = {
     labels: [
@@ -97,7 +94,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
   ];
   selectedPlanCreationOption: PlanCreationOption | null = null;
-  showCreatePlanButton: boolean = false;
+  showCreatePlanButton$ = new BehaviorSubject(false);
 
   private readonly destroy$ = new Subject<void>();
 
@@ -110,6 +107,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     private sessionService: SessionService,
     private planService: PlanService
   ) {
+    this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
+      takeUntil(this.destroy$)
+    );
     this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
       takeUntil(this.destroy$)
     );
@@ -120,64 +120,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       takeUntil(this.destroy$)
     );
 
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getHuc12BoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.huc12BoundaryGeoJson$.next(boundary);
-        this.huc12BoundaryGeoJsonLoaded = true;
-      });
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getHuc10BoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.huc10BoundaryGeoJson$.next(boundary);
-        this.huc10BoundaryGeoJsonLoaded = true;
-      });
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getCountyBoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.countyBoundaryGeoJson$.next(boundary);
-        this.countyBoundaryGeoJsonLoaded = true;
-      });
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getUsForestBoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.usForestBoundaryGeoJson$.next(boundary);
-        this.usForestBoundaryGeoJsonLoaded = true;
-      });
     this.mapService
       .getExistingProjects()
       .pipe(takeUntil(this.destroy$))
       .subscribe((projects: GeoJSON.GeoJSON) => {
         this.existingProjectsGeoJson$.next(projects);
-        this.existingProjectsGeoJsonLoaded = true;
+        this.loadingIndicators['existing_projects'] = false;
       });
 
     this.maps = ['map1', 'map2', 'map3', 'map4'].map(
@@ -190,7 +138,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       }
     );
 
-    this.mapManager = new MapManager(this.maps, popupService);
+    this.mapManager = new MapManager(
+      this.maps,
+      popupService,
+      this.startLoadingLayerCallback.bind(this),
+      this.doneLoadingLayerCallback.bind(this)
+    );
+    this.mapManager.polygonsCreated$.pipe(takeUntil(this.destroy$)).subscribe(this.showCreatePlanButton$);
   }
 
   ngOnInit(): void {
@@ -209,14 +163,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
+      const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
+      // Only add drawing controls to the selected map
+      if (selectedMapIndex === this.maps.indexOf(map)) {
+        this.mapManager.addDrawingControl(this.maps[selectedMapIndex].instance!);
+      }
+      else { // Show a copy of the drawing layer on the other maps
+        this.mapManager.showClonedDrawing(map);
+      }
     });
 
     this.mapManager.syncAllMaps();
-    this.mapManager.addDrawingControls(
-      this.maps[0].instance!,
-      this.onDrawCreatedCallback.bind(this),
-      this.onDrawDeletedCallback.bind(this)
-    );
   }
 
   ngOnDestroy(): void {
@@ -224,14 +181,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private onDrawCreatedCallback() {
-    this.showCreatePlanButton = true;
-  }
-
-  private onDrawDeletedCallback() {
-    this.showCreatePlanButton = false;
   }
 
   private restoreSession() {
@@ -258,10 +207,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.mapManager.initLeafletMap(
       map,
       id,
-      this.huc12BoundaryGeoJson$,
-      this.huc10BoundaryGeoJson$,
-      this.countyBoundaryGeoJson$,
-      this.usForestBoundaryGeoJson$,
       this.existingProjectsGeoJson$,
       (feature) => {
         let component = createComponent(ProjectCardComponent, {
@@ -270,7 +215,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         component.instance.feature = feature;
         this.applicationRef.attachView(component.hostView);
         return component.location.nativeElement;
-      }
+      },
+      this.getBoundaryLayerGeoJson.bind(this)
     );
 
     // Renders the selected region on the map.
@@ -278,11 +224,42 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.displayRegionBoundary(map, selectedRegion);
     });
 
-    // Mark the map as selected when the user clicks anywhere on it.
+    // Mark the map as selected when the user clicks anywhere on it
+    // and updates which map can be drawn on.
     map.instance?.addEventListener('click', () => {
-      this.mapViewOptions.selectedMapIndex = this.maps.indexOf(map);
-      this.sessionService.setMapViewOptions(this.mapViewOptions);
+      const previousMapIndex = this.mapViewOptions.selectedMapIndex;
+      const currentMapIndex = this.maps.indexOf(map);
+
+    // Toggle the cloned layer on if the map is not the current selected map.
+    // Toggle on the drawing layer and control on the selected map.
+      if (previousMapIndex !== currentMapIndex) {
+        this.mapManager.removeDrawingControl(this.maps[previousMapIndex].instance!);
+        this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
+
+        this.mapViewOptions.selectedMapIndex = currentMapIndex;
+        this.sessionService.setMapViewOptions(this.mapViewOptions);
+
+        this.mapManager.addDrawingControl(this.maps[currentMapIndex].instance!);
+        this.mapManager.hideClonedDrawing(this.maps[currentMapIndex]);
+      }
     });
+  }
+
+  private startLoadingLayerCallback(layerName: string) {
+    this.loadingIndicators[layerName] = true;
+  }
+  private doneLoadingLayerCallback(layerName: string) {
+    this.loadingIndicators[layerName] = false;
+  }
+
+  private getBoundaryLayerGeoJson(
+    boundaryName: string
+  ): Observable<GeoJSON.GeoJSON> {
+    return this.selectedRegion$.pipe(
+      switchMap((region) =>
+        this.mapService.getBoundaryShapes(boundaryName, region)
+      )
+    );
   }
 
   /** Configures and opens the Create Plan dialog */
@@ -325,7 +302,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
    */
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
-      this.mapManager.enablePolygonDrawingTool(this.maps[0].instance!);
+      this.mapManager.enablePolygonDrawingTool(this.maps[this.mapViewOptions.selectedMapIndex].instance!);
+      this.changeMapCount(1);
     }
   }
 
@@ -345,24 +323,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.mapManager.changeBaseLayer(map);
   }
 
-  /** Toggles whether HUC-12 boundaries are shown. */
-  toggleHuc12BoundariesLayer(map: Map) {
-    this.mapManager.toggleHuc12BoundariesLayer(map);
-  }
-
-  /** Toggles whether HUC-10 boundaries are shown. */
-  toggleHUC10BoundariesLayer(map: Map) {
-    this.mapManager.toggleHUC10BoundariesLayer(map);
-  }
-
-  /** Toggles whether county boundaries are shown. */
-  toggleCountyBoundariesLayer(map: Map) {
-    this.mapManager.toggleCountyBoundariesLayer(map);
-  }
-
-  /** Toggles whether US Forest boundaries are shown. */
-  toggleUSForestsBoundariesLayer(map: Map) {
-    this.mapManager.toggleUSForestsBoundariesLayer(map);
+  /** Toggles which boundary layer is shown. */
+  toggleBoundaryLayer(map: Map) {
+    this.mapManager.toggleBoundaryLayer(
+      map,
+      this.getBoundaryLayerGeoJson.bind(this)
+    );
   }
 
   /** Toggles whether existing projects from CalMapper are shown. */
@@ -375,7 +341,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.mapManager.changeConditionsLayer(map);
   }
 
-  /* Change how many maps are displayed in the viewport. */
+  /** Change how many maps are displayed in the viewport. */
   changeMapCount(mapCount: number) {
     this.mapViewOptions.numVisibleMaps = mapCount;
     setTimeout(() => {
@@ -383,7 +349,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     }, 0);
   }
 
-  /** Whether the map at given index should be visible.
+  /**
+   * Whether the map at given index should be visible.
    *
    *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
    */
