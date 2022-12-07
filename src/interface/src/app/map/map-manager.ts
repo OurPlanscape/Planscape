@@ -24,7 +24,7 @@ export class MapManager {
   popupService: PopupService;
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
-  private drawingLayer = new L.FeatureGroup();
+  drawingLayer = new L.FeatureGroup();
   private drawControl: L.Control.Draw;
 
   startLoadingLayerCallback: (layerName: string) => void;
