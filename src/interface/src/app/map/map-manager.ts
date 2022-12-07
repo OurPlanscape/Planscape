@@ -404,9 +404,6 @@ export class MapManager {
 
     let filepath = map.config.dataLayerConfig.filepath;
     if (filepath?.length === 0 || !filepath) return;
-    if (map.config.normalizeDataLayer) {
-      filepath = filepath.concat('_normalized');
-    }
     filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
 
     let colormap = map.config.dataLayerConfig.colormap;
@@ -427,8 +424,6 @@ export class MapManager {
       }
     );
 
-    if (map.config.showDataLayer) {
-      map.dataLayerRef.addTo(map.instance);
-    }
+    map.dataLayerRef.addTo(map.instance);
   }
 }

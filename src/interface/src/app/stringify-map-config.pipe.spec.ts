@@ -28,11 +28,9 @@ describe('StringifyMapConfigPipe', () => {
         },
         dataLayerConfig: {
           display_name: 'Habitat Connectivity',
-          metric_name: '',
-          filepath: '',
+          filepath: 'habitat_connectivity',
+          normalized: true,
         },
-        showDataLayer: true,
-        normalizeDataLayer: true,
         showExistingProjectsLayer: true,
       };
       let mapConfigStr =

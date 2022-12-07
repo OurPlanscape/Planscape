@@ -39,69 +39,141 @@
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="mapViewOptions.selectedMapIndex"
         class="layer-controls-tab-group">
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="!isMapVisible(i)">
-          <h3>Base layer</h3>
-          <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
-            class="layer-radio-group" [(ngModel)]="map.config.baseLayerType" (change)="changeBaseLayer(map)">
-            <mat-radio-button *ngFor="let baseLayerType of baseLayerTypes" [value]="baseLayerType"
-              checked="{{ baseLayerType == map.config.baseLayerType }}" class="layer-radio-button">
-              {{ BaseLayerType[baseLayerType] }}
-            </mat-radio-button>
-          </mat-radio-group>
+          <mat-accordion multi displayMode="flat">
 
-          <h3>Boundaries</h3>
-          <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
-            class="layer-radio-group"
-            [(ngModel)]="map.config.boundaryLayerConfig" (change)="toggleBoundaryLayer(map)">
-            <div *ngFor="let boundary of (boundaryConfig$ | async)" class="layer-control-container">
-              <mat-radio-button class="layer-radio-button" [value]="boundary">
-                {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
-              </mat-radio-button>
-              <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]"></mat-spinner>
-            </div>
-          </mat-radio-group>
+            <mat-expansion-panel expanded="true">
+              <mat-expansion-panel-header>
+                Basemaps
+              </mat-expansion-panel-header>
+              <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
+                class="layer-radio-group" [(ngModel)]="map.config.baseLayerType" (change)="changeBaseLayer(map)">
+                <mat-radio-button *ngFor="let baseLayerType of baseLayerTypes" [value]="baseLayerType"
+                  checked="{{ baseLayerType == map.config.baseLayerType }}" class="layer-radio-button">
+                  {{ BaseLayerType[baseLayerType] }}
+                </mat-radio-button>
+              </mat-radio-group>
+            </mat-expansion-panel>
 
-          <h3>Projects</h3>
-          <div class="layer-control-container">
-            <mat-checkbox name="{{ map.id + '-existing-projects-toggle' }}" aria-label="Select or deselect"
-              class="layer-checkbox" [(ngModel)]="map.config.showExistingProjectsLayer"
-              (change)="toggleExistingProjectsLayer(map)">
-              Existing projects
-            </mat-checkbox>
-            <mat-spinner [diameter]="24" *ngIf="!loadingIndicators['existing_projects']"></mat-spinner>
-          </div>
-
-          <h3>Conditions</h3>
-          <mat-checkbox name="{{ map.id + '-conditions-toggle' }}" aria-label="Select or deselect"
-            class="layer-checkbox" [(ngModel)]="map.config.showDataLayer"
-            (change)="changeConditionsLayer(map)">
-            Show conditions
-          </mat-checkbox>
-
-          <mat-checkbox name="{{ map.id + '-normalized-conditions-toggle' }}"
-            aria-label="Select or deselect" class="layer-checkbox"
-            *ngIf="map.config.showDataLayer" [(ngModel)]="map.config.normalizeDataLayer"
-            (change)="changeConditionsLayer(map)">
-            Normalize conditions data
-          </mat-checkbox>
-
-          <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
-            class="layer-radio-group" *ngIf="map.config.showDataLayer"
-            [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
-            <div *ngFor="let pillar of (conditionsConfig$ | async)?.pillars">
-              <div *ngIf="pillar.display">
-                <h4>{{ pillar.display_name }}</h4>
-                <div *ngFor="let element of pillar.elements">
-                  <h5>{{ element.display_name }}</h5>
-                  <div *ngFor="let metric of element.metrics">
-                    <mat-radio-button class="layer-radio-button" [value]="metric">
-                      {{ metric.display_name ? metric.display_name : metric.metric_name }}
-                    </mat-radio-button>
-                  </div>
+            <mat-expansion-panel expanded="true">
+              <mat-expansion-panel-header>
+                Boundaries
+              </mat-expansion-panel-header>
+              <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
+                class="layer-radio-group"
+                [(ngModel)]="map.config.boundaryLayerConfig" (change)="toggleBoundaryLayer(map)">
+                <div class="layer-control-container">
+                  <mat-radio-button class="layer-radio-button" [value]="noneBoundaryConfig">
+                    None
+                  </mat-radio-button>
                 </div>
-              </div>
-            </div>
-          </mat-radio-group>
+                <div *ngFor="let boundary of (boundaryConfig$ | async)" class="layer-control-container">
+                  <mat-radio-button class="layer-radio-button" [value]="boundary">
+                    {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
+                  </mat-radio-button>
+                  <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]"></mat-spinner>
+                </div>
+              </mat-radio-group>
+            </mat-expansion-panel>
 
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Land types
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Operability
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel expanded="false">
+              <mat-expansion-panel-header>
+                Recent treatment areas
+              </mat-expansion-panel-header>
+              <div class="layer-control-container">
+                <mat-checkbox name="{{ map.id + '-existing-projects-toggle' }}" aria-label="Select or deselect"
+                  class="layer-checkbox" [(ngModel)]="map.config.showExistingProjectsLayer"
+                  (change)="toggleExistingProjectsLayer(map)">
+                  Existing projects
+                </mat-checkbox>
+                <mat-spinner [diameter]="24" *ngIf="!loadingIndicators['existing_projects']"></mat-spinner>
+              </div>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Disturbances
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  HVRAs
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <mat-expansion-panel expanded="false">
+              <mat-expansion-panel-header>
+                Ecosystem scores
+              </mat-expansion-panel-header>
+
+              <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
+              [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionsLayer(map)">
+                <mat-tree [dataSource]="conditionDataSource" [treeControl]="conditionTreeControl" class="condition-tree">
+                  <!-- This is the tree node template for leaf nodes -->
+                  <!-- There is inline padding applied to this node using styles.
+                    This padding value depends on the mat-icon-button width. -->
+                  <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+                    <mat-radio-button [value]="node">
+                      {{node.display_name}}
+                    </mat-radio-button>
+                  </mat-tree-node>
+                  <!-- This is the tree node template for expandable nodes -->
+                  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+                      <div class="mat-tree-node">
+                        <mat-radio-button [value]="node">
+                          {{node.display_name}}
+                        </mat-radio-button>
+                        <button mat-icon-button matTreeNodeToggle
+                                [attr.aria-label]="'Toggle ' + node.display_name">
+                          <mat-icon class="mat-icon-rtl-mirror">
+                            {{conditionTreeControl.isExpanded(node) ? 'expand_less' : 'expand_more'}}
+                          </mat-icon>
+                        </button>
+                      </div>
+                      <!-- There is inline padding applied to this div using styles.
+                          This padding value depends on the mat-icon-button width.  -->
+                      <div [class.condition-tree-invisible]="!conditionTreeControl.isExpanded(node)"
+                          role="group">
+                        <ng-container matTreeNodeOutlet></ng-container>
+                    </div>
+                  </mat-nested-tree-node>
+                </mat-tree>
+              </mat-radio-group>
+            </mat-expansion-panel>
+
+          </mat-accordion>
         </mat-tab>
       </mat-tab-group>
   </div>
