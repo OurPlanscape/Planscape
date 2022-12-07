@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "conditions" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "conditions" ]
+    branches: [ "main" ]
 
 jobs:
   build:
