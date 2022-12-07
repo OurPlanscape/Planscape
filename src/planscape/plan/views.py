@@ -4,6 +4,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.views.decorators.csrf import requires_csrf_token
 from plan.models import Plan
+from base.region_name import RegionName
 
 
 @requires_csrf_token
@@ -22,6 +23,11 @@ def create(request: HttpRequest) -> HttpResponse:
         if name is None:
             raise ValueError("Must specify name")
 
+        # Get the region name
+        region_name = body.get('region_name', None)
+        if region_name is None:
+            region_name = str(RegionName.SIERRA_CASCADE_INYO)
+
         # Get the geometry of the plan and convert to a MultiPolygon
         geometry = body.get('geometry', None)
         if geometry is None:
@@ -39,9 +45,8 @@ def create(request: HttpRequest) -> HttpResponse:
             raise ValueError("Could not parse geometry")
 
         # Create the plan
-        # TODO(https://github.com/OurPlanscape/Planscape/issues/183) Fix region_name parameter 
         plan = Plan.objects.create(
-            owner=owner, name=name, region_name='SierraNevada', geometry=geometry)
+            owner=owner, name=name, region_name=region_name, geometry=geometry)
         plan.save()
         return HttpResponse(str(plan.pk))
 

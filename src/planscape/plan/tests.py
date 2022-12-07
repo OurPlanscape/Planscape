@@ -83,3 +83,13 @@ class PlanTest(TestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(Plan.objects.all()), 1)
+
+    def test_good_region_name(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create'),
+            {'name': 'plan', 'region_name': 'north_coast_inland', 'geometry': {'features': [
+                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(Plan.objects.all()), 1)
