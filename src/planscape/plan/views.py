@@ -24,11 +24,14 @@ def create(request: HttpRequest) -> HttpResponse:
             raise ValueError("Must specify name")
 
         # Get the region name
+        # TODO Reconsider default of Sierra Nevada region.
         region_name = body.get('region_name', None)
         if region_name is None:
             region_name = str(RegionName.SIERRA_CASCADE_INYO)
 
-        # Get the geometry of the plan and convert to a MultiPolygon
+        # Get the geometry of the plan.  Convert it to a MultiPolygon
+        # if it is a simple Polygon, since the model column type is
+        # MultiPolygon.
         geometry = body.get('geometry', None)
         if geometry is None:
             raise ValueError("Must specify geometry")
