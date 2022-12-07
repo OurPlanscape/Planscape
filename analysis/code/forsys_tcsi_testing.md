@@ -1,27 +1,17 @@
----
-title: "ForSys TCSI testing"
-author: "Laurens Geffert"
-date: "2022-11-21"
-output: rmarkdown::github_document
----
+ForSys TCSI testing
+================
+Laurens Geffert
+2022-11-21
 
 <!-- forsys_tcsi_testing.md is generated from forsys_tcsi_testing.Rmd. Please edit that file -->
 
-```{r, echo = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = '##',
-  fig.retina = 2,
-  fig.path = '../output/forsys_tcsi_testing_files/forsys_tcsi_testing_')
-```
-
-
-RScript for a test analysis of a single HUC12 in the TCSI area.
-The purpose of this script is to explore and illustrate the running of
+RScript for a test analysis of a single HUC12 in the TCSI area. The
+purpose of this script is to explore and illustrate the running of
 ForSysR in a real-world example using actual input data, so that we can
-understand the program API, input parameters, outputs, and estimate runtime.
+understand the program API, input parameters, outputs, and estimate
+runtime.
 
-```{r setup}
+``` r
 #' To install ForSysR and Patchmax from GitHub:
 #' library(jsonlite)
 #' library(devtools)
@@ -33,25 +23,84 @@ understand the program API, input parameters, outputs, and estimate runtime.
 #' install_github("forsys-sp/patchmax", auth_token=github_token)
 
 library(forsys)
+## Loading required package: rlang
 library(sf)
+## Linking to GEOS 3.10.2, GDAL 3.4.2, PROJ 8.2.1; sf_use_s2() is TRUE
 library(raster)
+## Loading required package: sp
 library(tidyverse)
+## ── Attaching packages
+## ───────────────────────────────────────
+## tidyverse 1.3.2 ──
+## ✔ ggplot2 3.3.6      ✔ purrr   0.3.5 
+## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
+## ✔ tidyr   1.2.1      ✔ stringr 1.4.1 
+## ✔ readr   2.1.3      ✔ forcats 0.5.2 
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ purrr::%@%()         masks rlang::%@%()
+## ✖ purrr::as_function() masks rlang::as_function()
+## ✖ tidyr::extract()     masks raster::extract()
+## ✖ dplyr::filter()      masks stats::filter()
+## ✖ purrr::flatten()     masks rlang::flatten()
+## ✖ purrr::flatten_chr() masks rlang::flatten_chr()
+## ✖ purrr::flatten_dbl() masks rlang::flatten_dbl()
+## ✖ purrr::flatten_int() masks rlang::flatten_int()
+## ✖ purrr::flatten_lgl() masks rlang::flatten_lgl()
+## ✖ purrr::flatten_raw() masks rlang::flatten_raw()
+## ✖ purrr::invoke()      masks rlang::invoke()
+## ✖ dplyr::lag()         masks stats::lag()
+## ✖ dplyr::select()      masks raster::select()
+## ✖ purrr::splice()      masks rlang::splice()
 library(magrittr)
+## 
+## Attaching package: 'magrittr'
+## 
+## The following object is masked from 'package:purrr':
+## 
+##     set_names
+## 
+## The following object is masked from 'package:tidyr':
+## 
+##     extract
+## 
+## The following object is masked from 'package:raster':
+## 
+##     extract
+## 
+## The following object is masked from 'package:rlang':
+## 
+##     set_names
 
 run_label = 'TCSI_downsample'
 ```
 
+First we load the data from local files. These were downloaded from [the
+TCSI GIS web application](http://northcoastxy.com/tcsi/#) and stored in
+a local data folder. See the README.md in that folder for documentation
+of the folder structure and files. We also load the harvesting system
+and cost layers provided by John Hogland as `.tif` raster files.
 
-First we load the data from local files. These were downloaded from 
-[the TCSI GIS web application](http://northcoastxy.com/tcsi/#) and stored in a 
-local data folder. See the README.md in that folder for documentation of the 
-folder structure and files. We also load the harvesting system and cost layers
-provided by John Hogland as `.tif` raster files. 
-
-```{r data_load, error = TRUE}
+``` r
 # Loading input data -----------------------------------------------------------
 shape_huc12 <- st_read('../data/TCSI/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp')
+## Reading layer `huc12_merge_sierra_proj_tcsi_clip' from data source 
+##   `/Users/geffert/Planscape/analysis/data/TCSI/HUC12/huc12_merge_sierra_proj_tcsi_clip.shp' 
+##   using driver `ESRI Shapefile'
+## Simple feature collection with 119 features and 21 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -113597.4 ymin: 66502.35 xmax: 10639.36 ymax: 196021.8
+## Projected CRS: NAD83 / California Albers
 shape_ownership <- st_read('../data/TCSI/iCluse/iCLUSE.shp')
+## Reading layer `iCLUSE' from data source 
+##   `/Users/geffert/Planscape/analysis/data/TCSI/iCluse/iCLUSE.shp' 
+##   using driver `ESRI Shapefile'
+## Simple feature collection with 7 features and 8 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XYZ
+## Bounding box:  xmin: -113570.3 ymin: 66502.35 xmax: 10659.91 ymax: 196021.8
+## z_range:       zmin: 0 zmax: 0
+## Projected CRS: NAD_1983_Albers
 
 #' Operability layer:
 #' 0 - Inoperable
@@ -76,12 +125,11 @@ score_adapt <- raster('../data/TCSI/ecosystem/tif/adapt.tif')
 score_protect <- raster('../data/TCSI/ecosystem/tif/protect.tif')
 ```
 
+The TCSI GIS web application provides “Adapt” and “Protect” scores but
+we are interested in the “Adapt-Protect” (or AP) score, a combination of
+the two. We can calculate that ourselves using the function below.
 
-The TCSI GIS web application provides "Adapt" and "Protect" scores but we are
-interested in the "Adapt-Protect" (or AP) score, a combination of the two. We
-can calculate that ourselves using the function below.
-
-```{r score_calculation, error = TRUE}
+``` r
 # Calculating opportunity score (a.k.a. Adapt-Protect score)
 score_rescale <- function(raster1, raster2) {
   max_value <- max(raster1, raster2)
@@ -96,17 +144,17 @@ score_opportunity <- score_rescale(score_adapt, score_protect)
 #score_opportunity <- score_adapt
 ```
 
+Due to the spatial extent of the Tahoe Central Sierra area (\~1 million
+ha) and the resolution of the data (30m x 30m), the overall data set it
+quite large. Running computations for the whole data set is feasible but
+slow and thus not ideal for iterative data exploration. That’s why we
+will subset the data and only look at a single HUC-12 watershed for now.
+I chose “Long Canyon-Silver Fork American River” because we visited that
+watershed after the off-site in Placerville. Having visited the area
+helps me to tie the values in the data back to conditions I’ve seen on
+the ground.
 
-Due to the spatial extent of the Tahoe Central Sierra area (~1 million ha) and
-the resolution of the data (30m x 30m), the overall data set it quite large.
-Running computations for the whole data set is feasible but slow and thus not
-ideal for iterative data exploration. That's why we will subset the data and
-only look at a single HUC-12 watershed for now. I chose "Long Canyon-Silver
-Fork American River" because we visited that watershed after the off-site in
-Placerville. Having visited the area helps me to tie the values in the data
-back to conditions I've seen on the ground.
-
-```{r data_transform_huc12mask, error = TRUE}
+``` r
 # Transforming input data ------------------------------------------------------
 
 # Select HUC12 planning area
@@ -145,15 +193,14 @@ harvest_cost <- raster_mask(harvest_system, shape_huc12, HUC12)
 # harvest_cost <- aggregate(harvest_cost, fact = 2, fun = max)
 ```
 
+We also have to pre-process the harvesting layers. Right now these are
+four separate layers: one for operability and three for costs of the
+three methods (skidd, cable, and helicopter). We convert this into a
+single cost layer that can be used with ForSys by replacing the values
+of the `harvest_system` raster with the cost of the least expensive
+method that can be used in a given location.
 
-We also have to pre-process the harvesting layers. Right now these are four
-separate layers: one for operability and three for costs of the three methods
-(skidd, cable, and helicopter). We convert this into a single cost layer that
-can be used with ForSys by replacing the values of the `harvest_system` raster
-with the cost of the least expensive method that can be used in a given
-location.
-
-```{r data_transform_harvestingcost, error = TRUE}
+``` r
 # Getting costs for harvesting with cheapest available system
 harvest_cost[harvest_system == 3] <- harvest_helic[harvest_system == 3]
 harvest_cost[harvest_system == 2] <- harvest_cable[harvest_system == 2]
@@ -165,14 +212,14 @@ harvest_cost[harvest_system == 0] <- harvest_helic[harvest_system == 0]
 harvest_cost <- raster::resample(x = harvest_cost, y = score_opportunity, 'ngb')
 ```
 
+Finally, we need to transform the data from raster to polygon because
+ForSysR currently takes polygon-based data only. We can do this by
+stacking the raster layers we’re interested in and then converting the
+whole stack to a “simple-feature” data frame. We also create some
+additional variables such as polygon (=stand) area, latitude, and
+longitude.
 
-Finally, we need to transform the data from raster to polygon because ForSysR
-currently takes polygon-based data only. We can do this by stacking the raster
-layers we're interested in and then converting the whole stack to a
-"simple-feature" data frame. We also create some additional variables such as
-polygon (=stand) area, latitude, and longitude.
-
-```{r data_transform_polygon, error = TRUE}
+``` r
 planning_polygon <- score_opportunity %>%
   # Adding other variables
   stack(
@@ -205,33 +252,34 @@ planning_polygon <- score_opportunity %>%
     #   TRUE ~ na_int))
 ```
 
-
 An overview of the data up to this point:
 
-```{r data_show, error = TRUE}
+``` r
 planning_polygon %>%
   drop_na() %>%
   plot(border = NA)
 ```
 
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_data_show-1.png" width="672" />
 
-The fact that we're using raster cells rather than "stands"
-(irregularly shaped areas of forest that represent similar conditions) means
-that some of the computations take longer to run and that projects generated by
-ForSysR and Patchmax may have "odd" shapes.
+The fact that we’re using raster cells rather than “stands” (irregularly
+shaped areas of forest that represent similar conditions) means that
+some of the computations take longer to run and that projects generated
+by ForSysR and Patchmax may have “odd” shapes.
 
-We can try to create stands from the data using a clustering approach. Here,
-we use k-means on input data as well as geographical dimensions
-(latitude, longitude) to cluster similar and spacially close raster cells into
-stands. There are two parameters that we can use to fine-tune the results:
-the geo-weight and the cluster size. A higher geo-weight puts a larger emphasis
-on the spatial dimensions of the data and is therefore more likely to generate
-spatially contiguous clusters. Lower geo-weight means that clustering cells with
-similar values together is more important that having spatially contiguous
-stands. Cluster size defines how many cells on average should end up in one
-stand, thus also giving us the average size of a stand.
+We can try to create stands from the data using a clustering approach.
+Here, we use k-means on input data as well as geographical dimensions
+(latitude, longitude) to cluster similar and spacially close raster
+cells into stands. There are two parameters that we can use to fine-tune
+the results: the geo-weight and the cluster size. A higher geo-weight
+puts a larger emphasis on the spatial dimensions of the data and is
+therefore more likely to generate spatially contiguous clusters. Lower
+geo-weight means that clustering cells with similar values together is
+more important that having spatially contiguous stands. Cluster size
+defines how many cells on average should end up in one stand, thus also
+giving us the average size of a stand.
 
-```{r cluster_stands, error = TRUE}
+``` r
 # Stand Clustering -------------------------------------------------------------
 
 #' Normalizing values to range of zero to one
@@ -371,6 +419,7 @@ clusters <- geo_clustering(
 
 # Getting proportion of spatially discontiguous clusters
 calculate_multipart_proportion(clusters)
+## [1] 0.989868
 
 # Visualizing the ouput clusters
 clusters %>%
@@ -380,12 +429,13 @@ clusters %>%
   plot(border = NA)
 ```
 
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_cluster_stands-1.png" width="672" />
 
-We want to find out what combination of geo-weight and cluster size gives us
-the best balance of stands that are spatially contiguous but also similar in
-values.
+We want to find out what combination of geo-weight and cluster size
+gives us the best balance of stands that are spatially contiguous but
+also similar in values.
 
-```{r optimize_geo_weight, error = TRUE}
+``` r
 # This takes very long to run so I'm loading it from rds
 
 # # Creating a parameter tuning grid
@@ -402,10 +452,9 @@ values.
 #     ll_range = map_dbl(df, calculate_latlon_range))
 # write_rds(x = grid_search_clusters, file = '../output/TCSI_geo_clustering.rds')
 grid_search_clusters <- read_rds(file = '../output/TCSI_geo_clustering.rds')
-
 ```
 
-```{r optimize_geo_weight_plot, error = TRUE}
+``` r
 # Plotting output of parameter optimization
 grid_search_clusters %>%
   select(cluster_weight_geo, cluster_size, sc_prop, sd_mean, vr_mean, ll_range) %>%
@@ -430,14 +479,15 @@ grid_search_clusters %>%
   facet_wrap(~cluster_size)
 ```
 
-The results suggest that smaller clusters are better than larger clusters
-(but keep in mind that there is a trade-off to compute time) and that the best
-geo-weights are in the range of 0.5 to 3. Larger clusters seem to benefit more
-from higher geo-weights. Note that using different priority variables will
-change these results.
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_optimize_geo_weight_plot-1.png" width="672" />
 
+The results suggest that smaller clusters are better than larger
+clusters (but keep in mind that there is a trade-off to compute time)
+and that the best geo-weights are in the range of 0.5 to 3. Larger
+clusters seem to benefit more from higher geo-weights. Note that using
+different priority variables will change these results.
 
-```{r cluster_outputs, error = TRUE}
+``` r
 # Running clustering algorithm with selected parameters
 clusters_final <- geo_clustering(
   df = planning_polygon,
@@ -448,6 +498,7 @@ clusters_final <- geo_clustering(
   'lat',
   'opportunity_score',
   'harvest_cost'))
+## Warning: did not converge in 10 iterations
 
 # Visualizing the ouput clusters
 clusters_final %>%
@@ -457,7 +508,9 @@ clusters_final %>%
   plot(border = NA)
 ```
 
-```{r aggregate_clusters, error = TRUE}
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_cluster_outputs-1.png" width="672" />
+
+``` r
 df_planning_clustered <- clusters_final %>%
   inner_join(
     planning_polygon %>%
@@ -475,7 +528,7 @@ df_planning_clustered <- clusters_final %>%
     stand_area = sum(stand_area))
 ```
 
-```{r forsys, error = TRUE}
+``` r
 # Running ForSysR --------------------------------------------------------------
 # Calculating adjacency for polygons
 patchmax_adj <- Patchmax::calculate_adj(
@@ -484,6 +537,8 @@ patchmax_adj <- Patchmax::calculate_adj(
   method = 'buffer')
 
 patchmax_dist <- Patchmax::calculate_dist(df_planning_clustered)
+## Warning in st_centroid.sf(Shapefile): st_centroid assumes attributes are
+## constant over geometries of x
 
 # TODO: add patchmax_st_seed (pass top e.g. 20% of stand_id in terms of priority)
 forsys_output <- forsys::run(
@@ -506,11 +561,27 @@ forsys_output <- forsys::run(
   patchmax_candidate_min_size = 404686,
   patchmax_proj_number = 3
   )
+## Output directory, /Users/geffert/Planscape/analysis/code/output/tcsi_testing_patchmax/, already exists
+## ...Overwriting previous files
+## Forsys Shiny data detected.
+## Forsys stand adjacency data detected
+## 
+## 
+## ---------------
+## Weighting scenario 1 of 1: 1-1
+## PatchMax assumes project stand threshold operator is ">="
+## Running PatchMax using 11 cores
+## 
+## Project #1
+##   treated area: 12945600; total selected area:6111086400; objective value: -1922.22; constraint: ; project type: 3
+## Project #2
+## [1] "There is no feasible projects"
+## Assuming unlimited annual target
+## 7 stands (0.25% of total) treated in 1 projects
 write_rds(x = forsys_output, file = '../output/TCSI_forsys_run.rds')
 ```
 
-
-```{r plot_outputs_1, error = TRUE}
+``` r
 df_planning_clustered %>%
   left_join(forsys_output$stand_output, by = 'cluster') %>%
   mutate(proj_id = replace_na(proj_id, replace = 0)) %>%
@@ -519,7 +590,9 @@ df_planning_clustered %>%
   plot(border = NA)
 ```
 
-```{r plot_outputs_2, error = TRUE}
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_plot_outputs_1-1.png" width="672" />
+
+``` r
 df_planning_clustered %>%
   left_join(forsys_output$stand_output, by = 'cluster') %>%
   mutate(proj_id = replace_na(proj_id, replace = 0)) %>%
@@ -528,7 +601,9 @@ df_planning_clustered %>%
   plot(border = NA)
 ```
 
-```{r plot_outputs_3, error = TRUE}
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_plot_outputs_2-1.png" width="672" />
+
+``` r
 df_planning_clustered %>%
   left_join(forsys_output$stand_output, by = 'cluster') %>%
   mutate(proj_id = replace_na(proj_id, replace = 0)) %>%
@@ -544,3 +619,4 @@ df_planning_clustered %>%
   plot(border = NA)
 ```
 
+<img src="../output/forsys_tcsi_testing_files/forsys_tcsi_testing_plot_outputs_3-1.png" width="672" />
