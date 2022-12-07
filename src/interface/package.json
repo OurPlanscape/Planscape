@@ -6,10 +6,14 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "ng lint",
+    "build:prod": "ng build --prod",
+    "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage"
   },
   "private": true,
   "dependencies": {
+    "@angular-eslint/schematics": "^1.0.0",
     "@angular/animations": "^14.2.0",
     "@angular/cdk": "^14.2.2",
     "@angular/common": "^14.2.0",
@@ -23,6 +27,7 @@
     "leaflet": "^1.9.2",
     "leaflet-draw": "^1.0.4",
     "leaflet.sync": "^0.2.4",
+    "loader-utils": "^3.2.1",
     "material": "^0.4.3",
     "moment": "^2.29.4",
     "ng-mocks": "^14.3.2",
