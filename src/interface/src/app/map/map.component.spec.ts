@@ -8,9 +8,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
-import {
-  MatRadioGroupHarness,
-} from '@angular/material/radio/testing';
+import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSelectHarness } from '@angular/material/select/testing';
 import { By } from '@angular/platform-browser';
@@ -449,7 +447,8 @@ describe('MapComponent', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
-      fixture.componentInstance.showCreatePlanButton$ = new BehaviorSubject<boolean>(true);
+      fixture.componentInstance.showCreatePlanButton$ =
+        new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.create-plan-button',
