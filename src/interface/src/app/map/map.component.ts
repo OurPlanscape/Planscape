@@ -45,6 +45,7 @@ export interface PlanCreationOption {
 }
 
 interface ConditionsNode extends DataLayerConfig {
+  showInfoIcon?: boolean;
   children?: ConditionsNode[];
 }
 
