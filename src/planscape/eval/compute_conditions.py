@@ -135,7 +135,7 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
         if not 'filepath' in pillar:
             return None
         return condition_reader.read(pillar['filepath'], condition_type) if pillar['filepath'] else None
-    element_conditions: list[Optional[Condition]] = []
+    element_conditions: list[Optional[ConditionMatrix]] = []
     for element in pillar['elements']:
         element_score = score_element(
             condition_reader, element, condition_type, True)
@@ -222,4 +222,4 @@ def average_weighted_scores(config: PillarConfig, condition_reader: ConditionRea
     for (condition, _) in conditions:
         if condition is None:
             return None
-    return weighted_average_condition(np.nan, cast(list[tuple[Condition, float]], conditions))
+    return weighted_average_condition(np.nan, cast(list[tuple[ConditionMatrix, float]], conditions))

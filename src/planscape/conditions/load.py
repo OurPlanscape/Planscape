@@ -1,21 +1,12 @@
 import os
-from pathlib import Path
 from decouple import config
 from typing import cast
-import sys
-
-from django.contrib.gis.utils.layermapping import LayerMapping
-from django.db.models.signals import pre_save
-from django.contrib.gis.gdal.raster.source import GDALRaster
 
 from base.condition_types import ConditionLevel, ConditionScoreType
-from base.region_name import RegionName
 from config.conditions_config import PillarConfig
 from .models import BaseCondition, Condition
 from base.conditions import *
 from eval.compute_conditions import *
-from osgeo import gdal, osr
-import psycopg2
 import subprocess
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
@@ -29,6 +20,7 @@ To run this script run the following commands"
     from conditions import load
     load.load_metrics('sierra_cascade_inyo')
 """
+
 
 def load_metrics(region: str):
     """Loads the metric rasters defined by the configuration into the database if display=true."""
@@ -70,7 +62,7 @@ def load_metrics(region: str):
                                 "BaseCondition " + metric['metric_name'] + " already exists; deleting.")
                             condition_query.delete()
 
-                        metric_is_raw = True if metric_type == '.tif' else False
+                        metric_is_raw = (metric_type == '.tif')
                         condition = Condition(condition_dataset=base_metric, raster_name=name,
                                               condition_score_type=ConditionScoreType.CURRENT, is_raw=metric_is_raw)
                         condition.save()
