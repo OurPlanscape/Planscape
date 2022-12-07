@@ -12,7 +12,7 @@ export interface Map {
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
   clonedDrawingRef?: L.FeatureGroup | undefined;
-  drawnPolygonLookup?: {[key: string]:L.Layer};
+  drawnPolygonLookup?: {[key: string]: L.Layer};
 }
 
 export interface MapConfig {

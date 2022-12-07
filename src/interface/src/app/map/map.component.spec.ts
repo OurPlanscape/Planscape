@@ -27,12 +27,14 @@ import {
   ConditionsConfig,
   BoundaryConfig,
 } from './../types';
+import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
 describe('MapComponent', () => {
   let component: MapComponent;
+  let mapManager: MapManager;
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
   let sessionInterval = new BehaviorSubject<number>(0);
@@ -142,6 +144,7 @@ describe('MapComponent', () => {
     fixture = TestBed.createComponent(MapComponent);
     loader = TestbedHarnessEnvironment.loader(fixture);
     component = fixture.componentInstance;
+    mapManager = component.mapManager;
     fixture.detectChanges();
   });
 
@@ -165,6 +168,22 @@ describe('MapComponent', () => {
         Region.SIERRA_NEVADA
       );
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
+    });
+
+    it('sets up drawing', () => {
+      const selectedMap =
+        component.maps[component.mapViewOptions.selectedMapIndex];
+
+      component.maps.forEach((map: Map) => {
+        expect(map.clonedDrawingRef).toBeDefined();
+        expect(map.drawnPolygonLookup).toEqual({});
+      });
+      expect(
+        selectedMap.instance?.hasLayer(selectedMap.clonedDrawingRef!)
+      ).toBeFalse();
+      expect(
+        selectedMap.instance?.hasLayer(mapManager.drawingLayer)
+      ).toBeTrue();
     });
   });
 
@@ -325,6 +344,35 @@ describe('MapComponent', () => {
         expect(component.mapRowHeight(mapRowIndex)).toEqual('50%');
       });
     });
+
+    it('enables drawing on selected map and shows cloned layer on other maps', () => {
+      component.ngAfterViewInit();
+
+      component.maps[3].instance?.fireEvent('click');
+
+      expect(component.mapViewOptions.selectedMapIndex).toBe(3);
+      [0, 1, 2, 3].forEach((mapIndex: number) => {
+        if (component.mapViewOptions.selectedMapIndex === mapIndex) {
+          expect(
+            component.maps[mapIndex].instance?.hasLayer(mapManager.drawingLayer)
+          ).toBeTrue();
+          expect(
+            component.maps[mapIndex].instance?.hasLayer(
+              component.maps[mapIndex].clonedDrawingRef!
+            )
+          ).toBeFalse();
+        } else {
+          expect(
+            component.maps[mapIndex].instance?.hasLayer(mapManager.drawingLayer)
+          ).toBeFalse();
+          expect(
+            component.maps[mapIndex].instance?.hasLayer(
+              component.maps[mapIndex].clonedDrawingRef!
+            )
+          ).toBeTrue();
+        }
+      });
+    });
   });
 
   describe('Layer control panels', () => {
@@ -455,7 +503,16 @@ describe('MapComponent', () => {
       });
     });
   });
-  describe('Plan creation dropdown', () => {
+
+  describe('Draw an area', () => {
+    const drawnPolygon = new L.Polygon([
+      [new L.LatLng(38.715517043571914, -120.42857302225725)],
+      [new L.LatLng(38.47079787227401, -120.5164425608172)],
+      [new L.LatLng(38.52668443555346, -120.11828371421737)],
+    ]);
+    const TEST_ID = '1';
+    (drawnPolygon as any)._leaflet_id = TEST_ID;
+
     beforeEach(async () => {
       component.ngAfterViewInit();
     });
@@ -472,13 +529,77 @@ describe('MapComponent', () => {
       expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
       expect(polygonSpy).toHaveBeenCalled();
     });
+
+    it('mirrors drawn polygon in all maps', async () => {
+      const selectedMap =
+        component.maps[component.mapViewOptions.selectedMapIndex];
+      selectedMap.instance?.fire('draw:created', { layer: drawnPolygon });
+
+      expect(
+        component.mapManager.drawingLayer.hasLayer(drawnPolygon)
+      ).toBeTrue();
+      [0, 1, 2, 3].forEach((mapIndex: number) => {
+        expect(
+          TEST_ID in component.maps[mapIndex].drawnPolygonLookup!
+        ).toBeTrue();
+        const clonedLayer =
+          component.maps[mapIndex].drawnPolygonLookup![TEST_ID];
+        expect(
+          component.maps[mapIndex].clonedDrawingRef?.hasLayer(clonedLayer)
+        ).toBeTrue();
+        expect(
+          component.maps[mapIndex].clonedDrawingRef?.getLayers().length
+        ).toEqual(1);
+      });
+    });
+
+    it('removes deleted polygon from all maps', async () => {
+      const selectedMap =
+        component.maps[component.mapViewOptions.selectedMapIndex];
+      selectedMap.instance?.fire('draw:created', { layer: drawnPolygon });
+      const deletedLayers = new L.FeatureGroup(
+        mapManager.drawingLayer.getLayers()
+      );
+
+      selectedMap.instance?.fire('draw:deleted', { layers: deletedLayers });
+
+      [0, 1, 2, 3].forEach((mapIndex: number) => {
+        expect(
+          TEST_ID in component.maps[mapIndex].drawnPolygonLookup!
+        ).toBeFalse();
+        expect(
+          component.maps[mapIndex].clonedDrawingRef?.getLayers().length
+        ).toEqual(0);
+      });
+    });
+
+    it('updates edited polygon in all maps', async () => {
+      const selectedMap =
+        component.maps[component.mapViewOptions.selectedMapIndex];
+      selectedMap.instance?.fire('draw:created', { layer: drawnPolygon });
+      const oldLayer = component.maps[0].drawnPolygonLookup![TEST_ID];
+      const editedPolygon = new L.Polygon([
+        [new L.LatLng(38.715517043571913, -120.42857302225725)],
+        [new L.LatLng(38.470797872274, -120.5164425608172)],
+        [new L.LatLng(38.52668443555345, -120.11828371421737)],
+      ]);
+      (editedPolygon as any)._leaflet_id = TEST_ID;
+      const editedLayers = new L.FeatureGroup([editedPolygon]);
+
+      selectedMap.instance?.fire('draw:edited', { layers: editedLayers });
+
+      expect(component.maps[0].drawnPolygonLookup![TEST_ID]).not.toEqual(
+        oldLayer
+      );
+    });
   });
 
   describe('Create plan', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
-      fixture.componentInstance.showCreatePlanButton$ = new BehaviorSubject<boolean>(true);
+      fixture.componentInstance.showCreatePlanButton$ =
+        new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.create-plan-button',
