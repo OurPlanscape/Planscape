@@ -13,7 +13,7 @@ from planscape.settings import CRS_9822_PROJ4
 from django.contrib.gis.gdal.raster.source import GDALRaster
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
-RASTER_TEST_FILE='src/planscape/testing/testdata/random_test.sql'
+RASTER_TEST_FILE = 'src/planscape/testing/testdata/random_test.sql'
 
 
 class ConditionTest(TestCase):
@@ -68,4 +68,12 @@ class ConditionTest(TestCase):
         response = self.client.get(
             '/conditions/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
             '&format=image/jpeg&layers=random_test.tif')
+        self.assertEqual(response.status_code, 200)
+
+    def test_bad_colormap(self):
+        response = self.client.get('/conditions/colormap/?colormap=foo')
+        self.assertEqual(response.status_code, 400)
+
+    def test_good_colormap(self):
+        response = self.client.get('/conditions/colormap/?colormap=viridis')
         self.assertEqual(response.status_code, 200)
