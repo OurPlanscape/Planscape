@@ -26,7 +26,6 @@
     "@angular/router": "^14.2.0",
     "@geoman-io/leaflet-geoman-free": "^2.13.1",
     "leaflet": "^1.9.2",
-    "leaflet-draw": "^1.0.4",
     "leaflet.sync": "^0.2.4",
     "loader-utils": "^3.2.1",
     "material": "^0.4.3",
