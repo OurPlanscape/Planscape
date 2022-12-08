@@ -24,9 +24,9 @@ import functools
 import numpy as np
 import os
 import rasterio
-from typing import Optional, cast
+from typing import Optional, cast, Tuple
 
-from base.conditions import average_condition, weighted_average_condition
+from base.conditions import average_condition, weighted_average_condition, convert_nodata_to_nan
 from base.condition_types import ConditionMatrix, ConditionScoreType, Region, Pillar, Element, Metric
 from config.conditions_config import PillarConfig
 
@@ -37,7 +37,7 @@ class ConditionReader():
     def __init__(self, root_directory: str = '/Users/elsieling/cnra/env'):
         self._root_directory = root_directory
 
-    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[ConditionMatrix]:
+    def read(self, filepath: str, condition_type: ConditionScoreType, is_raw : bool=False) -> Optional[Tuple[ConditionMatrix, str]]:
         """Reads a condition score from the filepath.
 
         Args:
@@ -48,8 +48,11 @@ class ConditionReader():
         """
         match condition_type:
             case ConditionScoreType.CURRENT:
-                # TODO Replace with Interpreted Value file path when available
-                file = '_normalized.tif'
+                if is_raw:
+                    file = '.tif'
+                else:
+                    # TODO Replace with Interpreted Value file path when available
+                    file = '_normalized.tif'
             case ConditionScoreType.FUTURE:
                 file = 'future.tif'
             case ConditionScoreType.IMPACT:
@@ -63,23 +66,39 @@ class ConditionReader():
             case ConditionScoreType.TRANSFORM:
                 file = 'transform.tif'
         with rasterio.open(os.path.join(self._root_directory, filepath) + file) as src:
-            return src.read(1, out_shape=(1, int(src.height), int(src.width)))
+            return src.read(1, out_shape=(1, int(src.height), int(src.width))), src.profile
 
 
-def _summarize(no_data_value: float, input: list[Optional[ConditionMatrix]], operation: str) -> Optional[ConditionMatrix]:
-    conditions = [condition for condition in input if condition is not None]
+def _summarize(no_data_value: float, input: list[Optional[Tuple[ConditionMatrix, str]]], operation: str) -> Optional[Tuple[ConditionMatrix, str]]:
+    if not input:
+        return None, None
+
+    if any(x is (None, None) for x in input):
+        return None, None
+    
+    conditions = [condition[0].astype('float32') for condition in input if condition is not None]
+    profiles = [condition[1] for condition in input if condition is not None]
+
     output = None
     if conditions:
         if len(conditions) == 1:
             output = conditions[0]
+            output_is_nodata = np.isnan(output) if np.isnan(
+            no_data_value) else (output == no_data_value)
+            output[output_is_nodata] = np.nan
         elif operation == 'MIN':
             output = functools.reduce(np.minimum, conditions)
         else:  # MEAN
             output = average_condition(no_data_value, conditions)
-    return output
+    return output, profiles[0]
 
+def convert_metric_nodata_to_nan(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType, is_raw : bool=False) -> Optional[ConditionMatrix]:
+    if not 'filepath' in metric:
+        return None
+    data,profile =  condition_reader.read(metric['filepath'], condition_type, is_raw) if metric['filepath'] else None
+    return convert_nodata_to_nan(profile['nodata'], data), profile
 
-def score_metric(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType) -> Optional[ConditionMatrix]:
+def score_metric(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType) -> Optional[Tuple[ConditionMatrix, str]]:
     """Scores the metric by reading the condition from the file. 
 
     Args:
@@ -90,12 +109,16 @@ def score_metric(condition_reader: ConditionReader, metric: Metric, condition_ty
        The condition score if the metric could be read, or None otherwise.
     """
     if not 'filepath' in metric:
-        return None
-    return condition_reader.read(metric['filepath'], condition_type) if metric['filepath'] else None
+        return None, None
+    condition,profile = condition_reader.read(metric['filepath'], condition_type) 
+    if metric['filepath']:
+        return condition, profile
+    else:
+        return None, None
 
 
 def score_element(condition_reader: ConditionReader, element: Element, condition_type: ConditionScoreType,
-                  recompute: bool = False) -> Optional[ConditionMatrix]:
+                  recompute: bool = False) -> Optional[Tuple[ConditionMatrix, str]]:
     """Computes the element score.
 
     Args:
@@ -108,11 +131,19 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
     """
     if not recompute:
         if not 'filepath' in element:
-            return None
-        return condition_reader.read(element['filepath'], condition_type) if element['filepath'] else None
-    metric_conditions = [score_metric(condition_reader, metric, condition_type)
-                         for metric in element['metrics']]
-    operation = element.get('operation', 'MEAN')
+            return None, None
+        condition, profile = condition_reader.read(element['filepath'], condition_type)
+        if element['filepath']: 
+            return condition, profile
+        else:
+            return None, None
+
+    metric_conditions = []
+    for metric in element['metrics']:
+        if not metric.get('ignore', False):
+            metric_conditions.append(score_metric(condition_reader, metric, condition_type))
+                         
+    operation = element.get('operation', "MEAN")
     # TODO: Parameterize the NoData value
     return _summarize(np.nan, metric_conditions, operation if operation else 'MEAN')
 
@@ -134,18 +165,29 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
     if not recompute:
         if not 'filepath' in pillar:
             return None
-        return condition_reader.read(pillar['filepath'], condition_type) if pillar['filepath'] else None
-    element_conditions: list[Optional[Condition]] = []
+        condition, profile = condition_reader.read(pillar['filepath'], condition_type)
+        if pillar['filepath']:
+            return condition
+        else:
+            return None
+            
+    element_conditions: list[Optional[Tuple[ConditionMatrix, str]]] = []
     for element in pillar['elements']:
         element_score = score_element(
             condition_reader, element, condition_type, True)
-        if element_score is None:
+        if element_score[0] is None and element_score[1] is None:
             element_score = score_element(
                 condition_reader, element, condition_type, False)
         element_conditions.append(element_score)
     operation = pillar.get('operation', 'MEAN')
     # TODO: Parameterize the NoData value
+<<<<<<< Updated upstream
     return _summarize(np.nan, element_conditions, operation if operation else 'MEAN')
+=======
+    pillar, profile = _summarize(float(np.finfo(np.float32).min), element_conditions, operation if operation else 'MEAN')
+    return pillar
+    
+>>>>>>> Stashed changes
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
@@ -210,7 +252,7 @@ def score_condition(config: PillarConfig, condition_reader: ConditionReader, con
                 region_name, pillar_name, element_name, metric_name)
             if metric is None:
                 return None
-            return score_metric(condition_reader, metric, condition_type)
+            return score_metric(condition_reader, metric, condition_type)[0]
         case _:
             return None
 
@@ -222,4 +264,4 @@ def average_weighted_scores(config: PillarConfig, condition_reader: ConditionRea
     for (condition, _) in conditions:
         if condition is None:
             return None
-    return weighted_average_condition(np.nan, cast(list[tuple[Condition, float]], conditions))
+    return weighted_average_condition(np.nan, cast(list[tuple[ConditionMatrix, float]], conditions))
