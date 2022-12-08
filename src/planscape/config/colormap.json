@@ -1,0 +1,23 @@
+{
+    "wistia": [
+        {"name": "poor", "percentile": 0, "rgb": "#e4ff7a"},
+        {"name": "fair", "percentile": 25, "rgb": "#ffe81a"},
+        {"name": "ok", "percentile": 50, "rgb": "#ffbd00"},
+        {"name": "good", "percentile": 75, "rgb": "#ffa000"},
+        {"name": "excellent", "percentile": 100, "rgb": "#fc7f00"}
+    ],
+    "viridis": [
+        {"name": "poor", "percentile": 0, "rgb": "#fde725"},
+        {"name": "fair", "percentile": 25, "rgb": "#5ec962"},
+        {"name": "ok", "percentile": 50, "rgb": "#21918c"},
+        {"name": "good", "percentile": 75, "rgb": "#3b528b"},
+        {"name": "excellent", "percentile": 100, "rgb": "#440154"}
+    ],
+    "inferno": [
+        {"name": "poor", "percentile": 0, "rgb": "#fcffa4"},
+        {"name": "fair", "percentile": 25, "rgb": "#f98e09"},
+        {"name": "ok", "percentile": 50, "rgb": "#bc3754"},
+        {"name": "good", "percentile": 75, "rgb": "#57106e"},
+        {"name": "excellent", "percentile": 100, "rgb": "#000004"}
+    ]
+}
