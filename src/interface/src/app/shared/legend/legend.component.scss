@@ -1,5 +1,32 @@
+.legend-wrapper {
+  align-items: stretch;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+h1 {
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 400;
+  text-align: center;
+}
+
 .legend {
-  width: fit-content;
+  align-items: center;
+  border: 1px solid #c4c4c4;
+  border-radius: 6px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  margin: 0px 48px 0px 48px;
+  padding: 12px;
 }
 
 .labels {

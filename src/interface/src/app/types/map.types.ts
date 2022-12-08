@@ -1,11 +1,12 @@
-import { BaseLayerType } from './layer.types';
 import * as L from 'leaflet';
 import {
+  BaseLayerType,
   BoundaryConfig,
   DataLayerConfig,
+  Legend,
   NONE_BOUNDARY_CONFIG,
   NONE_DATA_LAYER_CONFIG,
-} from './data.types';
+} from '../types';
 
 export interface Map {
   id: string;
@@ -17,7 +18,8 @@ export interface Map {
   existingProjectsLayerRef?: L.Layer | undefined;
   dataLayerRef?: L.Layer | undefined;
   clonedDrawingRef?: L.FeatureGroup | undefined;
-  drawnPolygonLookup?: {[key: string]: L.Layer};
+  drawnPolygonLookup?: { [key: string]: L.Layer };
+  legend?: Legend;
 }
 
 export interface MapConfig {
