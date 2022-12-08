@@ -1,4 +1,5 @@
 import json
+from typing import Tuple
 
 
 class ColormapConfig:
@@ -31,20 +32,26 @@ class ColormapConfig:
                 return 'fire'
             case _:
                 # Return the Viridis color map if nothing in the config
-                if colormap not in self._config:             
+                if colormap not in self._config:
                     return (
-                        '0% 253 231 37\n'
-                        '25% 94 201 98\n'
-                        '50% 33 145 140\n'
-                        '75% 59 82 139\n'
                         '100% 68 1 84\n'
+                        '75% 59 82 139\n'
+                        '50% 33 145 140\n'
+                        '25% 94 201 98\n'
+                        '0% 253 231 37\n'
                         'nv 0 0 0 0')
                 # Otherwise, construct the ST_Colormap
-                out = ''
+                # First, sort the list by percentile, from high to low (the ST_Colormap
+                # values seem to require this).
+                tuples: list = []
                 for value in self._config[colormap]:
                     percentile = value['percentile']
                     rgb = value['rgb'].lstrip('#')
-                    rgb_tuple = tuple(int(rgb[i:i+2], 16) for i in (0, 2, 4))
+                    tuples += [(int(percentile), int(rgb[0:2], 16),
+                                int(rgb[2:4], 16), int(rgb[4:6], 16))]
+                tuples.sort(reverse=True)
+                out = ''
+                for tuple in tuples:
                     out += ('{}% {} {} {}\n').format(
-                        percentile, rgb_tuple[0], rgb_tuple[1], rgb_tuple[2])
+                        tuple[0], tuple[1], tuple[2], tuple[3])
                 return out + 'nv 0 0 0 0'
