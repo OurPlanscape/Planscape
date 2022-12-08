@@ -61,7 +61,7 @@ class PillarConfig:
 
         def check_metric(metric) -> bool:
             return (isinstance(metric, dict) and
-                    metric.keys() <= {'metric_name', 'filepath', 'display_name', 'current_conditions_only'} and
+                    metric.keys() <= {'metric_name', 'filepath', 'display_name', 'current_conditions_only', 'ignore'} and
                     isinstance(metric['metric_name'], str))
 
         return 'regions' in self._config and check_regions(self._config['regions'])
