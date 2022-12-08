@@ -25,26 +25,30 @@ import numpy as np
 import os
 import rasterio
 from typing import Optional, cast, Tuple
+from decouple import config
 
 from base.conditions import average_condition, weighted_average_condition, convert_nodata_to_nan
 from base.condition_types import ConditionMatrix, ConditionScoreType, Region, Pillar, Element, Metric
 from config.conditions_config import PillarConfig
+from eval.raster_data import RasterData
+
+PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
 
 
 class ConditionReader():
     """Class to read conditions from files."""
 
-    def __init__(self, root_directory: str = '/Users/elsieling/cnra/env'):
+    def __init__(self, root_directory: str = os.path.dirname(cast(str, PLANSCAPE_ROOT_DIRECTORY))):
         self._root_directory = root_directory
 
-    def read(self, filepath: str, condition_type: ConditionScoreType, is_raw : bool=False) -> Optional[Tuple[ConditionMatrix, str]]:
-        """Reads a condition score from the filepath.
+    def read(self, filepath: str, condition_type: ConditionScoreType, is_raw: bool = False) -> Optional[RasterData]:
+        """Reads a condition raster and its profile from the filepath.
 
         Args:
           filepath: Directory relative to .. containing scores
           condition_type: Which condition to read (CURRENT, FUTURE, IMPACT)
         Returns:
-          The condition if found, else None.
+          The condition and profile if found, else None.
         """
         match condition_type:
             case ConditionScoreType.CURRENT:
@@ -66,39 +70,48 @@ class ConditionReader():
             case ConditionScoreType.TRANSFORM:
                 file = 'transform.tif'
         with rasterio.open(os.path.join(self._root_directory, filepath) + file) as src:
-            return src.read(1, out_shape=(1, int(src.height), int(src.width))), src.profile
+            return RasterData(src.read(1, out_shape=(1, int(src.height), int(src.width))), src.profile)
 
 
-def _summarize(no_data_value: float, input: list[Optional[Tuple[ConditionMatrix, str]]], operation: str) -> Optional[Tuple[ConditionMatrix, str]]:
+def _summarize(no_data_value: float, input: list[Optional[RasterData]], operation: str) -> Optional[RasterData]:
+    """Returns a computed raster based on the given operation and inputs and a corresponding profile. The profile of the first input is returned. Profiles are assumed to be consistent across inputs."""
     if not input:
-        return None, None
+        return None
 
-    if any(x is (None, None) for x in input):
-        return None, None
-    
-    conditions = [condition[0].astype('float32') for condition in input if condition is not None]
-    profiles = [condition[1] for condition in input if condition is not None]
+    if any(raster_data is None for raster_data in input):
+        return None
+
+    conditions = [raster_data.raster.astype(
+        'float32') for raster_data in input if raster_data is not None]
+    profiles = [
+        raster_data.profile for raster_data in input if raster_data is not None]
 
     output = None
     if conditions:
         if len(conditions) == 1:
             output = conditions[0]
             output_is_nodata = np.isnan(output) if np.isnan(
-            no_data_value) else (output == no_data_value)
+                no_data_value) else (output == no_data_value)
             output[output_is_nodata] = np.nan
         elif operation == 'MIN':
             output = functools.reduce(np.minimum, conditions)
         else:  # MEAN
             output = average_condition(no_data_value, conditions)
-    return output, profiles[0]
+    return RasterData(output, profiles[0])
 
-def convert_metric_nodata_to_nan(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType, is_raw : bool=False) -> Optional[ConditionMatrix]:
+
+def convert_metric_nodata_to_nan(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType, is_raw: bool = False) -> Optional[RasterData]:
+    """Replaces NoData values in the raster with NaN. Returns an profile with the updated NoData value."""
     if not 'filepath' in metric:
         return None
-    data,profile =  condition_reader.read(metric['filepath'], condition_type, is_raw) if metric['filepath'] else None
-    return convert_nodata_to_nan(profile['nodata'], data), profile
+    condition = condition_reader.read(
+        metric['filepath'], condition_type, is_raw) if metric['filepath'] else None
+    new_profile = condition.profile
+    new_profile['nodata'] = np.nan
+    return RasterData(convert_nodata_to_nan(condition.profile['nodata'], condition.raster), new_profile)
 
-def score_metric(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType) -> Optional[Tuple[ConditionMatrix, str]]:
+
+def score_metric(condition_reader: ConditionReader, metric: Metric, condition_type: ConditionScoreType) -> Optional[RasterData]:
     """Scores the metric by reading the condition from the file. 
 
     Args:
@@ -109,16 +122,16 @@ def score_metric(condition_reader: ConditionReader, metric: Metric, condition_ty
        The condition score if the metric could be read, or None otherwise.
     """
     if not 'filepath' in metric:
-        return None, None
-    condition,profile = condition_reader.read(metric['filepath'], condition_type) 
+        return None
+    condition = condition_reader.read(metric['filepath'], condition_type)
     if metric['filepath']:
-        return condition, profile
+        return condition
     else:
-        return None, None
+        return None
 
 
 def score_element(condition_reader: ConditionReader, element: Element, condition_type: ConditionScoreType,
-                  recompute: bool = False) -> Optional[Tuple[ConditionMatrix, str]]:
+                  recompute: bool = False) -> Optional[RasterData]:
     """Computes the element score.
 
     Args:
@@ -131,18 +144,17 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
     """
     if not recompute:
         if not 'filepath' in element:
-            return None, None
-        condition, profile = condition_reader.read(element['filepath'], condition_type)
-        if element['filepath']: 
-            return condition, profile
-        else:
-            return None, None
+            return None
+        condition = condition_reader.read(
+            element['filepath'], condition_type)
+        return condition if element['filepath'] else None
 
-    metric_conditions = []
+    metric_conditions: list(RasterData) = []
     for metric in element['metrics']:
         if not metric.get('ignore', False):
-            metric_conditions.append(score_metric(condition_reader, metric, condition_type))
-                         
+            metric_conditions.append(score_metric(
+                condition_reader, metric, condition_type))
+
     operation = element.get('operation', "MEAN")
     # TODO: Parameterize the NoData value
     return _summarize(np.nan, metric_conditions, operation if operation else 'MEAN')
@@ -165,29 +177,22 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
     if not recompute:
         if not 'filepath' in pillar:
             return None
-        condition, profile = condition_reader.read(pillar['filepath'], condition_type)
-        if pillar['filepath']:
-            return condition
-        else:
-            return None
-            
-    element_conditions: list[Optional[Tuple[ConditionMatrix, str]]] = []
+        condition = condition_reader.read(pillar['filepath'], condition_type)
+        return condition.raster if pillar['filepath'] else None
+
+    element_conditions: list[Optional[RasterData]] = []
     for element in pillar['elements']:
         element_score = score_element(
             condition_reader, element, condition_type, True)
-        if element_score[0] is None and element_score[1] is None:
+        if element_score is None:
             element_score = score_element(
                 condition_reader, element, condition_type, False)
         element_conditions.append(element_score)
     operation = pillar.get('operation', 'MEAN')
     # TODO: Parameterize the NoData value
-<<<<<<< Updated upstream
-    return _summarize(np.nan, element_conditions, operation if operation else 'MEAN')
-=======
-    pillar, profile = _summarize(float(np.finfo(np.float32).min), element_conditions, operation if operation else 'MEAN')
-    return pillar
-    
->>>>>>> Stashed changes
+    condition = _summarize(np.nan, element_conditions,
+                           operation if operation else 'MEAN')
+    return None if condition is None else condition.raster
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
@@ -246,13 +251,16 @@ def score_condition(config: PillarConfig, condition_reader: ConditionReader, con
                 region_name, pillar_name, element_name)
             if element is None:
                 return None
-            return score_element(condition_reader, element, condition_type, recompute)
+            condition = score_element(
+                condition_reader, element, condition_type, recompute)
+            return None if condition is None else condition.raster
         case [region_name, pillar_name, element_name, metric_name]:
             metric = config.get_metric(
                 region_name, pillar_name, element_name, metric_name)
             if metric is None:
                 return None
-            return score_metric(condition_reader, metric, condition_type)[0]
+            condition = score_metric(condition_reader, metric, condition_type)
+            return None if condition is None else condition.raster
         case _:
             return None
 
