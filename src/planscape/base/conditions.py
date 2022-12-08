@@ -37,14 +37,15 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
     sum = None
     total_weight = None
     for (condition, weight) in conditions_with_weights:
-        # Convert all conditions to float. This allows us to output NoData values as np.nan.
+        # Convert all conditions to float. This allows us to output NoData values as NaN.
         condition = condition.astype('float32')
 
+        # Convert all NoData values to NaN
         condition_is_nodata = np.isnan(condition) if np.isnan(
             no_data_value) else (condition == no_data_value)
-        weighted_path = ~condition_is_nodata * weight
         condition[condition_is_nodata] = np.nan
 
+        weighted_path = ~np.isnan(condition) * weight
         if sum is None or total_weight is None:
             sum = np.nan_to_num(condition, nan=0) * weight
             total_weight = weighted_path
@@ -52,9 +53,9 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
             # Set NoData values to 0, then add condition*weight to rolling sum.
             raw = (np.nan_to_num(sum, nan=0) +
                    np.nan_to_num(condition, nan=0) * weight)
-            # Masked array is True if both sum and condition arrays have NoData value.
-            raw = np.ma.masked_array(raw, np.isnan(sum) & condition_is_nodata)
-            # Set True value to Nan.
+            # Masked array is True if both sum and condition arrays have NoData.
+            raw = np.ma.masked_array(raw, np.isnan(sum) & np.isnan(condition))
+            # Set True value to NaN.
             sum = np.ma.filled(raw, np.nan)
             total_weight = total_weight + weighted_path
     if sum is None or total_weight is None:
