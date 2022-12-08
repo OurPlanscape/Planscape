@@ -7,12 +7,16 @@ import {
 } from 'geojson';
 import * as L from 'leaflet';
 import 'leaflet-draw';
+import '@geoman-io/leaflet-geoman-free';
 import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
 import { BaseLayerType, Map } from '../types';
+
+// Set to true so that layers are not editable by default
+L.PM.setOptIn(true);
 
 /**
  * Helper class to manage initialization and modification of Leaflet maps.
@@ -73,6 +77,20 @@ export class MapManager {
     return new L.Control.Draw(drawOptions);
   }
 
+  getGeomanDrawOptions(): L.PM.ToolbarOptions {
+    return {
+      cutPolygon: false,
+      drawCircle: false,
+      drawMarker: false,
+      drawCircleMarker: false,
+      drawPolyline: false,
+      drawRectangle: false,
+      drawText: false,
+      rotateMode: false,
+      position: 'bottomright',
+    }
+  }
+
   /** Initializes the map with controls and the layer options specified in its config. */
   initLeafletMap(
     map: Map,
@@ -96,6 +114,7 @@ export class MapManager {
       zoom: 9,
       layers: [map.baseLayerRef],
       zoomControl: false,
+      pmIgnore: false,
     });
 
     // Add zoom controls to bottom right corner
@@ -118,6 +137,22 @@ export class MapManager {
     // to one map at a time.
     map.clonedDrawingRef = new L.FeatureGroup();
     map.drawnPolygonLookup = {};
+    map.instance!.pm.setGlobalOptions({
+      allowSelfIntersection: false,
+      snappable: false,
+      hintlineStyle: {
+        color: '#7b61ff'
+      },
+      templineStyle: {
+        color: '#7b61ff'
+      },
+      layerGroup: this.drawingLayer,
+    });
+    map.instance!.pm.setPathOptions({
+      color: '#7b61ff',
+      fillColor: '#7b61ff',
+      fillOpacity: 0.2,
+    });
     this.setUpDrawingHandlers(map.instance!);
   }
 
@@ -183,7 +218,7 @@ export class MapManager {
       [-180, -90],
     ]);
     L.geoJSON(boundary, {
-      style: (feature) => ({
+      style: (_) => ({
         color: '#ffffff',
         weight: 2,
         opacity: 1,
@@ -205,17 +240,72 @@ export class MapManager {
 
   /** Removes drawing control and layer from the map. */
   removeDrawingControl(map: L.Map) {
-    map.removeControl(this.drawControl);
     map.removeLayer(this.drawingLayer);
+    map.pm.removeControls();
   }
 
   /** Adds drawing control and drawing layer to the map. */
   addDrawingControl(map: L.Map) {
     map.addLayer(this.drawingLayer);
-    map.addControl(this.drawControl);
+    map.pm.addControls(this.getGeomanDrawOptions());
   }
 
   private setUpDrawingHandlers(map: L.Map) {
+    map.on('pm:create', (event) => {
+      // Allow drawn layers to be editable
+      (event.layer as any).options.pmIgnore = false;
+      L.PM.reInitLayer(event.layer);
+
+      const layer = event.layer;
+      const originalId = L.Util.stamp(layer);
+      const featureGroup = L.featureGroup().addLayer(layer);
+
+      // Sync newly created polygons to all maps
+      this.maps.forEach((currMap) => {
+        // Hacky way to clone, but it removes the reference to the origin layer
+        const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+            color: '#ffde9e',
+            fillColor: '#ffde9e',
+          });
+          currMap.clonedDrawingRef?.addLayer(clonedLayer);
+          currMap.drawnPolygonLookup![originalId] = clonedLayer;
+      });
+
+      this.polygonsCreated$.next(true);
+
+      event.layer.on('pm:edit', ({layer}) => {
+        // Sync edited polygons to all maps
+        this.maps.forEach((currMap) => {
+          const originalPolygonKey = L.Util.stamp(layer);
+          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+
+          const updatedPolygon = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+            color: '#ffde9e',
+            fillColor: '#ffde9e',
+          });
+          currMap.clonedDrawingRef?.addLayer(updatedPolygon);
+          currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
+        });
+      })
+    });
+
+    map.on('pm:remove', (event) => {
+      const layer = event.layer;
+      // Sync deleted polygons to all maps
+      this.maps.forEach((currMap) => {
+        const originalPolygonKey = L.Util.stamp(layer);
+        const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+        currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+        delete currMap.drawnPolygonLookup![originalPolygonKey];
+      });
+
+      // When there are no more polygons
+      if (this.drawingLayer.getLayers().length === 0) {
+        this.polygonsCreated$.next(false);
+      }
+    });
+
     map.on(L.Draw.Event.CREATED, (event) => {
       const layer = (event as L.DrawEvents.Created).layer;
       this.drawingLayer.addLayer(layer);
@@ -309,8 +399,7 @@ export class MapManager {
    */
   enablePolygonDrawingTool(map: L.Map) {
     this.addDrawingControl(map);
-    const polygonButton = document.querySelector(".leaflet-draw-draw-polygon") as HTMLElement | null;
-    polygonButton?.click();
+    map.pm.enableDraw('Polygon');
   }
 
   /** Sync pan, zoom, etc. between all maps. */
