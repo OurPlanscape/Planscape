@@ -6,6 +6,15 @@ from typing import Optional, cast
 from base.condition_types import ConditionMatrix, ConditionScoreType
 
 
+def convert_nodata_to_nan(no_data_value: float, condition: ConditionMatrix) -> Optional[ConditionMatrix]:
+    """ Convert all NoData pixels to NaN. """
+    condition = condition.astype('float32')
+    condition_is_nodata = np.isnan(condition) if np.isnan(
+        no_data_value) else (condition == no_data_value)
+    condition[condition_is_nodata] = np.nan
+    return condition
+
+
 def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
     """Computes the weighted average condition.
 
@@ -46,7 +55,7 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
             # Masked array is True if both sum and condition arrays have NoData value.
             raw = np.ma.masked_array(raw, np.isnan(sum) & condition_is_nodata)
             # Set True value to Nan.
-            sum = np.ma.filled(raw, no_data_value)
+            sum = np.ma.filled(raw, np.nan)
             total_weight = total_weight + weighted_path
     if sum is None or total_weight is None:
         return None
