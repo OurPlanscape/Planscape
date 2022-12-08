@@ -3,20 +3,24 @@ import logging
 import os
 from typing import cast
 
-from conditions.colormap import get_colormap
+from config.colormap_config import ColormapConfig
 from decouple import config as cfg
 from django.db import connection
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 
+# Configure global logging.
 logger = logging.getLogger(__name__)
-
-PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 
 # Name of the table and column from models.py.
 RASTER_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
+
+# Global variable for the ColormapConfig, so that the configuration file is read once.
+PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
+colormap_config = ColormapConfig(
+    os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/colormap.json'))
 
 
 def get_wms(params: QueryDict):
@@ -45,10 +49,10 @@ def get_wms(params: QueryDict):
         if layers is None:
             raise ValueError("Must specify layers to select data layer")
 
-        # Get the style, which is the colormap
+        # Get the style, which is the colormap; default is "viridis"
         styles = params.get('styles', 'viridis')
         assert isinstance(styles, str)
-        colormap = get_colormap(styles)
+        colormap = colormap_config.get_colormap_string(styles)
         cursor.callproc('get_rast_tile', (format, width, height, srid,
                         bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3],
                         colormap, 'public', RASTER_TABLE, RASTER_COLUMN, RASTER_NAME_COLUMN,
@@ -89,3 +93,13 @@ def wms(request: HttpRequest) -> HttpResponse:
 def config(request: HttpRequest) -> HttpResponse:
     region = get_config(request.GET)
     return JsonResponse(region)
+
+
+def colormap(request: HttpRequest) -> HttpResponse:
+    colormap = None
+    colormap_name = request.GET.get('colormap', None)
+    if colormap_name is not None:
+        colormap = colormap_config.get_config(colormap_name)
+    if colormap is None:
+        return HttpResponseBadRequest("Ill-formed request: bad colormap name")
+    return JsonResponse(colormap)
