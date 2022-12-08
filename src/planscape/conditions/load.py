@@ -31,12 +31,13 @@ To run this script run the following commands
 """
 
 def convert_metrics_nodata(region: str):
-    """Rewrites the NoData pixels in metric rasters as the standard NaN value and updates the raster profile accordingly.
+    """Replaces the NoData pixels in metric rasters with the standard NaN value and updates the raster profile accordingly.
 
     Args:
       region: The region to rewrite
     """
-    config_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config_path = os.path.join(
+        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
     config = PillarConfig(config_path)
 
     region = config.get_region(region)
@@ -47,30 +48,22 @@ def convert_metrics_nodata(region: str):
                     # TODO: Update to interprted when available
                     for metric_type in ['.tif', '_normalized.tif']:
                         metric_is_raw = True if metric_type == '.tif' else False
-                        
+
                         reader = ConditionReader()
-                        np_array_with_nan,original_profile = convert_metric_nodata_to_nan(reader, metric, ConditionScoreType.CURRENT, metric_is_raw)
-                        
-                        # Overwrite original version locally
-                        base_filepath = os.path.join(os.path.dirname(PLANSCAPE_ROOT_DIRECTORY), metric['filepath']) + metric_type
-                        with rasterio.open(
-                            base_filepath,
-                            'w',
-                            driver=original_profile['driver'],
-                            height=original_profile['height'],
-                            width=original_profile['width'],
-                            count=original_profile['count'],
-                            dtype='float32',
-                            crs=original_profile['crs'],
-                            transform=original_profile['transform'],
-                            nodata=np.nan,
-                        ) as dst:
-                            dst.write(np_array_with_nan, 1)
+                        nan_condition = convert_metric_nodata_to_nan(
+                            reader, metric, ConditionScoreType.CURRENT, metric_is_raw)
+
+                        # Overwrite original local version
+                        base_filepath = os.path.join(os.path.dirname(
+                            PLANSCAPE_ROOT_DIRECTORY), metric['filepath']) + metric_type
+                        with rasterio.open(base_filepath,'w', nan_condition.profile) as dst:
+                            dst.write(nan_condition.raster, 1)
 
 
 def load_metrics(region: str):
     """Loads the metric rasters defined by the configuration into the database if display=true."""
-    config_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config_path = os.path.join(
+        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
     config = PillarConfig(config_path)
 
     region = config.get_region(region)
@@ -136,29 +129,30 @@ def compute_elements(region: str, reload: bool):
 
                 # TODO: Compute FUTURE metrics when available
                 reader = ConditionReader()
-                element_nparray,profile = score_element(
+                computed_element = score_element(
                     reader, element, ConditionScoreType.CURRENT, recompute=True)
 
-                # Save locally 
-                base_filepath = os.path.join(os.path.dirname(PLANSCAPE_ROOT_DIRECTORY), element['filepath']) + '.tif'
+                # Save locally
+                base_filepath = os.path.join(os.path.dirname(
+                    PLANSCAPE_ROOT_DIRECTORY), element['filepath']) + '.tif'
                 with rasterio.open(
                     base_filepath,
                     'w',
-                    driver=profile['driver'],
-                    height=profile['height'],
-                    width=profile['width'],
-                    count=profile['count'],
-                    dtype=profile['dtype'],
-                    crs=profile['crs'],
-                    transform=profile['transform'],
+                    driver=computed_element.profile['driver'],
+                    height=computed_element.profile['height'],
+                    width=computed_element.profile['width'],
+                    count=computed_element.profile['count'],
+                    dtype=computed_element.profile['dtype'],
+                    crs=computed_element.profile['crs'],
+                    transform=computed_element.profile['transform'],
                     nodata=np.nan,
                 ) as dst:
-                    dst.write(element_nparray, 1)
-                    print(element_nparray)
+                    dst.write(computed_element.raster, 1)
 
                 # Load to database
                 if reload:
-                    query = BaseCondition.objects.filter(condition_name=element['element_name'])
+                    query = BaseCondition.objects.filter(
+                        condition_name=element['element_name'])
                     if len(query) > 0:
                         print("Base Element " +
                               element['element_name'] + " already exists; deleting.")
@@ -178,7 +172,7 @@ def compute_elements(region: str, reload: bool):
                                           condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
                     condition.save()
                     print("Saved Element: " + condition.raster_name)
-                    
+
                     pw = 'pass'
                     cmds = 'export PGPASSWORD=pass; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
                         base_filepath + ' public.conditions_conditionraster | psql -U planscape -d planscape -h localhost -p 5432'
