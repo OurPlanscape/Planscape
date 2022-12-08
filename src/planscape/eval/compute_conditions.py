@@ -114,7 +114,7 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
                          for metric in element['metrics']]
     operation = element.get('operation', 'MEAN')
     # TODO: Parameterize the NoData value
-    return _summarize(float(np.finfo(np.float32).min), metric_conditions, operation if operation else 'MEAN')
+    return _summarize(np.nan, metric_conditions, operation if operation else 'MEAN')
 
 
 def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_type: ConditionScoreType,
@@ -145,7 +145,7 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
         element_conditions.append(element_score)
     operation = pillar.get('operation', 'MEAN')
     # TODO: Parameterize the NoData value
-    return _summarize(float(np.finfo(np.float32).min), element_conditions, operation if operation else 'MEAN')
+    return _summarize(np.nan, element_conditions, operation if operation else 'MEAN')
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
