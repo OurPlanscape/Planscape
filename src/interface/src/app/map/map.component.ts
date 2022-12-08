@@ -408,7 +408,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   changeMapCount(mapCount: number) {
     this.mapViewOptions.numVisibleMaps = mapCount;
     setTimeout(() => {
-      this.maps.forEach((map: Map) => map.instance?.invalidateSize());
+      this.maps.forEach((map: Map) => {
+        map.instance?.invalidateSize();
+        // Recalculate the map nameplate size.
+        this.updateMapNameplateWidth(map);
+      });
     }, 0);
   }
 
