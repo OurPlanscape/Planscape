@@ -113,4 +113,4 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 // Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
-@import "~leaflet-draw/dist/leaflet.draw.css";
+@import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';

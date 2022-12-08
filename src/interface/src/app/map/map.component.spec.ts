@@ -482,13 +482,12 @@ describe('MapComponent', () => {
     const TEST_ID = '1';
     (drawnPolygon as any)._leaflet_id = TEST_ID;
 
-    beforeEach(async () => {
+    beforeEach(() => {
       component.ngAfterViewInit();
     });
 
     it('enables polygon tool when drawing option is selected', async () => {
       spyOn(component, 'onPlanCreationOptionChange').and.callThrough();
-      const polygonSpy = spyOn(L.Draw, 'Polygon').and.callThrough();
       const select = await loader.getHarness(MatSelectHarness);
       await select.open();
       const option = await select.getOptions();
@@ -496,17 +495,16 @@ describe('MapComponent', () => {
       await option[0].click(); // 'draw-area' option
 
       expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
-      expect(polygonSpy).toHaveBeenCalled();
+      expect(
+        component.maps[component.mapViewOptions.selectedMapIndex].instance?.hasLayer(mapManager.drawingLayer)
+      ).toBeTrue();
     });
 
-    it('mirrors drawn polygon in all maps', async () => {
+    it('mirrors drawn polygon in all maps', () => {
       const selectedMap =
         component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('draw:created', { layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:create', { shape: 'Polygon', layer: drawnPolygon });
 
-      expect(
-        component.mapManager.drawingLayer.hasLayer(drawnPolygon)
-      ).toBeTrue();
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(
           TEST_ID in component.maps[mapIndex].drawnPolygonLookup!
@@ -522,15 +520,12 @@ describe('MapComponent', () => {
       });
     });
 
-    it('removes deleted polygon from all maps', async () => {
+    it('removes deleted polygon from all maps', () => {
       const selectedMap =
         component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('draw:created', { layer: drawnPolygon });
-      const deletedLayers = new L.FeatureGroup(
-        mapManager.drawingLayer.getLayers()
-      );
+      selectedMap.instance?.fire('pm:create', { shape: 'Polygon', layer: drawnPolygon });
 
-      selectedMap.instance?.fire('draw:deleted', { layers: deletedLayers });
+      selectedMap.instance?.fire('pm:remove', { shape: 'Polygon', layer: drawnPolygon });
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(
@@ -540,26 +535,6 @@ describe('MapComponent', () => {
           component.maps[mapIndex].clonedDrawingRef?.getLayers().length
         ).toEqual(0);
       });
-    });
-
-    it('updates edited polygon in all maps', async () => {
-      const selectedMap =
-        component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('draw:created', { layer: drawnPolygon });
-      const oldLayer = component.maps[0].drawnPolygonLookup![TEST_ID];
-      const editedPolygon = new L.Polygon([
-        [new L.LatLng(38.715517043571913, -120.42857302225725)],
-        [new L.LatLng(38.470797872274, -120.5164425608172)],
-        [new L.LatLng(38.52668443555345, -120.11828371421737)],
-      ]);
-      (editedPolygon as any)._leaflet_id = TEST_ID;
-      const editedLayers = new L.FeatureGroup([editedPolygon]);
-
-      selectedMap.instance?.fire('draw:edited', { layers: editedLayers });
-
-      expect(component.maps[0].drawnPolygonLookup![TEST_ID]).not.toEqual(
-        oldLayer
-      );
     });
   });
 
