@@ -1,10 +1,11 @@
 """ Tests for the conditions.py file. """
 
-import numpy as np
 import unittest
 
-from base.conditions import average_condition, weighted_average_condition, management_condition
+import numpy as np
 from base.condition_types import ConditionScoreType
+from base.conditions import (average_condition, management_condition,
+                             weighted_average_condition)
 
 
 class AverageTest(unittest.TestCase):
@@ -29,7 +30,7 @@ class AverageTest(unittest.TestCase):
         condition2 = np.array(
             [[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
         expected = np.array([[6, 7, 8], [4, 10, 11]])
-        average = average_condition(np.finfo(np.float32).min, [
+        average = average_condition(float(np.finfo(np.float32).min), [
                                     condition1, condition2])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
@@ -49,7 +50,7 @@ class AverageTest(unittest.TestCase):
         condition2 = np.array(
             [[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
         expected = np.array([[6, 7, 8], [np.nan, 10, 11]])
-        average = average_condition(np.finfo(np.float32).min, [
+        average = average_condition(float(np.finfo(np.float32).min), [
                                     condition1, condition2])
         self.assertIsNotNone(average)
 

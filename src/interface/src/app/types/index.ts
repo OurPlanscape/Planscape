@@ -1,3 +1,4 @@
+export * from "./data.types";
 export * from "./layer.types";
 export * from "./map.types";
 export * from "./plan.types";
