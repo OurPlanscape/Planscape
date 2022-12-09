@@ -498,14 +498,19 @@ describe('MapComponent', () => {
 
       expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
       expect(
-        component.maps[component.mapViewOptions.selectedMapIndex].instance?.hasLayer(mapManager.drawingLayer)
+        component.maps[
+          component.mapViewOptions.selectedMapIndex
+        ].instance?.hasLayer(mapManager.drawingLayer)
       ).toBeTrue();
     });
 
     it('mirrors drawn polygon in all maps', () => {
       const selectedMap =
         component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('pm:create', { shape: 'Polygon', layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:create', {
+        shape: 'Polygon',
+        layer: drawnPolygon,
+      });
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(
@@ -525,9 +530,15 @@ describe('MapComponent', () => {
     it('removes deleted polygon from all maps', () => {
       const selectedMap =
         component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('pm:create', { shape: 'Polygon', layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:create', {
+        shape: 'Polygon',
+        layer: drawnPolygon,
+      });
 
-      selectedMap.instance?.fire('pm:remove', { shape: 'Polygon', layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:remove', {
+        shape: 'Polygon',
+        layer: drawnPolygon,
+      });
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(
