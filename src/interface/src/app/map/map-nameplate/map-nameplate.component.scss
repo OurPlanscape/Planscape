@@ -14,12 +14,13 @@
   align-items: center;
   background-color: #ffffff;
   bottom: 0px;
+  box-sizing: border-box;
   display: flex;
   height: 30px;
   min-width: 0;
   opacity: 50%;
+  padding-right: 16px;
   position: absolute;
-  width: 100%;
   z-index: 10;
 }
 

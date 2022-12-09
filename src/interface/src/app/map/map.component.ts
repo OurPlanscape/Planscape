@@ -48,6 +48,8 @@ export interface PlanCreationOption {
 }
 
 interface ConditionsNode extends DataLayerConfig {
+  showInfoIcon?: boolean;
+  infoMenuOpen?: boolean;
   children?: ConditionsNode[];
 }
 
@@ -64,6 +66,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     selectedMapIndex: 0,
     numVisibleMaps: 2,
   };
+  mapNameplateWidths: BehaviorSubject<number | null>[] = Array(4)
+    .fill(null)
+    .map((_) => new BehaviorSubject<number | null>(null));
 
   boundaryConfig$: Observable<BoundaryConfig[] | null>;
   conditionsConfig$: Observable<ConditionsConfig | null>;
@@ -272,30 +277,37 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.displayRegionBoundary(map, selectedRegion);
     });
 
-    // Mark the map as selected when the user clicks anywhere on it
-    // and updates which map can be drawn on.
+    // Mark the map as selected when the user clicks anywhere on it.
     map.instance?.addEventListener('click', () => {
-      const previousMapIndex = this.mapViewOptions.selectedMapIndex;
-      const currentMapIndex = this.maps.indexOf(map);
-
-      // Toggle the cloned layer on if the map is not the current selected map.
-      // Toggle on the drawing layer and control on the selected map.
-      if (previousMapIndex !== currentMapIndex) {
-        this.mapManager.removeDrawingControl(
-          this.maps[previousMapIndex].instance!
-        );
-        this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
-
-        this.mapViewOptions.selectedMapIndex = currentMapIndex;
-        this.sessionService.setMapViewOptions(this.mapViewOptions);
-
-        this.mapManager.addDrawingControl(this.maps[currentMapIndex].instance!);
-        this.mapManager.hideClonedDrawing(this.maps[currentMapIndex]);
-      }
+      this.selectMap(this.maps.indexOf(map));
     });
 
     // Initialize the legend with colormap values.
     this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
+
+    // Calculate the maximum width of the map nameplate.
+    this.updateMapNameplateWidth(map);
+  }
+
+  private updateMapNameplateWidth(map: Map) {
+    this.mapNameplateWidths[this.maps.indexOf(map)].next(
+      this.getMapNameplateWidth(map)
+    );
+  }
+
+  private getMapNameplateWidth(map: Map): number | null {
+    const mapElement = document.getElementById(map.id);
+    const attribution = mapElement
+      ?.getElementsByClassName('leaflet-control-attribution')
+      ?.item(0);
+    const mapWidth = !!mapElement ? mapElement.clientWidth : null;
+    const attributionWidth = !!attribution ? attribution.clientWidth : null;
+    // The maximum width of the nameplate is equal to the width of the map minus the width
+    // of Leaflet's attribution control. Additional padding/margins may be applied in the
+    // nameplate component, but are not considered for this width.
+    const nameplateWidth =
+      !!mapWidth && !!attributionWidth ? mapWidth - attributionWidth : null;
+    return nameplateWidth;
   }
 
   private startLoadingLayerCallback(layerName: string) {
@@ -376,6 +388,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
     this.mapManager.changeBaseLayer(map);
+
+    // Changing the base layer may change the attribution, so the map nameplate
+    // width should be recalculated.
+    this.updateMapNameplateWidth(map);
   }
 
   /** Toggles which boundary layer is shown. */
@@ -417,8 +433,32 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   changeMapCount(mapCount: number) {
     this.mapViewOptions.numVisibleMaps = mapCount;
     setTimeout(() => {
-      this.maps.forEach((map: Map) => map.instance?.invalidateSize());
+      this.maps.forEach((map: Map) => {
+        map.instance?.invalidateSize();
+        // Recalculate the map nameplate size.
+        this.updateMapNameplateWidth(map);
+      });
     }, 0);
+  }
+
+  /** Select a map and update which map contains the drawing layer. */
+  selectMap(mapIndex: number) {
+    const previousMapIndex = this.mapViewOptions.selectedMapIndex;
+
+    // Toggle the cloned layer on if the map is not the current selected map.
+    // Toggle on the drawing layer and control on the selected map.
+    if (previousMapIndex !== mapIndex) {
+      this.mapManager.removeDrawingControl(
+        this.maps[previousMapIndex].instance!
+      );
+      this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
+
+      this.mapViewOptions.selectedMapIndex = mapIndex;
+      this.sessionService.setMapViewOptions(this.mapViewOptions);
+
+      this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
+      this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
+    }
   }
 
   /**
@@ -470,6 +510,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Used to compute whether a node in the condition layer tree has children. */
   hasChild = (_: number, node: ConditionsNode) =>
     !!node.children && node.children.length > 0;
+
+  /** Used to compute whether to show the info button on a condition layer node. */
+  showInfoIcon = (node: ConditionsNode) =>
+    node.filepath?.length && (node.showInfoIcon || node.infoMenuOpen);
 
   private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
     return [
