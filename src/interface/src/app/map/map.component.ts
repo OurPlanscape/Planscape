@@ -23,17 +23,20 @@ import {
 import {
   BaseLayerType,
   BoundaryConfig,
+  colormapConfigToLegend,
   ConditionsConfig,
   DataLayerConfig,
   defaultMapConfig,
+  DEFAULT_COLORMAP,
+  Legend,
   Map,
   MapConfig,
   MapViewOptions,
   NONE_BOUNDARY_CONFIG,
+  NONE_COLORMAP,
   NONE_DATA_LAYER_CONFIG,
   Region,
 } from '../types';
-import { Legend } from './../shared/legend/legend.component';
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
@@ -279,6 +282,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.selectMap(this.maps.indexOf(map));
     });
 
+    // Initialize the legend with colormap values.
+    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
+
     // Calculate the maximum width of the map nameplate.
     this.updateMapNameplateWidth(map);
   }
@@ -404,6 +410,23 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     this.mapManager.changeConditionsLayer(map);
+    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
+  }
+
+  private updateLegendWithColormap(map: Map, colormap?: string) {
+    if (colormap == undefined) {
+      colormap = DEFAULT_COLORMAP;
+    } else if (colormap == NONE_COLORMAP) {
+      map.legend = undefined;
+      return;
+    }
+
+    this.mapService
+      .getColormap(colormap)
+      .pipe(take(1))
+      .subscribe((colormapConfig) => {
+        map.legend = colormapConfigToLegend(colormapConfig);
+      });
   }
 
   /** Change how many maps are displayed in the viewport. */

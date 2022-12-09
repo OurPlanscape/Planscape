@@ -12,7 +12,7 @@ import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
-import { BaseLayerType, Map } from '../types';
+import { BaseLayerType, DEFAULT_COLORMAP, Map } from '../types';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -55,7 +55,7 @@ export class MapManager {
       drawText: false,
       rotateMode: false,
       position: 'bottomright',
-    }
+    };
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -108,10 +108,10 @@ export class MapManager {
       allowSelfIntersection: false,
       snappable: false,
       hintlineStyle: {
-        color: '#7b61ff'
+        color: '#7b61ff',
       },
       templineStyle: {
-        color: '#7b61ff'
+        color: '#7b61ff',
       },
       layerGroup: this.drawingLayer,
     });
@@ -229,31 +229,35 @@ export class MapManager {
       // Sync newly created polygons to all maps
       this.maps.forEach((currMap) => {
         // Hacky way to clone, but it removes the reference to the origin layer
-        const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
-            color: '#ffde9e',
-            fillColor: '#ffde9e',
-          });
-          currMap.clonedDrawingRef?.addLayer(clonedLayer);
-          currMap.drawnPolygonLookup![originalId] = clonedLayer;
+        const clonedLayer = L.geoJson(
+          (layer as L.Polygon).toGeoJSON()
+        ).setStyle({
+          color: '#ffde9e',
+          fillColor: '#ffde9e',
+        });
+        currMap.clonedDrawingRef?.addLayer(clonedLayer);
+        currMap.drawnPolygonLookup![originalId] = clonedLayer;
       });
 
       this.polygonsCreated$.next(true);
 
-      event.layer.on('pm:edit', ({layer}) => {
+      event.layer.on('pm:edit', ({ layer }) => {
         // Sync edited polygons to all maps
         this.maps.forEach((currMap) => {
           const originalPolygonKey = L.Util.stamp(layer);
           const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
           currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
 
-          const updatedPolygon = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+          const updatedPolygon = L.geoJson(
+            (layer as L.Polygon).toGeoJSON()
+          ).setStyle({
             color: '#ffde9e',
             fillColor: '#ffde9e',
           });
           currMap.clonedDrawingRef?.addLayer(updatedPolygon);
           currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
         });
-      })
+      });
     });
 
     map.on('pm:remove', (event) => {
@@ -407,7 +411,7 @@ export class MapManager {
 
     let colormap = map.config.dataLayerConfig.colormap;
     if (colormap?.length === 0 || !colormap) {
-      colormap = 'viridis';
+      colormap = DEFAULT_COLORMAP;
     }
 
     map.dataLayerRef = L.tileLayer.wms(
