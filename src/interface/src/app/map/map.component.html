@@ -3,9 +3,12 @@
   <!-- Map control panel -->
   <div id="controls" class="controls-container">
 
+    <div class="controls-header">
+      Highlighted map information
+    </div>
+
       <!-- Legend for the currently shown map -->
-      <h3>Legend</h3>
-      <app-legend [legend]="legend"></app-legend>
+      <app-legend [legend]="maps[mapViewOptions.selectedMapIndex].legend"></app-legend>
 
       <mat-divider class="layer-controls-divider"></mat-divider>
 

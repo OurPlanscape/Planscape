@@ -6,7 +6,12 @@ import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
-import { BoundaryConfig, ConditionsConfig, Region } from '../types';
+import {
+  BoundaryConfig,
+  ColormapConfig,
+  ConditionsConfig,
+  Region,
+} from '../types';
 
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
@@ -94,6 +99,33 @@ describe('MapService', () => {
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getColormap', () => {
+    it('makes request to endpoint', () => {
+      const fakeColormapConfig: ColormapConfig = {
+        name: 'fakecolormap',
+        values: [
+          {
+            rgb: '#000000',
+            name: 'fakelabel',
+          },
+        ],
+      };
+
+      service.getColormap('fakecolormap').subscribe((colormapConfig) => {
+        expect(colormapConfig).toEqual(fakeColormapConfig);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat(
+          '/conditions/colormap/?colormap=fakecolormap'
+        )
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(fakeColormapConfig);
       httpTestingController.verify();
     });
   });
