@@ -1,3 +1,5 @@
+import { NONE_COLORMAP } from './legend.types';
+
 export interface BoundaryConfig {
   display_name?: string;
   boundary_name: string;
@@ -38,4 +40,5 @@ export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
 export const NONE_DATA_LAYER_CONFIG: DataLayerConfig = {
   display_name: 'None',
   filepath: '',
+  colormap: NONE_COLORMAP,
 };

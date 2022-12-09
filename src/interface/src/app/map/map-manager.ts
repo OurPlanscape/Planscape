@@ -16,7 +16,7 @@ import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
-import { BaseLayerType, Map } from '../types';
+import { BaseLayerType, DEFAULT_COLORMAP, Map } from '../types';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -60,7 +60,7 @@ export class MapManager {
       drawText: false,
       rotateMode: false,
       position: 'bottomright',
-    }
+    };
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -114,10 +114,10 @@ export class MapManager {
       snappable: false,
       removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
-        color: '#7b61ff'
+        color: '#7b61ff',
       },
       templineStyle: {
-        color: '#7b61ff'
+        color: '#7b61ff',
       },
       layerGroup: this.drawingLayer,
     });
@@ -236,18 +236,20 @@ export class MapManager {
       // Sync newly created polygons to all maps
       this.maps.forEach((currMap) => {
         // Hacky way to clone, but it removes the reference to the origin layer
-        const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
-            color: '#ffde9e',
-            fillColor: '#ffde9e',
-          });
-          currMap.clonedDrawingRef?.addLayer(clonedLayer);
-          currMap.drawnPolygonLookup![originalId] = clonedLayer;
+        const clonedLayer = L.geoJson(
+          (layer as L.Polygon).toGeoJSON()
+        ).setStyle({
+          color: '#ffde9e',
+          fillColor: '#ffde9e',
+        });
+        currMap.clonedDrawingRef?.addLayer(clonedLayer);
+        currMap.drawnPolygonLookup![originalId] = clonedLayer;
       });
 
       this.polygonsCreated$.next(true);
 
       /** Edit layer handler. */
-      event.layer.on('pm:edit', ({layer}) => {
+      event.layer.on('pm:edit', ({ layer }) => {
         const editedLayer = layer as L.Polygon;
 
         // Check if polygon overlaps another
@@ -256,8 +258,14 @@ export class MapManager {
           const existingPolygon = feature as L.Polygon;
           // Skip feature with same latlng because that is what's being edited
           if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
-            const isOverlapping = booleanWithin(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON());
-            const isIntersecting = booleanIntersects(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON());
+            const isOverlapping = booleanWithin(
+              editedLayer.toGeoJSON(),
+              existingPolygon.toGeoJSON()
+            );
+            const isIntersecting = booleanIntersects(
+              editedLayer.toGeoJSON(),
+              existingPolygon.toGeoJSON()
+            );
             overlaps = isOverlapping || isIntersecting;
           }
         });
@@ -271,26 +279,32 @@ export class MapManager {
           const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
           currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
 
-          const updatedPolygon = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+          const updatedPolygon = L.geoJson(
+            (layer as L.Polygon).toGeoJSON()
+          ).setStyle({
             color: '#ffde9e',
             fillColor: '#ffde9e',
           });
           currMap.clonedDrawingRef?.addLayer(updatedPolygon);
           currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
         });
-      }) /** End of edit layer handler. */
+      }); /** End of edit layer handler. */
     }); /** End of create handler. */
 
     /** Start drawing handler. */
     map.on('pm:drawstart', (event) => {
-      event.workingLayer.on('pm:vertexadded', ({workingLayer, latlng}) => {
+      event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
         let overlaps = false;
-        const existingFeatures = this.drawingLayer.toGeoJSON() as FeatureCollection;
+        const existingFeatures =
+          this.drawingLayer.toGeoJSON() as FeatureCollection;
         const lastPoint = point([latlng.lng, latlng.lat]);
         existingFeatures.features.forEach((feature) => {
           const isWithin = booleanWithin(lastPoint, feature);
-          const isIntersecting = booleanIntersects((workingLayer as L.Polygon).toGeoJSON(), feature);
+          const isIntersecting = booleanIntersects(
+            (workingLayer as L.Polygon).toGeoJSON(),
+            feature
+          );
           overlaps = isWithin || isIntersecting;
         });
         if (overlaps) {
@@ -461,7 +475,7 @@ export class MapManager {
 
     let colormap = map.config.dataLayerConfig.colormap;
     if (colormap?.length === 0 || !colormap) {
-      colormap = 'viridis';
+      colormap = DEFAULT_COLORMAP;
     }
 
     map.dataLayerRef = L.tileLayer.wms(
