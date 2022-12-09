@@ -45,6 +45,8 @@ export interface PlanCreationOption {
 }
 
 interface ConditionsNode extends DataLayerConfig {
+  showInfoIcon?: boolean;
+  infoMenuOpen?: boolean;
   children?: ConditionsNode[];
 }
 
@@ -485,6 +487,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Used to compute whether a node in the condition layer tree has children. */
   hasChild = (_: number, node: ConditionsNode) =>
     !!node.children && node.children.length > 0;
+
+  /** Used to compute whether to show the info button on a condition layer node. */
+  showInfoIcon = (node: ConditionsNode) =>
+    node.filepath?.length && (node.showInfoIcon || node.infoMenuOpen);
 
   private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
     return [
