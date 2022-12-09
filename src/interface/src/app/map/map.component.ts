@@ -9,6 +9,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
@@ -129,6 +130,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     public applicationRef: ApplicationRef,
     private mapService: MapService,
     private dialog: MatDialog,
+    private matSnackBar: MatSnackBar,
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
@@ -166,6 +168,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     );
 
     this.mapManager = new MapManager(
+      matSnackBar,
       this.maps,
       popupService,
       this.startLoadingLayerCallback.bind(this),

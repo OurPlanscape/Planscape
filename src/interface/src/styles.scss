@@ -111,6 +111,13 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   font-size: 14px;
 }
 
+.snackbar-error {
+  background: #b00020;
+  button {
+    color: #ffffff;
+  }
+}
+
 // Geoman drawing vertex styling
 .marker-icon,
  .marker-icon:focus {
