@@ -252,15 +252,13 @@ export class MapManager {
 
         // Check if polygon overlaps another
         let overlaps = false;
-        const existingLayers = this.drawingLayer.getLayers();
-        existingLayers.forEach((feature) => {
+        this.drawingLayer.getLayers().forEach((feature) => {
           const existingPolygon = feature as L.Polygon;
           // Skip feature with same latlng because that is what's being edited
           if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
-            if (booleanWithin(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON()) ||
-                booleanIntersects(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON())) {
-              overlaps = true;
-            }
+            const isOverlapping = booleanWithin(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON());
+            const isIntersecting = booleanIntersects(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON());
+            overlaps = isOverlapping || isIntersecting;
           }
         });
         if (overlaps) {
@@ -280,8 +278,8 @@ export class MapManager {
           currMap.clonedDrawingRef?.addLayer(updatedPolygon);
           currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
         });
-      })
-    });
+      }) /** End of edit layer handler. */
+    }); /** End of create handler. */
 
     /** Start drawing handler. */
     map.on('pm:drawstart', (event) => {
@@ -291,10 +289,9 @@ export class MapManager {
         const existingFeatures = this.drawingLayer.toGeoJSON() as FeatureCollection;
         const lastPoint = point([latlng.lng, latlng.lat]);
         existingFeatures.features.forEach((feature) => {
-          if (booleanWithin(lastPoint, feature) ||
-              booleanIntersects((workingLayer as L.Polygon).toGeoJSON(), feature)) {
-            overlaps = true;
-          }
+          const isWithin = booleanWithin(lastPoint, feature);
+          const isIntersecting = booleanIntersects((workingLayer as L.Polygon).toGeoJSON(), feature);
+          overlaps = isWithin || isIntersecting;
         });
         if (overlaps) {
           this.showDrawingError();
@@ -302,7 +299,7 @@ export class MapManager {
           return;
         }
       });
-    });
+    }); /** End of start drawing handler. */
 
     /** Polygon deletion handler. */
     map.on('pm:remove', (event) => {
@@ -319,7 +316,7 @@ export class MapManager {
       if (this.drawingLayer.getLayers().length === 0) {
         this.polygonsCreated$.next(false);
       }
-    });
+    }); /** End of polygon deletion handler */
   }
 
   private showDrawingError() {
