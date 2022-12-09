@@ -109,7 +109,7 @@ def load_metrics(region: str):
                         print("Saved Condition: " + condition.raster_name)
 
 
-def compute_elements(region: str, reload: bool):
+def compute_elements(region: str, save: bool, reload: bool):
     """Computes element rasters based on the conditions config and saves them locally. Optionally loads them to our database.
 
     Args:
@@ -133,21 +133,22 @@ def compute_elements(region: str, reload: bool):
                     reader, element, ConditionScoreType.CURRENT, recompute=True)
 
                 # Save locally
-                base_filepath = os.path.join(os.path.dirname(
-                    PLANSCAPE_ROOT_DIRECTORY), element['filepath']) + '.tif'
-                with rasterio.open(
-                    base_filepath,
-                    'w',
-                    driver=computed_element.profile['driver'],
-                    height=computed_element.profile['height'],
-                    width=computed_element.profile['width'],
-                    count=computed_element.profile['count'],
-                    dtype=computed_element.profile['dtype'],
-                    crs=computed_element.profile['crs'],
-                    transform=computed_element.profile['transform'],
-                    nodata=np.nan,
-                ) as dst:
-                    dst.write(computed_element.raster, 1)
+                if save:
+                    base_filepath = os.path.join(os.path.dirname(
+                        PLANSCAPE_ROOT_DIRECTORY), element['filepath']) + '.tif'
+                    with rasterio.open(
+                        base_filepath,
+                        'w',
+                        driver=computed_element.profile['driver'],
+                        height=computed_element.profile['height'],
+                        width=computed_element.profile['width'],
+                        count=computed_element.profile['count'],
+                        dtype=computed_element.profile['dtype'],
+                        crs=computed_element.profile['crs'],
+                        transform=computed_element.profile['transform'],
+                        nodata=np.nan,
+                    ) as dst:
+                        dst.write(computed_element.raster, 1)
 
                 # Load to database
                 if reload:
