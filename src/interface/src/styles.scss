@@ -112,5 +112,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   margin-bottom: 30px;
 }
 
+.snackbar-error {
+  background: #b00020;
+  button {
+    color: #ffffff;
+  }
+}
+
 // Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
 @import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';

@@ -11,6 +11,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import * as L from 'leaflet';
@@ -126,6 +127,7 @@ describe('MapComponent', () => {
         MatCheckboxModule,
         MatRadioModule,
         MatSelectModule,
+        MatSnackBarModule,
         BrowserAnimationsModule,
       ],
       schemas: [NO_ERRORS_SCHEMA],

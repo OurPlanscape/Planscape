@@ -1,3 +1,4 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Feature,
   FeatureCollection,
@@ -7,6 +8,9 @@ import {
 } from 'geojson';
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
+import booleanIntersects from '@turf/boolean-intersects';
+import booleanWithin from '@turf/boolean-within';
+import { point } from '@turf/helpers';
 import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 
@@ -33,6 +37,7 @@ export class MapManager {
   doneLoadingLayerCallback: (layerName: string) => void;
 
   constructor(
+    private matSnackBar: MatSnackBar,
     maps: Map[],
     popupService: PopupService,
     startLoadingLayerCallback: (layerName: string) => void,
@@ -107,6 +112,7 @@ export class MapManager {
     map.instance!.pm.setGlobalOptions({
       allowSelfIntersection: false,
       snappable: false,
+      removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
         color: '#7b61ff'
       },
@@ -218,6 +224,7 @@ export class MapManager {
   }
 
   private setUpDrawingHandlers(map: L.Map) {
+    /** Create handler. */
     map.on('pm:create', (event) => {
       // Allow drawn layers to be editable
       (event.layer as any).options.pmIgnore = false;
@@ -239,7 +246,27 @@ export class MapManager {
 
       this.polygonsCreated$.next(true);
 
+      /** Edit layer handler. */
       event.layer.on('pm:edit', ({layer}) => {
+        const editedLayer = layer as L.Polygon;
+
+        // Check if polygon overlaps another
+        let overlaps = false;
+        const existingLayers = this.drawingLayer.getLayers();
+        existingLayers.forEach((feature) => {
+          const existingPolygon = feature as L.Polygon;
+          // Skip feature with same latlng because that is what's being edited
+          if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
+            if (booleanWithin(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON()) ||
+                booleanIntersects(editedLayer.toGeoJSON(), existingPolygon.toGeoJSON())) {
+              overlaps = true;
+            }
+          }
+        });
+        if (overlaps) {
+          this.showDrawingError();
+        }
+
         // Sync edited polygons to all maps
         this.maps.forEach((currMap) => {
           const originalPolygonKey = L.Util.stamp(layer);
@@ -256,6 +283,28 @@ export class MapManager {
       })
     });
 
+    /** Start drawing handler. */
+    map.on('pm:drawstart', (event) => {
+      event.workingLayer.on('pm:vertexadded', ({workingLayer, latlng}) => {
+        // Check if the vertex overlaps with an existing polygon
+        let overlaps = false;
+        const existingFeatures = this.drawingLayer.toGeoJSON() as FeatureCollection;
+        const lastPoint = point([latlng.lng, latlng.lat]);
+        existingFeatures.features.forEach((feature) => {
+          if (booleanWithin(lastPoint, feature) ||
+              booleanIntersects((workingLayer as L.Polygon).toGeoJSON(), feature)) {
+            overlaps = true;
+          }
+        });
+        if (overlaps) {
+          this.showDrawingError();
+          (map.pm.Draw as any).Polygon._removeLastVertex();
+          return;
+        }
+      });
+    });
+
+    /** Polygon deletion handler. */
     map.on('pm:remove', (event) => {
       const layer = event.layer;
       // Sync deleted polygons to all maps
@@ -270,6 +319,14 @@ export class MapManager {
       if (this.drawingLayer.getLayers().length === 0) {
         this.polygonsCreated$.next(false);
       }
+    });
+  }
+
+  private showDrawingError() {
+    this.matSnackBar.open('[Error] Planning areas cannot overlap!', 'Dismiss', {
+      duration: 10000,
+      panelClass: ['snackbar-error'],
+      verticalPosition: 'top',
     });
   }
 
