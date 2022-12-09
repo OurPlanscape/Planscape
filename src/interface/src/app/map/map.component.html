@@ -41,7 +41,7 @@
       <!-- Layer controls for each map, displayed in tabs -->
       <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true" [selectedIndex]="mapViewOptions.selectedMapIndex"
         class="layer-controls-tab-group" (selectedIndexChange)="selectMap($event)">
-        <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}" [disabled]="!isMapVisible(i)">
+        <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}">
           <mat-accordion multi displayMode="flat">
 
             <mat-expansion-panel expanded="true">
