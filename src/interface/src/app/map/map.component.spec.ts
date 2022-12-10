@@ -27,6 +27,7 @@ import {
   defaultMapConfig,
   ConditionsConfig,
   BoundaryConfig,
+  defaultMapViewOptions,
 } from './../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
@@ -174,7 +175,7 @@ describe('MapComponent', () => {
 
     it('sets up drawing', () => {
       const selectedMap =
-        component.maps[component.mapViewOptions.selectedMapIndex];
+        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
 
       component.maps.forEach((map: Map) => {
         expect(map.clonedDrawingRef).toBeDefined();
@@ -234,7 +235,7 @@ describe('MapComponent', () => {
     });
 
     it('shows 2 maps by default', async () => {
-      expect(component.mapViewOptions.numVisibleMaps).toBe(2);
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(2);
 
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
@@ -249,7 +250,7 @@ describe('MapComponent', () => {
       );
       await buttonHarnesses[0].click();
 
-      expect(component.mapViewOptions.numVisibleMaps).toBe(1);
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(1);
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeDefined();
       expect(map3.attributes['hidden']).toBeDefined();
@@ -263,7 +264,7 @@ describe('MapComponent', () => {
       );
       await buttonHarnesses[2].click();
 
-      expect(component.mapViewOptions.numVisibleMaps).toBe(4);
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(4);
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
       expect(map3.attributes['hidden']).toBeUndefined();
@@ -273,7 +274,7 @@ describe('MapComponent', () => {
 
   describe('Map selection', () => {
     it('first map is selected by default', () => {
-      expect(component.mapViewOptions.selectedMapIndex).toBe(0);
+      expect(component.mapViewOptions$.getValue().selectedMapIndex).toBe(0);
     });
 
     it('can select another map', () => {
@@ -282,24 +283,27 @@ describe('MapComponent', () => {
       // Clicking the initialized map should select it
       component.maps[2].instance?.fireEvent('click');
 
-      expect(component.mapViewOptions.selectedMapIndex).toBe(2);
+      expect(component.mapViewOptions$.getValue().selectedMapIndex).toBe(2);
     });
 
     it('selected map is always visible', () => {
       [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions$.getValue().selectedMapIndex =
+          selectedMapIndex;
         [1, 2, 4].forEach((mapCount: number) => {
-          component.mapViewOptions.numVisibleMaps = mapCount;
+          component.mapViewOptions$.getValue().numVisibleMaps = mapCount;
 
           expect(
-            component.isMapVisible(component.mapViewOptions.selectedMapIndex)
+            component.isMapVisible(
+              component.mapViewOptions$.getValue().selectedMapIndex
+            )
           ).toBeTrue();
         });
       });
     });
 
     it('all maps are visible in 4-map view', () => {
-      component.mapViewOptions.numVisibleMaps = 4;
+      component.mapViewOptions$.getValue().numVisibleMaps = 4;
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(component.isMapVisible(mapIndex)).toBeTrue();
@@ -307,10 +311,11 @@ describe('MapComponent', () => {
     });
 
     it('only selected map is visible in 1-map view', () => {
-      component.mapViewOptions.numVisibleMaps = 1;
+      component.mapViewOptions$.getValue().numVisibleMaps = 1;
 
       [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions$.getValue().selectedMapIndex =
+          selectedMapIndex;
         [0, 1, 2, 3].forEach((mapIndex: number) => {
           if (selectedMapIndex === mapIndex) {
             expect(component.isMapVisible(mapIndex)).toBeTrue();
@@ -322,17 +327,19 @@ describe('MapComponent', () => {
     });
 
     it('row containing selected map height is 100% in 1-map view', () => {
-      component.mapViewOptions.numVisibleMaps = 1;
+      component.mapViewOptions$.getValue().numVisibleMaps = 1;
 
       [0, 1].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions$.getValue().selectedMapIndex =
+          selectedMapIndex;
 
         expect(component.mapRowHeight(0)).toEqual('100%');
         expect(component.mapRowHeight(1)).toEqual('0%');
       });
 
       [2, 3].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions.selectedMapIndex = selectedMapIndex;
+        component.mapViewOptions$.getValue().selectedMapIndex =
+          selectedMapIndex;
 
         expect(component.mapRowHeight(0)).toEqual('0%');
         expect(component.mapRowHeight(1)).toEqual('100%');
@@ -340,7 +347,7 @@ describe('MapComponent', () => {
     });
 
     it('all row heights are 50% in 4-map view', () => {
-      component.mapViewOptions.numVisibleMaps = 4;
+      component.mapViewOptions$.getValue().numVisibleMaps = 4;
 
       [0, 1].forEach((mapRowIndex: number) => {
         expect(component.mapRowHeight(mapRowIndex)).toEqual('50%');
@@ -352,9 +359,11 @@ describe('MapComponent', () => {
 
       component.maps[3].instance?.fireEvent('click');
 
-      expect(component.mapViewOptions.selectedMapIndex).toBe(3);
+      expect(component.mapViewOptions$.getValue().selectedMapIndex).toBe(3);
       [0, 1, 2, 3].forEach((mapIndex: number) => {
-        if (component.mapViewOptions.selectedMapIndex === mapIndex) {
+        if (
+          component.mapViewOptions$.getValue().selectedMapIndex === mapIndex
+        ) {
           expect(
             component.maps[mapIndex].instance?.hasLayer(mapManager.drawingLayer)
           ).toBeTrue();
@@ -499,14 +508,14 @@ describe('MapComponent', () => {
       expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
       expect(
         component.maps[
-          component.mapViewOptions.selectedMapIndex
+          component.mapViewOptions$.getValue().selectedMapIndex
         ].instance?.hasLayer(mapManager.drawingLayer)
       ).toBeTrue();
     });
 
     it('mirrors drawn polygon in all maps', () => {
       const selectedMap =
-        component.maps[component.mapViewOptions.selectedMapIndex];
+        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
       selectedMap.instance?.fire('pm:create', {
         shape: 'Polygon',
         layer: drawnPolygon,
@@ -529,7 +538,7 @@ describe('MapComponent', () => {
 
     it('removes deleted polygon from all maps', () => {
       const selectedMap =
-        component.maps[component.mapViewOptions.selectedMapIndex];
+        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
       selectedMap.instance?.fire('pm:create', {
         shape: 'Polygon',
         layer: drawnPolygon,
@@ -614,15 +623,13 @@ describe('MapComponent', () => {
     it('restores map view options from session', () => {
       const sessionServiceStub: SessionService =
         fixture.debugElement.injector.get(SessionService);
-      const mapViewOptions: MapViewOptions = {
-        numVisibleMaps: 4,
-        selectedMapIndex: 1,
-      };
+      const mapViewOptions: MapViewOptions = defaultMapViewOptions();
+      mapViewOptions.numVisibleMaps = 4;
 
       sessionServiceStub.mapViewOptions$.next(mapViewOptions);
       component.ngOnInit();
 
-      expect(component.mapViewOptions).toEqual(mapViewOptions);
+      expect(component.mapViewOptions$.getValue()).toEqual(mapViewOptions);
     });
   });
 });
