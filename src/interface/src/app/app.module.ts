@@ -1,6 +1,6 @@
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -12,7 +12,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { AuthGuard, AuthService, MapService, PopupService, SessionService } from './services';
+import { AuthGuard, AuthService, MapService, PlanService, PopupService, SessionService } from './services';
 import { LoginComponent } from './login/login.component';
 import { MapNameplateComponent } from './map/map-nameplate/map-nameplate.component';
 import { MapComponent } from './map/map.component';
@@ -48,6 +48,10 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
     CommonModule,
     FormsModule,
     HttpClientModule,
+    HttpClientXsrfModule.withOptions({
+      cookieName: 'csrftoken',
+      headerName: 'X-CSRFTOKEN'
+    }),
     LayoutModule,
     MaterialModule,
     NgxGoogleAnalyticsModule,
@@ -60,6 +64,7 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
     AuthGuard,
     PopupService,
     MapService,
+    PlanService,
     CookieService,
     SessionService,
   ],
