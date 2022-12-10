@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { BackendConstants } from '../backend-constants';
 import {
   BehaviorSubject,
   catchError,
@@ -94,9 +95,11 @@ export class PlanService {
   private createPlanApi(plan: BasePlan): Plan {
     const createPlanRequest = this.convertToDbPlan(plan);
     this.tempPlanId = ++this.tempPlanId;
-    var planId:number = this.tempPlanId;
+    var planId: number = this.tempPlanId;
     this.http
-      .post('/plan/create/', createPlanRequest, { withCredentials: true })
+      .post(BackendConstants.END_POINT + '/plan/create/', createPlanRequest, {
+        withCredentials: true,
+      })
       .subscribe((result) => {
         console.log(result);
         planId = Number(result.toString());
