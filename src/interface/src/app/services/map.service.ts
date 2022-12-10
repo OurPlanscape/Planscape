@@ -3,7 +3,12 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, EMPTY, map, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { BoundaryConfig, ConditionsConfig, Region } from '../types';
+import {
+  BoundaryConfig,
+  ColormapConfig,
+  ConditionsConfig,
+  Region,
+} from '../types';
 
 /** A map of Region to its corresponding geojson path. */
 const regionToGeojsonMap: Record<Region, string> = {
@@ -99,6 +104,15 @@ export class MapService {
       map((response: string) => {
         return JSON.parse(response);
       })
+    );
+  }
+
+  /** Get colormap values from the REST server. */
+  getColormap(colormap: string): Observable<ColormapConfig> {
+    return this.http.get<ColormapConfig>(
+      BackendConstants.END_POINT.concat(
+        `/conditions/colormap/?colormap=${colormap}`
+      )
     );
   }
 }

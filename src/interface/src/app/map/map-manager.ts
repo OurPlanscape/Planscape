@@ -1,3 +1,4 @@
+import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   Feature,
   FeatureCollection,
@@ -7,12 +8,15 @@ import {
 } from 'geojson';
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
+import booleanIntersects from '@turf/boolean-intersects';
+import booleanWithin from '@turf/boolean-within';
+import { point } from '@turf/helpers';
 import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
-import { BaseLayerType, Map } from '../types';
+import { BaseLayerType, DEFAULT_COLORMAP, Map } from '../types';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -33,6 +37,7 @@ export class MapManager {
   doneLoadingLayerCallback: (layerName: string) => void;
 
   constructor(
+    private matSnackBar: MatSnackBar,
     maps: Map[],
     popupService: PopupService,
     startLoadingLayerCallback: (layerName: string) => void,
@@ -55,7 +60,7 @@ export class MapManager {
       drawText: false,
       rotateMode: false,
       position: 'bottomright',
-    }
+    };
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -107,11 +112,12 @@ export class MapManager {
     map.instance!.pm.setGlobalOptions({
       allowSelfIntersection: false,
       snappable: false,
+      removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
-        color: '#7b61ff'
+        color: '#7b61ff',
       },
       templineStyle: {
-        color: '#7b61ff'
+        color: '#7b61ff',
       },
       layerGroup: this.drawingLayer,
     });
@@ -218,6 +224,7 @@ export class MapManager {
   }
 
   private setUpDrawingHandlers(map: L.Map) {
+    /** Create handler. */
     map.on('pm:create', (event) => {
       // Allow drawn layers to be editable
       (event.layer as any).options.pmIgnore = false;
@@ -229,33 +236,86 @@ export class MapManager {
       // Sync newly created polygons to all maps
       this.maps.forEach((currMap) => {
         // Hacky way to clone, but it removes the reference to the origin layer
-        const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
-            color: '#ffde9e',
-            fillColor: '#ffde9e',
-          });
-          currMap.clonedDrawingRef?.addLayer(clonedLayer);
-          currMap.drawnPolygonLookup![originalId] = clonedLayer;
+        const clonedLayer = L.geoJson(
+          (layer as L.Polygon).toGeoJSON()
+        ).setStyle({
+          color: '#ffde9e',
+          fillColor: '#ffde9e',
+        });
+        currMap.clonedDrawingRef?.addLayer(clonedLayer);
+        currMap.drawnPolygonLookup![originalId] = clonedLayer;
       });
 
       this.polygonsCreated$.next(true);
 
-      event.layer.on('pm:edit', ({layer}) => {
+      /** Edit layer handler. */
+      event.layer.on('pm:edit', ({ layer }) => {
+        const editedLayer = layer as L.Polygon;
+
+        // Check if polygon overlaps another
+        let overlaps = false;
+        this.drawingLayer.getLayers().forEach((feature) => {
+          const existingPolygon = feature as L.Polygon;
+          // Skip feature with same latlng because that is what's being edited
+          if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
+            const isOverlapping = booleanWithin(
+              editedLayer.toGeoJSON(),
+              existingPolygon.toGeoJSON()
+            );
+            const isIntersecting = booleanIntersects(
+              editedLayer.toGeoJSON(),
+              existingPolygon.toGeoJSON()
+            );
+            overlaps = isOverlapping || isIntersecting;
+          }
+        });
+        if (overlaps) {
+          this.showDrawingError();
+        }
+
         // Sync edited polygons to all maps
         this.maps.forEach((currMap) => {
           const originalPolygonKey = L.Util.stamp(layer);
           const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
           currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
 
-          const updatedPolygon = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+          const updatedPolygon = L.geoJson(
+            (layer as L.Polygon).toGeoJSON()
+          ).setStyle({
             color: '#ffde9e',
             fillColor: '#ffde9e',
           });
           currMap.clonedDrawingRef?.addLayer(updatedPolygon);
           currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
         });
-      })
-    });
+      }); /** End of edit layer handler. */
+    }); /** End of create handler. */
 
+    /** Start drawing handler. */
+    map.on('pm:drawstart', (event) => {
+      event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
+        // Check if the vertex overlaps with an existing polygon
+        let overlaps = false;
+        const existingFeatures =
+          this.drawingLayer.toGeoJSON() as FeatureCollection;
+        const lastPoint = point([latlng.lng, latlng.lat]);
+        existingFeatures.features.forEach((feature) => {
+          const isWithin = booleanWithin(lastPoint, feature);
+          const isIntersecting = booleanIntersects(
+            (workingLayer as L.Polygon).toGeoJSON(),
+            feature
+          );
+          overlaps = isWithin || isIntersecting;
+        });
+        if (overlaps) {
+          this.showDrawingError();
+          (map.pm.Draw as any).Polygon._removeLastVertex();
+          return;
+        }
+      });
+    }); /** End of start drawing handler. */
+
+    /** Polygon deletion handler. */
     map.on('pm:remove', (event) => {
       const layer = event.layer;
       // Sync deleted polygons to all maps
@@ -270,6 +330,14 @@ export class MapManager {
       if (this.drawingLayer.getLayers().length === 0) {
         this.polygonsCreated$.next(false);
       }
+    }); /** End of polygon deletion handler */
+  }
+
+  private showDrawingError() {
+    this.matSnackBar.open('[Error] Planning areas cannot overlap!', 'Dismiss', {
+      duration: 10000,
+      panelClass: ['snackbar-error'],
+      verticalPosition: 'top',
     });
   }
 
@@ -407,7 +475,7 @@ export class MapManager {
 
     let colormap = map.config.dataLayerConfig.colormap;
     if (colormap?.length === 0 || !colormap) {
-      colormap = 'viridis';
+      colormap = DEFAULT_COLORMAP;
     }
 
     map.dataLayerRef = L.tileLayer.wms(

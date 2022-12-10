@@ -11,6 +11,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSelectHarness } from '@angular/material/select/testing';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import * as L from 'leaflet';
@@ -126,6 +127,7 @@ describe('MapComponent', () => {
         MatCheckboxModule,
         MatRadioModule,
         MatSelectModule,
+        MatSnackBarModule,
         BrowserAnimationsModule,
       ],
       schemas: [NO_ERRORS_SCHEMA],
@@ -496,14 +498,19 @@ describe('MapComponent', () => {
 
       expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
       expect(
-        component.maps[component.mapViewOptions.selectedMapIndex].instance?.hasLayer(mapManager.drawingLayer)
+        component.maps[
+          component.mapViewOptions.selectedMapIndex
+        ].instance?.hasLayer(mapManager.drawingLayer)
       ).toBeTrue();
     });
 
     it('mirrors drawn polygon in all maps', () => {
       const selectedMap =
         component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('pm:create', { shape: 'Polygon', layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:create', {
+        shape: 'Polygon',
+        layer: drawnPolygon,
+      });
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(
@@ -523,9 +530,15 @@ describe('MapComponent', () => {
     it('removes deleted polygon from all maps', () => {
       const selectedMap =
         component.maps[component.mapViewOptions.selectedMapIndex];
-      selectedMap.instance?.fire('pm:create', { shape: 'Polygon', layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:create', {
+        shape: 'Polygon',
+        layer: drawnPolygon,
+      });
 
-      selectedMap.instance?.fire('pm:remove', { shape: 'Polygon', layer: drawnPolygon });
+      selectedMap.instance?.fire('pm:remove', {
+        shape: 'Polygon',
+        layer: drawnPolygon,
+      });
 
       [0, 1, 2, 3].forEach((mapIndex: number) => {
         expect(
