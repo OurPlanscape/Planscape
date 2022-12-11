@@ -574,8 +574,8 @@ describe('MapComponent', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
-      //const planServiceStub: PlanService =
-      //  fixture.debugElement.injector.get(PlanService);
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
       fixture.componentInstance.showCreatePlanButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
@@ -587,7 +587,7 @@ describe('MapComponent', () => {
       await button.click();
 
       expect(fakeMatDialog.open).toHaveBeenCalled();
-      //expect(planServiceStub.createPlan).toHaveBeenCalled();
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
 
     it('dialog calls create plan with name and planning area ', async () => {
