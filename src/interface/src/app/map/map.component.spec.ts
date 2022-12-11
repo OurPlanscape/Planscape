@@ -17,12 +17,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import * as L from 'leaflet';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { MapService, PopupService, SessionService } from '../services';
+import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
   Map,
   MapConfig,
   MapViewOptions,
+  Plan,
   Region,
   defaultMapConfig,
   ConditionsConfig,
@@ -64,6 +65,13 @@ describe('MapComponent', () => {
         },
       ],
     };
+    const fakePlan: Plan = {
+      id: 'temp',
+      name: 'somePlan',
+      ownerId: 'owner',
+      region: Region.SIERRA_NEVADA,
+      planningArea: fakeGeoJson
+    }
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
@@ -93,6 +101,16 @@ describe('MapComponent', () => {
               ],
             },
           ],
+        }),
+      }
+    );
+    const fakePlanService = jasmine.createSpyObj<PlanService>(
+      'PlanService',
+      {createPlan: of({ success:true, fakePlan}) },
+      {
+        planState$: new BehaviorSubject<PlanState>({
+          all: {}, // All plans indexed by id
+          currentPlanId: 'temp',
         }),
       }
     );
@@ -139,6 +157,7 @@ describe('MapComponent', () => {
       providers: [
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
+        { provide: PlanService, useValue: fakePlanService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: fakeSessionService },
       ],
@@ -555,6 +574,8 @@ describe('MapComponent', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
+      //const planServiceStub: PlanService =
+      //  fixture.debugElement.injector.get(PlanService);
       fixture.componentInstance.showCreatePlanButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
@@ -566,9 +587,12 @@ describe('MapComponent', () => {
       await button.click();
 
       expect(fakeMatDialog.open).toHaveBeenCalled();
+      //expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
 
     it('dialog calls create plan with name and planning area ', async () => {
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
       const emptyGeoJson: GeoJSON.GeoJSON = {
         type: 'FeatureCollection',
         features: [],
@@ -581,6 +605,7 @@ describe('MapComponent', () => {
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
   });
 
