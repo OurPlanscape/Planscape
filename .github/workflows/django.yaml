@@ -2,7 +2,7 @@ name: Django CI
 
 on:
   push:
-    branches: [ "riecke_tests" ]
+    branches: [ "cleanup" ]
   pull_request:
     branches: [ "main" ]
 
@@ -37,11 +37,8 @@ jobs:
     - name: Install Dependencies
       run: |
         cd src/planscape
-        python -m pip install --upgrade pip
         sudo apt-get install gdal-bin libgdal-dev
-        pip install numpy rasterio typing_extensions
-        pip install djangorestframework django-cors-headers dj_rest_auth django-allauth django-filter
-        pip install djangorestframework-simplejwt django-leaflet 
+        python -m pip install --upgrade pip
         pip install -r requirements.txt 
     - name: Set up PostGIS
       env:
