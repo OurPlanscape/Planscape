@@ -321,6 +321,8 @@ export class MapManager {
     createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
   ) {
     map.instance!.on('click', (e) => {
+      if (!e.latlng) return;
+
       const intersectingFeatureLayers: L.Polygon[] = [];
 
       map.instance!.eachLayer((layer) => {
