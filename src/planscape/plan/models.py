@@ -1,6 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
 
+import math 
 
 class Plan(models.Model):
     """
@@ -23,3 +24,43 @@ class Plan(models.Model):
 
     # The planning area of the plan.
     geometry = models.MultiPolygonField(srid=4269, null=True)
+
+class Project(models.Model): 
+    """
+    A Project is associated with one User, the owner, and one Plan. It has optional user-specified
+    project parameters, e.g. constraints.
+    """
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True) 
+
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE) 
+
+    # Project Paramaters
+
+    # The maximum cost constraint. Default set to no max cost.
+    max_cost = models.IntegerField(null=True, default=math.inf) 
+
+    #min_acres_treated 
+
+    #permitted_ownership = (1=federal, 2=state, 4=private) 
+
+class GeneratedProjectAreas(models.Model): 
+    """
+    GeneratedProjectAreas are associated with one Project. It has geometries representing 
+    the project area, and an estimate of the area treated.
+    """
+    project = models.ForeignKey(Project, on_delete=models.CASCADE) 
+
+    # The project area geometries. May be one or more polygons that represent the project area.
+    project_area = models.MultiPolygonField(srid=4269, null=True) 
+
+    # The sum total of the project area areas.
+    estimated_area_treated = models.IntegerField(null=True) 
+
+class Scenario(models.Model):
+    """
+    A Scenario is associated with one User, the owner, and one Project. It has optional user-specified
+    prioritization parameters.
+    """
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
