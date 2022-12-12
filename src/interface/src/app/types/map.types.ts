@@ -20,6 +20,7 @@ export interface Map {
   clonedDrawingRef?: L.FeatureGroup | undefined;
   drawnPolygonLookup?: { [key: string]: L.Layer };
   legend?: Legend;
+  regionLayerRef?: L.Layer | undefined;
 }
 
 export interface MapConfig {
