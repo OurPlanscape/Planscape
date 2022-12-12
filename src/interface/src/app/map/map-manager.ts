@@ -27,30 +27,18 @@ L.PM.setOptIn(true);
  * of in map.component.ts.
  */
 export class MapManager {
-  maps: Map[];
-  readonly mapViewOptions$: BehaviorSubject<MapViewOptions>;
-  popupService: PopupService;
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
 
-  startLoadingLayerCallback: (layerName: string) => void;
-  doneLoadingLayerCallback: (layerName: string) => void;
-
   constructor(
     private matSnackBar: MatSnackBar,
-    maps: Map[],
-    mapViewOptions$: BehaviorSubject<MapViewOptions>,
-    popupService: PopupService,
-    startLoadingLayerCallback: (layerName: string) => void,
-    doneLoadingLayerCallback: (layerName: string) => void
-  ) {
-    this.maps = maps;
-    this.mapViewOptions$ = mapViewOptions$;
-    this.popupService = popupService;
-    this.startLoadingLayerCallback = startLoadingLayerCallback;
-    this.doneLoadingLayerCallback = doneLoadingLayerCallback;
-  }
+    private maps: Map[],
+    private readonly mapViewOptions$: BehaviorSubject<MapViewOptions>,
+    private popupService: PopupService,
+    private startLoadingLayerCallback: (layerName: string) => void,
+    private doneLoadingLayerCallback: (layerName: string) => void
+  ) {}
 
   getGeomanDrawOptions(): L.PM.ToolbarOptions {
     return {
