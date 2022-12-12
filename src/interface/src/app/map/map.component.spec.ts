@@ -20,14 +20,14 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MapService, PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
+  BoundaryConfig,
+  ConditionsConfig,
+  defaultMapConfig,
+  defaultMapViewOptions,
   Map,
   MapConfig,
   MapViewOptions,
   Region,
-  defaultMapConfig,
-  ConditionsConfig,
-  BoundaryConfig,
-  defaultMapViewOptions,
 } from './../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
@@ -199,17 +199,6 @@ describe('MapComponent', () => {
         expect(map.baseLayerRef).toBeDefined();
         expect(map.existingProjectsLayerRef).toBeDefined();
       });
-    });
-
-    it('creates project detail card', () => {
-      const applicationRef: ApplicationRef =
-        fixture.componentInstance.applicationRef;
-      spyOn(applicationRef, 'attachView').and.callThrough;
-
-      component.ngAfterViewInit();
-
-      // We expect a project detail card to be attached 4 times, 1x for each map
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -630,6 +619,53 @@ describe('MapComponent', () => {
       component.ngOnInit();
 
       expect(component.mapViewOptions$.getValue()).toEqual(mapViewOptions);
+    });
+  });
+
+  describe('Map detail card popups', () => {
+    let applicationRef: ApplicationRef;
+
+    beforeEach(() => {
+      applicationRef = fixture.componentInstance.applicationRef;
+      spyOn(applicationRef, 'attachView').and.callThrough;
+
+      component.ngAfterViewInit();
+
+      // Add a polygon to map 3
+      const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+            ],
+          ],
+        },
+        properties: {
+          shape_name: 'test_boundary',
+        },
+      };
+      L.geoJSON(feature).addTo(component.maps[3].instance!);
+    });
+
+    it('attaches popup when feature polygon is clicked', () => {
+      // Click on the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [0, 0],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not attach popup when map is clicked outside the polygon', () => {
+      // Click outside the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [2, 2],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
     });
   });
 });
