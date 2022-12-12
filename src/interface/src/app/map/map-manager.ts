@@ -59,7 +59,7 @@ export class MapManager {
     map: Map,
     mapId: string,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any,
+    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any,
     getBoundaryLayerGeoJsonCallback: (
       boundaryName: string
     ) => Observable<GeoJSON.GeoJSON>
@@ -90,7 +90,7 @@ export class MapManager {
     this.toggleBoundaryLayer(map, getBoundaryLayerGeoJsonCallback);
     existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
       if (projects) {
-        this.initCalMapperLayer(map, projects, createDetailCardCallback);
+        this.initCalMapperLayer(map, projects);
       }
     });
     this.changeConditionsLayer(map);
@@ -118,7 +118,7 @@ export class MapManager {
       fillOpacity: 0.2,
     });
 
-    this.setUpEventHandlers(map);
+    this.setUpEventHandlers(map, createDetailCardCallback);
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -146,22 +146,35 @@ export class MapManager {
   }
 
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
-  private initCalMapperLayer(
-    map: Map,
-    existingProjects: GeoJSON.GeoJSON,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any
-  ) {
+  private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
+    const normalStyle: L.PathOptions = {
+      color: '#000000',
+      weight: 1,
+      opacity: 0.5,
+    };
+    const hoverStyle: L.PathOptions = {
+      color: '#ff0000',
+      weight: 5,
+      opacity: 0.9,
+    };
+
     // [elsieling] This step makes the map less responsive
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
-      style: function (_) {
-        return {
-          color: '#000000',
-          weight: 3,
-          opacity: 0.9,
-        };
-      },
+      style: normalStyle,
       onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        layer.bindPopup(createDetailCardCallback(feature));
+        //layer.bindPopup(createDetailCardCallback(feature));
+        layer.bindTooltip(
+          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME)
+        );
+        // Exact type of layer (polygon or line) is not known
+        if ((layer as any).setStyle) {
+          layer.addEventListener('mouseover', (_) =>
+            (layer as L.Polygon).setStyle(hoverStyle)
+          );
+          layer.addEventListener('mouseout', (_) =>
+            (layer as L.Polygon).setStyle(normalStyle)
+          );
+        }
       },
     });
 
@@ -170,8 +183,12 @@ export class MapManager {
     }
   }
 
-  private setUpEventHandlers(map: Map) {
+  private setUpEventHandlers(
+    map: Map,
+    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+  ) {
     this.setUpDrawingHandlers(map.instance!);
+    this.setUpClickHandler(map, createDetailCardCallback);
 
     // Since maps are synced, pan and zoom event handlers only need
     // to be added to the first instance.
@@ -296,6 +313,53 @@ export class MapManager {
       duration: 10000,
       panelClass: ['snackbar-error'],
       verticalPosition: 'top',
+    });
+  }
+
+  private setUpClickHandler(
+    map: Map,
+    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+  ) {
+    map.instance!.on('click', (e) => {
+      const intersectingFeatureLayers: L.Polygon[] = [];
+
+      map.instance!.eachLayer((layer) => {
+        // Loop through all GeoJSON layers except the region boundaries
+        if (layer instanceof L.GeoJSON && layer !== map.regionLayerRef) {
+          (layer as L.GeoJSON).eachLayer((featureLayer) => {
+            if (featureLayer instanceof L.Polygon && featureLayer.feature) {
+              const polygon = featureLayer as L.Polygon;
+              // If feature contains the point that was clicked, add to list
+              if (
+                booleanIntersects(
+                  point(L.GeoJSON.latLngToCoords(e.latlng)),
+                  polygon.feature!
+                ) ||
+                booleanWithin(
+                  point(L.GeoJSON.latLngToCoords(e.latlng)),
+                  polygon.feature!
+                )
+              ) {
+                intersectingFeatureLayers.push(polygon);
+              }
+            }
+          });
+        }
+      });
+
+      if (intersectingFeatureLayers.length === 0) return;
+
+      // Open detail card with all the features present at the clicked point
+      map.instance!.openPopup(
+        createDetailCardCallback(
+          intersectingFeatureLayers
+            .map((featureLayer) => {
+              return (featureLayer as L.Polygon).feature;
+            })
+            .filter((feature) => !!feature) as Feature<Geometry, any>[]
+        ),
+        e.latlng
+      );
     });
   }
 
@@ -460,18 +524,36 @@ export class MapManager {
   }
 
   private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
+    const normalStyle: L.PathOptions = {
+      weight: 1,
+      opacity: 0.2,
+      color: '#0000ff',
+      fillOpacity: 0.2,
+      fillColor: '#0000ff',
+    };
+    const hoverStyle: L.PathOptions = {
+      weight: 3,
+      opacity: 0.5,
+      color: '#0000ff',
+      fillOpacity: 0.5,
+      fillColor: '#0000ff',
+    };
     return L.geoJSON(boundary, {
-      style: (_) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
+      style: normalStyle,
+      onEachFeature: (feature, layer) => {
         layer.bindTooltip(
           this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
+        );
+        // Exact type of layer (polygon or line) is not known
+        if ((layer as any).setStyle) {
+          layer.addEventListener('mouseover', (_) =>
+            (layer as L.Polygon).setStyle(hoverStyle)
+          );
+          layer.addEventListener('mouseout', (_) =>
+            (layer as L.Polygon).setStyle(normalStyle)
+          );
+        }
+      },
     });
   }
 
