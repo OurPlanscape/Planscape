@@ -103,33 +103,49 @@ def load_metrics(region: str):
                     _load_metric(metric, metric_type, base_metric)
 
 
-def _load_element(element: Element, raster_name: str, region_name: str, filepath: str):
+def _load_condition(condition_name: str, condition_level: ConditionLevel, condition_score_type: ConditionScoreType, raster_name: str, region_name: str, filepath: str):
     query = BaseCondition.objects.filter(
-        condition_name=element['element_name'])
+        condition_name=condition_name)
     if len(query) > 0:
-        print("Base Element " +
-                element['element_name'] + " already exists; deleting.")
+        print("BaseCondition " +
+              condition_name + " already exists; deleting.")
         query.delete()
-    base_element = BaseCondition(
-        condition_name=element['element_name'], condition_level=ConditionLevel.ELEMENT, region_name=region_name)
-    base_element.save()
-    print("Saved Base Element: " + base_element.condition_name)
+    base_condition = BaseCondition(
+        condition_name=condition_name, condition_level=condition_level, region_name=region_name)
+    base_condition.save()
+    print("Saved BaseCondition: " + base_condition.condition_name)
 
     condition_query = Condition.objects.filter(
-        condition_dataset=base_element.pk, raster_name=raster_name)
+        condition_dataset=base_condition.pk, raster_name=raster_name)
     if len(condition_query) > 0:
         print(
-            "Element " + element['element_name'] + " already exists; deleting.")
+            "Condition " + condition_name + " already exists; deleting.")
         condition_query.delete()
-    condition = Condition(condition_dataset=base_element, raster_name=raster_name,
-                            condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+    condition = Condition(condition_dataset=base_condition, raster_name=raster_name,
+                          condition_score_type=condition_score_type, is_raw=False)
     condition.save()
-    print("Saved Element: " + condition.raster_name)
+    print("Saved Condition: " + condition.raster_name)
 
     cmds = 'export PGPASSWORD=pass; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
         filepath + ' public.conditions_conditionraster | psql -U planscape -d planscape -h localhost -p 5432'
     subprocess.call(cmds, shell=True)
-    print("Saved Element Raster: " + filepath)
+    print("Saved Raster: " + filepath)
+
+
+def _save_condition(raster: ConditionMatrix, filepath: str, profile: dict):
+    with rasterio.open(
+        filepath,
+        'w',
+        driver=profile['driver'],
+        height=profile['height'],
+        width=profile['width'],
+        count=profile['count'],
+        dtype=profile['dtype'],
+        crs=profile['crs'],
+        transform=profile['transform'],
+        nodata=np.nan,
+    ) as dst:
+        dst.write(raster, 1)
 
 
 def compute_elements(region: str, save: bool, reload: bool):
@@ -149,34 +165,58 @@ def compute_elements(region: str, save: bool, reload: bool):
         if not pillar['display']:
             continue
         for element in config.get_elements(pillar):
-            raster_name = element['element_name'] + '_normalized.tif'
+            raster_path = element['filepath'] + '_normalized.tif'
 
             # TODO: Compute FUTURE metrics when available
             reader = ConditionReader()
             computed_element = score_element(
                 reader, element, ConditionScoreType.CURRENT, recompute=True)
             filepath = os.path.join(os.path.dirname(
-                PLANSCAPE_ROOT_DIRECTORY), element['filepath']) + '.tif'
-            
+                PLANSCAPE_ROOT_DIRECTORY), raster_path)
+
             # Save locally
-            if not save:
-                continue
-            with rasterio.open(
-                filepath,
-                'w',
-                driver=computed_element.profile['driver'],
-                height=computed_element.profile['height'],
-                width=computed_element.profile['width'],
-                count=computed_element.profile['count'],
-                dtype=computed_element.profile['dtype'],
-                crs=computed_element.profile['crs'],
-                transform=computed_element.profile['transform'],
-                nodata=np.nan,
-            ) as dst:
-                dst.write(computed_element.raster, 1)
+            if save:
+                _save_condition(computed_element.raster, filepath,
+                                computed_element.profile)
 
             # Load to database
             if not reload:
                 continue
-            _load_element(element, raster_name, region['region_name'], filepath)
+            _load_condition(element['element_name'], ConditionLevel.ELEMENT,
+                            ConditionScoreType.CURRENT, os.path.basename(raster_path), region['region_name'], filepath)
 
+
+def compute_pillars(region: str, save: bool, reload: bool):
+    """Computes pillar rasters based on the conditions config and saves them locally. Optionally loads them to our database.
+
+    Args:
+      region: The region to compute
+      reload: True if the raster should be reloaded 
+    """
+    config_path = os.path.join(
+        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config = PillarConfig(config_path)
+
+    region = config.get_region(region)
+    for pillar in config.get_pillars(region):
+        if not pillar['display']:
+            continue
+        raster_path = pillar['filepath'] + '_normalized.tif'
+
+        # TODO: Compute FUTURE condition when available
+        reader = ConditionReader()
+        computed_pillar = score_pillar(
+            reader, pillar, ConditionScoreType.CURRENT, recompute=True)
+        filepath = os.path.join(os.path.dirname(
+            PLANSCAPE_ROOT_DIRECTORY), raster_path)
+
+        # Save locally
+        if save:
+            _save_condition(computed_pillar.raster, filepath,
+                            computed_pillar.profile)
+
+        # Load to database
+        if not reload:
+            continue
+        _load_condition(pillar['pillar_name'], ConditionLevel.PILLAR,
+                        ConditionScoreType.CURRENT, os.path.basename(raster_path), region['region_name'], filepath)
