@@ -21,28 +21,28 @@ class PillarConfigTest(unittest.TestCase):
         self.assertTrue(self._config.check_config())
 
     def test_get_region(self):
-        region: Optional[Region] = self._config.get_region("tcsi")
+        region: Optional[Region] = self._config.get_region("sierra_cascade_inyo")
         self.assertIsNotNone(region)
         region = self._config.get_region("foo")
         self.assertIsNone(region)
 
     def test_get_pillar(self):
         pillar: Optional[Pillar] = self._config.get_pillar(
-            "tcsi", "fire_dynamics")
+            "sierra_cascade_inyo", "fire_dynamics")
         self.assertIsNotNone(pillar)
         pillar = self._config.get_pillar("foo", "bar")
         self.assertIsNone(pillar)
 
     def test_get_element(self):
         element: Optional[Element] = self._config.get_element(
-            "tcsi", "fire_dynamics", "fire_severity")
+            "sierra_cascade_inyo", "fire_dynamics", "functional_fire")
         self.assertIsNotNone(element)
         element = self._config.get_element("foo", "bar", "baz")
         self.assertIsNone(element)
 
     def test_get_metric(self):
         metric: Optional[Metric] = self._config.get_metric(
-            "tcsi", "fire_dynamics", "fire_severity", "high_severity_patch_size")
+            "sierra_cascade_inyo", "fire_dynamics", "functional_fire", "annual_burn_probability")
         self.assertIsNotNone(metric)
         metric = self._config.get_metric("foo", "bar", "baz", "boo")
         self.assertIsNone(metric)

@@ -6,6 +6,15 @@ from typing import Optional, cast
 from base.condition_types import ConditionMatrix, ConditionScoreType
 
 
+def convert_nodata_to_nan(no_data_value: float, condition: ConditionMatrix) -> Optional[ConditionMatrix]:
+    """ Convert all NoData pixels to NaN. """
+    condition = condition.astype('float32')
+    condition_is_nodata = np.isnan(condition) if np.isnan(
+        no_data_value) else (condition == no_data_value)
+    condition[condition_is_nodata] = np.nan
+    return condition
+
+
 def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
     """Computes the weighted average condition.
 
@@ -25,12 +34,17 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
     Raises:
       ValueError if the conditions do not have the same shape.
     """
+    for (condition, weight) in conditions_with_weights:
+      if np.any(np.isnan(condition)) and not np.isnan(no_data_value):
+        raise KeyError("Raster has NaN values, but NaN is not defined as NoData value.")
+
     sum = None
     total_weight = None
     for (condition, weight) in conditions_with_weights:
-        # Convert all conditions to float. This allows us to output NoData values as np.nan.
+        # Convert all conditions to float. This allows us to output NoData values as NaN.
         condition = condition.astype('float32')
 
+        # Convert all NoData values to NaN
         condition_is_nodata = np.isnan(condition) if np.isnan(
             no_data_value) else (condition == no_data_value)
         weighted_path = ~condition_is_nodata * weight
