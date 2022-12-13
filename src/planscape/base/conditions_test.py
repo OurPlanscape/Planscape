@@ -1,10 +1,11 @@
 """ Tests for the conditions.py file. """
 
-import numpy as np
 import unittest
 
-from base.conditions import average_condition, weighted_average_condition, management_condition
+import numpy as np
 from base.condition_types import ConditionScoreType
+from base.conditions import (average_condition, management_condition,
+                             weighted_average_condition, convert_nodata_to_nan)
 
 
 class AverageTest(unittest.TestCase):
@@ -29,7 +30,7 @@ class AverageTest(unittest.TestCase):
         condition2 = np.array(
             [[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
         expected = np.array([[6, 7, 8], [4, 10, 11]])
-        average = average_condition(np.finfo(np.float32).min, [
+        average = average_condition(float(np.finfo(np.float32).min), [
                                     condition1, condition2])
         self.assertIsNotNone(average)
         self.assertTrue(np.all(average == expected))
@@ -49,7 +50,7 @@ class AverageTest(unittest.TestCase):
         condition2 = np.array(
             [[11, 12, 13], [np.finfo(np.float32).min, 15, 16]])
         expected = np.array([[6, 7, 8], [np.nan, 10, 11]])
-        average = average_condition(np.finfo(np.float32).min, [
+        average = average_condition(float(np.finfo(np.float32).min), [
                                     condition1, condition2])
         self.assertIsNotNone(average)
 
@@ -202,3 +203,32 @@ class ManagementConditionTest(unittest.TestCase):
                              [0, v, 0],
                              [1, 0, -1]])
         self.assertTrue(np.all(np.isclose(expected, combined)))
+
+
+class ConvertTest(unittest.TestCase):
+    def test_no_conversion(self):
+        condition = np.array([[1, 2, 3], [4, 5, 6]])
+        expected = np.array([[1, 2, 3], [4, 5, 6]])
+        converted = convert_nodata_to_nan(np.nan, condition)
+        self.assertTrue(np.all(np.nan_to_num(converted)
+                        == np.nan_to_num(expected)))
+
+    def test_already_nan(self):
+        condition = np.array([[1, 2, 3], [np.nan, 5, 6]])
+        expected = np.array([[1, 2, 3], [np.nan, 5, 6]])
+        converted = convert_nodata_to_nan(np.nan, condition)
+        self.assertTrue(np.all(np.nan_to_num(converted)
+                        == np.nan_to_num(expected)))
+
+    def test_value_other_than_nan(self):
+        condition = np.array([[1, 2, 3], [999, 5, 6]])
+        expected = np.array([[1, 2, 3], [999, 5, 6]])
+        converted = convert_nodata_to_nan(np.nan, condition)
+        self.assertTrue(np.all(converted == expected))
+
+    def test_contains_nan_but_not_nodata(self):
+        condition = np.array([[1, 2, 3], [np.nan, 999, 6]])
+        expected = np.array([[1, 2, 3], [np.nan, np.nan, 6]])
+        converted = convert_nodata_to_nan(999, condition)
+        self.assertTrue(np.all(np.nan_to_num(converted)
+                        == np.nan_to_num(expected)))

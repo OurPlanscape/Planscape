@@ -1,12 +1,12 @@
 import os
 from pathlib import Path
-from decouple import config
 from typing import cast
 
+from config.boundary_config import BoundaryConfig
+from decouple import config
 from django.contrib.gis.utils.layermapping import LayerMapping
 from django.db.models.signals import pre_save
 
-from config.boundary_config import BoundaryConfig
 from .models import Boundary, BoundaryDetails
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
@@ -36,11 +36,16 @@ def run(boundary_to_load=None, verbose=True):
 
         # Create the new top-level Boundary
         print("Creating Boundary " + boundary_name)
+        display_name = boundary.get('display_name', None)
+        region_name = boundary.get('region_name', None)
+        if region_name is not None and region_name == "none":
+            region_name = None
         query = Boundary.objects.filter(boundary_name__exact=boundary_name)
         if len(query) > 0:
             print("Boundary " + boundary_name + " already exists; deleting.")
             query.delete()
-        boundary_obj = Boundary(boundary_name=boundary_name)
+        boundary_obj = Boundary(boundary_name=boundary_name, display_name=display_name,
+                                region_name=region_name)
         boundary_obj.save()
 
         shapefile_field_mapping = dict(boundary['shapefile_field_mapping'])
