@@ -9,4 +9,4 @@ class RasterData:
         self.profile = profile
 
     raster: ConditionMatrix
-    profile: str
+    profile: dict
