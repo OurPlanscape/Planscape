@@ -52,11 +52,8 @@ class ConditionReader():
         """
         match condition_type:
             case ConditionScoreType.CURRENT:
-                if is_raw:
-                    file = '.tif'
-                else:
-                    # TODO Replace with Interpreted Value file path when available
-                    file = '_normalized.tif'
+                # TODO Replace with Interpreted Value file path when available
+                file = '.tif' if is_raw else '_normalized.tif'
             case ConditionScoreType.FUTURE:
                 file = 'future.tif'
             case ConditionScoreType.IMPACT:
