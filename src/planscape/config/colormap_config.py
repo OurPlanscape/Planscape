@@ -19,7 +19,7 @@ class ColormapConfig:
         config = self._config.get(colormap, None)
         if config is None:
             return None
-        return {colormap: config}
+        return {"name": colormap, "values": config}
 
     def get_colormap_string(self, colormap: str) -> str:
         match colormap:
