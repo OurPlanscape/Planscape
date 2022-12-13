@@ -1,10 +1,8 @@
 import json
 import logging
 import os
-from typing import cast
 
 from config.colormap_config import ColormapConfig
-from decouple import config as cfg
 from django.db import connection
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
@@ -19,7 +17,6 @@ RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
 # Global variable for the ColormapConfig, so that the configuration file is read once.
-PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 colormap_config = ColormapConfig(
     os.path.join(settings.BASE_DIR, 'config/colormap.json'))
 
