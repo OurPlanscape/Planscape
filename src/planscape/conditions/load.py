@@ -1,21 +1,12 @@
 import os
-from pathlib import Path
 from decouple import config
 from typing import cast
-import sys
-
-from django.contrib.gis.utils.layermapping import LayerMapping
-from django.db.models.signals import pre_save
-from django.contrib.gis.gdal.raster.source import GDALRaster
 
 from base.condition_types import ConditionLevel, ConditionScoreType
-from base.region_name import RegionName
 from config.conditions_config import PillarConfig
 from .models import BaseCondition, Condition
 from base.conditions import *
 from eval.compute_conditions import *
-from osgeo import gdal, osr
-import psycopg2
 import subprocess
 
 PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
@@ -84,7 +75,6 @@ def _load_metric(metric: Metric, metric_type: str, base_metric: BaseCondition):
     condition.save()
     print("Saved Condition: " + condition.raster_name)
 
-
 def load_metrics(region: str):
     """Loads the metric rasters defined by the configuration into the database if display=true."""
     config_path = os.path.join(
@@ -93,16 +83,15 @@ def load_metrics(region: str):
 
     region = config.get_region(region)
     for pillar in config.get_pillars(region):
-        if not pillar['display']:
-            continue
-        for element in config.get_elements(pillar):
-            for metric in config.get_metrics(element):
-                query = BaseCondition.objects.filter(
-                    condition_name=metric['metric_name'])
-                if len(query) > 0:
-                    print("BaseCondition " +
-                          metric['metric_name'] + " already exists; deleting.")
-                    query.delete()
+        if pillar['display']:
+            for element in config.get_elements(pillar):
+                for metric in config.get_metrics(element):
+                    query = BaseCondition.objects.filter(
+                        condition_name=metric['metric_name'])
+                    if len(query) > 0:
+                        print("BaseCondition " +
+                              metric['metric_name'] + " already exists; deleting.")
+                        query.delete()
 
                 base_metric = BaseCondition(
                     condition_name=metric['metric_name'], condition_level=ConditionLevel.METRIC, region_name=region['region_name'])
@@ -112,6 +101,7 @@ def load_metrics(region: str):
                 # TODO: Update to interpreted when available
                 for metric_type in ['.tif', '_normalized.tif']:
                     _load_metric(metric, metric_type, base_metric)
+
 
 def _load_element(element: Element, raster_name: str, region_name: str, filepath: str):
     query = BaseCondition.objects.filter(

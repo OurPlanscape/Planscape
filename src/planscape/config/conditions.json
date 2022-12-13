@@ -174,7 +174,8 @@
                                 {
                                     "metric_name": "structure_exposure",
                                     "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
-                                    "display_name": "Structure Exposure"
+                                    "display_name": "Structure Exposure",
+                                    "colormap": "inferno"
                                 },
                                 {
                                     "metric_name": "damage_potential_wui",

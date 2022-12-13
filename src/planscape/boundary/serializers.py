@@ -4,7 +4,7 @@ from .models import Boundary, BoundaryDetails
 
 class BoundarySerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ("id", "boundary_name")
+        fields = ("id", "boundary_name", "display_name", "region_name")
         model = Boundary
 
 

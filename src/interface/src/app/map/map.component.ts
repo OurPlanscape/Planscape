@@ -1,47 +1,94 @@
-import { AfterViewInit, ApplicationRef, Component, createComponent, EnvironmentInjector, OnDestroy } from '@angular/core';
-import { Feature, Geometry } from 'geojson';
-import * as L from 'leaflet';
-import 'leaflet-draw';
-import 'leaflet.sync';
-import { BehaviorSubject, map, Observable, Subject, take, takeUntil } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { NestedTreeControl } from '@angular/cdk/tree';
+import {
+  AfterViewInit,
+  ApplicationRef,
+  Component,
+  createComponent,
+  EnvironmentInjector,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTreeNestedDataSource } from '@angular/material/tree';
+import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
+import { filter, switchMap } from 'rxjs/operators';
 
-import { MapService } from '../map.service';
-import { PlanService, PlanState } from '../plan.service';
-import { PopupService } from '../popup.service';
-import { SessionService } from '../session.service';
-import { BaseLayerType, Map, MapConfig, Region } from '../types';
-import { Legend } from './../shared/legend/legend.component';
+import {
+  MapService,
+  PlanService,
+  PlanState,
+  PopupService,
+  SessionService,
+} from '../services';
+import {
+  BaseLayerType,
+  BoundaryConfig,
+  colormapConfigToLegend,
+  ConditionsConfig,
+  DataLayerConfig,
+  defaultMapConfig,
+  defaultMapViewOptions,
+  DEFAULT_COLORMAP,
+  Legend,
+  Map,
+  MapConfig,
+  MapViewOptions,
+  NONE_BOUNDARY_CONFIG,
+  NONE_COLORMAP,
+  NONE_DATA_LAYER_CONFIG,
+  Region,
+} from '../types';
+import { MapManager } from './map-manager';
+import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
+
+export interface PlanCreationOption {
+  value: string;
+  display: string;
+  icon: any;
+}
+
+interface ConditionsNode extends DataLayerConfig {
+  showInfoIcon?: boolean;
+  infoMenuOpen?: boolean;
+  children?: ConditionsNode[];
+}
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-export class MapComponent implements AfterViewInit, OnDestroy {
-  maps: Map[];
-  mapCount: number = 2;
-  mapCountOptions: number[] = [1, 2, 4];
-  selectedMapIndex: number = 0;
+export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
+  mapManager: MapManager;
 
+  maps: Map[];
+  mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
+    defaultMapViewOptions()
+  );
+  mapNameplateWidths: BehaviorSubject<number | null>[] = Array(4)
+    .fill(null)
+    .map((_) => new BehaviorSubject<number | null>(null));
+
+  boundaryConfig$: Observable<BoundaryConfig[] | null>;
+  conditionsConfig$: Observable<ConditionsConfig | null>;
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
 
-  baseLayerTypes: number[] = [BaseLayerType.Road, BaseLayerType.Terrain];
-  BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
 
-  huc12BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-  huc10BoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-  countyBoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-  usForestBoundaryGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
+  readonly baseLayerTypes: number[] = [
+    BaseLayerType.Road,
+    BaseLayerType.Terrain,
+  ];
+  readonly BaseLayerType: typeof BaseLayerType = BaseLayerType;
+
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
-  huc12BoundaryGeoJsonLoaded: boolean = false;
-  huc10BoundaryGeoJsonLoaded: boolean = false;
-  countyBoundaryGeoJsonLoaded: boolean = false;
-  usForestBoundaryGeoJsonLoaded: boolean = false;
-  existingProjectsGeoJsonLoaded: boolean = false;
+  loadingIndicators: { [layerName: string]: boolean } = {
+    existing_projects: true,
+  };
 
   legend: Legend = {
     labels: [
@@ -66,56 +113,35 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     ],
   };
 
-  static hillshadeTiles() {
-    return L.tileLayer(
-      'https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA',
-      {
-        zIndex: 0,
-        tileSize: 512,
-        zoomOffset: -1,
-      }
-    );
-  }
+  planCreationOptions: PlanCreationOption[] = [
+    { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
+  ];
+  selectedPlanCreationOption: PlanCreationOption | null = null;
+  showCreatePlanButton$ = new BehaviorSubject(false);
 
-  static openStreetMapsTiles() {
-    return L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap',
-    });
-  }
-
-  static dataLayerTiles() {
-    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-      crs: L.CRS.EPSG4326,
-      minZoom: 7,
-      maxZoom: 15,
-      format: 'image/png',
-      opacity: 0.7,
-      layers: 'AvailableBiomass_2021_300m_base.tif',
-    });
-  }
-
-  static dataLayerTilesNormalized() {
-    return L.tileLayer.wms('http://localhost:8000/conditions/wms', {
-      crs: L.CRS.EPSG4326,
-      minZoom: 7,
-      maxZoom: 15,
-      format: 'image/png',
-      opacity: 0.7,
-      layers: 'AvailableBiomass_2021_300m_normalized.tif',
-    });
-  }
+  conditionTreeControl = new NestedTreeControl<ConditionsNode>(
+    (node) => node.children
+  );
+  conditionDataSource = new MatTreeNestedDataSource<ConditionsNode>();
 
   private readonly destroy$ = new Subject<void>();
 
   constructor(
     public applicationRef: ApplicationRef,
     private mapService: MapService,
+    private dialog: MatDialog,
+    private matSnackBar: MatSnackBar,
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
     private planService: PlanService
   ) {
+    this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
+      takeUntil(this.destroy$)
+    );
+    this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
+      takeUntil(this.destroy$)
+    );
     this.selectedRegion$ = this.sessionService.region$.pipe(
       takeUntil(this.destroy$)
     );
@@ -123,64 +149,12 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       takeUntil(this.destroy$)
     );
 
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getHuc12BoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.huc12BoundaryGeoJson$.next(boundary);
-        this.huc12BoundaryGeoJsonLoaded = true;
-      });
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getHuc10BoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.huc10BoundaryGeoJson$.next(boundary);
-        this.huc10BoundaryGeoJsonLoaded = true;
-      });
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getCountyBoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.countyBoundaryGeoJson$.next(boundary);
-        this.countyBoundaryGeoJsonLoaded = true;
-      });
-    this.selectedRegion$
-      .pipe(
-        take(1),
-        switchMap((selectedRegion) => {
-          return this.mapService
-            .getUsForestBoundaryShapes(selectedRegion)
-            .pipe(takeUntil(this.destroy$));
-        })
-      )
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.usForestBoundaryGeoJson$.next(boundary);
-        this.usForestBoundaryGeoJsonLoaded = true;
-      });
     this.mapService
       .getExistingProjects()
       .pipe(takeUntil(this.destroy$))
       .subscribe((projects: GeoJSON.GeoJSON) => {
         this.existingProjectsGeoJson$.next(projects);
-        this.existingProjectsGeoJsonLoaded = true;
+        this.loadingIndicators['existing_projects'] = false;
       });
 
     this.maps = ['map1', 'map2', 'map3', 'map4'].map(
@@ -188,173 +162,199 @@ export class MapComponent implements AfterViewInit, OnDestroy {
         return {
           id: id,
           name: 'Map ' + (index + 1),
-          config: this.defaultMapConfig(),
+          config: defaultMapConfig(),
         };
       }
     );
+
+    this.mapManager = new MapManager(
+      matSnackBar,
+      this.maps,
+      this.mapViewOptions$,
+      popupService,
+      this.startLoadingLayerCallback.bind(this),
+      this.doneLoadingLayerCallback.bind(this)
+    );
+    this.mapManager.polygonsCreated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(this.showCreatePlanButton$);
+
+    this.conditionDataSource.data = [NONE_DATA_LAYER_CONFIG];
+    this.conditionsConfig$
+      .pipe(filter((config) => !!config))
+      .subscribe((config) => {
+        this.conditionDataSource.data = this.conditionsConfigToData(config!);
+      });
+  }
+
+  ngOnInit(): void {
+    this.restoreSession();
+    /** Save map configurations in the user's session every X ms. */
+    this.sessionService.sessionInterval$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((_) => {
+        this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
+        this.sessionService.setMapConfigs(
+          this.maps.map((map: Map) => map.config)
+        );
+      });
   }
 
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
+      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+      // Only add drawing controls to the selected map
+      if (selectedMapIndex === this.maps.indexOf(map)) {
+        this.mapManager.addDrawingControl(
+          this.maps[selectedMapIndex].instance!
+        );
+      } else {
+        // Show a copy of the drawing layer on the other maps
+        this.mapManager.showClonedDrawing(map);
+      }
     });
 
-    this.syncAllMaps();
-
-    this.addDrawingControls(this.maps[0].instance!);
+    this.mapManager.syncAllMaps();
   }
 
   ngOnDestroy(): void {
     this.maps.forEach((map: Map) => map.instance?.remove());
+    this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  private restoreSession() {
+    this.sessionService.mapViewOptions$
+      .pipe(take(1))
+      .subscribe((mapViewOptions: MapViewOptions | null) => {
+        if (mapViewOptions) {
+          this.mapViewOptions$.next(mapViewOptions);
+        }
+      });
+    this.sessionService.mapConfigs$
+      .pipe(take(1))
+      .subscribe((mapConfigs: MapConfig[] | null) => {
+        if (mapConfigs) {
+          mapConfigs.forEach((mapConfig, index) => {
+            this.maps[index].config = mapConfig;
+          });
+        }
+        this.boundaryConfig$
+          .pipe(filter((config) => !!config))
+          .subscribe((config) => {
+            // Ensure the radio button corresponding to the saved selection is selected.
+            this.maps.forEach((map) => {
+              const boundaryConfig = config?.find(
+                (boundary) =>
+                  boundary.boundary_name ===
+                  map.config.boundaryLayerConfig.boundary_name
+              );
+              if (!!boundaryConfig) {
+                map.config.boundaryLayerConfig = boundaryConfig;
+              }
+            });
+          });
+      });
+  }
+
   /** Initializes the map with controls and the layer options specified in its config. */
-  private initMap(map: Map, id: string): L.Map {
-    if (map.instance != undefined) map.instance.remove();
-
-    if (map.config.baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = MapComponent.openStreetMapsTiles();
-    } else {
-      map.baseLayerRef = MapComponent.hillshadeTiles();
-    }
-
-    map.instance = L.map(id, {
-      center: [38.646, -120.548],
-      zoom: 9,
-      layers: [map.baseLayerRef],
-      zoomControl: false,
-    });
-
-    // Add zoom controls to bottom right corner
-    const zoomControl = L.control.zoom({
-      position: 'bottomright',
-    });
-    zoomControl.addTo(map.instance);
-
-    // Init layers, but only add them to the map instance if specified in the map config.
-    this.huc12BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
-      if (boundary) {
-        this.initHuc12BoundaryLayer(map, boundary);
-      }
-    });
-    this.huc10BoundaryGeoJson$.subscribe((boundary: GeoJSON.GeoJSON | null) => {
-      if (boundary != null) {
-        this.initHUC10BoundaryLayer(map, boundary);
-      }
-    });
-    this.countyBoundaryGeoJson$.subscribe(
-      (boundary: GeoJSON.GeoJSON | null) => {
-        if (boundary) {
-          this.initCountyBoundaryLayer(map, boundary);
-        }
-      }
+  private initMap(map: Map, id: string) {
+    this.mapManager.initLeafletMap(
+      map,
+      id,
+      this.existingProjectsGeoJson$,
+      (feature) => {
+        let component = createComponent(ProjectCardComponent, {
+          environmentInjector: this.environmentInjector,
+        });
+        component.instance.feature = feature;
+        this.applicationRef.attachView(component.hostView);
+        return component.location.nativeElement;
+      },
+      this.getBoundaryLayerGeoJson.bind(this)
     );
-    this.usForestBoundaryGeoJson$.subscribe(
-      (boundary: GeoJSON.GeoJSON | null) => {
-        if (boundary != null) {
-          this.initUSForestBoundaryLayer(map, boundary);
-        }
-      }
-    );
-    this.existingProjectsGeoJson$.subscribe(
-      (projects: GeoJSON.GeoJSON | null) => {
-        if (projects) {
-          this.initCalMapperLayer(map, projects);
-        }
-      }
-    );
-    this.initDataLayer(map);
 
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
-      this.displayRegionBoundary(map.instance!, selectedRegion);
+      this.displayRegionBoundary(map, selectedRegion);
     });
 
     // Mark the map as selected when the user clicks anywhere on it.
-    map.instance.addEventListener('click', () => {
-      this.selectedMapIndex = this.maps.indexOf(map);
+    map.instance?.addEventListener('click', () => {
+      this.selectMap(this.maps.indexOf(map));
     });
 
-    return map.instance;
+    // Initialize the legend with colormap values.
+    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
+
+    // Calculate the maximum width of the map nameplate.
+    this.updateMapNameplateWidth(map);
   }
 
-  /** Default starting config for a map. */
-  private defaultMapConfig(): MapConfig {
-    return {
-      baseLayerType: BaseLayerType.Road,
-      showExistingProjectsLayer: true,
-      showHuc12BoundaryLayer: false,
-      showHuc10BoundaryLayer: false,
-      showCountyBoundaryLayer: false,
-      showUsForestBoundaryLayer: false,
-      showDataLayer: false,
-      showDataLayerNormalized: false,
-    }
-  };
-
-  /** Sync pan, zoom, etc. between all maps. */
-  private syncAllMaps() {
-    this.maps.forEach((mapA) => {
-      this.maps.forEach((mapB) => {
-        if (mapA !== mapB) {
-          (mapA.instance as any).sync(mapB.instance);
-        }
-      });
-    });
+  private updateMapNameplateWidth(map: Map) {
+    this.mapNameplateWidths[this.maps.indexOf(map)].next(
+      this.getMapNameplateWidth(map)
+    );
   }
 
-  /** Adds drawing controls and handles drawing events. */
-  private addDrawingControls(map: L.Map) {
-    const drawingLayer = new L.FeatureGroup();
-    map.addLayer(drawingLayer);
+  private getMapNameplateWidth(map: Map): number | null {
+    const mapElement = document.getElementById(map.id);
+    const attribution = mapElement
+      ?.getElementsByClassName('leaflet-control-attribution')
+      ?.item(0);
+    const mapWidth = !!mapElement ? mapElement.clientWidth : null;
+    const attributionWidth = !!attribution ? attribution.clientWidth : null;
+    // The maximum width of the nameplate is equal to the width of the map minus the width
+    // of Leaflet's attribution control. Additional padding/margins may be applied in the
+    // nameplate component, but are not considered for this width.
+    const nameplateWidth =
+      !!mapWidth && !!attributionWidth ? mapWidth - attributionWidth : null;
+    return nameplateWidth;
+  }
 
-    const drawOptions: L.Control.DrawConstructorOptions = {
-      position: 'topright',
-      draw: {
-        polygon: {
-          allowIntersection: false,
-          showArea: true,
-          metric: false, // Set measurement units to acres
-          repeatMode: true, // Stays in polygon mode after completing a shape
-          shapeOptions: {
-            color: '#7b61ff',
-          },
-          drawError: {
-            color: '#ff7b61',
-            message: "Can't draw polygons with intersections!",
-          },
-        }, // Set to false to disable each tool
-        polyline: false,
-        circle: false,
-        rectangle: false,
-        marker: false,
-        circlemarker: false,
-      },
-      edit: {
-        featureGroup: drawingLayer, // Required and declares which layer is editable
-      },
-    };
+  private startLoadingLayerCallback(layerName: string) {
+    this.loadingIndicators[layerName] = true;
+  }
+  private doneLoadingLayerCallback(layerName: string) {
+    this.loadingIndicators[layerName] = false;
+  }
 
-    const drawControl = new L.Control.Draw(drawOptions);
-    map.addControl(drawControl);
+  private getBoundaryLayerGeoJson(
+    boundaryName: string
+  ): Observable<GeoJSON.GeoJSON> {
+    return this.selectedRegion$.pipe(
+      switchMap((region) =>
+        this.mapService.getBoundaryShapes(boundaryName, region)
+      )
+    );
+  }
 
-    map.on('draw:created', (event) => {
-      const layer = (event as L.DrawEvents.Created).layer;
-      drawingLayer.addLayer(layer);
+  /** Configures and opens the Create Plan dialog */
+  openCreatePlanDialog() {
+    const dialogConfig = new MatDialogConfig();
+    dialogConfig.maxWidth = '560px';
 
-      this.createPlan(layer.toGeoJSON());
+    const openedDialog = this.dialog.open(
+      PlanCreateDialogComponent,
+      dialogConfig
+    );
+
+    openedDialog.afterClosed().subscribe((result) => {
+      if (result) {
+        this.createPlan(result.value, this.mapManager.convertToPlanningArea());
+      }
     });
   }
 
-  private createPlan(shape: GeoJSON.GeoJSON) {
+  private createPlan(name: string, shape: GeoJSON.GeoJSON) {
     this.selectedRegion$.subscribe((selectedRegion) => {
       if (!selectedRegion) return;
 
       this.planService
         .createPlan({
-          name: 'tempName',
+          name: name,
           ownerId: 'tempUserId',
           region: selectedRegion,
           planningArea: shape,
@@ -365,247 +365,224 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     });
   }
 
+  /**
+   * On PlanCreationOptions selection change, enables the polygon tool if
+   * the drawing option is selected.
+   */
+  onPlanCreationOptionChange(option: PlanCreationOption) {
+    if (option.value === 'draw-area') {
+      this.mapManager.enablePolygonDrawingTool(
+        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
+      );
+      this.changeMapCount(1);
+    }
+  }
+
   /** Gets the selected region geojson and renders it on the map. */
-  private displayRegionBoundary(map: L.Map, selectedRegion: Region | null) {
+  private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
     if (!selectedRegion) return;
+    if (!map.instance) return;
     this.mapService
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.maskOutsideRegion(map, boundary);
+        this.mapManager.maskOutsideRegion(map.instance!, boundary);
       });
-  }
-
-  /**
-   * Darkens everything outside of the region boundary.
-   * Type 'any' is used in order to access coordinates.
-   * */
-  private maskOutsideRegion(map: L.Map, boundary: any) {
-    // Add corners of the map to invert the polygon
-    boundary.features[0].geometry.coordinates[0].unshift([
-      [180, -90],
-      [180, 90],
-      [-180, 90],
-      [-180, -90],
-    ]);
-    L.geoJSON(boundary, {
-      style: (feature) => ({
-        color: '#ffffff',
-        weight: 2,
-        opacity: 1,
-        fillColor: '#000000',
-        fillOpacity: 0.4,
-      }),
-    }).addTo(map);
-  }
-
-  /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
-  private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
-    // [elsieling] This step makes the map less responsive
-    map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
-      style: function (_) {
-        return {
-          color: '#000000',
-          weight: 3,
-          opacity: 0.9,
-        };
-      },
-      onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        let component = createComponent(ProjectCardComponent, {
-          environmentInjector: this.environmentInjector,
-        });
-        component.instance.feature = feature;
-        this.applicationRef.attachView(component.hostView);
-        layer.bindPopup(component.location.nativeElement);
-      },
-    });
-
-    if (map.config.showExistingProjectsLayer) {
-      map.instance?.addLayer(map.existingProjectsLayerRef);
-    }
-  }
-
-  /** Renders the HUC-12 boundaries in an optional layer. */
-  private initHuc12BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.huc12BoundaryLayerRef = L.geoJSON(boundary, {
-      style: (_) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
-
-    if (map.config.showHuc12BoundaryLayer) {
-      map.instance?.addLayer(map.huc12BoundaryLayerRef);
-    }
-  }
-
-  private initHUC10BoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.huc10BoundaryLayerRef = L.geoJSON(boundary, {
-      style: (feature) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
-
-    if (map.config.showHuc10BoundaryLayer) {
-      map.instance?.addLayer(map.huc10BoundaryLayerRef);
-    }
-  }
-
-  /** Renders the county boundaries in an optional layer. */
-  private initCountyBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.countyBoundaryLayerRef = L.geoJSON(boundary, {
-      style: (feature) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
-
-    if (map.config.showCountyBoundaryLayer) {
-      map.instance?.addLayer(map.countyBoundaryLayerRef);
-    }
-  }
-
-  private initUSForestBoundaryLayer(map: Map, boundary: GeoJSON.GeoJSON) {
-    map.usForestBoundaryLayerRef = L.geoJSON(boundary, {
-      style: (feature) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
-        layer.bindPopup(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
-    });
-
-    if (map.config.showUsForestBoundaryLayer) {
-      map.instance?.addLayer(map.usForestBoundaryLayerRef);
-    }
-  }
-
-  private initDataLayer(map: Map) {
-    map.dataLayerRef = MapComponent.dataLayerTiles();
-
-    if (map.config.showDataLayer) {
-      map.instance?.addLayer(map.dataLayerRef);
-    }
   }
 
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
-    let baseLayerType = map.config.baseLayerType;
-    map.baseLayerRef?.remove();
-    if (baseLayerType === BaseLayerType.Terrain) {
-      map.baseLayerRef = MapComponent.hillshadeTiles();
-    } else if (baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = MapComponent.openStreetMapsTiles();
-    }
-    map.instance?.addLayer(map.baseLayerRef!);
+    this.mapManager.changeBaseLayer(map);
+
+    // Changing the base layer may change the attribution, so the map nameplate
+    // width should be recalculated.
+    this.updateMapNameplateWidth(map);
   }
 
-  /** Toggles whether HUC-12 boundaries are shown. */
-  toggleHuc12BoundariesLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showHuc12BoundaryLayer) {
-      map.huc12BoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.huc12BoundaryLayerRef?.remove();
-    }
-  }
-
-  /** Toggles whether HUC-10 boundaries are shown. */
-  toggleHUC10BoundariesLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showHuc10BoundaryLayer) {
-      map.huc10BoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.huc10BoundaryLayerRef?.remove();
-    }
-  }
-
-  /** Toggles whether county boundaries are shown. */
-  toggleCountyBoundariesLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showCountyBoundaryLayer) {
-      map.countyBoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.countyBoundaryLayerRef?.remove();
-    }
-  }
-
-  /** Toggles whether US Forest boundaries are shown. */
-  toggleUSForestsBoundariesLayer(map: Map) {
-    if (map.instance == undefined) return;
-
-    if (map.config.showUsForestBoundaryLayer) {
-      map.usForestBoundaryLayerRef?.addTo(map.instance);
-    } else {
-      map.usForestBoundaryLayerRef?.remove();
-    }
+  /** Toggles which boundary layer is shown. */
+  toggleBoundaryLayer(map: Map) {
+    this.mapManager.toggleBoundaryLayer(
+      map,
+      this.getBoundaryLayerGeoJson.bind(this)
+    );
   }
 
   /** Toggles whether existing projects from CalMapper are shown. */
   toggleExistingProjectsLayer(map: Map) {
-    if (map.instance === undefined) return;
-
-    if (map.config.showExistingProjectsLayer) {
-      map.existingProjectsLayerRef?.addTo(map.instance);
-    } else {
-      map.existingProjectsLayerRef?.remove();
-    }
+    this.mapManager.toggleExistingProjectsLayer(map);
   }
 
-  /** Toggles whether data layer is shown. */
-  toggleDataLayer(map: Map) {
-    if (map.instance === undefined) return;
-    map.dataLayerRef = MapComponent.dataLayerTiles();
-
-    if (map.config.showDataLayer) {
-      map.dataLayerRef?.addTo(map.instance);
-    } else {
-      map.dataLayerRef?.remove();
-    }
-  }
-  toggleDataLayerNormalized(map: Map) {
-    if (map.instance === undefined) return;
-    map.dataLayerRef = MapComponent.dataLayerTilesNormalized();
-
-    if (map.config.showDataLayerNormalized) {
-      map.dataLayerRef?.addTo(map.instance);
-    } else {
-      map.dataLayerRef?.remove();
-    }
+  /** Changes which condition scores layer (if any) is shown. */
+  changeConditionsLayer(map: Map) {
+    this.mapManager.changeConditionsLayer(map);
+    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
   }
 
-  changeMapCount() {
+  private updateLegendWithColormap(map: Map, colormap?: string) {
+    if (colormap == undefined) {
+      colormap = DEFAULT_COLORMAP;
+    } else if (colormap == NONE_COLORMAP) {
+      map.legend = undefined;
+      return;
+    }
+
+    this.mapService
+      .getColormap(colormap)
+      .pipe(take(1))
+      .subscribe((colormapConfig) => {
+        map.legend = colormapConfigToLegend(colormapConfig);
+      });
+  }
+
+  /** Change how many maps are displayed in the viewport. */
+  changeMapCount(mapCount: number) {
+    const mapViewOptions = this.mapViewOptions$.getValue();
+    mapViewOptions.numVisibleMaps = mapCount;
+    this.mapViewOptions$.next(mapViewOptions);
     setTimeout(() => {
-      this.maps.forEach((map: Map) => map.instance?.invalidateSize());
+      this.maps.forEach((map: Map) => {
+        map.instance?.invalidateSize();
+        // Recalculate the map nameplate size.
+        this.updateMapNameplateWidth(map);
+      });
     }, 0);
+  }
+
+  /** Select a map and update which map contains the drawing layer. */
+  selectMap(mapIndex: number) {
+    const mapViewOptions = this.mapViewOptions$.getValue();
+    const previousMapIndex = mapViewOptions.selectedMapIndex;
+
+    // Toggle the cloned layer on if the map is not the current selected map.
+    // Toggle on the drawing layer and control on the selected map.
+    if (previousMapIndex !== mapIndex) {
+      this.mapManager.removeDrawingControl(
+        this.maps[previousMapIndex].instance!
+      );
+      this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
+
+      mapViewOptions.selectedMapIndex = mapIndex;
+      this.mapViewOptions$.next(mapViewOptions);
+      this.sessionService.setMapViewOptions(mapViewOptions);
+
+      this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
+      this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
+    }
+  }
+
+  /**
+   * Whether the map at given index should be visible.
+   *
+   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
+   */
+  isMapVisible(index: number): boolean {
+    if (index === this.mapViewOptions$.getValue().selectedMapIndex) return true;
+
+    switch (this.mapViewOptions$.getValue().numVisibleMaps) {
+      case 4:
+        return true;
+      case 1:
+        // Only 1 map is visible and this one is not selected
+        return false;
+      case 2:
+      default:
+        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
+        if (index === 0 || index === 1) {
+          // TODO: 2 map view might go away or the logic here might change
+          return true;
+        }
+        return false;
+    }
+  }
+
+  /** Computes the height for the map row at given index (0%, 50%, or 100%).
+   *
+   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
+   */
+  mapRowHeight(index: number): string {
+    switch (this.mapViewOptions$.getValue().numVisibleMaps) {
+      case 4:
+        return '50%';
+      case 2:
+        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
+        // TODO: 2 map view might go away or the logic here might change
+        return index === 0 ? '100%' : '0%';
+      case 1:
+      default:
+        if (
+          Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
+          index
+        ) {
+          return '100%';
+        }
+        return '0%';
+    }
+  }
+
+  /** Gets the legend that should be shown in the sidebar.
+   *
+   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
+   */
+  getSelectedLegend(): Legend | undefined {
+    return this.maps[this.mapViewOptions$.getValue().selectedMapIndex].legend;
+  }
+
+  /** Used to compute whether a node in the condition layer tree has children. */
+  hasChild = (_: number, node: ConditionsNode) =>
+    !!node.children && node.children.length > 0;
+
+  /** Used to compute whether to show the info button on a condition layer node. */
+  showInfoIcon = (node: ConditionsNode) =>
+    node.filepath?.length && (node.showInfoIcon || node.infoMenuOpen);
+
+  private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
+    return [
+      NONE_DATA_LAYER_CONFIG,
+      {
+        ...config,
+        display_name: 'Current condition',
+        children: config.pillars
+          ?.filter((pillar) => pillar.display)
+          .map((pillar): ConditionsNode => {
+            return {
+              ...pillar,
+              children: pillar.elements?.map((element): ConditionsNode => {
+                return {
+                  ...element,
+                  children: element.metrics,
+                };
+              }),
+            };
+          }),
+      },
+      {
+        display_name: 'Current condition (normalized)',
+        filepath: config.filepath?.concat('_normalized'),
+        colormap: config.colormap,
+        normalized: true,
+        children: config.pillars
+          ?.filter((pillar) => pillar.display)
+          .map((pillar): ConditionsNode => {
+            return {
+              ...pillar,
+              filepath: pillar.filepath?.concat('_normalized'),
+              normalized: true,
+              children: pillar.elements?.map((element): ConditionsNode => {
+                return {
+                  ...element,
+                  filepath: element.filepath?.concat('_normalized'),
+                  normalized: true,
+                  children: element.metrics?.map((metric): ConditionsNode => {
+                    return {
+                      ...metric,
+                      filepath: metric.filepath?.concat('_normalized'),
+                      normalized: true,
+                    };
+                  }),
+                };
+              }),
+            };
+          }),
+      },
+    ];
   }
 }
