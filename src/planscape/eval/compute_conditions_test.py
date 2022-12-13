@@ -1,52 +1,57 @@
 """ Tests for the conditions.py file. """
 
+import logging
 import numpy as np
-from typing import Optional
+from typing import Optional, Tuple
 import unittest
 
 from base.condition_types import ConditionMatrix, ConditionScoreType, Region, Pillar, Element, Metric
 import config.conditions_config as pc
 import eval.compute_conditions as cc
+from eval.raster_data import RasterData
 
 
 class FakeConditionReader(cc.ConditionReader):
-    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[ConditionMatrix]:
+    def read(self, filepath: str, condition_type: ConditionScoreType) -> Optional[RasterData]:
         match condition_type:
             case ConditionScoreType.CURRENT:
-                return np.array([[1, 2, 3], [4, 5, 6]])
+                return RasterData(np.array([[1, 2, 3], [4, 5, 6]]), "")
             case ConditionScoreType.FUTURE:
-                return np.array([[10, 2, 3], [4, 5, 6]])
+                return RasterData(np.array([[10, 2, 3], [4, 5, 6]]), "")
             case ConditionScoreType.IMPACT:
                 if filepath == 'special':
-                    return np.array([[-1, 2, 3], [-4, 5, 6]])
-                return np.array([[1, 20, 3], [4, 5, 6]])
+                    return RasterData(np.array([[-1, 2, 3], [-4, 5, 6]]), "")
+                return RasterData(np.array([[1, 20, 3], [4, 5, 6]]), "")
             case ConditionScoreType.ADAPT:
-                return np.array([[1, 2, 30], [4, 5, 6]])
+                return RasterData(np.array([[1, 2, 30], [4, 5, 6]]), "")
             case ConditionScoreType.MONITOR:
-                return np.array([[1, 2, 3], [40, 5, 6]])
+                return RasterData(np.array([[1, 2, 3], [40, 5, 6]]), "")
             case ConditionScoreType.PROTECT:
-                return np.array([[1, 20, 3], [4, 50, 6]])
+                return RasterData(np.array([[1, 20, 3], [4, 50, 6]]), "")
             case ConditionScoreType.TRANSFORM:
-                return np.array([[1, 2, 3], [4, 5, 60]])
+                return RasterData(np.array([[1, 2, 3], [4, 5, 60]]), "")
 
 
 class ScoreMetricTest(unittest.TestCase):
     def test_score_metric_no_file_returns_none(self):
         metric: Metric = {'metric_name': 'metric'}
-        self.assertIsNone(cc.score_metric(
-            FakeConditionReader(), metric, ConditionScoreType.ADAPT))
+        condition = cc.score_metric(
+            FakeConditionReader(), metric, ConditionScoreType.ADAPT)
+        self.assertIsNone(condition)
 
     def test_score_metric_with_file_returns_not_none(self):
         metric: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
-        self.assertIsNotNone(cc.score_metric(
-            FakeConditionReader(), metric, ConditionScoreType.IMPACT))
+        condition = cc.score_metric(
+            FakeConditionReader(), metric, ConditionScoreType.IMPACT)
+        self.assertIsNotNone(condition)
 
 
 class ScoreElementTest(unittest.TestCase):
     def test_score_element_no_file_returns_none(self):
         element: Element = {'element_name': 'element', 'metrics': []}
-        self.assertIsNone(cc.score_element(
-            FakeConditionReader(), element, ConditionScoreType.ADAPT))
+        computed_element = cc.score_element(
+            FakeConditionReader(), element, ConditionScoreType.ADAPT)
+        self.assertIsNone(computed_element)
 
     def test_score_element_with_file_returns_not_none(self):
         element: Element = {'element_name': 'element',
@@ -56,40 +61,43 @@ class ScoreElementTest(unittest.TestCase):
 
     def test_recompute_element_empty_metrics_returns_none(self):
         element: Element = {'element_name': 'element', 'metrics': []}
-        self.assertIsNone(cc.score_element(
-            FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True))
+        computed_element = cc.score_element(
+            FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
+        self.assertIsNone(computed_element)
 
     def test_recompute_element_one_metric(self):
         metric: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
         element: Element = {'element_name': 'element', 'metrics': [metric]}
-        score = cc.score_element(
+        computed_element = cc.score_element(
             FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
-        self.assertIsNotNone(score)
-        if score is not None:
-            self.assertTrue(np.all(score == np.array([[1, 20, 3], [4, 5, 6]])))
+        self.assertIsNotNone(computed_element)
+        if computed_element is not None:
+            self.assertTrue(np.all(computed_element.raster ==
+                            np.array([[1, 20, 3], [4, 5, 6]])))
 
     def test_recompute_element_two_metrics_mean(self):
         metric1: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
         metric2: Metric = {'metric_name': 'metric', 'filepath': 'special'}
         element: Element = {'element_name': 'element',
                             'metrics': [metric1, metric2]}
-        score = cc.score_element(
+        computed_element = cc.score_element(
             FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
-        self.assertIsNotNone(score)
-        if score is not None:
-            self.assertTrue(np.all(score == np.array([[0, 11, 3], [0, 5, 6]])))
+        self.assertIsNotNone(computed_element)
+        if computed_element is not None:
+            self.assertTrue(np.all(computed_element.raster ==
+                            np.array([[0, 11, 3], [0, 5, 6]])))
 
     def test_recompute_element_two_metrics_min(self):
         metric1: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
         metric2: Metric = {'metric_name': 'metric', 'filepath': 'special'}
         element: Element = {'element_name': 'element',
                             'metrics': [metric1, metric2], 'operation': 'MIN'}
-        score = cc.score_element(
+        computed_element = cc.score_element(
             FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
-        self.assertIsNotNone(score)
-        if score is not None:
+        self.assertIsNotNone(computed_element)
+        if computed_element is not None:
             self.assertTrue(
-                np.all(score == np.array([[-1, 2, 3], [-4, 5, 6]])))
+                np.all(computed_element.raster == np.array([[-1, 2, 3], [-4, 5, 6]])))
 
 
 class ScorePillarTest(unittest.TestCase):
@@ -248,7 +256,7 @@ class ScoreConditionTest(unittest.TestCase):
         if element is not None:
             expected = cc.score_element(
                 FakeConditionReader(), element, ConditionScoreType.IMPACT, recompute=True)
-            self.assertTrue(np.all(score == expected))
+            self.assertTrue(np.all(score == expected.raster))
 
     def test_score_condition_unknown_metric_returns_none(self):
         self.assertIsNone(cc.score_condition(self.FakePillarConfig(""),
@@ -262,7 +270,8 @@ class ScoreConditionTest(unittest.TestCase):
                                    FakeConditionReader(), "region/pillar/element2/metric1", ConditionScoreType.ADAPT)
         self.assertIsNotNone(score)
         self.assertIsNotNone(metric)
+
         if metric is not None:
-            expected = cc.score_metric(
+            condition = cc.score_metric(
                 FakeConditionReader(), metric, ConditionScoreType.ADAPT)
-            self.assertTrue(np.all(score == expected))
+            self.assertTrue(np.all(score == condition.raster))
