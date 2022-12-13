@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 from base.condition_types import ConditionScoreType
 from base.conditions import (average_condition, management_condition,
-                             weighted_average_condition)
+                             weighted_average_condition, convert_nodata_to_nan)
 
 
 class AverageTest(unittest.TestCase):
@@ -203,3 +203,32 @@ class ManagementConditionTest(unittest.TestCase):
                              [0, v, 0],
                              [1, 0, -1]])
         self.assertTrue(np.all(np.isclose(expected, combined)))
+
+
+class ConvertTest(unittest.TestCase):
+    def test_no_conversion(self):
+        condition = np.array([[1, 2, 3], [4, 5, 6]])
+        expected = np.array([[1, 2, 3], [4, 5, 6]])
+        converted = convert_nodata_to_nan(np.nan, condition)
+        self.assertTrue(np.all(np.nan_to_num(converted)
+                        == np.nan_to_num(expected)))
+
+    def test_already_nan(self):
+        condition = np.array([[1, 2, 3], [np.nan, 5, 6]])
+        expected = np.array([[1, 2, 3], [np.nan, 5, 6]])
+        converted = convert_nodata_to_nan(np.nan, condition)
+        self.assertTrue(np.all(np.nan_to_num(converted)
+                        == np.nan_to_num(expected)))
+
+    def test_value_other_than_nan(self):
+        condition = np.array([[1, 2, 3], [999, 5, 6]])
+        expected = np.array([[1, 2, 3], [999, 5, 6]])
+        converted = convert_nodata_to_nan(np.nan, condition)
+        self.assertTrue(np.all(converted == expected))
+
+    def test_contains_nan_but_not_nodata(self):
+        condition = np.array([[1, 2, 3], [np.nan, 999, 6]])
+        expected = np.array([[1, 2, 3], [np.nan, np.nan, 6]])
+        converted = convert_nodata_to_nan(999, condition)
+        self.assertTrue(np.all(np.nan_to_num(converted)
+                        == np.nan_to_num(expected)))
