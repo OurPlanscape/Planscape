@@ -43,10 +43,9 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
-export interface PlanCreationOption {
-  value: string;
-  display: string;
-  icon: any;
+export enum AreaCreationOption {
+  DRAW = 1,
+  UPLOAD = 2,
 }
 
 interface ConditionsNode extends DataLayerConfig {
@@ -82,7 +81,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     BaseLayerType.Road,
     BaseLayerType.Terrain,
   ];
-  readonly BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  readonly BaseLayerType = BaseLayerType;
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
@@ -113,10 +112,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     ],
   };
 
-  planCreationOptions: PlanCreationOption[] = [
-    { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
-  ];
-  selectedPlanCreationOption: PlanCreationOption | null = null;
+  /** Actions bar variables */
+  readonly AreaCreationOption = AreaCreationOption;
+  showUploader: boolean = false;
   showCreatePlanButton$ = new BehaviorSubject(false);
 
   conditionTreeControl = new NestedTreeControl<ConditionsNode>(
@@ -365,16 +363,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  /**
-   * On PlanCreationOptions selection change, enables the polygon tool if
-   * the drawing option is selected.
-   */
-  onPlanCreationOptionChange(option: PlanCreationOption) {
-    if (option.value === 'draw-area') {
+  onAreaCreationOptionChange(option: AreaCreationOption) {
+    if (option === AreaCreationOption.DRAW) {
       this.mapManager.enablePolygonDrawingTool(
         this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
       );
       this.changeMapCount(1);
+    }
+    if (option === AreaCreationOption.UPLOAD) {
+      this.showUploader = !this.showUploader;
     }
   }
 
