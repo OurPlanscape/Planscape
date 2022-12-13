@@ -1,0 +1,19 @@
+.file-uploader-wrapper {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  top: 8px;
+  z-index: 2;
+}
+
+.uploader {
+  align-items: center;
+  margin: 8px 0px 0px 20px;
+  height: 50px;
+  width: 250px;
+}
+
+.file-input {
+  display: none;
+}
