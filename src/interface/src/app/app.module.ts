@@ -25,6 +25,7 @@ import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-dialog.component';
+import { LayerInfoCardComponent } from './map/layer-info-card/layer-info-card.component';
 
 @NgModule({
   declarations: [
@@ -40,6 +41,7 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
     StringifyMapConfigPipe,
     MapNameplateComponent,
     PlanCreateDialogComponent,
+    LayerInfoCardComponent,
   ],
   imports: [
     AppRoutingModule,

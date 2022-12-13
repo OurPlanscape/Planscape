@@ -107,10 +107,25 @@ $planscape-frontend-theme: mat.define-light-theme((
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
-// Adjust the Leaflet attribution control to make room for the map nameplate.
-.leaflet-container .leaflet-control-attribution {
-  margin-bottom: 30px;
+.map-nameplate-tooltip {
+  font-size: 14px;
 }
+
+.snackbar-error {
+  background: #b00020;
+  button {
+    color: #ffffff;
+  }
+}
+
+// Geoman drawing vertex styling
+.marker-icon,
+ .marker-icon:focus {
+    border: 3px solid #7b61ff;
+    margin: -5px 0 0 -5px !important;
+    width: 5px !important;
+    height: 5px !important;
+ }
 
 // Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
 @import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
