@@ -3,18 +3,14 @@
     <h1>Plan summary</h1>
   </div>
   <mat-divider [vertical]="true"></mat-divider>
-  <div class="plan-step-panel">
-    <h1>Plan steps</h1>
-  </div>
-  <mat-divider [vertical]="true"></mat-divider>
   <div class="plan-map-container">
     <div class="plan-map-view">
       <p>Here is a map view</p>
+      <button mat-raised-button class="expand-map-button" (click)="expandMap()">EXPAND MAP</button>
     </div>
     <mat-divider></mat-divider>
-    <div class="plan-bottom-bar">
-      <button mat-button>REMIND ME LATER</button>
-      <button mat-raised-button color="primary" disabled>START CREATING SCENARIOS</button>
+    <div class="plan-scenario-panel">
+      <h1>Scenario comparison</h1>
     </div>
   </div>
 </div>
