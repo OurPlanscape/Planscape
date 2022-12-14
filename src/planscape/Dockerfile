@@ -15,7 +15,7 @@ RUN apt-get update \
 # Install Forsys
 # --------------
 # udunits2 is necessary for R package, sf.
-RUN R -e "devtools::install_github('forsys-sp/forsysr', auth_token='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')" \
+RUN R -e "devtools::install_github('forsys-sp/forsysr', auth_token='<YOUR GITHUB PERSONAL ACCESS TOKEN>')" \
   && R -e "install.packages('dplyr')" \
   && R -e "install.packages('sf')" \
   && R -e "install.packages('udunits2')"
