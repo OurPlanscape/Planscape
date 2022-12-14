@@ -183,7 +183,7 @@ export class MapManager {
 
   /**
    * Adds a GeoJSON to the drawing layer.
-   * @param area: The geojson to add to the drawing layer.
+   * @param area: The geojson of the area to add to the drawing layer.
    */
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
     L.geoJSON(area, {
@@ -236,6 +236,7 @@ export class MapManager {
   }
 
   private setUpDrawingHandlers(map: L.Map) {
+    /** Handles a created polygon event, which occurs when a polygon is completed. */
     map.on('pm:create', (event) => {
       // Allow drawn layers to be editable
       (event.layer as any).options.pmIgnore = false;
@@ -250,6 +251,7 @@ export class MapManager {
       event.layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
     });
 
+    /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
@@ -273,6 +275,7 @@ export class MapManager {
       });
     });
 
+    /** Handles a polygon removal event. */
     map.on('pm:remove', (event) => {
       const layer = event.layer;
       // Sync deleted polygons to all maps
@@ -285,6 +288,7 @@ export class MapManager {
     });
   }
 
+  /** Handles a polygon edit event. */
   private editHandler(layer: L.Layer) {
     const editedLayer = layer as L.Polygon;
 
