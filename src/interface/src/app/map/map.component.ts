@@ -43,6 +43,8 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
+import * as shp from 'shpjs';
+
 export enum AreaCreationOption {
   DRAW = 1,
   UPLOAD = 2,
@@ -372,6 +374,23 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     }
     if (option === AreaCreationOption.UPLOAD) {
       this.showUploader = !this.showUploader;
+    }
+  }
+
+  async loadArea(event: {type: string, value: File}) {
+    const file = event.value;
+    if (file) {
+      const fileReader = new FileReader();
+      const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
+        fileReader.onload = () => {
+          resolve(fileReader.result as ArrayBuffer);
+        }
+        fileReader.readAsArrayBuffer(file);
+      });
+      const geojson = await shp(fileAsArrayBuffer) as GeoJSON.GeoJSON;
+      console.log(geojson);
+      this.mapManager.addGeoJsonToDrawing(geojson);
+      this.showUploader = false;
     }
   }
 

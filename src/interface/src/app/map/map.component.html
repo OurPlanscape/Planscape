@@ -217,7 +217,10 @@
           (click)="onAreaCreationOptionChange(AreaCreationOption.UPLOAD)">
           <mat-icon>upload_file</mat-icon> Upload an area
         </button>
-        <file-uploader requiredFileType="application/zip" *ngIf="showUploader"></file-uploader>
+        <file-uploader *ngIf="showUploader"
+          requiredFileType="application/zip"
+          (fileEvent)="loadArea($event)"
+          ></file-uploader>
       </div>
 
       <!-- Create plan button -->
