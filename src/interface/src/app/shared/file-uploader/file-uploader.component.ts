@@ -6,7 +6,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./file-uploader.component.scss']
 })
 export class FileUploaderComponent {
-  /** File selected event. */
+  /** File uploaded event. */
   @Output() fileEvent = new EventEmitter<any>();
 
   fileName = '';
@@ -15,7 +15,7 @@ export class FileUploaderComponent {
   @Input()
     requiredFileType: string = 'application/zip';
 
-  onFileSelected(event: Event) {
+  onFileUploaded(event: Event) {
     const target = event.target as HTMLInputElement;
     const files = target.files as FileList;
     if (target.files) {
@@ -26,7 +26,7 @@ export class FileUploaderComponent {
   }
 
   /**
-   * Triggers file upload event.
+   * Emits a file upload event to the parent component.
    */
    private emitEvent(file: File) {
     this.fileEvent.emit({type: 'area_upload', value: file});
