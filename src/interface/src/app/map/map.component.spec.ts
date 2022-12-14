@@ -14,20 +14,21 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { MapService, PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
+  BoundaryConfig,
+  ConditionsConfig,
+  defaultMapConfig,
+  defaultMapViewOptions,
   Map,
   MapConfig,
   MapViewOptions,
   Region,
-  defaultMapConfig,
-  ConditionsConfig,
-  BoundaryConfig,
-  defaultMapViewOptions,
 } from './../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
@@ -122,6 +123,7 @@ describe('MapComponent', () => {
     const popupServiceStub = () => ({
       makeDetailsPopup: (shape_name: any) => ({}),
     });
+    const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -142,6 +144,7 @@ describe('MapComponent', () => {
         { provide: MapService, useValue: fakeMapService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: fakeSessionService },
+        { provide: Router, useFactory: routerStub },
       ],
     });
     fixture = TestBed.createComponent(MapComponent);
@@ -577,7 +580,10 @@ describe('MapComponent', () => {
       expect(fakeMatDialog.open).toHaveBeenCalled();
     });
 
-    it('dialog calls create plan with name and planning area ', async () => {
+    it('dialog calls create plan with name and planning area', async () => {
+      const routerStub: Router = fixture.debugElement.injector.get(Router);
+      spyOn(routerStub, 'navigate').and.callThrough();
+
       const emptyGeoJson: GeoJSON.GeoJSON = {
         type: 'FeatureCollection',
         features: [],
@@ -590,6 +596,7 @@ describe('MapComponent', () => {
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan']);
     });
   });
 
