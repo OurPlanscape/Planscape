@@ -1,30 +1,68 @@
-import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
-import { createFeatureGuard } from './features/feature.guard';
+import { Injectable, NgModule } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import {
+  RouterModule,
+  RouterStateSnapshot,
+  Routes,
+  TitleStrategy,
+} from '@angular/router';
 
+import { createFeatureGuard } from './features/feature.guard';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import { SignupComponent } from './signup/signup.component';
 
 const routes: Routes = [
-  { path: '', redirectTo: 'region', pathMatch: 'full' },
   {
-    path: 'login',
-    component: LoginComponent,
-    canActivate: [createFeatureGuard('login')],
+    path: '',
+    title: 'Planscape',
+    children: [
+      { path: '', redirectTo: 'region', pathMatch: 'full' },
+      {
+        path: 'login',
+        title: 'Login',
+        component: LoginComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'signup',
+        title: 'Signup',
+        component: SignupComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'region',
+        title: 'Region Selection',
+        component: RegionSelectionComponent,
+      },
+      { path: 'map', title: 'Explore', component: MapComponent },
+    ],
   },
-  {
-    path: 'signup',
-    component: SignupComponent,
-    canActivate: [createFeatureGuard('login')],
-  },
-  { path: 'region', component: RegionSelectionComponent },
-  { path: 'map', component: MapComponent },
 ];
+
+@Injectable({ providedIn: 'root' })
+export class PlanscapeTitleStrategy extends TitleStrategy {
+  constructor(private readonly title: Title) {
+    super();
+  }
+
+  override updateTitle(routerState: RouterStateSnapshot) {
+    const title = this.buildTitle(routerState);
+    if (title !== undefined) {
+      this.title.setTitle(`Planscape | ${title}`);
+    }
+  }
+}
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
+  providers: [
+    {
+      provide: TitleStrategy,
+      useClass: PlanscapeTitleStrategy,
+    },
+  ],
 })
 export class AppRoutingModule {}
