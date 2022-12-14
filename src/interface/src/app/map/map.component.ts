@@ -12,7 +12,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { filter, shareReplay, switchMap } from 'rxjs/operators';
 
 import {
   MapService,
@@ -376,22 +376,37 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.showUploader = !this.showUploader;
     }
   }
-
-  async loadArea(event: {type: string, value: File}) {
+  /** Converts and adds the editable shapefile to the map. */
+  async loadArea(event: { type: string; value: File }) {
     const file = event.value;
     if (file) {
-      const fileReader = new FileReader();
+      const reader = new FileReader();
       const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
-        fileReader.onload = () => {
-          resolve(fileReader.result as ArrayBuffer);
-        }
-        fileReader.readAsArrayBuffer(file);
+        reader.onload = () => {
+          resolve(reader.result as ArrayBuffer);
+        };
+        reader.readAsArrayBuffer(file);
       });
-      const geojson = await shp(fileAsArrayBuffer) as GeoJSON.GeoJSON;
-      console.log(geojson);
-      this.mapManager.addGeoJsonToDrawing(geojson);
-      this.showUploader = false;
+      try {
+        const geojson = (await shp(fileAsArrayBuffer)) as GeoJSON.GeoJSON;
+        if (geojson.type == 'FeatureCollection') {
+          this.mapManager.addGeoJsonToDrawing(geojson);
+          this.showUploader = false;
+        } else {
+          this.showUploadError();
+        }
+      } catch (e) {
+        this.showUploadError();
+      }
     }
+  }
+
+  private showUploadError() {
+    this.matSnackBar.open('[Error] Not a valid shapefile!', 'Dismiss', {
+      duration: 10000,
+      panelClass: ['snackbar-error'],
+      verticalPosition: 'top',
+    });
   }
 
   /** Gets the selected region geojson and renders it on the map. */
