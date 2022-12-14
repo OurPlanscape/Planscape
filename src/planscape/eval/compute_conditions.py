@@ -158,7 +158,7 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
 
 
 def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_type: ConditionScoreType,
-                 recompute: bool = False) -> Optional[ConditionMatrix]:
+                 recompute: bool = False) -> Optional[RasterData]:
     """Computes the pillar score.
 
     Args:
@@ -175,7 +175,7 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
         if not 'filepath' in pillar:
             return None
         condition = condition_reader.read(pillar['filepath'], condition_type)
-        return condition.raster if pillar['filepath'] else None
+        return condition if pillar['filepath'] else None
 
     element_conditions: list[Optional[RasterData]] = []
     for element in pillar['elements']:
@@ -189,7 +189,7 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
     # TODO: Parameterize the NoData value
     condition = _summarize(np.nan, element_conditions,
                            operation if operation else 'MEAN')
-    return None if condition is None else condition.raster
+    return None if condition is None else condition
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
@@ -242,7 +242,9 @@ def score_condition(config: PillarConfig, condition_reader: ConditionReader, con
             pillar = config.get_pillar(region_name, pillar_name)
             if pillar is None:
                 return None
-            return score_pillar(condition_reader, pillar, condition_type, recompute)
+            condition = score_pillar(
+                condition_reader, pillar, condition_type, recompute)
+            return None if condition is None else condition.raster
         case [region_name, pillar_name, element_name]:
             element = config.get_element(
                 region_name, pillar_name, element_name)
