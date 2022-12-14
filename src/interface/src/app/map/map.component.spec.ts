@@ -498,14 +498,16 @@ describe('MapComponent', () => {
     });
 
     it('enables polygon tool when drawing option is selected', async () => {
-      spyOn(component, 'onPlanCreationOptionChange').and.callThrough();
-      const select = await loader.getHarness(MatSelectHarness);
-      await select.open();
-      const option = await select.getOptions();
+      spyOn(component, 'onAreaCreationOptionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
 
-      await option[0].click(); // 'draw-area' option
+      await button.click();
 
-      expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
+      expect(component.onAreaCreationOptionChange).toHaveBeenCalled();
       expect(
         component.maps[
           component.mapViewOptions$.getValue().selectedMapIndex
@@ -557,6 +559,24 @@ describe('MapComponent', () => {
           component.maps[mapIndex].clonedDrawingRef?.getLayers().length
         ).toEqual(0);
       });
+    });
+  });
+
+  describe('Upload an area', () => {
+    beforeEach(() => {
+      component.ngAfterViewInit();
+    });
+
+    it('upload area button opens the file uploader', async () => {
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.upload-area-button',
+        })
+      );
+
+      await button.click();
+
+      expect(component.showUploader).toBeTrue();
     });
   });
 
