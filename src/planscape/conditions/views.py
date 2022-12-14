@@ -1,13 +1,12 @@
 import json
 import logging
 import os
-from typing import cast
 
 from config.colormap_config import ColormapConfig
-from decouple import config as cfg
 from django.db import connection
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+from django.conf import settings
 
 # Configure global logging.
 logger = logging.getLogger(__name__)
@@ -18,9 +17,8 @@ RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
 # Global variable for the ColormapConfig, so that the configuration file is read once.
-PLANSCAPE_ROOT_DIRECTORY = cast(str, cfg('PLANSCAPE_ROOT_DIRECTORY'))
 colormap_config = ColormapConfig(
-    os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/colormap.json'))
+    os.path.join(settings.BASE_DIR, 'config/colormap.json'))
 
 
 def get_wms(params: QueryDict):
@@ -70,7 +68,7 @@ def get_config(params: QueryDict):
 
     # Read from conditions config
     config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+        settings.BASE_DIR, 'config/conditions.json')
     conditions_config = json.load(open(config_path, 'r'))
 
     # Extract specific region data from JSON

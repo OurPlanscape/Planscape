@@ -14,6 +14,7 @@ import {
 import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { FeaturesModule } from './features/features.module';
 import { LoginComponent } from './login/login.component';
 import { LayerInfoCardComponent } from './map/layer-info-card/layer-info-card.component';
 import { MapNameplateComponent } from './map/map-nameplate/map-nameplate.component';
@@ -58,6 +59,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     BrowserAnimationsModule,
     BrowserModule,
     CommonModule,
+    FeaturesModule,
     FormsModule,
     HttpClientModule,
     LayoutModule,
