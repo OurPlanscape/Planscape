@@ -7,6 +7,7 @@ import {
   TitleStrategy,
 } from '@angular/router';
 
+import { createFeatureGuard } from './features/feature.guard';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
@@ -18,8 +19,18 @@ const routes: Routes = [
     title: 'Planscape',
     children: [
       { path: '', redirectTo: 'region', pathMatch: 'full' },
-      { path: 'login', title: 'Login', component: LoginComponent },
-      { path: 'signup', title: 'Signup', component: SignupComponent },
+      {
+        path: 'login',
+        title: 'Login',
+        component: LoginComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'signup',
+        title: 'Signup',
+        component: SignupComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
       {
         path: 'region',
         title: 'Region Selection',
