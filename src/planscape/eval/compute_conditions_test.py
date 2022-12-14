@@ -126,7 +126,7 @@ class ScorePillarTest(unittest.TestCase):
             FakeConditionReader(), pillar, ConditionScoreType.IMPACT, recompute=True)
         self.assertIsNotNone(score)
         if score is not None:
-            self.assertTrue(np.all(score == np.array([[1, 20, 3], [4, 5, 6]])))
+            self.assertTrue(np.all(score.raster == np.array([[1, 20, 3], [4, 5, 6]])))
 
     def test_recompute_pillar_two_metrics_mean(self):
         metric1: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
@@ -138,7 +138,7 @@ class ScorePillarTest(unittest.TestCase):
             FakeConditionReader(), pillar, ConditionScoreType.IMPACT, recompute=True)
         self.assertIsNotNone(score)
         if score is not None:
-            self.assertTrue(np.all(score == np.array([[0, 11, 3], [0, 5, 6]])))
+            self.assertTrue(np.all(score.raster == np.array([[0, 11, 3], [0, 5, 6]])))
 
     def test_recompute_pillar_two_metrics_min(self):
         metric1: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
@@ -151,7 +151,7 @@ class ScorePillarTest(unittest.TestCase):
         self.assertIsNotNone(score)
         if score is not None:
             self.assertTrue(
-                np.all(score == np.array([[-1, 2, 3], [-4, 5, 6]])))
+                np.all(score.raster == np.array([[-1, 2, 3], [-4, 5, 6]])))
 
     def test_recompute_pillar_fallback_to_element(self):
         metric1: Metric = {'metric_name': 'metric', 'filepath': 'path/to/file'}
@@ -164,7 +164,7 @@ class ScorePillarTest(unittest.TestCase):
             FakeConditionReader(), pillar, ConditionScoreType.IMPACT, recompute=True)
         self.assertIsNotNone(score)
         if score is not None:
-            self.assertTrue(np.all(score == np.array([[1, 20, 3], [4, 5, 6]])))
+            self.assertTrue(np.all(score.raster == np.array([[1, 20, 3], [4, 5, 6]])))
 
     def test_recompute_pillar_fallback_to_element_two_elements(self):
         metric1: Metric = {'metric_name': 'metric', 'filepath': 'special'}
@@ -181,7 +181,7 @@ class ScorePillarTest(unittest.TestCase):
         self.assertIsNotNone(score)
         if score is not None:
             self.assertTrue(
-                np.all(score == np.array([[0.5, 15.5, 3], [2, 5, 6]])))
+                np.all(score.raster == np.array([[0.5, 15.5, 3], [2, 5, 6]])))
 
 
 class ScoreConditionTest(unittest.TestCase):
@@ -240,7 +240,7 @@ class ScoreConditionTest(unittest.TestCase):
         if pillar is not None:
             expected = cc.score_pillar(
                 FakeConditionReader(), pillar, ConditionScoreType.ADAPT)
-            self.assertTrue(np.all(score == expected))
+            self.assertTrue(np.all(score == expected.raster))
 
     def test_score_condition_unknown_element_returns_none(self):
         self.assertIsNone(cc.score_condition(self.FakePillarConfig(""),
