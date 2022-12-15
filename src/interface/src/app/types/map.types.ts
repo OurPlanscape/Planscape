@@ -32,6 +32,8 @@ export interface MapConfig {
 export interface MapViewOptions {
   selectedMapIndex: number;
   numVisibleMaps: number;
+  zoom: number;
+  center: L.LatLngExpression;
 }
 
 export function defaultMapConfig(): MapConfig {
@@ -40,5 +42,14 @@ export function defaultMapConfig(): MapConfig {
     boundaryLayerConfig: NONE_BOUNDARY_CONFIG,
     dataLayerConfig: NONE_DATA_LAYER_CONFIG,
     showExistingProjectsLayer: false,
+  };
+}
+
+export function defaultMapViewOptions(): MapViewOptions {
+  return {
+    selectedMapIndex: 0,
+    numVisibleMaps: 2,
+    zoom: 9,
+    center: [38.646, -120.548],
   };
 }

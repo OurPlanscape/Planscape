@@ -16,7 +16,7 @@ import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
-import { BaseLayerType, DEFAULT_COLORMAP, Map } from '../types';
+import { BaseLayerType, DEFAULT_COLORMAP, Map, MapViewOptions } from '../types';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -27,27 +27,18 @@ L.PM.setOptIn(true);
  * of in map.component.ts.
  */
 export class MapManager {
-  maps: Map[];
-  popupService: PopupService;
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
 
-  startLoadingLayerCallback: (layerName: string) => void;
-  doneLoadingLayerCallback: (layerName: string) => void;
-
   constructor(
     private matSnackBar: MatSnackBar,
-    maps: Map[],
-    popupService: PopupService,
-    startLoadingLayerCallback: (layerName: string) => void,
-    doneLoadingLayerCallback: (layerName: string) => void
-  ) {
-    this.maps = maps;
-    this.popupService = popupService;
-    this.startLoadingLayerCallback = startLoadingLayerCallback;
-    this.doneLoadingLayerCallback = doneLoadingLayerCallback;
-  }
+    private maps: Map[],
+    private readonly mapViewOptions$: BehaviorSubject<MapViewOptions>,
+    private popupService: PopupService,
+    private startLoadingLayerCallback: (layerName: string) => void,
+    private doneLoadingLayerCallback: (layerName: string) => void
+  ) {}
 
   getGeomanDrawOptions(): L.PM.ToolbarOptions {
     return {
@@ -126,7 +117,8 @@ export class MapManager {
       fillColor: '#7b61ff',
       fillOpacity: 0.2,
     });
-    this.setUpDrawingHandlers(map.instance!);
+
+    this.setUpEventHandlers(map);
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -178,49 +170,15 @@ export class MapManager {
     }
   }
 
-  /**
-   * Darkens everything outside of the region boundary.
-   * Type 'any' is used in order to access coordinates.
-   */
-  maskOutsideRegion(map: L.Map, boundary: any) {
-    // Add corners of the map to invert the polygon
-    boundary.features[0].geometry.coordinates[0].unshift([
-      [180, -90],
-      [180, 90],
-      [-180, 90],
-      [-180, -90],
-    ]);
-    L.geoJSON(boundary, {
-      style: (_) => ({
-        color: '#ffffff',
-        weight: 2,
-        opacity: 1,
-        fillColor: '#000000',
-        fillOpacity: 0.4,
-      }),
-    }).addTo(map);
-  }
+  private setUpEventHandlers(map: Map) {
+    this.setUpDrawingHandlers(map.instance!);
 
-  /** Adds the cloned drawing layer to the map. */
-  showClonedDrawing(map: Map) {
-    map.clonedDrawingRef?.addTo(map.instance!);
-  }
-
-  /** Removes the cloned drawing layer from the map. */
-  hideClonedDrawing(map: Map) {
-    map.clonedDrawingRef?.removeFrom(map.instance!);
-  }
-
-  /** Removes drawing control and layer from the map. */
-  removeDrawingControl(map: L.Map) {
-    map.removeLayer(this.drawingLayer);
-    map.pm.removeControls();
-  }
-
-  /** Adds drawing control and drawing layer to the map. */
-  addDrawingControl(map: L.Map) {
-    map.addLayer(this.drawingLayer);
-    map.pm.addControls(this.getGeomanDrawOptions());
+    // Since maps are synced, pan and zoom event handlers only need
+    // to be added to the first instance.
+    if (this.maps.indexOf(map) === 0) {
+      this.setUpPanHandler(map.instance!);
+      this.setUpZoomHandler(map.instance!);
+    }
   }
 
   private setUpDrawingHandlers(map: L.Map) {
@@ -341,6 +299,52 @@ export class MapManager {
     });
   }
 
+  private setUpPanHandler(map: L.Map) {
+    if (!this.mapViewOptions$.getValue().center) return;
+
+    map.panTo(this.mapViewOptions$.getValue().center);
+
+    map.addEventListener('moveend', (e) => {
+      const mapViewOptions = this.mapViewOptions$.getValue();
+      mapViewOptions.center = map.getCenter();
+      this.mapViewOptions$.next(mapViewOptions);
+    });
+  }
+
+  private setUpZoomHandler(map: L.Map) {
+    if (!this.mapViewOptions$.getValue().zoom) return;
+
+    map.setZoom(this.mapViewOptions$.getValue().zoom);
+
+    map.addEventListener('zoomend', (e) => {
+      const mapViewOptions = this.mapViewOptions$.getValue();
+      mapViewOptions.zoom = map.getZoom();
+      this.mapViewOptions$.next(mapViewOptions);
+    });
+  }
+
+  /** Adds the cloned drawing layer to the map. */
+  showClonedDrawing(map: Map) {
+    map.clonedDrawingRef?.addTo(map.instance!);
+  }
+
+  /** Removes the cloned drawing layer from the map. */
+  hideClonedDrawing(map: Map) {
+    map.clonedDrawingRef?.removeFrom(map.instance!);
+  }
+
+  /** Removes drawing control and layer from the map. */
+  removeDrawingControl(map: L.Map) {
+    map.removeLayer(this.drawingLayer);
+    map.pm.removeControls();
+  }
+
+  /** Adds drawing control and drawing layer to the map. */
+  addDrawingControl(map: L.Map) {
+    map.addLayer(this.drawingLayer);
+    map.pm.addControls(this.getGeomanDrawOptions());
+  }
+
   /**
    * Converts drawingLayer to GeoJSON. If there are multiple polygons drawn,
    * creates and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon
@@ -378,6 +382,29 @@ export class MapManager {
   enablePolygonDrawingTool(map: L.Map) {
     this.addDrawingControl(map);
     map.pm.enableDraw('Polygon');
+  }
+
+  /**
+   * Darkens everything outside of the region boundary.
+   * Type 'any' is used in order to access coordinates.
+   */
+  maskOutsideRegion(map: L.Map, boundary: any) {
+    // Add corners of the map to invert the polygon
+    boundary.features[0].geometry.coordinates[0].unshift([
+      [180, -90],
+      [180, 90],
+      [-180, 90],
+      [-180, -90],
+    ]);
+    L.geoJSON(boundary, {
+      style: (_) => ({
+        color: '#ffffff',
+        weight: 2,
+        opacity: 1,
+        fillColor: '#000000',
+        fillOpacity: 0.4,
+      }),
+    }).addTo(map);
   }
 
   /** Sync pan, zoom, etc. between all maps. */
