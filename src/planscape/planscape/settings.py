@@ -117,6 +117,9 @@ DATABASES = {
         "USER": config('PLANSCAPE_DATABASE_USER', default='planscape'),
         "PASSWORD": config('PLANSCAPE_DATABASE_PASSWORD', default='pass'),
         "PORT": 5432,
+        'TEST': {
+            'NAME': 'auto_test',
+        }
     }
 }
 
