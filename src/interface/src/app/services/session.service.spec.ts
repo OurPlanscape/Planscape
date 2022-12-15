@@ -2,7 +2,11 @@ import { Region } from '../types/region.types';
 import { TestBed } from '@angular/core/testing';
 
 import { SessionService } from './session.service';
-import { defaultMapConfig, MapViewOptions } from '../types';
+import {
+  defaultMapConfig,
+  defaultMapViewOptions,
+  MapViewOptions,
+} from '../types';
 
 describe('SessionService', () => {
   let service: SessionService;
@@ -30,10 +34,7 @@ describe('SessionService', () => {
   });
 
   it('should save map view options', () => {
-    const testMapViewOptions: MapViewOptions = {
-      numVisibleMaps: 4,
-      selectedMapIndex: 1,
-    };
+    const testMapViewOptions: MapViewOptions = defaultMapViewOptions();
     const spyStorage = spyOn(localStorage, 'setItem');
 
     service.setMapViewOptions(testMapViewOptions);
