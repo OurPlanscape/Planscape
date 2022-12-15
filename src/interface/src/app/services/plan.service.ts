@@ -37,7 +37,6 @@ export class PlanService {
     all: {}, // All plans indexed by id
     currentPlanId: null,
   });
-  tempPlanId = 0;
 
   constructor(private http: HttpClient) {}
 
@@ -45,10 +44,9 @@ export class PlanService {
   createPlan(
     basePlan: BasePlan
   ): Observable<{ success: boolean; result?: Plan }> {
-    return of(this.createPlanApi(basePlan)).pipe(
+    return this.createPlanApi(basePlan).pipe(
       take(1),
       map((createdPlan) => {
-        // Call convertToPlan here
         return {
           success: true,
           result: createdPlan,
@@ -74,10 +72,6 @@ export class PlanService {
     };
   }
 
-  private convertToPlan() {
-    // TODO: Implement when backend response is known
-  }
-
   private addPlanToState(plan: Plan) {
     // Object.freeze() enforces shallow runtime immutability
     const currentState = Object.freeze(this.planState$.value);
@@ -92,21 +86,17 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-  private createPlanApi(plan: BasePlan): Plan {
+  private createPlanApi(plan: BasePlan): Observable<Plan> {
     const createPlanRequest = this.convertToDbPlan(plan);
-    ++this.tempPlanId;
-    var planId: number = this.tempPlanId;
-    this.http
+    return this.http
       .post(BackendConstants.END_POINT + '/plan/create/', createPlanRequest, {
         withCredentials: true,
       })
-      .subscribe((result) => {
-        planId = Number(result.toString());
-      });
-
-    return {
-      ...plan,
-      id: String(planId),
-    };
+      .pipe(take(1), map((result) => {
+        return {
+          ...plan,
+          id: result.toString(),
+        };
+      }));
   }
 }
