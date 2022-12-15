@@ -34,7 +34,7 @@ class Project(models.Model):
 
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE) 
 
-    # Project Paramaters
+    # Project Parameters:
 
     # The maximum cost constraint. Default set to no max cost.
     max_cost = models.IntegerField(null=True, default=math.inf) 
