@@ -33,7 +33,7 @@ def print_proj4(region_name: str):
         for element in config.get_elements(pillar):
             for metric in config.get_metrics(element):
                 base_filepath = os.path.join(
-                    data_path, metric.get('filepath', ""))
+                    os.path.dirname(data_path), metric.get('filepath', ''))
                 print(base_filepath)
                 dataset = gdal.Open(base_filepath + '.tif')
                 srs = osr.SpatialReference(dataset.GetProjection())
@@ -57,7 +57,10 @@ def print_nodata_values(region_string: str):
     region = config.get_region(region_string)
     if region is None:
         return
-    for pillar in config.get_pillars(region):
+    pillars = config.get_pillars(region)
+    if pillars is None:
+        return
+    for pillar in pillars:
         if not pillar.get('display', False):
             continue
         for element in config.get_elements(pillar):
@@ -74,7 +77,7 @@ def print_nodata_values(region_string: str):
 
                         array = src.read(1, out_shape=(
                             1, int(src.height), int(src.width)))
-                        count:dict[int, float] = dict(
+                        count: dict[int, float] = dict(
                             zip(*numpy.unique(array, return_counts=True)))
                         if np.isnan(nodatavalue):
                             array = np.nan_to_num(array, nan=12345567)
