@@ -14,10 +14,11 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { MapService, PopupService, SessionService } from '../services';
+import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -27,6 +28,7 @@ import {
   Map,
   MapConfig,
   MapViewOptions,
+  Plan,
   Region,
 } from './../types';
 import { MapManager } from './map-manager';
@@ -65,6 +67,13 @@ describe('MapComponent', () => {
         },
       ],
     };
+    const fakePlan: Plan = {
+      id: 'temp',
+      name: 'somePlan',
+      ownerId: 'owner',
+      region: Region.SIERRA_NEVADA,
+      planningArea: fakeGeoJson
+    }
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
@@ -97,6 +106,16 @@ describe('MapComponent', () => {
         }),
       }
     );
+    const fakePlanService = jasmine.createSpyObj<PlanService>(
+      'PlanService',
+      {createPlan: of({ success:true, fakePlan}) },
+      {
+        planState$: new BehaviorSubject<PlanState>({
+          all: {}, // All plans indexed by id
+          currentPlanId: 'temp',
+        }),
+      }
+    );
     const fakeSessionService = jasmine.createSpyObj<SessionService>(
       'SessionService',
       ['setMapConfigs', 'setMapViewOptions'],
@@ -122,6 +141,7 @@ describe('MapComponent', () => {
     const popupServiceStub = () => ({
       makeDetailsPopup: (shape_name: any) => ({}),
     });
+    const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -140,8 +160,10 @@ describe('MapComponent', () => {
       providers: [
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
+        { provide: PlanService, useValue: fakePlanService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: fakeSessionService },
+        { provide: Router, useFactory: routerStub },
       ],
     });
     fixture = TestBed.createComponent(MapComponent);
@@ -553,6 +575,8 @@ describe('MapComponent', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
       fixture.componentInstance.showCreatePlanButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
@@ -564,9 +588,15 @@ describe('MapComponent', () => {
       await button.click();
 
       expect(fakeMatDialog.open).toHaveBeenCalled();
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
 
-    it('dialog calls create plan with name and planning area ', async () => {
+    it('dialog calls create plan with name and planning area', async () => {
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
+      const routerStub: Router = fixture.debugElement.injector.get(Router);
+      spyOn(routerStub, 'navigate').and.callThrough();
+
       const emptyGeoJson: GeoJSON.GeoJSON = {
         type: 'FeatureCollection',
         features: [],
@@ -579,6 +609,8 @@ describe('MapComponent', () => {
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan']);
     });
   });
 

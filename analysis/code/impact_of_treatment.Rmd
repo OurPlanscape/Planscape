@@ -1,0 +1,169 @@
+---
+title: "Prototype Analysis for Inferring Treatment Impact"
+author: "Laurens Geffert"
+date: "2022-11-21"
+output: rmarkdown::github_document
+---
+
+<!-- impact_of_treatment.md is generated from impact_of_treatment.Rmd Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = '##',
+  fig.retina = 2,
+  fig.path = '../output/impact_of_treatment_files/impact_of_treatment_')
+```
+
+```{r setup, error = TRUE}
+library(sf)
+library(raster)
+library(tidyverse)
+library(magrittr)
+library(purrr)
+library(zeallot)
+library(mice)
+```
+
+```{r load_data, error = TRUE}
+# Using this raster as the target resolution and extent
+default_raster <- raster('../data/TCSI_box/metrics/forest_structure_current_soe.tif')
+
+resample_if_needed <- function(r, default_raster, ...) {
+  if (!all(dim(r) == dim(default_raster))) {
+    print(paste('resampling raster', names(r)))
+    r <- raster::resample(x = r, y = default_raster, 'ngb')
+  } else {
+    print(paste('no need to resample', names(r)))
+  }
+  return(r)
+}
+
+# load all metrics
+df_rasters <- tibble(
+  name = c(
+    'for_str_td',
+    'for_str_ba',
+    'for_str_ltd',
+    'for_com_se',
+    'for_com_sl',
+    'for_com_drid',
+    'fir_fun_tslf',
+    'fir_fun_frid',
+    'fad_sev_hsp',
+    'bio_foc_cso',
+    'bio_div_sr',
+    'bio_com_fgr',
+    'co2_stb_stb',
+    'zzz_zzz_climclass'),
+  path = c(
+    '../data/TCSI_box/metrics/forest_structure_current_soe.tif',
+    '../data/TCSI_box/metrics/baph_current.tif',
+    '../data/TCSI_box/metrics/large_tree_current.tif',
+    '../data/TCSI_box/metrics/seral_stage_soe_current_early.tif',
+    '../data/TCSI_box/metrics/seral_stage_soe_current_late.tif',
+    '../data/TCSI_box/metrics/drid_current_soe.tif',
+    '../data/TCSI_box/metrics/2A2_CURRENT_Prop_Fire_Dist_FULL.tif',
+    '../data/TCSI_box/metrics/frid_current_soe.tif',
+    '../data/TCSI_box/metrics/9A1_prob_FLEP4.tif',
+    '../data/TCSI_box/metrics/focal_species_current.tif',
+    '../data/TCSI_box/metrics/species_richness_current.tif',
+    '../data/TCSI_box/metrics/functional_richness_current.tif',
+    '../data/TCSI_box/metrics/carbon_current.tif',
+    '../data/TCSI_box/ClimateClasses/ClimateClasses.img'))
+
+# resample if resolution or extent do not map
+df_rasters %<>%
+  mutate(r = path %>%
+    map(.f = raster) %>%
+    map2(.y = name, .f = ~set_names(.x, .y))) %>%
+  mutate(r = map(r, resample_if_needed, default_raster = default_raster))
+
+# convert raster values into dataframe
+x <- df_rasters %>%
+  pluck('r') %>%
+  stack() %>%
+  values()
+
+# create a sample that's easier to work with in memory
+sierra_metrics <- c('bio_div_sr', 'bio_com_fgr', 'bio_foc_cso', 'zzz_zzz_climclass')
+df <- x[sample(nrow(x), size = 1e7, replace = FALSE), ] %>%
+  as_tibble() %>%
+  # drop all rows that only contain NA for TCSI metrics
+  filter(if_any(-one_of(sierra_metrics), ~ !is.na(.))) %>%
+  # introducing sampling to speed up the code during dev TODO: take this out
+  sample_n(1e4)
+
+summary(df)
+```
+
+
+```{r plot_metric_histogram, error = TRUE}
+# plot a histogram for each metric
+df %>%
+  pivot_longer(everything()) %>%
+  ggplot(aes(x = value)) +
+  geom_histogram() +
+  facet_wrap(~name, scales = 'free')
+```
+
+
+```{r find_good_bad_cells, error = TRUE}
+#' Next steps:
+#' - plot histograms for other metrics comparing 1 and -1 for tree density
+#' - create pairs plot for metrics to check for correlation
+#' - create top decile analysis and look at distribution changes for each metric
+#' - look at IV by climate class
+
+
+# Find areas with top 10% tree density and bottom 10% tree density,
+# then look at histograms for other metrics
+td_good <- df$for_str_td %>% quantile(.9, na.rm = TRUE)
+td_bad <- df$for_str_td %>% quantile(.1, na.rm = TRUE)
+
+# Drop all cells with mediocre tree density
+df_quality_td <- df %>%
+  mutate(quality_td = case_when(
+    for_str_td >= td_good ~ 'good',
+    for_str_td <= td_bad ~ 'bad',
+    TRUE ~ NA_character_)) %>%
+  filter(!is.na(quality_td))
+
+# plot distribution of other metrics for good and bad tree density cells
+df_quality_td %>%
+  pivot_longer(-quality_td) %>%
+  ggplot(aes(x = value, group = quality_td, fill = quality_td)) +
+  geom_density(alpha = .5) +
+  facet_wrap(~name, scales = 'free')
+```
+
+
+```{r test_good_bad_difference, error = TRUE}
+# run a kolmogorov-smirnov test to compare the distribution of one other metric
+ks_test <- function(df,
+                    column_grouping,
+                    column_testing) {
+  message('\n\nks-testing ', column_testing)
+  out <- ks.test(
+    x = df %>%
+      filter({{ column_grouping }} == 'good') %>%
+      pluck(column_testing),
+    y = df %>%
+      filter({{column_grouping}} == 'bad') %>%
+      pluck(column_testing))
+  return(out)
+}
+
+# run ks-test for each metric
+results <- tibble(var_names = colnames(df)[-1]) %>%
+  mutate(ks_result = map(
+    .x = var_names,
+    .f = ~ks_test(df_quality_td, quality_td, .x))) %>%
+  mutate(
+    ks_D = map_dbl(ks_result, ~.x$statistic),
+    ks_p = map_dbl(ks_result, ~.x$p.value))
+
+results %>%
+  select(-ks_result) %>%
+  arrange(desc(ks_D))
+```

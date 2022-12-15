@@ -366,6 +366,8 @@ export class MapManager {
   }
 
   private setUpPanHandler(map: L.Map) {
+    if (!this.mapViewOptions$.getValue().center) return;
+
     map.panTo(this.mapViewOptions$.getValue().center);
 
     map.addEventListener('moveend', (e) => {
@@ -376,6 +378,8 @@ export class MapManager {
   }
 
   private setUpZoomHandler(map: L.Map) {
+    if (!this.mapViewOptions$.getValue().zoom) return;
+
     map.setZoom(this.mapViewOptions$.getValue().zoom);
 
     map.addEventListener('zoomend', (e) => {
