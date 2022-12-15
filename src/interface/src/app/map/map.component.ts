@@ -11,6 +11,7 @@ import {
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
+import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
@@ -28,9 +29,9 @@ import {
   colormapConfigToLegend,
   ConditionsConfig,
   DataLayerConfig,
+  DEFAULT_COLORMAP,
   defaultMapConfig,
   defaultMapViewOptions,
-  DEFAULT_COLORMAP,
   Legend,
   Map,
   MapConfig,
@@ -135,7 +136,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planService: PlanService
+    private planService: PlanService,
+    private router: Router
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
       takeUntil(this.destroy$)
@@ -364,6 +366,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         })
         .subscribe((result) => {
           console.log(result);
+          this.router.navigate(['plan']);
         });
     });
   }
