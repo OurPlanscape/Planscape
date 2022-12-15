@@ -23,7 +23,7 @@ WORKDIR /src/planscape
 # --------------------
 RUN pip install --upgrade pip
 COPY requirements.txt .
-RUN apt-get update && apt-get install -y gdal-bin libgdal-dev
+RUN apt-get update && apt-get install -y gdal-bin libgdal-dev r-base-core
 RUN pip install -r requirements.txt
 
 # -----------------
