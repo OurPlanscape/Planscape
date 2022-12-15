@@ -8,9 +8,11 @@ djangorestframework~=3.13.0
 djangorestframework-gis~=0.18.0
 djangorestframework-simplejwt
 numpy
+pandas
 psycopg2>=2.9.3
 pymemcache
 python-decouple==3.6
 rasterio
+rpy2
 typing_extensions
 uwsgi

@@ -1,6 +1,12 @@
 import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { defaultMapConfig, MapConfig, MapViewOptions, Region } from '../types';
+import {
+  defaultMapConfig,
+  defaultMapViewOptions,
+  MapConfig,
+  MapViewOptions,
+  Region,
+} from '../types';
 
 /** How often the user's session should be saved to local storage (in ms). */
 const SESSION_SAVE_INTERVAL = 60000;
@@ -29,7 +35,10 @@ export class SessionService {
       this.mapConfigs$.next(JSON.parse(storedMapConfigs));
     }
     const storedMapViewOptions = localStorage.getItem('mapViewOptions');
-    if (storedMapViewOptions) {
+    if (
+      storedMapViewOptions &&
+      this.validateSavedMapViewOptions(storedMapViewOptions)
+    ) {
       this.mapViewOptions$.next(JSON.parse(storedMapViewOptions));
     }
     this.region$.next(localStorage.getItem('region') as Region | null);
@@ -59,11 +68,24 @@ export class SessionService {
    *  are present. */
   private validateSavedMapConfigs(data: string): boolean {
     const configs: any[] = JSON.parse(data);
-    return configs.every(val => this.instanceOfMapConfig(val));
+    return configs.every((val) => this.instanceOfMapConfig(val));
   }
 
   private instanceOfMapConfig(data: any): boolean {
     const mapConfigExample: MapConfig = defaultMapConfig();
-    return Object.keys(data).sort().join(',') === Object.keys(mapConfigExample).sort().join(',');
+    return (
+      Object.keys(data).sort().join(',') ===
+      Object.keys(mapConfigExample).sort().join(',')
+    );
+  }
+
+  /** Validates the map view options loaded from local storage to ensure all required fields
+   *  are present. */
+  private validateSavedMapViewOptions(data: string): boolean {
+    const mapViewOptions: MapViewOptions = JSON.parse(data);
+    return (
+      Object.keys(data).sort().join(',') ===
+      Object.keys(defaultMapViewOptions()).sort().join(',')
+    );
   }
 }
