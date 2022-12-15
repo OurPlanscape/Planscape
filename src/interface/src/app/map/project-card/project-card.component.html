@@ -1,11 +1,29 @@
-<h2>{{ feature?.properties.PROJECT_NAME }}</h2>
-<div>Project status: {{ feature?.properties.PROJECT_STATUS }}</div>
-<div>Project start date: {{ feature?.properties.PROJECT_START_DATE | date }}</div>
-<div>Project end date: {{ feature?.properties.PROJECT_END_DATE | date }}</div>
-<div>Last updated: {{ feature?.properties.LAST_UPDATED | date }}</div>
-<div>Project type: {{ feature?.properties.PROJECT_TYPE }}</div>
-<div>Region: {{ feature?.properties.REGION }}</div>
-<div>Unit: {{ feature?.properties.UNIT }}</div>
-<div>Treatment: {{ feature?.properties.TREATMENT_NAME }}</div>
-<div>Treatment objective: {{ feature?.properties.TREATMENT_OBJECTIVE }}</div>
-<div>Activity status: {{ feature?.properties.ACTIVITY_STATUS }}</div>
+<div class="detail-card">
+  <mat-card *ngFor="let boundary of boundaries">
+    <mat-card-title-group>
+      <mat-card-title>{{ boundary.shape_name }}</mat-card-title>
+      <mat-card-subtitle>Boundary</mat-card-subtitle>
+    </mat-card-title-group>
+  </mat-card>
+
+  <mat-card *ngFor="let project of projects">
+    <mat-card-title-group>
+      <mat-card-title>{{ project.PROJECT_NAME }}</mat-card-title>
+      <mat-card-subtitle>
+        Project ({{ project.PROJECT_STATUS }}) &#8226; {{ project.PROJECT_START_DATE | date }} - {{ project.PROJECT_END_DATE | date }}
+      </mat-card-subtitle>
+    </mat-card-title-group>
+    <mat-card-content>
+      <p>Last updated: {{ project.LAST_UPDATED | date }}</p>
+      <p>Project type: {{ project.PROJECT_TYPE }}</p>
+      <p>Region: {{ project.REGION }}</p>
+      <p>Unit: {{ project.UNIT }}</p>
+      <p>Treatments here:</p>
+      <ul>
+        <li *ngFor="let treatment of project.treatments">
+          <b>{{ treatment.TREATMENT_NAME }}</b> ({{ treatment.ACTIVITY_STATUS }}): {{ treatment.TREATMENT_OBJECTIVE }}
+        </li>
+      </ul>
+    </mat-card-content>
+  </mat-card>
+</div>
