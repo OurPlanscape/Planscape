@@ -8,7 +8,7 @@ class Plan(models.Model):
     A Plan is associated with one User, the owner, and one Region.  It has a name,
     status (locked/public), and a geometry representing the planning area.
     """
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)  # type: ignore
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     # The name of the plan.
     name: models.CharField = models.CharField(max_length=120)

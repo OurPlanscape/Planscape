@@ -1,6 +1,6 @@
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule } from '@angular/common/http';
+import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -29,6 +29,7 @@ import {
   AuthGuard,
   AuthService,
   MapService,
+  PlanService,
   PopupService,
   SessionService,
 } from './services';
@@ -62,6 +63,10 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     FeaturesModule,
     FormsModule,
     HttpClientModule,
+    HttpClientXsrfModule.withOptions({
+      cookieName: 'csrftoken',
+      headerName: 'X-CSRFTOKEN'
+    }),
     LayoutModule,
     MaterialModule,
     NgxGoogleAnalyticsModule,
@@ -74,6 +79,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     AuthGuard,
     PopupService,
     MapService,
+    PlanService,
     CookieService,
     SessionService,
   ],

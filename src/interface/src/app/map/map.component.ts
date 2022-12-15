@@ -12,6 +12,7 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { Router } from '@angular/router';
+import { Feature, Geometry } from 'geojson';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 
@@ -267,14 +268,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       map,
       id,
       this.existingProjectsGeoJson$,
-      (feature) => {
-        let component = createComponent(ProjectCardComponent, {
-          environmentInjector: this.environmentInjector,
-        });
-        component.instance.feature = feature;
-        this.applicationRef.attachView(component.hostView);
-        return component.location.nativeElement;
-      },
+      this.createDetailCardCallback.bind(this),
       this.getBoundaryLayerGeoJson.bind(this)
     );
 
@@ -321,6 +315,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   }
   private doneLoadingLayerCallback(layerName: string) {
     this.loadingIndicators[layerName] = false;
+  }
+
+  private createDetailCardCallback(features: Feature<Geometry, any>[]): any {
+    let component = createComponent(ProjectCardComponent, {
+      environmentInjector: this.environmentInjector,
+    });
+    component.instance.features = features;
+    this.applicationRef.attachView(component.hostView);
+    return component.location.nativeElement;
   }
 
   private getBoundaryLayerGeoJson(
