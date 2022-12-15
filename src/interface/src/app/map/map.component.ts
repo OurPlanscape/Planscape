@@ -365,14 +365,19 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
+  /** Handles the area creation action change. */
   onAreaCreationOptionChange(option: AreaCreationOption) {
     if (option === AreaCreationOption.DRAW) {
       this.mapManager.enablePolygonDrawingTool(
         this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
       );
+      this.showUploader = false;
       this.changeMapCount(1);
     }
     if (option === AreaCreationOption.UPLOAD) {
+      this.mapManager.disablePolygonDrawingTool(
+        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
+      );
       this.showUploader = !this.showUploader;
     }
   }
@@ -388,7 +393,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         reader.readAsArrayBuffer(file);
       });
       try {
-        const geojson = (await shp(fileAsArrayBuffer)) as GeoJSON.GeoJSON;
+        const geojson = (await shp.parseZip(
+          fileAsArrayBuffer
+        )) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
           this.mapManager.addGeoJsonToDrawing(geojson);
           this.showUploader = false;

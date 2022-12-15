@@ -403,12 +403,15 @@ export class MapManager {
     } as FeatureCollection;
   }
 
-  /**
-   * Enables the polygon drawing tool on a map.
-   */
+  /** Enables the polygon drawing tool on a map. */
   enablePolygonDrawingTool(map: L.Map) {
     this.addDrawingControl(map);
     map.pm.enableDraw('Polygon');
+  }
+
+  /** Disables the polygon drawing tool on a map. */
+  disablePolygonDrawingTool(map: L.Map) {
+    map.pm.disableDraw();
   }
 
   /**
