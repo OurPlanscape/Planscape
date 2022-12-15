@@ -11,6 +11,7 @@ import {
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
+import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 
@@ -27,8 +28,9 @@ import {
   colormapConfigToLegend,
   ConditionsConfig,
   DataLayerConfig,
-  defaultMapConfig,
   DEFAULT_COLORMAP,
+  defaultMapConfig,
+  defaultMapViewOptions,
   Legend,
   Map,
   MapConfig,
@@ -63,10 +65,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   mapManager: MapManager;
 
   maps: Map[];
-  mapViewOptions: MapViewOptions = {
-    selectedMapIndex: 0,
-    numVisibleMaps: 2,
-  };
+  mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
+    defaultMapViewOptions()
+  );
   mapNameplateWidths: BehaviorSubject<number | null>[] = Array(4)
     .fill(null)
     .map((_) => new BehaviorSubject<number | null>(null));
@@ -134,7 +135,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planService: PlanService
+    private planService: PlanService,
+    private router: Router
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
       takeUntil(this.destroy$)
@@ -170,6 +172,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.mapManager = new MapManager(
       matSnackBar,
       this.maps,
+      this.mapViewOptions$,
       popupService,
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this)
@@ -192,7 +195,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.sessionService.sessionInterval$
       .pipe(takeUntil(this.destroy$))
       .subscribe((_) => {
-        this.sessionService.setMapViewOptions(this.mapViewOptions);
+        this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
         this.sessionService.setMapConfigs(
           this.maps.map((map: Map) => map.config)
         );
@@ -202,7 +205,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
-      const selectedMapIndex = this.mapViewOptions.selectedMapIndex;
+      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
       // Only add drawing controls to the selected map
       if (selectedMapIndex === this.maps.indexOf(map)) {
         this.mapManager.addDrawingControl(
@@ -229,7 +232,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((mapViewOptions: MapViewOptions | null) => {
         if (mapViewOptions) {
-          this.mapViewOptions = mapViewOptions;
+          this.mapViewOptions$.next(mapViewOptions);
         }
       });
     this.sessionService.mapConfigs$
@@ -360,6 +363,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         })
         .subscribe((result) => {
           console.log(result);
+          this.router.navigate(['plan']);
         });
     });
   }
@@ -371,7 +375,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   onPlanCreationOptionChange(option: PlanCreationOption) {
     if (option.value === 'draw-area') {
       this.mapManager.enablePolygonDrawingTool(
-        this.maps[this.mapViewOptions.selectedMapIndex].instance!
+        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
       );
       this.changeMapCount(1);
     }
@@ -434,7 +438,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   /** Change how many maps are displayed in the viewport. */
   changeMapCount(mapCount: number) {
-    this.mapViewOptions.numVisibleMaps = mapCount;
+    const mapViewOptions = this.mapViewOptions$.getValue();
+    mapViewOptions.numVisibleMaps = mapCount;
+    this.mapViewOptions$.next(mapViewOptions);
     setTimeout(() => {
       this.maps.forEach((map: Map) => {
         map.instance?.invalidateSize();
@@ -446,7 +452,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   /** Select a map and update which map contains the drawing layer. */
   selectMap(mapIndex: number) {
-    const previousMapIndex = this.mapViewOptions.selectedMapIndex;
+    const mapViewOptions = this.mapViewOptions$.getValue();
+    const previousMapIndex = mapViewOptions.selectedMapIndex;
 
     // Toggle the cloned layer on if the map is not the current selected map.
     // Toggle on the drawing layer and control on the selected map.
@@ -456,8 +463,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       );
       this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
 
-      this.mapViewOptions.selectedMapIndex = mapIndex;
-      this.sessionService.setMapViewOptions(this.mapViewOptions);
+      mapViewOptions.selectedMapIndex = mapIndex;
+      this.mapViewOptions$.next(mapViewOptions);
+      this.sessionService.setMapViewOptions(mapViewOptions);
 
       this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
       this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
@@ -470,9 +478,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
    *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
    */
   isMapVisible(index: number): boolean {
-    if (index === this.mapViewOptions.selectedMapIndex) return true;
+    if (index === this.mapViewOptions$.getValue().selectedMapIndex) return true;
 
-    switch (this.mapViewOptions.numVisibleMaps) {
+    switch (this.mapViewOptions$.getValue().numVisibleMaps) {
       case 4:
         return true;
       case 1:
@@ -494,7 +502,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
    *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
    */
   mapRowHeight(index: number): string {
-    switch (this.mapViewOptions.numVisibleMaps) {
+    switch (this.mapViewOptions$.getValue().numVisibleMaps) {
       case 4:
         return '50%';
       case 2:
@@ -503,11 +511,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         return index === 0 ? '100%' : '0%';
       case 1:
       default:
-        if (Math.floor(this.mapViewOptions.selectedMapIndex / 2) === index) {
+        if (
+          Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
+          index
+        ) {
           return '100%';
         }
         return '0%';
     }
+  }
+
+  /** Gets the legend that should be shown in the sidebar.
+   *
+   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
+   */
+  getSelectedLegend(): Legend | undefined {
+    return this.maps[this.mapViewOptions$.getValue().selectedMapIndex].legend;
   }
 
   /** Used to compute whether a node in the condition layer tree has children. */
