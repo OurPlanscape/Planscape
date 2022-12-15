@@ -3,13 +3,11 @@ from pathlib import Path
 from typing import cast
 
 from config.boundary_config import BoundaryConfig
-from decouple import config
+from django.conf import settings
 from django.contrib.gis.utils.layermapping import LayerMapping
 from django.db.models.signals import pre_save
 
 from .models import Boundary, BoundaryDetails
-
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
 
 
 def run(boundary_to_load=None, verbose=True):
@@ -23,11 +21,11 @@ def run(boundary_to_load=None, verbose=True):
 
     # Build the configuration object.
     config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/boundary.json')
+        settings.BASE_DIR, 'config/boundary.json')
     config = BoundaryConfig(config_path)
 
     # Read the shapefiles and add Boundary and BoundaryDetail objects.
-    data_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, 'data')
+    data_path = os.path.join(settings.BASE_DIR, '../../data')
     for boundary in config.get_boundaries():
         # Check if need to load just one boundary
         boundary_name = boundary['boundary_name']
