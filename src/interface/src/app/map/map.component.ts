@@ -13,6 +13,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
 import { filter, shareReplay, switchMap } from 'rxjs/operators';
+import * as shp from 'shpjs';
 
 import {
   MapService,
@@ -42,8 +43,6 @@ import {
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
-
-import * as shp from 'shpjs';
 
 export enum AreaCreationOption {
   DRAW = 1,
