@@ -3,7 +3,7 @@ import { By } from '@angular/platform-browser';
 
 import { FileUploaderComponent } from './file-uploader.component';
 
-fdescribe('FileUploaderComponent', () => {
+describe('FileUploaderComponent', () => {
   let component: FileUploaderComponent;
   let fixture: ComponentFixture<FileUploaderComponent>;
 
