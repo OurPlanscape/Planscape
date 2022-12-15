@@ -13,7 +13,6 @@ Specific Planscape settings can be overridden by the .env file.
 These settings are
 
   SECRET_KEY:               Django key
-  PLANSCAPE_ROOT_DIRECTORY: root directory
   PLANSCAPE_DEBUG:          True or False
 
   PLANSCAPE_DATABASE_HOST: PostGIS hostname

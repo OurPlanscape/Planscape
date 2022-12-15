@@ -1,15 +1,14 @@
 import os
-from decouple import config
+import subprocess
 from typing import cast
 
 from base.condition_types import ConditionLevel, ConditionScoreType
-from config.conditions_config import PillarConfig
-from .models import BaseCondition, Condition
 from base.conditions import *
+from config.conditions_config import PillarConfig
+from django.conf import settings
 from eval.compute_conditions import *
-import subprocess
 
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
+from .models import BaseCondition, Condition
 
 """
 To run this script run the following commands
@@ -21,40 +20,51 @@ To run this script run the following commands
     load.load_metrics('sierra_cascade_inyo')
 """
 
-def convert_metrics_nodata(region: str):
+
+def convert_metrics_nodata(region_name: str):
     """Replaces the NoData pixels in metric rasters with the standard NaN value and updates the raster profile accordingly.
 
     Args:
       region: The region to rewrite
     """
-    config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config_path = os.path.join(settings.BASE_DIR, 'config/conditions.json')
     config = PillarConfig(config_path)
+    data_path = os.path.join(settings.BASE_DIR, '../..')
 
-    region = config.get_region(region)
+    region = config.get_region(region_name)
+    if region is None:
+        return
     for pillar in config.get_pillars(region):
-        if not pillar['display']:
+        if not pillar.get('display', False):
             continue
         for element in config.get_elements(pillar):
             for metric in config.get_metrics(element):
                 # TODO: Update to interprted when available
                 for metric_type in ['.tif', '_normalized.tif']:
-                    metric_is_raw = True if metric_type == '.tif' else False
+                    metric_is_raw = (metric_type == '.tif')
 
                     reader = ConditionReader()
                     nan_condition = convert_metric_nodata_to_nan(
                         reader, metric, ConditionScoreType.CURRENT, metric_is_raw)
+                    if nan_condition is None:
+                        continue
 
                     # Overwrite original local version
+                    metric_filepath = metric.get('filepath', None)
+                    if metric_filepath is None:
+                        continue
                     base_filepath = os.path.join(os.path.dirname(
-                        PLANSCAPE_ROOT_DIRECTORY), metric['filepath']) + metric_type
+                        data_path), metric_filepath) + metric_type
                     with rasterio.open(base_filepath, 'w', nan_condition.profile) as dst:
                         dst.write(nan_condition.raster, 1)
 
 
 def _load_metric(metric: Metric, metric_type: str, base_metric: BaseCondition):
+    metric_filepath = metric.get('filepath', None)
+    if metric_filepath is None:
+        return
     metric_path = os.path.join(
-        os.path.dirname(PLANSCAPE_ROOT_DIRECTORY), metric['filepath']) + metric_type
+        os.path.dirname(os.path.join(settings.BASE_DIR, '../..')), metric_filepath) + metric_type
 
     cmds = 'export PGPASSWORD=pass; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
         metric_path + ' public.conditions_conditionraster | psql -U planscape -d planscape -h localhost -p 5432'
@@ -75,23 +85,26 @@ def _load_metric(metric: Metric, metric_type: str, base_metric: BaseCondition):
     condition.save()
     print("Saved Condition: " + condition.raster_name)
 
-def load_metrics(region: str):
+
+def load_metrics(region_name: str):
     """Loads the metric rasters defined by the configuration into the database if display=true."""
-    config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config_path = os.path.join(settings.BASE_DIR, 'config/conditions.json')
     config = PillarConfig(config_path)
 
-    region = config.get_region(region)
+    region = config.get_region(region_name)
+    if region is None:
+        return
     for pillar in config.get_pillars(region):
-        if pillar['display']:
-            for element in config.get_elements(pillar):
-                for metric in config.get_metrics(element):
-                    query = BaseCondition.objects.filter(
-                        condition_name=metric['metric_name'])
-                    if len(query) > 0:
-                        print("BaseCondition " +
-                              metric['metric_name'] + " already exists; deleting.")
-                        query.delete()
+        if not pillar.get('display', False):
+            continue
+        for element in config.get_elements(pillar):
+            for metric in config.get_metrics(element):
+                query = BaseCondition.objects.filter(
+                    condition_name=metric['metric_name'])
+                if len(query) > 0:
+                    print("BaseCondition " +
+                          metric['metric_name'] + " already exists; deleting.")
+                    query.delete()
 
                 base_metric = BaseCondition(
                     condition_name=metric['metric_name'], condition_level=ConditionLevel.METRIC, region_name=region['region_name'])
@@ -148,7 +161,7 @@ def _save_condition(raster: ConditionMatrix, filepath: str, profile: dict):
         dst.write(raster, 1)
 
 
-def compute_elements(region: str, save: bool, reload: bool):
+def compute_elements(region_name: str, save: bool, reload: bool):
     """Computes element rasters based on the conditions config and saves them locally. Optionally loads them to our database.
 
     Args:
@@ -156,15 +169,21 @@ def compute_elements(region: str, save: bool, reload: bool):
       reload: True if the raster should be reloaded 
 
     """
-    config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config_path = os.path.join(settings.BASE_DIR, 'config/conditions.json')
     config = PillarConfig(config_path)
 
-    region = config.get_region(region)
-    for pillar in config.get_pillars(region):
-        if not pillar['display']:
+    region = config.get_region(region_name)
+    if region is None:
+        return
+    pillars = config.get_pillars(region)
+    if pillars is None:
+        return
+    for pillar in pillars:
+        if not pillar.get('display', False):
             continue
         for element in config.get_elements(pillar):
+            if 'filepath' not in element:
+                continue
             raster_path = element['filepath'] + '_normalized.tif'
 
             # TODO: Compute FUTURE metrics when available
@@ -172,10 +191,10 @@ def compute_elements(region: str, save: bool, reload: bool):
             computed_element = score_element(
                 reader, element, ConditionScoreType.CURRENT, recompute=True)
             filepath = os.path.join(os.path.dirname(
-                PLANSCAPE_ROOT_DIRECTORY), raster_path)
+                os.path.join(settings.BASE_DIR, '../..')), raster_path)
 
             # Save locally
-            if save:
+            if save and computed_element is not None:
                 _save_condition(computed_element.raster, filepath,
                                 computed_element.profile)
 
@@ -186,20 +205,24 @@ def compute_elements(region: str, save: bool, reload: bool):
                             ConditionScoreType.CURRENT, os.path.basename(raster_path), region['region_name'], filepath)
 
 
-def compute_pillars(region: str, save: bool, reload: bool):
+def compute_pillars(region_name: str, save: bool, reload: bool):
     """Computes pillar rasters based on the conditions config and saves them locally. Optionally loads them to our database.
 
     Args:
       region: The region to compute
       reload: True if the raster should be reloaded 
     """
-    config_path = os.path.join(
-        PLANSCAPE_ROOT_DIRECTORY, 'src/planscape/config/conditions.json')
+    config_path = os.path.join(settings.BASE_DIR, 'config/conditions.json')
     config = PillarConfig(config_path)
 
-    region = config.get_region(region)
-    for pillar in config.get_pillars(region):
-        if not pillar['display']:
+    region = config.get_region(region_name)
+    if region is None:
+        return
+    pillars = config.get_pillars(region)
+    if pillars is None:
+        return
+    for pillar in pillars:
+        if not pillar.get('display', False) or 'filepath' not in pillar:
             continue
         raster_path = pillar['filepath'] + '_normalized.tif'
 
@@ -208,10 +231,10 @@ def compute_pillars(region: str, save: bool, reload: bool):
         computed_pillar = score_pillar(
             reader, pillar, ConditionScoreType.CURRENT, recompute=True)
         filepath = os.path.join(os.path.dirname(
-            PLANSCAPE_ROOT_DIRECTORY), raster_path)
+            os.path.join(settings.BASE_DIR, '../..')), raster_path)
 
         # Save locally
-        if save:
+        if save and computed_pillar is not None:
             _save_condition(computed_pillar.raster, filepath,
                             computed_pillar.profile)
 
