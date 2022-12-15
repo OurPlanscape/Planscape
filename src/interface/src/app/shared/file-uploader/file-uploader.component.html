@@ -5,11 +5,11 @@
     [accept]="requiredFileType"
     (change)="onFileUploaded($event)" #fileUpload>
   <div class="upload-outline">
-      <mat-icon *ngIf="!file">upload</mat-icon>
-      {{fileName || "Select a file"}}
-      <button mat-flat-button class="upload-button"
-        (click)="fileUpload.click()"> UPLOAD
-      </button>
+    <mat-icon *ngIf="!file">upload</mat-icon>
+    {{fileName || "Select a file"}}
+    <button mat-flat-button class="upload-button"
+      (click)="fileUpload.click()"> UPLOAD
+    </button>
   </div>
   <span class="caption">only .zip of shapefile allowed</span>
 </div>
