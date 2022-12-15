@@ -1,14 +1,31 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, map, Observable, of, take, tap } from 'rxjs';
+import { BackendConstants } from '../backend-constants';
+import {
+  BehaviorSubject,
+  catchError,
+  map,
+  Observable,
+  of,
+  take,
+  tap,
+} from 'rxjs';
 
-import { BasePlan, Plan } from '../types';
+import { BasePlan, Plan, Region } from '../types';
 
 export interface PlanState {
   all: {
     [planId: string]: Plan;
   };
   currentPlanId: Plan['id'] | null;
+}
+
+export interface BackendPlan {
+  id?: number;
+  name: string;
+  owner?: number;
+  region: Region;
+  geometry: GeoJSON.GeoJSON;
 }
 
 @Injectable({
@@ -20,18 +37,16 @@ export class PlanService {
     all: {}, // All plans indexed by id
     currentPlanId: null,
   });
-  tempPlanId = 0;
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   /** Makes a request to the backend to create a plan and updates state. */
-  createPlan(basePlan: BasePlan): Observable<{ success: boolean; result?: Plan }> {
-    const createPlanRequest = this.convertToDbPlan(basePlan);
-    // TODO: Update when actual endpoint is known
-    return of(this.createPlanMockApi(createPlanRequest)).pipe(
+  createPlan(
+    basePlan: BasePlan
+  ): Observable<{ success: boolean; result?: Plan }> {
+    return this.createPlanApi(basePlan).pipe(
       take(1),
       map((createdPlan) => {
-        // Call convertToPlan here
         return {
           success: true,
           result: createdPlan,
@@ -48,13 +63,13 @@ export class PlanService {
     );
   }
 
-  private convertToDbPlan(plan: BasePlan) {
-    // TODO: Implement when backend contract is known
-    return plan;
-  }
-
-  private convertToPlan() {
-    // TODO: Implement when backend response is known
+  private convertToDbPlan(plan: BasePlan): BackendPlan {
+    return {
+      owner: Number(plan.ownerId),
+      name: plan.name,
+      region: plan.region,
+      geometry: plan.planningArea,
+    };
   }
 
   private addPlanToState(plan: Plan) {
@@ -71,12 +86,17 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-  /** Temporary stub for the api. */
-  private createPlanMockApi(plan: BasePlan): Plan {
-    this.tempPlanId = ++this.tempPlanId;
-    return {
-      ...plan,
-      id: this.tempPlanId.toString(),
-    };
+  private createPlanApi(plan: BasePlan): Observable<Plan> {
+    const createPlanRequest = this.convertToDbPlan(plan);
+    return this.http
+      .post(BackendConstants.END_POINT + '/plan/create/', createPlanRequest, {
+        withCredentials: true,
+      })
+      .pipe(take(1), map((result) => {
+        return {
+          ...plan,
+          id: result.toString(),
+        };
+      }));
   }
 }

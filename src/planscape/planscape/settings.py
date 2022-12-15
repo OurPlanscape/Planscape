@@ -173,6 +173,15 @@ CORS_ALLOWED_HOSTS = str(config(
     'PLANSCAPE_CORS_ALLOWED_HOSTS', default='http://localhost:4200')).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
+# Cross-Site Request Forgery protection settings
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_TRUSTED_ORIGINS = [
+  "http://localhost:4200",
+]
+CSRF_HEADER_NAME = 'CSRF_COOKIE'
+PLANSCAPE_GUEST_CAN_SAVE = True
+
 # REST Framework settings
 
 REST_FRAMEWORK = {
