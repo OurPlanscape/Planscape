@@ -224,12 +224,12 @@ export class MapManager {
    * Given the original polygon, removes the cloned polygons from the cloned drawing
    * layer on all maps. Optionally deletes the original polygon key.
    */
-  private removeClonedPolygons(layer: L.Layer, toDelete: boolean) {
+  private removeClonedPolygons(layer: L.Layer, deleteOriginal: boolean) {
     this.maps.forEach((currMap) => {
       const originalPolygonKey = L.Util.stamp(layer);
       const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
       currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
-      if (toDelete) {
+      if (deleteOriginal) {
         delete currMap.drawnPolygonLookup![originalPolygonKey];
       }
     });
