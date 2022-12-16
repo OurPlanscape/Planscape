@@ -37,6 +37,7 @@
     "ngx-cookie-service": "^14.0.1",
     "ngx-google-analytics": "^14.0.1",
     "rxjs": "~7.5.0",
+    "shpjs": "^4.0.4",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
   },
@@ -48,6 +49,7 @@
     "@types/jasmine": "~4.0.0",
     "@types/leaflet": "^1.9.0",
     "@types/leaflet-draw": "^1.0.4",
+    "@types/shpjs": "^3.4.2",
     "jasmine-core": "~4.3.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",

@@ -59,7 +59,7 @@ export class MapManager {
     map: Map,
     mapId: string,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any,
+    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any,
     getBoundaryLayerGeoJsonCallback: (
       boundaryName: string
     ) => Observable<GeoJSON.GeoJSON>
@@ -90,7 +90,7 @@ export class MapManager {
     this.toggleBoundaryLayer(map, getBoundaryLayerGeoJsonCallback);
     existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
       if (projects) {
-        this.initCalMapperLayer(map, projects, createDetailCardCallback);
+        this.initCalMapperLayer(map, projects);
       }
     });
     this.changeConditionsLayer(map);
@@ -118,7 +118,7 @@ export class MapManager {
       fillOpacity: 0.2,
     });
 
-    this.setUpEventHandlers(map);
+    this.setUpEventHandlers(map, createDetailCardCallback);
   }
 
   /** Creates a basemap layer using the Hillshade tiles. */
@@ -146,22 +146,35 @@ export class MapManager {
   }
 
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
-  private initCalMapperLayer(
-    map: Map,
-    existingProjects: GeoJSON.GeoJSON,
-    createDetailCardCallback: (feature: Feature<Geometry, any>) => any
-  ) {
+  private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
+    const normalStyle: L.PathOptions = {
+      color: '#000000',
+      weight: 1,
+      opacity: 0.5,
+    };
+    const hoverStyle: L.PathOptions = {
+      color: '#ff0000',
+      weight: 5,
+      opacity: 0.9,
+    };
+
     // [elsieling] This step makes the map less responsive
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
-      style: function (_) {
-        return {
-          color: '#000000',
-          weight: 3,
-          opacity: 0.9,
-        };
-      },
+      style: normalStyle,
       onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        layer.bindPopup(createDetailCardCallback(feature));
+        //layer.bindPopup(createDetailCardCallback(feature));
+        layer.bindTooltip(
+          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME)
+        );
+        // Exact type of layer (polygon or line) is not known
+        if ((layer as any).setStyle) {
+          layer.addEventListener('mouseover', (_) =>
+            (layer as L.Polygon).setStyle(hoverStyle)
+          );
+          layer.addEventListener('mouseout', (_) =>
+            (layer as L.Polygon).setStyle(normalStyle)
+          );
+        }
       },
     });
 
@@ -170,8 +183,12 @@ export class MapManager {
     }
   }
 
-  private setUpEventHandlers(map: Map) {
+  private setUpEventHandlers(
+    map: Map,
+    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+  ) {
     this.setUpDrawingHandlers(map.instance!);
+    this.setUpClickHandler(map, createDetailCardCallback);
 
     // Since maps are synced, pan and zoom event handlers only need
     // to be added to the first instance.
@@ -181,75 +198,77 @@ export class MapManager {
     }
   }
 
+  /**
+   * Adds a GeoJSON to the drawing layer.
+   * @param area: The geojson of the area to add to the drawing layer.
+   */
+  addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
+    L.geoJSON(area, {
+      style: (_) => ({
+        color: '#7b61ff',
+        fillColor: '#7b61ff',
+        fillOpacity: 0.2,
+      }),
+      pmIgnore: false,
+      onEachFeature: (_, layer) => {
+        layer.addTo(this.drawingLayer);
+        this.addClonedPolygons(layer);
+        layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+      },
+    });
+    this.polygonsCreated$.next(true);
+  }
+
+  /**
+   * Given the original polygon, adds the cloned polygons to the cloned drawing
+   * layer on all maps.
+   */
+  private addClonedPolygons(layer: L.Layer) {
+    this.maps.forEach((currMap) => {
+      const originalId = L.Util.stamp(layer);
+
+      // Hacky way to clone, but it removes the reference to the origin layer
+      const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+        color: '#ffde9e',
+        fillColor: '#ffde9e',
+      });
+      currMap.clonedDrawingRef?.addLayer(clonedLayer);
+      currMap.drawnPolygonLookup![originalId] = clonedLayer;
+    });
+  }
+
+  /**
+   * Given the original polygon, removes the cloned polygons from the cloned drawing
+   * layer on all maps. Optionally deletes the original polygon key.
+   */
+  private removeClonedPolygons(layer: L.Layer, deleteOriginal: boolean) {
+    this.maps.forEach((currMap) => {
+      const originalPolygonKey = L.Util.stamp(layer);
+      const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+      currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+      if (deleteOriginal) {
+        delete currMap.drawnPolygonLookup![originalPolygonKey];
+      }
+    });
+  }
+
   private setUpDrawingHandlers(map: L.Map) {
-    /** Create handler. */
+    /** Handles a created polygon event, which occurs when a polygon is completed. */
     map.on('pm:create', (event) => {
       // Allow drawn layers to be editable
       (event.layer as any).options.pmIgnore = false;
       L.PM.reInitLayer(event.layer);
 
       const layer = event.layer;
-      const originalId = L.Util.stamp(layer);
-
-      // Sync newly created polygons to all maps
-      this.maps.forEach((currMap) => {
-        // Hacky way to clone, but it removes the reference to the origin layer
-        const clonedLayer = L.geoJson(
-          (layer as L.Polygon).toGeoJSON()
-        ).setStyle({
-          color: '#ffde9e',
-          fillColor: '#ffde9e',
-        });
-        currMap.clonedDrawingRef?.addLayer(clonedLayer);
-        currMap.drawnPolygonLookup![originalId] = clonedLayer;
-      });
+      // Sync created polygons to all maps
+      this.addClonedPolygons(layer);
 
       this.polygonsCreated$.next(true);
 
-      /** Edit layer handler. */
-      event.layer.on('pm:edit', ({ layer }) => {
-        const editedLayer = layer as L.Polygon;
+      event.layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+    });
 
-        // Check if polygon overlaps another
-        let overlaps = false;
-        this.drawingLayer.getLayers().forEach((feature) => {
-          const existingPolygon = feature as L.Polygon;
-          // Skip feature with same latlng because that is what's being edited
-          if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
-            const isOverlapping = booleanWithin(
-              editedLayer.toGeoJSON(),
-              existingPolygon.toGeoJSON()
-            );
-            const isIntersecting = booleanIntersects(
-              editedLayer.toGeoJSON(),
-              existingPolygon.toGeoJSON()
-            );
-            overlaps = isOverlapping || isIntersecting;
-          }
-        });
-        if (overlaps) {
-          this.showDrawingError();
-        }
-
-        // Sync edited polygons to all maps
-        this.maps.forEach((currMap) => {
-          const originalPolygonKey = L.Util.stamp(layer);
-          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
-          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
-
-          const updatedPolygon = L.geoJson(
-            (layer as L.Polygon).toGeoJSON()
-          ).setStyle({
-            color: '#ffde9e',
-            fillColor: '#ffde9e',
-          });
-          currMap.clonedDrawingRef?.addLayer(updatedPolygon);
-          currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
-        });
-      }); /** End of edit layer handler. */
-    }); /** End of create handler. */
-
-    /** Start drawing handler. */
+    /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
@@ -271,24 +290,49 @@ export class MapManager {
           return;
         }
       });
-    }); /** End of start drawing handler. */
+    });
 
-    /** Polygon deletion handler. */
+    /** Handles a polygon removal event. */
     map.on('pm:remove', (event) => {
       const layer = event.layer;
       // Sync deleted polygons to all maps
-      this.maps.forEach((currMap) => {
-        const originalPolygonKey = L.Util.stamp(layer);
-        const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
-        currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
-        delete currMap.drawnPolygonLookup![originalPolygonKey];
-      });
+      this.removeClonedPolygons(layer, true);
 
       // When there are no more polygons
       if (this.drawingLayer.getLayers().length === 0) {
         this.polygonsCreated$.next(false);
       }
-    }); /** End of polygon deletion handler */
+    });
+  }
+
+  /** Handles a polygon edit event. */
+  private editHandler(layer: L.Layer) {
+    const editedLayer = layer as L.Polygon;
+
+    // Check if polygon overlaps another
+    let overlaps = false;
+    this.drawingLayer.getLayers().forEach((feature) => {
+      const existingPolygon = feature as L.Polygon;
+      // Skip feature with same latlng because that is what's being edited
+      if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
+        const isOverlapping = booleanWithin(
+          editedLayer.toGeoJSON(),
+          existingPolygon.toGeoJSON()
+        );
+        const isIntersecting = booleanIntersects(
+          editedLayer.toGeoJSON(),
+          existingPolygon.toGeoJSON()
+        );
+        overlaps = isOverlapping || isIntersecting;
+      }
+    });
+    if (overlaps) {
+      this.showDrawingError();
+    }
+
+    // Sync edited polygons to all maps
+    this.removeClonedPolygons(layer, false);
+    this.addClonedPolygons(layer);
   }
 
   private showDrawingError() {
@@ -296,6 +340,55 @@ export class MapManager {
       duration: 10000,
       panelClass: ['snackbar-error'],
       verticalPosition: 'top',
+    });
+  }
+
+  private setUpClickHandler(
+    map: Map,
+    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+  ) {
+    map.instance!.on('click', (e) => {
+      if (!e.latlng) return;
+
+      const intersectingFeatureLayers: L.Polygon[] = [];
+
+      map.instance!.eachLayer((layer) => {
+        // Loop through all GeoJSON layers except the region boundaries
+        if (layer instanceof L.GeoJSON && layer !== map.regionLayerRef) {
+          (layer as L.GeoJSON).eachLayer((featureLayer) => {
+            if (featureLayer instanceof L.Polygon && featureLayer.feature) {
+              const polygon = featureLayer as L.Polygon;
+              // If feature contains the point that was clicked, add to list
+              if (
+                booleanIntersects(
+                  point(L.GeoJSON.latLngToCoords(e.latlng)),
+                  polygon.feature!
+                ) ||
+                booleanWithin(
+                  point(L.GeoJSON.latLngToCoords(e.latlng)),
+                  polygon.feature!
+                )
+              ) {
+                intersectingFeatureLayers.push(polygon);
+              }
+            }
+          });
+        }
+      });
+
+      if (intersectingFeatureLayers.length === 0) return;
+
+      // Open detail card with all the features present at the clicked point
+      map.instance!.openPopup(
+        createDetailCardCallback(
+          intersectingFeatureLayers
+            .map((featureLayer) => {
+              return (featureLayer as L.Polygon).feature;
+            })
+            .filter((feature) => !!feature) as Feature<Geometry, any>[]
+        ),
+        e.latlng
+      );
     });
   }
 
@@ -376,12 +469,15 @@ export class MapManager {
     } as FeatureCollection;
   }
 
-  /**
-   * Enables the polygon drawing tool on a map.
-   */
+  /** Enables the polygon drawing tool on a map. */
   enablePolygonDrawingTool(map: L.Map) {
     this.addDrawingControl(map);
     map.pm.enableDraw('Polygon');
+  }
+
+  /** Disables the polygon drawing tool on a map. */
+  disablePolygonDrawingTool(map: L.Map) {
+    map.pm.disableDraw();
   }
 
   /**
@@ -464,18 +560,36 @@ export class MapManager {
   }
 
   private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
+    const normalStyle: L.PathOptions = {
+      weight: 1,
+      opacity: 0.2,
+      color: '#0000ff',
+      fillOpacity: 0.2,
+      fillColor: '#0000ff',
+    };
+    const hoverStyle: L.PathOptions = {
+      weight: 3,
+      opacity: 0.5,
+      color: '#0000ff',
+      fillOpacity: 0.5,
+      fillColor: '#0000ff',
+    };
     return L.geoJSON(boundary, {
-      style: (_) => ({
-        weight: 3,
-        opacity: 0.5,
-        color: '#0000ff',
-        fillOpacity: 0.2,
-        fillColor: '#6DB65B',
-      }),
-      onEachFeature: (feature, layer) =>
+      style: normalStyle,
+      onEachFeature: (feature, layer) => {
         layer.bindTooltip(
           this.popupService.makeDetailsPopup(feature.properties.shape_name)
-        ),
+        );
+        // Exact type of layer (polygon or line) is not known
+        if ((layer as any).setStyle) {
+          layer.addEventListener('mouseover', (_) =>
+            (layer as L.Polygon).setStyle(hoverStyle)
+          );
+          layer.addEventListener('mouseout', (_) =>
+            (layer as L.Polygon).setStyle(normalStyle)
+          );
+        }
+      },
     });
   }
 

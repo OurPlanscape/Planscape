@@ -172,6 +172,15 @@ CORS_ALLOWED_HOSTS = str(config(
     'PLANSCAPE_CORS_ALLOWED_HOSTS', default='http://localhost:4200')).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
+# Cross-Site Request Forgery protection settings
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
+CSRF_TRUSTED_ORIGINS = [
+  "http://localhost:4200",
+]
+CSRF_HEADER_NAME = 'CSRF_COOKIE'
+PLANSCAPE_GUEST_CAN_SAVE = True
+
 # REST Framework settings
 
 REST_FRAMEWORK = {
@@ -210,4 +219,23 @@ CACHES = {
         'BACKEND': config('PLANSCAPE_CACHE_BACKEND', default='django.core.cache.backends.locmem.LocMemCache'),
         'LOCATION': config('PLANSCAPE_CACHE_LOCATION', 'planscape-cache'),
     }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname}: {name}.{message}",
+            "style": "{",
+        },
+    },
+
+    'handlers': {
+         "console": {'level': 'DEBUG', "class": "logging.StreamHandler", "formatter": "verbose"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
 }

@@ -4,20 +4,20 @@
 FROM node:alpine as builder
 
 # Create a working directory
-RUN mkdir /app
-WORKDIR /app
+RUN mkdir -p /src/interface
+WORKDIR /src/interface
 
 # Copy app dependencies
-COPY ./package.json ./package-lock.json /app/
+COPY ./package.json ./package-lock.json /src/interface/
 
 # Install angular
 RUN npm install --legacy-peer-deps
 
 # Copy app files
-COPY . /app
+COPY . /src/interface
 
 # Allow nginx to access static assets
-RUN chmod -R 755 /app/src/assets
+RUN chmod -R 755 /src/interface/src/assets
 
 # Build app
 RUN npm run build -- --output-path=./dist/out
@@ -31,7 +31,8 @@ FROM nginx
 RUN rm -rf /usr/share/nginx/html/*
 
 # Copy output directory from builder to nginx image
-COPY --from=builder /app/dist/out /usr/share/nginx/html
+COPY --from=builder /src/interface/dist/out /usr/share/nginx/html
 
-# Copy nginx configuration file
+# Copy nginx configuration files
 COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
+COPY ./nginx/uwsgi_params /etc/nginx/uwsgi_params

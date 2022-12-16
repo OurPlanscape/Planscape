@@ -12,8 +12,10 @@ import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { Router } from '@angular/router';
+import { Feature, Geometry } from 'geojson';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { filter, shareReplay, switchMap } from 'rxjs/operators';
+import * as shp from 'shpjs';
 
 import {
   MapService,
@@ -44,10 +46,9 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
-export interface PlanCreationOption {
-  value: string;
-  display: string;
-  icon: any;
+export enum AreaCreationOption {
+  DRAW = 1,
+  UPLOAD = 2,
 }
 
 interface ConditionsNode extends DataLayerConfig {
@@ -83,7 +84,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     BaseLayerType.Road,
     BaseLayerType.Terrain,
   ];
-  readonly BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  readonly BaseLayerType = BaseLayerType;
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
@@ -114,10 +115,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     ],
   };
 
-  planCreationOptions: PlanCreationOption[] = [
-    { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
-  ];
-  selectedPlanCreationOption: PlanCreationOption | null = null;
+  /** Actions bar variables */
+  readonly AreaCreationOption = AreaCreationOption;
+  showUploader: boolean = false;
   showCreatePlanButton$ = new BehaviorSubject(false);
 
   conditionTreeControl = new NestedTreeControl<ConditionsNode>(
@@ -267,14 +267,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       map,
       id,
       this.existingProjectsGeoJson$,
-      (feature) => {
-        let component = createComponent(ProjectCardComponent, {
-          environmentInjector: this.environmentInjector,
-        });
-        component.instance.feature = feature;
-        this.applicationRef.attachView(component.hostView);
-        return component.location.nativeElement;
-      },
+      this.createDetailCardCallback.bind(this),
       this.getBoundaryLayerGeoJson.bind(this)
     );
 
@@ -323,6 +316,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.loadingIndicators[layerName] = false;
   }
 
+  private createDetailCardCallback(features: Feature<Geometry, any>[]): any {
+    let component = createComponent(ProjectCardComponent, {
+      environmentInjector: this.environmentInjector,
+    });
+    component.instance.features = features;
+    this.applicationRef.attachView(component.hostView);
+    return component.location.nativeElement;
+  }
+
   private getBoundaryLayerGeoJson(
     boundaryName: string
   ): Observable<GeoJSON.GeoJSON> {
@@ -368,17 +370,55 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  /**
-   * On PlanCreationOptions selection change, enables the polygon tool if
-   * the drawing option is selected.
-   */
-  onPlanCreationOptionChange(option: PlanCreationOption) {
-    if (option.value === 'draw-area') {
+  /** Handles the area creation action change. */
+  onAreaCreationOptionChange(option: AreaCreationOption) {
+    if (option === AreaCreationOption.DRAW) {
       this.mapManager.enablePolygonDrawingTool(
         this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
       );
+      this.showUploader = false;
       this.changeMapCount(1);
     }
+    if (option === AreaCreationOption.UPLOAD) {
+      this.mapManager.disablePolygonDrawingTool(
+        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
+      );
+      this.showUploader = !this.showUploader;
+    }
+  }
+  /** Converts and adds the editable shapefile to the map. */
+  async loadArea(event: { type: string; value: File }) {
+    const file = event.value;
+    if (file) {
+      const reader = new FileReader();
+      const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
+        reader.onload = () => {
+          resolve(reader.result as ArrayBuffer);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+      try {
+        const geojson = (await shp.parseZip(
+          fileAsArrayBuffer
+        )) as GeoJSON.GeoJSON;
+        if (geojson.type == 'FeatureCollection') {
+          this.mapManager.addGeoJsonToDrawing(geojson);
+          this.showUploader = false;
+        } else {
+          this.showUploadError();
+        }
+      } catch (e) {
+        this.showUploadError();
+      }
+    }
+  }
+
+  private showUploadError() {
+    this.matSnackBar.open('[Error] Not a valid shapefile!', 'Dismiss', {
+      duration: 10000,
+      panelClass: ['snackbar-error'],
+      verticalPosition: 'top',
+    });
   }
 
   /** Gets the selected region geojson and renders it on the map. */
