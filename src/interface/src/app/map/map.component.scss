@@ -131,9 +131,9 @@
 }
 
 // Styling for the actions bar above the maps
-.map-options-bar {
-  display: flex;
+.map-actions-bar {
   background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
   flex-direction: row;
   height: $info-bar-height;
   position: absolute;
@@ -141,21 +141,40 @@
   z-index: 2;
 }
 
-.draw-area-button {
+.create-plan-button {
+  align-items: center;
   background-color: #ffffff;
+  border-radius: 50px;
+  font-weight: 500;
   height: 35px;
-  margin: 0px 0px 0px 20px;
-  pointer-events: auto;
-  top: 8px;
-  width: fit-content;
-
-  &:hover {
-    background-color: #b9b9b9;
-  }
+  margin: 8px 0px 0px 20px;
 }
 
-.upload-area-button {
+.arrow {
+  border: solid #565656;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  height: 0;
+  padding: 3px;
+  pointer-events: none;
+  position: relative;
+  width: 0;
+}
+
+.right {
+  transform: rotate(-45deg);
+  -webkit-transform: rotate(-45deg);
+}
+
+.left {
+  left: 5px;
+  transform: rotate(135deg);
+  -webkit-transform: rotate(135deg);
+}
+
+.draw-area-button, .upload-area-button {
   background-color: #ffffff;
+  border-radius: 50px;
   height: 35px;
   margin: 8px 0px 0px 10px;
   pointer-events: auto;
@@ -166,9 +185,31 @@
   }
 }
 
-.create-plan-button {
+.selected {
+  background-color: #b9b9b9;
+}
+
+.upload-wrapper {
+  position: relative;
+
+  .file-uploader {
+    left: 0;
+    position: absolute;
+    top: 50px;
+  }
+}
+
+.confirm-area-button {
   color: #ffffff;
-  margin: 4px 0px 0px 20px;
+  margin: 4px 20px 0px 0px;
+  pointer-events: auto;
+  width: fit-content;
+}
+
+.cancel-button {
+  color: #ffffff;
+  margin: 4px 20px 0px 20px;
+  margin-left: auto;
   pointer-events: auto;
   width: fit-content;
 }
