@@ -200,22 +200,6 @@ describe('MapComponent', () => {
       );
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
-
-    it('sets up drawing', () => {
-      const selectedMap =
-        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
-
-      component.maps.forEach((map: Map) => {
-        expect(map.clonedDrawingRef).toBeDefined();
-        expect(map.drawnPolygonLookup).toEqual({});
-      });
-      expect(
-        selectedMap.instance?.hasLayer(selectedMap.clonedDrawingRef!)
-      ).toBeFalse();
-      expect(
-        selectedMap.instance?.hasLayer(mapManager.drawingLayer)
-      ).toBeTrue();
-    });
   });
 
   describe('ngAfterViewInit', () => {
@@ -371,8 +355,15 @@ describe('MapComponent', () => {
       });
     });
 
-    it('enables drawing on selected map and shows cloned layer on other maps', () => {
+    it('enables drawing on selected map and shows cloned layer on other maps', async () => {
       component.ngAfterViewInit();
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
+      await button.click();
 
       component.maps[3].instance?.fireEvent('click');
 
@@ -514,8 +505,32 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
     });
 
+    it('sets up drawing', async () => {
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
+
+      await button.click();
+      const selectedMap =
+        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
+
+      component.maps.forEach((map: Map) => {
+        expect(map.clonedDrawingRef).toBeDefined();
+        expect(map.drawnPolygonLookup).toEqual({});
+      });
+      expect(
+        selectedMap.instance?.hasLayer(selectedMap.clonedDrawingRef!)
+      ).toBeFalse();
+      expect(
+        selectedMap.instance?.hasLayer(mapManager.drawingLayer)
+      ).toBeTrue();
+    });
+
     it('enables polygon tool when drawing option is selected', async () => {
-      spyOn(component, 'onAreaCreationOptionChange').and.callThrough();
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.draw-area-button',
@@ -524,7 +539,7 @@ describe('MapComponent', () => {
 
       await button.click();
 
-      expect(component.onAreaCreationOptionChange).toHaveBeenCalled();
+      expect(component.onAreaCreationActionChange).toHaveBeenCalled();
       expect(
         component.maps[
           component.mapViewOptions$.getValue().selectedMapIndex
@@ -645,11 +660,11 @@ describe('MapComponent', () => {
         fixture.debugElement.injector.get(MatDialog);
       const planServiceStub: PlanService =
         fixture.debugElement.injector.get(PlanService);
-      fixture.componentInstance.showCreatePlanButton$ =
+      fixture.componentInstance.showConfirmAreaButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
-          selector: '.create-plan-button',
+          selector: '.confirm-area-button',
         })
       );
 

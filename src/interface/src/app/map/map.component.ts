@@ -46,7 +46,8 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
-export enum AreaCreationOption {
+export enum AreaCreationAction {
+  NONE = 0,
   DRAW = 1,
   UPLOAD = 2,
 }
@@ -116,9 +117,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   };
 
   /** Actions bar variables */
-  readonly AreaCreationOption = AreaCreationOption;
-  showUploader: boolean = false;
-  showCreatePlanButton$ = new BehaviorSubject(false);
+  readonly AreaCreationAction = AreaCreationAction;
+  showUploader = false;
+  showAreaCreationActionButtons = false;
+  selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
+  showConfirmAreaButton$ = new BehaviorSubject(false);
 
   conditionTreeControl = new NestedTreeControl<ConditionsNode>(
     (node) => node.children
@@ -179,7 +182,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     );
     this.mapManager.polygonsCreated$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(this.showCreatePlanButton$);
+      .subscribe(this.showConfirmAreaButton$);
 
     this.conditionDataSource.data = [NONE_DATA_LAYER_CONFIG];
     this.conditionsConfig$
@@ -205,18 +208,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
-      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
-      // Only add drawing controls to the selected map
-      if (selectedMapIndex === this.maps.indexOf(map)) {
-        this.mapManager.addDrawingControl(
-          this.maps[selectedMapIndex].instance!
-        );
-      } else {
-        // Show a copy of the drawing layer on the other maps
-        this.mapManager.showClonedDrawing(map);
-      }
     });
-
     this.mapManager.syncAllMaps();
   }
 
@@ -371,23 +363,56 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   /** Handles the area creation action change. */
-  onAreaCreationOptionChange(option: AreaCreationOption) {
-    if (option === AreaCreationOption.DRAW) {
+  onAreaCreationActionChange(option: AreaCreationAction) {
+    const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+    this.selectedAreaCreationAction = option;
+    if (option === AreaCreationAction.DRAW) {
+      this.addDrawingControlToAllMaps();
       this.mapManager.enablePolygonDrawingTool(
-        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
+        this.maps[selectedMapIndex].instance!
       );
       this.showUploader = false;
       this.changeMapCount(1);
     }
-    if (option === AreaCreationOption.UPLOAD) {
+    if (option === AreaCreationAction.UPLOAD) {
+      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+      this.maps[selectedMapIndex].instance!.pm.removeControls();
       this.mapManager.disablePolygonDrawingTool(
-        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
+        this.maps[selectedMapIndex].instance!
       );
       this.showUploader = !this.showUploader;
     }
   }
+
+  cancelAreaCreationAction() {
+    const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+    this.mapManager.removeDrawingControl(this.maps[selectedMapIndex].instance!);
+    this.mapManager.disablePolygonDrawingTool(
+      this.maps[selectedMapIndex].instance!
+    );
+    this.mapManager.clearAllDrawings();
+    this.selectedAreaCreationAction = AreaCreationAction.NONE;
+    this.showUploader = false;
+  }
+
+  private addDrawingControlToAllMaps() {
+    this.maps.forEach((map: Map) => {
+      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+      // Only add drawing controls to the selected map
+      if (selectedMapIndex === this.maps.indexOf(map)) {
+        this.mapManager.addDrawingControl(
+          this.maps[selectedMapIndex].instance!
+        );
+      } else {
+        // Show a copy of the drawing layer on the other maps
+        this.mapManager.showClonedDrawing(map);
+      }
+    });
+  }
+
   /** Converts and adds the editable shapefile to the map. */
   async loadArea(event: { type: string; value: File }) {
+    this.addDrawingControlToAllMaps();
     const file = event.value;
     if (file) {
       const reader = new FileReader();
