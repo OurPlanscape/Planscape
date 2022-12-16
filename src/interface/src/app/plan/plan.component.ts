@@ -1,4 +1,4 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
 
@@ -9,9 +9,9 @@ import { Plan, Region } from '../types';
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss'],
 })
-export class PlanComponent implements AfterViewInit {
-  private map!: L.Map;
-  private plan: Plan | null = null;
+export class PlanComponent implements AfterViewInit, OnDestroy {
+  map!: L.Map;
+  plan: Plan | null = null;
 
   constructor(private router: Router) {
     // TODO(leehana): Use a fake plan until we can query plans from the DB
@@ -29,6 +29,8 @@ export class PlanComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+    if (this.map != undefined) this.map.remove();
+
     this.map = L.map('map', {
       center: [38.646, -120.548],
       zoom: 9,
@@ -63,6 +65,10 @@ export class PlanComponent implements AfterViewInit {
           '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
       }
     );
+  }
+
+  ngOnDestroy(): void {
+    this.map.remove();
   }
 
   expandMap() {

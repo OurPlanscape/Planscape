@@ -6,6 +6,9 @@ import { Router } from '@angular/router';
 
 import { PlanComponent } from './plan.component';
 
+import * as L from 'leaflet';
+import { MaterialModule } from '../material/material.module';
+
 describe('PlanComponent', () => {
   let component: PlanComponent;
   let fixture: ComponentFixture<PlanComponent>;
@@ -15,6 +18,7 @@ describe('PlanComponent', () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
     await TestBed.configureTestingModule({
+      imports: [MaterialModule],
       declarations: [PlanComponent],
       providers: [{ provide: Router, useFactory: routerStub }],
     }).compileComponents();
@@ -27,6 +31,25 @@ describe('PlanComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should add planning area to map', () => {
+    component.ngAfterViewInit();
+
+    let foundPlanningAreaLayer = false;
+
+    component.map.eachLayer((layer) => {
+      if (layer instanceof L.GeoJSON) {
+        if (
+          (layer as L.GeoJSON).toGeoJSON().bbox ===
+          component.plan?.planningArea.bbox
+        ) {
+          foundPlanningAreaLayer = true;
+        }
+      }
+    });
+
+    expect(foundPlanningAreaLayer).toBeTrue();
   });
 
   describe('expand map button', () => {
