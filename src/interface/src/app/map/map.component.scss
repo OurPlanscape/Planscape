@@ -172,21 +172,7 @@
   -webkit-transform: rotate(135deg);
 }
 
-.draw-area-button {
-  background-color: #ffffff;
-  border-radius: 50px;
-  height: 35px;
-  margin: 0px 0px 0px 10px;
-  pointer-events: auto;
-  top: 8px;
-  width: fit-content;
-
-  &:hover {
-    background-color: #b9b9b9;
-  }
-}
-
-.upload-area-button {
+.draw-area-button, .upload-area-button {
   background-color: #ffffff;
   border-radius: 50px;
   height: 35px;
