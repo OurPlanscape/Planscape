@@ -438,6 +438,16 @@ export class MapManager {
     map.pm.addControls(this.getGeomanDrawOptions());
   }
 
+  /** Clears all drawings and cloned drawings. */
+  clearAllDrawings() {
+    this.drawingLayer.clearLayers();
+    this.maps.forEach((currMap) => {
+      currMap.clonedDrawingRef!.clearLayers();
+      currMap.drawnPolygonLookup = {};
+    });
+    this.polygonsCreated$.next(false);
+  }
+
   /**
    * Converts drawingLayer to GeoJSON. If there are multiple polygons drawn,
    * creates and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon
