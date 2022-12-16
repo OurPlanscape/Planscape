@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MaterialModule } from '../material/material.module';
+import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanComponent } from './plan.component';
 
 describe('PlanComponent', () => {
@@ -10,7 +11,7 @@ describe('PlanComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MaterialModule],
-      declarations: [PlanComponent],
+      declarations: [PlanComponent, PlanMapComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlanComponent);
