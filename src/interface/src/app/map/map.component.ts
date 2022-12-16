@@ -518,21 +518,27 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   selectMap(mapIndex: number) {
     const mapViewOptions = this.mapViewOptions$.getValue();
     const previousMapIndex = mapViewOptions.selectedMapIndex;
+    mapViewOptions.selectedMapIndex = mapIndex;
+    this.mapViewOptions$.next(mapViewOptions);
+    this.sessionService.setMapViewOptions(mapViewOptions);
 
     // Toggle the cloned layer on if the map is not the current selected map.
     // Toggle on the drawing layer and control on the selected map.
-    if (previousMapIndex !== mapIndex) {
-      this.mapManager.removeDrawingControl(
-        this.maps[previousMapIndex].instance!
-      );
-      this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
-
-      mapViewOptions.selectedMapIndex = mapIndex;
-      this.mapViewOptions$.next(mapViewOptions);
-      this.sessionService.setMapViewOptions(mapViewOptions);
-
-      this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
-      this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
+    if (
+      this.selectedAreaCreationAction === AreaCreationAction.DRAW ||
+      this.showConfirmAreaButton$
+    ) {
+      if (previousMapIndex !== mapIndex) {
+        this.mapManager.disablePolygonDrawingTool(
+          this.maps[previousMapIndex].instance!
+        );
+        this.mapManager.removeDrawingControl(
+          this.maps[previousMapIndex].instance!
+        );
+        this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
+        this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
+        this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
+      }
     }
   }
 
