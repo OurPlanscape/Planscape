@@ -1,3 +1,5 @@
+@import "../shared/_variables.scss";
+
 .root-container {
   display: flex;
   flex-direction: row;
@@ -128,27 +130,47 @@
   width: 8px;
 }
 
-// Styling for the info bar above the maps
+// Styling for the actions bar above the maps
 .map-options-bar {
+  display: flex;
   background-color: rgba(0, 0, 0, 0.5);
-  height: 50px;
+  flex-direction: row;
+  height: $info-bar-height;
   position: absolute;
-  pointer-events: none;
   width: 100%;
   z-index: 2;
 }
 
-.plan-options-button {
-  left: 20px;
+.draw-area-button {
+  background-color: #ffffff;
+  height: 35px;
+  margin: 0px 0px 0px 20px;
   pointer-events: auto;
   top: 8px;
+  width: fit-content;
+
+  &:hover {
+    background-color: #b9b9b9;
+  }
+}
+
+.upload-area-button {
+  background-color: #ffffff;
+  height: 35px;
+  margin: 8px 0px 0px 10px;
+  pointer-events: auto;
+  width: fit-content;
+
+  &:hover {
+    background-color: #b9b9b9;
+  }
 }
 
 .create-plan-button {
   color: #ffffff;
-  left: 30px;
+  margin: 4px 0px 0px 20px;
   pointer-events: auto;
-  top: 10px;
+  width: fit-content;
 }
 
 .condition-tree-invisible {

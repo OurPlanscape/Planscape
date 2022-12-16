@@ -201,24 +201,27 @@
 
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="maps-container">
-    <!-- Info bar above the maps -->
+    <!-- Actions bar above the maps -->
     <div class="map-options-bar">
-      <!-- Dropdown for creating a planning area -->
-      <button mat-raised-button type="button" class="plan-options-button">
-        <mat-select
-          [(value)]="selectedPlanCreationOption"
-          placeholder="Create a plan"
-          class="plan-options-select"
-          (selectionChange)="onPlanCreationOptionChange($event.value)">
-          <mat-select-trigger *ngIf="selectedPlanCreationOption">
-            <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
-            {{selectedPlanCreationOption.display}}
-          </mat-select-trigger>
-          <mat-option *ngFor="let option of planCreationOptions" [value]="option">
-            <mat-icon>{{option.icon}}</mat-icon>{{option.display}}
-          </mat-option>
-        </mat-select>
-      </button>
+      <!-- Draw a planning area -->
+      <button mat-flat-button
+          class="draw-area-button"
+          (click)="onAreaCreationOptionChange(AreaCreationOption.DRAW)">
+          <mat-icon>edit</mat-icon> Draw an area
+        </button>
+
+      <!-- Upload a planning area -->
+      <div class="upload-wrapper">
+        <button mat-flat-button
+          class="upload-area-button"
+          (click)="onAreaCreationOptionChange(AreaCreationOption.UPLOAD)">
+          <mat-icon>upload_file</mat-icon> Upload an area
+        </button>
+        <file-uploader *ngIf="showUploader"
+          requiredFileType="application/zip"
+          (fileEvent)="loadArea($event)"
+          ></file-uploader>
+      </div>
 
       <!-- Create plan button -->
       <button *ngIf="showCreatePlanButton$ | async"
