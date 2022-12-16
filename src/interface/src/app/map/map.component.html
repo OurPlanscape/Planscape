@@ -207,7 +207,7 @@
       <button mat-flat-button
           class="draw-area-button"
           (click)="onAreaCreationOptionChange(AreaCreationOption.DRAW)">
-          <mat-icon>edit</mat-icon> Draw an area
+          <mat-icon>draw</mat-icon> Draw an area
         </button>
 
       <!-- Upload a planning area -->
@@ -215,7 +215,7 @@
         <button mat-flat-button
           class="upload-area-button"
           (click)="onAreaCreationOptionChange(AreaCreationOption.UPLOAD)">
-          <mat-icon>upload_file</mat-icon> Upload an area
+          <mat-icon>upload</mat-icon> Upload an area
         </button>
         <file-uploader *ngIf="showUploader"
           class="file-uploader"
@@ -229,7 +229,7 @@
         mat-button type="button"
         class="create-plan-button"
         (click)="openCreatePlanDialog()">
-        <mat-icon>add</mat-icon>CREATE
+        <mat-icon>add_circle</mat-icon>Create plan
       </button>
     </div>
 
