@@ -2,19 +2,18 @@ import json
 
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import requires_csrf_token
 from plan.models import Plan
 from base.region_name import RegionName
+from planscape import settings
 
 
-@requires_csrf_token
 def create(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
         owner = None
         if request.user.is_authenticated:
             owner = request.user
-        if owner is None:
+        if owner is None and not(settings.PLANSCAPE_GUEST_CAN_SAVE):
             raise ValueError("Must be logged in")
 
         # Get the name of the plan.
@@ -27,7 +26,7 @@ def create(request: HttpRequest) -> HttpResponse:
         # TODO Reconsider default of Sierra Nevada region.
         region_name = body.get('region_name', None)
         if region_name is None:
-            region_name = str(RegionName.SIERRA_CASCADE_INYO)
+            region_name = 'sierra_cascade_inyo'
 
         # Get the geometry of the plan.  Convert it to a MultiPolygon
         # if it is a simple Polygon, since the model column type is
