@@ -268,6 +268,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.displayRegionBoundary(map, selectedRegion);
     });
 
+    this.showConfirmAreaButton$.subscribe((value: boolean) => {
+      if (!value && this.selectedAreaCreationAction === AreaCreationAction.UPLOAD) {
+        const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+        this.mapManager.removeDrawingControl(this.maps[selectedMapIndex].instance!);
+        this.showUploader = true;
+      }
+    });
+
     // Mark the map as selected when the user clicks anywhere on it.
     map.instance?.addEventListener('click', () => {
       this.selectMap(this.maps.indexOf(map));
@@ -411,7 +419,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   /** Converts and adds the editable shapefile to the map. */
   async loadArea(event: { type: string; value: File }) {
-    this.addDrawingControlToAllMaps();
     const file = event.value;
     if (file) {
       const reader = new FileReader();
@@ -428,6 +435,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         if (geojson.type == 'FeatureCollection') {
           this.mapManager.addGeoJsonToDrawing(geojson);
           this.showUploader = false;
+          this.addDrawingControlToAllMaps();
         } else {
           this.showUploadError();
         }
@@ -518,15 +526,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   selectMap(mapIndex: number) {
     const mapViewOptions = this.mapViewOptions$.getValue();
     const previousMapIndex = mapViewOptions.selectedMapIndex;
-    mapViewOptions.selectedMapIndex = mapIndex;
-    this.mapViewOptions$.next(mapViewOptions);
-    this.sessionService.setMapViewOptions(mapViewOptions);
 
     // Toggle the cloned layer on if the map is not the current selected map.
     // Toggle on the drawing layer and control on the selected map.
     if (
       this.selectedAreaCreationAction === AreaCreationAction.DRAW ||
-      this.showConfirmAreaButton$
+      this.showConfirmAreaButton$.value
     ) {
       if (previousMapIndex !== mapIndex) {
         this.mapManager.disablePolygonDrawingTool(
@@ -540,6 +545,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
       }
     }
+    mapViewOptions.selectedMapIndex = mapIndex;
+    this.mapViewOptions$.next(mapViewOptions);
+    this.sessionService.setMapViewOptions(mapViewOptions);
   }
 
   /**
