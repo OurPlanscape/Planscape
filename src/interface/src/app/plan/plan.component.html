@@ -4,10 +4,7 @@
   </div>
   <mat-divider [vertical]="true"></mat-divider>
   <div class="plan-map-container">
-    <div class="plan-map-view">
-      <div id="map" class="plan-map"></div>
-      <button mat-raised-button class="expand-map-button" (click)="expandMap()">EXPAND MAP</button>
-    </div>
+    <app-plan-map [plan]="plan"></app-plan-map>
     <mat-divider></mat-divider>
     <div class="plan-scenario-panel">
       <h1>Scenario comparison</h1>
