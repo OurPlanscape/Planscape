@@ -375,7 +375,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.changeMapCount(1);
     }
     if (option === AreaCreationAction.UPLOAD) {
-      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
       this.maps[selectedMapIndex].instance!.pm.removeControls();
       this.mapManager.disablePolygonDrawingTool(
         this.maps[selectedMapIndex].instance!

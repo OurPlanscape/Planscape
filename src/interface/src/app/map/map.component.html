@@ -214,7 +214,7 @@
       <button mat-flat-button
         class="draw-area-button"
         [class.is-hidden]="!showAreaCreationActionButtons"
-        [ngClass]="{selected: selectedAreaCreationAction==AreaCreationAction.DRAW}"
+        [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.DRAW}"
         (click)="onAreaCreationActionChange(AreaCreationAction.DRAW)">
         <mat-icon>draw</mat-icon> Draw an area
       </button>
@@ -224,7 +224,7 @@
         <button mat-flat-button
           class="upload-area-button"
           [class.is-hidden]="!showAreaCreationActionButtons"
-          [ngClass]="{selected: selectedAreaCreationAction==AreaCreationAction.UPLOAD}"
+          [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.UPLOAD}"
           (click)="onAreaCreationActionChange(AreaCreationAction.UPLOAD)">
           <mat-icon>upload</mat-icon> Upload an area
         </button>
@@ -236,7 +236,8 @@
       </div>
 
       <!-- Cancel button -->
-      <button *ngIf="selectedAreaCreationAction==AreaCreationAction.DRAW || selectedAreaCreationAction==AreaCreationAction.UPLOAD"
+      <button *ngIf="selectedAreaCreationAction === AreaCreationAction.DRAW ||
+        selectedAreaCreationAction === AreaCreationAction.UPLOAD"
         mat-button type="button"
         class="cancel-button"
         (click)="cancelAreaCreationAction()">
