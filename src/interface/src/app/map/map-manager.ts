@@ -198,75 +198,77 @@ export class MapManager {
     }
   }
 
+  /**
+   * Adds a GeoJSON to the drawing layer.
+   * @param area: The geojson of the area to add to the drawing layer.
+   */
+  addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
+    L.geoJSON(area, {
+      style: (_) => ({
+        color: '#7b61ff',
+        fillColor: '#7b61ff',
+        fillOpacity: 0.2,
+      }),
+      pmIgnore: false,
+      onEachFeature: (_, layer) => {
+        layer.addTo(this.drawingLayer);
+        this.addClonedPolygons(layer);
+        layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+      },
+    });
+    this.polygonsCreated$.next(true);
+  }
+
+  /**
+   * Given the original polygon, adds the cloned polygons to the cloned drawing
+   * layer on all maps.
+   */
+  private addClonedPolygons(layer: L.Layer) {
+    this.maps.forEach((currMap) => {
+      const originalId = L.Util.stamp(layer);
+
+      // Hacky way to clone, but it removes the reference to the origin layer
+      const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+        color: '#ffde9e',
+        fillColor: '#ffde9e',
+      });
+      currMap.clonedDrawingRef?.addLayer(clonedLayer);
+      currMap.drawnPolygonLookup![originalId] = clonedLayer;
+    });
+  }
+
+  /**
+   * Given the original polygon, removes the cloned polygons from the cloned drawing
+   * layer on all maps. Optionally deletes the original polygon key.
+   */
+  private removeClonedPolygons(layer: L.Layer, deleteOriginal: boolean) {
+    this.maps.forEach((currMap) => {
+      const originalPolygonKey = L.Util.stamp(layer);
+      const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
+      currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
+      if (deleteOriginal) {
+        delete currMap.drawnPolygonLookup![originalPolygonKey];
+      }
+    });
+  }
+
   private setUpDrawingHandlers(map: L.Map) {
-    /** Create handler. */
+    /** Handles a created polygon event, which occurs when a polygon is completed. */
     map.on('pm:create', (event) => {
       // Allow drawn layers to be editable
       (event.layer as any).options.pmIgnore = false;
       L.PM.reInitLayer(event.layer);
 
       const layer = event.layer;
-      const originalId = L.Util.stamp(layer);
-
-      // Sync newly created polygons to all maps
-      this.maps.forEach((currMap) => {
-        // Hacky way to clone, but it removes the reference to the origin layer
-        const clonedLayer = L.geoJson(
-          (layer as L.Polygon).toGeoJSON()
-        ).setStyle({
-          color: '#ffde9e',
-          fillColor: '#ffde9e',
-        });
-        currMap.clonedDrawingRef?.addLayer(clonedLayer);
-        currMap.drawnPolygonLookup![originalId] = clonedLayer;
-      });
+      // Sync created polygons to all maps
+      this.addClonedPolygons(layer);
 
       this.polygonsCreated$.next(true);
 
-      /** Edit layer handler. */
-      event.layer.on('pm:edit', ({ layer }) => {
-        const editedLayer = layer as L.Polygon;
+      event.layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+    });
 
-        // Check if polygon overlaps another
-        let overlaps = false;
-        this.drawingLayer.getLayers().forEach((feature) => {
-          const existingPolygon = feature as L.Polygon;
-          // Skip feature with same latlng because that is what's being edited
-          if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
-            const isOverlapping = booleanWithin(
-              editedLayer.toGeoJSON(),
-              existingPolygon.toGeoJSON()
-            );
-            const isIntersecting = booleanIntersects(
-              editedLayer.toGeoJSON(),
-              existingPolygon.toGeoJSON()
-            );
-            overlaps = isOverlapping || isIntersecting;
-          }
-        });
-        if (overlaps) {
-          this.showDrawingError();
-        }
-
-        // Sync edited polygons to all maps
-        this.maps.forEach((currMap) => {
-          const originalPolygonKey = L.Util.stamp(layer);
-          const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
-          currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
-
-          const updatedPolygon = L.geoJson(
-            (layer as L.Polygon).toGeoJSON()
-          ).setStyle({
-            color: '#ffde9e',
-            fillColor: '#ffde9e',
-          });
-          currMap.clonedDrawingRef?.addLayer(updatedPolygon);
-          currMap.drawnPolygonLookup![originalPolygonKey] = updatedPolygon;
-        });
-      }); /** End of edit layer handler. */
-    }); /** End of create handler. */
-
-    /** Start drawing handler. */
+    /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
@@ -288,24 +290,49 @@ export class MapManager {
           return;
         }
       });
-    }); /** End of start drawing handler. */
+    });
 
-    /** Polygon deletion handler. */
+    /** Handles a polygon removal event. */
     map.on('pm:remove', (event) => {
       const layer = event.layer;
       // Sync deleted polygons to all maps
-      this.maps.forEach((currMap) => {
-        const originalPolygonKey = L.Util.stamp(layer);
-        const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
-        currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
-        delete currMap.drawnPolygonLookup![originalPolygonKey];
-      });
+      this.removeClonedPolygons(layer, true);
 
       // When there are no more polygons
       if (this.drawingLayer.getLayers().length === 0) {
         this.polygonsCreated$.next(false);
       }
-    }); /** End of polygon deletion handler */
+    });
+  }
+
+  /** Handles a polygon edit event. */
+  private editHandler(layer: L.Layer) {
+    const editedLayer = layer as L.Polygon;
+
+    // Check if polygon overlaps another
+    let overlaps = false;
+    this.drawingLayer.getLayers().forEach((feature) => {
+      const existingPolygon = feature as L.Polygon;
+      // Skip feature with same latlng because that is what's being edited
+      if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
+        const isOverlapping = booleanWithin(
+          editedLayer.toGeoJSON(),
+          existingPolygon.toGeoJSON()
+        );
+        const isIntersecting = booleanIntersects(
+          editedLayer.toGeoJSON(),
+          existingPolygon.toGeoJSON()
+        );
+        overlaps = isOverlapping || isIntersecting;
+      }
+    });
+    if (overlaps) {
+      this.showDrawingError();
+    }
+
+    // Sync edited polygons to all maps
+    this.removeClonedPolygons(layer, false);
+    this.addClonedPolygons(layer);
   }
 
   private showDrawingError() {
@@ -442,12 +469,15 @@ export class MapManager {
     } as FeatureCollection;
   }
 
-  /**
-   * Enables the polygon drawing tool on a map.
-   */
+  /** Enables the polygon drawing tool on a map. */
   enablePolygonDrawingTool(map: L.Map) {
     this.addDrawingControl(map);
     map.pm.enableDraw('Polygon');
+  }
+
+  /** Disables the polygon drawing tool on a map. */
+  disablePolygonDrawingTool(map: L.Map) {
+    map.pm.disableDraw();
   }
 
   /**
