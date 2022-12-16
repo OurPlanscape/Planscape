@@ -269,9 +269,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
-      if (!value && this.selectedAreaCreationAction === AreaCreationAction.UPLOAD) {
-        const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
-        this.mapManager.removeDrawingControl(this.maps[selectedMapIndex].instance!);
+      if (
+        !value &&
+        this.selectedAreaCreationAction === AreaCreationAction.UPLOAD
+      ) {
+        const selectedMapIndex =
+          this.mapViewOptions$.getValue().selectedMapIndex;
+        this.mapManager.removeDrawingControl(
+          this.maps[selectedMapIndex].instance!
+        );
         this.showUploader = true;
       }
     });
@@ -529,13 +535,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     const mapViewOptions = this.mapViewOptions$.getValue();
     const previousMapIndex = mapViewOptions.selectedMapIndex;
 
-    // Toggle the cloned layer on if the map is not the current selected map.
-    // Toggle on the drawing layer and control on the selected map.
-    if (
-      this.selectedAreaCreationAction === AreaCreationAction.DRAW ||
-      this.showConfirmAreaButton$.value
-    ) {
-      if (previousMapIndex !== mapIndex) {
+    if (previousMapIndex !== mapIndex) {
+      mapViewOptions.selectedMapIndex = mapIndex;
+      this.mapViewOptions$.next(mapViewOptions);
+      this.sessionService.setMapViewOptions(mapViewOptions);
+
+      // Toggle the cloned layer on if the map is not the current selected map.
+      // Toggle on the drawing layer and control on the selected map.
+      if (
+        this.selectedAreaCreationAction === AreaCreationAction.DRAW ||
+        this.showConfirmAreaButton$.value
+      ) {
         this.mapManager.disablePolygonDrawingTool(
           this.maps[previousMapIndex].instance!
         );
@@ -547,9 +557,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
       }
     }
-    mapViewOptions.selectedMapIndex = mapIndex;
-    this.mapViewOptions$.next(mapViewOptions);
-    this.sessionService.setMapViewOptions(mapViewOptions);
   }
 
   /**
