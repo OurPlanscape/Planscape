@@ -14,11 +14,13 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject, of } from 'rxjs';
+import { featureCollection, point } from '@turf/helpers';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import { BehaviorSubject, of } from 'rxjs';
+import * as shp from 'shpjs';
 
-import { MapService, PopupService, SessionService } from '../services';
+import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -28,12 +30,17 @@ import {
   Map,
   MapConfig,
   MapViewOptions,
+  Plan,
   Region,
 } from './../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
+
+interface ExtendedWindow extends Window {
+  FileReader: FileReader;
+}
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -66,6 +73,13 @@ describe('MapComponent', () => {
         },
       ],
     };
+    const fakePlan: Plan = {
+      id: 'temp',
+      name: 'somePlan',
+      ownerId: 'owner',
+      region: Region.SIERRA_NEVADA,
+      planningArea: fakeGeoJson
+    }
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
@@ -95,6 +109,16 @@ describe('MapComponent', () => {
               ],
             },
           ],
+        }),
+      }
+    );
+    const fakePlanService = jasmine.createSpyObj<PlanService>(
+      'PlanService',
+      {createPlan: of({ success:true, fakePlan}) },
+      {
+        planState$: new BehaviorSubject<PlanState>({
+          all: {}, // All plans indexed by id
+          currentPlanId: 'temp',
         }),
       }
     );
@@ -142,6 +166,7 @@ describe('MapComponent', () => {
       providers: [
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
+        { provide: PlanService, useValue: fakePlanService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: fakeSessionService },
         { provide: Router, useFactory: routerStub },
@@ -202,17 +227,6 @@ describe('MapComponent', () => {
         expect(map.baseLayerRef).toBeDefined();
         expect(map.existingProjectsLayerRef).toBeDefined();
       });
-    });
-
-    it('creates project detail card', () => {
-      const applicationRef: ApplicationRef =
-        fixture.componentInstance.applicationRef;
-      spyOn(applicationRef, 'attachView').and.callThrough;
-
-      component.ngAfterViewInit();
-
-      // We expect a project detail card to be attached 4 times, 1x for each map
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -501,14 +515,16 @@ describe('MapComponent', () => {
     });
 
     it('enables polygon tool when drawing option is selected', async () => {
-      spyOn(component, 'onPlanCreationOptionChange').and.callThrough();
-      const select = await loader.getHarness(MatSelectHarness);
-      await select.open();
-      const option = await select.getOptions();
+      spyOn(component, 'onAreaCreationOptionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
 
-      await option[0].click(); // 'draw-area' option
+      await button.click();
 
-      expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
+      expect(component.onAreaCreationOptionChange).toHaveBeenCalled();
       expect(
         component.maps[
           component.mapViewOptions$.getValue().selectedMapIndex
@@ -563,10 +579,72 @@ describe('MapComponent', () => {
     });
   });
 
+  describe('Upload an area', () => {
+    function createSpy(mockReader: jasmine.SpyObj<FileReader>) {
+      spyOn(window as any, 'FileReader').and.returnValue(mockReader);
+    }
+
+    beforeEach(() => {
+      component.ngAfterViewInit();
+    });
+
+    it('upload area button opens the file uploader', async () => {
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.upload-area-button',
+        })
+      );
+
+      await button.click();
+
+      expect(component.showUploader).toBeTrue();
+    });
+
+    it('adds the geojson to the map given a valid shapefile', async () => {
+      const testFile = new File([], 'test.zip');
+      const fakeResult = featureCollection([point([-75.343, 39.984])]);
+      const mockReader = jasmine.createSpyObj('FileReader', [
+        'readAsArrayBuffer',
+        'onload',
+      ]);
+      mockReader.result = 'test content';
+      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
+      createSpy(mockReader);
+      spyOn(shp, 'parseZip').and.returnValue(Promise.resolve(fakeResult));
+      spyOn(mapManager, 'addGeoJsonToDrawing').and.stub();
+
+      await component.loadArea({ type: 'area_upload', value: testFile });
+
+      expect(mapManager.addGeoJsonToDrawing).toHaveBeenCalled();
+      expect(component.showUploader).toBeFalse();
+    });
+
+    it('shows error when the file is invalid', async () => {
+      const testFile = new File([], 'test.zip');
+      const mockReader = jasmine.createSpyObj('FileReader', [
+        'readAsArrayBuffer',
+        'onload',
+      ]);
+      mockReader.result = 'test content';
+      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
+      createSpy(mockReader);
+      spyOn(shp, 'parseZip').and.returnValue(Promise.reject());
+      spyOn(mapManager, 'addGeoJsonToDrawing').and.stub();
+      spyOn(component as any, 'showUploadError').and.callThrough();
+
+      await component.loadArea({ type: 'area_upload', value: testFile });
+
+      expect(mapManager.addGeoJsonToDrawing).not.toHaveBeenCalled();
+      expect((component as any).showUploadError).toHaveBeenCalled();
+    });
+  });
+
   describe('Create plan', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
       fixture.componentInstance.showCreatePlanButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
@@ -578,9 +656,12 @@ describe('MapComponent', () => {
       await button.click();
 
       expect(fakeMatDialog.open).toHaveBeenCalled();
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
 
     it('dialog calls create plan with name and planning area', async () => {
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
       const routerStub: Router = fixture.debugElement.injector.get(Router);
       spyOn(routerStub, 'navigate').and.callThrough();
 
@@ -596,6 +677,7 @@ describe('MapComponent', () => {
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
       expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan']);
     });
   });
@@ -637,6 +719,53 @@ describe('MapComponent', () => {
       component.ngOnInit();
 
       expect(component.mapViewOptions$.getValue()).toEqual(mapViewOptions);
+    });
+  });
+
+  describe('Map detail card popups', () => {
+    let applicationRef: ApplicationRef;
+
+    beforeEach(() => {
+      applicationRef = fixture.componentInstance.applicationRef;
+      spyOn(applicationRef, 'attachView').and.callThrough;
+
+      component.ngAfterViewInit();
+
+      // Add a polygon to map 3
+      const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+            ],
+          ],
+        },
+        properties: {
+          shape_name: 'test_boundary',
+        },
+      };
+      L.geoJSON(feature).addTo(component.maps[3].instance!);
+    });
+
+    it('attaches popup when feature polygon is clicked', () => {
+      // Click on the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [0, 0],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not attach popup when map is clicked outside the polygon', () => {
+      // Click outside the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [2, 2],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
     });
   });
 });

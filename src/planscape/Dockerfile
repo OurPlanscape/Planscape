@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.10.9
 
 # -------------------------
 # Set environment variables
@@ -15,21 +15,19 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # ------------------
 # Set work directory
 # ------------------
-RUN mkdir /code
-WORKDIR /code
+RUN mkdir -p /src/planscape
+WORKDIR /src/planscape
 
 # --------------------
 # Install dependencies
 # --------------------
 RUN pip install --upgrade pip
 COPY requirements.txt .
+RUN apt-get update && apt-get install -y gdal-bin libgdal-dev r-base-core
 RUN pip install -r requirements.txt
-RUN apt-get update && apt-get install -y gdal-bin
 
 # -----------------
 # Copy project code
 # -----------------
 # note: code is copied AFTER dependencies have been installed.
-COPY . /code/
-
-CMD python manage.py runserver 0.0.0.0:8080
+COPY . /src/planscape

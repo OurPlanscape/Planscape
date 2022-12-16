@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./planscape
+    command: uwsgi --ini ./planscape/uwsgi.ini
+    volumes:
+      - ./planscape/:/usr/src/planscape/
+      - ./socket:/var/run/planscape
+    expose:
+      - 8000
+      - 5432
+    env_file:
+      - ./planscape/planscape/.env
+    depends_on:
+      - frontend
+
+  frontend:
+    build: ./interface
+    volumes:
+      - ./interface/:/usr/src/interface/
+      - ./socket:/var/run/planscape
+    ports:
+      - 80:80
+
+# Shared volume; used to set up communication by sockets from
+# nginx -> uwsgi -> Django.
+volumes:
+  socket:

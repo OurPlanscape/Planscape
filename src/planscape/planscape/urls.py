@@ -17,13 +17,14 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('boundary/', include('boundary.api')),
-    path('conditions/', include('conditions.urls')),
-    path('forsys/', include('forsys.urls')),
-    path('plan/', include('plan.urls')),
-    path('projects/', include('existing_projects.urls')),
+    path('planscape-backend/admin/', admin.site.urls),
+    path('planscape-backend/boundary/', include('boundary.api')),
+    path('planscape-backend/conditions/', include('conditions.urls')),
+    path('planscape-backend/forsys/', include('forsys.urls')),
+    path('planscape-backend/plan/', include('plan.urls')),
+    path('planscape-backend/projects/', include('existing_projects.urls')),
     # Auth URLs
-    path('dj-rest-auth/', include('dj_rest_auth.urls')),
-    path('dj-rest-auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('planscape-backend/dj-rest-auth/', include('dj_rest_auth.urls')),
+    path('planscape-backend/dj-rest-auth/registration/',
+         include('dj_rest_auth.registration.urls')),
 ]

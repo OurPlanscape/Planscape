@@ -36,41 +36,47 @@ class ConditionTest(TestCase):
             condition_dataset=base_condition, raster_name='random_test.tif')
         super(ConditionTest, cls).setUpClass()
 
+    def setUp(self):
+        self._api_prefix = '/planscape-backend/conditions'
+
     def test_bad_height(self):
-        response = self.client.get('/conditions/wms/?height=foo&width=87')
+        response = self.client.get(
+            self._api_prefix + '/wms/?height=foo&width=87')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_bbox(self):
         response = self.client.get(
-            '/conditions/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.hg')
+            self._api_prefix + '/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.hg')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_srs_prefix(self):
         response = self.client.get(
-            '/conditions/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPS:123')
+            self._api_prefix + '/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPS:123')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_srs_int(self):
         response = self.client.get(
-            '/conditions/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPSG:bar')
+            self._api_prefix + '/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPSG:bar')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_layers(self):
-        response = self.client.get(
-            '/conditions/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
-            '&format=image/jpeg&layers=foo.tif')
+        response = self.client.get(self._api_prefix +
+                                   '/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
+                                   '&format=image/jpeg&layers=foo.tif')
         self.assertEqual(response.status_code, 400)
 
     def test_good_request(self):
-        response = self.client.get(
-            '/conditions/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
-            '&format=image/jpeg&layers=random_test.tif')
+        response = self.client.get(self._api_prefix +
+                                   '/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
+                                   '&format=image/jpeg&layers=random_test.tif')
         self.assertEqual(response.status_code, 200)
 
     def test_bad_colormap(self):
-        response = self.client.get('/conditions/colormap/?colormap=foo')
+        response = self.client.get(
+            self._api_prefix + '/colormap/?colormap=foo')
         self.assertEqual(response.status_code, 400)
 
     def test_good_colormap(self):
-        response = self.client.get('/conditions/colormap/?colormap=viridis')
+        response = self.client.get(
+            self._api_prefix + '/colormap/?colormap=viridis')
         self.assertEqual(response.status_code, 200)
