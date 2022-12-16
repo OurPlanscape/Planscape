@@ -1,4 +1,5 @@
 @import "../shared/_variables.scss";
+@import "../shared/file-uploader/file-uploader.component.scss";
 
 .root-container {
   display: flex;
@@ -163,6 +164,16 @@
 
   &:hover {
     background-color: #b9b9b9;
+  }
+}
+
+.upload-wrapper {
+  position: relative;
+
+  .file-uploader {
+    left: 0;
+    position: absolute;
+    top: 50px;
   }
 }
 
