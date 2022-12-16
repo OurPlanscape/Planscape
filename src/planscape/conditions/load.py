@@ -39,10 +39,12 @@ def convert_metrics_nodata(region_name: str):
             continue
         for element in config.get_elements(pillar):
             for metric in config.get_metrics(element):
+                metric_filepath = metric.get('filepath', None)
+                if metric_filepath is None:
+                    continue
                 # TODO: Update to interprted when available
                 for metric_type in ['.tif', '_normalized.tif']:
                     metric_is_raw = (metric_type == '.tif')
-
                     reader = ConditionReader()
                     nan_condition = convert_metric_nodata_to_nan(
                         reader, metric, ConditionScoreType.CURRENT, metric_is_raw)
@@ -50,9 +52,6 @@ def convert_metrics_nodata(region_name: str):
                         continue
 
                     # Overwrite original local version
-                    metric_filepath = metric.get('filepath', None)
-                    if metric_filepath is None:
-                        continue
                     base_filepath = os.path.join(os.path.dirname(
                         data_path), metric_filepath) + metric_type
                     with rasterio.open(base_filepath, 'w', nan_condition.profile) as dst:
