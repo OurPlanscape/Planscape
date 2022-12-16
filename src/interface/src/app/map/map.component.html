@@ -218,6 +218,7 @@
           <mat-icon>upload_file</mat-icon> Upload an area
         </button>
         <file-uploader *ngIf="showUploader"
+          class="file-uploader"
           requiredFileType="application/zip"
           (fileEvent)="loadArea($event)"
           ></file-uploader>
