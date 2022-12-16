@@ -24,21 +24,20 @@ import functools
 import numpy as np
 import os
 import rasterio
-from typing import Optional, cast, Tuple
+from typing import Optional, cast
 from decouple import config
 
+from django.conf import settings
 from base.conditions import average_condition, weighted_average_condition, convert_nodata_to_nan
 from base.condition_types import ConditionMatrix, ConditionScoreType, Region, Pillar, Element, Metric
 from config.conditions_config import PillarConfig
 from eval.raster_data import RasterData
 
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
-
 
 class ConditionReader():
     """Class to read conditions from files."""
 
-    def __init__(self, root_directory: str = os.path.dirname(cast(str, PLANSCAPE_ROOT_DIRECTORY))):
+    def __init__(self, root_directory: str = os.path.dirname(os.path.join(settings.BASE_DIR, "../../"))):
         self._root_directory = root_directory
 
     def read(self, filepath: str, condition_type: ConditionScoreType, is_raw: bool = False) -> Optional[RasterData]:
@@ -103,6 +102,8 @@ def convert_metric_nodata_to_nan(condition_reader: ConditionReader, metric: Metr
         return None
     condition = condition_reader.read(
         metric['filepath'], condition_type, is_raw) if metric['filepath'] else None
+    if condition is None:
+        return None
     new_profile = condition.profile
     new_profile['nodata'] = np.nan
     return RasterData(convert_nodata_to_nan(condition.profile['nodata'], condition.raster), new_profile)
@@ -146,7 +147,7 @@ def score_element(condition_reader: ConditionReader, element: Element, condition
             element['filepath'], condition_type)
         return condition if element['filepath'] else None
 
-    metric_conditions: list(RasterData) = []
+    metric_conditions: list[Optional[RasterData]] = []
     for metric in element['metrics']:
         if not metric.get('ignore', False):
             metric_conditions.append(score_metric(
@@ -193,7 +194,7 @@ def score_pillar(condition_reader: ConditionReader, pillar: Pillar, condition_ty
 
 
 def score_region(condition_reader: ConditionReader, region: Region, condition_type: ConditionScoreType,
-                 recompute: bool = False) -> Optional[ConditionMatrix]:
+                 recompute: bool = False) -> Optional[RasterData]:
     """Computes the region score.
 
     This computes the "Evaluation Score", which does a weighted average of the 
@@ -207,9 +208,10 @@ def score_region(condition_reader: ConditionReader, region: Region, condition_ty
       The condition score of the region, or None if it could not be computed.
     """
     if not recompute:
-        if not 'filepath' in region:
+        region_path = region.get('filepath', None)
+        if region_path is None:
             return None
-        return condition_reader.read(region['filepath'], condition_type) if region['filepath'] else None
+        return condition_reader.read(region_path, condition_type)
     return None  # TODO(riecke) Finish this with the "evaluation statistic"
 
 
@@ -237,7 +239,8 @@ def score_condition(config: PillarConfig, condition_reader: ConditionReader, con
             region = config.get_region(region_name)
             if region is None:
                 return None
-            return score_region(condition_reader, region, condition_type, recompute)
+            condition = score_region(condition_reader, region, condition_type, recompute)
+            return None if condition is None else condition.raster
         case [region_name, pillar_name]:
             pillar = config.get_pillar(region_name, pillar_name)
             if pillar is None:
