@@ -14,22 +14,24 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { featureCollection, point } from '@turf/helpers';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import * as shp from 'shpjs';
 
-import { MapService, PopupService, SessionService } from '../services';
+import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
+  BoundaryConfig,
+  ConditionsConfig,
+  defaultMapConfig,
+  defaultMapViewOptions,
   Map,
   MapConfig,
   MapViewOptions,
+  Plan,
   Region,
-  defaultMapConfig,
-  ConditionsConfig,
-  BoundaryConfig,
-  defaultMapViewOptions,
 } from './../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
@@ -71,7 +73,13 @@ describe('MapComponent', () => {
         },
       ],
     };
-
+    const fakePlan: Plan = {
+      id: 'temp',
+      name: 'somePlan',
+      ownerId: 'owner',
+      region: Region.SIERRA_NEVADA,
+      planningArea: fakeGeoJson
+    }
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
@@ -104,6 +112,16 @@ describe('MapComponent', () => {
         }),
       }
     );
+    const fakePlanService = jasmine.createSpyObj<PlanService>(
+      'PlanService',
+      {createPlan: of({ success:true, fakePlan}) },
+      {
+        planState$: new BehaviorSubject<PlanState>({
+          all: {}, // All plans indexed by id
+          currentPlanId: 'temp',
+        }),
+      }
+    );
     const fakeSessionService = jasmine.createSpyObj<SessionService>(
       'SessionService',
       ['setMapConfigs', 'setMapViewOptions'],
@@ -129,6 +147,7 @@ describe('MapComponent', () => {
     const popupServiceStub = () => ({
       makeDetailsPopup: (shape_name: any) => ({}),
     });
+    const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
@@ -147,8 +166,10 @@ describe('MapComponent', () => {
       providers: [
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
+        { provide: PlanService, useValue: fakePlanService },
         { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: fakeSessionService },
+        { provide: Router, useFactory: routerStub },
       ],
     });
     fixture = TestBed.createComponent(MapComponent);
@@ -206,17 +227,6 @@ describe('MapComponent', () => {
         expect(map.baseLayerRef).toBeDefined();
         expect(map.existingProjectsLayerRef).toBeDefined();
       });
-    });
-
-    it('creates project detail card', () => {
-      const applicationRef: ApplicationRef =
-        fixture.componentInstance.applicationRef;
-      spyOn(applicationRef, 'attachView').and.callThrough;
-
-      component.ngAfterViewInit();
-
-      // We expect a project detail card to be attached 4 times, 1x for each map
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(4);
     });
   });
 
@@ -633,6 +643,8 @@ describe('MapComponent', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
       fixture.componentInstance.showCreatePlanButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
@@ -644,9 +656,15 @@ describe('MapComponent', () => {
       await button.click();
 
       expect(fakeMatDialog.open).toHaveBeenCalled();
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
 
-    it('dialog calls create plan with name and planning area ', async () => {
+    it('dialog calls create plan with name and planning area', async () => {
+      const planServiceStub: PlanService =
+        fixture.debugElement.injector.get(PlanService);
+      const routerStub: Router = fixture.debugElement.injector.get(Router);
+      spyOn(routerStub, 'navigate').and.callThrough();
+
       const emptyGeoJson: GeoJSON.GeoJSON = {
         type: 'FeatureCollection',
         features: [],
@@ -659,6 +677,8 @@ describe('MapComponent', () => {
       fixture.componentInstance.openCreatePlanDialog();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
+      expect(planServiceStub.createPlan).toHaveBeenCalled();
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan']);
     });
   });
 
@@ -699,6 +719,53 @@ describe('MapComponent', () => {
       component.ngOnInit();
 
       expect(component.mapViewOptions$.getValue()).toEqual(mapViewOptions);
+    });
+  });
+
+  describe('Map detail card popups', () => {
+    let applicationRef: ApplicationRef;
+
+    beforeEach(() => {
+      applicationRef = fixture.componentInstance.applicationRef;
+      spyOn(applicationRef, 'attachView').and.callThrough;
+
+      component.ngAfterViewInit();
+
+      // Add a polygon to map 3
+      const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
+        type: 'Feature',
+        geometry: {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+            ],
+          ],
+        },
+        properties: {
+          shape_name: 'test_boundary',
+        },
+      };
+      L.geoJSON(feature).addTo(component.maps[3].instance!);
+    });
+
+    it('attaches popup when feature polygon is clicked', () => {
+      // Click on the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [0, 0],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not attach popup when map is clicked outside the polygon', () => {
+      // Click outside the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [2, 2],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
     });
   });
 });
