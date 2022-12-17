@@ -1,13 +1,14 @@
 <div class="summary-panel">
   <div class="summary-header">
-    <div class="summary-title">Shiba Inu</div>
-    <div class="summary-subtitle">Status: Cute</div>
+    <div class="summary-title">{{summaryInput?.type}} Summary</div>
+    <div *ngIf="summaryInput?.type === 'Plan'" class="summary-subtitle">Status: {{summaryInput?.status}}</div>
   </div>
   <div class="summary-content">
     <p>
-      The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan.
-      A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally
-      bred for hunting.
+      <span>Owner: {{summaryInput?.owner}}</span>
+      <br><span>Created: {{summaryInput?.createdTime}}</span>
+      <br><span>Last updated: {{summaryInput?.updatedTime}}</span>
+      <br><span>Region: {{summaryInput?.region}}</span>
     </p>
 
     <div class="grid-container">
