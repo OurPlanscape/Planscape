@@ -1,7 +1,7 @@
 <div class="summary-panel">
   <div class="summary-header">
     <div class="summary-title">{{summaryInput?.type}} Summary</div>
-    <div *ngIf="summaryInput?.type === 'Plan'" class="summary-subtitle">Status: {{summaryInput?.status}}</div>
+    <div class="summary-subtitle">Status: {{summaryInput?.status}}</div>
   </div>
   <div class="summary-content">
     <p>
@@ -13,15 +13,15 @@
 
     <div class="grid-container">
       <div class="grid-item">
-        <span class="grid-title">Poor</span>
+        <span class="grid-title" [style.color]="conditionScoreColorMap[conditionScore]">{{conditionScore}}</span>
         <span class="grid-subtitle">current condition</span>
       </div>
       <div class="grid-item">
-        <span class="grid-title">Leaning Good</span>
+        <span class="grid-title" [style.color]="conditionScoreColorMap[futureConditionScore]">{{futureConditionScore}}</span>
         <span class="grid-subtitle">future condition</span>
       </div>
       <div class="grid-item">
-        <span class="grid-title">123456</span>
+        <span class="grid-title">{{acres}}</span>
         <span class="grid-subtitle">acres</span>
       </div>
       <div class="grid-item">
