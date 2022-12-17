@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 
-import { Plan, Region } from '../../types';
+import { Region } from '../../types';
 
 export interface SummaryInput {
   id?: string;
@@ -15,6 +15,23 @@ export interface SummaryInput {
   updatedTime: string;
 }
 
+// todo: move this to shared types
+export enum ConditionName {
+  GOOD = 'Good',
+  LEANING_GOOD = 'Leaning good',
+  NEUTRAL = 'Neutral',
+  LEANING_POOR = 'Leaning poor',
+  POOR = 'Poor',
+}
+
+export const conditionScoreColorMap: Record<ConditionName, string> = {
+  [ConditionName.GOOD]: '#010108',
+  [ConditionName.LEANING_GOOD]: '#4c1761',
+  [ConditionName.NEUTRAL]: '#b1354c',
+  [ConditionName.LEANING_POOR]: '#F4511e',
+  [ConditionName.POOR]: '#fdd853',
+}
+
 @Component({
   selector: 'summary-panel',
   templateUrl: './summary-panel.component.html',
@@ -22,6 +39,12 @@ export interface SummaryInput {
 })
 export class SummaryPanelComponent implements OnInit {
   @Input() summaryInput: SummaryInput | null = null;
+  // todo: pass these in as inputs
+  conditionScore: ConditionName = ConditionName.POOR;
+  futureConditionScore: ConditionName = ConditionName.LEANING_GOOD;
+  acres = '123,456';
+
+  conditionScoreColorMap = conditionScoreColorMap;
 
   constructor() { }
 
@@ -51,5 +74,4 @@ export class SummaryPanelComponent implements OnInit {
       updatedTime: '2 hours ago',
     }
   }
-
 }
