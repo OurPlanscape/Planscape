@@ -3,19 +3,32 @@ import * as L from 'leaflet';
 
 import { Plan, Region } from '../../types';
 
+export interface SummaryInput {
+  id?: string;
+  type: string;
+  name: string;
+  owner: string;
+  region: Region;
+  area: GeoJSON.GeoJSON;
+  status?: string;
+  createdTime: string;
+  updatedTime: string;
+}
+
 @Component({
   selector: 'summary-panel',
   templateUrl: './summary-panel.component.html',
   styleUrls: ['./summary-panel.component.scss']
 })
 export class SummaryPanelComponent implements OnInit {
-  @Input() plan: Plan | null = null;
+  @Input() summaryInput: SummaryInput | null = null;
 
   constructor() { }
 
   ngOnInit(): void {
-    this.plan = {
-      id: 'fake',
+    // todo: pass the summaryInput from plan component
+    const plan = {
+      id: 'fakeId',
       name: 'placeholder plan name',
       ownerId: 'fake',
       region: Region.SIERRA_NEVADA,
@@ -25,6 +38,18 @@ export class SummaryPanelComponent implements OnInit {
         new L.LatLng(38.52668443555346, -120.11828371421737),
       ]).toGeoJSON(),
     };
+
+    this.summaryInput = {
+      id: plan.id,
+      type: 'Plan',
+      name: plan.name,
+      owner: 'Player 456',
+      region: plan.region,
+      area: plan.planningArea,
+      status: 'Draft',
+      createdTime: '10/20/2022',
+      updatedTime: '2 hours ago',
+    }
   }
 
 }
