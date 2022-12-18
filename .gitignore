@@ -10,3 +10,4 @@ data
 output
 # Docs folder used for papers etc
 analysis/docs
+node_modules
