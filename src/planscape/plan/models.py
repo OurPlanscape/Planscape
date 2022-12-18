@@ -8,7 +8,9 @@ class Plan(models.Model):
     A Plan is associated with one User, the owner, and one Region.  It has a name,
     status (locked/public), and a geometry representing the planning area.
     """
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)  # type: ignore
+    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because 
+    # we want alpha users to not be signed in.
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     # The name of the plan.
     name: models.CharField = models.CharField(max_length=120)
@@ -32,7 +34,7 @@ class Project(models.Model):
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because 
     # we want alpha users to not be signed in.
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True) 
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE) 
 
@@ -54,7 +56,7 @@ class GeneratedProjectAreas(models.Model):
     # The project area geometries. May be one or more polygons that represent the project area.
     project_area = models.MultiPolygonField(srid=4269, null=True) 
 
-    # The sum total of the project area areas.
+    # The sum total of the project area geometries.
     estimated_area_treated = models.IntegerField(null=True) 
 
 class Scenario(models.Model):
@@ -64,6 +66,6 @@ class Scenario(models.Model):
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because 
     # we want alpha users to not be signed in.
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
