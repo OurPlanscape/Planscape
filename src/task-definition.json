@@ -1,9 +1,8 @@
 {
-    "taskDefinitionArn": "arn:aws:ecs:us-west-1:705618310400:task-definition/PlanscapeDevTask:2",
     "containerDefinitions": [
         {
             "name": "backend",
-            "image": "planscape/backend",
+            "image": "backend",
             "cpu": 0,
             "links": [],
             "portMappings": [
@@ -36,7 +35,7 @@
         },
         {
             "name": "frontend",
-            "image": "planscape/frontend",
+            "image": "frontend",
             "cpu": 0,
             "links": [],
             "portMappings": [
@@ -70,25 +69,12 @@
     ],
     "family": "PlanscapeDevTask",
     "networkMode": "bridge",
-    "revision": 2,
     "volumes": [
         {
-            "name": "scratch"
-        }
-    ],
-    "status": "ACTIVE",
-    "requiresAttributes": [
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
-        },
-        {
-            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+            "name": "socket"
         }
     ],
     "placementConstraints": [],
-    "compatibilities": [
-        "EC2"
-    ],
     "requiresCompatibilities": [
         "EC2"
     ],
@@ -97,17 +83,5 @@
     "runtimePlatform": {
         "cpuArchitecture": "X86_64",
         "operatingSystemFamily": "LINUX"
-    },
-    "registeredAt": "2022-12-18T18:05:53.268Z",
-    "registeredBy": "arn:aws:iam::705618310400:user/admin.Jon.Riecke",
-    "tags": [
-        {
-            "key": "ecs:taskDefinition:createdFrom",
-            "value": "ecs-console-v2"
-        },
-        {
-            "key": "ecs:taskDefinition:stackId",
-            "value": "arn:aws:cloudformation:us-west-1:705618310400:stack/ECS-Console-V2-TaskDefinition-cb4ad2c8-f38a-4f17-a4fb-85c6a2545ca8/99f88f30-7efe-11ed-b849-02bde56671b3"
-        }
-    ]
+    }
 }
