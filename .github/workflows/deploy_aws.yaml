@@ -41,7 +41,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Build, tag, and push image to Amazon ECR
+      - name: Set image tags
         id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -51,6 +51,12 @@ jobs:
           # be deployed to ECS.
           echo "frontend_image=$ECR_REGISTRY/$ECR_REPOSITORY:frontend-$IMAGE_TAG" >> $GITHUB_ENV
           echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG" >> $GITHUB_ENV
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        run: |
+          # Build a docker container and push it to ECR so that it can
+          # be deployed to ECS.
           cd src/interface
           docker build -t planscape-frontend . 
           docker tag planscape-frontend:latest ${{ env.frontend_image }}
