@@ -1,0 +1,87 @@
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# GitHub recommends pinning actions to a commit SHA.
+# To get a newer version, you will need to update the SHA.
+# You can also reference a tag or branch, but the action may change without warning.
+
+name: Deploy to Amazon ECS
+
+on:
+  push:
+    branches:
+      - deployment
+
+env:
+  AWS_REGION: us-west-1
+  ECR_REPOSITORY: planscape_dev
+  ECS_SERVICE: PlanscapeDevService
+  ECS_CLUSTER: PlanscapeDevCluster
+  ECS_TASK_DEFINITION: task-definition.json
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          # Build a docker container and push it to ECR so that it can
+          # be deployed to ECS.
+          cd src/planscape
+          docker build -t planscape-backend . 
+          docker tag planscape-backend:latest $ECR_REGISTRY/planscape-backend:$IMAGE_TAG 
+          docker push $ECR_REGISTRY/planscape-backend:$IMAGE_TAG 
+          cd ../interface
+          docker build -t planscape-frontend . 
+          docker tag planscape-frontend:latest $ECR_REGISTRY/planscape-frontend:$IMAGE_TAG 
+          docker push $ECR_REGISTRY/planscape-frontend:$IMAGE_TAG 
+          echo "image=$ECR_REGISTRY/planscape-frontend:$IMAGE_TAG " >> $GITHUB_OUTPUT
+
+      - name: Render backend
+        id: render-backend-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: web
+          image: $ECR_REGISTRY/planscape-backend:$IMAGE_TAG
+          environment-variables: |
+              LOG_LEVEL=info
+              ENVIRONMENT=prod
+
+      - name: Modify Amazon ECS task definition with frontend container
+        id: render-app-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-web-container.outputs.task-definition }}
+          container-name: app
+          image: $ECR_REGISTRY/planscape-frontend:$IMAGE_TAG
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
