@@ -57,6 +57,7 @@ jobs:
           docker build -t planscape-backend . 
           docker tag planscape-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG 
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG 
+          cd ..
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG " >> $GITHUB_OUTPUT
 
       - name: Render backend
