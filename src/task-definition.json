@@ -8,11 +8,9 @@
             "links": [],
             "portMappings": [
                 {
-                    "name": "backend-5432-tcp",
                     "containerPort": 5432,
                     "hostPort": 5432,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
+                    "protocol": "tcp"
                 }
             ],
             "essential": true,
@@ -43,11 +41,9 @@
             "links": [],
             "portMappings": [
                 {
-                    "name": "frontend-80-tcp",
                     "containerPort": 80,
                     "hostPort": 80,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
+                    "protocol": "tcp"
                 }
             ],
             "essential": true,
