@@ -51,37 +51,37 @@ jobs:
           # be deployed to ECS.
           cd src/interface
           docker build -t planscape-frontend . 
-          docker tag planscape-frontend:latest $ECR_REGISTRY/planscape-frontend:$IMAGE_TAG 
-          docker push $ECR_REGISTRY/planscape-frontend:$IMAGE_TAG 
+          docker tag planscape-frontend:latest $ECR_REGISTRY/$ECR_REPOSITORY:frontend-$IMAGE_TAG 
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:frontend-$IMAGE_TAG 
           cd ../planscape
           docker build -t planscape-backend . 
-          docker tag planscape-backend:latest $ECR_REGISTRY/planscape-backend:$IMAGE_TAG 
-          docker push $ECR_REGISTRY/planscape-backend:$IMAGE_TAG 
-          echo "image=$ECR_REGISTRY/planscape-frontend:$IMAGE_TAG " >> $GITHUB_OUTPUT
+          docker tag planscape-backend:latest $ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG 
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG 
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG " >> $GITHUB_OUTPUT
 
       - name: Render backend
         id: render-backend-container
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: web
-          image: $ECR_REGISTRY/planscape-backend:$IMAGE_TAG
+          container-name: backend
+          image: $ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG
           environment-variables: |
               LOG_LEVEL=info
               ENVIRONMENT=prod
 
       - name: Modify Amazon ECS task definition with frontend container
-        id: render-app-container
+        id: render-frontend-container
         uses: aws-actions/amazon-ecs-render-task-definition@v1
         with:
-          task-definition: ${{ steps.render-web-container.outputs.task-definition }}
-          container-name: app
-          image: $ECR_REGISTRY/planscape-frontend:$IMAGE_TAG
+          task-definition: ${{ steps.render-backend-container.outputs.task-definition }}
+          container-name: frontend
+          image: $ECR_REGISTRY/$ECR_REPOSITORY:frontend-$IMAGE_TAG
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
-          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
           service: ${{ env.ECS_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
