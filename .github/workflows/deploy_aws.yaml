@@ -42,7 +42,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Set image tags
-        id: build-image
+        id: set-image-tags
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
