@@ -3,7 +3,7 @@ version: '3.8'
 services:
   backend:
     build: ./planscape
-    command: uwsgi --ini ./planscape/uwsgi.ini
+    image: planscape/backend
     volumes:
       - ./planscape/:/usr/src/planscape/
       - ./socket:/var/run/planscape
@@ -19,6 +19,7 @@ services:
 
   frontend:
     build: ./interface
+    image: planscape/frontend
     volumes:
       - ./interface/:/usr/src/interface/
       - ./socket:/var/run/planscape
