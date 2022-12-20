@@ -1,3 +1,5 @@
+import { environment  } from "src/environments/environment";
+
 export const BackendConstants = {
-  END_POINT: 'http://127.0.0.1/planscape-backend',
+  END_POINT: environment.backend_endpoint
 } as const;
