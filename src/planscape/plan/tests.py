@@ -1,21 +1,15 @@
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import TransactionTestCase
 from django.urls import reverse
 
 from .models import Plan
 
 
-class PlanTest(TestCase):
+class PlanTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
-        #self.user.save()
-        self.plan_no_user = Plan.objects.create(
-            owner=None, name='ownerless', region_name='sierra_cascade_inyo')
-        #self.plan_no_user.save()
-        self.plan_with_user = Plan.objects.create(
-            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
-        #self.plan_with_user.save()
+        self.user.save()
 
     def test_missing_user(self):
         response = self.client.post(
@@ -100,9 +94,21 @@ class PlanTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(Plan.objects.all()), 1)
 
+
+class GetPlanTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.plan_no_user = Plan.objects.create(
+            owner=None, name='ownerless', region_name='sierra_cascade_inyo')
+        self.plan_with_user = Plan.objects.create(
+            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
+        self.plan_with_user.save()
+
     def test_get_plan_with_user(self):
-        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk}, 
-            content_type="application/json")
+        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
+                                   content_type="application/json")
+        print(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get('name'), 'with_owner')
-        
