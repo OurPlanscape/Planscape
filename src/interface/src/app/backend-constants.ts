@@ -1,3 +1,3 @@
 export const BackendConstants = {
-  END_POINT: 'http://127.0.0.1/planscape-backend',
+  END_POINT: 'http://localhost:8000/planscape-backend',
 } as const;
