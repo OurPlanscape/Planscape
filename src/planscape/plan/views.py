@@ -1,10 +1,9 @@
 import json
 
 from django.core import serializers
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, QueryDict
+from django.contrib.gis.geos import GEOSGeometry
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse, QueryDict
 from plan.models import Plan
-from base.region_name import RegionName
 from planscape import settings
 
 
@@ -57,19 +56,18 @@ def create(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 def get_plan_by_id(params: QueryDict):
-    # Get plan id
     assert isinstance(params['id'], str)
-    plan_id = params['id']
+    plan_id = params.get('id', 0)
 
     # Get plan from database
     plan = Plan.objects.get(pk=int(plan_id))
 
     # Convert to json object
-    serialized_plan = serializers.serialize('json', [plan])
-
-    return HttpResponse(serialized_plan, content_type="text/json-comment-filtered")
+    #serialized_plan = serializers.serialize('json', plan)
+    #print(serialized_plan)
+    username = plan.owner.get_username() if plan.owner is not None else ''
+    return JsonResponse({'id': plan.pk, 'name': plan.name, 'owner': username, 'region_name': plan.region_name})
     
-
 
 def get_plans_by_owner(params: QueryDict):
     # Get owner id
@@ -77,15 +75,13 @@ def get_plans_by_owner(params: QueryDict):
 
     # Read from database
     plans_list = None
-    if(owner_id) :
+    if owner_id is not None:
         plans_list = Plan.objects.filter(owner=owner_id)
     else:
         plans_list = Plan.objects.filter(owner=None)
-    
 
     # Convert to json object
     serialized_plans = serializers.serialize('json', plans_list, many=True)
-    
     return HttpResponse(serialized_plans, content_type="text/json-comment-filtered")
 
 
@@ -99,7 +95,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        plan = get_plan_by_id(request.GET)
-        return HttpResponse(plan)
+        return get_plan_by_id(request.GET)
+        #return HttpResponse(plan)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))

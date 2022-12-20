@@ -9,5 +9,5 @@ app_name = 'plan'
 urlpatterns = [
     path('create/', create, name='create'),
     path('get_plan/', get_plan, name='get_plan'),
-    path('list_plans_by_owner', list_plans_by_owner, name='list_plans_by_owner')
+    path('list_plans_by_owner/', list_plans_by_owner, name='list_plans_by_owner')
 ]
