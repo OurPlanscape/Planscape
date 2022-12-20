@@ -102,6 +102,7 @@ class GetPlanTest(TransactionTestCase):
         self.user.save()
         self.plan_no_user = Plan.objects.create(
             owner=None, name='ownerless', region_name='sierra_cascade_inyo')
+        self.plan_no_user.save()
         self.plan_with_user = Plan.objects.create(
             owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
         self.plan_with_user.save()
@@ -110,13 +111,13 @@ class GetPlanTest(TransactionTestCase):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk}, 
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get('name'), 'with_owner')
+        self.assertEqual(response.json()['name'], 'with_owner')
 
     def test_get_plan_no_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk}, 
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get('name'), 'ownerless')
+        self.assertEqual(response.json()['name'], 'ownerless')
 
 
 class ListPlansTest(TransactionTestCase):
