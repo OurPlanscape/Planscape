@@ -16,7 +16,7 @@ export class PlanComponent {
 
   constructor() {
     // TODO(leehana): Use a fake plan until we can query plans from the DB
-    const plan = {
+    this.plan = {
       id: 'fake',
       name: 'Shiba Resilience Plan',
       ownerId: 'fake',
@@ -27,6 +27,6 @@ export class PlanComponent {
         new L.LatLng(38.52668443555346, -120.11828371421737),
       ]).toGeoJSON(),
     };
-    this.currentPlan$.next(plan);
+    this.currentPlan$.next(this.plan);
   }
 }
