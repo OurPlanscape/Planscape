@@ -1,5 +1,5 @@
 <div class="root-container">
-  <div class="plan-summary-panel" *nfIf="!resumePlanning">
+  <div class="plan-summary-panel" *ngIf="!resumePlanning">
     <summary-panel></summary-panel>
   </div>
   <div class="plan-progress-panel" *ngIf="resumePlanning">
