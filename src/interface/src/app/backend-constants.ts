@@ -1,3 +1,5 @@
+import { environment  } from "src/environments/environment";
+
 export const BackendConstants = {
-  END_POINT: 'http://localhost:8000',
+  END_POINT: environment.backend_endpoint
 } as const;

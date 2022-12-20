@@ -14,7 +14,8 @@ import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { filter, shareReplay, switchMap } from 'rxjs/operators';
+import * as shp from 'shpjs';
 
 import {
   MapService,
@@ -45,10 +46,10 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
-export interface PlanCreationOption {
-  value: string;
-  display: string;
-  icon: any;
+export enum AreaCreationAction {
+  NONE = 0,
+  DRAW = 1,
+  UPLOAD = 2,
 }
 
 interface ConditionsNode extends DataLayerConfig {
@@ -84,7 +85,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     BaseLayerType.Road,
     BaseLayerType.Terrain,
   ];
-  readonly BaseLayerType: typeof BaseLayerType = BaseLayerType;
+  readonly BaseLayerType = BaseLayerType;
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
@@ -115,11 +116,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     ],
   };
 
-  planCreationOptions: PlanCreationOption[] = [
-    { value: 'draw-area', icon: 'edit', display: 'Draw an area' },
-  ];
-  selectedPlanCreationOption: PlanCreationOption | null = null;
-  showCreatePlanButton$ = new BehaviorSubject(false);
+  /** Actions bar variables */
+  readonly AreaCreationAction = AreaCreationAction;
+  showUploader = false;
+  showAreaCreationActionButtons = false;
+  selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
+  showConfirmAreaButton$ = new BehaviorSubject(false);
 
   conditionTreeControl = new NestedTreeControl<ConditionsNode>(
     (node) => node.children
@@ -180,7 +182,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     );
     this.mapManager.polygonsCreated$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(this.showCreatePlanButton$);
+      .subscribe(this.showConfirmAreaButton$);
 
     this.conditionDataSource.data = [NONE_DATA_LAYER_CONFIG];
     this.conditionsConfig$
@@ -206,18 +208,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   ngAfterViewInit(): void {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
-      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
-      // Only add drawing controls to the selected map
-      if (selectedMapIndex === this.maps.indexOf(map)) {
-        this.mapManager.addDrawingControl(
-          this.maps[selectedMapIndex].instance!
-        );
-      } else {
-        // Show a copy of the drawing layer on the other maps
-        this.mapManager.showClonedDrawing(map);
-      }
     });
-
     this.mapManager.syncAllMaps();
   }
 
@@ -275,6 +266,20 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
       this.displayRegionBoundary(map, selectedRegion);
+    });
+
+    this.showConfirmAreaButton$.subscribe((value: boolean) => {
+      if (
+        !value &&
+        this.selectedAreaCreationAction === AreaCreationAction.UPLOAD
+      ) {
+        const selectedMapIndex =
+          this.mapViewOptions$.getValue().selectedMapIndex;
+        this.mapManager.removeDrawingControl(
+          this.maps[selectedMapIndex].instance!
+        );
+        this.showUploader = true;
+      }
     });
 
     // Mark the map as selected when the user clicks anywhere on it.
@@ -371,17 +376,89 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
   }
 
-  /**
-   * On PlanCreationOptions selection change, enables the polygon tool if
-   * the drawing option is selected.
-   */
-  onPlanCreationOptionChange(option: PlanCreationOption) {
-    if (option.value === 'draw-area') {
+  /** Handles the area creation action change. */
+  onAreaCreationActionChange(option: AreaCreationAction) {
+    const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+    this.selectedAreaCreationAction = option;
+    if (option === AreaCreationAction.DRAW) {
+      this.addDrawingControlToAllMaps();
       this.mapManager.enablePolygonDrawingTool(
-        this.maps[this.mapViewOptions$.getValue().selectedMapIndex].instance!
+        this.maps[selectedMapIndex].instance!
       );
+      this.showUploader = false;
       this.changeMapCount(1);
     }
+    if (option === AreaCreationAction.UPLOAD) {
+      if (!this.showConfirmAreaButton$.value) {
+        this.maps[selectedMapIndex].instance!.pm.removeControls();
+      }
+      this.mapManager.disablePolygonDrawingTool(
+        this.maps[selectedMapIndex].instance!
+      );
+      this.showUploader = !this.showUploader;
+    }
+  }
+
+  cancelAreaCreationAction() {
+    const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+    this.mapManager.removeDrawingControl(this.maps[selectedMapIndex].instance!);
+    this.mapManager.disablePolygonDrawingTool(
+      this.maps[selectedMapIndex].instance!
+    );
+    this.mapManager.clearAllDrawings();
+    this.selectedAreaCreationAction = AreaCreationAction.NONE;
+    this.showUploader = false;
+  }
+
+  private addDrawingControlToAllMaps() {
+    this.maps.forEach((map: Map) => {
+      const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+      // Only add drawing controls to the selected map
+      if (selectedMapIndex === this.maps.indexOf(map)) {
+        this.mapManager.addDrawingControl(
+          this.maps[selectedMapIndex].instance!
+        );
+      } else {
+        // Show a copy of the drawing layer on the other maps
+        this.mapManager.showClonedDrawing(map);
+      }
+    });
+  }
+
+  /** Converts and adds the editable shapefile to the map. */
+  async loadArea(event: { type: string; value: File }) {
+    const file = event.value;
+    if (file) {
+      const reader = new FileReader();
+      const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
+        reader.onload = () => {
+          resolve(reader.result as ArrayBuffer);
+        };
+        reader.readAsArrayBuffer(file);
+      });
+      try {
+        const geojson = (await shp.parseZip(
+          fileAsArrayBuffer
+        )) as GeoJSON.GeoJSON;
+        if (geojson.type == 'FeatureCollection') {
+          this.mapManager.addGeoJsonToDrawing(geojson);
+          this.showUploader = false;
+          this.addDrawingControlToAllMaps();
+        } else {
+          this.showUploadError();
+        }
+      } catch (e) {
+        this.showUploadError();
+      }
+    }
+  }
+
+  private showUploadError() {
+    this.matSnackBar.open('[Error] Not a valid shapefile!', 'Dismiss', {
+      duration: 10000,
+      panelClass: ['snackbar-error'],
+      verticalPosition: 'top',
+    });
   }
 
   /** Gets the selected region geojson and renders it on the map. */
@@ -458,20 +535,27 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     const mapViewOptions = this.mapViewOptions$.getValue();
     const previousMapIndex = mapViewOptions.selectedMapIndex;
 
-    // Toggle the cloned layer on if the map is not the current selected map.
-    // Toggle on the drawing layer and control on the selected map.
     if (previousMapIndex !== mapIndex) {
-      this.mapManager.removeDrawingControl(
-        this.maps[previousMapIndex].instance!
-      );
-      this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
-
       mapViewOptions.selectedMapIndex = mapIndex;
       this.mapViewOptions$.next(mapViewOptions);
       this.sessionService.setMapViewOptions(mapViewOptions);
 
-      this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
-      this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
+      // Toggle the cloned layer on if the map is not the current selected map.
+      // Toggle on the drawing layer and control on the selected map.
+      if (
+        this.selectedAreaCreationAction === AreaCreationAction.DRAW ||
+        this.showConfirmAreaButton$.value
+      ) {
+        this.mapManager.disablePolygonDrawingTool(
+          this.maps[previousMapIndex].instance!
+        );
+        this.mapManager.removeDrawingControl(
+          this.maps[previousMapIndex].instance!
+        );
+        this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
+        this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
+        this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
+      }
     }
   }
 

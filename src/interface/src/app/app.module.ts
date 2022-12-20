@@ -37,6 +37,8 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { PlanMapComponent } from './plan/plan-map/plan-map.component';
+import { SummaryPanelComponent } from './plan/summary-panel/summary-panel.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +56,8 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     PlanCreateDialogComponent,
     LayerInfoCardComponent,
     PlanComponent,
+    PlanMapComponent,
+    SummaryPanelComponent,
   ],
   imports: [
     AppRoutingModule,
