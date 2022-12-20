@@ -5,8 +5,7 @@ services:
     build: ./planscape
     image: planscape/backend
     volumes:
-      - ./planscape/:/usr/src/planscape/
-      - ./socket:/var/run/planscape
+      - socket:/home/planscape/backend/socket
     # Expose port 5432 to get access to the PostGIS database
     expose:
       - 5432
@@ -21,8 +20,7 @@ services:
     build: ./interface
     image: planscape/frontend
     volumes:
-      - ./interface/:/usr/src/interface/
-      - ./socket:/var/run/planscape
+      - socket:/django_socket
     ports:
       - 80:80
 

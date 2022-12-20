@@ -20,7 +20,7 @@
             "mountPoints": [
                 {
                   "sourceVolume": "socket",
-                  "containerPath": "/var/run/planscape"
+                  "containerPath": "/home/planscape/backend/socket"
                 }
             ],
             "volumesFrom": [],
@@ -53,7 +53,7 @@
             "mountPoints": [
                 {
                   "sourceVolume": "socket",
-                  "containerPath": "/var/run/planscape"
+                  "containerPath": "/django_socket"
                 }
             ],
             "volumesFrom": [],
@@ -71,7 +71,12 @@
     "networkMode": "bridge",
     "volumes": [
         {
-            "name": "socket"
+            "name": "socket",
+            "dockerVolumeConfiguration": {
+                "driver": "local",
+                "scope": "shared",
+                "autoprovision": false
+            }
         }
     ],
     "placementConstraints": [],

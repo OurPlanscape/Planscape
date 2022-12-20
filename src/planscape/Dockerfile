@@ -28,9 +28,8 @@ FROM python:3.10.9
 RUN addgroup planscape && adduser planscape --ingroup planscape
 
 # create the appropriate directories
-ENV HOME=/home/planscape
 ENV APP_HOME=/home/planscape/backend
-RUN mkdir $APP_HOME
+RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 # install dependencies
