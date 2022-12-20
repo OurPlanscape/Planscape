@@ -1,7 +1,14 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { Observable, Subscription } from 'rxjs';
 
 import { AuthService } from '../services';
+
+export interface SidenavLink {
+  text: string;
+  href: string;
+  icon: string;
+}
 
 @Component({
   selector: 'app-navigation',
@@ -9,15 +16,33 @@ import { AuthService } from '../services';
   styleUrls: ['./navigation.component.scss']
 })
 export class NavigationComponent implements OnInit, OnDestroy {
-  @Input()
-  sidebarOpen = false;
+  @Input() sidebarOpen = false;
 
+  sideNavLinks: SidenavLink[] = [
+    {
+      text: "Home",
+      href: "/region",
+      icon: "home",
+    },
+    {
+      text: "Explore",
+      href: "/map",
+      icon: "explore",
+    },
+    {
+      text: "Plan",
+      href: "/plan",
+      icon: "edit_document",
+    },
+  ]
   isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
 
   private isLoggedInSubscription!: Subscription;
 
   constructor(
-    private authService: AuthService) {}
+    private authService: AuthService,
+    private router: Router,
+    ) {}
 
   ngOnInit() {
     this.isLoggedInSubscription = this.authService.isLoggedIn$.subscribe();
@@ -31,4 +56,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     this.authService.logout().subscribe();
   }
 
+  isSelected(path: string) {
+    return this.router.url === path;
+  }
 }
