@@ -77,6 +77,7 @@ export class ProgressPanelComponent implements OnChanges, AfterViewInit {
   constructor() {}
 
   ngAfterViewInit() {
+    this.setProgressList();
     this.treeControl.expandAll();
   }
 
@@ -84,6 +85,7 @@ export class ProgressPanelComponent implements OnChanges, AfterViewInit {
     this.setProgressList();
   }
 
+  /** Derives the progress list. */
   setProgressList() {
     this.dataSource.data = [
       {
@@ -150,6 +152,7 @@ export class ProgressPanelComponent implements OnChanges, AfterViewInit {
     ];
   }
 
+  /** Sets the current task and renders the corresponding view. */
   goToStep(node: ProgressFlatNode) {
     console.log('clicked ' + node.name);
     this.currentTaskId = node.id;
