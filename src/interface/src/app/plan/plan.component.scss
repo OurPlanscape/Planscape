@@ -10,6 +10,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   height: 100%;
   position: relative;
   width: 300px;
@@ -30,7 +31,20 @@
 
 .plan-scenario-panel {
   background-color: white;
-  display: flex;
-  flex-grow: 3;
+  flex-grow: 1;
   padding: 20px;
+}
+
+.plan-scenario-panel-content {
+  align-items: flex-start;
+  display: flex;
+  width: 100%;
+}
+
+.plan-scenario-panel-text {
+  margin-right: 150px;
+}
+
+.mat-raised-button {
+  min-width: unset;
 }
