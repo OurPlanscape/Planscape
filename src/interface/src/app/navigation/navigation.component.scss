@@ -19,14 +19,14 @@
 }
 
 .nav-link {
+  align-items: center;
   display: flex;
   flex-direction: column;
   height: auto;
+  justify-content: center;
   max-height: 72px;
   padding: 20px 0 5px;
   text-decoration: none;
-  align-items: center;
-  justify-content: center;
 }
 
 .selected {
