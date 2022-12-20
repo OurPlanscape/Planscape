@@ -19,6 +19,18 @@
   font-size: 15px;
 }
 
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e8f0fe;
+  }
+}
+
+.selected {
+  background-color: #e8f0fe;
+}
+
 .bullet-point-icon {
   font-size: 8px;
   color: #757575;
