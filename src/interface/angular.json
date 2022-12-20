@@ -38,7 +38,9 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "leaflet"
+              "leaflet",
+              "shpjs",
+              "geojson-rbush"
             ]
           },
           "configurations": {
