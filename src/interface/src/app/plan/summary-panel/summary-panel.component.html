@@ -1,0 +1,37 @@
+<div class="summary-panel">
+  <div class="summary-header">
+    <div class="summary-title">{{summaryInput?.type}} Summary</div>
+    <div class="summary-subtitle">Status: {{summaryInput?.status}}</div>
+  </div>
+  <div class="summary-content">
+    <div>Owner: {{summaryInput?.owner}}</div>
+    <div>Created: {{summaryInput?.createdTime}}</div>
+    <div>Last updated: {{summaryInput?.updatedTime}}</div>
+    <div>Region: {{summaryInput?.region}}</div>
+
+    <div class="grid-container">
+      <div class="grid-item">
+        <span class="grid-title" [style.color]="conditionScoreColorMap[conditionScore]">{{conditionScore}}</span>
+        <span class="grid-subtitle">current condition</span>
+      </div>
+      <div class="grid-item">
+        <span class="grid-title" [style.color]="conditionScoreColorMap[futureConditionScore]">{{futureConditionScore}}</span>
+        <span class="grid-subtitle">future condition</span>
+      </div>
+      <div class="grid-item">
+        <span class="grid-title">{{acres}}</span>
+        <span class="grid-subtitle">acres</span>
+      </div>
+      <div class="grid-item">
+        <span class="grid-title">0</span>
+        <span class="grid-subtitle">scenarios</span>
+      </div>
+    </div>
+  </div>
+  <div class="summary-footer">
+    <div class="summary-actions">
+      <button mat-flat-button>Share</button>
+      <button mat-flat-button>Subscribe</button>
+    </div>
+  </div>
+</div>
