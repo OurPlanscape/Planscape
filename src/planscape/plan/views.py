@@ -1,9 +1,10 @@
 import json
 
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.contrib.gis.geos import GEOSGeometry
+from django.core import serializers
+from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse)
 from plan.models import Plan
-from base.region_name import RegionName
 from planscape import settings
 
 
@@ -13,7 +14,7 @@ def create(request: HttpRequest) -> HttpResponse:
         owner = None
         if request.user.is_authenticated:
             owner = request.user
-        if owner is None and not(settings.PLANSCAPE_GUEST_CAN_SAVE):
+        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
             raise ValueError("Must be logged in")
 
         # Get the name of the plan.
@@ -54,3 +55,11 @@ def create(request: HttpRequest) -> HttpResponse:
 
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def get_plan(request: HttpRequest) -> HttpResponse:
+    plan_id = request.GET.get("id", None)
+    if plan_id is None or len(plan_id) == 0:
+        return JsonResponse(None)
+    plan = Plan.objects.get(pk=int(plan_id))
+    return HttpResponse(serializers.serialize('json', [plan])[0])
