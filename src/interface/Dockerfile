@@ -20,7 +20,7 @@ COPY . /src/interface
 RUN chmod -R 755 /src/interface/src/assets
 
 # Build app
-RUN npm run build -- --output-path=./dist/out
+RUN npm run build -- --configuration production --output-path=./dist/out
 
 # ---------------------------------
 # Multi-stage build 2: nginx Server
