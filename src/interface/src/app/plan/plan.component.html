@@ -1,13 +1,10 @@
 <div class="root-container">
   <div class="plan-summary-panel">
-    <h1>Plan summary</h1>
+    <summary-panel></summary-panel>
   </div>
   <mat-divider [vertical]="true"></mat-divider>
   <div class="plan-map-container">
-    <div class="plan-map-view">
-      <p>Here is a map view</p>
-      <button mat-raised-button class="expand-map-button" (click)="expandMap()">EXPAND MAP</button>
-    </div>
+    <app-plan-map [plan]="plan" class="plan-map-view"></app-plan-map>
     <mat-divider></mat-divider>
     <div class="plan-scenario-panel">
       <h1>Scenario comparison</h1>

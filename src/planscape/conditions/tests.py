@@ -1,19 +1,16 @@
 import os
-from decouple import config
 from typing import cast
-
-from django.db import connection
-from django.test import TestCase
 
 from base.condition_types import ConditionLevel
 from conditions.models import BaseCondition, Condition
 from conditions.views import wms
+from django.conf import settings
+from django.contrib.gis.gdal.raster.source import GDALRaster
+from django.db import connection
+from django.test import TestCase
 from planscape.settings import CRS_9822_PROJ4
 
-from django.contrib.gis.gdal.raster.source import GDALRaster
-
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
-RASTER_TEST_FILE = 'src/planscape/testing/testdata/random_test.sql'
+RASTER_TEST_FILE = 'testing/testdata/random_test.sql'
 
 
 class ConditionTest(TestCase):
@@ -21,7 +18,7 @@ class ConditionTest(TestCase):
     def setUpClass(cls):
         # Read the test data; this is a GeoTIFF with CRS 9822, ready to load into the
         # ConditionRaster table.  See testing/create_random_geotiff.py for details.
-        geotiff_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, RASTER_TEST_FILE)
+        geotiff_path = os.path.join(settings.BASE_DIR, RASTER_TEST_FILE)
         with open(geotiff_path) as f:
             geotiff = f.read()
 
@@ -39,41 +36,47 @@ class ConditionTest(TestCase):
             condition_dataset=base_condition, raster_name='random_test.tif')
         super(ConditionTest, cls).setUpClass()
 
+    def setUp(self):
+        self._api_prefix = '/planscape-backend/conditions'
+
     def test_bad_height(self):
-        response = self.client.get('/conditions/wms/?height=foo&width=87')
+        response = self.client.get(
+            self._api_prefix + '/wms/?height=foo&width=87')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_bbox(self):
         response = self.client.get(
-            '/conditions/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.hg')
+            self._api_prefix + '/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.hg')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_srs_prefix(self):
         response = self.client.get(
-            '/conditions/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPS:123')
+            self._api_prefix + '/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPS:123')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_srs_int(self):
         response = self.client.get(
-            '/conditions/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPSG:bar')
+            self._api_prefix + '/wms/?height=76&width=87&bbox=1.1,2.2,3.3,4.4&srs=EPSG:bar')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_layers(self):
-        response = self.client.get(
-            '/conditions/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
-            '&format=image/jpeg&layers=foo.tif')
+        response = self.client.get(self._api_prefix +
+                                   '/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
+                                   '&format=image/jpeg&layers=foo.tif')
         self.assertEqual(response.status_code, 400)
 
     def test_good_request(self):
-        response = self.client.get(
-            '/conditions/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
-            '&format=image/jpeg&layers=random_test.tif')
+        response = self.client.get(self._api_prefix +
+                                   '/wms/?height=100&width=100&srs=EPSG:4326&bbox=-115.7,44.4,-115.6,44.5'
+                                   '&format=image/jpeg&layers=random_test.tif')
         self.assertEqual(response.status_code, 200)
 
     def test_bad_colormap(self):
-        response = self.client.get('/conditions/colormap/?colormap=foo')
+        response = self.client.get(
+            self._api_prefix + '/colormap/?colormap=foo')
         self.assertEqual(response.status_code, 400)
 
     def test_good_colormap(self):
-        response = self.client.get('/conditions/colormap/?colormap=viridis')
+        response = self.client.get(
+            self._api_prefix + '/colormap/?colormap=viridis')
         self.assertEqual(response.status_code, 200)

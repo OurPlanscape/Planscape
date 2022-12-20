@@ -68,6 +68,7 @@ class Pillar(TypedDict):
     filepath: NotRequired[str]
     display_name: NotRequired[str]
     colormap: NotRequired[str]
+    display: NotRequired[bool]
 
 
 class Region(TypedDict):
@@ -76,3 +77,4 @@ class Region(TypedDict):
     filepath: NotRequired[str]
     display_name: NotRequired[str]
     colormap: NotRequired[str]
+

@@ -201,31 +201,55 @@
 
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="maps-container">
-    <!-- Info bar above the maps -->
-    <div class="map-options-bar">
-      <!-- Dropdown for creating a planning area -->
-      <button mat-raised-button type="button" class="plan-options-button">
-        <mat-select
-          [(value)]="selectedPlanCreationOption"
-          placeholder="Create a plan"
-          class="plan-options-select"
-          (selectionChange)="onPlanCreationOptionChange($event.value)">
-          <mat-select-trigger *ngIf="selectedPlanCreationOption">
-            <mat-icon class="selection-icon">{{selectedPlanCreationOption.icon}}</mat-icon>
-            {{selectedPlanCreationOption.display}}
-          </mat-select-trigger>
-          <mat-option *ngFor="let option of planCreationOptions" [value]="option">
-            <mat-icon>{{option.icon}}</mat-icon>{{option.display}}
-          </mat-option>
-        </mat-select>
+    <!-- Actions bar above the maps -->
+    <div class="map-actions-bar">
+      <button mat-flat-button
+        class="create-plan-button"
+        (click)="showAreaCreationActionButtons=!showAreaCreationActionButtons">
+        Create a plan
+        <span class="arrow" [ngClass]="{right: !showAreaCreationActionButtons, left: showAreaCreationActionButtons}"></span>
       </button>
 
-      <!-- Create plan button -->
-      <button *ngIf="showCreatePlanButton$ | async"
+      <!-- Draw a planning area -->
+      <button mat-flat-button
+        class="draw-area-button"
+        [class.is-hidden]="!showAreaCreationActionButtons"
+        [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.DRAW}"
+        (click)="onAreaCreationActionChange(AreaCreationAction.DRAW)">
+        <mat-icon>draw</mat-icon> Draw an area
+      </button>
+
+      <!-- Upload a planning area -->
+      <div class="upload-wrapper">
+        <button mat-flat-button
+          class="upload-area-button"
+          [class.is-hidden]="!showAreaCreationActionButtons"
+          [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.UPLOAD}"
+          (click)="onAreaCreationActionChange(AreaCreationAction.UPLOAD)">
+          <mat-icon>upload</mat-icon> Upload an area
+        </button>
+        <file-uploader *ngIf="showUploader"
+          class="file-uploader"
+          requiredFileType="application/zip"
+          (fileEvent)="loadArea($event)"
+          ></file-uploader>
+      </div>
+
+      <!-- Cancel button -->
+      <button *ngIf="selectedAreaCreationAction === AreaCreationAction.DRAW ||
+        selectedAreaCreationAction === AreaCreationAction.UPLOAD"
         mat-button type="button"
-        class="create-plan-button"
+        class="cancel-button"
+        (click)="cancelAreaCreationAction()">
+        <mat-icon>cancel</mat-icon>CANCEL
+      </button>
+
+      <!-- Done (confirm area) button -->
+      <button *ngIf="showConfirmAreaButton$ | async"
+        mat-button type="button"
+        class="confirm-area-button"
         (click)="openCreatePlanDialog()">
-        <mat-icon>add</mat-icon>CREATE
+        <mat-icon>done</mat-icon>DONE
       </button>
     </div>
 

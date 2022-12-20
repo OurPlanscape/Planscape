@@ -13,7 +13,6 @@ Specific Planscape settings can be overridden by the .env file.
 These settings are
 
   SECRET_KEY:               Django key
-  PLANSCAPE_ROOT_DIRECTORY: root directory
   PLANSCAPE_DEBUG:          True or False
 
   PLANSCAPE_DATABASE_HOST: PostGIS hostname
@@ -220,4 +219,23 @@ CACHES = {
         'BACKEND': config('PLANSCAPE_CACHE_BACKEND', default='django.core.cache.backends.locmem.LocMemCache'),
         'LOCATION': config('PLANSCAPE_CACHE_LOCATION', 'planscape-cache'),
     }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    "formatters": {
+        "verbose": {
+            "format": "[{asctime}] {levelname}: {name}.{message}",
+            "style": "{",
+        },
+    },
+
+    'handlers': {
+         "console": {'level': 'DEBUG', "class": "logging.StreamHandler", "formatter": "verbose"},
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG",
+    },
 }

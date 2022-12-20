@@ -14,9 +14,11 @@ import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject, of } from 'rxjs';
+import { featureCollection, point } from '@turf/helpers';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import { BehaviorSubject, of } from 'rxjs';
+import * as shp from 'shpjs';
 
 import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
 import {
@@ -35,6 +37,10 @@ import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
+
+interface ExtendedWindow extends Window {
+  FileReader: FileReader;
+}
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -194,22 +200,6 @@ describe('MapComponent', () => {
       );
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
-
-    it('sets up drawing', () => {
-      const selectedMap =
-        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
-
-      component.maps.forEach((map: Map) => {
-        expect(map.clonedDrawingRef).toBeDefined();
-        expect(map.drawnPolygonLookup).toEqual({});
-      });
-      expect(
-        selectedMap.instance?.hasLayer(selectedMap.clonedDrawingRef!)
-      ).toBeFalse();
-      expect(
-        selectedMap.instance?.hasLayer(mapManager.drawingLayer)
-      ).toBeTrue();
-    });
   });
 
   describe('ngAfterViewInit', () => {
@@ -365,8 +355,15 @@ describe('MapComponent', () => {
       });
     });
 
-    it('enables drawing on selected map and shows cloned layer on other maps', () => {
+    it('enables drawing on selected map and shows cloned layer on other maps', async () => {
       component.ngAfterViewInit();
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
+      await button.click();
 
       component.maps[3].instance?.fireEvent('click');
 
@@ -508,15 +505,41 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
     });
 
+    it('sets up drawing', async () => {
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
+
+      await button.click();
+      const selectedMap =
+        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
+
+      component.maps.forEach((map: Map) => {
+        expect(map.clonedDrawingRef).toBeDefined();
+        expect(map.drawnPolygonLookup).toEqual({});
+      });
+      expect(
+        selectedMap.instance?.hasLayer(selectedMap.clonedDrawingRef!)
+      ).toBeFalse();
+      expect(
+        selectedMap.instance?.hasLayer(mapManager.drawingLayer)
+      ).toBeTrue();
+    });
+
     it('enables polygon tool when drawing option is selected', async () => {
-      spyOn(component, 'onPlanCreationOptionChange').and.callThrough();
-      const select = await loader.getHarness(MatSelectHarness);
-      await select.open();
-      const option = await select.getOptions();
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
 
-      await option[0].click(); // 'draw-area' option
+      await button.click();
 
-      expect(component.onPlanCreationOptionChange).toHaveBeenCalled();
+      expect(component.onAreaCreationActionChange).toHaveBeenCalled();
       expect(
         component.maps[
           component.mapViewOptions$.getValue().selectedMapIndex
@@ -571,17 +594,77 @@ describe('MapComponent', () => {
     });
   });
 
+  describe('Upload an area', () => {
+    function createSpy(mockReader: jasmine.SpyObj<FileReader>) {
+      spyOn(window as any, 'FileReader').and.returnValue(mockReader);
+    }
+
+    beforeEach(() => {
+      component.ngAfterViewInit();
+    });
+
+    it('upload area button opens the file uploader', async () => {
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.upload-area-button',
+        })
+      );
+
+      await button.click();
+
+      expect(component.showUploader).toBeTrue();
+    });
+
+    it('adds the geojson to the map given a valid shapefile', async () => {
+      const testFile = new File([], 'test.zip');
+      const fakeResult = featureCollection([point([-75.343, 39.984])]);
+      const mockReader = jasmine.createSpyObj('FileReader', [
+        'readAsArrayBuffer',
+        'onload',
+      ]);
+      mockReader.result = 'test content';
+      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
+      createSpy(mockReader);
+      spyOn(shp, 'parseZip').and.returnValue(Promise.resolve(fakeResult));
+      spyOn(mapManager, 'addGeoJsonToDrawing').and.stub();
+
+      await component.loadArea({ type: 'area_upload', value: testFile });
+
+      expect(mapManager.addGeoJsonToDrawing).toHaveBeenCalled();
+      expect(component.showUploader).toBeFalse();
+    });
+
+    it('shows error when the file is invalid', async () => {
+      const testFile = new File([], 'test.zip');
+      const mockReader = jasmine.createSpyObj('FileReader', [
+        'readAsArrayBuffer',
+        'onload',
+      ]);
+      mockReader.result = 'test content';
+      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
+      createSpy(mockReader);
+      spyOn(shp, 'parseZip').and.returnValue(Promise.reject());
+      spyOn(mapManager, 'addGeoJsonToDrawing').and.stub();
+      spyOn(component as any, 'showUploadError').and.callThrough();
+
+      await component.loadArea({ type: 'area_upload', value: testFile });
+
+      expect(mapManager.addGeoJsonToDrawing).not.toHaveBeenCalled();
+      expect((component as any).showUploadError).toHaveBeenCalled();
+    });
+  });
+
   describe('Create plan', () => {
     it('opens create plan dialog', async () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
       const planServiceStub: PlanService =
         fixture.debugElement.injector.get(PlanService);
-      fixture.componentInstance.showCreatePlanButton$ =
+      fixture.componentInstance.showConfirmAreaButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
-          selector: '.create-plan-button',
+          selector: '.confirm-area-button',
         })
       );
 

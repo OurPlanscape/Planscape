@@ -1,0 +1,52 @@
+.summary-panel {
+  background-color: white;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  height: 100%;
+  padding: 24px;
+  position: absolute;
+  width: 300px;
+}
+
+.summary-title {
+  font-family: "Google Sans";
+  font-size: 24px;
+  margin: 20px 0px 10px 0px;
+}
+
+.summary-subtitle {
+  color: #5F6368;
+  font-family: "Google Sans";
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  margin-bottom: 5px;
+}
+
+.summary-content {
+  color: #5F6368;
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 130px 130px;
+}
+
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  margin: 10px;
+}
+
+.grid-title {
+  color: #455a64;
+  font-size: 20px;
+}
+
+.summary-footer {
+  margin-top: auto;
+}
