@@ -1,0 +1,41 @@
+.progress-panel {
+  background-color: white;
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  position: absolute;
+  width: 300px;
+}
+
+.progress-title {
+  font-family: "Google Sans";
+  font-size: 20px;
+  margin: 20px 0px 10px 0px;
+  font-weight: 500;
+}
+
+.mat-tree-node {
+  font-size: 15px;
+}
+
+.bullet-point-icon {
+  font-size: 8px;
+  color: #757575;
+}
+
+.check-icon {
+  color: #3367d6;
+}
+
+.number-circle {
+  background: #757575;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  height: 20px;
+  line-height: 20px;
+  margin-left: 10px;
+  text-align: center;
+  width: 20px;
+}

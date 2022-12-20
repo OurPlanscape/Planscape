@@ -1,5 +1,8 @@
 <div class="root-container">
-  <div class="plan-summary-panel">
+  <div class="plan-progress-panel" *ngIf="resumePlanning">
+    <progress-panel [plan]="currentPlan$ | async"></progress-panel>
+  </div>
+  <div class="plan-summary-panel" *nfIf="!resumePlanning">
     <summary-panel></summary-panel>
   </div>
   <mat-divider [vertical]="true"></mat-divider>
