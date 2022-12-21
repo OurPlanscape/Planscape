@@ -1,0 +1,35 @@
+<mat-card [style.margin-top]="'24px'">
+  <mat-card-header>
+    <mat-card-title>Unsaved Scenarios</mat-card-title>
+    <mat-card-subtitle>{{ scenarios.length }}</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <mat-table [dataSource]="scenarios" >
+      <!-- ID Column -->
+      <ng-container matColumnDef="id">
+        <mat-header-cell *matHeaderCellDef> Scenario </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+      </ng-container>
+
+      <!-- Timestamp Column -->
+      <ng-container matColumnDef="createdTimestamp">
+        <mat-header-cell *matHeaderCellDef> Date Created </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.createdTimestamp | date:'medium' }} </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button mat-raised-button>
+      <mat-icon>open_in_new</mat-icon>
+      SEE ALL
+    </button>
+    <button mat-raised-button color="primary">
+      OPEN
+    </button>
+  </mat-card-actions>
+</mat-card>

@@ -1,3 +1,4 @@
+import { BehaviorSubject } from 'rxjs';
 import { Component } from '@angular/core';
 import * as L from 'leaflet';
 
@@ -10,12 +11,14 @@ import { Plan, Region } from '../types';
 })
 export class PlanComponent {
   plan: Plan | undefined;
+  currentPlan$ = new BehaviorSubject<Plan | null>(null);
+  resumePlanning = true;
 
   constructor() {
     // TODO(leehana): Use a fake plan until we can query plans from the DB
     this.plan = {
       id: 'fake',
-      name: 'fake',
+      name: 'Shiba Resilience Plan',
       ownerId: 'fake',
       region: Region.SIERRA_NEVADA,
       planningArea: new L.Polygon([
@@ -24,5 +27,6 @@ export class PlanComponent {
         new L.LatLng(38.52668443555346, -120.11828371421737),
       ]).toGeoJSON(),
     };
+    this.currentPlan$.next(this.plan);
   }
 }
