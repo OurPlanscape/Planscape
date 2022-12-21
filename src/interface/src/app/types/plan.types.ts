@@ -1,4 +1,4 @@
-import { Region } from "./region.types";
+import { Region } from './region.types';
 
 export interface Plan extends BasePlan {
   id: string;
@@ -14,4 +14,9 @@ export interface BasePlan {
   ownerId: string;
   region: Region;
   planningArea: GeoJSON.GeoJSON;
+}
+
+export interface Scenario {
+  id: string;
+  createdTimestamp: number;
 }

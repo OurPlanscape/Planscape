@@ -23,7 +23,7 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
 import { ProjectCardComponent } from './map/project-card/project-card.component';
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
-import { PlanComponent } from './plan/plan.component';
+import { PlanModule } from './plan/plan.module';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import {
   AuthGuard,
@@ -37,9 +37,6 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
-import { PlanMapComponent } from './plan/plan-map/plan-map.component';
-import { ProgressPanelComponent } from './plan/progress-panel/progress-panel.component';
-import { SummaryPanelComponent } from './plan/summary-panel/summary-panel.component';
 
 @NgModule({
   declarations: [
@@ -56,10 +53,6 @@ import { SummaryPanelComponent } from './plan/summary-panel/summary-panel.compon
     MapNameplateComponent,
     PlanCreateDialogComponent,
     LayerInfoCardComponent,
-    PlanComponent,
-    PlanMapComponent,
-    ProgressPanelComponent,
-    SummaryPanelComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -71,12 +64,13 @@ import { SummaryPanelComponent } from './plan/summary-panel/summary-panel.compon
     HttpClientModule,
     HttpClientXsrfModule.withOptions({
       cookieName: 'csrftoken',
-      headerName: 'X-CSRFTOKEN'
+      headerName: 'X-CSRFTOKEN',
     }),
     LayoutModule,
     MaterialModule,
     NgxGoogleAnalyticsModule,
     NgxGoogleAnalyticsRouterModule,
+    PlanModule,
     SharedModule,
     ReactiveFormsModule,
   ],
