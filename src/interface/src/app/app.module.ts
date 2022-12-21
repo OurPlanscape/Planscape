@@ -38,6 +38,7 @@ import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { PlanMapComponent } from './plan/plan-map/plan-map.component';
+import { ProgressPanelComponent } from './plan/progress-panel/progress-panel.component';
 import { SummaryPanelComponent } from './plan/summary-panel/summary-panel.component';
 
 @NgModule({
@@ -57,6 +58,7 @@ import { SummaryPanelComponent } from './plan/summary-panel/summary-panel.compon
     LayerInfoCardComponent,
     PlanComponent,
     PlanMapComponent,
+    ProgressPanelComponent,
     SummaryPanelComponent,
   ],
   imports: [
