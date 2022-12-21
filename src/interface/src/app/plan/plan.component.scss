@@ -16,6 +16,17 @@
   width: 300px;
 }
 
+.plan-progress-panel {
+  background-color: white;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  height: 100%;
+  position: relative;
+  width: 300px;
+}
+
 .plan-map-container {
   display: flex;
   flex-direction: column;
