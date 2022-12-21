@@ -61,32 +61,25 @@ def create(request: HttpRequest) -> HttpResponse:
 def get_plan_by_id(params: QueryDict):
     assert isinstance(params['id'], str)
     plan_id = params.get('id', 0)
-    plan = Plan.objects.get(pk=int(plan_id))
-    return JsonResponse(PlanSerializer(plan).data)
+    return Plan.objects.get(pk=int(plan_id))
 
 
 def get_plans_by_owner(params: QueryDict):
     owner_id = params.get('owner')
-    plans_list = None
-    if owner_id is not None:
-        plans_list = Plan.objects.filter(owner=owner_id)
-    else:
-        plans_list = Plan.objects.filter(owner__isnull=True)
-    serialized_plans = [PlanSerializer(plan).data for plan in plans_list]
-    print(serialized_plans)
-    return JsonResponse(serialized_plans, safe=False)
+    return Plan.objects.filter(owner=owner_id)
 
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        return get_plan_by_id(request.GET)
+        plan = get_plan_by_id(request.GET)
+        return JsonResponse(PlanSerializer(plan).data)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
     try:
-        return get_plans_by_owner(request.GET)
+        plans = get_plans_by_owner(request.GET)
+        return JsonResponse([PlanSerializer(plan).data for plan in plans], safe=False)
     except Exception as e:
-        print(e)
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
