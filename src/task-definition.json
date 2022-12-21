@@ -12,7 +12,7 @@
                     "protocol": "tcp"
                 }
             ],
-            "essential": true,
+            "essential": false,
             "entryPoint": [],
             "command": [],
             "environment": [],
@@ -74,8 +74,7 @@
             "name": "socket",
             "dockerVolumeConfiguration": {
                 "driver": "local",
-                "scope": "shared",
-                "autoprovision": false
+                "scope": "task"
             }
         }
     ],
