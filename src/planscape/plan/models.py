@@ -36,12 +36,12 @@ class Project(models.Model):
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE) 
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)  # type: ignore
 
     # Project Parameters:
 
     # The maximum cost constraint. If null, no max cost.
-    max_cost = models.IntegerField(null=True) 
+    max_cost:models.IntegerField = models.IntegerField(null=True) 
 
     # TODO: Add more project parameters like min_acres_treated and 
     # permitted_ownership = (1=federal, 2=state, 4=private) 
@@ -51,13 +51,13 @@ class GeneratedProjectAreas(models.Model):
     GeneratedProjectAreas are associated with one Project. It has geometries representing 
     the project area, and an estimate of the area treated.
     """
-    project = models.ForeignKey(Project, on_delete=models.CASCADE) 
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)  # type: ignore
 
     # The project area geometries. May be one or more polygons that represent the project area.
     project_area = models.MultiPolygonField(srid=4269, null=True) 
 
     # The sum total of the project area geometries.
-    estimated_area_treated = models.IntegerField(null=True) 
+    estimated_area_treated:models.IntegerField = models.IntegerField(null=True) 
 
 class Scenario(models.Model):
     """
@@ -68,4 +68,4 @@ class Scenario(models.Model):
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)  # type: ignore

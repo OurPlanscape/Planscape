@@ -1,9 +1,11 @@
 import json
 
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
+from django.contrib.gis.geos import GEOSGeometry
+from django.core import serializers
+from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse, QueryDict)
 from plan.models import Plan
-from base.region_name import RegionName
+from plan.serializers import PlanSerializer
 from planscape import settings
 
 
@@ -13,7 +15,7 @@ def create(request: HttpRequest) -> HttpResponse:
         owner = None
         if request.user.is_authenticated:
             owner = request.user
-        if owner is None and not(settings.PLANSCAPE_GUEST_CAN_SAVE):
+        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
             raise ValueError("Must be logged in")
 
         # Get the name of the plan.
@@ -52,5 +54,32 @@ def create(request: HttpRequest) -> HttpResponse:
         plan.save()
         return HttpResponse(str(plan.pk))
 
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def get_plan_by_id(params: QueryDict):
+    assert isinstance(params['id'], str)
+    plan_id = params.get('id', 0)
+    return Plan.objects.get(pk=int(plan_id))
+
+
+def get_plans_by_owner(params: QueryDict):
+    owner_id = params.get('owner')
+    return Plan.objects.filter(owner=owner_id)
+
+
+def get_plan(request: HttpRequest) -> HttpResponse:
+    try:
+        plan = get_plan_by_id(request.GET)
+        return JsonResponse(PlanSerializer(plan).data)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
+    try:
+        plans = get_plans_by_owner(request.GET)
+        return JsonResponse([PlanSerializer(plan).data for plan in plans], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
