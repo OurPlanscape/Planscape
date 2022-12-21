@@ -65,7 +65,11 @@ jobs:
           docker tag planscape-frontend:latest ${{ env.frontend_image }}
           docker push ${{ env.frontend_image }}
           cd ../planscape
-          docker build -t planscape-backend . 
+          docker build -t planscape-backend . \
+              --build-arg SECRET_KEY=${{ env.SECRET_KEY }} \
+              --build-arg PLANSCAPE_DATABASE_HOST=$${{ env.PLANSCAPE_DATABASE_HOST }} \
+              --build-arg PLANSCAPE_CORS_ALLOWED_HOSTS=$${{ env.PLANSCAPE_CORS_ALLOWED_HOSTS }} \
+              --build-arg PLANSCAPE_CORS_ALLOWED_ORIGINS=$${{ env.PLANSCAPE_CORS_ALLOWED_ORIGINS }} \
           docker tag planscape-backend:latest ${{ env.backend_image }}
           docker push ${{ env.backend_image }}
 
