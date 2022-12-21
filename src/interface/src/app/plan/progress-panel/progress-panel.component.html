@@ -3,8 +3,8 @@
     <div class="progress-title">{{plan?.name}}</div>
   </div>
 
-  <!-- Tree node template for leaf nodes (without children) -->
   <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+    <!-- Tree node template for leaf nodes (without children) -->
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding
       [ngClass]="{'clickable': node.clickable, 'selected': node.id === currentTaskId}"
       (click)="goToStep(node)">
