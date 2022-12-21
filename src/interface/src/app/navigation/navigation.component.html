@@ -1,17 +1,40 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #drawer class="sidenav"
-      [attr.role]="'navigation'"
-      [mode]="'side'"
-      [opened]="sidebarOpen">
+    [attr.role]="'navigation'"
+    [mode]="'side'"
+    [opened]="sidebarOpen">
     <mat-nav-list>
-      <a mat-list-item routerLink="/region">Select Region</a>
-      <a mat-list-item routerLink="/map">Map</a>
+      <ng-container *ngFor="let link of sidenavLinks">
+        <a routerLink="{{link.href}}"
+          class="nav-link"
+          [ngClass]="{'selected': isSelected(link.href)}">
+            <mat-icon class="material-symbols-outlined">
+              {{link.icon}}
+            </mat-icon>
+            <div class="nav-text">
+              {{link.text}}
+            </div>
+          </a>
+      </ng-container>
       <ng-container *featureFlag="'login'">
         <div *ngIf="isLoggedIn$ | async; else showLogin">
-          <a mat-list-item (click)="logout()">Logout</a>
+          <a class="nav-link"
+            (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <div class="nav-text">
+              Logout
+            </div>
+          </a>
         </div>
         <ng-template #showLogin>
-          <a mat-list-item routerLink="/login">Login/Signup</a>
+          <a routerLink="/login"
+            class="nav-link"
+            [ngClass]="{'selected': isSelected('/login')}">
+            <mat-icon>login</mat-icon>
+            <div class="nav-text">
+              Login / Signup
+            </div>
+          </a>
         </ng-template>
       </ng-container>
     </mat-nav-list>
