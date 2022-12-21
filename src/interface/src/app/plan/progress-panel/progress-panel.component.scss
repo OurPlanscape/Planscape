@@ -1,0 +1,53 @@
+.progress-panel {
+  background-color: white;
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+  padding: 24px;
+  position: absolute;
+  width: 300px;
+}
+
+.progress-title {
+  font-family: "Google Sans";
+  font-size: 20px;
+  font-weight: 500;
+  margin: 20px 0px 10px 0px;
+}
+
+.mat-tree-node {
+  font-size: 15px;
+}
+
+.clickable {
+  cursor: pointer;
+
+  &:hover {
+    background-color: #e8f0fe;
+  }
+}
+
+.selected {
+  background-color: #e8f0fe;
+}
+
+.bullet-point-icon {
+  color: #757575;
+  font-size: 8px;
+}
+
+.check-icon {
+  color: #3367d6;
+}
+
+.number-circle {
+  background: #757575;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 12px;
+  height: 20px;
+  line-height: 20px;
+  margin-left: 10px;
+  text-align: center;
+  width: 20px;
+}
