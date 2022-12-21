@@ -4,7 +4,7 @@
     [mode]="'side'"
     [opened]="sidebarOpen">
     <mat-nav-list>
-      <ng-container *ngFor="let link of sideNavLinks">
+      <ng-container *ngFor="let link of sidenavLinks">
         <a routerLink="{{link.href}}"
           class="nav-link"
           [ngClass]="{'selected': isSelected(link.href)}">

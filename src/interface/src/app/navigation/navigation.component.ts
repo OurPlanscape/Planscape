@@ -18,7 +18,7 @@ export interface SidenavLink {
 export class NavigationComponent implements OnInit, OnDestroy {
   @Input() sidebarOpen = false;
 
-  sideNavLinks: SidenavLink[] = [
+  sidenavLinks: SidenavLink[] = [
     {
       text: "Home",
       href: "/region",
