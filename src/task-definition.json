@@ -1,4 +1,5 @@
 {
+  "executionRoleArn": "arn:aws:iam::705618310400:role/PlanscapeDevRole",
   "containerDefinitions": [
     {
       "name": "backend",
