@@ -1,91 +1,116 @@
 {
-    "containerDefinitions": [
+  "containerDefinitions": [
+    {
+      "name": "backend",
+      "image": "backend",
+      "cpu": 0,
+      "links": [],
+      "portMappings": [
         {
-            "name": "backend",
-            "image": "backend",
-            "cpu": 0,
-            "links": [],
-            "portMappings": [
-                {
-                    "containerPort": 5432,
-                    "hostPort": 5432,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": false,
-            "entryPoint": [],
-            "command": [],
-            "environment": [],
-            "environmentFiles": [],
-            "mountPoints": [
-                {
-                  "sourceVolume": "socket",
-                  "containerPath": "/home/planscape/backend/socket"
-                }
-            ],
-            "volumesFrom": [],
-            "secrets": [],
-            "dnsServers": [],
-            "dnsSearchDomains": [],
-            "extraHosts": [],
-            "dockerSecurityOptions": [],
-            "dockerLabels": {},
-            "ulimits": [],
-            "systemControls": []
+          "containerPort": 5432,
+          "hostPort": 5432,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": false,
+      "entryPoint": [],
+      "command": [],
+      "environment": [
+        {
+          "name": "ENVIRONMENT",
+          "value": "prod"
         },
         {
-            "name": "frontend",
-            "image": "frontend",
-            "cpu": 0,
-            "links": [],
-            "portMappings": [
-                {
-                    "containerPort": 80,
-                    "hostPort": 80,
-                    "protocol": "tcp"
-                }
-            ],
-            "essential": true,
-            "entryPoint": [],
-            "command": [],
-            "environment": [],
-            "environmentFiles": [],
-            "mountPoints": [
-                {
-                  "sourceVolume": "socket",
-                  "containerPath": "/django_socket"
-                }
-            ],
-            "volumesFrom": [],
-            "secrets": [],
-            "dnsServers": [],
-            "dnsSearchDomains": [],
-            "extraHosts": [],
-            "dockerSecurityOptions": [],
-            "dockerLabels": {},
-            "ulimits": [],
-            "systemControls": []
-        }
-    ],
-    "family": "PlanscapeDevTask",
-    "networkMode": "bridge",
-    "volumes": [
+          "name": "LOG_LEVEL",
+          "value": "info"
+        },
         {
-            "name": "socket",
-            "dockerVolumeConfiguration": {
-                "driver": "local",
-                "scope": "task"
-            }
+          "name": "PLANSCAPE_CORS_ALLOWED_HOSTS",
+          "value": "http://ec2-13-52-182-67.us-west-1.compute.amazonaws.com"
+        },
+        {
+          "name": "PLANSCAPE_CORS_ALLOWED_ORIGINS",
+          "value": "http://ec2-13-52-182-67.us-west-1.compute.amazonaws.com"
         }
-    ],
-    "placementConstraints": [],
-    "requiresCompatibilities": [
-        "EC2"
-    ],
-    "cpu": "1024",
-    "memory": "3072",
-    "runtimePlatform": {
-        "cpuArchitecture": "X86_64",
-        "operatingSystemFamily": "LINUX"
+      ],
+      "environmentFiles": [],
+      "mountPoints": [
+        {
+          "sourceVolume": "socket",
+          "containerPath": "/home/planscape/backend/socket"
+        }
+      ],
+      "volumesFrom": [],
+      "secrets": [
+        {
+          "valueFrom": "arn:aws:ssm:us-west-1:705618310400:parameter/PlanscapeDjangoKey",
+          "name": "SECRET_KEY"
+        }
+      ],
+      "dnsServers": [],
+      "dnsSearchDomains": [],
+      "extraHosts": [],
+      "dockerSecurityOptions": [],
+      "dockerLabels": {},
+      "ulimits": [],
+      "systemControls": []
+    },
+    {
+      "name": "frontend",
+      "image": "frontend",
+      "cpu": 0,
+      "links": [],
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [],
+      "environmentFiles": [],
+      "mountPoints": [
+        {
+          "sourceVolume": "socket",
+          "containerPath": "/django_socket"
+        }
+      ],
+      "volumesFrom": [],
+      "secrets": [],
+      "dnsServers": [],
+      "dnsSearchDomains": [],
+      "extraHosts": [],
+      "dockerSecurityOptions": [],
+      "dockerLabels": {},
+      "ulimits": [],
+      "systemControls": []
     }
+  ],
+  "taskRoleArn": "arn:aws:iam::705618310400:role/PlanscapeDevRole",
+  "compatibilities": [
+    "EXTERNAL",
+    "EC2"
+  ],
+  "family": "PlanscapeDevTask",
+  "networkMode": "bridge",
+  "volumes": [
+    {
+      "name": "socket",
+      "dockerVolumeConfiguration": {
+        "driver": "local",
+        "scope": "task"
+      }
+    }
+  ],
+  "placementConstraints": [],
+  "requiresCompatibilities": ["EC2"],
+  "cpu": "1024",
+  "memory": "3072",
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  }
 }
