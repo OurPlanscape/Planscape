@@ -55,7 +55,7 @@ jobs:
         id: build-frontend
         run: |
           cd src/interface
-          sed -i "" "s/localhost/${{ env.EC2_INSTANCE }}/" src/environments/environment.prod.ts
+          sed -i "s/localhost/${{ env.EC2_INSTANCE }}/" src/environments/environment.prod.ts
           docker build -t planscape-frontend . 
           docker tag planscape-frontend:latest ${{ env.frontend_image }}
           docker push ${{ env.frontend_image }}
