@@ -20,6 +20,7 @@ env:
   ECS_SERVICE: PlanscapeDevService
   ECS_CLUSTER: PlanscapeDevCluster
   ECS_TASK_DEFINITION: src/task-definition.json
+  EC2_INSTANCE: ec2-13-52-182-67.us-west-1.compute.amazonaws.com
 jobs:
   deploy:
     name: Deploy
@@ -54,20 +55,16 @@ jobs:
         id: build-frontend
         run: |
           cd src/interface
+          sed -i "" "s/localhost/${{ env.EC2_INSTANCE }}/" src/environments/environment.prod.ts
           docker build -t planscape-frontend . 
           docker tag planscape-frontend:latest ${{ env.frontend_image }}
           docker push ${{ env.frontend_image }}
 
       - name: Build, tag, and push backend
         id: build-backend
-        env:
-          SECRET_KEY: ${{ secrets.DJANGO_ACCESS_KEY }}
-          PLANSCAPE_DATABASE_HOST: 'host.docker.internal'
-          PLANSCAPE_CORS_ALLOWED_HOSTS: 'http://ec2-13-52-182-67.us-west-1.compute.amazonaws.com'
-          PLANSCAPE_CORS_ALLOWED_ORIGINS: 'http://ec2-13-52-182-67.us-west-1.compute.amazonaws.com'
         run: |
           cd src/planscape
-          docker build -t planscape-backend . --build-arg SECRET_KEY='${{ env.SECRET_KEY }}' --build-arg PLANSCAPE_DATABASE_HOST=$${{ env.PLANSCAPE_DATABASE_HOST }} --build-arg PLANSCAPE_CORS_ALLOWED_HOSTS=$${{ env.PLANSCAPE_CORS_ALLOWED_HOSTS }} --build-arg PLANSCAPE_CORS_ALLOWED_ORIGINS=$${{ env.PLANSCAPE_CORS_ALLOWED_ORIGINS }}
+          docker build -t planscape-backend .
           docker tag planscape-backend:latest ${{ env.backend_image }}
           docker push ${{ env.backend_image }}
 
