@@ -4,14 +4,13 @@ from typing import cast
 from base.condition_types import ConditionLevel
 from conditions.models import BaseCondition, Condition
 from conditions.views import wms
-from decouple import config
+from django.conf import settings
 from django.contrib.gis.gdal.raster.source import GDALRaster
 from django.db import connection
 from django.test import TestCase
 from planscape.settings import CRS_9822_PROJ4
 
-PLANSCAPE_ROOT_DIRECTORY = cast(str, config('PLANSCAPE_ROOT_DIRECTORY'))
-RASTER_TEST_FILE = 'src/planscape/testing/testdata/random_test.sql'
+RASTER_TEST_FILE = 'testing/testdata/random_test.sql'
 
 
 class ConditionTest(TestCase):
@@ -19,7 +18,7 @@ class ConditionTest(TestCase):
     def setUpClass(cls):
         # Read the test data; this is a GeoTIFF with CRS 9822, ready to load into the
         # ConditionRaster table.  See testing/create_random_geotiff.py for details.
-        geotiff_path = os.path.join(PLANSCAPE_ROOT_DIRECTORY, RASTER_TEST_FILE)
+        geotiff_path = os.path.join(settings.BASE_DIR, RASTER_TEST_FILE)
         with open(geotiff_path) as f:
             geotiff = f.read()
 

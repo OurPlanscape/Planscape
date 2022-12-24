@@ -38,7 +38,9 @@
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "leaflet"
+              "leaflet",
+              "shpjs",
+              "geojson-rbush"
             ]
           },
           "configurations": {
@@ -76,9 +78,6 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "proxyConfig": "proxy.conf.json"
-          },
           "configurations": {
             "production": {
               "browserTarget": "interface:build:production"

@@ -1,12 +1,15 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
 
+import math 
 
 class Plan(models.Model):
     """
     A Plan is associated with one User, the owner, and one Region.  It has a name,
     status (locked/public), and a geometry representing the planning area.
     """
+    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because 
+    # we want alpha users to not be signed in.
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     # The name of the plan.
@@ -65,4 +68,4 @@ class Scenario(models.Model):
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # type: ignore
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE) # type: ignore
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)  # type: ignore
