@@ -37,7 +37,7 @@ jobs:
     - name: Install Dependencies
       run: |
         cd src/planscape
-        sudo apt-get install gdal-bin libgdal-dev
+        sudo apt-get install gdal-bin libgdal-dev r-base-core
         python -m pip install --upgrade pip
         pip install -r requirements.txt 
     - name: Set up PostGIS
@@ -48,7 +48,6 @@ jobs:
     - name: Run Tests
       env:
         SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
-        PLANSCAPE_ROOT_DIRECTORY: ${{ github.workspace }}
       run: |
         cd src/planscape
         python manage.py test -p "*test*.py"

@@ -23,7 +23,7 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
 import { ProjectCardComponent } from './map/project-card/project-card.component';
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
-import { PlanComponent } from './plan/plan.component';
+import { PlanModule } from './plan/plan.module';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import {
   AuthGuard,
@@ -53,7 +53,6 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     MapNameplateComponent,
     PlanCreateDialogComponent,
     LayerInfoCardComponent,
-    PlanComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -65,12 +64,13 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     HttpClientModule,
     HttpClientXsrfModule.withOptions({
       cookieName: 'csrftoken',
-      headerName: 'X-CSRFTOKEN'
+      headerName: 'X-CSRFTOKEN',
     }),
     LayoutModule,
     MaterialModule,
     NgxGoogleAnalyticsModule,
     NgxGoogleAnalyticsRouterModule,
+    PlanModule,
     SharedModule,
     ReactiveFormsModule,
   ],
