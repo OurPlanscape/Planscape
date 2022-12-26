@@ -32,6 +32,10 @@
         {
           "name": "PLANSCAPE_CORS_ALLOWED_ORIGINS",
           "value": "http://ec2-13-52-182-67.us-west-1.compute.amazonaws.com"
+        },
+        {
+          "name": "PLANSCAPE_DATABASE_HOST",
+          "value": "planscape-dev.c0aecsgfmxbc.us-west-1.rds.amazonaws.com"
         }
       ],
       "environmentFiles": [],
@@ -46,6 +50,10 @@
         {
           "valueFrom": "arn:aws:ssm:us-west-1:705618310400:parameter/PlanscapeDjangoKey",
           "name": "SECRET_KEY"
+        },
+        {
+          "valueFrom": "arn:aws:ssm:us-west-1:705618310400:parameter/PlanscapeDatabasePassword",
+          "name": "PLANSCAPE_DATABASE_PASSWORD"
         }
       ],
       "dnsServers": [],
@@ -91,10 +99,7 @@
     }
   ],
   "taskRoleArn": "arn:aws:iam::705618310400:role/PlanscapeDevRole",
-  "compatibilities": [
-    "EXTERNAL",
-    "EC2"
-  ],
+  "compatibilities": ["EXTERNAL", "EC2"],
   "family": "PlanscapeDevTask",
   "networkMode": "bridge",
   "volumes": [
