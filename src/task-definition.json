@@ -36,6 +36,14 @@
         {
           "name": "PLANSCAPE_DATABASE_HOST",
           "value": "planscape-dev.c0aecsgfmxbc.us-west-1.rds.amazonaws.com"
+        },
+        {
+          "name": "PLANSCAPE_CACHE_BACKEND",
+          "value": "django.core.cache.backends.memcached.PyMemcacheCache"
+        },
+        {
+          "name": "PLANSCAPE_CACHE_LOCATION",
+          "value": "planscapedevcache.a2raas.cfg.usw1.cache.amazonaws.com:11211"
         }
       ],
       "environmentFiles": [],
