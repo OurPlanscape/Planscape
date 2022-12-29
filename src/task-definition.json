@@ -11,6 +11,11 @@
           "containerPort": 5432,
           "hostPort": 5432,
           "protocol": "tcp"
+        },
+        {
+          "containerPort": 11211,
+          "hostPort": 11211,
+          "protocol": "tcp"
         }
       ],
       "essential": false,
@@ -43,7 +48,7 @@
         },
         {
           "name": "PLANSCAPE_CACHE_LOCATION",
-          "value": "planscapedevcache.a2raas.cfg.usw1.cache.amazonaws.com:11211"
+          "value": "planscapedevcache.a2raas.0001.usw1.cache.amazonaws.com:11211"
         }
       ],
       "environmentFiles": [],
