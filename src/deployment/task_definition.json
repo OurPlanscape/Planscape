@@ -39,6 +39,10 @@
           "value": "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com"
         },
         {
+          "name": "PLANSCAPE_CSRF_TRUSTED_ORIGINS",
+          "value": "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com"
+        },
+        {
           "name": "PLANSCAPE_DATABASE_HOST",
           "value": "planscape-dev.c0aecsgfmxbc.us-west-1.rds.amazonaws.com"
         },
