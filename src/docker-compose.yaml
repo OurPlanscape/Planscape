@@ -11,8 +11,8 @@ services:
       - 5432
     environment:
       - PLANSCAPE_DATABASE_HOST=host.docker.internal
-      - PLANSCAPE_CORS_ALLOWED_HOSTS='http://localhost'
-      - PLANSCAPE_CORS_ALLOWED_ORIGINS='http://localhost'
+      - PLANSCAPE_CORS_ALLOWED_HOSTS='planscape_nginx'
+      - PLANSCAPE_CORS_ALLOWED_ORIGINS='planscape_nginx'
     depends_on:
       - frontend
 

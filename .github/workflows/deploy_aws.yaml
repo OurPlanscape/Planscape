@@ -20,7 +20,7 @@ env:
   ECS_SERVICE: PlanscapeDevService
   ECS_CLUSTER: PlanscapeDevCluster
   ECS_TASK_DEFINITION: src/deployment/task_definition.json
-  EC2_INSTANCE: ec2-13-52-182-67.us-west-1.compute.amazonaws.com
+  EC2_LOAD_BALANCER: planscapedevload-1541713932.us-west-1.elb.amazonaws.com
 jobs:
   deploy:
     name: Deploy
@@ -55,7 +55,7 @@ jobs:
         id: build-frontend
         run: |
           cd src/interface
-          sed -i "s/localhost/${{ env.EC2_INSTANCE }}/" src/environments/environment.prod.ts
+          sed -i "s/localhost/${{ env.EC2_LOAD_BALANCER }}/" src/environments/environment.prod.ts
           docker build -t planscape-frontend . 
           docker tag planscape-frontend:latest ${{ env.frontend_image }}
           docker push ${{ env.frontend_image }}
