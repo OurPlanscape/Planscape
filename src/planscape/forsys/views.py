@@ -93,14 +93,16 @@ def raster_extent_overlaps_project_area(raster, project_area):
                         (e[0], e[1])) )
   return e_polygon.overlaps(project_area)
 
-# Merges add-on raster with base_raster.
+# Merges two raster inputs into a single output raster according to the scale and skew of the base_raster.
 def mosaic_rasters(base_raster, addon_raster):
   scale = base_raster.scale
   skew = base_raster.skew
   origin = base_raster.origin
 
+  # distorts the add-on raster according to the scale and skew of the base raster.
   addon_raster_copy = addon_raster.warp({"scale": scale, "skew": skew})
 
+  # computes the origin, width, and height of the merged raster and adjusts rasters accordingly.
   origin[0] = addon_raster_copy.origin[0] if addon_raster_copy.origin[0] < origin[0] else origin[0]
   origin[1] = addon_raster_copy.origin[1] if addon_raster_copy.origin[1] > origin[1] else origin[1]
 
@@ -109,6 +111,8 @@ def mosaic_rasters(base_raster, addon_raster):
 
   addon_raster_copy = addon_raster_copy.warp({"width": width, "height": height, "origin": origin})
   base_raster_copy = base_raster.warp({"width": width, "height": height, "origin": origin})
+
+  # computes merged raster data.
   base_data = base_raster_copy.bands[0].data()
   addon_data = addon_raster_copy.bands[0].data()
 
