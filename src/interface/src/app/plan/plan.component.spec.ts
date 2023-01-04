@@ -1,3 +1,5 @@
+import { RouterTestingModule } from '@angular/router/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MaterialModule } from '../material/material.module';
@@ -11,7 +13,7 @@ describe('PlanComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [HttpClientTestingModule, MaterialModule, RouterTestingModule],
       declarations: [PlanComponent, PlanMapComponent, ProgressPanelComponent],
     }).compileComponents();
 
