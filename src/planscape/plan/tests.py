@@ -117,14 +117,10 @@ class GetPlanTest(TransactionTestCase):
     def test_get_plan_with_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
                                    content_type="application/json")
-        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
-                                   content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'with_owner')
 
     def test_get_plan_no_user(self):
-        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
-                                   content_type="application/json")
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
