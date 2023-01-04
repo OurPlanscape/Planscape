@@ -14,6 +14,10 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 
 
+# Constants for spatial references.
+kSpatialReferenceForRasters = "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+kSpatialReferenceForHucBoundaries = 4269
+
 # Configure global logging.
 logger = logging.getLogger(__name__)
 
@@ -41,19 +45,10 @@ def convert_dictionary_of_lists_to_rdf(lists):
   rdf = rpy2.robjects.vectors.DataFrame(data)
   return rdf
 
-# Translates polygon.
-def translate_polygon(polygon, dx, dy):
-  coords = []
-  for ring in polygon.coords:
-    for point in ring:
-      coords.append((point[0] + dx, point[1] + dy))
-  translated = Polygon( tuple(coords) ) 
-  translated.srid = polygon.srid
-  return translated
-
 def get_boundary_debug_info(boundaries, project_area):
   boundary_response = []
   for b in boundaries:
+    print(b.shape_name)
     boundary_response.append("%s (id=%s, intersection area=%f)"%(b.shape_name, b.boundary_id, b.geometry.intersection(project_area).area))
   return boundary_response
 
@@ -81,11 +76,16 @@ def get_condition_rasters(condition, region):
   if len(condition_files) > 1:
     raise LookupError("more than 1 condition filename exists for condition id, %d"%(c.id))
 
+  print(condition_files[0].raster_name)
   condition_rasters = ConditionRaster.objects.filter(name=condition_files[0].raster_name)
   return condition_rasters
 
+def extent_overlaps(e1, e2):
+  return e1[0] < e2[2] and e1[2] > e2[0] and e1[1] < e2[3] and e1[3] > e2[1]
+
 def raster_extent_overlaps_project_area(raster, project_area):
   e = raster.extent
+  # return extent_overlaps(e, project_area.extent)
   e_polygon = Polygon( ((e[0], e[1]),
                         (e[2], e[1]),
                         (e[2], e[3]),
@@ -134,25 +134,25 @@ def fetch_condition_rasters(priorities, region, project_area):
   for p in priorities:
     condition_rasters = get_condition_rasters(p, region)
     origin = [sys.float_info.max, sys.float_info.min]
-    rfinal = GDALRaster({
-      "width": 1,
-      "height": 1,
-      "srid": kSrid,
-      "origin": origin,
-      "scale": kScale,
-      "skew": kSkew,
-      "bands": [{"nodata_value": np.nan}]
-    })
+    is_first_raster = True
+    rfinal = np.nan 
 
     for cr in condition_rasters:
       r = cr.raster
 
       # Checking for overlapping extents is faster than issuing a query that checks for overlaps. 
       if not raster_extent_overlaps_project_area(r, project_area):
+        print("skipping raster")
         continue
-      rfinal = mosaic_rasters(rfinal, r)
+      print("processing raster")
+      if is_first_raster:
+        rfinal = r
+        is_first_raster = False
+      else:
+        rfinal = mosaic_rasters(rfinal, r)
 
-    all_rasters[p] = rfinal
+    if not is_first_raster:
+      all_rasters[p] = rfinal
 
   return all_rasters
 
@@ -175,7 +175,7 @@ def get_condition_data(raster, polygon):
   else:
     min_y = int(np.floor((e[3] - o[1]) / s[1]))
     max_y = int(np.ceil((e[1] - o[1]) / s[1]))
-
+  
   data = raster.bands[0].data()
 
   sum = 0
@@ -216,11 +216,8 @@ def transform_into_forsys_df_data(condition_rasters, boundaries, project_area):
     data['cost'] = []
 
   for b in boundaries:
-    # raster boundary seems to be 80 units off from the huc-12 boundaries.
-    # TODO: adjust raster data.
     geo = project_area.intersection(b.geometry)
-    geo = translate_polygon(geo, 80, 0)
-    geo.transform(CoordTransform(SpatialReference(4269), SpatialReference(9822)))
+    geo.transform(CoordTransform(SpatialReference(kSpatialReferenceForHucBoundaries), SpatialReference(kSpatialReferenceForRasters)))
 
     # TODO: set project_area ID from an external source
     data['proj_id'].append(1)
@@ -277,20 +274,17 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
 
     huc12_id = 43
 
-    project_area = Polygon( ((-120.14015536869722, 37.05413814388948),
-                             (-120.18409937110482, 36.9321584213366),
-                             (-119.93422142411087, 36.94003252840713),
-                             (-120.03710286062301, 36.99713288358574),
-                             (-120.14015536869722, 37.05413814388948)) )
-    project_area.srid = 4269
+    project_area = Polygon( ((-120.14015536869722, 39.05413814388948),
+                             (-120.18409937110482, 39.48622140686506),
+                             (-119.93422142411087, 39.48622140686506),
+                             (-119.93422142411087, 39.05413814388948),
+                             (-120.14015536869722, 39.05413814388948)) )
+    project_area.srid = kSpatialReferenceForHucBoundaries
     if not project_area.valid:
       raise ValueError("invalid project area: %s"%project_area.valid_reason) 
 
-    # raster boundary seems to be 80 units off from the huc-12 boundaries.
-    # TODO: adjust raster data.
-    project_area_translated = translate_polygon(project_area, 80, 0)
-    project_area_raster = project_area_translated.clone()
-    project_area_raster.transform(CoordTransform(SpatialReference(4269), SpatialReference(9822)))
+    project_area_raster = project_area.clone()
+    project_area_raster.transform(CoordTransform(SpatialReference(kSpatialReferenceForHucBoundaries), SpatialReference(kSpatialReferenceForRasters)))
 
     response = {}
     if (save_debug_info):
