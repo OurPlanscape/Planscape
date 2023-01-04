@@ -168,6 +168,9 @@ class ListPlansTest(TransactionTestCase):
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
+        for plan in response.json():
+            if plan['owner'] == 'A_ownerless':
+                self.assertEqual(plan['geometry'], self.geometry)
 
 
 class ProjectTest(TransactionTestCase):
@@ -224,7 +227,3 @@ class ProjectTest(TransactionTestCase):
                 'plan_id': self.plan_with_user.pk, 'max_cost': 100},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-
-        for plan in response.json():
-            if plan['owner'] == 'A_ownerless':
-                self.assertEqual(plan['geometry'], self.geometry)
