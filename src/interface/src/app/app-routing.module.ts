@@ -38,6 +38,7 @@ const routes: Routes = [
         component: RegionSelectionComponent,
       },
       { path: 'map', title: 'Explore', component: MapComponent },
+      { path: 'plan/:id', title: 'Plan', component: PlanComponent },
       { path: 'plan', title: 'Plan', component: PlanComponent },
     ],
   },
