@@ -63,6 +63,31 @@ export class PlanService {
     );
   }
 
+  /** Makes a request to the backend to fetch a plan with the given ID. */
+  getPlan(planId: string): Observable<Plan> {
+    return this.http
+      .get<BackendPlan>(
+        BackendConstants.END_POINT.concat('/plan/get_plan/?id=', planId),
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        take(1),
+        map((dbPlan) => this.convertToPlan(dbPlan))
+      );
+  }
+
+  private convertToPlan(plan: BackendPlan): Plan {
+    return {
+      id: String(plan.id),
+      ownerId: String(plan.owner),
+      name: plan.name,
+      region: plan.region,
+      planningArea: plan.geometry,
+    };
+  }
+
   private convertToDbPlan(plan: BasePlan): BackendPlan {
     return {
       owner: Number(plan.ownerId),
@@ -92,11 +117,14 @@ export class PlanService {
       .post(BackendConstants.END_POINT + '/plan/create/', createPlanRequest, {
         withCredentials: true,
       })
-      .pipe(take(1), map((result) => {
-        return {
-          ...plan,
-          id: result.toString(),
-        };
-      }));
+      .pipe(
+        take(1),
+        map((result) => {
+          return {
+            ...plan,
+            id: result.toString(),
+          };
+        })
+      );
   }
 }
