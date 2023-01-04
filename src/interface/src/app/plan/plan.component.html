@@ -1,27 +1,30 @@
 <div class="root-container">
-  <div class="plan-summary-panel" *ngIf="!resumePlanning">
-    <summary-panel></summary-panel>
-  </div>
-  <div class="plan-progress-panel" *ngIf="resumePlanning">
-    <progress-panel [plan]="currentPlan$ | async"></progress-panel>
-  </div>
-  <mat-divider [vertical]="true"></mat-divider>
-  <div class="plan-map-container">
-    <app-plan-map [plan]="plan" class="plan-map-view"></app-plan-map>
-    <mat-divider></mat-divider>
-    <div class="plan-scenario-panel">
-      <h1>Plan name</h1>
-      <div class="plan-scenario-panel-content">
-        <p class="plan-scenario-panel-text">
-          Your planning area, priorities, and constraints are used to generate scenarios.
-          Using the Scenario Explorer, you can adjust the relative importance of priorities.
-          Saved scenarios are added to the Comparison table. Scenarios consist of Project Areas,
-          Treatment plans, Potential Outcomes, and Estimated costs.
-        </p>
-        <button mat-raised-button color="primary">CREATE A NEW SCENARIO</button>
-      </div>
-      <app-saved-scenarios [plan]="plan"></app-saved-scenarios>
-      <app-unsaved-scenarios [plan]="plan"></app-unsaved-scenarios>
+  <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
+  <ng-container *ngIf="!planNotFound && plan">
+    <div class="plan-summary-panel" *ngIf="!resumePlanning">
+      <summary-panel></summary-panel>
     </div>
-  </div>
+    <div class="plan-progress-panel" *ngIf="resumePlanning">
+      <progress-panel [plan]="currentPlan$ | async"></progress-panel>
+    </div>
+    <mat-divider [vertical]="true"></mat-divider>
+    <div class="plan-map-container">
+      <app-plan-map [plan]="currentPlan$" class="plan-map-view"></app-plan-map>
+      <mat-divider></mat-divider>
+      <div class="plan-scenario-panel">
+        <h1>{{ plan.name }}</h1>
+        <div class="plan-scenario-panel-content">
+          <p class="plan-scenario-panel-text">
+            Your planning area, priorities, and constraints are used to generate scenarios.
+            Using the Scenario Explorer, you can adjust the relative importance of priorities.
+            Saved scenarios are added to the Comparison table. Scenarios consist of Project Areas,
+            Treatment plans, Potential Outcomes, and Estimated costs.
+          </p>
+          <button mat-raised-button color="primary">CREATE A NEW SCENARIO</button>
+        </div>
+        <app-saved-scenarios [plan]="currentPlan$ | async"></app-saved-scenarios>
+        <app-unsaved-scenarios [plan]="currentPlan$ | async"></app-unsaved-scenarios>
+      </div>
+    </div>
+  </ng-container>
 </div>

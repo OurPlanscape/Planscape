@@ -8,7 +8,7 @@ import { Plan, Scenario } from 'src/app/types';
   styleUrls: ['./saved-scenarios.component.scss'],
 })
 export class SavedScenariosComponent {
-  @Input() plan: Plan | undefined;
+  @Input() plan: Plan | null = null;
   scenarios: Scenario[];
   displayedColumns: string[] = ['id', 'createdTimestamp'];
 

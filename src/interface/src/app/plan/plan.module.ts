@@ -8,6 +8,7 @@ import { ProgressPanelComponent } from './progress-panel/progress-panel.componen
 import { SavedScenariosComponent } from './saved-scenarios/saved-scenarios.component';
 import { SummaryPanelComponent } from './summary-panel/summary-panel.component';
 import { UnsavedScenariosComponent } from './unsaved-scenarios/unsaved-scenarios.component';
+import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -18,6 +19,7 @@ import { UnsavedScenariosComponent } from './unsaved-scenarios/unsaved-scenarios
     SavedScenariosComponent,
     SummaryPanelComponent,
     UnsavedScenariosComponent,
+    PlanUnavailableComponent,
   ],
   imports: [CommonModule, MaterialModule],
 })

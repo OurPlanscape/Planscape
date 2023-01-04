@@ -1,6 +1,8 @@
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
+import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { Plan } from 'src/app/types';
 
 @Component({
@@ -9,9 +11,11 @@ import { Plan } from 'src/app/types';
   styleUrls: ['./plan-map.component.scss'],
 })
 export class PlanMapComponent implements AfterViewInit, OnDestroy {
-  @Input() plan: Plan | undefined;
+  @Input() plan!: BehaviorSubject<Plan | null>;
 
+  private readonly destroy$ = new Subject<void>();
   map!: L.Map;
+  drawingLayer: L.GeoJSON | undefined;
 
   constructor(private router: Router) {}
 
@@ -27,19 +31,34 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     });
     this.map.attributionControl.setPosition('topright');
 
-    // Add planning area to map and frame it in view
-    if (!!this.plan) {
-      const planningArea = L.geoJSON(this.plan.planningArea, {
-        pane: 'overlayPane',
-        style: {
-          color: '#7b61ff',
-          fillColor: '#7b61ff',
-          fillOpacity: 0.2,
-          weight: 3,
-        },
-      }).addTo(this.map);
-      this.map.fitBounds(planningArea.getBounds());
+    this.plan
+      .pipe(
+        takeUntil(this.destroy$),
+        filter((plan) => !!plan)
+      )
+      .subscribe((plan) => {
+        this.drawPlanningArea(plan!);
+      });
+  }
+
+  // Add planning area to map and frame it in view
+  private drawPlanningArea(plan: Plan) {
+    if (!plan.planningArea) return;
+
+    if (!!this.drawingLayer) {
+      this.drawingLayer.remove();
     }
+
+    this.drawingLayer = L.geoJSON(plan.planningArea, {
+      pane: 'overlayPane',
+      style: {
+        color: '#7b61ff',
+        fillColor: '#7b61ff',
+        fillOpacity: 0.2,
+        weight: 3,
+      },
+    }).addTo(this.map);
+    this.map.fitBounds(this.drawingLayer.getBounds());
   }
 
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
@@ -56,6 +75,8 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.map.remove();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   expandMap() {
