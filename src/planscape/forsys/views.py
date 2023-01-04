@@ -57,7 +57,7 @@ def get_raster_debug_info(rasters):
     r = rasters[c]
     d = r.bands[0].data()
     count = np.count_nonzero(~np.isnan(d))
-    mean = np.sum(d[~np.isnan(d)]) / count
+    mean = np.sum(d[~np.isnan(d)])/count if count > 0 else 0
     shape = np.shape(d)
     raster_response.append("%s (non-nan area: %d, mean: %f, shape: %d x %d)"%(c, count, mean, shape[0], shape[1]))
   return raster_response
@@ -78,12 +78,8 @@ def get_condition_rasters(condition, region):
   condition_rasters = ConditionRaster.objects.filter(name=condition_files[0].raster_name)
   return condition_rasters
 
-def extent_overlaps(e1, e2):
-  return e1[0] < e2[2] and e1[2] > e2[0] and e1[1] < e2[3] and e1[3] > e2[1]
-
 def raster_extent_overlaps_project_area(raster, project_area):
   e = raster.extent
-  # return extent_overlaps(e, project_area.extent)
   e_polygon = Polygon( ((e[0], e[1]),
                         (e[2], e[1]),
                         (e[2], e[3]),
