@@ -156,14 +156,10 @@ class ListPlansTest(TransactionTestCase):
     def test_list_plans_by_owner_with_user(self):
         response = self.client.get(reverse('plan:list_plans_by_owner'), {'owner': self.user.pk},
                                    content_type="application/json")
-        response = self.client.get(reverse('plan:list_plans_by_owner'), {'owner': self.user.pk},
-                                   content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
 
     def test_list_plans_by_owner_no_user(self):
-        response = self.client.get(reverse('plan:list_plans_by_owner'), {},
-                                   content_type="application/json")
         response = self.client.get(reverse('plan:list_plans_by_owner'), {},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
