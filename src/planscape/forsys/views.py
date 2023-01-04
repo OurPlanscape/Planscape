@@ -48,7 +48,6 @@ def convert_dictionary_of_lists_to_rdf(lists):
 def get_boundary_debug_info(boundaries, project_area):
   boundary_response = []
   for b in boundaries:
-    print(b.shape_name)
     boundary_response.append("%s (id=%s, intersection area=%f)"%(b.shape_name, b.boundary_id, b.geometry.intersection(project_area).area))
   return boundary_response
 
@@ -76,7 +75,6 @@ def get_condition_rasters(condition, region):
   if len(condition_files) > 1:
     raise LookupError("more than 1 condition filename exists for condition id, %d"%(c.id))
 
-  print(condition_files[0].raster_name)
   condition_rasters = ConditionRaster.objects.filter(name=condition_files[0].raster_name)
   return condition_rasters
 
@@ -142,9 +140,7 @@ def fetch_condition_rasters(priorities, region, project_area):
 
       # Checking for overlapping extents is faster than issuing a query that checks for overlaps. 
       if not raster_extent_overlaps_project_area(r, project_area):
-        print("skipping raster")
         continue
-      print("processing raster")
       if is_first_raster:
         rfinal = r
         is_first_raster = False
