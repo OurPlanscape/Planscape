@@ -11,7 +11,7 @@ import { Plan } from 'src/app/types';
   styleUrls: ['./plan-map.component.scss'],
 })
 export class PlanMapComponent implements AfterViewInit, OnDestroy {
-  @Input() plan!: BehaviorSubject<Plan | null>;
+  @Input() plan = new BehaviorSubject<Plan | null>(null);
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
