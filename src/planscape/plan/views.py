@@ -69,10 +69,16 @@ def get_plans_by_owner(params: QueryDict):
     return Plan.objects.filter(owner=owner_id)
 
 
+def _serialize_plan(plan: Plan):
+    data = PlanSerializer(plan).data
+    result = data['properties']
+    result.update({'id': data['id'], 'geometry': data['geometry']})
+    return result
+
+
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        plan = get_plan_by_id(request.GET)
-        return JsonResponse(PlanSerializer(plan).data)
+        return JsonResponse(_serialize_plan(get_plan_by_id(request.GET)))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -80,7 +86,7 @@ def get_plan(request: HttpRequest) -> HttpResponse:
 def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
     try:
         plans = get_plans_by_owner(request.GET)
-        return JsonResponse([PlanSerializer(plan).data for plan in plans], safe=False)
+        return JsonResponse([_serialize_plan(plan) for plan in plans], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
