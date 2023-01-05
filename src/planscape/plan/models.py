@@ -10,7 +10,6 @@ class Plan(models.Model):
     status (locked/public), and a geometry representing the planning area.
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
-    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True)  # type: ignore
@@ -41,10 +40,7 @@ class Project(models.Model):
     project parameters, e.g. constraints.
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
-    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # we want alpha users to not be signed in.
-    owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True)  # type: ignore
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True)  # type: ignore
 
@@ -54,10 +50,7 @@ class Project(models.Model):
 
     # The maximum cost constraint. If null, no max cost.
     max_cost: models.IntegerField = models.IntegerField(null=True)
-    max_cost: models.IntegerField = models.IntegerField(null=True)
 
-    # TODO: Add more project parameters like min_acres_treated and
-    # permitted_ownership = (1=federal, 2=state, 4=private)
     # TODO: Add more project parameters like min_acres_treated and
     # permitted_ownership = (1=federal, 2=state, 4=private)
 
@@ -99,7 +92,6 @@ class Scenario(models.Model):
     A Scenario is associated with one User, the owner, and one Project. It has optional user-specified
     prioritization parameters.
     """
-    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(
