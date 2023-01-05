@@ -13,9 +13,28 @@ from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 
-
 # Configure global logging.
 logger = logging.getLogger(__name__)
+
+# Fetches input parameters for the scenario_set api.
+def fetch_input_params():
+  # TODO: make input_params an object.
+  # TODO: replace hardcoded values with parameters read from QueryDict and/or data retrieved from db. 
+  input_params = {}
+  input_params['save_debug_info'] = True
+  input_params['region'] = 'sierra_cascade_inyo'
+  input_params['priorities' = ['fire_dynamics', 'forest_resilience', 'species_diversity']
+  input_params['huc12_id'] = 43
+  project_area = Polygon( ((-120.14015536869722, 39.05413814388948),
+                           (-120.18409937110482, 39.48622140686506),
+                           (-119.93422142411087, 39.48622140686506),
+                           (-119.93422142411087, 39.05413814388948),
+                           (-120.14015536869722, 39.05413814388948)) )
+  project_area.srid = 4269
+  if not project_area.valid:
+    raise ValueError("invalid project area: %s"%project_area.valid_reason)
+  input_params['project_area'] = project_area
+  return input_params
 
 # Converts R dataframe to Pandas dataframe.
 # TODO: the broadly-accepted solution involves robjects.conversion.rpy2py - debug why it failed with an input type error.
@@ -262,20 +281,12 @@ def run_forsys_scenario_sets(npdf, priorities):
 def scenario_set(request: HttpRequest) -> HttpResponse:
   try:
     # TODO: fetch region, boundary, priorities, stand type, and project area, project area SRID as url parameters (or from the db).
-    save_debug_info = True
-    region = 'sierra_cascade_inyo'
-    priorities = ['fire_dynamics', 'forest_resilience', 'species_diversity']
-
-    huc12_id = 43
-
-    project_area = Polygon( ((-120.14015536869722, 39.05413814388948),
-                             (-120.18409937110482, 39.48622140686506),
-                             (-119.93422142411087, 39.48622140686506),
-                             (-119.93422142411087, 39.05413814388948),
-                             (-120.14015536869722, 39.05413814388948)) )
-    project_area.srid = 4269
-    if not project_area.valid:
-      raise ValueError("invalid project area: %s"%project_area.valid_reason) 
+    input_params = fetch_input_params()
+    save_debug_info = input_params['save_debug_info']
+    region = input_params['region']
+    priorities = input_params['priorities']
+    huc12_id = input_params['huc12_id']
+    project_area = input_params['project_area']
 
     project_area_raster = project_area.clone()
     project_area_raster.transform(CoordTransform(SpatialReference(project_area.srid), SpatialReference(settings.CRS_9822_PROJ4)))
