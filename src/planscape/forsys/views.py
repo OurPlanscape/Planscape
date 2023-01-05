@@ -10,6 +10,7 @@ from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.conf import settings
 from django.contrib.gis.gdal import CoordTransform, GDALRaster, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
+from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 
@@ -17,13 +18,13 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
 logger = logging.getLogger(__name__)
 
 # Fetches input parameters for the scenario_set api.
-def fetch_input_params():
+def fetch_input_params() -> dict:
   # TODO: make input_params an object.
   # TODO: replace hardcoded values with parameters read from QueryDict and/or data retrieved from db. 
   input_params = {}
   input_params['save_debug_info'] = True
   input_params['region'] = 'sierra_cascade_inyo'
-  input_params['priorities' = ['fire_dynamics', 'forest_resilience', 'species_diversity']
+  input_params['priorities'] = ['fire_dynamics', 'forest_resilience', 'species_diversity']
   input_params['huc12_id'] = 43
   project_area = Polygon( ((-120.14015536869722, 39.05413814388948),
                            (-120.18409937110482, 39.48622140686506),
@@ -38,13 +39,13 @@ def fetch_input_params():
 
 # Converts R dataframe to Pandas dataframe.
 # TODO: the broadly-accepted solution involves robjects.conversion.rpy2py - debug why it failed with an input type error.
-def convert_rdf_to_pddf(rdf):
+def convert_rdf_to_pddf(rdf: dict) -> "pd.Dataframe":
   pddf = pd.DataFrame.from_dict({ key : np.asarray(rdf.rx2(key)) for key in rdf.names })
   return pddf
 
 # Converts dictionary of lists to R dataframe.
 # The lists must have equal length.
-def convert_dictionary_of_lists_to_rdf(lists):
+def convert_dictionary_of_lists_to_rdf(lists: dict) -> "rpy2.robjeects.vectors.DataFrame":
   data = {}
   for key in lists.keys():
     if len(lists[key]) == 0:
@@ -60,7 +61,7 @@ def convert_dictionary_of_lists_to_rdf(lists):
   rdf = rpy2.robjects.vectors.DataFrame(data)
   return rdf
 
-def get_boundary_debug_info(boundaries, project_area):
+def get_boundary_debug_info(boundaries: QuerySet, project_area: Polygon) -> dict:
   boundary_response = []
   for b in boundaries:
     geo = b.geometry
@@ -71,7 +72,7 @@ def get_boundary_debug_info(boundaries, project_area):
                                                                  geo.intersection(project_area).area))
   return boundary_response
 
-def get_raster_debug_info(rasters):
+def get_raster_debug_info(rasters: dict) -> dict:
   raster_response = []
   for c in rasters:
     r = rasters[c]
@@ -82,7 +83,7 @@ def get_raster_debug_info(rasters):
     raster_response.append("%s (non-nan area: %d, mean: %f, shape: %d x %d)"%(c, count, mean, shape[0], shape[1]))
   return raster_response
 
-def get_condition_rasters(condition, region):
+def get_condition_rasters(condition: str, region: str) -> QuerySet:
   conditions = BaseCondition.objects.filter(condition_name=condition).filter(region_name=region).all()
   if len(conditions) == 0:
     raise LookupError("no condition with name, %s, exists in region, %s"%(condition, region))
@@ -98,7 +99,7 @@ def get_condition_rasters(condition, region):
   condition_rasters = ConditionRaster.objects.filter(name=condition_files[0].raster_name)
   return condition_rasters
 
-def raster_extent_overlaps_project_area(raster, project_area):
+def raster_extent_overlaps_project_area(raster: GDALRaster, project_area: Polygon) -> bool:
   e = raster.extent
   e_polygon = Polygon( ((e[0], e[1]),
                         (e[2], e[1]),
@@ -108,7 +109,7 @@ def raster_extent_overlaps_project_area(raster, project_area):
   return e_polygon.overlaps(project_area)
 
 # Merges two raster inputs into a single output raster according to the scale and skew of the base_raster.
-def mosaic_rasters(base_raster, addon_raster):
+def mosaic_rasters(base_raster: GDALRaster, addon_raster: GDALRaster) -> GDALRaster:
   scale = base_raster.scale
   skew = base_raster.skew
   origin = base_raster.origin
@@ -138,7 +139,7 @@ def mosaic_rasters(base_raster, addon_raster):
   base_raster_copy.bands[0].data(base_data)
   return base_raster_copy
 
-def fetch_condition_rasters(priorities, region, project_area):
+def fetch_condition_rasters(priorities: list[str], region: str, project_area: Polygon) -> dict:
   kScale = [300.0, -300.0]
   kSkew = [0, 0]
   kSrid = 9822
@@ -168,7 +169,7 @@ def fetch_condition_rasters(priorities, region, project_area):
 
   return all_rasters
 
-def get_condition_data(raster, polygon):
+def get_condition_data(raster: GDALRaster, polygon: Polygon) -> dict:
   data = {"mean": 0, "count": 0}
   e = polygon.extent
   o = raster.origin
@@ -212,7 +213,7 @@ def get_condition_data(raster, polygon):
     return {"mean": 0, "count": 0}
   return {"mean": sum / count, "count": count}
 
-def transform_into_forsys_df_data(condition_rasters, boundaries, project_area):
+def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: QuerySet, project_area: Polygon) -> dict:
   kConditionPrefix = "cond"
   kPriorityPrefix = "p"
   kUnitAreaCost = 5000
@@ -251,7 +252,7 @@ def transform_into_forsys_df_data(condition_rasters, boundaries, project_area):
   return data 
 
 # Runs a forsys scenario sets call.
-def run_forsys_scenario_sets(npdf, priorities):
+def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> dict:
   kPriorityPrefix = "p"
 
   import rpy2.robjects as robjects
