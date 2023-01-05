@@ -8,6 +8,17 @@ from django.urls import reverse
 from .models import Plan
 from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
 
+class ScenarioSetTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+    def test_missing_user(self):
+        response = self.client.post(
+            reverse('plan:create_scenario_set'), {},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
 
 class PlanTest(TransactionTestCase):
     def setUp(self):

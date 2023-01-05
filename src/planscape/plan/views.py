@@ -4,12 +4,12 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core import serializers
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from plan.models import Plan, Project
+from plan.models import Plan, Project, ScenarioSet
 from plan.serializers import PlanSerializer
 from planscape import settings
 
 
-def create(request: HttpRequest) -> HttpResponse:
+def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
         owner = None
@@ -125,6 +125,27 @@ def create_project(request: HttpRequest) -> HttpResponse:
             owner=owner, plan=plan, max_cost=max_cost)
         project.save()
         return HttpResponse(str(project.pk))
+    except Exception as e:
+        print(e)
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+def create_scenario_set(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = None
+        if request.user.is_authenticated:
+            owner = request.user
+        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+
+        body = json.loads(request.body)
+        # TODO: retrieve and save selected priorities 
+
+        # Create the scenario set
+        scenario_set = ScenarioSet.objects.create()
+        # scenario_set.save()
+
+        return HttpResponse("placeholder")
     except Exception as e:
         print(e)
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
