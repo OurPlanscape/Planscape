@@ -9,7 +9,7 @@ from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
 from .models import Plan, Project, Scenario
 
 
-class PlanTest(TransactionTestCase):
+class CreatePlanTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -116,6 +116,72 @@ def create_plan(owner: User | None, name: str, geometry: GEOSGeometry | None, sc
     return plan
 
 
+class DeletePlanTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.plan1 = create_plan(None, "ownerless", None, [0])
+        self.plan2 = create_plan(self.user, "owned", None, [1])
+
+    def test_delete_user_not_logged_in(self):
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan2.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(len(Project.objects.all()), 2)
+        self.assertEqual(len(Scenario.objects.all()), 1)
+
+    def test_user_logged_in_tries_to_delete_ownerless_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan1.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(len(Project.objects.all()), 2)
+        self.assertEqual(len(Scenario.objects.all()), 1)
+
+    def test_delete_wrong_user(self):
+        new_user = User.objects.create(username='newuser')
+        new_user.set_password('12345')
+        new_user.save()
+        self.client.force_login(new_user)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan2.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(len(Project.objects.all()), 2)
+        self.assertEqual(len(Scenario.objects.all()), 1)
+
+    def test_delete_ownerless_plan(self):
+        self.assertEqual(len(Plan.objects.all()), 2)
+        plan1_id = self.plan1.pk
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan1.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, str(plan1_id).encode())
+        self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(len(Project.objects.all()), 1)
+        self.assertEqual(len(Scenario.objects.all()), 1)
+
+    def test_delete_owned_plan(self):
+        self.client.force_login(self.user)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        plan2_id = self.plan2.pk
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan2.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, str(plan2_id).encode())
+        self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(len(Project.objects.all()), 1)
+        self.assertEqual(len(Scenario.objects.all()), 0)
+
+
 class GetPlanTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
@@ -125,8 +191,7 @@ class GetPlanTest(TransactionTestCase):
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
-        self.plan_with_user = create_plan(
-            self.user, 'owned', None, [])
+        self.plan_with_user = create_plan(self.user, 'owned', None, [])
 
     def test_get_plan_with_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
