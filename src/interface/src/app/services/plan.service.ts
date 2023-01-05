@@ -78,6 +78,26 @@ export class PlanService {
       );
   }
 
+  /** Makes a request to the backend for a list of all plans owned by a user.
+   *  If the user is not provided, return all plans with owner=null.
+   */
+  listPlansByUser(userId: string | null): Observable<Plan[]> {
+    let url = BackendConstants.END_POINT.concat('/plan/list_plans_by_owner');
+    if (userId) {
+      url = url.concat('/?owner=', userId);
+    }
+    return this.http
+      .get<BackendPlan[]>(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((dbPlanList) =>
+          dbPlanList.map((dbPlan) => this.convertToPlan(dbPlan))
+        )
+      );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
