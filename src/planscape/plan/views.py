@@ -1,10 +1,10 @@
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Count, OuterRef, Subquery, Sum
+from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from plan.models import Plan, Project, Scenario
+from plan.models import Plan, Project
 from plan.serializers import PlanSerializer
 from planscape import settings
 
@@ -53,9 +53,38 @@ def create(request: HttpRequest) -> HttpResponse:
             owner=owner, name=name, region_name=region_name, geometry=geometry)
         plan.save()
         return HttpResponse(str(plan.pk))
-
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        return HttpResponseBadRequest("Error in create: " + str(e))
+
+
+def delete(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = None
+        if request.user.is_authenticated:
+            owner = request.user
+        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+        owner_id = None if owner is None else owner.pk
+
+        # Get the plan id.
+        body = json.loads(request.body)
+        plan_id = body.get('id', None)
+        if plan_id is None or not (isinstance(plan_id, int)):
+            raise ValueError("Must specify plan_id as an integer")
+
+        # Get the plan, and if the user is logged in, make sure either
+        # 1. the plan owner and the owner are both None, or
+        # 2. the plan owner and the owner are both not None, and are equal.
+        plan = Plan.objects.get(pk=int(plan_id))
+        plan_owner_id = None if plan.owner is None else plan.owner.pk
+        if owner_id != plan_owner_id:
+            raise ValueError(
+                "Cannot delete project; plan is not owned by user")
+        plan.delete()
+        return HttpResponse(plan_id)
+    except Exception as e:
+        return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
 def get_plan_by_id(params: QueryDict):
