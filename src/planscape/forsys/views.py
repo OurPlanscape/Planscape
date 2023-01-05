@@ -8,15 +8,11 @@ import sys
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.conf import settings
-from django.contrib.gis.gdal import CoordTransform, SpatialReference, GDALRaster
+from django.contrib.gis.gdal import CoordTransform, GDALRaster, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 
-
-# Constants for spatial references.
-kSpatialReferenceForRasters = "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
-kSpatialReferenceForHucBoundaries = 4269
 
 # Configure global logging.
 logger = logging.getLogger(__name__)
@@ -48,7 +44,12 @@ def convert_dictionary_of_lists_to_rdf(lists):
 def get_boundary_debug_info(boundaries, project_area):
   boundary_response = []
   for b in boundaries:
-    boundary_response.append("%s (id=%s, intersection area=%f)"%(b.shape_name, b.boundary_id, b.geometry.intersection(project_area).area))
+    geo = b.geometry
+    p = project_area.clone()
+    p.transform(CoordTransform(SpatialReference(project_area.srid), SpatialReference(geo.srid)))
+    boundary_response.append("%s (id=%s, intersection area=%f)"%(b.shape_name,
+                                                                 b.boundary_id,
+                                                                 geo.intersection(project_area).area))
   return boundary_response
 
 def get_raster_debug_info(rasters):
@@ -57,7 +58,7 @@ def get_raster_debug_info(rasters):
     r = rasters[c]
     d = r.bands[0].data()
     count = np.count_nonzero(~np.isnan(d))
-    mean = np.sum(d[~np.isnan(d)])/count if count > 0 else 0
+    mean = np.sum(d[~np.isnan(d)]) / count if count > 0 else 0
     shape = np.shape(d)
     raster_response.append("%s (non-nan area: %d, mean: %f, shape: %d x %d)"%(c, count, mean, shape[0], shape[1]))
   return raster_response
@@ -190,7 +191,7 @@ def get_condition_data(raster, polygon):
 
   if count == 0:
     return {"mean": 0, "count": 0}
-  return {"mean": sum/count, "count": count}
+  return {"mean": sum / count, "count": count}
 
 def transform_into_forsys_df_data(condition_rasters, boundaries, project_area):
   kConditionPrefix = "cond"
@@ -208,8 +209,9 @@ def transform_into_forsys_df_data(condition_rasters, boundaries, project_area):
     data['cost'] = []
 
   for b in boundaries:
-    geo = project_area.intersection(b.geometry)
-    geo.transform(CoordTransform(SpatialReference(kSpatialReferenceForHucBoundaries), SpatialReference(kSpatialReferenceForRasters)))
+    geo = b.geometry.clone()
+    geo.transform(CoordTransform(SpatialReference(geo.srid), SpatialReference(settings.CRS_9822_PROJ4)))
+    geo = project_area.intersection(geo)
 
     # TODO: set project_area ID from an external source
     data['proj_id'].append(1)
@@ -259,7 +261,7 @@ def run_forsys_scenario_sets(npdf, priorities):
 # Returns JSon data for a forsys scenario set call.
 def scenario_set(request: HttpRequest) -> HttpResponse:
   try:
-    # TODO: fetch region, priorities, stand type, and project area as url parameters.
+    # TODO: fetch region, boundary, priorities, stand type, and project area, project area SRID as url parameters (or from the db).
     save_debug_info = True
     region = 'sierra_cascade_inyo'
     priorities = ['fire_dynamics', 'forest_resilience', 'species_diversity']
@@ -271,12 +273,12 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
                              (-119.93422142411087, 39.48622140686506),
                              (-119.93422142411087, 39.05413814388948),
                              (-120.14015536869722, 39.05413814388948)) )
-    project_area.srid = kSpatialReferenceForHucBoundaries
+    project_area.srid = 4269
     if not project_area.valid:
       raise ValueError("invalid project area: %s"%project_area.valid_reason) 
 
     project_area_raster = project_area.clone()
-    project_area_raster.transform(CoordTransform(SpatialReference(kSpatialReferenceForHucBoundaries), SpatialReference(kSpatialReferenceForRasters)))
+    project_area_raster.transform(CoordTransform(SpatialReference(project_area.srid), SpatialReference(settings.CRS_9822_PROJ4)))
 
     response = {}
     if (save_debug_info):
@@ -284,6 +286,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
 
     # Filters boundaries by boundary_id.
     # TODO: add more stand options. For the existing solution, project areas drawn manually are divided into stands according to HUC-12 boundaries.
+    # TODO: double-check, in this case, that "__intersects" works when project_area and boundary geometry have different srid's.
     boundaries = BoundaryDetails.objects.filter(boundary_id=huc12_id).filter(geometry__intersects=project_area)
     if (save_debug_info):
       response['debug']['huc-12 boundaries'] = get_boundary_debug_info(boundaries, project_area) 
@@ -295,7 +298,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
 
     # Transforms rasters into dataframes.
     # TODO: instead of using HUC-12 boundaries to delineate stands, add options for using individual pixels and individual latitudinal bars.
-    dataframe_data = transform_into_forsys_df_data(condition_rasters, boundaries, project_area)
+    dataframe_data = transform_into_forsys_df_data(condition_rasters, boundaries, project_area_raster)
     dataframe = pd.DataFrame(data=dataframe_data)
     response['forsys'] = {}
     response['forsys']['input_df'] = dataframe.to_json()
