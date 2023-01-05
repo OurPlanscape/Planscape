@@ -1,6 +1,13 @@
 <div class="root-container">
   <h1>My Plans</h1>
 
+  <div class="button-row">
+    <button mat-raised-button color="primary" (click)="create()">
+      <mat-icon>add_box</mat-icon>
+      CREATE
+    </button>
+  </div>
+
   <mat-table [dataSource]="datasource" matSort>
     <!-- Name Column -->
     <ng-container matColumnDef="name">
