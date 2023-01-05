@@ -16,6 +16,15 @@ export interface BasePlan {
   planningArea: GeoJSON.GeoJSON;
 }
 
+export interface PlanPreview {
+  id: string;
+  name: string;
+  createdTimestamp?: number;
+  region?: Region;
+  savedScenarios?: number;
+  status?: string;
+}
+
 export interface Scenario {
   id: string;
   createdTimestamp: number;
