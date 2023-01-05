@@ -2,6 +2,7 @@ import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
 import { PlanService } from './../../services/plan.service';
@@ -25,7 +26,7 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
     'status',
   ];
 
-  constructor(private planService: PlanService) {}
+  constructor(private planService: PlanService, private router: Router) {}
 
   ngAfterViewInit(): void {
     this.datasource.paginator = this.paginator;
@@ -39,5 +40,9 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
       .subscribe((plans) => {
         this.datasource.data = plans;
       });
+  }
+
+  create(): void {
+    this.router.navigate(['region']);
   }
 }
