@@ -138,11 +138,11 @@ def create_scenario_set(request: HttpRequest) -> HttpResponse:
         if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
             raise ValueError("Must be logged in")
 
-        body = json.loads(request.body)
+        # body = json.loads(request.body)
         # TODO: retrieve and save selected priorities 
 
         # Create the scenario set
-        scenario_set = ScenarioSet.objects.create()
+        # scenario_set = ScenarioSet.objects.create()
         # scenario_set.save()
 
         return HttpResponse("placeholder")
