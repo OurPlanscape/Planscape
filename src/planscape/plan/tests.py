@@ -14,11 +14,11 @@ class ScenarioSetTest(TransactionTestCase):
         self.user.set_password('12345')
         self.user.save()
 
-    def test_missing_user(self):
+    def test_missing_user_ok(self):
         response = self.client.post(
             reverse('plan:create_scenario_set'), {},
             content_type='application/json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
 
 class PlanTest(TransactionTestCase):
     def setUp(self):
