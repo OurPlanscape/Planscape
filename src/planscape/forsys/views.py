@@ -8,13 +8,13 @@ import sys
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.conf import settings
-from django.contrib.gis.gdal import CoordTransform, GDALRaster, SpatialReference
+from django.contrib.gis.gdal import CoordTransform, Envelope, GDALRaster, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 
-# Configure global logging.
+# Configures global logging.
 logger = logging.getLogger(__name__)
 
 # Fetches input parameters for the scenario_set api.
@@ -140,15 +140,10 @@ def mosaic_rasters(base_raster: GDALRaster, addon_raster: GDALRaster) -> GDALRas
   return base_raster_copy
 
 def fetch_condition_rasters(priorities: list[str], region: str, project_area: Polygon) -> dict:
-  kScale = [300.0, -300.0]
-  kSkew = [0, 0]
-  kSrid = 9822
-
   all_rasters = {}
 
   for p in priorities:
     condition_rasters = get_condition_rasters(p, region)
-    origin = [sys.float_info.max, sys.float_info.min]
     is_first_raster = True
     rfinal = np.nan 
 
@@ -169,45 +164,58 @@ def fetch_condition_rasters(priorities: list[str], region: str, project_area: Po
 
   return all_rasters
 
-def get_condition_data(raster: GDALRaster, polygon: Polygon) -> dict:
-  data = {"mean": 0, "count": 0}
-  e = polygon.extent
-  o = raster.origin
-  s = raster.scale
-
-  if s[0] > 0:
-    min_x = int(np.floor((e[0] - o[0]) / s[0]))
-    max_x = int(np.ceil((e[2] - o[0]) / s[0]))
+def convert_extent_to_raster_indices(extent: Envelope, origin: GDALRaster.origin, scale: GDALRaster.scale) -> Envelope:
+  min_x = 0
+  min_y = 0
+  max_x = 0
+  max_y = 0
+  if scale[0] > 0:
+    min_x = int(np.floor((extent[0] - origin[0]) / scale[0]))
+    max_x = int(np.ceil((extent[2] - origin[0]) / scale[0]))
   else:
-    min_x = int(np.floor((e[2] - o[0]) / s[0]))
-    max_x = int(np.ceil((e[0] - o[0]) / s[0]))
+    min_x = int(np.floor((extent[2] - origin[0]) / scale[0]))
+    max_x = int(np.ceil((extent[0] - origin[0]) / scale[0]))
 
-  if s[1] > 0:
-    min_y = int(np.floor((e[1] - o[1]) / s[1]))
-    max_y = int(np.ceil((e[3] - o[1]) / s[1]))
+  if scale[1] > 0:
+    min_y = int(np.floor((extent[1] - origin[1]) / scale[1]))
+    max_y = int(np.ceil((extent[3] - origin[1]) / scale[1]))
   else:
-    min_y = int(np.floor((e[3] - o[1]) / s[1]))
-    max_y = int(np.ceil((e[1] - o[1]) / s[1]))
-  
-  data = raster.bands[0].data()
+    min_y = int(np.floor((extent[3] - origin[1]) / scale[1]))
+    max_y = int(np.ceil((extent[1] - origin[1]) / scale[1]))
 
-  sum = 0
+  return (min_x, min_y, max_x, max_y)
+
+def polygon_contains_point(origin: GDALRaster.origin, scale: GDALRaster.scale, x: int, y: int, polygon: Polygon) -> bool:
+  # TODO: adjust these equations for the case where skew != [0, 0]
+  xpoly = origin[0] + x*scale[0]
+  ypoly = origin[1] + y*scale[1]
+  p = Point((xpoly, ypoly))
+  return p.within(polygon)
+
+def count_raster_data(data: np.ndarray, extent_indices: Envelope, origin: GDALRaster.origin, scale: GDALRaster.scale, polygon: Polygon) -> (int, float):
   count = 0
-  for y in range(min_y, max_y + 1, 1):
-    for x in range(min_x, max_x + 1, 1):
+  sum = 0
+  for y in range(extent_indices[1], extent_indices[3] + 1, 1):
+    for x in range(extent_indices[0], extent_indices[2] + 1, 1):
       d = data[y][x]
       if np.isnan(d):
         continue
-
-      # TODO: adjust these equations for the case where skew != [0, 0]
-      xpoly = o[0] + x*s[0]
-      ypoly = o[1] + y*s[1] 
-      p = Point((xpoly, ypoly))
-      if not p.within(polygon):
+      if not polygon_contains_point(origin, scale, x, y, polygon):
         continue
-
       sum = sum + d
       count = count + 1
+  return count, sum
+
+
+def get_condition_data(raster: GDALRaster, polygon: Polygon) -> dict:
+  scale = raster.scale
+  origin = raster.origin
+
+  polygon_extent_indices = convert_extent_to_raster_indices(polygon.extent, origin, scale)
+
+  data = raster.bands[0].data()
+
+  count, sum = count_raster_data(data, polygon_extent_indices, origin, scale, polygon) 
 
   if count == 0:
     return {"mean": 0, "count": 0}
