@@ -19,6 +19,24 @@ class PillarConfig:
     Class wrapping the configuration of regions, pillars, elements, and metrics.
     """
 
+    COMMON_KEYS = {'filepath', 'display_name', 'colormap'}
+    REGION_KEYS = {'region_name', 'pillars'}.union(COMMON_KEYS)
+    PILLAR_KEYS = {'pillar_name',
+                   'elements',
+                   'operation',
+                   'display'}.union(COMMON_KEYS)
+    ELEMENT_KEYS = {'element_name',
+                    'metrics',
+                    'operation'}.union(COMMON_KEYS)
+    METRIC_KEYS = {'metric_name',
+                   'current_conditions_only',
+                   'ignore',
+                   'source',
+                   'source_link',
+                   'data_source',
+                   'data_download_link',
+                   'data_year'}.union(COMMON_KEYS)
+
     def __init__(self, filename: str):
         with open(filename, "r") as stream:
             try:
@@ -40,28 +58,28 @@ class PillarConfig:
 
         def check_region(region) -> bool:
             return (isinstance(region, dict) and
-                    region.keys() <= set(['region_name', 'pillars', 'filepath', 'display_name', 'colormap']) and
+                    region.keys() <= PillarConfig.REGION_KEYS and
                     isinstance(RegionName(region['region_name']), RegionName) and
                     isinstance(region['pillars'], list) and
                     all([check_pillar(pillar) for pillar in region['pillars']]))
 
         def check_pillar(pillar) -> bool:
             return (isinstance(pillar, dict) and
-                    pillar.keys() <= {'pillar_name', 'elements', 'operation', 'filepath', 'display_name', 'display', 'colormap'} and
+                    pillar.keys() <= PillarConfig.PILLAR_KEYS and
                     isinstance(pillar['pillar_name'], str) and
                     isinstance(pillar['elements'], list) and
                     all([check_element(element) for element in pillar['elements']]))
 
         def check_element(element) -> bool:
             return (isinstance(element, dict) and
-                    element.keys() <= {'element_name', 'metrics', 'operation', 'filepath', 'display_name', 'colormap'} and
+                    element.keys() <= PillarConfig.ELEMENT_KEYS and
                     isinstance(element['element_name'], str) and
                     isinstance(element['metrics'], list) and
                     all([check_metric(metric) for metric in element['metrics']]))
 
         def check_metric(metric) -> bool:
             return (isinstance(metric, dict) and
-                    metric.keys() <= {'metric_name', 'filepath', 'display_name', 'current_conditions_only', 'colormap', 'ignore'} and
+                    metric.keys() <= PillarConfig.METRIC_KEYS and
                     isinstance(metric['metric_name'], str))
 
         return 'regions' in self._config and check_regions(self._config['regions'])
