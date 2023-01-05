@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ('conditions', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('plan', '0003_project_scenario_generatedprojectareas'),
+        ('plan', '0004_plan_creation_time'),
     ]
 
     operations = [

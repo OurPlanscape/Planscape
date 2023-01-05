@@ -5,8 +5,9 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import { PlanService } from './plan.service';
 import { BasePlan, Plan, Region } from '../types';
+import { PlanPreview } from './../types/plan.types';
+import { BackendPlan, PlanService } from './plan.service';
 
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
@@ -20,7 +21,7 @@ describe('PlanService', () => {
     };
     mockPlan = {
       name: 'tempName',
-      ownerId: 'tempUserId',
+      ownerId: '2',
       region: Region.SIERRA_NEVADA,
       planningArea: fakeGeoJson,
     };
@@ -51,6 +52,61 @@ describe('PlanService', () => {
       expect(service.planState$.value.all).toEqual({
         [expectedPlan.id]: expectedPlan,
       });
+    });
+  });
+
+  describe('getPlan', () => {
+    it('should make HTTP get request to DB', () => {
+      const expectedPlan: Plan = {
+        ...mockPlan,
+        id: '1',
+      };
+
+      const backendPlan: BackendPlan = {
+        id: 1,
+        name: expectedPlan.name,
+        owner: 2,
+        region: expectedPlan.region,
+        geometry: expectedPlan.planningArea,
+      };
+
+      service.getPlan('1').subscribe((res) => {
+        expect(res).toEqual(expectedPlan);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/get_plan/?id=1')
+      );
+      req.flush(backendPlan);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('listPlansByUser', () => {
+    it('should make HTTP get request to DB', () => {
+      const expectedPlan: PlanPreview = {
+        id: '1',
+        name: mockPlan.name,
+        region: mockPlan.region,
+      };
+
+      const backendPlan: BackendPlan = {
+        id: 1,
+        name: expectedPlan.name,
+        owner: 2,
+        region: mockPlan.region,
+        geometry: mockPlan.planningArea,
+      };
+
+      service.listPlansByUser(null).subscribe((res) => {
+        expect(res).toEqual([expectedPlan]);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/list_plans_by_owner')
+      );
+      req.flush([backendPlan]);
+      httpTestingController.verify();
     });
   });
 });
