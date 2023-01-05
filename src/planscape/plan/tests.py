@@ -129,6 +129,9 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(len(Project.objects.all()), 2)
+        self.assertEqual(len(Scenario.objects.all()), 1)
 
     def test_user_logged_in_tries_to_delete_ownerless_plan(self):
         self.client.force_login(self.user)
@@ -136,6 +139,9 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan1.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(len(Project.objects.all()), 2)
+        self.assertEqual(len(Scenario.objects.all()), 1)
 
     def test_delete_wrong_user(self):
         new_user = User.objects.create(username='newuser')
@@ -146,6 +152,9 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(len(Project.objects.all()), 2)
+        self.assertEqual(len(Scenario.objects.all()), 1)
 
     def test_delete_ownerless_plan(self):
         self.assertEqual(len(Plan.objects.all()), 2)
@@ -156,6 +165,8 @@ class DeletePlanTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, str(plan1_id).encode())
         self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(len(Project.objects.all()), 1)
+        self.assertEqual(len(Scenario.objects.all()), 1)
 
     def test_delete_owned_plan(self):
         self.client.force_login(self.user)
@@ -167,6 +178,8 @@ class DeletePlanTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, str(plan2_id).encode())
         self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(len(Project.objects.all()), 1)
+        self.assertEqual(len(Scenario.objects.all()), 0)
 
 
 class GetPlanTest(TransactionTestCase):
