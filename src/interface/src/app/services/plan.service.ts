@@ -1,3 +1,4 @@
+import { PlanPreview } from './../types/plan.types';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BackendConstants } from '../backend-constants';
@@ -81,7 +82,7 @@ export class PlanService {
   /** Makes a request to the backend for a list of all plans owned by a user.
    *  If the user is not provided, return all plans with owner=null.
    */
-  listPlansByUser(userId: string | null): Observable<Plan[]> {
+  listPlansByUser(userId: string | null): Observable<PlanPreview[]> {
     let url = BackendConstants.END_POINT.concat('/plan/list_plans_by_owner');
     if (userId) {
       url = url.concat('/?owner=', userId);
@@ -93,7 +94,7 @@ export class PlanService {
       .pipe(
         take(1),
         map((dbPlanList) =>
-          dbPlanList.map((dbPlan) => this.convertToPlan(dbPlan))
+          dbPlanList.map((dbPlan) => this.convertToPlanPreview(dbPlan))
         )
       );
   }
@@ -115,6 +116,14 @@ export class PlanService {
       region: plan.region,
       geometry: plan.planningArea,
     };
+  }
+
+  private convertToPlanPreview(plan: BackendPlan): PlanPreview {
+    return {
+      id: String(plan.id),
+      name: plan.name,
+      region: plan.region,
+    }
   }
 
   private addPlanToState(plan: Plan) {
