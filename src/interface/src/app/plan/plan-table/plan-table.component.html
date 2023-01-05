@@ -1,1 +1,63 @@
-<p>plan-table works!</p>
+<div class="root-container">
+  <h1>My Plans</h1>
+
+  <mat-table [dataSource]="datasource" matSort>
+    <!-- Name Column -->
+    <ng-container matColumnDef="name">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Name
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <a href="/plan/{{ element.id }}">{{element.name}}</a>
+      </mat-cell>
+    </ng-container>
+
+    <!-- Timestamp Column -->
+    <ng-container matColumnDef="createdTimestamp">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Date Created
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{element.createdTimestamp | date:'medium' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Region Column -->
+    <ng-container matColumnDef="region">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Region
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{element.region}}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Saved Scenarios Column -->
+    <ng-container matColumnDef="savedScenarios">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Saved Scenarios
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{element.savedScenarios}}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Status Column -->
+    <ng-container matColumnDef="status">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Status
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{element.status}}
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+  </mat-table>
+
+  <mat-paginator [pageSizeOptions]="[10, 20, 30]"
+                 showFirstLastButtons
+                 aria-label="Select page of plans">
+  </mat-paginator>
+</div>
