@@ -10,7 +10,11 @@
 name: Deploy to Amazon ECS
 
 on:
+  release:
+    # Deploy when stable or pre-releases are published.
+    types: [published]
   push:
+    # Deploy when push on the "deployment" branch.  Use with caution!
     branches:
       - deployment
 
@@ -76,8 +80,8 @@ jobs:
           container-name: backend
           image: ${{ env.backend_image }}
           environment-variables: |
-              LOG_LEVEL=info
-              ENVIRONMENT=prod
+            LOG_LEVEL=info
+            ENVIRONMENT=prod
 
       - name: Modify Amazon ECS task definition with frontend container
         id: render-frontend-container
