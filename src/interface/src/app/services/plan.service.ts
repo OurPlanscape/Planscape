@@ -65,6 +65,19 @@ export class PlanService {
     );
   }
 
+  /** Makes a request to the backend to delete a plan with the given ID. */
+  deletePlan(planId: string): Observable<any> {
+    return this.http.post(
+      BackendConstants.END_POINT.concat('/plan/delete/?id=', planId),
+      {
+        id: Number.parseInt(planId),
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   /** Makes a request to the backend to fetch a plan with the given ID. */
   getPlan(planId: string): Observable<Plan> {
     return this.http
@@ -125,7 +138,7 @@ export class PlanService {
       name: plan.name,
       region: plan.region_name,
       savedScenarios: plan.scenarios,
-    }
+    };
   }
 
   private addPlanToState(plan: Plan) {
