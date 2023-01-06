@@ -233,6 +233,7 @@ class GetPlanTest(TransactionTestCase):
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'badregion')
+        self.assertTrue(isinstance(response.json()['creation_timestamp'], int))
         self.assertLessEqual(
             response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
         self.assertEqual(response.json()['region_name'], None)
