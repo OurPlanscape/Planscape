@@ -28,16 +28,19 @@ def fetch_input_params() -> dict:
     input_params['priorities'] = ['fire_dynamics',
                                   'forest_resilience', 'species_diversity']
     input_params['huc12_id'] = 43
-    project_area = Polygon(((-120.14015536869722, 39.05413814388948),
+    project_area1 = Polygon(((-120.14015536869722, 39.05413814388948),
                             (-120.18409937110482, 39.48622140686506),
                             (-119.93422142411087, 39.48622140686506),
                             (-119.93422142411087, 39.05413814388948),
                             (-120.14015536869722, 39.05413814388948)))
-    project_area.srid = 4269
-    if not project_area.valid:
-        raise ValueError("invalid project area: %s" %
-                         project_area.valid_reason)
-    input_params['project_area'] = project_area
+    project_area1.srid = 4269
+    project_area2 = Polygon(((-120.14015536869722, 38.05413814388948),
+                             (-120.18409937110482, 38.48622140686506),
+                             (-119.93422142411087, 38.48622140686506),
+                             (-119.93422142411087, 38.05413814388948),
+                             (-120.14015536869722, 38.05413814388948)))
+    project_area2.srid = 4269
+    input_params['project_areas'] = [project_area1, project_area2]
     return input_params
 
 
@@ -254,7 +257,7 @@ def get_condition_data(raster: GDALRaster, polygon: Polygon) -> dict:
     return {"mean": sum / count, "count": count}
 
 
-def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: QuerySet, project_area: Polygon) -> dict:
+def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: QuerySet, project_area: Polygon, project_area_id: int) -> dict:
     kConditionPrefix = "cond"
     kPriorityPrefix = "p"
     # TODO: fix cost estimation once rasters become available.
@@ -277,7 +280,7 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: Query
         geo = project_area.intersection(geo)
 
         # TODO: set project_area ID from an external source
-        data['proj_id'].append(1)
+        data['proj_id'].append(project_area_id)
         # TODO: double-check that it makes sense to use this ID.
         data['stand_id'].append(b.id)
         # TODO: double-check that this field is necessary.
@@ -314,8 +317,6 @@ def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> dict:
         priority_headers.append(kPriorityPrefix + "_" + p)
 
     forsys_output = scenario_sets_function_r(rdf,
-                                             robjects.FloatVector(
-                                                 [np.ceil(np.sum(npdf['area']))]),
                                              robjects.StrVector(priority_headers))
 
     # TODO: add logic for applying constraints to forsys_output.
@@ -335,41 +336,51 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
         region = input_params['region']
         priorities = input_params['priorities']
         huc12_id = input_params['huc12_id']
-        project_area = input_params['project_area']
+        project_areas = input_params['project_areas']
 
-        project_area_raster = project_area.clone()
-        project_area_raster.transform(CoordTransform(SpatialReference(
-            project_area.srid), SpatialReference(settings.CRS_9822_PROJ4)))
+        forsys_input_df = {}
+        for i in range(len(project_areas)):
+            project_area = project_areas[i]
+            project_area_raster = project_area.clone()
+            project_area_raster.transform(CoordTransform(SpatialReference(
+                project_area.srid), SpatialReference(settings.CRS_9822_PROJ4)))
 
-        response = {}
-        if (save_debug_info):
-            response['debug'] = {}
+            response = {}
+            if (save_debug_info):
+                response['debug'] = {}
 
-        # Filters boundaries by boundary_id.
-        # TODO: add more stand options. For the existing solution, project areas drawn manually are divided into stands according to HUC-12 boundaries.
-        # TODO: double-check, in this case, that "__intersects" works when project_area and boundary geometry have different srid's.
-        boundaries = BoundaryDetails.objects.filter(
-            boundary_id=huc12_id).filter(geometry__intersects=project_area)
-        if (save_debug_info):
-            response['debug']['huc-12 boundaries'] = get_boundary_debug_info(
-                boundaries, project_area)
+            # Filters boundaries by boundary_id.
+            # TODO: add more stand options. For the existing solution, project areas drawn manually are divided into stands according to HUC-12 boundaries.
+            # TODO: double-check, in this case, that "__intersects" works when project_area and boundary geometry have different srid's.
+            boundaries = BoundaryDetails.objects.filter(
+                boundary_id=huc12_id).filter(geometry__intersects=project_area)
+            if (save_debug_info):
+                response['debug']['huc-12 boundaries'] = get_boundary_debug_info(
+                    boundaries, project_area)
 
-        # Fetches priority rasters for the given project area.
-        condition_rasters = fetch_condition_rasters(
-            priorities, region, project_area_raster)
-        if (save_debug_info):
-            response['debug']['rasters'] = get_raster_debug_info(
-                condition_rasters)
+            # Fetches priority rasters for the given project area.
+            condition_rasters = fetch_condition_rasters(
+                priorities, region, project_area_raster)
+            if (save_debug_info):
+                response['debug']['rasters'] = get_raster_debug_info(
+                    condition_rasters)
 
-        # Transforms rasters into dataframes.
-        # TODO: instead of using HUC-12 boundaries to delineate stands, add options for using individual pixels and individual latitudinal bars.
-        dataframe_data = transform_into_forsys_df_data(
-            condition_rasters, boundaries, project_area_raster)
-        dataframe = pd.DataFrame(data=dataframe_data)
+            # Transforms rasters into dataframes.
+            # TODO: instead of using HUC-12 boundaries to delineate stands, add options for using individual pixels and individual latitudinal bars.
+            dataframe_data = transform_into_forsys_df_data(
+                condition_rasters, boundaries, project_area_raster, i)
+            if len(forsys_input_df.keys()) == 0:
+                forsys_input_df = dataframe_data
+            else:
+                for k in forsys_input_df.keys():
+                  for v in dataframe_data[k]:
+                    forsys_input_df[k].append(v)
+
+        dataframe = pd.DataFrame(data=forsys_input_df)
         response['forsys'] = {}
         response['forsys']['input_df'] = dataframe.to_json()
 
-        results = run_forsys_scenario_sets(dataframe_data, priorities)
+        results = run_forsys_scenario_sets(forsys_input_df, priorities)
         response['forsys']['output_stand'] = results['top_stands'].to_json()
         response['forsys']['output_project'] = results['top_projects'].to_json()
 

@@ -2,7 +2,9 @@ library(dplyr)
 library(forsys)
 library(sf)
 
-scenario_sets <- function(input_stand_data, max_area, priorities) {
+scenario_sets <- function(input_stand_data, priorities) {
+  input_stand_data
+
   stand_dat <- test_forest %>% st_drop_geometry()
   run_outputs <- forsys::run(
     return_outputs = TRUE,
@@ -15,7 +17,7 @@ scenario_sets <- function(input_stand_data, max_area, priorities) {
     scenario_weighting_values = c("1 5 1"), 
     proj_fixed_target =  FALSE,
     proj_target_field = "area",
-    proj_target_value = max_area
+    proj_target_value = 2.0
   )
 
   return(run_outputs)
