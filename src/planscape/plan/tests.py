@@ -225,6 +225,18 @@ class GetPlanTest(TransactionTestCase):
             response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
+    def test_get_plan_bad_stored_region(self):
+        plan = Plan.objects.create(
+            owner=self.user, name='badregion', region_name='Sierra Nevada', geometry=None)
+        plan.save()
+        response = self.client.get(reverse('plan:get_plan'), {'id': plan.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], 'badregion')
+        self.assertLessEqual(
+            response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
+        self.assertEqual(response.json()['region_name'], None)
+       
 
 class ListPlansTest(TransactionTestCase):
     def setUp(self):

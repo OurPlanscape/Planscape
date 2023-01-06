@@ -4,7 +4,7 @@ import json
 from base.region_name import (RegionName, display_name_to_region,
                               region_to_display_name)
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Count, F
+from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from plan.models import Plan, Project

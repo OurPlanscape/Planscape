@@ -17,7 +17,7 @@ class RegionName(str, enum.Enum):
     SOUTHERN_CALIFORNIA = 'southern_california'
 
 
-def region_to_display_name(region: RegionName) -> str:
+def region_to_display_name(region: RegionName) -> str | None:
     """
     Converts a backend RegionName to the display name.
     """
@@ -32,6 +32,9 @@ def region_to_display_name(region: RegionName) -> str:
             return 'Central Coast'
         case RegionName.SOUTHERN_CALIFORNIA:
             return 'Southern California'
+        case _:
+            # Necessary for region names that are now unknown.
+            return None
 
 
 def display_name_to_region(region: str) -> RegionName | None:
