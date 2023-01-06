@@ -66,7 +66,7 @@ describe('PlanService', () => {
         id: 1,
         name: expectedPlan.name,
         owner: 2,
-        region: expectedPlan.region,
+        region_name: expectedPlan.region,
         geometry: expectedPlan.planningArea,
       };
 
@@ -88,14 +88,16 @@ describe('PlanService', () => {
         id: '1',
         name: mockPlan.name,
         region: mockPlan.region,
+        savedScenarios: 1,
       };
 
       const backendPlan: BackendPlan = {
         id: 1,
         name: expectedPlan.name,
         owner: 2,
-        region: mockPlan.region,
+        region_name: mockPlan.region,
         geometry: mockPlan.planningArea,
+        scenarios: 1,
       };
 
       service.listPlansByUser(null).subscribe((res) => {

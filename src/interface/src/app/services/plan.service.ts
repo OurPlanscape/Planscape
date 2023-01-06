@@ -25,8 +25,9 @@ export interface BackendPlan {
   id?: number;
   name: string;
   owner?: number;
-  region: Region;
-  geometry: GeoJSON.GeoJSON;
+  region_name: Region;
+  geometry?: GeoJSON.GeoJSON;
+  scenarios?: number;
 }
 
 @Injectable({
@@ -104,7 +105,7 @@ export class PlanService {
       id: String(plan.id),
       ownerId: String(plan.owner),
       name: plan.name,
-      region: plan.region,
+      region: plan.region_name,
       planningArea: plan.geometry,
     };
   }
@@ -113,7 +114,7 @@ export class PlanService {
     return {
       owner: Number(plan.ownerId),
       name: plan.name,
-      region: plan.region,
+      region_name: plan.region,
       geometry: plan.planningArea,
     };
   }
@@ -122,7 +123,8 @@ export class PlanService {
     return {
       id: String(plan.id),
       name: plan.name,
-      region: plan.region,
+      region: plan.region_name,
+      savedScenarios: plan.scenarios,
     }
   }
 

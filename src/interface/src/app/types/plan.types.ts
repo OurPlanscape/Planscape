@@ -5,7 +5,7 @@ export interface Plan extends BasePlan {
   name: string;
   ownerId: string;
   region: Region;
-  planningArea: GeoJSON.GeoJSON;
+  planningArea?: GeoJSON.GeoJSON;
 }
 
 export interface BasePlan {
@@ -13,7 +13,7 @@ export interface BasePlan {
   name: string;
   ownerId: string;
   region: Region;
-  planningArea: GeoJSON.GeoJSON;
+  planningArea?: GeoJSON.GeoJSON;
 }
 
 export interface PlanPreview {
