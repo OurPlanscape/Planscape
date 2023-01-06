@@ -71,21 +71,30 @@ def delete(request: HttpRequest) -> HttpResponse:
             raise ValueError("Must be logged in")
         owner_id = None if owner is None else owner.pk
 
-        # Get the plan id.
+        # Get the plans
         body = json.loads(request.body)
         plan_id = body.get('id', None)
-        if plan_id is None or not (isinstance(plan_id, int)):
-            raise ValueError("Must specify plan_id as an integer")
+        plan_ids = []
+        if plan_id is None:
+            raise ValueError("Must specify plan_id")
+        elif isinstance(plan_id, int):
+            plan_ids = [plan_id]
+        elif isinstance(plan_id, str):
+            plan_ids = [int(x) for x in plan_id.split(',')]
+        else:
+            raise ValueError("Bad plan_id: " + plan_id)
 
-        # Get the plan, and if the user is logged in, make sure either
+        # Get the plans, and if the user is logged in, make sure either
         # 1. the plan owner and the owner are both None, or
         # 2. the plan owner and the owner are both not None, and are equal.
-        plan = Plan.objects.get(pk=int(plan_id))
-        plan_owner_id = None if plan.owner is None else plan.owner.pk
-        if owner_id != plan_owner_id:
-            raise ValueError(
-                "Cannot delete project; plan is not owned by user")
-        plan.delete()
+        plans = Plan.objects.filter(pk__in=plan_ids)
+        for plan in plans:
+            plan_owner_id = None if plan.owner is None else plan.owner.pk
+            if owner_id != plan_owner_id:
+                raise ValueError(
+                    "Cannot delete plan; plan is not owned by user")
+        for plan in plans:
+            plan.delete()
         return HttpResponse(plan_id)
     except Exception as e:
         return HttpResponseBadRequest("Error in delete: " + str(e))
