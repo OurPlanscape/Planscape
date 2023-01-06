@@ -138,15 +138,16 @@ class DeletePlanTest(TransactionTestCase):
         self.user.save()
         self.plan1 = create_plan(None, "ownerless", None, [0])
         self.plan2 = create_plan(self.user, "owned", None, [1])
+        self.plan3 = create_plan(self.user, "owned_also", None, [1, 2])
 
     def test_delete_user_not_logged_in(self):
         response = self.client.post(
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(Plan.objects.count(), 2)
-        self.assertEqual(Project.objects.all().count(), 2)
-        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.all().count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
 
     def test_user_logged_in_tries_to_delete_ownerless_plan(self):
         self.client.force_login(self.user)
@@ -154,9 +155,9 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan1.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(Plan.objects.count(), 2)
-        self.assertEqual(Project.objects.count(), 2)
-        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
 
     def test_delete_wrong_user(self):
         new_user = User.objects.create(username='newuser')
@@ -167,31 +168,56 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(Plan.objects.count(), 2)
-        self.assertEqual(Project.objects.count(), 2)
-        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
 
     def test_delete_ownerless_plan(self):
-        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Plan.objects.count(), 3)
         plan1_id = self.plan1.pk
         response = self.client.post(
             reverse('plan:delete'), {'id': self.plan1.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, str(plan1_id).encode())
-        self.assertEqual(Plan.objects.count(), 1)
-        self.assertEqual(Project.objects.count(), 1)
-        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 3)
+        self.assertEqual(Scenario.objects.count(), 4)
 
     def test_delete_owned_plan(self):
         self.client.force_login(self.user)
-        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Plan.objects.count(), 3)
         plan2_id = self.plan2.pk
         response = self.client.post(
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, str(plan2_id).encode())
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 3)
+        self.assertEqual(Scenario.objects.count(), 3)
+
+    def test_delete_multiple_plans_fails_if_any_not_owner(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Plan.objects.count(), 3)
+        plan_ids = str(self.plan1.pk) + ',' + str(self.plan2.pk)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': plan_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
+
+    def test_delete_multiple_plans(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Plan.objects.count(), 3)
+        plan_ids = str(self.plan2.pk) + ',' + str(self.plan3.pk)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': plan_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, plan_ids.encode())
         self.assertEqual(Plan.objects.count(), 1)
         self.assertEqual(Project.objects.count(), 1)
         self.assertEqual(Scenario.objects.count(), 0)
