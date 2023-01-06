@@ -19,7 +19,7 @@ export interface BasePlan {
 export interface PlanPreview {
   id: string;
   name: string;
-  createdTimestamp?: number;
+  createdTimestamp?: number;  // in milliseconds since epoch
   region?: Region;
   savedScenarios?: number;
   status?: string;
@@ -27,5 +27,5 @@ export interface PlanPreview {
 
 export interface Scenario {
   id: string;
-  createdTimestamp: number;
+  createdTimestamp: number; //in milliseconds since epoch
 }

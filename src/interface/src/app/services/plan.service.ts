@@ -28,6 +28,7 @@ export interface BackendPlan {
   region_name: Region;
   geometry?: GeoJSON.GeoJSON;
   scenarios?: number;
+  creation_timestamp?: number; // in seconds since epoch
 }
 
 @Injectable({
@@ -66,11 +67,11 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to delete a plan with the given ID. */
-  deletePlan(planId: string): Observable<any> {
-    return this.http.post(
-      BackendConstants.END_POINT.concat('/plan/delete/?id=', planId),
+  deletePlan(planIds: string[]): Observable<string> {
+    return this.http.post<string>(
+      BackendConstants.END_POINT.concat('/plan/delete/?id=', planIds.join()),
       {
-        id: Number.parseInt(planId),
+        id: planIds.join(),
       },
       {
         withCredentials: true,
@@ -138,7 +139,18 @@ export class PlanService {
       name: plan.name,
       region: plan.region_name,
       savedScenarios: plan.scenarios,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        plan.creation_timestamp
+      ),
     };
+  }
+
+  // Convert the timestamp stored in backend (measured in seconds since the epoch)
+  // to the timestamp Angular assumes is used (milliseconds since the epoch).
+  convertBackendTimestamptoFrontendTimestamp(
+    timestamp: number | undefined
+  ): number | undefined {
+    return timestamp ? timestamp * 1000 : undefined;
   }
 
   private addPlanToState(plan: Plan) {
