@@ -134,7 +134,6 @@ def get_plan(request: HttpRequest) -> HttpResponse:
     try:
         return JsonResponse(_serialize_plan(get_plan_by_id(request.GET)[0], True))
     except Exception as e:
-        print(e)
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
@@ -143,7 +142,6 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
         plans = get_plans_by_owner(request.GET)
         return JsonResponse([_serialize_plan(plan, False) for plan in plans], safe=False)
     except Exception as e:
-        print(e)
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
