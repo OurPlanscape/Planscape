@@ -1,3 +1,4 @@
+import datetime
 import json
 
 from django.contrib.auth.models import User
@@ -76,7 +77,7 @@ class CreatePlanTest(TransactionTestCase):
                 {'geometry': {'type': 'Polygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 1)
 
     def test_good_multipolygon(self):
         self.client.force_login(self.user)
@@ -86,17 +87,31 @@ class CreatePlanTest(TransactionTestCase):
                 {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 1)
 
-    def test_good_region_name(self):
+    def test_bad_region_name(self):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create'),
             {'name': 'plan', 'region_name': 'north_coast_inland', 'geometry': {'features': [
                 {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
             content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_good_region_name(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create'),
+            {'name': 'plan', 'region_name': 'Northern California', 'geometry': {'features': [
+                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
+            content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Plan.objects.all()), 1)
+        plans = Plan.objects.all()
+        self.assertEqual(plans.count(), 1)
+        plan = plans.first()
+        assert plan is not None
+        self.assertEqual(plan.region_name, 'north_coast_inland')
+
 
 
 def create_plan(owner: User | None, name: str, geometry: GEOSGeometry | None, scenarios: list[int]):
@@ -129,9 +144,9 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(len(Plan.objects.all()), 2)
-        self.assertEqual(len(Project.objects.all()), 2)
-        self.assertEqual(len(Scenario.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.all().count(), 2)
+        self.assertEqual(Scenario.objects.count(), 1)
 
     def test_user_logged_in_tries_to_delete_ownerless_plan(self):
         self.client.force_login(self.user)
@@ -139,9 +154,9 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan1.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(len(Plan.objects.all()), 2)
-        self.assertEqual(len(Project.objects.all()), 2)
-        self.assertEqual(len(Scenario.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(Scenario.objects.count(), 1)
 
     def test_delete_wrong_user(self):
         new_user = User.objects.create(username='newuser')
@@ -152,34 +167,34 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(len(Plan.objects.all()), 2)
-        self.assertEqual(len(Project.objects.all()), 2)
-        self.assertEqual(len(Scenario.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(Scenario.objects.count(), 1)
 
     def test_delete_ownerless_plan(self):
-        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(Plan.objects.count(), 2)
         plan1_id = self.plan1.pk
         response = self.client.post(
             reverse('plan:delete'), {'id': self.plan1.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, str(plan1_id).encode())
-        self.assertEqual(len(Plan.objects.all()), 1)
-        self.assertEqual(len(Project.objects.all()), 1)
-        self.assertEqual(len(Scenario.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 1)
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Scenario.objects.count(), 1)
 
     def test_delete_owned_plan(self):
         self.client.force_login(self.user)
-        self.assertEqual(len(Plan.objects.all()), 2)
+        self.assertEqual(Plan.objects.count(), 2)
         plan2_id = self.plan2.pk
         response = self.client.post(
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, str(plan2_id).encode())
-        self.assertEqual(len(Plan.objects.all()), 1)
-        self.assertEqual(len(Project.objects.all()), 1)
-        self.assertEqual(len(Scenario.objects.all()), 0)
+        self.assertEqual(Plan.objects.count(), 1)
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Scenario.objects.count(), 0)
 
 
 class GetPlanTest(TransactionTestCase):
@@ -198,6 +213,7 @@ class GetPlanTest(TransactionTestCase):
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'owned')
+        self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
     def test_get_plan_no_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
@@ -205,7 +221,22 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'ownerless')
         self.assertEqual(response.json()['geometry'], self.geometry)
+        self.assertLessEqual(
+            response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
+        self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
+    def test_get_plan_bad_stored_region(self):
+        plan = Plan.objects.create(
+            owner=self.user, name='badregion', region_name='Sierra Nevada', geometry=None)
+        plan.save()
+        response = self.client.get(reverse('plan:get_plan'), {'id': plan.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], 'badregion')
+        self.assertLessEqual(
+            response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
+        self.assertEqual(response.json()['region_name'], None)
+       
 
 class ListPlansTest(TransactionTestCase):
     def setUp(self):
@@ -226,6 +257,8 @@ class ListPlansTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
         for plan in response.json():
+            self.assertTrue('geometry' not in plan)
+            self.assertEqual(plan['region_name'], 'Sierra Nevada')
             if plan['name'] == 'plan1':
                 self.assertEqual(plan['projects'], 0)
                 self.assertEqual(plan['scenarios'], 0)
@@ -241,7 +274,8 @@ class ListPlansTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
         for plan in response.json():
-            self.assertEqual(plan['geometry'], self.geometry)
+            self.assertTrue('geometry' not in plan)
+            self.assertEqual(plan['region_name'], 'Sierra Nevada')
             if plan['name'] == 'plan3':
                 self.assertEqual(plan['projects'], 1)
                 self.assertEqual(plan['scenarios'], 1)
