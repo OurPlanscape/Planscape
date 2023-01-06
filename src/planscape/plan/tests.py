@@ -248,7 +248,7 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.json()['name'], 'ownerless')
         self.assertEqual(response.json()['geometry'], self.geometry)
         self.assertLessEqual(
-            response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
+            response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
     def test_get_plan_bad_stored_region(self):
@@ -261,7 +261,7 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.json()['name'], 'badregion')
         self.assertTrue(isinstance(response.json()['creation_timestamp'], int))
         self.assertLessEqual(
-            response.json()['creation_timestamp'], datetime.datetime.now().timestamp())
+            response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
         self.assertEqual(response.json()['region_name'], None)
        
 
