@@ -55,6 +55,23 @@ describe('PlanService', () => {
     });
   });
 
+  describe('deletePlan', () => {
+    it('should make HTTP post request to DB', () => {
+      service.deletePlan('1').subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/delete/?id=1')
+      );
+
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body['id']).toEqual(1);
+
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
   describe('getPlan', () => {
     it('should make HTTP get request to DB', () => {
       const expectedPlan: Plan = {
