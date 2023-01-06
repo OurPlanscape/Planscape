@@ -18,14 +18,20 @@ import json
 #   The value is a comma-separated list consisting of a subset of the following conditions:
 #       TODO: list the conditions
 class ForsysScenarioSetRequestParams():
-    def _get_default_polygon() -> Polygon:
-        p = Polygon(((-120.14015536869722, 39.05413814388948),
+    def _get_default_polygons() -> list[Polygon]:
+        p1 = Polygon(((-120.14015536869722, 39.05413814388948),
                      (-120.18409937110482, 39.48622140686506),
                      (-119.93422142411087, 39.48622140686506),
                      (-119.93422142411087, 39.05413814388948),
                      (-120.14015536869722, 39.05413814388948)))
-        p.srid = 4269
-        return p
+        p1.srid = 4269
+        p2 = Polygon(((-120.14015536869722, 38.05413814388948),
+                     (-120.18409937110482, 38.48622140686506),
+                     (-119.93422142411087, 38.48622140686506),
+                     (-119.93422142411087, 38.05413814388948),
+                     (-120.14015536869722, 38.05413814388948)))
+        p2.srid = 4269
+        return [p1, p2]
 
     def __init__(self, params: QueryDict) -> None:
         if params.has_key('save_debug_info'):
