@@ -1,7 +1,7 @@
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
-from django.core import serializers
+from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from plan.models import Plan, Project
@@ -53,26 +53,65 @@ def create(request: HttpRequest) -> HttpResponse:
             owner=owner, name=name, region_name=region_name, geometry=geometry)
         plan.save()
         return HttpResponse(str(plan.pk))
-
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        return HttpResponseBadRequest("Error in create: " + str(e))
+
+
+def delete(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = None
+        if request.user.is_authenticated:
+            owner = request.user
+        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+        owner_id = None if owner is None else owner.pk
+
+        # Get the plan id.
+        body = json.loads(request.body)
+        plan_id = body.get('id', None)
+        if plan_id is None or not (isinstance(plan_id, int)):
+            raise ValueError("Must specify plan_id as an integer")
+
+        # Get the plan, and if the user is logged in, make sure either
+        # 1. the plan owner and the owner are both None, or
+        # 2. the plan owner and the owner are both not None, and are equal.
+        plan = Plan.objects.get(pk=int(plan_id))
+        plan_owner_id = None if plan.owner is None else plan.owner.pk
+        if owner_id != plan_owner_id:
+            raise ValueError(
+                "Cannot delete project; plan is not owned by user")
+        plan.delete()
+        return HttpResponse(plan_id)
+    except Exception as e:
+        return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
 def get_plan_by_id(params: QueryDict):
     assert isinstance(params['id'], str)
     plan_id = params.get('id', 0)
-    return Plan.objects.get(pk=int(plan_id))
+    return (Plan.objects.filter(id=int(plan_id))
+                        .annotate(projects=Count('project', distinct=True))
+                        .annotate(scenarios=Count('project__scenario')))
 
 
 def get_plans_by_owner(params: QueryDict):
     owner_id = params.get('owner')
-    return Plan.objects.filter(owner=owner_id)
+    return (Plan.objects.filter(owner=owner_id)
+            .annotate(projects=Count('project', distinct=True))
+            .annotate(scenarios=Count('project__scenario')))
+
+
+def _serialize_plan(plan: Plan):
+    data = PlanSerializer(plan).data
+    result = data['properties']
+    result.update({'id': data['id'], 'geometry': data['geometry']})
+    return result
 
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        plan = get_plan_by_id(request.GET)
-        return JsonResponse(PlanSerializer(plan).data)
+        return JsonResponse(_serialize_plan(get_plan_by_id(request.GET)[0]))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -80,7 +119,7 @@ def get_plan(request: HttpRequest) -> HttpResponse:
 def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
     try:
         plans = get_plans_by_owner(request.GET)
-        return JsonResponse([PlanSerializer(plan).data for plan in plans], safe=False)
+        return JsonResponse([_serialize_plan(plan) for plan in plans], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -98,7 +137,6 @@ def create_project(request: HttpRequest) -> HttpResponse:
         body = json.loads(request.body)
         plan_id = body.get('plan_id', None)
         if plan_id is None or not (isinstance(plan_id, int)):
-            print(plan_id)
             raise ValueError("Must specify plan_id as an integer")
 
         # Get the plan, and if the user is logged in, make sure either
@@ -106,7 +144,7 @@ def create_project(request: HttpRequest) -> HttpResponse:
         # 2. the plan owner and the owner are both not None, and are equal.
         plan = Plan.objects.get(pk=int(plan_id))
         if not ((owner is None and plan.owner is None) or
-                (owner is not None and plan.owner is not None and owner.pk==plan.owner.pk)):
+                (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
 
@@ -120,5 +158,4 @@ def create_project(request: HttpRequest) -> HttpResponse:
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
-        print(e)
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
