@@ -113,7 +113,6 @@ class CreatePlanTest(TransactionTestCase):
         self.assertEqual(plan.region_name, 'north_coast_inland')
 
 
-
 def create_plan(owner: User | None, name: str, geometry: GEOSGeometry | None, scenarios: list[int]):
     """
     Creates a plan with the given owner, name, geometry, and projects with the
@@ -179,7 +178,8 @@ class DeletePlanTest(TransactionTestCase):
             reverse('plan:delete'), {'id': self.plan1.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, str(plan1_id).encode())
+        self.assertEqual(response.content, json.dumps(
+            {"id": [self.plan1.pk]}).encode())
         self.assertEqual(Plan.objects.count(), 2)
         self.assertEqual(Project.objects.count(), 3)
         self.assertEqual(Scenario.objects.count(), 4)
@@ -187,12 +187,12 @@ class DeletePlanTest(TransactionTestCase):
     def test_delete_owned_plan(self):
         self.client.force_login(self.user)
         self.assertEqual(Plan.objects.count(), 3)
-        plan2_id = self.plan2.pk
         response = self.client.post(
             reverse('plan:delete'), {'id': self.plan2.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, str(plan2_id).encode())
+        self.assertEqual(response.content, json.dumps(
+            {"id": [self.plan2.pk]}).encode())
         self.assertEqual(Plan.objects.count(), 2)
         self.assertEqual(Project.objects.count(), 3)
         self.assertEqual(Scenario.objects.count(), 3)
@@ -200,7 +200,7 @@ class DeletePlanTest(TransactionTestCase):
     def test_delete_multiple_plans_fails_if_any_not_owner(self):
         self.client.force_login(self.user)
         self.assertEqual(Plan.objects.count(), 3)
-        plan_ids = str(self.plan1.pk) + ',' + str(self.plan2.pk)
+        plan_ids = [self.plan1.pk, self.plan2.pk]
         response = self.client.post(
             reverse('plan:delete'), {'id': plan_ids},
             content_type='application/json')
@@ -212,12 +212,13 @@ class DeletePlanTest(TransactionTestCase):
     def test_delete_multiple_plans(self):
         self.client.force_login(self.user)
         self.assertEqual(Plan.objects.count(), 3)
-        plan_ids = str(self.plan2.pk) + ',' + str(self.plan3.pk)
+        plan_ids = [self.plan2.pk, self.plan3.pk]
         response = self.client.post(
             reverse('plan:delete'), {'id': plan_ids},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, plan_ids.encode())
+        self.assertEqual(response.content, json.dumps(
+            {"id": plan_ids}).encode())
         self.assertEqual(Plan.objects.count(), 1)
         self.assertEqual(Project.objects.count(), 1)
         self.assertEqual(Scenario.objects.count(), 0)
@@ -263,7 +264,7 @@ class GetPlanTest(TransactionTestCase):
         self.assertLessEqual(
             response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
         self.assertEqual(response.json()['region_name'], None)
-       
+
 
 class ListPlansTest(TransactionTestCase):
     def setUp(self):
