@@ -96,7 +96,6 @@ def delete(request: HttpRequest) -> HttpResponse:
         for plan in plans:
             plan.delete()
         response_data = {'id': plan_ids}
-        print(json.dumps(response_data))
         return HttpResponse(json.dumps(response_data), content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Error in delete: " + str(e))
