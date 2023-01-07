@@ -1,18 +1,19 @@
+import json
 import logging
 import numpy as np
 import os
 import pandas as pd
 import rpy2
-import sys
+
+from .parse_forsys_output import ForsysScenarioSetOutput
 
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.conf import settings
 from django.contrib.gis.gdal import CoordTransform, Envelope, GDALRaster, SpatialReference
-from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
+from django.contrib.gis.geos import Point, Polygon
 from django.db.models.query import QuerySet
-from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse, QueryDict)
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
@@ -300,7 +301,7 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: Query
 
 
 # Runs a forsys scenario sets call.
-def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> dict:
+def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> ForsysScenarioSetOutput:
     kPriorityPrefix = "p"
 
     import rpy2.robjects as robjects
@@ -319,12 +320,12 @@ def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> dict:
     forsys_output = scenario_sets_function_r(rdf,
                                              robjects.StrVector(priority_headers))
 
+    parsed_output = ForsysScenarioSetOutput(
+        forsys_output, priorities, "proj_id", "area", "cost")
+
     # TODO: add logic for applying constraints to forsys_output.
 
-    result = {}
-    result['top_stands'] = convert_rdf_to_pddf(forsys_output[0])
-    result['top_projects'] = convert_rdf_to_pddf(forsys_output[1])
-    return result
+    return parsed_output
 
 
 # Returns JSon data for a forsys scenario set call.
@@ -373,16 +374,18 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
                 forsys_input_df = dataframe_data
             else:
                 for k in forsys_input_df.keys():
-                  for v in dataframe_data[k]:
-                    forsys_input_df[k].append(v)
+                    for v in dataframe_data[k]:
+                        forsys_input_df[k].append(v)
 
         dataframe = pd.DataFrame(data=forsys_input_df)
         response['forsys'] = {}
         response['forsys']['input_df'] = dataframe.to_json()
 
-        results = run_forsys_scenario_sets(forsys_input_df, priorities)
-        response['forsys']['output_stand'] = results['top_stands'].to_json()
-        response['forsys']['output_project'] = results['top_projects'].to_json()
+        forsys_scenario_sets_output = run_forsys_scenario_sets(
+            forsys_input_df, priorities)
+
+        response['forsys']['output_project'] = json.dumps(
+            forsys_scenario_sets_output.to_dictionary())
 
         # TODO: configure response to potentially show stand coordinates and other signals necessary for the UI.
 
