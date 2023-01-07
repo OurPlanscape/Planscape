@@ -19,3 +19,22 @@ The data comes as 15-m raster maps that can be downloaded as zipfiles (`.tif` an
 -   **Adapt** scores indicate areas that are currently in poor condition but, under natural disturbance processes, exhibit the capacity to achieve desired conditions in the future. Managmenet in these areas would have a higher likelihood of success given their demonstrated ability to achieve and maintain target conditions over time. Darker purple colors indicate Adapt scores closer to +1 and provide stronger support for the adaptation strategy.
 -   **Transform** scores indicate areas that are currently in poor condition and remain so over time. In terms of sequencing treatments over large landscapes, these areas may not be the first in line for treatment given the lack of evidence for them to achieve and maintain target conditions over time, thereby increasing the uncertainty in management effectivness. Darker red colors indicate Transform scores closer to +1 and provide stronger support for the transformation strategy.
 -   **ap** (a.k.a impact) scores indicate the maximum level of support for either Adapt or Protect strategies. These areas would benefit most from management given the goals of protecting resources that are currently functional on the landscape (Protect) and treating those areas with the highest certainty of success from treatment (Adapt). Red colors (scores closer to +1) indicate areas with strong support for either Adapt or Protect strategies, while blue colors (scores closer to -1) indicate low support for these strategies.
+
+
+## California Building Outlines
+
+From: <https://github.com/Microsoft/USBuildingFootprints>
+
+GeoJSON with building outlines for California, generated from satellite imagery
+using an ANN computer vision model. We're converting this to a raster layer 
+because the highly detailed shapefile would be too big to display the web
+UI of Planscape. See issue
+[#277](https://github.com/OurPlanscape/Planscape/issues/277)
+
+
+# BMFP Notebook Data
+
+From: <https://drive.google.com/file/d/1zNYZRTgNEX4mNAtU1I3-7RD8VSo8-ATH/view?usp=sharing/BMFP_Notebook_data.zip>
+
+Contains Tiger Roads data for California which we use to calculate distance
+from nearest road for treatment cost calculations
