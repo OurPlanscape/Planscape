@@ -1,12 +1,16 @@
+import datetime
+import json
+
 from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry
 from django.test import TransactionTestCase
 from django.urls import reverse
-
-from .models import Plan
 from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
 
+from .models import Plan, Project, Scenario
 
-class PlanTest(TransactionTestCase):
+
+class CreatePlanTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -73,27 +77,150 @@ class PlanTest(TransactionTestCase):
                 {'geometry': {'type': 'Polygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 1)
 
     def test_good_multipolygon(self):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create'),
             {'name': 'plan', 'geometry': {'features': [
-                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
+                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Plan.objects.all()), 1)
+        self.assertEqual(Plan.objects.count(), 1)
+
+    def test_bad_region_name(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create'),
+            {'name': 'plan', 'region_name': 'north_coast_inland', 'geometry': {'features': [
+                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
 
     def test_good_region_name(self):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create'),
-            {'name': 'plan', 'region_name': 'north_coast_inland', 'geometry': {'features': [
-                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
+            {'name': 'plan', 'region_name': 'Northern California', 'geometry': {'features': [
+                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(Plan.objects.all()), 1)
+        plans = Plan.objects.all()
+        self.assertEqual(plans.count(), 1)
+        plan = plans.first()
+        assert plan is not None
+        self.assertEqual(plan.region_name, 'north_coast_inland')
+
+
+
+def create_plan(owner: User | None, name: str, geometry: GEOSGeometry | None, scenarios: list[int]):
+    """
+    Creates a plan with the given owner, name, geometry, and projects with the
+    number of scenarios.
+    """
+    plan = Plan.objects.create(
+        owner=owner, name=name, region_name='sierra_cascade_inyo', geometry=geometry)
+    plan.save()
+    for num_scenarios in scenarios:
+        project = Project.objects.create(owner=owner, plan=plan)
+        project.save()
+        for _ in range(num_scenarios):
+            scenario = Scenario.objects.create(project=project)
+            scenario.save()
+    return plan
+
+
+class DeletePlanTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.plan1 = create_plan(None, "ownerless", None, [0])
+        self.plan2 = create_plan(self.user, "owned", None, [1])
+        self.plan3 = create_plan(self.user, "owned_also", None, [1, 2])
+
+    def test_delete_user_not_logged_in(self):
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan2.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.all().count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
+
+    def test_user_logged_in_tries_to_delete_ownerless_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan1.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
+
+    def test_delete_wrong_user(self):
+        new_user = User.objects.create(username='newuser')
+        new_user.set_password('12345')
+        new_user.save()
+        self.client.force_login(new_user)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan2.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
+
+    def test_delete_ownerless_plan(self):
+        self.assertEqual(Plan.objects.count(), 3)
+        plan1_id = self.plan1.pk
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan1.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, str(plan1_id).encode())
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 3)
+        self.assertEqual(Scenario.objects.count(), 4)
+
+    def test_delete_owned_plan(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Plan.objects.count(), 3)
+        plan2_id = self.plan2.pk
+        response = self.client.post(
+            reverse('plan:delete'), {'id': self.plan2.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, str(plan2_id).encode())
+        self.assertEqual(Plan.objects.count(), 2)
+        self.assertEqual(Project.objects.count(), 3)
+        self.assertEqual(Scenario.objects.count(), 3)
+
+    def test_delete_multiple_plans_fails_if_any_not_owner(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Plan.objects.count(), 3)
+        plan_ids = str(self.plan1.pk) + ',' + str(self.plan2.pk)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': plan_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Plan.objects.count(), 3)
+        self.assertEqual(Project.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 4)
+
+    def test_delete_multiple_plans(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Plan.objects.count(), 3)
+        plan_ids = str(self.plan2.pk) + ',' + str(self.plan3.pk)
+        response = self.client.post(
+            reverse('plan:delete'), {'id': plan_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, plan_ids.encode())
+        self.assertEqual(Plan.objects.count(), 1)
+        self.assertEqual(Project.objects.count(), 1)
+        self.assertEqual(Scenario.objects.count(), 0)
 
 
 class GetPlanTest(TransactionTestCase):
@@ -101,55 +228,89 @@ class GetPlanTest(TransactionTestCase):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
         self.user.save()
-        self.plan_no_user = Plan.objects.create(
-            owner=None, name='ownerless', region_name='sierra_cascade_inyo')
-        self.plan_no_user.save()
-        self.plan_with_user = Plan.objects.create(
-            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
-        self.plan_with_user.save()
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
+        self.plan_with_user = create_plan(self.user, 'owned', None, [])
 
     def test_get_plan_with_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['name'], 'with_owner')
+        self.assertEqual(response.json()['name'], 'owned')
+        self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
     def test_get_plan_no_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'ownerless')
+        self.assertEqual(response.json()['geometry'], self.geometry)
+        self.assertLessEqual(
+            response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
+        self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
+    def test_get_plan_bad_stored_region(self):
+        plan = Plan.objects.create(
+            owner=self.user, name='badregion', region_name='Sierra Nevada', geometry=None)
+        plan.save()
+        response = self.client.get(reverse('plan:get_plan'), {'id': plan.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['name'], 'badregion')
+        self.assertTrue(isinstance(response.json()['creation_timestamp'], int))
+        self.assertLessEqual(
+            response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
+        self.assertEqual(response.json()['region_name'], None)
+       
 
 class ListPlansTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
         self.user.save()
-        self.plan_A_no_user = Plan.objects.create(
-            owner=None, name='A_ownerless', region_name='sierra_cascade_inyo')
-        self.plan_A_no_user.save()
-        self.plan_B_no_user = Plan.objects.create(
-            owner=None, name='B_ownerless', region_name='sierra_cascade_inyo')
-        self.plan_B_no_user.save()
-        self.plan_A_with_user = Plan.objects.create(
-            owner=self.user, name='A_with_owner', region_name='sierra_cascade_inyo')
-        self.plan_A_with_user.save()
-        self.plan_B_with_user = Plan.objects.create(
-            owner=self.user, name='B_with_owner', region_name='sierra_cascade_inyo')
-        self.plan_B_with_user.save()
-
-    def test_list_plans_by_owner_with_user(self):
-        response = self.client.get(reverse('plan:list_plans_by_owner'), {'owner': self.user.pk},
-                                   content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan1 = create_plan(None, 'plan1', None, [])
+        self.plan2 = create_plan(None, 'plan2', stored_geometry, [0])
+        self.plan3 = create_plan(self.user, 'plan3', stored_geometry, [1])
+        self.plan4 = create_plan(self.user, 'plan4', stored_geometry, [2, 1])
 
     def test_list_plans_by_owner_no_user(self):
         response = self.client.get(reverse('plan:list_plans_by_owner'), {},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
+        for plan in response.json():
+            self.assertTrue('geometry' not in plan)
+            self.assertEqual(plan['region_name'], 'Sierra Nevada')
+            if plan['name'] == 'plan1':
+                self.assertEqual(plan['projects'], 0)
+                self.assertEqual(plan['scenarios'], 0)
+            elif plan['name'] == 'plan2':
+                self.assertEqual(plan['projects'], 1)
+                self.assertEqual(plan['scenarios'], 0)
+            else:
+                self.assertTrue(False)
+
+    def test_list_plans_by_owner_with_user(self):
+        response = self.client.get(reverse('plan:list_plans_by_owner'), {'owner': self.user.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
+        for plan in response.json():
+            self.assertTrue('geometry' not in plan)
+            self.assertEqual(plan['region_name'], 'Sierra Nevada')
+            if plan['name'] == 'plan3':
+                self.assertEqual(plan['projects'], 1)
+                self.assertEqual(plan['scenarios'], 1)
+            elif plan['name'] == 'plan4':
+                self.assertEqual(plan['projects'], 2)
+                self.assertEqual(plan['scenarios'], 3)
+            else:
+                self.assertTrue(False)
 
 
 class ProjectTest(TransactionTestCase):

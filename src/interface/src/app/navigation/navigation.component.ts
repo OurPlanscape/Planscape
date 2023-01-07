@@ -30,7 +30,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       icon: "explore",
     },
     {
-      text: "Plan",
+      text: "My Plans",
       href: "/plan",
       icon: "edit_document",
     },
