@@ -54,7 +54,7 @@ describe('PlanMapComponent', () => {
       if (layer instanceof L.GeoJSON) {
         if (
           (layer as L.GeoJSON).toGeoJSON().bbox ===
-          component.plan.value?.planningArea.bbox
+          component.plan.value?.planningArea!.bbox
         ) {
           foundPlanningAreaLayer = true;
         }
