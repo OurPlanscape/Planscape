@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import rpy2
 
-from .parse_forsys_output import ForsysScenarioSetOutput
+from forsys.parse_forsys_output import ForsysScenarioSetOutput
 
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster

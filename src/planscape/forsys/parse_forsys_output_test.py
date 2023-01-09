@@ -1,11 +1,11 @@
-import unittest
 import rpy2
 
 import rpy2.robjects as ro
 
-from parse_forsys_output import ForsysScenarioSetOutput
+from django.test import TestCase
+from forsys.parse_forsys_output import ForsysScenarioSetOutput
 
-class TestForsysScenarioSetOutput(unittest.TestCase):
+class TestForsysScenarioSetOutput(TestCase):
     def test_successfully_parses_output(self) -> None:
         raw_forsys_output = self.__get_raw_forsys_output()
         parsed_output = ForsysScenarioSetOutput(raw_forsys_output, ["p1", "p2"], "proj_id", "area", "cost")
