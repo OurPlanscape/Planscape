@@ -22,7 +22,7 @@
                   "display_name": "High Severity Potential Smoke Emissions",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
-                  "data_source": "USDA Forest Service, Region 5",
+                  "data_provider": "USDA Forest Service, Region 5",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
                   "data_year": "2021",
                   "min_value": 0,
