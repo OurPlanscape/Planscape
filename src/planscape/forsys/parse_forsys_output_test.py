@@ -31,6 +31,8 @@ class TestForsysScenarioSetOutput(unittest.TestCase):
         assert scenario.ranked_projects[2].weighted_priority_scores == {'p1': 0.3, 'p2': 0.1}
         assert scenario.ranked_projects[2].total_score == 0.4
         assert scenario.ranked_projects[2].rank == 3
+        assert scenario.cumulative_ranked_project_area == [10, 21, 33]
+        assert scenario.cumulative_ranked_project_cost == [500, 1100, 1900]
 
         scenario = scenarios['p1:1 p2:2']
         assert scenario.priority_weights == {'p1': 1, 'p2': 2}
@@ -47,6 +49,8 @@ class TestForsysScenarioSetOutput(unittest.TestCase):
         assert scenario.ranked_projects[2].weighted_priority_scores == {'p1': 0.3, 'p2': 0.2}
         assert scenario.ranked_projects[2].total_score == 0.5
         assert scenario.ranked_projects[2].rank == 3
+        assert scenario.cumulative_ranked_project_area == [11, 21, 33]
+        assert scenario.cumulative_ranked_project_cost == [600, 1100, 1900]
 
     def test_successfully_outputs_dictionary(self) -> None:
         raw_forsys_output = self.__get_raw_forsys_output()
@@ -73,6 +77,8 @@ class TestForsysScenarioSetOutput(unittest.TestCase):
         assert ranked_projects[2]['weighted_priority_scores'] == {'p1': 0.3, 'p2': 0.1}
         assert ranked_projects[2]['total_score'] == 0.4
         assert ranked_projects[2]['rank'] == 3
+        assert scenario['cumulative_ranked_project_area'] == [10, 21, 33]
+        assert scenario['cumulative_ranked_project_cost'] == [500, 1100, 1900]
 
         scenario = dictionary['p1:1 p2:2']
         assert scenario['priority_weights'] == {'p1': 1, 'p2': 2}
@@ -90,6 +96,45 @@ class TestForsysScenarioSetOutput(unittest.TestCase):
         assert ranked_projects[2]['weighted_priority_scores'] == {'p1': 0.3, 'p2': 0.2}
         assert ranked_projects[2]['total_score'] == 0.5
         assert ranked_projects[2]['rank'] == 3
+        assert scenario['cumulative_ranked_project_area'] == [11, 21, 33]
+        assert scenario['cumulative_ranked_project_cost'] == [600, 1100, 1900]
+        
+
+    def test_fails_if_priority_ordering_is_wrong(self) -> None:
+        raw_forsys_output = self.__get_raw_forsys_output()
+
+        with self.assertRaises(Exception) as context:
+            # priority order is ["p2", "p1"] instead of ["p1", "p2"]
+            ForsysScenarioSetOutput(raw_forsys_output, ["p2", "p1"], "proj_id", "area", "cost")
+        
+        assert str(context.exception) == 'header, Pr_1_p2, is not a forsys output header'
+
+    def test_fails_if_proj_id_header_is_wrong(self) -> None:
+        raw_forsys_output = self.__get_raw_forsys_output()
+
+        with self.assertRaises(Exception) as context:
+            # project id is "project_id" instead of "proj_id"
+            ForsysScenarioSetOutput(raw_forsys_output, ["p1", "p2"], "project_id", "area", "cost")
+        
+        assert str(context.exception) == 'header, project_id, is not a forsys output header'
+    
+    def test_fails_if_area_header_is_wrong(self) -> None:
+        raw_forsys_output = self.__get_raw_forsys_output()
+
+        with self.assertRaises(Exception) as context:
+            # area header is "area_ha" instead of "area"
+            ForsysScenarioSetOutput(raw_forsys_output, ["p1", "p2"], "proj_id", "area_ha", "cost")
+        
+        assert str(context.exception) == 'header, ETrt_area_ha_PCP, is not a forsys output header'
+
+    def test_fails_if_cost_header_is_wrong(self) -> None:
+        raw_forsys_output = self.__get_raw_forsys_output()
+
+        with self.assertRaises(Exception) as context:
+            # cost header is "c" instead of "cost"
+            ForsysScenarioSetOutput(raw_forsys_output, ["p1", "p2"], "proj_id", "area", "c")
+        
+        assert str(context.exception) == 'header, ETrt_c_PCP, is not a forsys output header'
 
     def __convert_dictionary_of_lists_to_rdf(self, lists: dict) -> ro.vectors.DataFrame:
         data = {}

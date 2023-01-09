@@ -114,15 +114,27 @@ class ForsysScenarioSetOutput():
         self.__forsys_output_dict = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
+    def __check_header_name(self, header) -> None:
+        if header not in self.__forsys_output_dict.keys():
+                raise Exception("header, %s, is not a forsys output header"%header)
+
     def __set_header_names(self, priorities: list[str], area_header: str, cost_header: str, project_id_header: str) -> None:
         self.__priorities = priorities
         self.__priority_weight_headers = [self.__PRIORITY_WEIGHT_STRFORMAT % (
             i+1, priorities[i]) for i in range(len(priorities))]
+        for h in self.__priority_weight_headers:
+            self.__check_header_name(h)
+
         self.__priority_contribution_headers = [
             self.__CONTRIBUTION_STRFORMAT % (p) for p in priorities]
+        for h in self.__priority_weight_headers:
+            self.__check_header_name(h)
         self.__area_contribution_header = self.__CONTRIBUTION_STRFORMAT % area_header
+        self.__check_header_name(self.__area_contribution_header)
         self.__cost_contribution_header = self.__CONTRIBUTION_STRFORMAT % cost_header
+        self.__check_header_name(self.__cost_contribution_header)
         self.__project_id_header = project_id_header
+        self.__check_header_name(self.__project_id_header)
 
     def __get_weights_str(self, weights: dict) -> str:
         return " ".join([self.__WEIGHT_STRFORMAT % (k, weights[k]) for k in weights.keys()])
