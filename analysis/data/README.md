@@ -21,14 +21,14 @@ The data comes as 15-m raster maps that can be downloaded as zipfiles (`.tif` an
 -   **ap** (a.k.a impact) scores indicate the maximum level of support for either Adapt or Protect strategies. These areas would benefit most from management given the goals of protecting resources that are currently functional on the landscape (Protect) and treating those areas with the highest certainty of success from treatment (Adapt). Red colors (scores closer to +1) indicate areas with strong support for either Adapt or Protect strategies, while blue colors (scores closer to -1) indicate low support for these strategies.
 
 
-## California Building Outlines
+## US Building Outlines
 
 From: <https://github.com/Microsoft/USBuildingFootprints>
 
-GeoJSON with building outlines for California, generated from satellite imagery
-using an ANN computer vision model. We're converting this to a raster layer 
-because the highly detailed shapefile would be too big to display the web
-UI of Planscape. See issue
+GeoJSON with building outlines for the US, generated from satellite imagery
+using an ANN computer vision model. We're converting this to a raster layer
+of building presence for California because the highly detailed shapefile would
+be too big to display the web UI of Planscape. See issue
 [#277](https://github.com/OurPlanscape/Planscape/issues/277)
 
 
