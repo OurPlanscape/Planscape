@@ -17,7 +17,7 @@ scenario_sets <- function(input_stand_data, priorities) {
     scenario_weighting_values = c("1 5 1"), 
     proj_fixed_target =  FALSE,
     proj_target_field = "area",
-    proj_target_value = 2.0
+    proj_target_value = 1.0
   )
 
   return(run_outputs)
