@@ -20,7 +20,13 @@ import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import * as shp from 'shpjs';
 
-import { MapService, PlanService, PlanState, PopupService, SessionService } from '../services';
+import {
+  MapService,
+  PlanService,
+  PlanState,
+  PopupService,
+  SessionService,
+} from '../services';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -78,8 +84,8 @@ describe('MapComponent', () => {
       name: 'somePlan',
       ownerId: 'owner',
       region: Region.SIERRA_NEVADA,
-      planningArea: fakeGeoJson
-    }
+      planningArea: fakeGeoJson,
+    };
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
@@ -114,7 +120,7 @@ describe('MapComponent', () => {
     );
     const fakePlanService = jasmine.createSpyObj<PlanService>(
       'PlanService',
-      {createPlan: of({ success:true, fakePlan}) },
+      { createPlan: of({ success: true, result: fakePlan }) },
       {
         planState$: new BehaviorSubject<PlanState>({
           all: {}, // All plans indexed by id
@@ -693,7 +699,7 @@ describe('MapComponent', () => {
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
       expect(planServiceStub.createPlan).toHaveBeenCalled();
-      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan']);
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan', 'temp']);
     });
   });
 

@@ -24,9 +24,6 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 
 FROM python:3.10.9
 
-# create the app user
-RUN addgroup planscape && adduser planscape --ingroup planscape
-
 # create the appropriate directories
 ENV APP_HOME=/home/planscape/backend
 RUN mkdir -p $APP_HOME
@@ -40,11 +37,5 @@ RUN pip install --no-cache /wheels/*
 
 # copy project
 COPY . $APP_HOME
-
-# chown all the files to the planscape user
-RUN chown -R planscape:planscape $APP_HOME
-
-# change to the planscape user
-USER planscape
 
 CMD ["uwsgi", "--ini", "./planscape/uwsgi.ini"]

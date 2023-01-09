@@ -371,7 +371,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         })
         .subscribe((result) => {
           console.log(result);
-          this.router.navigate(['plan']);
+          this.router.navigate(['plan', result.result!.id]);
         });
     });
   }
