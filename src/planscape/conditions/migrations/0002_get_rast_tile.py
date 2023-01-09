@@ -93,20 +93,22 @@ BEGIN
         param_raster_name;
 
     /* Cut the extent of var_result down to the unextended bounding box */
-    EXECUTE 'SELECT ST_MapAlgebra($1, $2, ''[rast2]'', NULL::text, 
-                                 ''FIRST'', ''[rast2]'', NULL::text) rast'
+    EXECUTE
+        'SELECT ST_MapAlgebra($1, $2, ''[rast2]'', NULL::text, ''FIRST'', ''[rast2]'', NULL::text) rast'
     INTO var_result
     USING var_erast, var_result;
 
-       convert the var_result to 8-bit unsigned ints, and transform to output geometry. */
+    /* Convert the var_result to 8-bit unsigned ints. */
     IF param_raster_range IS NOT NULL THEN
         var_sql := 'SELECT ST_ReClass($1, 1, ''' || param_raster_range || ':[0-254]'', ''8BUI'', 255) rast';
-    END
-        EXECUTE var_sql
-        INTO var_result
-        USING var_result;
+    ELSE
+        var_sql := 'SELECT ST_ReClass($1, 1, ''[-1-1]:[0-254]'', ''8BUI'', 255) rast';
     END IF;
+    EXECUTE var_sql
+    INTO var_result
+    USING var_result;
 
+    /* Transform to output geometry. */
     EXECUTE 'SELECT ST_Transform($1, $2)'
     INTO var_result
     USING var_result, param_srid;

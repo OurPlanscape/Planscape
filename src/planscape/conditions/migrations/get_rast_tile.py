@@ -91,24 +91,16 @@ BEGIN
 	    var_srid,
         param_raster_name;
 
-raise notice '(%)', (ST_SummaryStats(var_result)).min;
-raise notice '(%)', (ST_SummaryStats(var_result)).max;
     /* Cut the extent of var_result down to the unextended bounding box,
        convert the var_result to 8-bit unsigned ints, and transform to output geometry. */
     var_sql :=
-        'SELECT ST_Transform(
-            ST_ReClass(ST_MapAlgebra($1, $2, ''[rast2]'', NULL::text,
-	                                 ''FIRST'', ''[rast2]'', NULL::text),
-                       1, ''[-1-1]:[0-254]'', ''8BUI'', 255), $3) rast';
+        'SELECT ST_Transform(ST_MapAlgebra($1, $2, ''[rast2]'', ''8BUI''::text,
+	                                       ''FIRST'', ''[rast2]'', NULL::text), $3) rast';
     EXECUTE var_sql INTO var_result
     USING var_erast, var_result, param_srid;
-    raise notice 'here0';
     IF var_result IS NULL THEN
         var_result := var_erast;
     END IF;
-raise notice '(%)', (ST_SummaryStats(var_result)).min;
-raise notice '(%)', (ST_SummaryStats(var_result)).max;
-
 
     RETURN
         CASE
