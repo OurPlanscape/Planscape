@@ -71,7 +71,7 @@ class ForsysScenarioSetOutput():
     # Of note, priorities must be listed in the same order they're listed for the forsys call.
     def __init__(self, raw_forsys_output: "rpy2.robjects.vectors.ListVector", priorities: list[str], project_id_header: str, area_header: str, cost_header: str):
         self.scenarios = {}
-        
+
         self.__save_raw_forsys_output_as_dict(raw_forsys_output)
 
         self.__set_header_names(priorities, area_header,
@@ -81,9 +81,11 @@ class ForsysScenarioSetOutput():
             scenario_weights, scenario_str = self.__get_scenario(i)
 
             if scenario_str in self.scenarios.keys():
-                self.__append_project_to_existing_scenario(scenario_str, scenario_weights, i)
+                self.__append_project_to_existing_scenario(
+                    scenario_str, scenario_weights, i)
             else:
-                self.__append_project_to_new_scenario(scenario_str, scenario_weights, i)
+                self.__append_project_to_new_scenario(
+                    scenario_str, scenario_weights, i)
 
     # The raw forsys output consists of 3 R dataframes. This is the index of the "project output" dataframe.
     __PROJECT_OUTPUT_INDEX = 1
@@ -116,7 +118,8 @@ class ForsysScenarioSetOutput():
 
     def __check_header_name(self, header) -> None:
         if header not in self.__forsys_output_dict.keys():
-                raise Exception("header, %s, is not a forsys output header"%header)
+            raise Exception(
+                "header, %s, is not a forsys output header" % header)
 
     def __set_header_names(self, priorities: list[str], area_header: str, cost_header: str, project_id_header: str) -> None:
         self.__priorities = priorities
@@ -158,7 +161,8 @@ class ForsysScenarioSetOutput():
             project.weighted_priority_scores[p] = contribution
             total = total + contribution
         project.total_score = total
-        project.rank = int(self.__forsys_output_dict[self.__TREATMENT_RANK_HEADER][ind])
+        project.rank = int(
+            self.__forsys_output_dict[self.__TREATMENT_RANK_HEADER][ind])
         return project
 
     def __append_project_to_existing_scenario(self, scenario_str: str, scenario_weights: dict, i: int) -> None:
