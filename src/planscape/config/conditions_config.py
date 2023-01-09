@@ -38,7 +38,7 @@ class PillarConfig:
                    'ignore',
                    'source',
                    'source_link',
-                   'data_source',
+                   'data_provider',
                    'data_download_link',
                    'data_year'}.union(COMMON_METADATA)
 
