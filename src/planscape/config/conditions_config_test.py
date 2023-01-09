@@ -21,7 +21,8 @@ class PillarConfigTest(unittest.TestCase):
         self.assertTrue(self._config.check_config())
 
     def test_get_region(self):
-        region: Optional[Region] = self._config.get_region("sierra_cascade_inyo")
+        region: Optional[Region] = self._config.get_region(
+            "sierra_cascade_inyo")
         self.assertIsNotNone(region)
         region = self._config.get_region("foo")
         self.assertIsNone(region)
@@ -46,6 +47,16 @@ class PillarConfigTest(unittest.TestCase):
         self.assertIsNotNone(metric)
         metric = self._config.get_metric("foo", "bar", "baz", "boo")
         self.assertIsNone(metric)
+
+    def test_get_min_max_values(self):
+        self.assertEqual(self._config.get_min_max_values(
+            'fire_dynamics.tif'), (-1, 1))
+        self.assertEqual(self._config.get_min_max_values(
+            'functional_fire.tif'), (-1, 1))
+        self.assertEqual(self._config.get_min_max_values(
+            'TPA_30in_up_2021_300m.tif'), (0, 26))
+        self.assertEqual(self._config.get_min_max_values(
+            'TPA_30in_up_2021_300m_normalized.tif'), (-1, 1))
 
 
 if __name__ == '__main__':

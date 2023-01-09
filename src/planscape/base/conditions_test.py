@@ -188,9 +188,9 @@ class ManagementConditionTest(unittest.TestCase):
         short = (np.sqrt(2) - 1)/np.sqrt(2)
         medium = (np.sqrt(2) - 2)/np.sqrt(2)
         long = (np.sqrt(2) - np.sqrt(5))/np.sqrt(2)
-        expected = np.array([[1, short, medium],
-                             [short, 0, long],
-                             [medium, long, -1]])
+        expected = np.array([[1.0, short, medium],
+                             [short, 0.0, long],
+                             [medium, long, -1.0]])
         self.assertTrue(np.all(expected == combined))
 
     def test_impact_condition(self):
@@ -210,6 +210,7 @@ class ConvertTest(unittest.TestCase):
         condition = np.array([[1, 2, 3], [4, 5, 6]])
         expected = np.array([[1, 2, 3], [4, 5, 6]])
         converted = convert_nodata_to_nan(np.nan, condition)
+        assert converted is not None
         self.assertTrue(np.all(np.nan_to_num(converted)
                         == np.nan_to_num(expected)))
 
@@ -217,6 +218,7 @@ class ConvertTest(unittest.TestCase):
         condition = np.array([[1, 2, 3], [np.nan, 5, 6]])
         expected = np.array([[1, 2, 3], [np.nan, 5, 6]])
         converted = convert_nodata_to_nan(np.nan, condition)
+        assert converted is not None
         self.assertTrue(np.all(np.nan_to_num(converted)
                         == np.nan_to_num(expected)))
 
@@ -230,5 +232,6 @@ class ConvertTest(unittest.TestCase):
         condition = np.array([[1, 2, 3], [np.nan, 999, 6]])
         expected = np.array([[1, 2, 3], [np.nan, np.nan, 6]])
         converted = convert_nodata_to_nan(999, condition)
+        assert converted is not None
         self.assertTrue(np.all(np.nan_to_num(converted)
                         == np.nan_to_num(expected)))

@@ -16,7 +16,8 @@ create or replace function get_rast_tile(
       param_table text,
       param_raster_column text,
       param_raster_name_column text,
-      param_raster_name text) returns bytea
+      param_raster_name text,
+      param_raster_range text) returns bytea
     immutable
     parallel safe
     cost 1000
@@ -91,24 +92,28 @@ BEGIN
 	    var_srid,
         param_raster_name;
 
-raise notice '(%)', (ST_SummaryStats(var_result)).min;
-raise notice '(%)', (ST_SummaryStats(var_result)).max;
-    /* Cut the extent of var_result down to the unextended bounding box,
+    /* Cut the extent of var_result down to the unextended bounding box */
+    EXECUTE 'SELECT ST_MapAlgebra($1, $2, ''[rast2]'', NULL::text, 
+                                 ''FIRST'', ''[rast2]'', NULL::text) rast'
+    INTO var_result
+    USING var_erast, var_result;
+
        convert the var_result to 8-bit unsigned ints, and transform to output geometry. */
-    var_sql :=
-        'SELECT ST_Transform(
-            ST_ReClass(ST_MapAlgebra($1, $2, ''[rast2]'', NULL::text,
-	                                 ''FIRST'', ''[rast2]'', NULL::text),
-                       1, ''[-1-1]:[0-254]'', ''8BUI'', 255), $3) rast';
-    EXECUTE var_sql INTO var_result
-    USING var_erast, var_result, param_srid;
-    raise notice 'here0';
+    IF param_raster_range IS NOT NULL THEN
+        var_sql := 'SELECT ST_ReClass($1, 1, ''' || param_raster_range || ':[0-254]'', ''8BUI'', 255) rast';
+    END
+        EXECUTE var_sql
+        INTO var_result
+        USING var_result;
+    END IF;
+
+    EXECUTE 'SELECT ST_Transform($1, $2)'
+    INTO var_result
+    USING var_result, param_srid;
+
     IF var_result IS NULL THEN
         var_result := var_erast;
     END IF;
-raise notice '(%)', (ST_SummaryStats(var_result)).min;
-raise notice '(%)', (ST_SummaryStats(var_result)).max;
-
 
     RETURN
         CASE
@@ -123,6 +128,7 @@ $$;
 class Migration(migrations.Migration):
 
     dependencies: list[Tuple[str, str]] = [
+        ('conditions', '0001_initial'),
     ]
 
     operations = [migrations.RunSQL(SQL)]
