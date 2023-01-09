@@ -4,7 +4,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, OuterRef, Subquery, Sum
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from plan.models import Plan, Project, ScenarioSet, Scenario
+from plan.models import Plan, Project, Scenario
 from plan.serializers import PlanSerializer
 from planscape import settings
 
@@ -123,31 +123,12 @@ def create_project(request: HttpRequest) -> HttpResponse:
         # TODO: Add more parameters as necessary.
         max_cost = body.get('max_cost', None)
 
+        # TODO: retrieve and save selected priorities 
+
         # Create the project.
         project = Project.objects.create(
             owner=owner, plan=plan, max_cost=max_cost)
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
-def create_scenario_set(request: HttpRequest) -> HttpResponse:
-    try:
-        # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
-
-        # body = json.loads(request.body)
-        # TODO: retrieve and save selected priorities 
-
-        # Create the scenario set
-        # scenario_set = ScenarioSet.objects.create()
-        # scenario_set.save()
-
-        return HttpResponse("placeholder")
-    except Exception as e:
-        print(e)
         return HttpResponseBadRequest("Ill-formed request: " + str(e))

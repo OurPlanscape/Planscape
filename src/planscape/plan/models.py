@@ -47,6 +47,9 @@ class Project(models.Model):
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)  # type: ignore
 
     # Project Parameters:
+ 
+    # TODO: Limit number of allowed priorities
+    priorities = models.ManyToManyField('conditions.Condition')
 
     # The maximum cost constraint. If null, no max cost.
     max_cost: models.IntegerField = models.IntegerField(null=True)
@@ -54,37 +57,20 @@ class Project(models.Model):
     # TODO: Add more project parameters like min_acres_treated and
     # permitted_ownership = (1=federal, 2=state, 4=private)
 
-class GeneratedProjectAreas(models.Model):
+class ProjectArea(models.Model):
     """
-    GeneratedProjectAreas are associated with one Project. It has geometries representing 
+    ProjectAreas are associated with one Project. Each ProjectArea has geometries representing 
     the project area, and an estimate of the area treated.
     """
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE)  # type: ignore
 
-    # The project area geometries. May be one or more polygons that represent the project area.
+    # The project area geometries. May be one or more polygons that represent a single project area.
     project_area = models.MultiPolygonField(srid=4269, null=True)
 
     # The sum total of the project area geometries.
     estimated_area_treated: models.IntegerField = models.IntegerField(
         null=True)
-
-
-class ScenarioSet(models.Model):
-    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
-    # we want alpha users to not be signed in.
-    owner = models.ForeignKey(
-        User, on_delete=models.CASCADE, null=True)  # type: ignore
-
-    project = models.ForeignKey(
-        Project, on_delete=models.CASCADE)  # type: ignore
-
-    # Scenario Parameters:
-
-    # TODO: Limit number of allowed priorities
-    priorities = models.ManyToManyField('conditions.Condition')
-
-    # TODO: Add constraints
 
 
 class Scenario(models.Model):
@@ -100,10 +86,8 @@ class Scenario(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE)  # type: ignore
 
-    # TODO: Change null=True once schema is finalized. Existing entries in the Scenario table do not have this field set.
-    scenario_set = models.ForeignKey(
-        ScenarioSet, on_delete=models.CASCADE, null=True)
-
     # TODO: Add project area ranking
 
     # TODO: Add flag to indicate whether this was a 'selected' scenario
+
+    # TODO: Add estimated cost

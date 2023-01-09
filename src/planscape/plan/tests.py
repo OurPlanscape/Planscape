@@ -10,18 +10,6 @@ from .models import Plan, Project, Scenario
 
 from .models import Plan, Project, Scenario
 
-class ScenarioSetTest(TransactionTestCase):
-    def setUp(self):
-        self.user = User.objects.create(username='testuser')
-        self.user.set_password('12345')
-        self.user.save()
-
-    def test_missing_user_ok(self):
-        response = self.client.post(
-            reverse('plan:create_scenario_set'), {},
-            content_type='application/json')
-        self.assertEqual(response.status_code, 200)
-
 class PlanTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
