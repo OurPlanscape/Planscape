@@ -98,6 +98,7 @@ BEGIN
 	                                       ''FIRST'', ''[rast2]'', NULL::text), $3) rast';
     EXECUTE var_sql INTO var_result
     USING var_erast, var_result, param_srid;
+
     IF var_result IS NULL THEN
         var_result := var_erast;
     END IF;
