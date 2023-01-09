@@ -146,12 +146,12 @@ class ManagementConditionTest(unittest.TestCase):
         future = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
         combined = management_condition(
             current, future, ConditionScoreType.ADAPT)
-        short = (np.sqrt(2) - 1)/np.sqrt(2)
-        medium = (np.sqrt(2) - 2)/np.sqrt(2)
-        long = (np.sqrt(2) - np.sqrt(5))/np.sqrt(2)
-        expected = np.array([[medium, short, 1],
-                             [long, 0, short],
-                             [-1, long, medium]])
+        short = float((np.sqrt(2) - 1)/np.sqrt(2))
+        medium = float((np.sqrt(2) - 2)/np.sqrt(2))
+        long = float((np.sqrt(2) - np.sqrt(5))/np.sqrt(2))
+        expected = np.array([[medium, short, 1.0],
+                             [long, 0.0, short],
+                             [-1.0, long, medium]])
         self.assertTrue(np.all(expected == combined))
 
     def test_monitor_condition(self):
@@ -159,12 +159,12 @@ class ManagementConditionTest(unittest.TestCase):
         future = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
         combined = management_condition(
             current, future, ConditionScoreType.MONITOR)
-        short = (np.sqrt(2) - 1)/np.sqrt(2)
-        medium = (np.sqrt(2) - 2)/np.sqrt(2)
-        long = (np.sqrt(2) - np.sqrt(5))/np.sqrt(2)
-        expected = np.array([[-1, long, medium],
-                             [long, 0, short],
-                             [medium, short, 1]])
+        short = float((np.sqrt(2) - 1)/np.sqrt(2))
+        medium = float((np.sqrt(2) - 2)/np.sqrt(2))
+        long = float((np.sqrt(2) - np.sqrt(5))/np.sqrt(2))
+        expected = np.array([[-1.0, long, medium],
+                             [long, 0.0, short],
+                             [medium, short, 1.0]])
         self.assertTrue(np.all(expected == combined))
 
     def test_protect_condition(self):
@@ -172,12 +172,12 @@ class ManagementConditionTest(unittest.TestCase):
         future = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
         combined = management_condition(
             current, future, ConditionScoreType.PROTECT)
-        short = (np.sqrt(2) - 1)/np.sqrt(2)
-        medium = (np.sqrt(2) - 2)/np.sqrt(2)
-        long = (np.sqrt(2) - np.sqrt(5))/np.sqrt(2)
-        expected = np.array([[medium, long, -1],
-                             [short, 0, long],
-                             [1, short, medium]])
+        short = float((np.sqrt(2) - 1)/np.sqrt(2))
+        medium = float((np.sqrt(2) - 2)/np.sqrt(2))
+        long = float((np.sqrt(2) - np.sqrt(5))/np.sqrt(2))
+        expected = np.array([[medium, long, -1.0],
+                             [short, 0.0, long],
+                             [1.0, short, medium]])
         self.assertTrue(np.all(expected == combined))
 
     def test_transform_condition(self):
@@ -185,9 +185,9 @@ class ManagementConditionTest(unittest.TestCase):
         future = np.array([[-1, 0, 1], [-1, 0, 1], [-1, 0, 1]])
         combined = management_condition(
             current, future, ConditionScoreType.TRANSFORM)
-        short = (np.sqrt(2) - 1)/np.sqrt(2)
-        medium = (np.sqrt(2) - 2)/np.sqrt(2)
-        long = (np.sqrt(2) - np.sqrt(5))/np.sqrt(2)
+        short = float((np.sqrt(2) - 1)/np.sqrt(2))
+        medium = float((np.sqrt(2) - 2)/np.sqrt(2))
+        long = float((np.sqrt(2) - np.sqrt(5))/np.sqrt(2))
         expected = np.array([[1.0, short, medium],
                              [short, 0.0, long],
                              [medium, long, -1.0]])
