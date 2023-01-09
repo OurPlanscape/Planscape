@@ -95,7 +95,7 @@ BEGIN
        convert the var_result to 8-bit unsigned ints, and transform to output geometry. */
     var_sql :=
         'SELECT ST_Transform(ST_MapAlgebra($1, $2, ''[rast2]'', ''8BUI''::text,
-	                                       ''FIRST'', ''[rast2]'', NULL::text), $3) rast';
+	                                   ''FIRST'', ''[rast2]'', NULL::text), $3) rast';
     EXECUTE var_sql INTO var_result
     USING var_erast, var_result, param_srid;
 
