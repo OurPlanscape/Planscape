@@ -69,9 +69,9 @@ export class PlanService {
   /** Makes a request to the backend to delete a plan with the given ID. */
   deletePlan(planIds: string[]): Observable<string> {
     return this.http.post<string>(
-      BackendConstants.END_POINT.concat('/plan/delete/?id=', planIds.join()),
+      BackendConstants.END_POINT.concat('/plan/delete/?id=', planIds.toString()),
       {
-        id: planIds.join(),
+        id: planIds,
       },
       {
         withCredentials: true,

@@ -76,13 +76,13 @@ def delete(request: HttpRequest) -> HttpResponse:
         plan_id = body.get('id', None)
         plan_ids = []
         if plan_id is None:
-            raise ValueError("Must specify plan_id")
+            raise ValueError("Must specify plan id")
         elif isinstance(plan_id, int):
             plan_ids = [plan_id]
-        elif isinstance(plan_id, str):
-            plan_ids = [int(x) for x in plan_id.split(',')]
+        elif isinstance(plan_id, list):
+            plan_ids = plan_id
         else:
-            raise ValueError("Bad plan_id: " + plan_id)
+            raise ValueError("Bad plan id: " + plan_id)
 
         # Get the plans, and if the user is logged in, make sure either
         # 1. the plan owner and the owner are both None, or
@@ -95,7 +95,8 @@ def delete(request: HttpRequest) -> HttpResponse:
                     "Cannot delete plan; plan is not owned by user")
         for plan in plans:
             plan.delete()
-        return HttpResponse(plan_id)
+        response_data = {'id': plan_ids}
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
