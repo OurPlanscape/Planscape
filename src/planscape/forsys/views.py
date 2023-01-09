@@ -321,7 +321,7 @@ def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> ForsysScenari
                                              robjects.StrVector(priority_headers))
 
     parsed_output = ForsysScenarioSetOutput(
-        forsys_output, priorities, "proj_id", "area", "cost")
+        forsys_output, priority_headers, "proj_id", "area", "cost")
 
     # TODO: add logic for applying constraints to forsys_output.
 
