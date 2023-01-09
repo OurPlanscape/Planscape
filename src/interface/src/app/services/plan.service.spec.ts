@@ -55,6 +55,38 @@ describe('PlanService', () => {
     });
   });
 
+  describe('deletePlan', () => {
+    it('should make HTTP post request to DB for a single ID', () => {
+      service.deletePlan(['1']).subscribe((res) => {
+        expect(res).toEqual('1');
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/delete/?id=1')
+      );
+
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body['id']).toEqual(['1']);
+
+      req.flush('1');
+      httpTestingController.verify();
+    });
+
+    it('should make HTTP post request to DB for multiple IDs', () => {
+      service.deletePlan(['1', '2', '3']).subscribe((res) => {
+        expect(res).toEqual('[1,2,3]');
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/delete/?id=1,2,3')
+      );
+
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body['id']).toEqual(['1', '2', '3']);
+
+      req.flush('[1,2,3]');
+      httpTestingController.verify();
+    });
+  });
+
   describe('getPlan', () => {
     it('should make HTTP get request to DB', () => {
       const expectedPlan: Plan = {
@@ -66,7 +98,7 @@ describe('PlanService', () => {
         id: 1,
         name: expectedPlan.name,
         owner: 2,
-        region: expectedPlan.region,
+        region_name: expectedPlan.region,
         geometry: expectedPlan.planningArea,
       };
 
@@ -88,14 +120,18 @@ describe('PlanService', () => {
         id: '1',
         name: mockPlan.name,
         region: mockPlan.region,
+        savedScenarios: 1,
+        createdTimestamp: 5000,
       };
 
       const backendPlan: BackendPlan = {
         id: 1,
         name: expectedPlan.name,
         owner: 2,
-        region: mockPlan.region,
+        region_name: mockPlan.region,
         geometry: mockPlan.planningArea,
+        scenarios: 1,
+        creation_timestamp: 5,
       };
 
       service.listPlansByUser(null).subscribe((res) => {
