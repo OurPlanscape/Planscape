@@ -65,7 +65,7 @@ describe('PlanService', () => {
       );
 
       expect(req.request.method).toEqual('POST');
-      expect(req.request.body['id']).toEqual('1');
+      expect(req.request.body['id']).toEqual(['1']);
 
       req.flush('1');
       httpTestingController.verify();
@@ -73,16 +73,16 @@ describe('PlanService', () => {
 
     it('should make HTTP post request to DB for multiple IDs', () => {
       service.deletePlan(['1', '2', '3']).subscribe((res) => {
-        expect(res).toEqual('1,2,3');
+        expect(res).toEqual('[1,2,3]');
       });
       const req = httpTestingController.expectOne(
         BackendConstants.END_POINT.concat('/plan/delete/?id=1,2,3')
       );
 
       expect(req.request.method).toEqual('POST');
-      expect(req.request.body['id']).toEqual('1,2,3');
+      expect(req.request.body['id']).toEqual(['1', '2', '3']);
 
-      req.flush('1,2,3');
+      req.flush('[1,2,3]');
       httpTestingController.verify();
     });
   });
