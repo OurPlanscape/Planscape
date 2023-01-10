@@ -141,6 +141,7 @@ export class MapManager {
         maxZoom: 19,
         attribution:
           '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+        zIndex: 0,
       }
     );
   }

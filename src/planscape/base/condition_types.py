@@ -15,7 +15,7 @@ Types defined:
 """
 
 import enum
-from typing import Any, Optional, TypedDict
+from typing import TypedDict
 from xmlrpc.client import boolean
 
 import numpy as np
@@ -50,6 +50,8 @@ class Metric(TypedDict):
     display_name: NotRequired[str]
     current_conditions_only: NotRequired[boolean]
     colormap: NotRequired[str]
+    min_value: NotRequired[int]
+    max_value: NotRequired[int]
 
 
 class Element(TypedDict):
