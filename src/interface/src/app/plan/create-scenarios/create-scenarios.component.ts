@@ -6,6 +6,7 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./create-scenarios.component.scss']
 })
 export class CreateScenariosComponent implements OnInit {
+  panelExpanded: boolean = true;
 
   constructor() { }
 
