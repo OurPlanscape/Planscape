@@ -14,21 +14,25 @@ class TestForsysScenarioSetRequestParams(TestCase):
         keys = list(params.project_areas.keys())
         keys.sort()
         assert keys == [1, 2]
+
         assert params.project_areas[1].coords == ((((-120.14015536869722, 39.05413814388948), (-120.18409937110482, 39.48622140686506), (-119.93422142411087, 39.48622140686506), (-119.93422142411087, 39.05413814388948), (-120.14015536869722, 39.05413814388948)),), ((
             (-120.14015536869722, 38.05413814388948), (-120.18409937110482, 38.48622140686506), (-119.93422142411087, 38.48622140686506), (-119.93422142411087, 38.05413814388948), (-120.14015536869722, 38.05413814388948)),))
         assert params.project_areas[2].coords == ((((-118.14015536869722, 39.05413814388948), (-118.18409937110482, 39.48622140686506),
                                                     (-119.53422142411087, 39.48622140686506), (-119.53422142411087, 39.05413814388948), (-118.14015536869722, 39.05413814388948)),),)
+
 
     def test_reads_region_from_url_params(self) -> None:
         qd = QueryDict('set_all_params_via_url_params=1&region=foo')
         params = ForsysScenarioSetRequestParams(qd)
         assert params.region == 'foo'
 
+
     def test_reads_priorities_from_url_params(self) -> None:
         qd = QueryDict(
             'set_all_params_via_url_params=1&priorities=foo&priorities=bar&priorities=baz')
         params = ForsysScenarioSetRequestParams(qd)
         assert params.priorities == ['foo', 'bar', 'baz']
+
 
     def test_reads_project_areas_from_url_params(self) -> None:
         qd = QueryDict(
@@ -49,6 +53,7 @@ class TestForsysScenarioSetRequestParams(TestCase):
         with self.assertRaises(Exception) as context:
             ForsysScenarioSetRequestParams(qd)
         assert "LinearRing requires at least 4 points, got 2" in str(context.exception)
+
 
     def test_reads_from_db(self) -> None:
         qd = QueryDict('')
