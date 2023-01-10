@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 # Fetches input parameters for the scenario_set api.
 def fetch_input_params() -> dict:
     # TODO: make input_params an object.
-    # TODO: replace hardcoded values with parameters read from QueryDict and/or data retrieved from db.
+    # TODO: replace hardcoded values with parameters read from QueryDict and/or
+    # data retrieved from db.
     input_params = {}
     input_params['save_debug_info'] = True
     input_params['region'] = 'sierra_cascade_inyo'
@@ -46,7 +47,8 @@ def fetch_input_params() -> dict:
 
 
 # Converts R dataframe to Pandas dataframe.
-# TODO: the broadly-accepted solution involves robjects.conversion.rpy2py - debug why it failed with an input type error.
+# TODO: the broadly-accepted solution involves robjects.conversion.rpy2py -
+#   debug why it failed with an input type error.
 def convert_rdf_to_pddf(rdf: dict) -> "pd.Dataframe":
     pddf = pd.DataFrame.from_dict(
         {key: np.asarray(rdf.rx2(key)) for key in rdf.names})
@@ -55,7 +57,8 @@ def convert_rdf_to_pddf(rdf: dict) -> "pd.Dataframe":
 
 # Converts dictionary of lists to R dataframe.
 # The lists must have equal length.
-def convert_dictionary_of_lists_to_rdf(lists: dict) -> "rpy2.robjects.vectors.DataFrame":
+def convert_dictionary_of_lists_to_rdf(
+        lists: dict) -> "rpy2.robjects.vectors.DataFrame":
     data = {}
     for key in lists.keys():
         if len(lists[key]) == 0:
@@ -72,16 +75,17 @@ def convert_dictionary_of_lists_to_rdf(lists: dict) -> "rpy2.robjects.vectors.Da
     return rdf
 
 
-def get_boundary_debug_info(boundaries: QuerySet, project_area: Polygon) -> dict:
+def get_boundary_debug_info(
+        boundaries: QuerySet, project_area: Polygon) -> dict:
     boundary_response = []
     for b in boundaries:
         geo = b.geometry
         p = project_area.clone()
         p.transform(CoordTransform(SpatialReference(
             project_area.srid), SpatialReference(geo.srid)))
-        boundary_response.append("%s (id=%s, intersection area=%f)" % (b.shape_name,
-                                                                       b.boundary_id,
-                                                                       geo.intersection(project_area).area))
+        boundary_response.append(
+            "%s (id=%s, intersection area=%f)" %
+            (b.shape_name, b.boundary_id, geo.intersection(project_area).area))
     return boundary_response
 
 
@@ -94,7 +98,9 @@ def get_raster_debug_info(rasters: dict) -> dict:
         mean = np.sum(d[~np.isnan(d)]) / count if count > 0 else 0
         shape = np.shape(d)
         raster_response.append(
-            "%s (non-nan area: %d, mean: %f, shape: %d x %d)" % (c, count, mean, shape[0], shape[1]))
+            "%s (non-nan area: %d, mean: %f, shape: %d x %d)" %
+            (c, count, mean, shape[0],
+             shape[1]))
     return raster_response
 
 
@@ -103,10 +109,12 @@ def get_condition_rasters(condition: str, region: str) -> QuerySet:
         condition_name=condition).filter(region_name=region).all()
     if len(conditions) == 0:
         raise LookupError(
-            "no condition with name, %s, exists in region, %s" % (condition, region))
+            "no condition with name, %s, exists in region, %s" %
+            (condition, region))
     if len(conditions) > 1:
         raise LookupError(
-            "more than 1 condition with name, %s, exists in region, %s" % (condition, region))
+            "more than 1 condition with name, %s, exists in region, %s" %
+            (condition, region))
     c = conditions[0]
     condition_files = Condition.objects.filter(condition_dataset_id=c.id).all()
     if len(condition_files) == 0:
@@ -114,14 +122,16 @@ def get_condition_rasters(condition: str, region: str) -> QuerySet:
             "no condition filename exists for condition id, %d" % (c.id))
     if len(condition_files) > 1:
         raise LookupError(
-            "more than 1 condition filename exists for condition id, %d" % (c.id))
+            "more than 1 condition filename exists for condition id, %d" %
+            (c.id))
 
     condition_rasters = ConditionRaster.objects.filter(
         name=condition_files[0].raster_name)
     return condition_rasters
 
 
-def raster_extent_overlaps_project_area(raster: GDALRaster, project_area: Polygon) -> bool:
+def raster_extent_overlaps_project_area(
+        raster: GDALRaster, project_area: Polygon) -> bool:
     e = raster.extent
     e_polygon = Polygon(((e[0], e[1]),
                          (e[2], e[1]),
@@ -131,16 +141,20 @@ def raster_extent_overlaps_project_area(raster: GDALRaster, project_area: Polygo
     return e_polygon.overlaps(project_area)
 
 
-# Merges two raster inputs into a single output raster according to the scale and skew of the base_raster.
-def mosaic_rasters(base_raster: GDALRaster, addon_raster: GDALRaster) -> GDALRaster:
+# Merges two raster inputs into a single output raster according to the scale
+# and skew of the base_raster.
+def mosaic_rasters(
+        base_raster: GDALRaster, addon_raster: GDALRaster) -> GDALRaster:
     scale = base_raster.scale
     skew = base_raster.skew
     origin = base_raster.origin
 
-    # distorts the add-on raster according to the scale and skew of the base raster.
+    # distorts the add-on raster according to the scale and skew of the base
+    # raster.
     addon_raster_copy = addon_raster.warp({"scale": scale, "skew": skew})
 
-    # computes the origin, width, and height of the merged raster and adjusts rasters accordingly.
+    # computes the origin, width, and height of the merged raster and adjusts
+    # rasters accordingly.
     origin[0] = addon_raster_copy.origin[0] if addon_raster_copy.origin[0] < origin[0] else origin[0]
     origin[1] = addon_raster_copy.origin[1] if addon_raster_copy.origin[1] > origin[1] else origin[1]
 
@@ -170,7 +184,9 @@ def mosaic_rasters(base_raster: GDALRaster, addon_raster: GDALRaster) -> GDALRas
     return base_raster_copy
 
 
-def fetch_condition_rasters(priorities: list[str], region: str, project_area: Polygon) -> dict:
+def fetch_condition_rasters(
+        priorities: list[str],
+        region: str, project_area: Polygon) -> dict:
     all_rasters = {}
 
     for p in priorities:
@@ -181,7 +197,8 @@ def fetch_condition_rasters(priorities: list[str], region: str, project_area: Po
         for cr in condition_rasters:
             r = cr.raster
 
-            # Checking for overlapping extents is faster than issuing a query that checks for overlaps.
+            # Checking for overlapping extents is faster than issuing a query
+            # that checks for overlaps.
             if not raster_extent_overlaps_project_area(r, project_area):
                 continue
             if is_first_raster:
@@ -218,7 +235,9 @@ def convert_extent_to_raster_indices(extent: Envelope, origin: GDALRaster.origin
     return (min_x, min_y, max_x, max_y)
 
 
-def polygon_contains_point(origin: GDALRaster.origin, scale: GDALRaster.scale, x: int, y: int, polygon: Polygon) -> bool:
+def polygon_contains_point(
+        origin: GDALRaster.origin, scale: GDALRaster.scale, x: int, y: int,
+        polygon: Polygon) -> bool:
     # TODO: adjust these equations for the case where skew != [0, 0]
     xpoly = origin[0] + x*scale[0]
     ypoly = origin[1] + y*scale[1]
@@ -226,7 +245,9 @@ def polygon_contains_point(origin: GDALRaster.origin, scale: GDALRaster.scale, x
     return p.within(polygon)
 
 
-def count_raster_data(data: np.ndarray, extent_indices: Envelope, origin: GDALRaster.origin, scale: GDALRaster.scale, polygon: Polygon) -> (int, float):
+def count_raster_data(data: np.ndarray, extent_indices: Envelope,
+                      origin: GDALRaster.origin, scale: GDALRaster.scale,
+                      polygon: Polygon) -> (int, float):
     count = 0
     sum = 0
     for y in range(extent_indices[1], extent_indices[3] + 1, 1):
@@ -258,7 +279,9 @@ def get_condition_data(raster: GDALRaster, polygon: Polygon) -> dict:
     return {"mean": sum / count, "count": count}
 
 
-def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: QuerySet, project_area: Polygon, project_area_id: int) -> dict:
+def transform_into_forsys_df_data(condition_rasters: QuerySet,
+                                  boundaries: QuerySet, project_area: Polygon,
+                                  project_area_id: int) -> dict[str, list]:
     kConditionPrefix = "cond"
     kPriorityPrefix = "p"
     # TODO: fix cost estimation once rasters become available.
@@ -301,7 +324,9 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet, boundaries: Query
 
 
 # Runs a forsys scenario sets call.
-def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> ForsysScenarioSetOutput:
+def run_forsys_scenario_sets(
+        forsys_input_dict: dict[str, list],
+        priorities: list[str]) -> ForsysScenarioSetOutput:
     kPriorityPrefix = "p"
 
     import rpy2.robjects as robjects
@@ -310,15 +335,16 @@ def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> ForsysScenari
     scenario_sets_function_r = robjects.globalenv['scenario_sets']
 
     # TODO: add inputs for thresholds.
-    # TODO: clean-up: pass header names (e.g. proj_id) into scenario_sets_function_r.
-    rdf = convert_dictionary_of_lists_to_rdf(npdf)
+    # TODO: clean-up: pass header names (e.g. proj_id) into
+    # scenario_sets_function_r.
+    forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
     priority_headers = []
     for p in priorities:
         priority_headers.append(kPriorityPrefix + "_" + p)
 
-    forsys_output = scenario_sets_function_r(rdf,
-                                             robjects.StrVector(priority_headers))
+    forsys_output = scenario_sets_function_r(
+        forsys_input, robjects.StrVector(priority_headers))
 
     parsed_output = ForsysScenarioSetOutput(
         forsys_output, priority_headers, "proj_id", "area", "cost")
@@ -331,7 +357,8 @@ def run_forsys_scenario_sets(npdf: dict, priorities: list[str]) -> ForsysScenari
 # Returns JSon data for a forsys scenario set call.
 def scenario_set(request: HttpRequest) -> HttpResponse:
     try:
-        # TODO: fetch region, boundary, priorities, stand type, and project area, project area SRID as url parameters (or from the db).
+        # TODO: fetch region, boundary, priorities, stand type, and project
+        # area, project area SRID as url parameters (or from the db).
         input_params = fetch_input_params()
         save_debug_info = input_params['save_debug_info']
         region = input_params['region']
@@ -351,10 +378,14 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
                 response['debug'] = {}
 
             # Filters boundaries by boundary_id.
-            # TODO: add more stand options. For the existing solution, project areas drawn manually are divided into stands according to HUC-12 boundaries.
-            # TODO: double-check, in this case, that "__intersects" works when project_area and boundary geometry have different srid's.
+            # TODO: add more stand options. For the existing solution, project
+            # areas drawn manually are divided into stands according to HUC-12
+            # boundaries.
+            # TODO: double-check, in this case, that "__intersects" works when
+            # project_area and boundary geometry have different srid's.
             boundaries = BoundaryDetails.objects.filter(
-                boundary_id=huc12_id).filter(geometry__intersects=project_area)
+                boundary_id=huc12_id).filter(
+                geometry__intersects=project_area)
             if (save_debug_info):
                 response['debug']['huc-12 boundaries'] = get_boundary_debug_info(
                     boundaries, project_area)
@@ -367,7 +398,9 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
                     condition_rasters)
 
             # Transforms rasters into dataframes.
-            # TODO: instead of using HUC-12 boundaries to delineate stands, add options for using individual pixels and individual latitudinal bars.
+            # TODO: instead of using HUC-12 boundaries to delineate stands, add
+            # options for using individual pixels and individual latitudinal
+            # bars.
             dataframe_data = transform_into_forsys_df_data(
                 condition_rasters, boundaries, project_area_raster, i)
             if len(forsys_input_df.keys()) == 0:
@@ -387,9 +420,12 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
         response['forsys']['output_project'] = json.dumps(
             forsys_scenario_sets_output.scenarios)
 
-        # TODO: configure response to potentially show stand coordinates and other signals necessary for the UI.
+        # TODO: configure response to potentially show stand coordinates and
+        # other signals necessary for the UI.
 
-        return HttpResponse(JsonResponse(response), content_type='application/json')
+        return HttpResponse(
+            JsonResponse(response),
+            content_type='application/json')
 
     except Exception as e:
         logger.error('scenario set error: ' + str(e))

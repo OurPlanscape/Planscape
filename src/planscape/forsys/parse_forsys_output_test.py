@@ -5,7 +5,6 @@ import rpy2.robjects as ro
 from django.test import TestCase
 from forsys.parse_forsys_output import ForsysScenarioSetOutput
 
-
 class TestForsysScenarioSetOutput(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
@@ -93,8 +92,9 @@ class TestForsysScenarioSetOutput(TestCase):
             ForsysScenarioSetOutput(
                 raw_forsys_output, ["p1", "p2"], "proj_id", "area_ha", "cost")
 
-        self.assertEqual(str(
-            context.exception), 'header, ETrt_area_ha_PCP, is not a forsys output header')
+        self.assertEqual(
+            str(context.exception),
+            'header, ETrt_area_ha_PCP, is not a forsys output header')
 
     def test_fails_if_cost_header_is_wrong(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
@@ -104,10 +104,12 @@ class TestForsysScenarioSetOutput(TestCase):
             ForsysScenarioSetOutput(
                 raw_forsys_output, ["p1", "p2"], "proj_id", "area", "c")
 
-        self.assertEqual(str(
-            context.exception), 'header, ETrt_c_PCP, is not a forsys output header')
+        self.assertEqual(
+            str(context.exception),
+            'header, ETrt_c_PCP, is not a forsys output header')
 
-    def _convert_dictionary_of_lists_to_rdf(self, lists: dict) -> ro.vectors.DataFrame:
+    def _convert_dictionary_of_lists_to_rdf(
+            self, lists: dict) -> ro.vectors.DataFrame:
         data = {}
         for key in lists.keys():
             if len(lists[key]) == 0:
@@ -134,10 +136,8 @@ class TestForsysScenarioSetOutput(TestCase):
             "ETrt_area_PCP": [10, 11, 12, 11, 10, 12],
             "ETrt_cost_PCP": [500, 600, 800, 600, 500, 800],
         }
-        raw_forsys_output = ro.vectors.ListVector({"stand_output": self._convert_dictionary_of_lists_to_rdf(
-            {}), "project_output": self._convert_dictionary_of_lists_to_rdf(data), "subset_output": self._convert_dictionary_of_lists_to_rdf({})})
+        raw_forsys_output = ro.vectors.ListVector(
+            {"stand_output": self._convert_dictionary_of_lists_to_rdf({}),
+             "project_output": self._convert_dictionary_of_lists_to_rdf(data),
+             "subset_output": self._convert_dictionary_of_lists_to_rdf({})})
         return raw_forsys_output
-
-
-if __name__ == '__main__':
-    unittest.main()
