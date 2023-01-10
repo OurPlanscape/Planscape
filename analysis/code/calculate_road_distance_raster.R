@@ -15,20 +15,39 @@ roads <- road_files |>
   bind_rows()
 
 # load an RRK metric for raster extent and resolution
-accel_fn <- 'analysis/data/Sierra Nevada ACCEL/fireAdaptComm/DamagePotential_WUI_2022_300m_normalized.tif'
-accel_extent <- raster(accel_fn)
+rrk_fn <- 'analysis/data/RRK - Sierra Nevada/forest_resilience/forest_composition_normalized.tif'
+rrk_extent <- raster(rrk_fn)
 # set all values to zero (just to be safe)
-values(accel_extent) <- 0
-names(accel_extent) <- 'buildings_present'
+values(rrk_extent) <- 0
+names(rrk_extent) <- 'road_distance'
 # set correct CRS
-proj4string(accel_extent) <- CRS("+init=EPSG:3310")
+proj4string(rrk_extent) <- CRS('+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs')
+
+# check extent and alignment
+roads_sample <- roads %>%
+  sample_n(1e3) %>%
+  select() %>%
+  st_transform(crs(rrk_extent))
+ggplot() +
+  geom_sf(data = roads_sample) +
+  geom_sf(
+    data = roads %>%
+      st_transform(crs(rrk_extent)) %>%
+      st_bbox() %>%
+      st_as_sfc(),
+    fill = NA,
+    color = 'red') +
+  geom_sf(
+    data = st_as_sfc(st_bbox(rrk_extent)),
+    fill = NA,
+    color = 'blue')
 
 # rasterize, checking if roads are present in each cell
 roads_raster <- roads %>%
-  st_transform(crs(accel_extent)) %>%
+  st_transform(crs(rrk_extent)) %>%
   select() %>%
   as_Spatial() %>%
-  rasterize(y = accel_extent)
+  rasterize(y = rrk_extent)
 writeRaster(roads_raster, 'analysis/output/roads_raster.tif')
 
 # make into NA or 0 values
