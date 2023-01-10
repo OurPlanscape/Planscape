@@ -3,15 +3,50 @@ import rpy2
 import numpy as np
 
 
+class RankedProject():
+    # Project ID.
+    id: int
+    # Contribution of each priority to the total score
+    # The contribution is weighted according to a scenario's priority weights.
+    weighted_priority_scores: dict
+    # The total score, summed across weighted priority scores.
+    total_score: float
+    # Project rank.
+    rank: int
+
+    def __init__(self) -> None:
+        self.id = -1
+        self.weighted_priority_scores = {}
+        self.total_score = 0
+        self.rank = -1
+
+    # Converts a RankedProject to a dictionary.
+    # This facilitates JSON conversion.
+    def to_dictionary(self) -> dict:
+        output = {
+            'id': self.id,
+            'weighted_priority_scores': self.weighted_priority_scores,
+            'total_score': self.total_score,
+            'rank': self.rank,
+        }
+        return output
+
+
 class Scenario():
     # Priority weights for the scenario.
-    priority_weights = {}
+    priority_weights: dict
     # A list of the projects, ranked.
-    ranked_projects = []
+    ranked_projects: list[RankedProject]
     # Given ranked projects, a cumulative sum of project area.
-    cumulative_ranked_project_area = []
+    cumulative_ranked_project_area: list[float]
     # Given ranked projects, a cumulative sum of project cost.
-    cumulative_ranked_project_cost = []
+    cumulative_ranked_project_cost: list[float]
+
+    def __init__(self) -> None:
+        self.priority_weights = {}
+        self.ranked_projects = []
+        self.cumulative_ranked_project_area = []
+        self.cumulative_ranked_project_cost = []
 
     # Converts a Scenario to a dictionary.
     # This facilitates JSON conversion.
@@ -32,32 +67,9 @@ class Scenario():
         return output
 
 
-class RankedProject():
-    # Project ID.
-    id = -1
-    # Contribution of each priority to the total score
-    # The contribution is weighted according to a scenario's priority weights.
-    weighted_priority_scores = {}
-    # The total score, summed across weighted priority scores.
-    total_score = 0
-    # Project rank.
-    rank = -1
-
-    # Converts a RankedProject to a dictionary.
-    # This facilitates JSON conversion.
-    def to_dictionary(self) -> dict:
-        output = {
-            'id': self.id,
-            'weighted_priority_scores': self.weighted_priority_scores,
-            'total_score': self.total_score,
-            'rank': self.rank,
-        }
-        return output
-
-
 # Transforms the output of a Forsys scenario set run into a more easily-interpreted version.
 class ForsysScenarioSetOutput():
-    scenarios = {}
+    scenarios: dict
 
     # Converts a ForsysScenarioSetOutput to a dictionary.
     # This facilitates JSON conversion.
@@ -101,15 +113,15 @@ class ForsysScenarioSetOutput():
     __WEIGHT_STRFORMAT = "%s:%d"
 
     # The "project output" dataframe is converted into a dictionary so that it's easier to parse.
-    __forsys_output_dict = {}
+    __forsys_output_dict: dict
     # A list of priorities.
-    __priorities = []
+    __priorities: list[str]
     # The headers used to parse the "project output" dataframe.
-    __priority_weight_headers = []
-    __priority_contribution_headers = []
-    __project_id_header = ""
-    __area_contribution_header = ""
-    __cost_contribution_header = ""
+    __priority_weight_headers: list[str]
+    __priority_contribution_headers: list[str]
+    __project_id_header: str
+    __area_contribution_header: str
+    __cost_contribution_header: str
 
     def __save_raw_forsys_output_as_dict(self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
         rdf = raw_forsys_output[self.__PROJECT_OUTPUT_INDEX]
