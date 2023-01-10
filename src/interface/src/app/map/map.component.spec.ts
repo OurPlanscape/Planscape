@@ -40,7 +40,7 @@ import {
   Region,
 } from './../types';
 import { MapManager } from './map-manager';
-import { MapComponent } from './map.component';
+import { ConditionsNode, MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 
@@ -787,6 +787,41 @@ describe('MapComponent', () => {
       });
 
       expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
+    });
+  });
+
+  describe('condition tree', () => {
+    beforeEach(() => {
+      component.conditionDataSource.data = [
+        {
+          children: [{}, {}, {}],
+        },
+        {
+          children: [],
+        },
+      ];
+    });
+
+    it('styles children of a selected node and unstyles all other nodes', () => {
+      const nodeWithChildren = component.conditionDataSource.data[0];
+      const nodeWithoutChildren = component.conditionDataSource.data[1];
+
+      component.onSelect(nodeWithChildren);
+
+      nodeWithChildren.children?.forEach((child) => {
+        expect(child.styleDisabled).toBeTrue();
+      });
+      expect(nodeWithChildren.styleDisabled).toBeFalse();
+      expect(nodeWithoutChildren.styleDisabled).toBeFalse();
+
+      component.onSelect(nodeWithoutChildren);
+
+      component.conditionDataSource.data.forEach((node) => {
+        expect(node.styleDisabled).toBeFalse();
+        node.children?.forEach((child) => {
+          expect(child.styleDisabled).toBeFalse();
+        });
+      });
     });
   });
 });
