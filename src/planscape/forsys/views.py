@@ -5,8 +5,6 @@ import pandas as pd
 import rpy2
 import sys
 
-from .io import ForsysScenarioSetRequestParams
-
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.conf import settings
@@ -15,6 +13,7 @@ from django.contrib.gis.geos import GEOSGeometry, Point, Polygon
 from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+from forsys.get_forsys_inputs import ForsysScenarioSetRequestParams
                     
 
 # Configures global logging.
