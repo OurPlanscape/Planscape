@@ -23,6 +23,7 @@ These settings are
   PLANSCAPE_ALLOWED_HOSTS:        Comma-separated string of addresses
   PLANSCAPE_CORS_ALLOWED_ORIGINS: Comma-separated string of addresses
   PLANSCAPE_CORS_ALLOWED_HOSTS:   Comma-separated string of addresses
+  PLANSCAPE_CSRF_TRUSTED_ORIGINS: Comma-separated string of addresses
 
   PLANSCAPE_CACHE_BACKEND: Backend type for cache
   PLANSCAPE_CACHE_LOCATION: Cache location (important for memcached, etc.)
@@ -175,10 +176,11 @@ CORS_ALLOW_CREDENTIALS = True
 # Cross-Site Request Forgery protection settings
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = [
-  "http://localhost:4200",
-]
+CSRF_TRUSTED_ORIGINS = str(config(
+    'PLANSCAPE_CSRF_TRUSTED_ORIGINS', default='http://localhost:4200')).split(',')
 CSRF_HEADER_NAME = 'CSRF_COOKIE'
+
+# True if a non-logged-in user can save plans.
 PLANSCAPE_GUEST_CAN_SAVE = True
 
 # REST Framework settings
@@ -232,10 +234,10 @@ LOGGING = {
     },
 
     'handlers': {
-         "console": {'level': 'DEBUG', "class": "logging.StreamHandler", "formatter": "verbose"},
+        "console": {'level': 'DEBUG', "class": "logging.StreamHandler", "formatter": "verbose"},
     },
     "root": {
         "handlers": ["console"],
-        "level": "DEBUG",
+        "level": "WARNING",
     },
 }
