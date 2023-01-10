@@ -12,7 +12,7 @@ from plan.serializers import PlanSerializer
 from planscape import settings
 
 
-def create(request: HttpRequest) -> HttpResponse:
+def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
         owner = None
@@ -182,6 +182,8 @@ def create_project(request: HttpRequest) -> HttpResponse:
         # Get the max_cost parameter.
         # TODO: Add more parameters as necessary.
         max_cost = body.get('max_cost', None)
+
+        # TODO: retrieve and save selected priorities 
 
         # Create the project.
         project = Project.objects.create(
