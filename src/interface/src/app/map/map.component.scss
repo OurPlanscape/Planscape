@@ -229,7 +229,7 @@
  * This padding sets alignment of the nested nodes.
  */
 .condition-tree .mat-nested-tree-node div[role=group] {
-  padding-left: 40px;
+  padding-left: 20px;
 }
 
 /*
@@ -238,5 +238,9 @@
  * under the same parent.
  */
 .condition-tree div[role=group] > .mat-tree-node {
-  padding-left: 40px;
+  padding-left: 20px;
+}
+
+.mat-tree-node > .disabled {
+  opacity: 0.5;
 }

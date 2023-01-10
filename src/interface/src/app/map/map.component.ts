@@ -14,7 +14,7 @@ import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
 import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
-import { filter, shareReplay, switchMap } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
 import {
@@ -52,9 +52,11 @@ export enum AreaCreationAction {
   UPLOAD = 2,
 }
 
-interface ConditionsNode extends DataLayerConfig {
+export interface ConditionsNode extends DataLayerConfig {
   showInfoIcon?: boolean;
   infoMenuOpen?: boolean;
+  disableSelect?: boolean; // Node should not include a radio button
+  styleDisabled?: boolean; // Node should be greyed out but still selectable
   children?: ConditionsNode[];
 }
 
@@ -624,20 +626,50 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   showInfoIcon = (node: ConditionsNode) =>
     node.filepath?.length && (node.showInfoIcon || node.infoMenuOpen);
 
+  /** Unstyles all nodes in the tree using recursion. */
+  unstyleAllNodes(node?: ConditionsNode): void {
+    if (!node && this.conditionDataSource.data.length > 0) {
+      this.conditionDataSource.data.forEach((node) =>
+        this.unstyleAllNodes(node)
+      );
+    } else if (node) {
+      node.styleDisabled = false;
+      node.children?.forEach((child) => this.unstyleAllNodes(child));
+    }
+  }
+
+  /** Visually indicates that all the descendants of a condition layer node are
+   *  included in the current analysis by setting their style, using recursion.
+   */
+  styleDescendantsDisabled(node: ConditionsNode): void {
+    node.children?.forEach((child) => {
+      child.styleDisabled = true;
+      this.styleDescendantsDisabled(child);
+    });
+  }
+
+  onSelect(node: ConditionsNode): void {
+    this.unstyleAllNodes();
+    this.styleDescendantsDisabled(node);
+  }
+
   private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
     return [
       NONE_DATA_LAYER_CONFIG,
       {
         ...config,
         display_name: 'Current condition',
+        disableSelect: true,
         children: config.pillars
           ?.filter((pillar) => pillar.display)
           .map((pillar): ConditionsNode => {
             return {
               ...pillar,
+              disableSelect: true,
               children: pillar.elements?.map((element): ConditionsNode => {
                 return {
                   ...element,
+                  disableSelect: true,
                   children: element.metrics,
                 };
               }),
@@ -649,6 +681,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         filepath: config.filepath?.concat('_normalized'),
         colormap: config.colormap,
         normalized: true,
+        disableSelect: true,
         children: config.pillars
           ?.filter((pillar) => pillar.display)
           .map((pillar): ConditionsNode => {
