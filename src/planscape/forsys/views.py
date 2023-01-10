@@ -385,7 +385,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
             forsys_input_df, priorities)
 
         response['forsys']['output_project'] = json.dumps(
-            forsys_scenario_sets_output.to_dictionary())
+            forsys_scenario_sets_output.scenarios)
 
         # TODO: configure response to potentially show stand coordinates and other signals necessary for the UI.
 

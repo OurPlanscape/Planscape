@@ -2,8 +2,10 @@ import rpy2
 
 import numpy as np
 
+from typing import TypedDict
 
-class RankedProject():
+
+class RankedProject(TypedDict):
     # Project ID.
     id: int
     # Contribution of each priority to the total score
@@ -14,25 +16,8 @@ class RankedProject():
     # Project rank.
     rank: int
 
-    def __init__(self) -> None:
-        self.id = -1
-        self.weighted_priority_scores = {}
-        self.total_score = 0
-        self.rank = -1
 
-    # Converts a RankedProject to a dictionary.
-    # This facilitates JSON conversion.
-    def to_dictionary(self) -> dict:
-        output = {
-            'id': self.id,
-            'weighted_priority_scores': self.weighted_priority_scores,
-            'total_score': self.total_score,
-            'rank': self.rank,
-        }
-        return output
-
-
-class Scenario():
+class Scenario(TypedDict):
     # Priority weights for the scenario.
     priority_weights: dict
     # A list of the projects, ranked.
@@ -41,30 +26,6 @@ class Scenario():
     cumulative_ranked_project_area: list[float]
     # Given ranked projects, a cumulative sum of project cost.
     cumulative_ranked_project_cost: list[float]
-
-    def __init__(self) -> None:
-        self.priority_weights = {}
-        self.ranked_projects = []
-        self.cumulative_ranked_project_area = []
-        self.cumulative_ranked_project_cost = []
-
-    # Converts a Scenario to a dictionary.
-    # This facilitates JSON conversion.
-    def to_dictionary(self) -> dict:
-        output = {
-            'priority_weights': self.priority_weights,
-            'ranked_projects': [],
-            'cumulative_ranked_project_area': [],
-            'cumulative_ranked_project_cost': [],
-        }
-        for i in range(len(self.ranked_projects)):
-            output['ranked_projects'].append(
-                self.ranked_projects[i].to_dictionary())
-            output['cumulative_ranked_project_area'].append(
-                self.cumulative_ranked_project_area[i])
-            output['cumulative_ranked_project_cost'].append(
-                self.cumulative_ranked_project_cost[i])
-        return output
 
 
 # Transforms the output of a Forsys scenario set run into a more easily-interpreted version.
@@ -76,7 +37,7 @@ class ForsysScenarioSetOutput():
     def to_dictionary(self) -> dict:
         output = {}
         for k in self.scenarios.keys():
-            output[k] = self.scenarios[k].to_dictionary()
+            output[k] = self.scenarios[k]
         return output
 
     # Initializes a ForsysScenarioSetOutput instance given raw forsys output, and the following inputs to the forsys call: header names, list of priorities.
@@ -161,40 +122,39 @@ class ForsysScenarioSetOutput():
 
     def __create_scenario_project(self,
                                   scenario_weights: dict, ind: int) -> RankedProject:
-        project = RankedProject()
-        project.id = int(
-            self.__forsys_output_dict[self.__project_id_header][ind])
-        total = 0
-        project.weighted_priority_scores = {}
+        project: RankedProject = {
+            'id': int(
+                self.__forsys_output_dict[self.__project_id_header][ind]),
+            'weighted_priority_scores': {},
+            'rank': int(
+                self.__forsys_output_dict[self.__TREATMENT_RANK_HEADER][ind]),
+            'total_score': 0,
+        }
         for i in range(len(self.__priorities)):
             p = self.__priorities[i]
             contribution = self.__forsys_output_dict[self.__priority_contribution_headers[i]
                                                      ][ind] * scenario_weights[p]
-            project.weighted_priority_scores[p] = contribution
-            total = total + contribution
-        project.total_score = total
-        project.rank = int(
-            self.__forsys_output_dict[self.__TREATMENT_RANK_HEADER][ind])
+            project['weighted_priority_scores'][p] = contribution
+            project['total_score'] = project['total_score'] + contribution
         return project
 
     def __append_project_to_existing_scenario(self, scenario_str: str, scenario_weights: dict, i: int) -> None:
         scenario = self.scenarios[scenario_str]
-        ranked_projects = scenario.ranked_projects
+        ranked_projects = scenario['ranked_projects']
         scenario_ind = len(ranked_projects)
         ranked_projects.append(self.__create_scenario_project(
             scenario_weights, i))
-        scenario.cumulative_ranked_project_area.append(
-            scenario.cumulative_ranked_project_area[scenario_ind-1] + self.__forsys_output_dict[self.__area_contribution_header][i])
-        scenario.cumulative_ranked_project_cost.append(
-            scenario.cumulative_ranked_project_cost[scenario_ind-1] + self.__forsys_output_dict[self.__cost_contribution_header][i])
+        scenario['cumulative_ranked_project_area'].append(
+            scenario['cumulative_ranked_project_area'][scenario_ind-1] + self.__forsys_output_dict[self.__area_contribution_header][i])
+        scenario['cumulative_ranked_project_cost'].append(
+            scenario['cumulative_ranked_project_cost'][scenario_ind-1] + self.__forsys_output_dict[self.__cost_contribution_header][i])
 
     def __append_project_to_new_scenario(self, scenario_str: str, scenario_weights: dict, i: int) -> None:
-        scenario = Scenario()
-        scenario.priority_weights = scenario_weights
-        scenario.ranked_projects = [self.__create_scenario_project(
-            scenario_weights, i)]
-        scenario.cumulative_ranked_project_area = [
-            self.__forsys_output_dict[self.__area_contribution_header][i]]
-        scenario.cumulative_ranked_project_cost = [
-            self.__forsys_output_dict[self.__cost_contribution_header][i]]
+        scenario: Scenario = {
+            'priority_weights': scenario_weights,
+            'ranked_projects': [self.__create_scenario_project(
+                scenario_weights, i)],
+            'cumulative_ranked_project_area': [self.__forsys_output_dict[self.__area_contribution_header][i]],
+            'cumulative_ranked_project_cost': [self.__forsys_output_dict[self.__cost_contribution_header][i]],
+        }
         self.scenarios[scenario_str] = scenario
