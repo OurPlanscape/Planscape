@@ -28,5 +28,11 @@
 }
 
 .plan-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.plan-content-inner {
   flex: 1;
 }

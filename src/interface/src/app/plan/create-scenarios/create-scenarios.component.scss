@@ -1,0 +1,23 @@
+.create-scenarios-container {
+  display: flex;
+  flex-grow: 1;
+  height: 100%;
+  position: relative;
+}
+
+.map-container {
+  background-color: red;
+  flex-grow: 1;
+  height: 100%;
+  width: 100%;
+}
+
+.create-scenarios-panel {
+  background-color: white;
+  box-sizing: border-box;
+  height: 100%;
+  left: 0px;
+  padding: 32px;
+  position: absolute;
+  width: 700px;
+}

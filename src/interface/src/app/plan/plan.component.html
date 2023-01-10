@@ -9,7 +9,11 @@
     </div>
     <mat-divider [vertical]="true"></mat-divider>
     <div class="plan-content">
-      <app-plan-overview [plan$]="currentPlan$" (createScenarioEvent)="currentPlanStep = 1" *ngIf="currentPlanStep === 0"></app-plan-overview>
+      <div class="plan-content-inner">
+        <app-plan-overview [plan$]="currentPlan$" (createScenarioEvent)="currentPlanStep = 1" *ngIf="currentPlanStep === 0"></app-plan-overview>
+        <app-create-scenarios *ngIf="currentPlanStep === 1"></app-create-scenarios>
+      </div>
+      <app-plan-bottom-bar *ngIf="currentPlanStep > 0"></app-plan-bottom-bar>
     </div>
   </ng-container>
 </div>
