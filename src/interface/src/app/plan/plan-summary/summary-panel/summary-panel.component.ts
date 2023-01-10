@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import * as L from 'leaflet';
 
-import { Region } from '../../types';
+import { Region } from '../../../types';
 
 export interface SummaryInput {
   id?: string;
