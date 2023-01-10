@@ -4,11 +4,12 @@ from typing import TypedDict
 
 import json
 
-
+# A list of coordinates representing a polygon.
 class PolygonFromUrlParams(TypedDict):
     coordinates: list[tuple[float, float]]
 
 
+# A project area composed of multiple disjoint polygons.
 class ProjectAreaFromUrlParams(TypedDict):
     # Project ID
     id: int
@@ -18,6 +19,7 @@ class ProjectAreaFromUrlParams(TypedDict):
     polygons: list[PolygonFromUrlParams]
 
 
+# Gathers forsys input parameters from url params, database lookups, or a combination
 class ForsysScenarioSetRequestParams():
     # If true, additional debug information is sent to the json file.
     save_debug_info: bool
@@ -27,7 +29,6 @@ class ForsysScenarioSetRequestParams():
     priorities: list[str]
     # Project areas to be ranked. A project area may be a multipolygon.
     project_areas: dict[int, MultiPolygon]
-
     # TODO: add fields for constraints, costs, treatments, and thresholds.
 
 
@@ -63,9 +64,11 @@ class ForsysScenarioSetRequestParams():
     __UP_PRIORITIES = 'priorities'
     __UP_PROJECT_AREAS = 'project_areas'
 
+    # TODO: make regions and priorities enums to make error checking easier.
     __DEFAULT_REGION = 'sierra_cascade_inyo'
     __DEFAULT_PRIORITIES = ['fire_dynamics',
                             'forest_resilience', 'species_diversity']
+
 
     def __get_default_project_areas(self) -> dict[int, MultiPolygon]:
         p1 = Polygon(((-120.14015536869722, 39.05413814388948),
@@ -88,7 +91,7 @@ class ForsysScenarioSetRequestParams():
         p3.srid = 4269
         return {1: MultiPolygon(p1, p2),
                 2: MultiPolygon(p3)}
-                
+
 
     def __read_project_areas_from_url_params(self, params: QueryDict) -> dict[int, MultiPolygon]:
         project_areas = {}
