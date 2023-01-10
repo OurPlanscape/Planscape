@@ -47,7 +47,7 @@ class Project(models.Model):
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)  # type: ignore
 
     # Project Parameters:
- 
+
     # TODO: Limit number of allowed priorities
     priorities = models.ManyToManyField('conditions.Condition')
 
@@ -56,21 +56,6 @@ class Project(models.Model):
 
     # TODO: Add more project parameters like min_acres_treated and
     # permitted_ownership = (1=federal, 2=state, 4=private)
-
-class ProjectArea(models.Model):
-    """
-    ProjectAreas are associated with one Project. Each ProjectArea has geometries representing 
-    the project area, and an estimate of the area treated.
-    """
-    project = models.ForeignKey(
-        Project, on_delete=models.CASCADE)  # type: ignore
-
-    # The project area geometries. May be one or more polygons that represent a single project area.
-    project_area = models.MultiPolygonField(srid=4269, null=True)
-
-    # The sum total of the project area geometries.
-    estimated_area_treated: models.IntegerField = models.IntegerField(
-        null=True)
 
 
 class Scenario(models.Model):
@@ -91,3 +76,24 @@ class Scenario(models.Model):
     # TODO: Add flag to indicate whether this was a 'selected' scenario
 
     # TODO: Add estimated cost
+
+
+class ProjectArea(models.Model):
+    """
+    ProjectAreas are associated with one Project. Each ProjectArea has geometries representing 
+    the project area, and an estimate of the area treated.
+    """
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE)  # type: ignore
+
+    # Some Scenarios may share the same ProjectAreas. If the project is populated, but the scenario field is
+    # not, assume that this ProjectArea is selected for all scenarios.
+    scenario = models.ForeignKey(
+        Scenario, on_delete=models.CASCADE, null=True)  # type: ignore
+
+    # The project area geometries. May be one or more polygons that represent a single project area.
+    project_area = models.MultiPolygonField(srid=4269, null=True)
+
+    # The sum total of the project area geometries.
+    estimated_area_treated: models.IntegerField = models.IntegerField(
+        null=True)
