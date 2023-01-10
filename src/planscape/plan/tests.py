@@ -9,6 +9,7 @@ from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
 
 from .models import Plan, Project, Scenario
 
+from .models import Plan, Project, Scenario
 
 class CreatePlanTest(TransactionTestCase):
     def setUp(self):
