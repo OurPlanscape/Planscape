@@ -21,3 +21,25 @@
   position: absolute;
   width: 700px;
 }
+
+.create-scenarios-panel.collapsed {
+  background-color: #ebebeb;
+  padding: 0px;
+  width: 36px;
+}
+
+.create-scenarios-panel-expand-button {
+  align-items: center;
+  background-color: white;
+  border-radius: 8px;
+  display: flex;
+  height: 64px;
+  position: absolute;
+  right: -24px;
+  top: 12px;
+}
+
+.create-scenarios-panel-expand-button.collapsed {
+  background-color: #ebebeb;
+  transform: rotate(180deg);
+}
