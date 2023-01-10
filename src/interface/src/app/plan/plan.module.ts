@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { PlanMapComponent } from './plan-map/plan-map.component';
+import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
 import { UnsavedScenariosComponent } from './plan-summary/unsaved-scenarios/unsaved-scenarios.component';
@@ -25,6 +26,7 @@ import { ProgressPanelComponent } from './progress-panel/progress-panel.componen
     PlanUnavailableComponent,
     PlanTableComponent,
     DeletePlanDialogComponent,
+    PlanOverviewComponent,
   ],
   imports: [CommonModule, FormsModule, MaterialModule],
 })
