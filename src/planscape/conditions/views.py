@@ -3,6 +3,7 @@ import logging
 import os
 
 from config.colormap_config import ColormapConfig
+from config.conditions_config import PillarConfig
 from django.db import connection
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
@@ -15,6 +16,10 @@ logger = logging.getLogger(__name__)
 RASTER_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
+
+# Global variable for the PillarConfig, so that the configuration file is read once.
+pillar_config = PillarConfig(
+    os.path.join(settings.BASE_DIR, 'config/conditions.json'))
 
 # Global variable for the ColormapConfig, so that the configuration file is read once.
 colormap_config = ColormapConfig(
@@ -46,6 +51,12 @@ def get_wms(params: QueryDict):
         layers = params.get('layers', None)
         if layers is None:
             raise ValueError("Must specify layers to select data layer")
+        range = None
+        if layers.endswith('_normalized.tif'):
+            range = '[-1-1]'
+        else:
+            (min, max) = pillar_config.get_min_max_values(layers)
+            range = '[{0}-{1}]'.format(min, max)
 
         # Get the style, which is the colormap; default is "viridis"
         styles = params.get('styles', 'viridis')
@@ -54,7 +65,7 @@ def get_wms(params: QueryDict):
         cursor.callproc('get_rast_tile', (format, width, height, srid,
                         bbox_coords[0], bbox_coords[1], bbox_coords[2], bbox_coords[3],
                         colormap, 'public', RASTER_TABLE, RASTER_COLUMN, RASTER_NAME_COLUMN,
-                        layers))
+                        layers, range))
         row = cursor.fetchone()
         if row is None or row[0] is None:
             raise ValueError("No data; check 'layers' parameter")

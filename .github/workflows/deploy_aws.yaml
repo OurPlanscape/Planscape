@@ -10,7 +10,11 @@
 name: Deploy to Amazon ECS
 
 on:
+  release:
+    # Deploy when stable or pre-releases are published.
+    types: [published]
   push:
+    # Deploy when push on the "deployment" branch.  Use with caution!
     branches:
       - deployment
 
@@ -19,7 +23,8 @@ env:
   ECR_REPOSITORY: planscape_dev
   ECS_SERVICE: PlanscapeDevService
   ECS_CLUSTER: PlanscapeDevCluster
-  ECS_TASK_DEFINITION: src/task-definition.json
+  ECS_TASK_DEFINITION: src/deployment/task_definition.json
+  EC2_LOAD_BALANCER: planscapedevload-1541713932.us-west-1.elb.amazonaws.com
 jobs:
   deploy:
     name: Deploy
@@ -47,22 +52,23 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Build a docker container and push it to ECR so that it can
-          # be deployed to ECS.
           echo "frontend_image=$ECR_REGISTRY/$ECR_REPOSITORY:frontend-$IMAGE_TAG" >> $GITHUB_ENV
           echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Build, tag, and push image to Amazon ECR
-        id: build-image
+      - name: Build, tag, and push frontend
+        id: build-frontend
         run: |
-          # Build a docker container and push it to ECR so that it can
-          # be deployed to ECS.
           cd src/interface
+          sed -i "s/localhost/${{ env.EC2_LOAD_BALANCER }}/" src/environments/environment.prod.ts
           docker build -t planscape-frontend . 
           docker tag planscape-frontend:latest ${{ env.frontend_image }}
           docker push ${{ env.frontend_image }}
-          cd ../planscape
-          docker build -t planscape-backend . 
+
+      - name: Build, tag, and push backend
+        id: build-backend
+        run: |
+          cd src/planscape
+          docker build -t planscape-backend .
           docker tag planscape-backend:latest ${{ env.backend_image }}
           docker push ${{ env.backend_image }}
 
@@ -74,8 +80,8 @@ jobs:
           container-name: backend
           image: ${{ env.backend_image }}
           environment-variables: |
-              LOG_LEVEL=info
-              ENVIRONMENT=prod
+            LOG_LEVEL=info
+            ENVIRONMENT=prod
 
       - name: Modify Amazon ECS task definition with frontend container
         id: render-frontend-container
