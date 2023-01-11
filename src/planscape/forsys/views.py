@@ -5,7 +5,7 @@ import os
 import pandas as pd
 import rpy2
 
-from forsys.get_forsys_inputs import ForsysScenarioSetRequestParams
+from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
 from forsys.parse_forsys_output import ForsysScenarioSetOutput
 
 from boundary.models import BoundaryDetails
@@ -334,7 +334,7 @@ def run_forsys_scenario_sets(
 # Returns JSon data for a forsys scenario set call.
 def scenario_set(request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysScenarioSetRequestParams(request.GET)
+        params = ForsysProjectAreaRankingRequestParams(request.GET)
         save_debug_info = params.save_debug_info
         region = params.region
         priorities = params.priorities
@@ -344,7 +344,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
         huc12_id = 43
 
         forsys_input_df = {}
-        for id in project_areas:
+        for id in project_areas.keys():
             project_area = project_areas[id]
             project_area_raster = project_area.clone()
             project_area_raster.transform(CoordTransform(SpatialReference(
