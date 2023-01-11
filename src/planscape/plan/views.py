@@ -241,7 +241,5 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
             owner=owner, project=project, project_area=geometry)
         project_area.save()
         return HttpResponse(str(project_area.pk))
-
-        return HttpResponse("placeholder project_area pk")
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))

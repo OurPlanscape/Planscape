@@ -80,8 +80,8 @@ class Scenario(models.Model):
 
 class ProjectArea(models.Model):
     """
-    ProjectAreas are associated with one Project. Each ProjectArea has geometries representing 
-    the project area, and an estimate of the area treated.
+    ProjectAreas are associated with one User, the owner, and one Project. Each ProjectArea has 
+    geometries representing the project area, and an estimate of the area treated.
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # we want alpha users to not be signed in.
