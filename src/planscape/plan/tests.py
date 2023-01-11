@@ -8,6 +8,8 @@ from django.urls import reverse
 from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
 
 from .models import Plan, Project, Scenario, ProjectArea
+from conditions.models import BaseCondition, Condition
+from base.condition_types import ConditionLevel
 
 
 class CreatePlanTest(TransactionTestCase):
@@ -400,21 +402,22 @@ class CreateProjectAreaTest(TransactionTestCase):
 
     def test_missing_features(self):
         response = self.client.post(
-            reverse('plan:create_project_area'), {'project_id': self.project_no_user.pk,'geometry': {}},
+            reverse('plan:create_project_area'), {
+                'project_id': self.project_no_user.pk, 'geometry': {}},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_empty_features(self):
         response = self.client.post(
             reverse('plan:create_project_area'),
-            {'project_id': self.project_no_user.pk,'geometry': {'features': []}},
+            {'project_id': self.project_no_user.pk, 'geometry': {'features': []}},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_bad_geometry(self):
         response = self.client.post(
             reverse('plan:create_project_area'),
-            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+            {'project_id': self.project_no_user.pk, 'geometry': {'features': [
                 {'type': 'Point', 'coordinates': [1, 2]}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
@@ -422,7 +425,7 @@ class CreateProjectAreaTest(TransactionTestCase):
     def test_bad_polygon(self):
         response = self.client.post(
             reverse('plan:create_project_area'),
-            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+            {'project_id': self.project_no_user.pk, 'geometry': {'features': [
                 {'geometry': {'type': 'Polygon'}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
@@ -430,7 +433,7 @@ class CreateProjectAreaTest(TransactionTestCase):
     def test_good_polygon(self):
         response = self.client.post(
             reverse('plan:create_project_area'),
-            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+            {'project_id': self.project_no_user.pk, 'geometry': {'features': [
                 {'geometry': {'type': 'Polygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
@@ -439,8 +442,49 @@ class CreateProjectAreaTest(TransactionTestCase):
     def test_good_multipolygon(self):
         response = self.client.post(
             reverse('plan:create_project_area'),
-            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+            {'project_id': self.project_no_user.pk, 'geometry': {'features': [
                 {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ProjectArea.objects.count(), 1)
+
+
+class GetProjectTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
+        self.project_no_user_no_pri = Project.objects.create(
+            owner=None, plan=self.plan_no_user, max_cost=100)
+
+    def test_get_plan_no_priorities(self):
+        response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['owner'], None)
+        self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
+        self.assertEqual(response.json()['max_cost'], 100)
+
+    def test_get_plan_no_user_with_priorities(self):
+        base_condition = BaseCondition.objects.create(
+            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        condition1 = Condition.objects.create(
+            condition_dataset=base_condition, raster_name="name1")
+        condition2 = Condition.objects.create(
+            condition_dataset=base_condition, raster_name="name2")
+        self.project_no_user_no_pri.priorities.add(condition1)
+        self.project_no_user_no_pri.priorities.add(condition2)
+
+        response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['owner'], None)
+        self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
+        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['priorities'], [1, 2])

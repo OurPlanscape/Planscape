@@ -8,7 +8,7 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from plan.models import Plan, Project, ProjectArea
-from plan.serializers import PlanSerializer
+from plan.serializers import PlanSerializer, ProjectSerializer
 from planscape import settings
 
 
@@ -199,6 +199,16 @@ def create_project(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+def get_project(request: HttpRequest) -> HttpResponse:
+    try:
+        return JsonResponse(ProjectSerializer(get_project_by_id(request.GET)[0]).data)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+def get_project_by_id(params: QueryDict):
+    assert isinstance(params['id'], str)
+    project_id = params.get('id', 0)
+    return (Project.objects.filter(id=int(project_id)))
 
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
@@ -243,3 +253,4 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
         return HttpResponse(str(project_area.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        
