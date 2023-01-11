@@ -1,11 +1,11 @@
 <div class="create-scenarios-container">
   <div class="map-container">
   </div>
-  <div class="create-scenarios-panel" [class.collapsed]="!panelExpanded">
-    <div class="create-scenarios-panel-content" *ngIf="panelExpanded">
+  <div class="create-scenarios-panel" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
+    <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'expanded' : 'collapsed'">
       <h1>Create scenarios</h1>
     </div>
-    <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded">
+    <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded" [@expandCollapseButton]="panelExpanded ? 'expanded': 'collapsed'">
       <button mat-icon-button (click)="panelExpanded = !panelExpanded"><mat-icon>chevron_left</mat-icon></button>
     </div>
   </div>

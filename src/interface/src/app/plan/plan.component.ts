@@ -18,7 +18,7 @@ export enum PlanStep {
 export class PlanComponent {
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  currentPlanStep: PlanStep = PlanStep.Overview;
+  currentPlanStep: PlanStep = PlanStep.CreateScenarios;
   planNotFound: boolean = false;
 
   constructor(private planService: PlanService, private route: ActivatedRoute) {
