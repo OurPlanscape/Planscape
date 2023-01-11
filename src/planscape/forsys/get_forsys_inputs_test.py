@@ -1,12 +1,12 @@
 from django.test import TestCase
 from django.http import QueryDict
-from forsys.get_forsys_inputs import ForsysScenarioSetRequestParams
+from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
 
 
-class TestForsysScenarioSetRequestParams(TestCase):
+class TestForsysProjectAreaRankingRequestParams(TestCase):
     def test_reads_default_url_params(self) -> None:
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysScenarioSetRequestParams(qd)
+        params = ForsysProjectAreaRankingRequestParams(qd)
 
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(
@@ -42,14 +42,14 @@ class TestForsysScenarioSetRequestParams(TestCase):
     def test_reads_region_from_url_params(self) -> None:
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1&region=foo')
-        params = ForsysScenarioSetRequestParams(qd)
+        params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.region, 'foo')
 
     def test_reads_priorities_from_url_params(self) -> None:
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&priorities=foo&priorities=bar&priorities=baz')
-        params = ForsysScenarioSetRequestParams(qd)
+        params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
 
     def test_reads_project_areas_from_url_params(self) -> None:
@@ -63,7 +63,7 @@ class TestForsysScenarioSetRequestParams(TestCase):
             '&project_areas={ "id": 2, "srid": 4269, ' +
             '"polygons": [ { "coordinates": [ [-121, 42], [-120, 40], ' +
             '[-121, 41], [-121, 42] ] } ] }')
-        params = ForsysScenarioSetRequestParams(qd)
+        params = ForsysProjectAreaRankingRequestParams(qd)
 
         keys = list(params.project_areas.keys())
         keys.sort()
@@ -93,14 +93,14 @@ class TestForsysScenarioSetRequestParams(TestCase):
             '&project_areas={ "id": 1, "srid": 4269, ' +
             '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39] ] } ] }')
         with self.assertRaises(Exception) as context:
-            ForsysScenarioSetRequestParams(qd)
+            ForsysProjectAreaRankingRequestParams(qd)
         self.assertIn("LinearRing requires at least 4 points, got 2", str(
             context.exception))
 
     def test_reads_from_db(self) -> None:
         qd = QueryDict('')
         with self.assertRaises(Exception) as context:
-            ForsysScenarioSetRequestParams(qd)
+            ForsysProjectAreaRankingRequestParams(qd)
             self.assertEqual(
                 str(context.exception),
                 'WIP. Please set set_all_params_via_url_params to true.')

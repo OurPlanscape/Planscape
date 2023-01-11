@@ -25,7 +25,7 @@ class ProjectAreaFromUrlParams(TypedDict):
 # Of note, the option to set all forsys input paramters via url parameters is
 # intended for backend debugging purposes while the option to set most forsys
 # input parameters via database lookups is intended for production.
-class ForsysScenarioSetRequestParams():
+class ForsysProjectAreaRankingRequestParams():
     # Constants for parsing url parameters.
     _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
     _URL_REGION = 'region'
@@ -45,7 +45,8 @@ class ForsysScenarioSetRequestParams():
     region: str
     # Conditions whose AP scores will be considered when ranking projects.
     priorities: list[str]
-    # Project areas to be ranked. A project area may be a multipolygon.
+    # Project areas to be ranked. A project area may consist of multiple
+    # disjoint polygons. The dict is keyed by project ID.
     project_areas: dict[int, MultiPolygon]
 
     def __init__(self, params: QueryDict) -> None:
