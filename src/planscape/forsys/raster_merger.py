@@ -50,10 +50,10 @@ class RasterMerger():
             raise Exception(
                 "invalid raster scale, [%f, %f] " %
                 (raster.scale.x, raster.scale.y) +
-                "(expected original scale, [%f, %f]" % (scale.x, scale.y))
+                "(expected original scale, [%f, %f])" % (scale.x, scale.y))
         if raster.srid != self.merged_raster.srid:
             raise Exception(
-                "invalid raster srid, %d (expected original srid, %d" %
+                "invalid raster srid, %d (expected original srid, %d)" %
                 (raster.srid, self.merged_raster.srid))
 
     def _merge_raster(self, raster: GDALRaster) -> None:
@@ -102,10 +102,11 @@ class RasterMerger():
 
     def _merge_band_data(self, d1: np.array, d2: np.array) -> np.array:
         overlap = np.logical_and(~np.isnan(d1), ~np.isnan(d2))
-        if overlap.sum > 0:
+        overlap_size = overlap.sum()
+        if overlap_size > 0:
             raise Exception(
-                "%d overlapping elements were detected " % overlap.sum +
-                "between the raster to be added and the merged raster.")
+                "%d overlapping elements were detected " % overlap_size +
+                "between the raster to be added and the merged raster")
         indices_to_replace = np.logical_and(
             np.isnan(d1), ~np.isnan(d2))
         d1[indices_to_replace] = d2[indices_to_replace]
