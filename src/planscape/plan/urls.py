@@ -14,5 +14,4 @@ urlpatterns = [
     path('create_project/', create_project, name='create_project'),
     path('get_project/', get_project, name='get_project'),
     path('create_project_area/', create_project_area, name='create_project_area'),
-    path('get_project_areas/', get_project_areas, name='get_project_areas'),
 ]
