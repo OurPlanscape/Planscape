@@ -1,6 +1,6 @@
 from django.urls import path
 from plan.views import (create_plan, create_project, delete, get_plan,
-                        list_plans_by_owner, create_project_area, get_project, get_project_areas)
+                        list_plans_by_owner, create_project_area, get_project)
 
 app_name = 'plan'
 
