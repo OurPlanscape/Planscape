@@ -83,6 +83,11 @@ class ProjectArea(models.Model):
     ProjectAreas are associated with one Project. Each ProjectArea has geometries representing 
     the project area, and an estimate of the area treated.
     """
+    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
+    # we want alpha users to not be signed in.
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True)  # type: ignore
+
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE)  # type: ignore
 
