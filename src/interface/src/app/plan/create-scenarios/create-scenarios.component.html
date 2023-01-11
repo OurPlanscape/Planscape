@@ -4,7 +4,60 @@
   </div>
   <div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
     <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'expanded' : 'collapsed'">
-      <h1>Create scenarios</h1>
+      <div>
+        <h1>Create scenarios</h1>
+        <p>{{ text1 }}</p>
+      </div>
+      <mat-grid-list cols="2" rowHeight="fit" gutterSize="64px" [style.flex]="'1 1 auto'">
+        <mat-grid-tile>
+          <div class="tile-content">
+            <mat-form-field appearance="fill">
+              <mat-label>
+                Generate scenarios using:
+              </mat-label>
+              <mat-select>
+                <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
+                <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <div class="tile-content">
+            <p>
+              {{ text2 }}
+            </p>
+          </div>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <mat-grid-list cols="3" rowHeight="fit" gutterSize="64px" [style.flex-grow]="2">
+        <mat-grid-tile colspan="2">
+          <div class="tile-content">
+            <h2>Current Conditions score</h2>
+            <p>{{ text3 }}</p>
+          </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <div class="tile-content">
+            <h4>Condition Score Scale</h4>
+          </div>
+        </mat-grid-tile>
+        <mat-grid-tile colspan="2">
+          <div class="tile-content">
+            <h2>Opportunity score (Coming soon)</h2>
+            <p>{{ text4 }}</p>
+          </div>
+        </mat-grid-tile>
+        <mat-grid-tile>
+          <div class="tile-content">
+            <h4>Opportunity Score Scale</h4>
+          </div>
+        </mat-grid-tile>
+      </mat-grid-list>
+      <div class="row-div">
+        <button mat-icon-button><mat-icon class="material-symbols-outlined">info</mat-icon></button>
+        <div>{{ text5 }}</div>
+      </div>
     </div>
     <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded" [@expandCollapseButton]="panelExpanded ? 'expanded': 'collapsed'">
       <button mat-icon-button (click)="panelExpanded = !panelExpanded"><mat-icon>chevron_left</mat-icon></button>
