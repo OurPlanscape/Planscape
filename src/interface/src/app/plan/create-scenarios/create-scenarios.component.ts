@@ -1,3 +1,5 @@
+import { Plan } from 'src/app/types';
+import { BehaviorSubject } from 'rxjs';
 import {
   animate,
   animateChild,
@@ -8,7 +10,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -82,6 +84,8 @@ import { Component, OnInit } from '@angular/core';
   ],
 })
 export class CreateScenariosComponent implements OnInit {
+  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
+
   panelExpanded: boolean = true;
 
   constructor() {}

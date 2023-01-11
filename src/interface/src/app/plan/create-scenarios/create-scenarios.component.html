@@ -1,7 +1,8 @@
 <div class="create-scenarios-container">
   <div class="map-container">
+    <app-plan-map [plan]="plan$"></app-plan-map>
   </div>
-  <div class="create-scenarios-panel" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
+  <div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
     <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'expanded' : 'collapsed'">
       <h1>Create scenarios</h1>
     </div>
