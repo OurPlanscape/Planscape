@@ -7,7 +7,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from plan.models import Plan, Project
+from plan.models import Plan, Project, ProjectArea
 from plan.serializers import PlanSerializer
 from planscape import settings
 
@@ -34,23 +34,14 @@ def create_plan(request: HttpRequest) -> HttpResponse:
         if region_name is None:
             raise ValueError("Unknown region_name: " + region_name_input)
 
-        # Get the geometry of the plan.  Convert it to a MultiPolygon
-        # if it is a simple Polygon, since the model column type is
-        # MultiPolygon.
+        # Get the geometry of the plan.
         geometry = body.get('geometry', None)
         if geometry is None:
             raise ValueError("Must specify geometry")
-        features = geometry.get('features', [])
-        if len(features) > 1 or len(features) == 0:
-            raise ValueError("Must send exactly one feature.")
-        feature = features[0]
-        geom = feature['geometry']
-        if geom['type'] == 'Polygon':
-            geom['type'] = 'MultiPolygon'
-            geom['coordinates'] = [feature['geometry']['coordinates']]
-        geometry = GEOSGeometry(json.dumps(geom))
-        if geometry.geom_type != 'MultiPolygon':
-            raise ValueError("Could not parse geometry")
+        # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
+        # MultiPolygon.
+        # If this fails, the rest of the clause is skipped.
+        geometry = _convert_polygon_to_multipolygon(geometry)
 
         # Create the plan
         plan = Plan.objects.create(
@@ -59,6 +50,21 @@ def create_plan(request: HttpRequest) -> HttpResponse:
         return HttpResponse(str(plan.pk))
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
+
+
+def _convert_polygon_to_multipolygon(geometry: dict):
+    features = geometry.get('features', [])
+    if len(features) > 1 or len(features) == 0:
+        raise ValueError("Must send exactly one feature.")
+    feature = features[0]
+    geom = feature['geometry']
+    if geom['type'] == 'Polygon':
+        geom['type'] = 'MultiPolygon'
+        geom['coordinates'] = [feature['geometry']['coordinates']]
+    geometry = GEOSGeometry(json.dumps(geom))
+    if geometry.geom_type != 'MultiPolygon':
+        raise ValueError("Could not parse geometry")
+    return geometry
 
 
 def delete(request: HttpRequest) -> HttpResponse:
@@ -183,12 +189,57 @@ def create_project(request: HttpRequest) -> HttpResponse:
         # TODO: Add more parameters as necessary.
         max_cost = body.get('max_cost', None)
 
-        # TODO: retrieve and save selected priorities 
+        # TODO: retrieve and save selected priorities
 
         # Create the project.
         project = Project.objects.create(
             owner=owner, plan=plan, max_cost=max_cost)
         project.save()
         return HttpResponse(str(project.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def create_project_area(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = None
+        if request.user.is_authenticated:
+            owner = request.user
+        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+
+        body = json.loads(request.body)
+
+        # Get the project_id. This may come from an existing project or a
+        # placeholder project created for 1 forsys with patchmax run)
+        project_id = body.get('project_id', None)
+        if project_id is None or not (isinstance(project_id, int)):
+            raise ValueError("Must specify project_id as an integer")
+
+        # Get the Project, and if the user is logged in, make sure either
+        # 1. the Project owner and the owner are both None, or
+        # 2. the Project owner and the owner are both not None, and are equal.
+        project = Project.objects.get(pk=int(project_id))
+        if not ((owner is None and project.owner is None) or
+                (owner is not None and project.owner is not None and owner.pk == project.owner.pk)):
+            raise ValueError(
+                "Cannot create project; plan is not owned by user")
+
+        # Get the geometry of the Project.
+        geometry = body.get('geometry', None)
+        if geometry is None:
+            raise ValueError("Must specify geometry")
+        # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
+        # MultiPolygon.
+        # If this fails, the rest of the clause is skipped.
+        geometry = _convert_polygon_to_multipolygon(geometry)
+
+        # TODO: Optionally save scenario pk
+
+        project_area = ProjectArea.objects.create(
+            owner=owner, project=project, project_area=geometry)
+        project_area.save()
+        return HttpResponse(str(project_area.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
