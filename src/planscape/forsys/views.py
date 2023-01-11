@@ -243,9 +243,7 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet,
     data['proj_id'] = []
     data['stand_id'] = []
     data['shape_name'] = []
-    print("len", len(condition_rasters.keys()))
     for c in condition_rasters.keys():
-        print("key", c)
         data[kConditionPrefix + "_" + c] = []
         data[kPriorityPrefix + "_" + c] = []
         data['area'] = []
