@@ -17,7 +17,7 @@
   box-sizing: border-box;
   height: 100%;
   left: 0px;
-  padding: 32px;
+  padding: 32px 56px 32px 32px;
   position: absolute;
   width: 700px;
   z-index: 2;
@@ -36,4 +36,21 @@
 
 .create-scenarios-panel-expand-button.collapsed {
   transform: rotate(180deg);
+}
+
+.create-scenarios-panel-content {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  height: 100%;
+}
+
+.tile-content {
+  height: 100%;
+  width: 100%;
+}
+
+.row-div {
+  display: flex;
+  flex-direction: row;
 }
