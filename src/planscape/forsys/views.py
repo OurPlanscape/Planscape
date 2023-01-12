@@ -6,6 +6,7 @@ import pandas as pd
 import rpy2
 
 from forsys.parse_forsys_output import ForsysScenarioSetOutput
+from forsys.raster_merger import RasterMerger
 
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster
@@ -140,50 +141,6 @@ def raster_extent_overlaps_project_area(
                          (e[0], e[1])))
     return e_polygon.overlaps(project_area)
 
-
-# Merges two raster inputs into a single output raster according to the scale
-# and skew of the base_raster.
-def mosaic_rasters(
-        base_raster: GDALRaster, addon_raster: GDALRaster) -> GDALRaster:
-    scale = base_raster.scale
-    skew = base_raster.skew
-    origin = base_raster.origin
-
-    # distorts the add-on raster according to the scale and skew of the base
-    # raster.
-    addon_raster_copy = addon_raster.warp({"scale": scale, "skew": skew})
-
-    # computes the origin, width, and height of the merged raster and adjusts
-    # rasters accordingly.
-    origin[0] = addon_raster_copy.origin[0] if addon_raster_copy.origin[0] < origin[0] else origin[0]
-    origin[1] = addon_raster_copy.origin[1] if addon_raster_copy.origin[1] > origin[1] else origin[1]
-
-    width = int(np.ceil(addon_raster_copy.width +
-                (addon_raster_copy.origin[0] - origin[0]) / scale[0]))
-    height = int(np.ceil(addon_raster_copy.height +
-                 (addon_raster_copy.origin[1] - origin[1]) / scale[1]))
-
-    addon_raster_copy = addon_raster_copy.warp(
-        {"width": width, "height": height, "origin": origin})
-    base_raster_copy = base_raster.warp(
-        {"width": width, "height": height, "origin": origin})
-
-    # computes merged raster data.
-    base_data = base_raster_copy.bands[0].data()
-    addon_data = addon_raster_copy.bands[0].data()
-
-    indices_to_sum = np.logical_and(
-        ~np.isnan(base_data), ~np.isnan(addon_data))
-    indices_to_replace = np.logical_and(
-        np.isnan(base_data), ~np.isnan(addon_data))
-    base_data[indices_to_sum] = (
-        base_data[indices_to_sum] + addon_data[indices_to_sum]) / 2
-    base_data[indices_to_replace] = addon_data[indices_to_replace]
-
-    base_raster_copy.bands[0].data(base_data)
-    return base_raster_copy
-
-
 def fetch_condition_rasters(
         priorities: list[str],
         region: str, project_area: Polygon) -> dict:
@@ -191,8 +148,8 @@ def fetch_condition_rasters(
 
     for p in priorities:
         condition_rasters = get_condition_rasters(p, region)
-        is_first_raster = True
-        rfinal = np.nan
+
+        raster_merger = RasterMerger()
 
         for cr in condition_rasters:
             r = cr.raster
@@ -201,14 +158,9 @@ def fetch_condition_rasters(
             # that checks for overlaps.
             if not raster_extent_overlaps_project_area(r, project_area):
                 continue
-            if is_first_raster:
-                rfinal = r
-                is_first_raster = False
-            else:
-                rfinal = mosaic_rasters(rfinal, r)
+            raster_merger.add_raster(r)
 
-        if not is_first_raster:
-            all_rasters[p] = rfinal
+        all_rasters[p] = raster_merger.merged_raster
 
     return all_rasters
 
@@ -347,7 +299,7 @@ def run_forsys_scenario_sets(
         forsys_input, robjects.StrVector(priority_headers))
 
     parsed_output = ForsysScenarioSetOutput(
-        forsys_output, priority_headers, "proj_id", "area", "cost")
+        forsys_output, priority_headers, 'proj_id', 'area', 'cost')
 
     # TODO: add logic for applying constraints to forsys_output.
 
