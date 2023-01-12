@@ -463,23 +463,38 @@ class GetProjectTest(TransactionTestCase):
         self.project_no_user_no_pri = Project.objects.create(
             owner=None, plan=self.plan_no_user, max_cost=100)
 
-    def test_get_plan_no_priorities(self):
+        self.plan_with_user = create_plan(
+            self.user, 'ownerless', stored_geometry, [])
+        self.project_with_user_no_pri = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_cost=100)
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1")
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name2")
+
+    def test_get_plan_no_user_no_priorities(self):
         response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
+        self.assertEqual(response.json()['max_cost'], 100)
+
+    def test_get_plan_no_priorities(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_project'), {'id': self.project_with_user_no_pri.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['owner'], self.user.pk)
+        self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
         self.assertEqual(response.json()['max_cost'], 100)
 
     def test_get_plan_no_user_with_priorities(self):
-        base_condition = BaseCondition.objects.create(
-            condition_name="name", condition_level=ConditionLevel.ELEMENT)
-        condition1 = Condition.objects.create(
-            condition_dataset=base_condition, raster_name="name1")
-        condition2 = Condition.objects.create(
-            condition_dataset=base_condition, raster_name="name2")
-        self.project_no_user_no_pri.priorities.add(condition1)
-        self.project_no_user_no_pri.priorities.add(condition2)
+        self.project_no_user_no_pri.priorities.add(self.condition1)
+        self.project_no_user_no_pri.priorities.add(self.condition2)
 
         response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
                                    content_type="application/json")
@@ -487,4 +502,19 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
         self.assertEqual(response.json()['max_cost'], 100)
-        self.assertEqual(response.json()['priorities'], [1, 2])
+        self.assertEqual(response.json()['priorities'], [
+                         self.condition1.pk, self.condition2.pk])
+
+    def test_get_plan_with_priorities(self):
+        self.client.force_login(self.user)
+        self.project_with_user_no_pri.priorities.add(self.condition1)
+        self.project_with_user_no_pri.priorities.add(self.condition2)
+
+        response = self.client.get(reverse('plan:get_project'), {'id': self.project_with_user_no_pri.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['owner'], self.user.pk)
+        self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
+        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['priorities'], [
+                         self.condition1.pk, self.condition2.pk])
