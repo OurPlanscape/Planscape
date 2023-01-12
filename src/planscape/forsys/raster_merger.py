@@ -23,11 +23,13 @@ class RasterMerger():
 
     def add_raster(self, raster: GDALRaster) -> None:
         self._ensure_raster_is_valid(raster)
+
         if self.merged_raster is None:
             self.merged_raster = raster
-        else:
-            self._ensure_raster_is_compatible_with_merged_raster(raster)
-            self._merge_raster(raster)
+            return
+            
+        self._ensure_raster_is_compatible_with_merged_raster(raster)
+        self._merge_raster(raster)
 
     def _ensure_raster_is_valid(self, raster: GDALRaster) -> None:
         if raster.skew.x != 0 and raster.skew.y != 0:
@@ -45,6 +47,9 @@ class RasterMerger():
 
     def _ensure_raster_is_compatible_with_merged_raster(
             self, raster: GDALRaster) -> None:
+        if self.merged_raster is None:
+            return
+
         scale = self.merged_raster.scale
         if raster.scale.x != scale.x and raster.scale.y != scale.y:
             raise Exception(
@@ -57,6 +62,10 @@ class RasterMerger():
                 (raster.srid, self.merged_raster.srid))
 
     def _merge_raster(self, raster: GDALRaster) -> None:
+        if self.merged_raster is None:
+            self.add_raster(raster)
+            return
+
         origin = self._compute_updated_origin(raster)
 
         dims = self._compute_updated_dimensions(raster, origin)
@@ -75,6 +84,9 @@ class RasterMerger():
         self.merged_raster = r2
 
     def _compute_updated_origin(self, raster: GDALRaster) -> list[float]:
+        if self.merged_raster is None:
+            return [raster.origin.x, raster.origin.y]
+
         scale = self.merged_raster.scale
         origin = self.merged_raster.origin
 
@@ -88,6 +100,9 @@ class RasterMerger():
 
     def _compute_updated_dimensions(self, raster: GDALRaster,
                                     updated_origin: list[float]) -> list[float]:
+        if self.merged_raster is None:
+            return [raster.width, raster.height]
+
         scale = self.merged_raster.scale
         return [self._compute_dim(scale.x, raster.width,
                                   raster.origin.x, updated_origin[0]),
