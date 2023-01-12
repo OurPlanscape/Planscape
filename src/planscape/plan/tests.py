@@ -7,7 +7,7 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
 
-from .models import Plan, Project, Scenario
+from .models import Plan, Project, Scenario, ProjectArea
 
 
 class CreatePlanTest(TransactionTestCase):
@@ -368,3 +368,79 @@ class ProjectTest(TransactionTestCase):
                 'plan_id': self.plan_with_user.pk, 'max_cost': 100},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+
+class CreateProjectAreaTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan_no_user = Plan.objects.create(
+            owner=None, name='ownerless', region_name='sierra_cascade_inyo')
+        self.project_no_user = Project.objects.create(
+            owner=None, plan=self.plan_no_user)
+
+    # TODO: re-enable when we restrict functionality to logged in users
+    # def test_missing_user(self):
+    #     response = self.client.post(
+    #         reverse('plan:create_project_area'), {'name': 'project_area'},
+    #         content_type='application/json')
+    #     self.assertEqual(response.status_code, 200)
+
+    def test_missing_project(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'), {}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_missing_geometry(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'), {'project_id': self.project_no_user.pk}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_missing_features(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'), {'project_id': self.project_no_user.pk,'geometry': {}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_empty_features(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'),
+            {'project_id': self.project_no_user.pk,'geometry': {'features': []}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_bad_geometry(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'),
+            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+                {'type': 'Point', 'coordinates': [1, 2]}]}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_bad_polygon(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'),
+            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+                {'geometry': {'type': 'Polygon'}}]}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_good_polygon(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'),
+            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+                {'geometry': {'type': 'Polygon', 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]}}]}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ProjectArea.objects.count(), 1)
+
+    def test_good_multipolygon(self):
+        response = self.client.post(
+            reverse('plan:create_project_area'),
+            {'project_id': self.project_no_user.pk,'geometry': {'features': [
+                {'geometry': {'type': 'MultiPolygon', 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}}]}},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ProjectArea.objects.count(), 1)
