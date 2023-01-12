@@ -8,6 +8,7 @@ import { PlanService } from './../services/plan.service';
 export enum PlanStep {
   Overview,
   CreateScenarios,
+  SetPriorities,
 }
 
 @Component({
@@ -41,5 +42,13 @@ export class PlanComponent {
           this.planNotFound = true;
         }
       );
+  }
+
+  nextStep(): void {
+    this.currentPlanStep += 1;
+  }
+
+  previousStep(): void {
+    this.currentPlanStep -= 1;
   }
 }
