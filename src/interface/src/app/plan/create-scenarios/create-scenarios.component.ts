@@ -1,5 +1,3 @@
-import { Plan } from 'src/app/types';
-import { BehaviorSubject } from 'rxjs';
 import {
   animate,
   animateChild,
@@ -10,7 +8,11 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
+import { BehaviorSubject, take } from 'rxjs';
+import { colormapConfigToLegend, Legend, Plan } from 'src/app/types';
+
+import { MapService } from './../../services/map.service';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -114,9 +116,17 @@ export class CreateScenariosComponent implements OnInit {
     linkaddresshere.
   `;
 
+  legend: Legend | undefined;
   panelExpanded: boolean = true;
 
-  constructor() {}
+  constructor(private mapService: MapService) {
+    this.mapService
+      .getColormap('viridis')
+      .pipe(take(1))
+      .subscribe((colormapConfig) => {
+        this.legend = colormapConfigToLegend(colormapConfig);
+      });
+  }
 
   ngOnInit(): void {}
 }
