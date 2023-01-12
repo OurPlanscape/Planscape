@@ -86,6 +86,36 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         )
         self.assertEqual(params.project_areas[2].srid, 4269)
 
+    def test_reads_project_areas_from_url_params_with_default_srid(self) -> None:
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&project_areas={ "id": 2, ' +
+            '"polygons": [ { "coordinates": [ [-121, 42], [-120, 40], ' +
+            '[-121, 41], [-121, 42] ] } ] }')
+        params = ForsysProjectAreaRankingRequestParams(qd)
+
+        keys = list(params.project_areas.keys())
+        keys.sort()
+        self.assertEqual(keys, [2])
+
+        self.assertEqual(params.project_areas[2].coords, (
+            (((-121.0, 42.0), (-120.0, 40.0),
+              (-121.0, 41.0), (-121.0, 42.0)),),)
+        )
+        self.assertEqual(params.project_areas[2].srid, 4269)
+
+    def test_raises_error_for_url_params_project_areas_w_empty_polygons(
+            self) -> None:
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&project_areas={ "id": 1, "srid": 4269, ' +
+            '"polygons": [ ] }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(
+            str(context.exception),
+            'project area field, "polygons" is an empty list')
+
     def test_raises_error_for_invalid_project_areas_from_url_params(
             self) -> None:
         qd = QueryDict(
@@ -96,6 +126,33 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             ForsysProjectAreaRankingRequestParams(qd)
         self.assertIn("LinearRing requires at least 4 points, got 2", str(
             context.exception))
+
+    def test_raises_error_for_url_params_project_areas_missing_polygons_field(
+            self) -> None:
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&project_areas={ "id": 1, "srid": 4269 }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEquals(
+            str(context.exception),
+            'project area missing field, "polygons"')
+
+    def test_raises_error_for_url_params_project_areas_missing_id_field(self) -> None:
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&project_areas={ "srid": 4269, ' +
+            '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39], ' +
+            '[-119, 39], [-120, 40] ] }, ' +
+            '{ "coordinates": [ [-118, 39], [-119, 38], [-119, 39], ' +
+            '[-118, 39] ] } ] }' +
+            '&project_areas={ "id": 2, "srid": 4269, ' +
+            '"polygons": [ { "coordinates": [ [-121, 42], [-120, 40], ' +
+            '[-121, 41], [-121, 42] ] } ] }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEquals(
+            str(context.exception), 'project area missing field, "id"')
 
     def test_reads_from_db(self) -> None:
         qd = QueryDict('')
