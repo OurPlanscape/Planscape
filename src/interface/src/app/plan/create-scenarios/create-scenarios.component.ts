@@ -8,15 +8,13 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { Component, Input, OnInit } from '@angular/core';
-import { BehaviorSubject, take } from 'rxjs';
+import { Component, Input } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import {
   colorTransitionTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { colormapConfigToLegend, Legend, Plan } from 'src/app/types';
-
-import { MapService } from './../../services/map.service';
+import { Plan } from 'src/app/types';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -69,48 +67,9 @@ import { MapService } from './../../services/map.service';
     }),
   ],
 })
-export class CreateScenariosComponent implements OnInit {
+export class CreateScenariosComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
+  @Input() planningStep: number = 1;
 
-  readonly text1: string = `
-    Scenarios consist of project areas identified by your priorities and constraints
-    within the planning area. You can draw or upload your own project areas when creating
-    scenarios or Planscape can recommend some project areas and scenarios within those
-    project areas.
-  `;
-
-  readonly text2: string = `
-    You can choose to use either Current Condition scores or Management Opportunity scores to
-    inform your selection of priorities.
-  `;
-
-  readonly text3: string = `
-    Define project areas based on choosing priorities based only on the current condition of
-    the defined planning area. Future modeling is not considered in this mode.
-  `;
-
-  readonly text4: string = `
-    Choose priorities using the Pillars of Resilience Framework. Priorities with higher
-    opportunity scores (-1 to +1 range) represent how management value is greatest in the near
-    term within the defined planning area. Future modeling is considered in this mode.
-  `;
-
-  readonly text5: string = `
-    To learn more about how priorities are defined and used within this tool, visit
-    linkaddresshere.
-  `;
-
-  legend: Legend | undefined;
   panelExpanded: boolean = true;
-
-  constructor(private mapService: MapService) {}
-
-  ngOnInit(): void {
-    this.mapService
-      .getColormap('viridis') // TODO(leehana): replace once colormaps are finalized
-      .pipe(take(1))
-      .subscribe((colormapConfig) => {
-        this.legend = colormapConfigToLegend(colormapConfig);
-      });
-  }
 }

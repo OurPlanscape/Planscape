@@ -1,0 +1,16 @@
+.panel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  height: 100%;
+}
+
+.tile-content {
+  height: 100%;
+  width: 100%;
+}
+
+.row-div {
+  display: flex;
+  flex-direction: row;
+}
