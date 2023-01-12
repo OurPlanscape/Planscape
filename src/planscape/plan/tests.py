@@ -475,7 +475,7 @@ class GetProjectTest(TransactionTestCase):
         self.condition2 = Condition.objects.create(
             condition_dataset=self.base_condition, raster_name="name2")
 
-    def test_get_plan_no_user_no_priorities(self):
+    def test_get_project_no_user_no_priorities(self):
         response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
@@ -483,7 +483,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
         self.assertEqual(response.json()['max_cost'], 100)
 
-    def test_get_plan_no_priorities(self):
+    def test_get_project_no_priorities(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('plan:get_project'), {'id': self.project_with_user_no_pri.pk},
                                    content_type="application/json")
@@ -492,7 +492,13 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
         self.assertEqual(response.json()['max_cost'], 100)
 
-    def test_get_plan_no_user_with_priorities(self):
+    def test_get_nonexistent_project(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_project'), {'id': 10},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_project_no_user_with_priorities(self):
         self.project_no_user_no_pri.priorities.add(self.condition1)
         self.project_no_user_no_pri.priorities.add(self.condition2)
 
@@ -505,7 +511,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['priorities'], [
                          self.condition1.pk, self.condition2.pk])
 
-    def test_get_plan_with_priorities(self):
+    def test_get_project_with_priorities(self):
         self.client.force_login(self.user)
         self.project_with_user_no_pri.priorities.add(self.condition1)
         self.project_with_user_no_pri.priorities.add(self.condition2)
