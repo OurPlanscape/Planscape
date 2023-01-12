@@ -283,7 +283,9 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet,
 # Runs a forsys scenario sets call.
 def run_forsys_scenario_sets(
         forsys_input_dict: dict[str, list],
-        priorities: list[str], forsys_proj_id_header: str, forsys_stand_id_header: str, forsys_area_header: str, forsys_cost_header: str) -> ForsysScenarioSetOutput:
+        priorities: list[str], forsys_proj_id_header: str,
+        forsys_stand_id_header: str, forsys_area_header: str,
+        forsys_cost_header: str) -> ForsysScenarioSetOutput:
     kPriorityPrefix = "p"
 
     import rpy2.robjects as robjects
