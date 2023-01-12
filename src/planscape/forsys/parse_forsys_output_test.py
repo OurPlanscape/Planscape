@@ -94,7 +94,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
         self.assertEqual(
             str(context.exception),
-            'header, ETrt_area_ha_PCP, is not a forsys output header')
+            'header, ETrt_area_ha, is not a forsys output header')
 
     def test_fails_if_cost_header_is_wrong(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
@@ -106,7 +106,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
         self.assertEqual(
             str(context.exception),
-            'header, ETrt_c_PCP, is not a forsys output header')
+            'header, ETrt_c, is not a forsys output header')
 
     def _convert_dictionary_of_lists_to_rdf(
             self, lists: dict) -> ro.vectors.DataFrame:
@@ -130,11 +130,11 @@ class TestForsysScenarioSetOutput(TestCase):
             "proj_id": [1, 2, 3, 2, 1, 3],
             "Pr_1_p1": [1, 1, 1, 1, 1, 1],
             "Pr_2_p2": [1, 1, 1, 2, 2, 2],
-            "ETrt_p1_PCP": [0.5, 0.1, 0.3, 0.1, 0.5, 0.3],
-            "ETrt_p2_PCP": [0.1, 0.4, 0.1, 0.4, 0.1, 0.1],
+            "ETrt_p1": [0.5, 0.1, 0.3, 0.1, 0.5, 0.3],
+            "ETrt_p2": [0.1, 0.4, 0.1, 0.4, 0.1, 0.1],
             "treatment_rank": [1, 2, 3, 1, 2, 3],
-            "ETrt_area_PCP": [10, 11, 12, 11, 10, 12],
-            "ETrt_cost_PCP": [500, 600, 800, 600, 500, 800],
+            "ETrt_area": [10, 11, 12, 11, 10, 12],
+            "ETrt_cost": [500, 600, 800, 600, 500, 800],
         }
         raw_forsys_output = ro.vectors.ListVector(
             {"stand_output": self._convert_dictionary_of_lists_to_rdf({}),
