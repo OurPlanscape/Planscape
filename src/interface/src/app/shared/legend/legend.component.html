@@ -1,12 +1,12 @@
 <div class="legend-wrapper" *ngIf="legend">
-  <h1>Legend</h1>
-  <div class="legend">
-    <h2>Potential for impact</h2>
-    <div class="colors">
-      <div class="colorbox" *ngFor="let color of legend?.colors" [ngStyle]="{'background-color': color}"></div>
+  <h1 *ngIf="!hideTitles">Legend</h1>
+  <div class="legend" [class.vertical]="vertical" [class.no-border]="hideOutline">
+    <h2 *ngIf="!hideTitles">Potential for impact</h2>
+    <div class="colors" [class.vertical]="vertical">
+      <div class="colorbox" [class.vertical]="vertical" *ngFor="let color of legend?.colors" [ngStyle]="{'background-color': color}"></div>
     </div>
-    <div class="labels">
-      <div class="label" *ngFor="let label of legend?.labels">{{ label }}</div>
+    <div class="labels" [class.vertical]="vertical">
+      <div class="label" [class.vertical]="vertical" *ngFor="let label of legend?.labels">{{ label }}</div>
     </div>
   </div>
 </div>
