@@ -1,10 +1,12 @@
 from rest_framework.serializers import IntegerField
-from rest_framework_gis import serializers
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
 
-from .models import Plan
+from .models import Plan, Project
+from conditions.models import Condition
 
 
-class PlanSerializer(serializers.GeoFeatureModelSerializer):
+class PlanSerializer(gis_serializers.GeoFeatureModelSerializer):
     projects = IntegerField(read_only=True, required=False)
     scenarios = IntegerField(read_only=True, required=False)
 
@@ -13,3 +15,18 @@ class PlanSerializer(serializers.GeoFeatureModelSerializer):
                   "locked", "creation_time", "projects", "scenarios")
         model = Plan
         geo_field = "geometry"
+
+
+class ConditionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Condition
+        fields = '__all__'
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    priorities = serializers.SlugRelatedField(
+        many=True, read_only=True, slug_field='id')
+
+    class Meta:
+        model = Project
+        fields = '__all__'
