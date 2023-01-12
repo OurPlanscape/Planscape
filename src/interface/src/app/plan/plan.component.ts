@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, take } from 'rxjs';
 
 import { Plan } from '../types';
 import { PlanService } from './../services/plan.service';
+import { PlanMapComponent } from './plan-map/plan-map.component';
 
 export enum PlanStep {
   Overview,
@@ -17,9 +18,11 @@ export enum PlanStep {
   styleUrls: ['./plan.component.scss'],
 })
 export class PlanComponent {
+  @ViewChild(PlanMapComponent) map!: PlanMapComponent;
+
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  currentPlanStep: PlanStep = PlanStep.Overview;
+  currentPlanStep: PlanStep = PlanStep.SetPriorities;
   planNotFound: boolean = false;
 
   constructor(private planService: PlanService, private route: ActivatedRoute) {
@@ -50,5 +53,9 @@ export class PlanComponent {
 
   previousStep(): void {
     this.currentPlanStep -= 1;
+  }
+
+  changeCondition(filepath: string): void {
+    this.map.setCondition(filepath);
   }
 }

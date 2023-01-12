@@ -8,7 +8,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import {
   colorTransitionTrigger,
@@ -70,6 +70,7 @@ import { Plan } from 'src/app/types';
 export class CreateScenariosComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: number = 1;
+  @Output() changeConditionEvent = new EventEmitter<string>();
 
   panelExpanded: boolean = true;
 }

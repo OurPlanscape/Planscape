@@ -16,7 +16,7 @@
             <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'"></app-plan-map>
           </div>
           <div class="plan-content-panel">
-            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep"></app-create-scenarios>
+            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep" (changeConditionEvent)="changeCondition($event)"></app-create-scenarios>
           </div>
         </ng-container>
       </div>
