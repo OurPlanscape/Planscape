@@ -35,4 +35,19 @@
 
 .plan-content-inner {
   flex: 1;
+  position: relative;
+}
+
+.plan-map-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.plan-content-panel {
+  left: 0;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  z-index: 2;
 }
