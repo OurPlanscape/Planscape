@@ -84,6 +84,10 @@ describe('PlanComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('currentPlanStep should be 0', () => {
+    expect(component.currentPlanStep).toBe(0);
+  });
+
   it('fetches plan from service using ID', () => {
     expect(component.planNotFound).toBeFalse();
     expect(component.plan).toEqual(fakePlan);
