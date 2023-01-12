@@ -119,7 +119,9 @@ export class CreateScenariosComponent implements OnInit {
   legend: Legend | undefined;
   panelExpanded: boolean = true;
 
-  constructor(private mapService: MapService) {
+  constructor(private mapService: MapService) {}
+
+  ngOnInit(): void {
     this.mapService
       .getColormap('viridis')
       .pipe(take(1))
@@ -127,6 +129,4 @@ export class CreateScenariosComponent implements OnInit {
         this.legend = colormapConfigToLegend(colormapConfig);
       });
   }
-
-  ngOnInit(): void {}
 }

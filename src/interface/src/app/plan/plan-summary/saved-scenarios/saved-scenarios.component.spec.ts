@@ -8,9 +8,8 @@ describe('SavedScenariosComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SavedScenariosComponent ]
-    })
-    .compileComponents();
+      declarations: [SavedScenariosComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SavedScenariosComponent);
     component = fixture.componentInstance;
@@ -19,5 +18,13 @@ describe('SavedScenariosComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('createScenario should emit event', () => {
+    spyOn(component.createScenarioEvent, 'emit');
+
+    component.createScenario();
+
+    expect(component.createScenarioEvent.emit).toHaveBeenCalled();
   });
 });

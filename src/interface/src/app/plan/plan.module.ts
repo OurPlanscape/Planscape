@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { SharedModule } from './../shared/shared.module';
@@ -33,6 +34,12 @@ import { ProgressPanelComponent } from './progress-panel/progress-panel.componen
     CreateScenariosComponent,
     PlanBottomBarComponent,
   ],
-  imports: [CommonModule, FormsModule, MaterialModule, SharedModule],
+  imports: [
+    BrowserAnimationsModule,
+    CommonModule,
+    FormsModule,
+    MaterialModule,
+    SharedModule,
+  ],
 })
 export class PlanModule {}

@@ -1,6 +1,6 @@
 <div class="create-scenarios-container">
   <div class="map-container">
-    <app-plan-map [plan]="plan$"></app-plan-map>
+    <app-plan-map [plan]="plan$" [mapId]="'planning-map'"></app-plan-map>
   </div>
   <div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
     <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'expanded' : 'collapsed'">
