@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from 'src/app/material/material.module';
 
+import { SharedModule } from './../shared/shared.module';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { PlanBottomBarComponent } from './plan-bottom-bar/plan-bottom-bar.component';
 import { PlanMapComponent } from './plan-map/plan-map.component';
@@ -32,6 +33,6 @@ import { ProgressPanelComponent } from './progress-panel/progress-panel.componen
     CreateScenariosComponent,
     PlanBottomBarComponent,
   ],
-  imports: [CommonModule, FormsModule, MaterialModule],
+  imports: [CommonModule, FormsModule, MaterialModule, SharedModule],
 })
 export class PlanModule {}
