@@ -1,15 +1,17 @@
-import { filter } from 'rxjs/operators';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
-import { ConditionsConfig } from './../../../types/data.types';
+import { filter } from 'rxjs/operators';
+
 import { MapService } from './../../../services/map.service';
-import { Component, OnInit } from '@angular/core';
+import { ConditionsConfig } from './../../../types/data.types';
 
 interface PriorityRow {
   selected?: boolean;
   visible?: boolean;
   conditionName: string;
   score: number;
+  filepath: string;
   children: PriorityRow[];
 }
 
@@ -19,6 +21,8 @@ interface PriorityRow {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
+  @Output() changeConditionEvent = new EventEmitter<string>();
+
   readonly text1: string = `
     Condition scores represent the condition of each priority within the defined planning area.
     Select at least one priority to create scenarios. Note: Choosing more than 5 may dilute
@@ -29,7 +33,7 @@ export class SetPrioritiesComponent implements OnInit {
     'selected',
     'visible',
     'conditionName',
-    'score'
+    'score',
   ];
   datasource = new MatTableDataSource<PriorityRow>();
 
@@ -55,6 +59,7 @@ export class SetPrioritiesComponent implements OnInit {
         conditionName: pillar.display_name
           ? pillar.display_name
           : pillar.pillar_name!,
+        filepath: pillar.filepath!,
         score: 0,
         children: [],
       });
@@ -63,6 +68,7 @@ export class SetPrioritiesComponent implements OnInit {
           conditionName: element.display_name
             ? element.display_name
             : element.element_name!,
+          filepath: element.filepath!,
           score: 0,
           children: [],
         });
@@ -71,6 +77,7 @@ export class SetPrioritiesComponent implements OnInit {
             conditionName: metric.display_name
               ? metric.display_name
               : metric.metric_name!,
+            filepath: metric.filepath!,
             score: 0,
             children: [],
           });
@@ -78,5 +85,20 @@ export class SetPrioritiesComponent implements OnInit {
       });
     });
     return data;
+  }
+
+  /** Toggle visibility for a priority condition. If visibility is ON, turn visibility
+   *  for all other conditions to OFF.
+   */
+  toggleVisibility(priority: PriorityRow): void {
+    priority.visible = !priority.visible;
+    if (priority.visible) {
+      this.changeConditionEvent.emit(priority.filepath);
+      this.datasource.data.forEach((priorityRow) => {
+        if (priorityRow !== priority) {
+          priorityRow.visible = false;
+        }
+      });
+    }
   }
 }
