@@ -1,0 +1,29 @@
+.panel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.priority-table {
+  overflow-y: auto;
+}
+
+.mat-column-selected {
+  flex: 0 0 auto;
+  width: 36px;
+}
+
+.mat-column-visible {
+  flex: 0 0 auto;
+  width: 48px;
+}
+
+.mat-column-conditionName {
+  flex: 2 0 auto;
+}
+
+.mat-column-score {
+  flex: 0 0 auto;
+  width: 120px;
+}
