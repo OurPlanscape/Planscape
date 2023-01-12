@@ -8,8 +8,9 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from plan.models import Plan, Project, ProjectArea
-from plan.serializers import PlanSerializer
+from plan.serializers import PlanSerializer, ProjectSerializer
 from planscape import settings
+from django.shortcuts import get_list_or_404
 
 
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -196,6 +197,16 @@ def create_project(request: HttpRequest) -> HttpResponse:
             owner=owner, plan=plan, max_cost=max_cost)
         project.save()
         return HttpResponse(str(project.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def get_project(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['id'], str)
+        project_id = request.GET.get('id', 0)
+        response = get_list_or_404(Project, id=project_id)
+        return JsonResponse(ProjectSerializer(response[0]).data)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
