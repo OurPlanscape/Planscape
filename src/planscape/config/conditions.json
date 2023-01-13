@@ -22,18 +22,20 @@
                   "display_name": "High Severity Potential Smoke Emissions",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
-                  "data_source": "USDA Forest Service, Region 5",
+                  "data_provider": "USDA Forest Service, Region 5",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
                   "data_year": "2021",
                   "min_value": 0,
-                  "max_value": 1
+                  "max_value": 1,
+                  "invert_raw": true
                 },
                 {
                   "metric_name": "moderate_severity_potential_smoke_emissions",
                   "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
                   "display_name": "Moderate Severity Potential Smoke Emissions",
                   "min_value": 0,
-                  "max_value": 1
+                  "max_value": 1,
+                  "invert_raw": true
                 }
               ]
             }
@@ -207,14 +209,16 @@
                   "filepath": "sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
                   "display_name": "Structure Exposure",
                   "min_value": 1,
-                  "max_value": 18
+                  "max_value": 18,
+                  "invert_raw": true
                 },
                 {
                   "metric_name": "damage_potential_wui",
                   "filepath": "sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m",
                   "display_name": "WUI Damage Potential",
                   "min_value": 1,
-                  "max_value": 9
+                  "max_value": 9,
+                  "invert_raw": true
                 }
               ]
             }
@@ -239,15 +243,14 @@
                   "display_name": "Mean PFRID",
                   "min_value": -100,
                   "max_value": 100
-
                 },
                 {
                   "metric_name": "probability_high_fire_severity",
                   "filepath": "sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
                   "display_name": "Probability High Fire Severity",
                   "min_value": 0,
-                  "max_value": 1
-
+                  "max_value": 1,
+                  "invert_raw": true
                 },
                 {
                   "metric_name": "annual_burn_probability",
@@ -255,7 +258,6 @@
                   "display_name": "Annual Burn Probability",
                   "min_value": 0,
                   "max_value": 10
-
                 }
               ]
             }
@@ -279,7 +281,8 @@
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m",
                   "display_name": "Tree Density > 1",
                   "min_value": 0,
-                  "max_value": 8500
+                  "max_value": 8500,
+                  "invert_raw": true
                 },
                 {
                   "metric_name": "large_tree_density_gt30",
@@ -300,7 +303,8 @@
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
                   "display_name": "Max SDI",
                   "min_value": 0,
-                  "max_value": 1
+                  "max_value": 1,
+                  "invert_raw": true
                 }
               ]
             },
@@ -337,7 +341,8 @@
                   "filepath": "sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m",
                   "display_name": "Tree Mortality",
                   "min_value": 0,
-                  "max_value": 100
+                  "max_value": 100,
+                  "invert_raw": true
                 }
               ]
             }
