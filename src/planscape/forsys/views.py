@@ -5,6 +5,7 @@ import os
 import pandas as pd
 import rpy2
 
+from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
 from forsys.parse_forsys_output import ForsysScenarioSetOutput
 from forsys.raster_merger import RasterMerger
 
@@ -12,39 +13,13 @@ from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.conf import settings
 from django.contrib.gis.gdal import CoordTransform, Envelope, GDALRaster, SpatialReference
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse)
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
-
-
-# Fetches input parameters for the scenario_set api.
-def fetch_input_params() -> dict:
-    # TODO: make input_params an object.
-    # TODO: replace hardcoded values with parameters read from QueryDict and/or
-    # data retrieved from db.
-    input_params = {}
-    input_params['save_debug_info'] = True
-    input_params['region'] = 'sierra_cascade_inyo'
-    input_params['priorities'] = ['fire_dynamics',
-                                  'forest_resilience', 'species_diversity']
-    input_params['huc12_id'] = 43
-    project_area1 = Polygon(((-120.14015536869722, 39.05413814388948),
-                            (-120.18409937110482, 39.48622140686506),
-                            (-119.93422142411087, 39.48622140686506),
-                            (-119.93422142411087, 39.05413814388948),
-                            (-120.14015536869722, 39.05413814388948)))
-    project_area1.srid = 4269
-    project_area2 = Polygon(((-120.14015536869722, 38.05413814388948),
-                             (-120.18409937110482, 38.48622140686506),
-                             (-119.93422142411087, 38.48622140686506),
-                             (-119.93422142411087, 38.05413814388948),
-                             (-120.14015536869722, 38.05413814388948)))
-    project_area2.srid = 4269
-    input_params['project_areas'] = [project_area1, project_area2]
-    return input_params
 
 
 # Converts R dataframe to Pandas dataframe.
@@ -77,7 +52,7 @@ def convert_dictionary_of_lists_to_rdf(
 
 
 def get_boundary_debug_info(
-        boundaries: QuerySet, project_area: Polygon) -> dict:
+        boundaries: QuerySet, project_area: MultiPolygon) -> dict:
     boundary_response = []
     for b in boundaries:
         geo = b.geometry
@@ -132,7 +107,7 @@ def get_condition_rasters(condition: str, region: str) -> QuerySet:
 
 
 def raster_extent_overlaps_project_area(
-        raster: GDALRaster, project_area: Polygon) -> bool:
+        raster: GDALRaster, project_area: MultiPolygon) -> bool:
     e = raster.extent
     e_polygon = Polygon(((e[0], e[1]),
                          (e[2], e[1]),
@@ -144,7 +119,7 @@ def raster_extent_overlaps_project_area(
 
 def fetch_condition_rasters(
         priorities: list[str],
-        region: str, project_area: Polygon) -> dict:
+        region: str, project_area: MultiPolygon) -> dict:
     all_rasters = {}
 
     for p in priorities:
@@ -188,19 +163,19 @@ def convert_extent_to_raster_indices(extent: Envelope, origin: GDALRaster.origin
     return (min_x, min_y, max_x, max_y)
 
 
-def polygon_contains_point(
+def multipolygon_contains_point(
         origin: GDALRaster.origin, scale: GDALRaster.scale, x: int, y: int,
-        polygon: Polygon) -> bool:
+        multipolygon: MultiPolygon) -> bool:
     # TODO: adjust these equations for the case where skew != [0, 0]
     xpoly = origin[0] + x*scale[0]
     ypoly = origin[1] + y*scale[1]
     p = Point((xpoly, ypoly))
-    return p.within(polygon)
+    return p.within(multipolygon)
 
 
 def count_raster_data(data: np.ndarray, extent_indices: Envelope,
                       origin: GDALRaster.origin, scale: GDALRaster.scale,
-                      polygon: Polygon) -> (int, float):
+                      multipolygon: MultiPolygon) -> [int, float]:
     count = 0
     sum = 0
     for y in range(extent_indices[1], extent_indices[3] + 1, 1):
@@ -208,24 +183,25 @@ def count_raster_data(data: np.ndarray, extent_indices: Envelope,
             d = data[y][x]
             if np.isnan(d):
                 continue
-            if not polygon_contains_point(origin, scale, x, y, polygon):
+            if not multipolygon_contains_point(
+                    origin, scale, x, y, multipolygon):
                 continue
             sum = sum + d
             count = count + 1
     return count, sum
 
 
-def get_condition_data(raster: GDALRaster, polygon: Polygon) -> dict:
+def get_condition_data(raster: GDALRaster, multipolygon: MultiPolygon) -> dict:
     scale = raster.scale
     origin = raster.origin
 
-    polygon_extent_indices = convert_extent_to_raster_indices(
-        polygon.extent, origin, scale)
+    multipolygon_extent_indices = convert_extent_to_raster_indices(
+        multipolygon.extent, origin, scale)
 
     data = raster.bands[0].data()
 
     count, sum = count_raster_data(
-        data, polygon_extent_indices, origin, scale, polygon)
+        data, multipolygon_extent_indices, origin, scale, multipolygon)
 
     if count == 0:
         return {"mean": 0, "count": 0}
@@ -321,22 +297,22 @@ def run_forsys_scenario_sets(
 # Returns JSon data for a forsys scenario set call.
 def scenario_set(request: HttpRequest) -> HttpResponse:
     try:
-        # TODO: fetch region, boundary, priorities, stand type, and project
-        # area, project area SRID as url parameters (or from the db).
-        input_params = fetch_input_params()
-        save_debug_info = input_params['save_debug_info']
-        region = input_params['region']
-        priorities = input_params['priorities']
-        huc12_id = input_params['huc12_id']
-        project_areas = input_params['project_areas']
+        params = ForsysProjectAreaRankingRequestParams(request.GET)
+        save_debug_info = params.save_debug_info
+        region = params.region
+        priorities = params.priorities
+        project_areas = params.project_areas
+
+        # TODO: remove this because it's likely not be neceessary if we're ranking project areas rather than stands.
+        huc12_id = 43
 
         forsys_project_id_header = "proj_id"
         forsys_stand_id_header = "stand_id"
         forsys_area_header = "area"
         forsys_cost_header = "cost"
         forsys_input_df = {}
-        for i in range(len(project_areas)):
-            project_area = project_areas[i]
+        for id in project_areas.keys():
+            project_area = project_areas[id]
             project_area_raster = project_area.clone()
             project_area_raster.transform(CoordTransform(SpatialReference(
                 project_area.srid), SpatialReference(settings.CRS_9822_PROJ4)))
@@ -370,7 +346,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
             # options for using individual pixels and individual latitudinal
             # bars.
             dataframe_data = transform_into_forsys_df_data(
-                condition_rasters, boundaries, project_area_raster, i,
+                condition_rasters, boundaries, project_area_raster, id,
                 forsys_project_id_header, forsys_stand_id_header,
                 forsys_area_header, forsys_cost_header)
             if len(forsys_input_df.keys()) == 0:

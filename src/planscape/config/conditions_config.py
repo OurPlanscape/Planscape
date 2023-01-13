@@ -38,9 +38,10 @@ class PillarConfig:
                    'ignore',
                    'source',
                    'source_link',
-                   'data_source',
+                   'data_provider',
                    'data_download_link',
-                   'data_year'}.union(COMMON_METADATA)
+                   'data_year',
+                   'invert_raw'}.union(COMMON_METADATA)
 
     @classmethod
     def build_condition_metadata(cls, config: list[Region]):
