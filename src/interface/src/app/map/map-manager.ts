@@ -623,23 +623,18 @@ export class MapManager {
 
     let filepath = map.config.dataLayerConfig.filepath;
     if (filepath?.length === 0 || !filepath) return;
-    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
 
     let colormap = map.config.dataLayerConfig.colormap;
     if (colormap?.length === 0 || !colormap) {
       colormap = DEFAULT_COLORMAP;
     }
 
-    map.dataLayerRef = L.tileLayer.wms(
-      BackendConstants.END_POINT + '/conditions/wms',
+    map.dataLayerRef = L.tileLayer(
+      'https://planscape-tiles.s3.us-west-1.amazonaws.com/' + filepath + '/{z}/{x}/{y}.png',
       {
-        crs: L.CRS.EPSG4326,
         minZoom: 7,
-        maxZoom: 15,
-        format: 'image/png',
-        opacity: 0.7,
-        layers: filepath,
-        styles: colormap,
+        maxZoom: 13,
+        opacity: 0.7
       }
     );
 
