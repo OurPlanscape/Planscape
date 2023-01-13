@@ -10,6 +10,10 @@ import {
 } from '@angular/animations';
 import { Component, Input, OnInit } from '@angular/core';
 import { BehaviorSubject, take } from 'rxjs';
+import {
+  colorTransitionTrigger,
+  opacityTransitionTrigger,
+} from 'src/app/shared/animations';
 import { colormapConfigToLegend, Legend, Plan } from 'src/app/types';
 
 import { MapService } from './../../services/map.service';
@@ -51,38 +55,18 @@ import { MapService } from './../../services/map.service';
         ]),
       ]),
     ]),
-    trigger('expandCollapseButton', [
-      state(
-        'expanded',
-        style({
-          backgroundColor: 'white',
-        })
-      ),
-      state(
-        'collapsed',
-        style({
-          backgroundColor: '#ebebeb',
-        })
-      ),
-      transition('expanded => collapsed', [animate('300ms ease-out')]),
-      transition('collapsed => expanded', [animate('250ms ease-out')]),
-    ]),
-    trigger('expandCollapsePanelContent', [
-      state(
-        'expanded',
-        style({
-          opacity: 1,
-        })
-      ),
-      state(
-        'collapsed',
-        style({
-          opacity: 0,
-        })
-      ),
-      transition('expanded => collapsed', [animate('100ms ease-out')]),
-      transition('collapsed => expanded', [animate('100ms 250ms ease-out')]),
-    ]),
+    colorTransitionTrigger({
+      triggerName: 'expandCollapseButton',
+      colorA: 'white',
+      colorB: '#ebebeb',
+      timingA: '300ms ease-out',
+      timingB: '250ms ease-out',
+    }),
+    opacityTransitionTrigger({
+      triggerName: 'expandCollapsePanelContent',
+      timingA: '100ms ease-out',
+      timingB: '100ms 250ms ease-out',
+    }),
   ],
 })
 export class CreateScenariosComponent implements OnInit {
@@ -123,7 +107,7 @@ export class CreateScenariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.mapService
-      .getColormap('viridis')
+      .getColormap('viridis') // TODO(leehana): replace once colormaps are finalized
       .pipe(take(1))
       .subscribe((colormapConfig) => {
         this.legend = colormapConfigToLegend(colormapConfig);

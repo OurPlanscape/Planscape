@@ -18,10 +18,9 @@
   position: absolute;
   right: -24px;
   top: 12px;
-}
-
-.create-scenarios-panel-expand-button.collapsed {
-  transform: rotate(180deg);
+  &.collapsed {
+    transform: rotate(180deg);
+  }
 }
 
 .create-scenarios-panel-content {
