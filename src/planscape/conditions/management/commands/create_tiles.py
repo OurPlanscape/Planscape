@@ -50,6 +50,9 @@ class Command(BaseCommand):
         input_file = os.path.join(input_dir, raster_file)
         colormap_file = os.path.join(os.path.dirname(os.path.realpath(
             __file__)), colormap + ('_inverted.cpt' if invert else '.cpt'))
+        if not os.path.exists(colormap_file):
+            raise CommandError(
+                'Unknown colormap file {0}.'.format(colormap_file))
 
         # Set up the outputs
         output_filepath = filepath.replace('data/', 'tiles/')
@@ -60,25 +63,27 @@ class Command(BaseCommand):
         output_file = os.path.join(
             output_dir, raster_file.removesuffix('.tif'))
 
-        os.makedirs(output_dir, exist_ok=True)
-
         # Build the commands.  The first converts the raster to a color-relief version, the second
         # to tiles.
         gdaldem = ['gdaldem', 'color-relief', input_file,
                    colormap_file, gdaldem_file, '-of', 'VRT']
         gdal2tiles = ['gdal2tiles.py', '-s', settings.CRS_9822_PROJ4,
                       '--xyz', '-z', zoom_levels, gdaldem_file, output_file]
-        print('-----------------------')
-        print('Converting: ' + filepath)
-        print(' '.join(gdaldem))
-        print(' '.join(gdal2tiles))
+        self.stdout.write('-----------------------')
+        self.stdout.write('Converting: ' + filepath)
+        self.stdout.write(' '.join(gdaldem))
+        self.stdout.write(' '.join(gdal2tiles))
         if not dry_run:
+            os.makedirs(output_dir, exist_ok=True)
             subprocess.run(gdaldem, stdout=subprocess.PIPE,
                            stderr=subprocess.STDOUT, check=True)
             subprocess.run(gdal2tiles, capture_output=True, check=True)
 
     def handle(self, *args, **options):
         data_directory = options['data_directory']
+        if data_directory is None:
+            raise CommandError(
+                'Must specify the data directory as an argument.')
         dry_run = options['dry_run']
         region_name = options['region_name']
         colormap = options['colormap']
@@ -88,7 +93,8 @@ class Command(BaseCommand):
         config = PillarConfig(config_path)
         region = config.get_region(region_name)
         if region is None:
-            return
+            raise CommandError(
+                'Region "{0}" is not in configuration.'.format(region_name))
         for pillar in config.get_pillars(region):
             if not pillar.get('display', False):
                 continue
