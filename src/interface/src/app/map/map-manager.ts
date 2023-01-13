@@ -630,7 +630,7 @@ export class MapManager {
     }
 
     map.dataLayerRef = L.tileLayer(
-      'https://planscape-tiles.s3.us-west-1.amazonaws.com/' + filepath + '/{z}/{x}/{y}.png',
+      BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
       {
         minZoom: 7,
         maxZoom: 13,
