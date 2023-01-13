@@ -1,5 +1,5 @@
 <div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
-  <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'expanded' : 'collapsed'">
+  <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
     <div>
       <h1>Create scenarios</h1>
       <p>{{ text1 }}</p>
@@ -57,7 +57,7 @@
       <div>{{ text5 }}</div>
     </div>
   </div>
-  <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded" [@expandCollapseButton]="panelExpanded ? 'expanded': 'collapsed'">
+  <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded" [@expandCollapseButton]="panelExpanded ? 'colorA': 'colorB'">
     <button mat-icon-button (click)="panelExpanded = !panelExpanded"><mat-icon>chevron_left</mat-icon></button>
   </div>
 </div>
