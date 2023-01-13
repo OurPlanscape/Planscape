@@ -5,6 +5,11 @@
   height: 100%;
 }
 
+.flex-row-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
 .priority-table {
   overflow-y: auto;
 }
