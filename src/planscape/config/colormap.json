@@ -12,12 +12,12 @@
         {"name": "ok", "percentile": 50, "rgb": "#21918c"},
         {"name": "fair", "percentile": 25, "rgb": "#5ec962"},
         {"name": "poor", "percentile": 0, "rgb": "#fde725"}
-   ],
+    ],
     "inferno": [
         {"name": "excellent", "percentile": 100, "rgb": "#000004"},
         {"name": "good", "percentile": 75, "rgb": "#57106e"},
         {"name": "ok", "percentile": 50, "rgb": "#bc3754"},
         {"name": "fair", "percentile": 25, "rgb": "#f98e09"},
         {"name": "poor", "percentile": 0, "rgb": "#fcffa4"}
-     ]
+    ]
 }
