@@ -52,6 +52,7 @@ class Metric(TypedDict):
     colormap: NotRequired[str]
     min_value: NotRequired[int]
     max_value: NotRequired[int]
+    invert_raw: NotRequired[bool]
 
 
 class Element(TypedDict):

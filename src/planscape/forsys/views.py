@@ -116,6 +116,7 @@ def raster_extent_overlaps_project_area(
                          (e[0], e[1])))
     return e_polygon.overlaps(project_area)
 
+
 def fetch_condition_rasters(
         priorities: list[str],
         region: str, project_area: MultiPolygon) -> dict:
@@ -208,23 +209,26 @@ def get_condition_data(raster: GDALRaster, multipolygon: MultiPolygon) -> dict:
 
 
 def transform_into_forsys_df_data(condition_rasters: QuerySet,
-                                  boundaries: QuerySet,
-                                  project_area: MultiPolygon,
-                                  project_area_id: int) -> dict[str, list]:
+                                  boundaries: QuerySet, project_area: Polygon,
+                                  project_area_id: int,
+                                  forsys_proj_id_header: str,
+                                  forsys_stand_id_header: str,
+                                  forsys_area_header: str,
+                                  forsys_cost_header: str) -> dict[str, list]:
     kConditionPrefix = "cond"
     kPriorityPrefix = "p"
     # TODO: fix cost estimation once rasters become available.
     kUnitAreaCost = 5000
 
     data = {}
-    data['proj_id'] = []
-    data['stand_id'] = []
+    data[forsys_proj_id_header] = []
+    data[forsys_stand_id_header] = []
     data['shape_name'] = []
     for c in condition_rasters.keys():
         data[kConditionPrefix + "_" + c] = []
         data[kPriorityPrefix + "_" + c] = []
-        data['area'] = []
-        data['cost'] = []
+        data[forsys_area_header] = []
+        data[forsys_cost_header] = []
 
     for b in boundaries:
         geo = b.geometry.clone()
@@ -233,14 +237,14 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet,
         geo = project_area.intersection(geo)
 
         # TODO: set project_area ID from an external source
-        data['proj_id'].append(project_area_id)
+        data[forsys_proj_id_header].append(project_area_id)
         # TODO: double-check that it makes sense to use this ID.
-        data['stand_id'].append(b.id)
+        data[forsys_stand_id_header].append(b.id)
         # TODO: double-check that this field is necessary.
         data['shape_name'].append(b.shape_name)
-        data['area'].append(geo.area)
+        data[forsys_area_header].append(geo.area)
         # TODO: adjust cost as a function of treatment type.
-        data['cost'].append(kUnitAreaCost * geo.area)
+        data[forsys_cost_header].append(kUnitAreaCost * geo.area)
 
         for c in condition_rasters.keys():
             d = get_condition_data(condition_rasters[c], geo)
@@ -255,7 +259,9 @@ def transform_into_forsys_df_data(condition_rasters: QuerySet,
 # Runs a forsys scenario sets call.
 def run_forsys_scenario_sets(
         forsys_input_dict: dict[str, list],
-        priorities: list[str]) -> ForsysScenarioSetOutput:
+        priorities: list[str], forsys_proj_id_header: str,
+        forsys_stand_id_header: str, forsys_area_header: str,
+        forsys_cost_header: str) -> ForsysScenarioSetOutput:
     kPriorityPrefix = "p"
 
     import rpy2.robjects as robjects
@@ -272,11 +278,16 @@ def run_forsys_scenario_sets(
     for p in priorities:
         priority_headers.append(kPriorityPrefix + "_" + p)
 
-    forsys_output = scenario_sets_function_r(
-        forsys_input, robjects.StrVector(priority_headers))
+    forsys_output = scenario_sets_function_r(forsys_input, robjects.StrVector(
+        priority_headers),
+        forsys_stand_id_header,
+        forsys_proj_id_header,
+        forsys_area_header,
+        forsys_cost_header)
 
     parsed_output = ForsysScenarioSetOutput(
-        forsys_output, priority_headers, 'proj_id', 'area', 'cost')
+        forsys_output, priority_headers, forsys_proj_id_header,
+        forsys_area_header, forsys_cost_header)
 
     # TODO: add logic for applying constraints to forsys_output.
 
@@ -295,6 +306,10 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
         # TODO: remove this because it's likely not be neceessary if we're ranking project areas rather than stands.
         huc12_id = 43
 
+        forsys_project_id_header = "proj_id"
+        forsys_stand_id_header = "stand_id"
+        forsys_area_header = "area"
+        forsys_cost_header = "cost"
         forsys_input_df = {}
         for id in project_areas.keys():
             project_area = project_areas[id]
@@ -331,8 +346,9 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
             # options for using individual pixels and individual latitudinal
             # bars.
             dataframe_data = transform_into_forsys_df_data(
-                condition_rasters, boundaries, project_area_raster, id)
-
+                condition_rasters, boundaries, project_area_raster, id,
+                forsys_project_id_header, forsys_stand_id_header,
+                forsys_area_header, forsys_cost_header)
             if len(forsys_input_df.keys()) == 0:
                 forsys_input_df = dataframe_data
             else:
@@ -345,7 +361,8 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
         response['forsys']['input_df'] = dataframe.to_json()
 
         forsys_scenario_sets_output = run_forsys_scenario_sets(
-            forsys_input_df, priorities)
+            forsys_input_df, priorities, forsys_project_id_header,
+            forsys_stand_id_header, forsys_area_header, forsys_cost_header)
 
         response['forsys']['output_project'] = json.dumps(
             forsys_scenario_sets_output.scenarios)
