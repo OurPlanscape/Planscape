@@ -8,11 +8,14 @@ import { ConditionsConfig } from './../../../types/data.types';
 
 interface PriorityRow {
   selected?: boolean;
-  visible?: boolean;
+  visible?: boolean; // Visible as raster data on map
+  expanded?: boolean; // Children in table are not hidden
+  hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
   conditionName: string;
   score: number;
   filepath: string;
   children: PriorityRow[];
+  level: number;
 }
 
 @Component({
@@ -55,36 +58,61 @@ export class SetPrioritiesComponent implements OnInit {
   conditionsConfigToPriorityData(config: ConditionsConfig): PriorityRow[] {
     let data: PriorityRow[] = [];
     config.pillars?.forEach((pillar) => {
-      data.push({
+      let pillarRow: PriorityRow = {
         conditionName: pillar.display_name
           ? pillar.display_name
           : pillar.pillar_name!,
         filepath: pillar.filepath!,
         score: 0,
         children: [],
-      });
+        level: 0,
+        expanded: true,
+      };
+      data.push(pillarRow);
       pillar.elements?.forEach((element) => {
-        data.push({
+        let elementRow: PriorityRow = {
           conditionName: element.display_name
             ? element.display_name
             : element.element_name!,
           filepath: element.filepath!,
           score: 0,
           children: [],
-        });
+          level: 1,
+          expanded: true,
+        };
+        data.push(elementRow);
+        pillarRow.children.push(elementRow);
         element.metrics?.forEach((metric) => {
-          data.push({
+          let metricRow: PriorityRow = {
             conditionName: metric.display_name
               ? metric.display_name
               : metric.metric_name!,
             filepath: metric.filepath!,
             score: 0,
             children: [],
-          });
+            level: 2,
+          };
+          data.push(metricRow);
+          elementRow.children.push(metricRow);
         });
       });
     });
     return data;
+  }
+
+  /** Toggle whether a priority condition's children are expanded. */
+  toggleExpand(
+    priority: PriorityRow,
+    expanded?: boolean,
+    hideChildren?: boolean
+  ): void {
+    priority.expanded = expanded !== undefined ? expanded : !priority.expanded;
+    priority.children.forEach((child) => {
+      child.hidden = hideChildren !== undefined ? hideChildren : !child.hidden;
+      if (child.hidden) {
+        this.toggleExpand(child, false, true);
+      }
+    });
   }
 
   /** Toggle visibility for a priority condition. If visibility is ON, turn visibility

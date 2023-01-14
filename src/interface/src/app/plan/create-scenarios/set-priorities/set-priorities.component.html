@@ -48,6 +48,8 @@
         Priorities
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
+        <span class="indent-level-{{ element.level }}"></span>
+        <button mat-icon-button *ngIf="element.children.length" (click)="toggleExpand(element)"><mat-icon>expand_more</mat-icon></button>
         {{ element.conditionName }}
       </mat-cell>
     </ng-container>
@@ -62,6 +64,6 @@
     </ng-container>
 
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hide-row]="row.hidden"></mat-row>
   </mat-table>
 </div>

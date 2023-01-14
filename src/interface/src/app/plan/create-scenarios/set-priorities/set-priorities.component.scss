@@ -25,10 +25,27 @@
 }
 
 .mat-column-conditionName {
+  box-sizing: border-box;
   flex: 2 0 auto;
+  padding-right: 24px;
+  width: 344px;
 }
 
 .mat-column-score {
   flex: 0 0 auto;
   width: 120px;
+}
+
+.indent-level-1 {
+  flex: 0 0 auto;
+  width: 24px;
+}
+
+.indent-level-2 {
+  flex: 0 0 auto;
+  width: 88px;
+}
+
+.hide-row {
+  display: none;
 }
