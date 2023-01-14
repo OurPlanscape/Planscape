@@ -57,46 +57,48 @@ export class SetPrioritiesComponent implements OnInit {
 
   conditionsConfigToPriorityData(config: ConditionsConfig): PriorityRow[] {
     let data: PriorityRow[] = [];
-    config.pillars?.forEach((pillar) => {
-      let pillarRow: PriorityRow = {
-        conditionName: pillar.display_name
-          ? pillar.display_name
-          : pillar.pillar_name!,
-        filepath: pillar.filepath!,
-        score: 0,
-        children: [],
-        level: 0,
-        expanded: true,
-      };
-      data.push(pillarRow);
-      pillar.elements?.forEach((element) => {
-        let elementRow: PriorityRow = {
-          conditionName: element.display_name
-            ? element.display_name
-            : element.element_name!,
-          filepath: element.filepath!,
+    config.pillars
+      ?.filter((pillar) => pillar.display)
+      .forEach((pillar) => {
+        let pillarRow: PriorityRow = {
+          conditionName: pillar.display_name
+            ? pillar.display_name
+            : pillar.pillar_name!,
+          filepath: pillar.filepath!,
           score: 0,
           children: [],
-          level: 1,
+          level: 0,
           expanded: true,
         };
-        data.push(elementRow);
-        pillarRow.children.push(elementRow);
-        element.metrics?.forEach((metric) => {
-          let metricRow: PriorityRow = {
-            conditionName: metric.display_name
-              ? metric.display_name
-              : metric.metric_name!,
-            filepath: metric.filepath!,
+        data.push(pillarRow);
+        pillar.elements?.forEach((element) => {
+          let elementRow: PriorityRow = {
+            conditionName: element.display_name
+              ? element.display_name
+              : element.element_name!,
+            filepath: element.filepath!,
             score: 0,
             children: [],
-            level: 2,
+            level: 1,
+            expanded: true,
           };
-          data.push(metricRow);
-          elementRow.children.push(metricRow);
+          data.push(elementRow);
+          pillarRow.children.push(elementRow);
+          element.metrics?.forEach((metric) => {
+            let metricRow: PriorityRow = {
+              conditionName: metric.display_name
+                ? metric.display_name
+                : metric.metric_name!,
+              filepath: metric.filepath!,
+              score: 0,
+              children: [],
+              level: 2,
+            };
+            data.push(metricRow);
+            elementRow.children.push(metricRow);
+          });
         });
       });
-    });
     return data;
   }
 
