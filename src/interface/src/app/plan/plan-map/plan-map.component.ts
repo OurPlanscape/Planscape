@@ -12,6 +12,7 @@ import { Plan } from 'src/app/types';
 })
 export class PlanMapComponent implements AfterViewInit, OnDestroy {
   @Input() plan = new BehaviorSubject<Plan | null>(null);
+  @Input() mapId?: string;
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
@@ -22,7 +23,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this.map != undefined) this.map.remove();
 
-    this.map = L.map('map', {
+    this.map = L.map(this.mapId ? this.mapId : 'map', {
       center: [38.646, -120.548],
       zoom: 9,
       layers: [this.stadiaAlidadeTiles()],
@@ -39,6 +40,8 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       .subscribe((plan) => {
         this.drawPlanningArea(plan!);
       });
+
+    setTimeout(() => this.map.invalidateSize(), 0);
   }
 
   // Add planning area to map and frame it in view
