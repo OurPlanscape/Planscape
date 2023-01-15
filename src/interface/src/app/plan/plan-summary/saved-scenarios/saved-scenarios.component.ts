@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { now } from 'moment';
 import { Plan, Scenario } from 'src/app/types';
 
@@ -9,6 +9,8 @@ import { Plan, Scenario } from 'src/app/types';
 })
 export class SavedScenariosComponent {
   @Input() plan: Plan | null = null;
+  @Output() createScenarioEvent = new EventEmitter<void>();
+
   scenarios: Scenario[];
   displayedColumns: string[] = ['id', 'createdTimestamp'];
 
@@ -20,5 +22,9 @@ export class SavedScenariosComponent {
         createdTimestamp: now(),
       },
     ];
+  }
+
+  createScenario(): void {
+    this.createScenarioEvent.emit();
   }
 }

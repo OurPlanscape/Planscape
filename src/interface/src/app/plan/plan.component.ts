@@ -5,6 +5,11 @@ import { BehaviorSubject, take } from 'rxjs';
 import { Plan } from '../types';
 import { PlanService } from './../services/plan.service';
 
+export enum PlanStep {
+  Overview,
+  CreateScenarios,
+}
+
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
@@ -13,7 +18,7 @@ import { PlanService } from './../services/plan.service';
 export class PlanComponent {
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  resumePlanning = true;
+  currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
 
   constructor(private planService: PlanService, private route: ActivatedRoute) {
