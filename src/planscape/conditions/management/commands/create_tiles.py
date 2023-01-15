@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 
@@ -9,7 +10,7 @@ ZOOM_LEVELS = '7-13'
 
 
 class Command(BaseCommand):
-    help = 'Converts a directory of rasters pecified by config/conditions.json into tiles.'
+    help = 'Converts a directory of rasters specified by config/conditions.json into tiles.'
 
     def add_arguments(self, parser):
         parser.add_argument('data_directory', nargs='?', type=str)
@@ -17,8 +18,8 @@ class Command(BaseCommand):
                             type=str, default=ZOOM_LEVELS)
         parser.add_argument('--region_name', nargs='?',
                             type=str, default='sierra_cascade_inyo')
-        parser.add_argument('--dry_run', nargs='?',
-                            type=bool, default=True)
+        parser.add_argument('--dry_run',
+                            type=bool, default=True, action=argparse.BooleanOptionalAction)
         parser.add_argument('--colormap', nargs='?', type=str, default='turbo')
 
     def _convert_tif_to_tiles(self, dry_run: bool, data_directory: str, filepath: str | None,
@@ -55,9 +56,8 @@ class Command(BaseCommand):
                 'Unknown colormap file {0}.'.format(colormap_file))
 
         # Set up the outputs
-        output_filepath = filepath.replace('data/', 'tiles/')
         output_dir = os.path.dirname(
-            os.path.join(data_directory, output_filepath))
+            os.path.join(data_directory.replace('data', 'tiles'), filepath))
         gdaldem_file = os.path.join(
             output_dir, raster_file.replace('.tif', '.vrt'))
         output_file = os.path.join(
