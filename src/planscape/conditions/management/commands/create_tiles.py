@@ -70,6 +70,10 @@ class Command(BaseCommand):
         gdal2tiles = ['gdal2tiles.py', '-s', settings.CRS_9822_PROJ4,
                       '--xyz', '-z', zoom_levels, gdaldem_file, output_file]
         self.stdout.write('-----------------------')
+        self.stdout.write(output_file)
+        if os.path.exists(output_file):
+            self.stdout.write('SKIPPING: ' + output_file)
+            return
         self.stdout.write('Converting: ' + filepath)
         self.stdout.write(' '.join(gdaldem))
         self.stdout.write(' '.join(gdal2tiles))
