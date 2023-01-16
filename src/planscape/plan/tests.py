@@ -298,24 +298,6 @@ class ListPlansTest(TransactionTestCase):
             else:
                 self.assertTrue(False)
 
-    def test_list_plans_by_owner_no_user_logged_in(self):
-        self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:list_plans_by_owner'), {},
-                                   content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
-        for plan in response.json():
-            self.assertTrue('geometry' not in plan)
-            self.assertEqual(plan['region_name'], 'Sierra Nevada')
-            if plan['name'] == 'plan3':
-                self.assertEqual(plan['projects'], 1)
-                self.assertEqual(plan['scenarios'], 1)
-            elif plan['name'] == 'plan4':
-                self.assertEqual(plan['projects'], 2)
-                self.assertEqual(plan['scenarios'], 3)
-            else:
-                self.assertTrue(False)
-
     def test_list_plans_by_owner_with_user(self):
         response = self.client.get(reverse('plan:list_plans_by_owner'), {'owner': self.user.pk},
                                    content_type="application/json")
