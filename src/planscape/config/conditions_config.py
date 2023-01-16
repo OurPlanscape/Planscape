@@ -41,6 +41,7 @@ class PillarConfig:
                    'data_provider',
                    'data_download_link',
                    'data_year',
+                   'reference_link',
                    'invert_raw'}.union(COMMON_METADATA)
 
     @classmethod
