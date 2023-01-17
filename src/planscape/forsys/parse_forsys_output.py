@@ -43,7 +43,7 @@ class ForsysScenarioSetOutput():
     _PRIORITY_WEIGHT_STRFORMAT = "Pr_%d_%s"
     # The priority contribution header in the "project output" dataframe.
     # Weighted priority score is priority weight * priority contribution.
-    _CONTRIBUTION_STRFORMAT = "ETrt_%s_PCP"
+    _CONTRIBUTION_STRFORMAT = "ETrt_%s"
     # The project area rank header in the "project output" dataframe.
     _TREATMENT_RANK_HEADER = "treatment_rank"
 
