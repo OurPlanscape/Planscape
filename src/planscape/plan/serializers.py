@@ -2,7 +2,7 @@ from rest_framework.serializers import IntegerField
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from .models import Plan, Project
+from .models import Plan, Project, ProjectArea
 from conditions.models import Condition
 
 
@@ -30,3 +30,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
+
+
+class ProjectAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = '__all__'
+        geo_field = "project_area"
