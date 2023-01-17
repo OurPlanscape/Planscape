@@ -48,12 +48,21 @@ roads_raster <- roads %>%
   select() %>%
   as_Spatial() %>%
   rasterize(y = rrk_extent)
-writeRaster(roads_raster, 'analysis/output/roads_raster.tif')
+writeRaster(
+  x = roads_raster,
+  filename = 'analysis/output/roads_raster.tif',
+  overwrite = TRUE)
 
 # make into NA or 0 values
 roads_raster[!is.na(roads_raster)] <- 0
-writeRaster(roads_raster, 'analysis/output/roads_raster_boolean.tif')
+writeRaster(
+  x = roads_raster,
+  filename = 'analysis/output/roads_raster_boolean.tif',
+  overwrite = TRUE)
 
 # calculate distance from roads
 roads_distance <- terra::distance(x = roads_raster)
-writeRaster(roads_distance, 'analysis/output/roads_distance.tif')
+writeRaster(
+  x = roads_distance,
+  filename = 'analysis/output/roads_distance.tif',
+  overwrite = TRUE)

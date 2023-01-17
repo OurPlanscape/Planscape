@@ -58,6 +58,8 @@ buildings_raster <- buildings %>%
     field = 'n',
     fun = 'sum',
     background = 0)
+names(buildings_raster) <- 'buildings'
+
 buildings_raster
 
 writeRaster(
