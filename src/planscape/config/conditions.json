@@ -70,7 +70,7 @@
                   "data_provider": "California Department of Fish and Wildlife",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=27",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=27",
                   "min_value": 1,
                   "max_value": 5
                 }
@@ -91,7 +91,7 @@
                   "data_provider": "USDA Forest Service, Region 5 and PSW",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=23",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=23",
                   "min_value": 0,
                   "max_value": 1
                 },
@@ -104,7 +104,7 @@
                   "data_provider": "USDA Forest Service, Region 5 and PSW",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 0,
                   "max_value": 1
                 },
@@ -117,7 +117,7 @@
                   "data_provider": "USDA Forest Service, Region 5 and PSW",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=26",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=26",
                   "min_value": 1,
                   "max_value": 7
                 },
@@ -131,7 +131,7 @@
                   "data_provider": "UC Davis",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2020",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=22",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=22",
                   "min_value": 0,
                   "max_value": 684
                 }
@@ -152,7 +152,7 @@
                   "data_provider": "USDA Forest Service, Region 5 and PSW",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 1,
                   "max_value": 7
                 }
@@ -182,7 +182,7 @@
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/carbonSeq.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=33",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=33",
                   "min_value": 0,
                   "max_value": 250
                 }
@@ -203,7 +203,7 @@
                   "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/carbonSeq.zip",
                   "data_year": "2021",
-                    "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=32",  
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=32",
                   "min_value": 0,
                   "max_value": 500
                 }
@@ -230,7 +230,7 @@
                   "data_provider": "USDA Forest Service, Rocky Mountain Research Station",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
                   "max_value": 4200
                 },
@@ -243,7 +243,7 @@
                   "data_provider": "USDA Forest Service, Rocky Mountain Research Station",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
                   "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",		    
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
                   "max_value": 4200
                 },
@@ -256,7 +256,7 @@
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
                   "data_year": "2021",
-                    "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=29",   
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=29",
                   "min_value": 0,
                   "max_value": 120
                 }
@@ -504,7 +504,7 @@
               "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
               "display_name": "Environmental Justice",
               "metrics": [
-                {  
+                {
                   "metric_name": "housing_burden",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
