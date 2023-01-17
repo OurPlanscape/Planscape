@@ -16,11 +16,11 @@
             <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'"></app-plan-map>
           </div>
           <div class="plan-content-panel">
-            <app-create-scenarios [plan$]="currentPlan$" *ngIf="currentPlanStep === 1"></app-create-scenarios>
+            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep" (changeConditionEvent)="changeCondition($event)"></app-create-scenarios>
           </div>
         </ng-container>
       </div>
-      <app-plan-bottom-bar *ngIf="currentPlanStep > 0"></app-plan-bottom-bar>
+      <app-plan-bottom-bar (nextEvent)="nextStep()" (previousEvent)="previousStep()" *ngIf="currentPlanStep > 0"></app-plan-bottom-bar>
     </div>
   </ng-container>
 </div>

@@ -5,7 +5,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { SharedModule } from './../shared/shared.module';
+import { CreateScenariosIntroComponent } from './create-scenarios/create-scenarios-intro/create-scenarios-intro.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
+import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
 import { PlanBottomBarComponent } from './plan-bottom-bar/plan-bottom-bar.component';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
@@ -33,6 +35,8 @@ import { ProgressPanelComponent } from './progress-panel/progress-panel.componen
     PlanOverviewComponent,
     CreateScenariosComponent,
     PlanBottomBarComponent,
+    SetPrioritiesComponent,
+    CreateScenariosIntroComponent,
   ],
   imports: [
     BrowserAnimationsModule,

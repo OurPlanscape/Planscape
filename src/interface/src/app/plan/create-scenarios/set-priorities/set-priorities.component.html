@@ -1,0 +1,69 @@
+<div class="panel-container">
+  <div class="flex-row-space-between">
+    <h1>Set priorities</h1>
+    <mat-chip-list>
+      <mat-chip>
+        <mat-chip-avatar>
+          <mat-icon class="material-symbols-outlined">info</mat-icon>
+        </mat-chip-avatar>
+        Required
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+  <div>
+    <mat-form-field appearance="fill">
+      <mat-label>
+        Generate scenarios using:
+      </mat-label>
+      <mat-select>
+        <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
+        <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <p>{{ text1 }}</p>
+  <mat-table [dataSource]="datasource" class="priority-table">
+    <ng-container matColumnDef="selected">
+      <mat-header-cell *matHeaderCellDef>
+        Select
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <mat-checkbox name="${element.conditionName}-selected" [(ngModel)]="element.selected"></mat-checkbox>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="visible">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <button mat-icon-button>
+          <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)">
+            {{ element.visible ? 'visibility' : 'visibility_off' }}
+          </mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="conditionName">
+      <mat-header-cell *matHeaderCellDef>
+        Priorities
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <span class="indent-level-{{ element.level }}"></span>
+        <button mat-icon-button *ngIf="element.children.length" (click)="toggleExpand(element)"><mat-icon>expand_more</mat-icon></button>
+        {{ element.conditionName }}
+      </mat-cell>
+    </ng-container>
+
+    <ng-container matColumnDef="score">
+      <mat-header-cell *matHeaderCellDef>
+        Condition score
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{ element.score }}
+      </mat-cell>
+    </ng-container>
+
+    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+    <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hide-row]="row.hidden"></mat-row>
+  </mat-table>
+</div>
