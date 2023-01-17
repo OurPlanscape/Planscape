@@ -2,6 +2,7 @@
   <mat-divider></mat-divider>
   <div class="button-row">
     <button mat-button>RESET</button>
-    <button mat-button>NEXT</button>
+    <button mat-button (click)="previousEvent.emit()">PREVIOUS</button>
+    <button mat-button color="primary" (click)="nextEvent.emit()">NEXT</button>
   </div>
 </div>
