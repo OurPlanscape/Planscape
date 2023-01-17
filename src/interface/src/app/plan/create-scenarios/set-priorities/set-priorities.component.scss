@@ -1,0 +1,51 @@
+.panel-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  height: 100%;
+}
+
+.flex-row-space-between {
+  display: flex;
+  justify-content: space-between;
+}
+
+.priority-table {
+  overflow-y: auto;
+}
+
+.mat-column-selected {
+  flex: 0 0 auto;
+  width: 36px;
+}
+
+.mat-column-visible {
+  flex: 0 0 auto;
+  width: 48px;
+}
+
+.mat-column-conditionName {
+  box-sizing: border-box;
+  flex: 2 0 auto;
+  padding-right: 24px;
+  width: 344px;
+}
+
+.mat-column-score {
+  flex: 0 0 auto;
+  width: 120px;
+}
+
+.indent-level-1 {
+  flex: 0 0 auto;
+  width: 24px;
+}
+
+.indent-level-2 {
+  flex: 0 0 auto;
+  width: 88px;
+}
+
+.hide-row {
+  display: none;
+}
