@@ -570,7 +570,8 @@ class GetProjectAreaTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_get_projectareas_no_results(self):
-        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': self.project_no_user_no_projectareas.pk},
+        response = self.client.get(reverse('plan:get_project_areas'),
+                                   {'project_id': self.project_no_user_no_projectareas.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
