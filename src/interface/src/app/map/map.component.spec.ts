@@ -598,6 +598,23 @@ describe('MapComponent', () => {
         ).toEqual(0);
       });
     });
+
+    it('tracks whether the drawing tool is active', () => {
+      const selectedMap =
+        component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
+      expect(mapManager.isInDrawingMode).toBeFalse();
+
+      selectedMap.instance?.fire('pm:drawstart', {
+        shape: 'Polygon',
+        workingLayer: mapManager.drawingLayer,
+      });
+
+      expect(mapManager.isInDrawingMode).toBeTrue();
+
+      selectedMap.instance?.fire('pm:drawend');
+
+      expect(mapManager.isInDrawingMode).toBeFalse();
+    });
   });
 
   describe('Upload an area', () => {
@@ -753,22 +770,26 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
 
       // Add a polygon to map 3
+      const fakeGeometry: GeoJSON.Geometry = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [1, 1],
+          ],
+        ],
+      };
       const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
         type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [0, 0],
-              [1, 1],
-            ],
-          ],
-        },
+        geometry: fakeGeometry,
         properties: {
-          shape_name: 'test_boundary',
+          PROJECT_NAME: 'test_project',
         },
       };
-      L.geoJSON(feature).addTo(component.maps[3].instance!);
+      component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
+      component.maps[3].existingProjectsLayerRef.addTo(
+        component.maps[3].instance!
+      );
     });
 
     it('attaches popup when feature polygon is clicked', () => {
@@ -784,6 +805,17 @@ describe('MapComponent', () => {
       // Click outside the polygon
       component.maps[3].instance?.fireEvent('click', {
         latlng: [2, 2],
+      });
+
+      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
+    });
+
+    it('does not attach popup if drawing mode is active', () => {
+      component.mapManager.isInDrawingMode = true;
+
+      // Click on the polygon
+      component.maps[3].instance?.fireEvent('click', {
+        latlng: [0, 0],
       });
 
       expect(applicationRef.attachView).toHaveBeenCalledTimes(0);

@@ -30,6 +30,7 @@ export class MapManager {
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
+  isInDrawingMode: boolean = false;
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -78,6 +79,7 @@ export class MapManager {
       layers: [map.baseLayerRef],
       zoomControl: false,
       pmIgnore: false,
+      scrollWheelZoom: false,
     });
 
     // Add zoom controls to bottom right corner
@@ -163,7 +165,6 @@ export class MapManager {
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
       style: normalStyle,
       onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        //layer.bindPopup(createDetailCardCallback(feature));
         layer.bindTooltip(
           this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME)
         );
@@ -271,6 +272,7 @@ export class MapManager {
 
     /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
+      this.isInDrawingMode = true;
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
         let overlaps = false;
@@ -291,6 +293,11 @@ export class MapManager {
           return;
         }
       });
+    });
+
+    /** Handles exit from drawing mode. */
+    map.on('pm:drawend', (event) => {
+      this.isInDrawingMode = false;
     });
 
     /** Handles a polygon removal event. */
@@ -350,30 +357,30 @@ export class MapManager {
   ) {
     map.instance!.on('click', (e) => {
       if (!e.latlng) return;
+      if (!map.existingProjectsLayerRef) return;
+
+      // if the user is in drawing mode, don't open popups
+      if (this.isInDrawingMode) return;
 
       const intersectingFeatureLayers: L.Polygon[] = [];
 
-      map.instance!.eachLayer((layer) => {
-        // Loop through all GeoJSON layers except the region boundaries
-        if (layer instanceof L.GeoJSON && layer !== map.regionLayerRef) {
-          (layer as L.GeoJSON).eachLayer((featureLayer) => {
-            if (featureLayer instanceof L.Polygon && featureLayer.feature) {
-              const polygon = featureLayer as L.Polygon;
-              // If feature contains the point that was clicked, add to list
-              if (
-                booleanIntersects(
-                  point(L.GeoJSON.latLngToCoords(e.latlng)),
-                  polygon.feature!
-                ) ||
-                booleanWithin(
-                  point(L.GeoJSON.latLngToCoords(e.latlng)),
-                  polygon.feature!
-                )
-              ) {
-                intersectingFeatureLayers.push(polygon);
-              }
-            }
-          });
+      // Get all existing project polygons at the clicked point
+      (map.existingProjectsLayerRef as L.GeoJSON).eachLayer((featureLayer) => {
+        if (featureLayer instanceof L.Polygon && featureLayer.feature) {
+          const polygon = featureLayer as L.Polygon;
+          // If feature contains the point that was clicked, add to list
+          if (
+            booleanIntersects(
+              point(L.GeoJSON.latLngToCoords(e.latlng)),
+              polygon.feature!
+            ) ||
+            booleanWithin(
+              point(L.GeoJSON.latLngToCoords(e.latlng)),
+              polygon.feature!
+            )
+          ) {
+            intersectingFeatureLayers.push(polygon);
+          }
         }
       });
 
