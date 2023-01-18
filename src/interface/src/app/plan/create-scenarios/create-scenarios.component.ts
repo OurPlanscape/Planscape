@@ -26,7 +26,6 @@ import { Plan } from 'src/app/types';
         'expanded',
         style({
           backgroundColor: 'white',
-          padding: '*',
           width: '700px',
         })
       ),
@@ -34,7 +33,6 @@ import { Plan } from 'src/app/types';
         'collapsed',
         style({
           backgroundColor: '#ebebeb',
-          padding: '0px',
           width: '36px',
         })
       ),
