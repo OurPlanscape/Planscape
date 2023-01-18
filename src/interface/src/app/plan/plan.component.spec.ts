@@ -88,6 +88,20 @@ describe('PlanComponent', () => {
     expect(component.currentPlanStep).toBe(0);
   });
 
+  it('nextStep should increment currentPlanStep', () => {
+    component.nextStep();
+
+    expect(component.currentPlanStep).toBe(1);
+  });
+
+  it('previousStep should decrement currentPlanStep', () => {
+    component.nextStep();
+    component.nextStep();
+    component.previousStep();
+
+    expect(component.currentPlanStep).toBe(1);
+  });
+
   it('fetches plan from service using ID', () => {
     expect(component.planNotFound).toBeFalse();
     expect(component.plan).toEqual(fakePlan);
