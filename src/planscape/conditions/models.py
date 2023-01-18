@@ -1,4 +1,5 @@
 from django.contrib.gis.db import models
+from plan.models import Plan, ProjectArea
 from planscape.settings import CRS_FOR_RASTERS
 
 
@@ -64,9 +65,26 @@ class ConditionRaster(models.Model):
     # Primary key; predetermined by raster2pgsql
     rid: models.AutoField = models.AutoField(primary_key=True)
 
-    # The name of the raster, which must match the raster_name in the Condition. 
-    # WARNING: raster2pgsql does not work if this field name has any _ chars. 
+    # The name of the raster, which must match the raster_name in the Condition.
+    # WARNING: raster2pgsql does not work if this field name has any _ chars.
     name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.
     raster = models.RasterField(null=True, srid=CRS_FOR_RASTERS)
+
+
+class ConditionScores(models.Model):
+    """
+    Condition scores are computed from statistics aggregated across all stands
+    within a project area or planning area.
+    """
+    # Either plan or project should be present.
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(
+        ProjectArea, on_delete=models.CASCADE, null=True)
+
+    # Condition
+    condition: models.ForeignKey(
+        Condition, on_delete=models.CASCADE, null=False)
+
+    mean_score: models.FloatField(null=False)
