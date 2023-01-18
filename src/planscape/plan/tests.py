@@ -524,3 +524,84 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['max_cost'], 100)
         self.assertEqual(response.json()['priorities'], [
                          self.condition1.pk, self.condition2.pk])
+
+
+class GetProjectAreaTest(TransactionTestCase):
+    def setUp(self):
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1")
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name2")
+
+        self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
+        self.project_no_user = Project.objects.create(
+            owner=None, plan=self.plan_no_user, max_cost=100)
+        self.project_area_no_user = ProjectArea.objects.create(
+            owner=None, project=self.project_no_user, project_area=stored_geometry, estimated_area_treated=100)
+        self.project_area_no_user2 = ProjectArea.objects.create(
+            owner=None, project=self.project_no_user, project_area=stored_geometry)
+        self.project_no_user_no_projectareas = Project.objects.create(
+            owner=None, plan=self.plan_no_user, max_cost=200)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.plan_with_user = create_plan(
+            self.user, 'ownerless', stored_geometry, [])
+        self.project_with_user = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_cost=100)
+        self.project_area_with_user = ProjectArea.objects.create(
+            owner=self.user, project=self.project_with_user, project_area=stored_geometry, estimated_area_treated=200)
+
+    def test_get_projectareas_for_nonexistent_project(self):
+        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': 10},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_projectareas_no_project_id(self):
+        response = self.client.get(reverse('plan:get_project_areas'), {},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_projectareas_no_results(self):
+        response = self.client.get(reverse('plan:get_project_areas'),
+                                   {'project_id': self.project_no_user_no_projectareas.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
+
+    def test_get_projectareas_no_user(self):
+        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': self.project_no_user.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
+        project_area_id = str(self.project_area_no_user.pk)
+        self.assertEqual(
+            response.json()[project_area_id]['properties']['owner'], None)
+        self.assertEqual(response.json()[
+                         project_area_id]['properties']['project'], self.project_no_user.pk)
+        self.assertEqual(
+            response.json()[project_area_id]['properties']['estimated_area_treated'], 100)
+        self.assertEqual(
+            response.json()[project_area_id]['geometry'], self.geometry)
+
+    def test_get_projectareas_with_user(self):
+        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': self.project_with_user.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        project_area_id = str(self.project_area_with_user.pk)
+        self.assertEqual(
+            response.json()[project_area_id]['properties']['owner'], self.user.pk)
+        self.assertEqual(response.json()[
+                         project_area_id]['properties']['project'], self.project_with_user.pk)
+        self.assertEqual(
+            response.json()[project_area_id]['properties']['estimated_area_treated'], 200)
+        self.assertEqual(
+            response.json()[project_area_id]['geometry'], self.geometry)
