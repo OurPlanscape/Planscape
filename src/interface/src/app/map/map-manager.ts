@@ -183,6 +183,11 @@ export class MapManager {
     if (map.config.showExistingProjectsLayer) {
       map.instance?.addLayer(map.existingProjectsLayerRef);
     }
+
+    // When the existing projects layer is removed, close any popups.
+    map.existingProjectsLayerRef.addEventListener('remove', (_) => {
+      map.instance?.closePopup();
+    });
   }
 
   private setUpEventHandlers(
