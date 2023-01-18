@@ -32,6 +32,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
+      scrollWheelZoom: false,
     });
     this.map.attributionControl.setPosition('topright');
 
