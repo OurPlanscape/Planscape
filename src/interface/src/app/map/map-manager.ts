@@ -272,7 +272,6 @@ export class MapManager {
 
     /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
-      console.log(event);
       this.isInDrawingMode = true;
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
@@ -298,7 +297,6 @@ export class MapManager {
 
     /** Handles exit from drawing mode. */
     map.on('pm:drawend', (event) => {
-      console.log(event);
       this.isInDrawingMode = false;
     });
 
