@@ -389,6 +389,32 @@ class ProjectTest(TransactionTestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
+    def test_with_priority(self):
+        self.client.force_login(self.user)
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, condition_score_type=0)
+
+        response = self.client.post(
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'max_cost': 100, 'priorities': 'condition1'},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+    def test_with_nonexistent_priority(self):
+        self.client.force_login(self.user)
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, condition_score_type=0)
+
+        response = self.client.post(
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'max_cost': 100, 'priorities': 'condition3'},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
 
 class CreateProjectAreaTest(TransactionTestCase):
     def setUp(self):
