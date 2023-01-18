@@ -36,6 +36,12 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     });
     this.map.attributionControl.setPosition('topright');
 
+    // Add zoom controls to bottom right corner
+     const zoomControl = L.control.zoom({
+      position: 'bottomright',
+    });
+    zoomControl.addTo(this.map);
+
     this.plan
       .pipe(
         takeUntil(this.destroy$),
