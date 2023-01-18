@@ -30,6 +30,7 @@ export class MapManager {
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
+  isInDrawingMode: boolean = false;
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -271,6 +272,7 @@ export class MapManager {
 
     /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
+      this.isInDrawingMode = true;
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
         let overlaps = false;
@@ -291,6 +293,11 @@ export class MapManager {
           return;
         }
       });
+    });
+
+    /** Handles exit from drawing mode. */
+    map.on('pm:drawend', (event) => {
+      this.isInDrawingMode = false;
     });
 
     /** Handles a polygon removal event. */
@@ -351,6 +358,9 @@ export class MapManager {
     map.instance!.on('click', (e) => {
       if (!e.latlng) return;
       if (!map.existingProjectsLayerRef) return;
+
+      // if the user is in drawing mode, don't open popups
+      if (this.isInDrawingMode) return;
 
       const intersectingFeatureLayers: L.Polygon[] = [];
 
