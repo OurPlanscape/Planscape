@@ -64,6 +64,14 @@ describe('PlanMapComponent', () => {
     expect(foundPlanningAreaLayer).toBeTrue();
   });
 
+  it('should add tile layer to map', () => {
+    expect(component.tileLayer).toBeUndefined();
+
+    component.setCondition('filepath');
+
+    expect(component.tileLayer).toBeDefined();
+  });
+
   describe('expand map button', () => {
     it('should navigate to map view when clicked'),
       async () => {

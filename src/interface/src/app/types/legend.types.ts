@@ -1,4 +1,4 @@
-export const DEFAULT_COLORMAP = 'viridis';
+export const DEFAULT_COLORMAP = 'turbo';
 export const NONE_COLORMAP = 'none';
 
 export interface ColormapConfig {

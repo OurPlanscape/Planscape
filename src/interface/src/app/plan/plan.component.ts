@@ -1,9 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BehaviorSubject, take } from 'rxjs';
 
 import { Plan } from '../types';
 import { PlanService } from './../services/plan.service';
+import { PlanMapComponent } from './plan-map/plan-map.component';
+
+export enum PlanStep {
+  Overview,
+  CreateScenarios,
+  SetPriorities,
+}
 
 @Component({
   selector: 'app-plan',
@@ -11,9 +18,11 @@ import { PlanService } from './../services/plan.service';
   styleUrls: ['./plan.component.scss'],
 })
 export class PlanComponent {
+  @ViewChild(PlanMapComponent) map!: PlanMapComponent;
+
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  resumePlanning = true;
+  currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
 
   constructor(private planService: PlanService, private route: ActivatedRoute) {
@@ -36,5 +45,17 @@ export class PlanComponent {
           this.planNotFound = true;
         }
       );
+  }
+
+  nextStep(): void {
+    this.currentPlanStep += 1;
+  }
+
+  previousStep(): void {
+    this.currentPlanStep -= 1;
+  }
+
+  changeCondition(filepath: string): void {
+    this.map.setCondition(filepath);
   }
 }

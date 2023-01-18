@@ -1,0 +1,9 @@
+<div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
+  <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
+    <app-create-scenarios-intro *ngIf="planningStep === 1"></app-create-scenarios-intro>
+    <app-set-priorities *ngIf="planningStep === 2" (changeConditionEvent)="changeConditionEvent.emit($event)"></app-set-priorities>
+  </div>
+  <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded" [@expandCollapseButton]="panelExpanded ? 'colorA': 'colorB'">
+    <button mat-icon-button (click)="panelExpanded = !panelExpanded"><mat-icon>chevron_left</mat-icon></button>
+  </div>
+</div>

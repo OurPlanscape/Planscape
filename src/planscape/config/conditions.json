@@ -2,37 +2,44 @@
   "regions": [
     {
       "region_name": "sierra_cascade_inyo",
-      "filepath": "data/sierra_nevada",
+      "filepath": "sierra_nevada",
       "display_name": "Sierra Nevada",
       "pillars": [
         {
           "pillar_name": "air_quality",
-          "filepath": "data/sierra_nevada/air_quality",
+          "filepath": "sierra_nevada/air_quality",
           "display_name": "Air Quality",
           "display": false,
           "elements": [
             {
               "element_name": "particulate_matter",
-              "filepath": "data/sierra_nevada/air_quality/particulate_matter",
+              "filepath": "sierra_nevada/air_quality/particulate_matter",
               "display_name": "Particulate Matter",
               "metrics": [
                 {
                   "metric_name": "high_severity_potential_smoke_emissions",
-                  "filepath": "data/sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
+                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
                   "display_name": "High Severity Potential Smoke Emissions",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
                   "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=36",
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true
                 },
                 {
                   "metric_name": "moderate_severity_potential_smoke_emissions",
-                  "filepath": "data/sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
+                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
                   "display_name": "Moderate Severity Potential Smoke Emissions",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=36",
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true
@@ -43,21 +50,27 @@
         },
         {
           "pillar_name": "biodiversity",
-          "filepath": "data/sierra_nevada/biodiversity",
+          "filepath": "sierra_nevada/biodiversity",
           "display_name": "Biodiversity",
           "operation": "MEAN",
           "display": true,
           "elements": [
             {
               "element_name": "community_integrity",
-              "filepath": "data/sierra_nevada/biodiversity/community_integrity",
+              "filepath": "sierra_nevada/biodiversity/community_integrity",
               "display_name": "Community Integrity",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "habitat_connectivity",
-                  "filepath": "data/sierra_nevada/biodiversity/community_integrity/ACCEL_habitatConnectivity_values_300m",
+                  "filepath": "sierra_nevada/biodiversity/community_integrity/ACCEL_habitatConnectivity_values_300m",
                   "display_name": "Habitat Connectivity",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=27",
                   "min_value": 1,
                   "max_value": 5
                 }
@@ -65,36 +78,60 @@
             },
             {
               "element_name": "focal_species",
-              "filepath": "data/sierra_nevada/biodiversity/focal_species",
+              "filepath": "sierra_nevada/biodiversity/focal_species",
               "display_name": "Focal Species",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "california_spotted_owl",
-                  "filepath": "data/sierra_nevada/biodiversity/focal_species/CSO_suitablehabitat_combined_300m",
+                  "filepath": "sierra_nevada/biodiversity/focal_species/CSO_suitablehabitat_combined_300m",
                   "display_name": "California Spotted Owl Habitats",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5 and PSW",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=23",
                   "min_value": 0,
                   "max_value": 1
                 },
                 {
                   "metric_name": "pacific_fisher",
-                  "filepath": "data/sierra_nevada/biodiversity/focal_species/fisher_suitablehabitat_combined_300m",
+                  "filepath": "sierra_nevada/biodiversity/focal_species/fisher_suitablehabitat_combined_300m",
                   "display_name": "Pacific Fisher Habitats",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5 and PSW",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 0,
                   "max_value": 1
                 },
                 {
                   "metric_name": "endangered_vertebrate",
-                  "filepath": "data/sierra_nevada/biodiversity/focal_species/t_e_species_richness_300m",
+                  "filepath": "sierra_nevada/biodiversity/focal_species/t_e_species_richness_300m",
                   "display_name": "Endangered Vertebrate Richness",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5 and PSW",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=26",
                   "min_value": 1,
                   "max_value": 7
                 },
                 {
                   "metric_name": "black_oak_stands",
-                  "filepath": "data/sierra_nevada/biodiversity/focal_species/CA_Black_Oak_Stand_Distribution_2016to2020_300m",
+                  "filepath": "sierra_nevada/biodiversity/focal_species/CA_Black_Oak_Stand_Distribution_2016to2020_300m",
                   "display_name": "Black Oak Stands",
                   "ignore": true,
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "UC Davis",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
+                  "data_year": "2020",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=22",
                   "min_value": 0,
                   "max_value": 684
                 }
@@ -102,14 +139,20 @@
             },
             {
               "element_name": "species_diversity",
-              "filepath": "data/sierra_nevada/biodiversity/species_diversity",
+              "filepath": "sierra_nevada/biodiversity/species_diversity",
               "display_name": "Species Diversity",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "species_richness",
-                  "filepath": "data/sierra_nevada/biodiversity/species_diversity/wildlife_species_richness_300m",
+                  "filepath": "sierra_nevada/biodiversity/species_diversity/wildlife_species_richness_300m",
                   "display_name": "Species Richness",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5 and PSW",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 1,
                   "max_value": 7
                 }
@@ -119,7 +162,7 @@
         },
         {
           "pillar_name": "carbon_sequestration",
-          "filepath": "data/sierra_nevada/carbon_sequestration",
+          "filepath": "sierra_nevada/carbon_sequestration",
           "display_name": "Carbon Sequestration",
           "operation": "MEAN",
           "display": true,
@@ -127,13 +170,19 @@
             {
               "element_name": "stability",
               "display_name": "Stability",
-              "filepath": "data/sierra_nevada/carbon_sequestration/stability",
+              "filepath": "sierra_nevada/carbon_sequestration/stability",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "large_tree_carbon",
-                  "filepath": "data/sierra_nevada/carbon_sequestration/stability/LargeTreeCarbon_2021_300m",
+                  "filepath": "sierra_nevada/carbon_sequestration/stability/LargeTreeCarbon_2021_300m",
                   "display_name": "Large Tree Carbon",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/carbonSeq.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=33",
                   "min_value": 0,
                   "max_value": 250
                 }
@@ -142,13 +191,19 @@
             {
               "element_name": "storage",
               "display_name": "Storage",
-              "filepath": "data/sierra_nevada/carbon_sequestration/storage",
+              "filepath": "sierra_nevada/carbon_sequestration/storage",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "total_carbon",
-                  "filepath": "data/sierra_nevada/carbon_sequestration/storage/CECS_TotalCarbon_300m",
+                  "filepath": "sierra_nevada/carbon_sequestration/storage/CECS_TotalCarbon_300m",
                   "display_name": "Total Carbon",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/carbonSeq.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=32",
                   "min_value": 0,
                   "max_value": 500
                 }
@@ -158,7 +213,7 @@
         },
         {
           "pillar_name": "economic_diversity",
-          "filepath": "data/sierra_nevada/economic_diversity",
+          "filepath": "sierra_nevada/economic_diversity",
           "display_name": "Economic Diversity",
           "display": false,
           "elements": [
@@ -168,22 +223,40 @@
               "metrics": [
                 {
                   "metric_name": "skidder_bio_cost",
-                  "filepath": "data/sierra_nevada/economic_diversity/wood/skidder_bio_cost_proj_clip_300m",
+                  "filepath": "sierra_nevada/economic_diversity/wood/skidder_bio_cost_proj_clip_300m",
                   "display_name": "Skidder Bio Cost",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Rocky Mountain Research Station",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
                   "max_value": 4200
                 },
                 {
                   "metric_name": "skidder_saw_cost",
-                  "filepath": "data/sierra_nevada/economic_diversity/wood/skidder_saw_cost_proj_clip2_300m",
+                  "filepath": "sierra_nevada/economic_diversity/wood/skidder_saw_cost_proj_clip2_300m",
                   "display_name": "Skidder Saw Cost",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Rocky Mountain Research Station",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
                   "max_value": 4200
                 },
                 {
                   "metric_name": "available_biomass",
-                  "filepath": "data/sierra_nevada/economic_diversity/wood/AvailableBiomass_2021_300m",
+                  "filepath": "sierra_nevada/economic_diversity/wood/AvailableBiomass_2021_300m",
                   "display_name": "Available Biomass",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=29",
                   "min_value": 0,
                   "max_value": 120
                 }
@@ -193,7 +266,7 @@
         },
         {
           "pillar_name": "fire_adapted_communities",
-          "filepath": "data/sierra_nevada/fire_adapted_communities",
+          "filepath": "sierra_nevada/fire_adapted_communities",
           "display_name": "Fire-Adapted Communities",
           "display": true,
           "operation": "MEAN",
@@ -201,22 +274,33 @@
             {
               "element_name": "hazard",
               "display_name": "Hazard",
-              "filepath": "data/sierra_nevada/fire_adapted_communities/hazard",
+              "filepath": "sierra_nevada/fire_adapted_communities/hazard",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "structure_exposure",
-                  "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
+                  "filepath": "sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
                   "display_name": "Structure Exposure",
-                  "colormap": "inferno",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Pyrologix",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireAdaptComm.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=10",
                   "min_value": 1,
                   "max_value": 18,
                   "invert_raw": true
                 },
                 {
                   "metric_name": "damage_potential_wui",
-                  "filepath": "data/sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m",
+                  "filepath": "sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m",
                   "display_name": "WUI Damage Potential",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Pyrologix",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireAdaptComm.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=12",
                   "min_value": 1,
                   "max_value": 9,
                   "invert_raw": true
@@ -227,36 +311,54 @@
         },
         {
           "pillar_name": "fire_dynamics",
-          "filepath": "data/sierra_nevada/fire_dynamics",
+          "filepath": "sierra_nevada/fire_dynamics",
           "display_name": "Fire Dynamics",
           "operation": "MEAN",
           "display": true,
           "elements": [
             {
               "element_name": "functional_fire",
-              "filepath": "data/sierra_nevada/fire_dynamics/functional_fire",
+              "filepath": "sierra_nevada/fire_dynamics/functional_fire",
               "display_name": "Functional Fire",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "mean_percent_fire_return_interval_departure",
-                  "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/meanPFRID_300m",
+                  "filepath": "sierra_nevada/fire_dynamics/functional_fire/meanPFRID_300m",
                   "display_name": "Mean PFRID",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireDynamics.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=14",
                   "min_value": -100,
                   "max_value": 100
                 },
                 {
                   "metric_name": "probability_high_fire_severity",
-                  "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
+                  "filepath": "sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
                   "display_name": "Probability High Fire Severity",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Pyrologix",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireDynamics.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=15",
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true
                 },
                 {
                   "metric_name": "annual_burn_probability",
-                  "filepath": "data/sierra_nevada/fire_dynamics/functional_fire/BurnProbability_2022_300m",
+                  "filepath": "sierra_nevada/fire_dynamics/functional_fire/BurnProbability_2022_300m",
                   "display_name": "Annual Burn Probability",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Pyrologix",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireDynamics.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=16",
                   "min_value": 0,
                   "max_value": 10
                 }
@@ -266,43 +368,67 @@
         },
         {
           "pillar_name": "forest_resilience",
-          "filepath": "data/sierra_nevada/forest_resilience",
+          "filepath": "sierra_nevada/forest_resilience",
           "display_name": "Forest Resilience",
           "operation": "MEAN",
           "display": true,
           "elements": [
             {
               "element_name": "forest_structure",
-              "filepath": "data/sierra_nevada/forest_resilience/forest_structure",
+              "filepath": "sierra_nevada/forest_resilience/forest_structure",
               "display_name": "Forest Structure",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "tree_density_gt1",
-                  "filepath": "data/sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m",
+                  "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m",
                   "display_name": "Tree Density > 1",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=18",
                   "min_value": 0,
                   "max_value": 8500,
                   "invert_raw": true
                 },
                 {
                   "metric_name": "large_tree_density_gt30",
-                  "filepath": "data/sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m",
+                  "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m",
                   "display_name": "Tree Density < 30",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=18",
                   "min_value": 0,
                   "max_value": 26
                 },
                 {
                   "metric_name": "basal_area",
-                  "filepath": "data/sierra_nevada/forest_resilience/forest_structure/BASATOT_2021_300m",
+                  "filepath": "sierra_nevada/forest_resilience/forest_structure/BASATOT_2021_300m",
                   "display_name": "Basal Area",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=17",
                   "min_value": 0,
                   "max_value": 400
                 },
                 {
                   "metric_name": "max_sdi",
-                  "filepath": "data/sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
+                  "filepath": "sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
                   "display_name": "Max SDI",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=19",
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true
@@ -311,21 +437,33 @@
             },
             {
               "element_name": "forest_composition",
-              "filepath": "data/sierra_nevada/forest_resilience/forest_composition",
+              "filepath": "sierra_nevada/forest_resilience/forest_composition",
               "display_name": "Forest Composition",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "seral_stage",
-                  "filepath": "data/sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
+                  "filepath": "sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
                   "display_name": "Seral Stage",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=21",
                   "min_value": 0,
                   "max_value": 1
                 },
                 {
                   "metric_name": "tree_to_shrub_cover_ratio",
-                  "filepath": "data/sierra_nevada/forest_resilience/forest_composition/CECS_TreeToShrubRatio_300m",
+                  "filepath": "sierra_nevada/forest_resilience/forest_composition/CECS_TreeToShrubRatio_300m",
                   "display_name": "Tree:Shrub Cover",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=20",
                   "min_value": 0,
                   "max_value": 100
                 }
@@ -333,14 +471,20 @@
             },
             {
               "element_name": "disturbance",
-              "filepath": "data/sierra_nevada/forest_resilience/disturbance",
+              "filepath": "sierra_nevada/forest_resilience/disturbance",
               "display_name": "Disturbance",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "tree_mortality",
-                  "filepath": "data/sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m",
+                  "filepath": "sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m",
                   "display_name": "Tree Mortality",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "USDA Forest Service, Region 5",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/forestResil.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=21",
                   "min_value": 0,
                   "max_value": 100,
                   "invert_raw": true
@@ -351,30 +495,48 @@
         },
         {
           "pillar_name": "social_cultural_wellbeing",
-          "filepath": "data/sierra_nevada/social_cultural_wellbeing",
+          "filepath": "sierra_nevada/social_cultural_wellbeing",
           "display_name": "Social and Cultural Wellbeing",
           "display": false,
           "elements": [
             {
               "element_name": "environmental_justice",
-              "filepath": "data/sierra_nevada/social_cultural_wellbeing/environmental_justice",
+              "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
               "display_name": "Environmental Justice",
               "metrics": [
                 {
                   "metric_name": "housing_burden",
-                  "filepath": "data/sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
+                  "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Office of Environmental Health Hazard Assessment, CAL EPA",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/socialCultural.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=39",
                   "min_value": 0,
                   "max_value": 100
                 },
                 {
                   "metric_name": "unemployment",
-                  "filepath": "data/sierra_nevada/social_cultural_wellbeing/environmental_justice/UnemploymentPctl_2021_300m",
+                  "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/UnemploymentPctl_2021_300m",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Office of Environmental Health Hazard Assessment, CAL EPA",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/socialCultural.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=40",
                   "min_value": 0,
                   "max_value": 100
                 },
                 {
                   "metric_name": "low_income",
-                  "filepath": "data/sierra_nevada/social_cultural_wellbeing/environmental_justice/LowIncome_CCI_2021_300m",
+                  "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/LowIncome_CCI_2021_300m",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Office of Environmental Health Hazard Assessment, CAL EPA",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/socialCultural.zip",
+                  "data_year": "2022",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=38",
                   "min_value": 0,
                   "max_value": 2
                 }
@@ -384,24 +546,36 @@
         },
         {
           "pillar_name": "water_security",
-          "filepath": "data/sierra_nevada/water_security",
+          "filepath": "sierra_nevada/water_security",
           "display_name": "Water Security",
           "display": false,
           "elements": [
             {
               "element_name": "quantity",
-              "filepath": "data/sierra_nevada/water_security/quantity",
+              "filepath": "sierra_nevada/water_security/quantity",
               "display_name": "Quantity",
               "metrics": [
                 {
                   "metric_name": "evapotranspiration_precipitation",
-                  "filepath": "data/sierra_nevada/water_security/quantity/CECS_AETFrac_300m",
+                  "filepath": "sierra_nevada/water_security/quantity/CECS_AETFrac_300m",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/waterSecurity.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=34",
                   "min_value": 0,
                   "max_value": 1000
                 },
                 {
                   "metric_name": "runoff",
-                  "filepath": "data/sierra_nevada/water_security/quantity/CECS_RunoffMean_300m",
+                  "filepath": "sierra_nevada/water_security/quantity/CECS_RunoffMean_300m",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/waterSecurity.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=34",
                   "min_value": 0,
                   "max_value": 2500
                 }
@@ -411,18 +585,24 @@
         },
         {
           "pillar_name": "wetland_integrity",
-          "filepath": "data/sierra_nevada/wetland_integrity",
+          "filepath": "sierra_nevada/wetland_integrity",
           "display_name": "Wetland Integrity",
           "display": false,
           "elements": [
             {
               "element_name": "hydrologic",
-              "filepath": "data/sierra_nevada/wetland_integrity/hydrologic",
+              "filepath": "sierra_nevada/wetland_integrity/hydrologic",
               "display_name": "Hydrologic Function",
               "metrics": [
                 {
                   "metric_name": "meadow_sensitivity_index",
-                  "filepath": "data/sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
+                  "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
+                  "source": "Sierra Nevada Regional Resource Kit",
+                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
+                  "data_provider": "UC Davis",
+                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/wetlandInteg.zip",
+                  "data_year": "2021",
+                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=37",
                   "min_value": 0,
                   "max_value": 100
                 }

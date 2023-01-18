@@ -8,11 +8,12 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+from django.shortcuts import get_list_or_404
 from plan.models import Plan, Project, ProjectArea
 from plan.raster_pixel_accumulator import RasterPixelAccumulator
-from plan.serializers import PlanSerializer, ProjectSerializer
+from plan.serializers import (
+    PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
 from planscape import settings
-from django.shortcuts import get_list_or_404
 
 
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -64,10 +65,10 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     if geom['type'] == 'Polygon':
         geom['type'] = 'MultiPolygon'
         geom['coordinates'] = [feature['geometry']['coordinates']]
-    geometry = GEOSGeometry(json.dumps(geom))
-    if geometry.geom_type != 'MultiPolygon':
+    actual_geometry = GEOSGeometry(json.dumps(geom))
+    if actual_geometry.geom_type != 'MultiPolygon':
         raise ValueError("Could not parse geometry")
-    return geometry
+    return actual_geometry
 
 
 def delete(request: HttpRequest) -> HttpResponse:
@@ -114,17 +115,10 @@ def delete(request: HttpRequest) -> HttpResponse:
 
 def get_plan_by_id(params: QueryDict):
     assert isinstance(params['id'], str)
-    plan_id = params.get('id', 0)
+    plan_id = params.get('id', "0")
     return (Plan.objects.filter(id=int(plan_id))
                         .annotate(projects=Count('project', distinct=True))
                         .annotate(scenarios=Count('project__scenario')))
-
-
-def get_plans_by_owner(params: QueryDict):
-    owner_id = params.get('owner')
-    return (Plan.objects.filter(owner=owner_id)
-            .annotate(projects=Count('project', distinct=True))
-            .annotate(scenarios=Count('project__scenario')))
 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
@@ -163,7 +157,15 @@ def get_plan(request: HttpRequest) -> HttpResponse:
 
 def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
     try:
-        plans = get_plans_by_owner(request.GET)
+        owner_id = None
+        owner_str = request.GET.get('owner')
+        if owner_str is not None:
+            owner_id = int(owner_str)
+        elif request.user.is_authenticated:
+            owner_id = request.user.pk
+        plans = (Plan.objects.filter(owner=owner_id)
+                 .annotate(projects=Count('project', distinct=True))
+                 .annotate(scenarios=Count('project__scenario')))
         return JsonResponse(
             [_serialize_plan(plan, False) for plan in plans],
             safe=False)
@@ -213,7 +215,7 @@ def create_project(request: HttpRequest) -> HttpResponse:
 def get_project(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['id'], str)
-        project_id = request.GET.get('id', 0)
+        project_id = request.GET.get('id', "0")
         response = get_list_or_404(Project, id=project_id)
         return JsonResponse(ProjectSerializer(response[0]).data)
     except Exception as e:
@@ -261,6 +263,21 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
             owner=owner, project=project, project_area=geometry)
         project_area.save()
         return HttpResponse(str(project_area.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def get_project_areas(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['project_id'], str)
+        project_id = request.GET.get('project_id', "0")
+        project_exists = get_list_or_404(Project, id=project_id)
+        project_areas = ProjectArea.objects.filter(project=project_id)
+        response = {}
+        for area in project_areas:
+            data = ProjectAreaSerializer(area).data
+            response[data['id']] = data
+        return JsonResponse(response)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
