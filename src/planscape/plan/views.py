@@ -11,6 +11,7 @@ from django.shortcuts import get_list_or_404
 from plan.models import Plan, Project, ProjectArea
 from plan.serializers import PlanSerializer, ProjectSerializer, ProjectAreaSerializer
 from planscape import settings
+from conditions.models import BaseCondition, Condition
 
 
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -191,12 +192,17 @@ def create_project(request: HttpRequest) -> HttpResponse:
         # TODO: Add more parameters as necessary.
         max_cost = body.get('max_cost', None)
 
-        # TODO: retrieve and save selected priorities
+        priorities = body.get('priorities', None)
+        priorities_list = [] if priorities is None else priorities.split(',')
 
         # Create the project.
         project = Project.objects.create(
             owner=owner, plan=plan, max_cost=max_cost)
         project.save()
+        for pri in priorities_list:
+            base_condition = BaseCondition.objects.get(condition_name=pri)
+            condition = Condition.objects.get(condition_dataset=base_condition, condition_score_type=0)
+            project.priorities.add(condition)
         return HttpResponse(str(project.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
