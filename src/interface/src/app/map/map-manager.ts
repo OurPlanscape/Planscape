@@ -78,6 +78,7 @@ export class MapManager {
       layers: [map.baseLayerRef],
       zoomControl: false,
       pmIgnore: false,
+      scrollWheelZoom: false,
     });
 
     // Add zoom controls to bottom right corner
