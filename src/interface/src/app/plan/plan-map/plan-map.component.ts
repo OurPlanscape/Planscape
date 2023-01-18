@@ -19,7 +19,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
-  tileLayer: L.TileLayer.WMS | undefined;
+  tileLayer: L.TileLayer | undefined;
 
   constructor(private router: Router) {}
 
@@ -86,21 +86,19 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /** Display rendered tiles for the provided condition filepath (or, if the filepath
+   *  string is empty, remove rendered tiles). */
   setCondition(filepath: string): void {
-    if (filepath?.length === 0 || !filepath) return;
-    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
-
     this.tileLayer?.remove();
 
-    this.tileLayer = L.tileLayer.wms(
-      BackendConstants.END_POINT + '/conditions/wms',
+    if (filepath?.length === 0 || !filepath) return;
+
+    this.tileLayer = L.tileLayer(
+      BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
       {
-        crs: L.CRS.EPSG4326,
         minZoom: 7,
-        maxZoom: 15,
-        format: 'image/png',
+        maxZoom: 13,
         opacity: 0.7,
-        layers: filepath,
       }
     );
 
