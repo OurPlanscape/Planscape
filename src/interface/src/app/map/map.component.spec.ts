@@ -241,13 +241,13 @@ describe('MapComponent', () => {
       ).nativeElement;
     });
 
-    it('shows 2 maps by default', async () => {
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(2);
+    it('shows 4 maps by default', async () => {
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(4);
 
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
-      expect(map3.attributes['hidden']).toBeDefined();
-      expect(map4.attributes['hidden']).toBeDefined();
+      expect(map3.attributes['hidden']).toBeUndefined();
+      expect(map4.attributes['hidden']).toBeUndefined();
     });
 
     it('toggles to show 1 map', async () => {
@@ -264,18 +264,18 @@ describe('MapComponent', () => {
       expect(map4.attributes['hidden']).toBeDefined();
     });
 
-    it('toggles to show 4 maps', async () => {
+    it('toggles to show 2 maps', async () => {
       const childLoader = await loader.getChildLoader('.map-count-button-row');
       const buttonHarnesses = await childLoader.getAllHarnesses(
         MatButtonHarness
       );
-      await buttonHarnesses[2].click();
+      await buttonHarnesses[1].click();
 
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(4);
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(2);
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
-      expect(map3.attributes['hidden']).toBeUndefined();
-      expect(map4.attributes['hidden']).toBeUndefined();
+      expect(map3.attributes['hidden']).toBeDefined();
+      expect(map4.attributes['hidden']).toBeDefined();
     });
   });
 
