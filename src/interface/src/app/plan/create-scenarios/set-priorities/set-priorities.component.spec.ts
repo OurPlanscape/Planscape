@@ -68,7 +68,7 @@ describe('SetPrioritiesComponent', () => {
     };
     const element = {
       conditionName: 'test_element_1',
-      filepath: 'test_element_1',
+      filepath: 'test_element_1_normalized',
       score: 0,
       children: [metric],
       level: 1,
@@ -76,7 +76,7 @@ describe('SetPrioritiesComponent', () => {
     };
     const pillar = {
       conditionName: 'test_pillar_1',
-      filepath: 'test_pillar_1',
+      filepath: 'test_pillar_1_normalized',
       score: 0,
       children: [element],
       level: 0,
