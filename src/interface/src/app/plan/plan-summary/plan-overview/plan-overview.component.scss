@@ -1,0 +1,32 @@
+.plan-overview-container {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  height: 100%;
+}
+
+.plan-map-view {
+  background-color: #e9e9e9;
+  flex-grow: 2;
+  position: relative;
+}
+
+.plan-scenario-panel {
+  background-color: white;
+  flex-grow: 1;
+  padding: 20px;
+}
+
+.plan-scenario-panel-content {
+  align-items: flex-start;
+  display: flex;
+  width: 100%;
+}
+
+.plan-scenario-panel-text {
+  margin-right: 150px;
+}
+
+.mat-raised-button {
+  min-width: unset;
+}

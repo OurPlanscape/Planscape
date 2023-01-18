@@ -8,4 +8,7 @@ import { Legend } from 'src/app/types';
 })
 export class LegendComponent {
   @Input() legend?: Legend;
+  @Input() vertical?: boolean;
+  @Input() hideTitles?: boolean;
+  @Input() hideOutline?: boolean;
 }

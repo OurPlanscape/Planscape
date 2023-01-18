@@ -1,30 +1,26 @@
 <div class="root-container">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
-    <div class="plan-summary-panel" *ngIf="!resumePlanning">
+    <div class="plan-summary-panel" *ngIf="currentPlanStep === 0">
       <summary-panel></summary-panel>
     </div>
-    <div class="plan-progress-panel" *ngIf="resumePlanning">
+    <div class="plan-progress-panel" *ngIf="currentPlanStep > 0">
       <progress-panel [plan]="currentPlan$ | async"></progress-panel>
     </div>
     <mat-divider [vertical]="true"></mat-divider>
-    <div class="plan-map-container">
-      <app-plan-map [plan]="currentPlan$" class="plan-map-view"></app-plan-map>
-      <mat-divider></mat-divider>
-      <div class="plan-scenario-panel">
-        <h1>{{ plan.name }}</h1>
-        <div class="plan-scenario-panel-content">
-          <p class="plan-scenario-panel-text">
-            Your planning area, priorities, and constraints are used to generate scenarios.
-            Using the Scenario Explorer, you can adjust the relative importance of priorities.
-            Saved scenarios are added to the Comparison table. Scenarios consist of Project Areas,
-            Treatment plans, Potential Outcomes, and Estimated costs.
-          </p>
-          <button mat-raised-button color="primary">CREATE A NEW SCENARIO</button>
-        </div>
-        <app-saved-scenarios [plan]="currentPlan$ | async"></app-saved-scenarios>
-        <app-unsaved-scenarios [plan]="currentPlan$ | async"></app-unsaved-scenarios>
+    <div class="plan-content">
+      <div class="plan-content-inner">
+        <app-plan-overview [plan$]="currentPlan$" (createScenarioEvent)="currentPlanStep = 1" *ngIf="currentPlanStep === 0"></app-plan-overview>
+        <ng-container *ngIf="currentPlanStep > 0">
+          <div class="plan-map-container">
+            <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'"></app-plan-map>
+          </div>
+          <div class="plan-content-panel">
+            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep" (changeConditionEvent)="changeCondition($event)"></app-create-scenarios>
+          </div>
+        </ng-container>
       </div>
+      <app-plan-bottom-bar (nextEvent)="nextStep()" (previousEvent)="previousStep()" *ngIf="currentPlanStep > 0"></app-plan-bottom-bar>
     </div>
   </ng-container>
 </div>

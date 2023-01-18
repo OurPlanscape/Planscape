@@ -1,17 +1,19 @@
+import { PlanModule } from './../../plan.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SavedScenariosComponent } from './saved-scenarios.component';
+import { PlanOverviewComponent } from './plan-overview.component';
 
-describe('SavedScenariosComponent', () => {
-  let component: SavedScenariosComponent;
-  let fixture: ComponentFixture<SavedScenariosComponent>;
+describe('PlanOverviewComponent', () => {
+  let component: PlanOverviewComponent;
+  let fixture: ComponentFixture<PlanOverviewComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [SavedScenariosComponent],
+      imports: [PlanModule],
+      declarations: [PlanOverviewComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SavedScenariosComponent);
+    fixture = TestBed.createComponent(PlanOverviewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

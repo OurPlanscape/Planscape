@@ -5,6 +5,8 @@ import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Plan } from 'src/app/types';
 
+import { BackendConstants } from './../../backend-constants';
+
 @Component({
   selector: 'app-plan-map',
   templateUrl: './plan-map.component.html',
@@ -12,17 +14,19 @@ import { Plan } from 'src/app/types';
 })
 export class PlanMapComponent implements AfterViewInit, OnDestroy {
   @Input() plan = new BehaviorSubject<Plan | null>(null);
+  @Input() mapId?: string;
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
+  tileLayer: L.TileLayer.WMS | undefined;
 
   constructor(private router: Router) {}
 
   ngAfterViewInit(): void {
     if (this.map != undefined) this.map.remove();
 
-    this.map = L.map('map', {
+    this.map = L.map(this.mapId ? this.mapId : 'map', {
       center: [38.646, -120.548],
       zoom: 9,
       layers: [this.stadiaAlidadeTiles()],
@@ -39,6 +43,8 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       .subscribe((plan) => {
         this.drawPlanningArea(plan!);
       });
+
+    setTimeout(() => this.map.invalidateSize(), 0);
   }
 
   // Add planning area to map and frame it in view
@@ -77,6 +83,27 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.map.remove();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  setCondition(filepath: string): void {
+    if (filepath?.length === 0 || !filepath) return;
+    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
+
+    this.tileLayer?.remove();
+
+    this.tileLayer = L.tileLayer.wms(
+      BackendConstants.END_POINT + '/conditions/wms',
+      {
+        crs: L.CRS.EPSG4326,
+        minZoom: 7,
+        maxZoom: 15,
+        format: 'image/png',
+        opacity: 0.7,
+        layers: filepath,
+      }
+    );
+
+    this.map.addLayer(this.tileLayer);
   }
 
   expandMap() {
