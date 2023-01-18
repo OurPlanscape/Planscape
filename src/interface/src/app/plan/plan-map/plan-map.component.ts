@@ -19,7 +19,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
-  tileLayer: L.TileLayer.WMS | undefined;
+  tileLayer: L.TileLayer | undefined;
 
   constructor(private router: Router) {}
 
@@ -87,19 +87,15 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
 
   setCondition(filepath: string): void {
     if (filepath?.length === 0 || !filepath) return;
-    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
 
     this.tileLayer?.remove();
 
-    this.tileLayer = L.tileLayer.wms(
-      BackendConstants.END_POINT + '/conditions/wms',
+    this.tileLayer =  L.tileLayer(
+      BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
       {
-        crs: L.CRS.EPSG4326,
         minZoom: 7,
-        maxZoom: 15,
-        format: 'image/png',
-        opacity: 0.7,
-        layers: filepath,
+        maxZoom: 13,
+        opacity: 0.7
       }
     );
 
