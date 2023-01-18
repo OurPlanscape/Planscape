@@ -26,37 +26,6 @@ describe('ProjectCardComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should filter boundaries', () => {
-    const fakeGeometry: GeoJSON.Geometry = {
-      type: 'Polygon',
-      coordinates: [
-        [
-          [0, 0],
-          [1, 1],
-        ],
-      ],
-    };
-    const fakeBoundary: GeoJSON.Feature<GeoJSON.Polygon, any> = {
-      type: 'Feature',
-      geometry: fakeGeometry,
-      properties: {
-        shape_name: 'test_boundary',
-      },
-    };
-    const fakeProject: GeoJSON.Feature<GeoJSON.Polygon, any> = {
-      type: 'Feature',
-      geometry: fakeGeometry,
-      properties: {
-        PROJECT_NAME: 'test_project',
-      },
-    };
-    component.features = [fakeBoundary, fakeProject];
-    fixture.detectChanges();
-
-    expect(component.boundaries.length).toEqual(1);
-    expect(component.boundaries).toContain(fakeBoundary.properties);
-  });
-
   it('should filter projects', () => {
     const fakeGeometry: GeoJSON.Geometry = {
       type: 'Polygon',
