@@ -4,7 +4,7 @@ import json
 from base.region_name import (RegionName, display_name_to_region,
                               region_to_display_name)
 from conditions.models import BaseCondition, Condition, ConditionRaster
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
@@ -296,17 +296,20 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         ids_to_raster_names = {
             c.condition_dataset_id: c.raster_name
             for c in Condition.objects.filter(is_raw=False).all()}
+        filtered_raster_names_to_ids = {
+            ids_to_raster_names[id]: id for id in ids_to_raster_names
+            if id in ids_to_conditions}
 
-        for id in ids_to_raster_names.keys():
-            if id not in ids_to_conditions.keys():
+        for r in ConditionRaster.objects.filter(
+                name__in=filtered_raster_names_to_ids.keys()).filter(
+                raster__bboverlaps=geo).all():
+
+            if r.raster is None:
                 continue
-            for r in ConditionRaster.objects.filter(
-                    name=ids_to_raster_names[id]).all():
-
-                if r.raster is None:
-                    continue
-                accumulator.process_raster(
-                    r.raster, ids_to_conditions[id])
+            id = filtered_raster_names_to_ids[r.name]
+            condition = ids_to_conditions[id]
+            accumulator.process_raster(
+                r.raster, condition)
 
         conditions = []
         for c in accumulator.stats.keys():

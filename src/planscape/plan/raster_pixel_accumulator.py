@@ -25,6 +25,7 @@ class RasterPixelAccumulator:
     # A constant representing the spatial reference of rasters being proccessed.
     # TODO: remove if we switch from non-standard 9822 to 3310.
     RASTER_SR = SpatialReference(settings.CRS_9822_PROJ4)
+    RASTER_SRID = settings.CRS_FOR_RASTERS
 
     # Only raster pixels that fall within this geometry are counted.
     geo: OGRGeometry
@@ -39,6 +40,7 @@ class RasterPixelAccumulator:
         self.geo = geo.clone()
         self.geo.transform(CoordTransform(SpatialReference(self.geo.srid),
                                           self.RASTER_SR))
+        self.geo.srid=self.RASTER_SRID
 
         self.reset_stats()
 
@@ -86,9 +88,8 @@ class RasterPixelAccumulator:
         if scale > 0:
             return [int(np.floor(self._compute_ind(x_min, scale, origin))),
                     int(np.ceil(self._compute_ind(x_max, scale, origin)))]
-        else:
-            return [int(np.floor(self._compute_ind(x_max, scale, origin))),
-                    int(np.ceil(self._compute_ind(x_min, scale, origin)))]
+        return [int(np.floor(self._compute_ind(x_max, scale, origin))),
+                int(np.ceil(self._compute_ind(x_min, scale, origin)))]
 
     def _compute_ind(self, x: float, scale: float, origin: float) -> int:
         return (x - origin) / scale

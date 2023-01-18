@@ -51,7 +51,7 @@ class RasterPixelAccumulatorTest(TestCase):
              (-2118, 2100954),
              (-2117, 2100954)))
         raster = GDALRaster({
-            'srid': 9822,  # 6326
+            'srid': 9822,
             'width': 4,
             'height': 4,
             'scale': [300, -300],
