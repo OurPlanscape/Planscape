@@ -64,7 +64,7 @@ export class SetPrioritiesComponent implements OnInit {
           conditionName: pillar.display_name
             ? pillar.display_name
             : pillar.pillar_name!,
-          filepath: pillar.filepath!,
+          filepath: pillar.filepath!.concat('_normalized'),
           score: 0,
           children: [],
           level: 0,
@@ -76,7 +76,7 @@ export class SetPrioritiesComponent implements OnInit {
             conditionName: element.display_name
               ? element.display_name
               : element.element_name!,
-            filepath: element.filepath!,
+            filepath: element.filepath!.concat('_normalized'),
             score: 0,
             children: [],
             level: 1,
@@ -129,6 +129,8 @@ export class SetPrioritiesComponent implements OnInit {
           priorityRow.visible = false;
         }
       });
+    } else {
+      this.changeConditionEvent.emit('');
     }
   }
 }
