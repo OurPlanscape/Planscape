@@ -164,7 +164,6 @@ export class MapManager {
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
       style: normalStyle,
       onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        //layer.bindPopup(createDetailCardCallback(feature));
         layer.bindTooltip(
           this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME)
         );
@@ -351,30 +350,27 @@ export class MapManager {
   ) {
     map.instance!.on('click', (e) => {
       if (!e.latlng) return;
+      if (!map.existingProjectsLayerRef) return;
 
       const intersectingFeatureLayers: L.Polygon[] = [];
 
-      map.instance!.eachLayer((layer) => {
-        // Loop through all GeoJSON layers except the region boundaries
-        if (layer instanceof L.GeoJSON && layer !== map.regionLayerRef) {
-          (layer as L.GeoJSON).eachLayer((featureLayer) => {
-            if (featureLayer instanceof L.Polygon && featureLayer.feature) {
-              const polygon = featureLayer as L.Polygon;
-              // If feature contains the point that was clicked, add to list
-              if (
-                booleanIntersects(
-                  point(L.GeoJSON.latLngToCoords(e.latlng)),
-                  polygon.feature!
-                ) ||
-                booleanWithin(
-                  point(L.GeoJSON.latLngToCoords(e.latlng)),
-                  polygon.feature!
-                )
-              ) {
-                intersectingFeatureLayers.push(polygon);
-              }
-            }
-          });
+      // Get all existing project polygons at the clicked point
+      (map.existingProjectsLayerRef as L.GeoJSON).eachLayer((featureLayer) => {
+        if (featureLayer instanceof L.Polygon && featureLayer.feature) {
+          const polygon = featureLayer as L.Polygon;
+          // If feature contains the point that was clicked, add to list
+          if (
+            booleanIntersects(
+              point(L.GeoJSON.latLngToCoords(e.latlng)),
+              polygon.feature!
+            ) ||
+            booleanWithin(
+              point(L.GeoJSON.latLngToCoords(e.latlng)),
+              polygon.feature!
+            )
+          ) {
+            intersectingFeatureLayers.push(polygon);
+          }
         }
       });
 
