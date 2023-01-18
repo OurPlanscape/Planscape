@@ -768,57 +768,70 @@ describe('MapComponent', () => {
       spyOn(applicationRef, 'attachView').and.callThrough;
 
       component.ngAfterViewInit();
+    });
 
-      // Add a polygon to map 3
-      const fakeGeometry: GeoJSON.Geometry = {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [0, 0],
-            [1, 1],
+    describe('popup triggering', () => {
+      beforeEach(() => {
+        // Add a polygon to map 3
+        const fakeGeometry: GeoJSON.Geometry = {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+            ],
           ],
-        ],
-      };
-      const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
-        type: 'Feature',
-        geometry: fakeGeometry,
-        properties: {
-          PROJECT_NAME: 'test_project',
-        },
-      };
-      component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
-      component.maps[3].existingProjectsLayerRef.addTo(
-        component.maps[3].instance!
-      );
-    });
-
-    it('attaches popup when feature polygon is clicked', () => {
-      // Click on the polygon
-      component.maps[3].instance?.fireEvent('click', {
-        latlng: [0, 0],
+        };
+        const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
+          type: 'Feature',
+          geometry: fakeGeometry,
+          properties: {
+            PROJECT_NAME: 'test_project',
+          },
+        };
+        component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
+        component.maps[3].existingProjectsLayerRef.addTo(
+          component.maps[3].instance!
+        );
       });
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
-    });
+      it('attaches popup when feature polygon is clicked', () => {
+        // Click on the polygon
+        component.maps[3].instance?.fireEvent('click', {
+          latlng: [0, 0],
+        });
 
-    it('does not attach popup when map is clicked outside the polygon', () => {
-      // Click outside the polygon
-      component.maps[3].instance?.fireEvent('click', {
-        latlng: [2, 2],
+        expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
       });
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
-    });
+      it('does not attach popup when map is clicked outside the polygon', () => {
+        // Click outside the polygon
+        component.maps[3].instance?.fireEvent('click', {
+          latlng: [2, 2],
+        });
 
-    it('does not attach popup if drawing mode is active', () => {
-      component.mapManager.isInDrawingMode = true;
-
-      // Click on the polygon
-      component.maps[3].instance?.fireEvent('click', {
-        latlng: [0, 0],
+        expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
       });
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
+      it('does not attach popup if drawing mode is active', () => {
+        component.mapManager.isInDrawingMode = true;
+
+        // Click on the polygon
+        component.maps[3].instance?.fireEvent('click', {
+          latlng: [0, 0],
+        });
+
+        expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
+      });
+    });
+
+    it('popup is removed when existing project layer is removed', () => {
+      spyOn(component.maps[3].instance!, 'closePopup');
+
+      component.maps[3].instance?.openPopup('test', [0, 0]);
+      component.maps[3].existingProjectsLayerRef?.fire('remove');
+
+      expect(component.maps[3].instance?.closePopup).toHaveBeenCalled();
     });
   });
 
