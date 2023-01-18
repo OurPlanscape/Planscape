@@ -32,7 +32,6 @@ export class MapService {
       .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/boundary')
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
-        config = config.filter(b => b.boundary_name != 'task_force_regions')
         this.boundaryConfig$.next(config);
       });
     this.http
