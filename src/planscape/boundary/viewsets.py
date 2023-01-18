@@ -13,7 +13,7 @@ CACHE_TIME_IN_SECONDS = 60*60*2
 
 
 class BoundaryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Boundary.objects.all()
+    queryset = Boundary.objects.all().exclude(boundary_name='task_force_regions')
     serializer_class = BoundarySerializer
 
 
