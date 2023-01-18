@@ -14,10 +14,22 @@ class RasterPixelAccumulatorStats(TypedDict):
     count: int
 
 
+# Aggregates pixel-level statistics across rasters for pixels that fall within
+# a given geometry.
+# Caveats:
+# - This doesn't track positions of pixels that have been processed so
+# it's up to the user to avoid counting a pixel multiple times.
+# - This will not raise a warning if a portion of the geometry falls outside of
+# the area covered by processed rasters.
 class RasterPixelAccumulator:
+    # A constant representing the spatial reference of rasters being proccessed.
+    # TODO: remove if we switch from non-standard 9822 to 3310.
     RASTER_SR = SpatialReference(settings.CRS_9822_PROJ4)
 
+    # Only raster pixels that fall within this geometry are counted.
     geo: OGRGeometry
+    # Rasters that are counted may be associated with different conditions.
+    # This maps condition name to accumulated pixel statistics.
     stats: dict[str, RasterPixelAccumulatorStats]
 
     def __init__(self, geo: OGRGeometry) -> None:
@@ -27,6 +39,7 @@ class RasterPixelAccumulator:
         self.geo = geo.clone()
         self.geo.transform(CoordTransform(SpatialReference(self.geo.srid),
                                           self.RASTER_SR))
+
         self.reset_stats()
 
     def reset_stats(self) -> None:
@@ -37,11 +50,14 @@ class RasterPixelAccumulator:
 
         data = raster.bands[0].data()
 
-        extent = self._get_geo_pixel_extent(raster)
-        for x in self._get_pixel_range(extent[0], extent[2], raster.width):
+        pixel_extent = self._get_geo_pixel_extent(raster)
+        for x in self._get_pixel_range(
+                pixel_extent[0],
+                pixel_extent[2],
+                raster.width):
             for y in self._get_pixel_range(
-                    extent[1],
-                    extent[3],
+                    pixel_extent[1],
+                    pixel_extent[3],
                     raster.height):
                 if np.isnan(data[y][x]):
                     continue
@@ -77,7 +93,8 @@ class RasterPixelAccumulator:
     def _compute_ind(self, x: float, scale: float, origin: float) -> int:
         return (x - origin) / scale
 
-    def _get_pixel_range(self, i_min: int, i_max: int, width: int) -> list[int]:
+    def _get_pixel_range(
+            self, i_min: int, i_max: int, width: int) -> list[int]:
         return range(max(0, i_min), min(width, i_max + 1))
 
     def _pixel_point_is_in_geo(
@@ -86,7 +103,7 @@ class RasterPixelAccumulator:
         origin = raster.origin
         p = Point((self._compute_coordinate(x, scale.x, origin.x),
                    self._compute_coordinate(y, scale.y, origin.y)))
-        return p.within(self.geo)
+        return p.intersects(self.geo)
 
     def _compute_coordinate(
             self, x: int, scale: float, origin: float) -> float:
