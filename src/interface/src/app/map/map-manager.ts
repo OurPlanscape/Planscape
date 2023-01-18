@@ -573,17 +573,13 @@ export class MapManager {
   private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
     const normalStyle: L.PathOptions = {
       weight: 1,
-      opacity: 0.2,
       color: '#0000ff',
-      fillOpacity: 0.2,
-      fillColor: '#0000ff',
+      fillOpacity: 0,
     };
     const hoverStyle: L.PathOptions = {
-      weight: 3,
-      opacity: 0.5,
+      weight: 5,
       color: '#0000ff',
-      fillOpacity: 0.5,
-      fillColor: '#0000ff',
+      fillOpacity: 0,
     };
     return L.geoJSON(boundary, {
       style: normalStyle,
@@ -634,7 +630,7 @@ export class MapManager {
       {
         minZoom: 7,
         maxZoom: 13,
-        opacity: 0.7
+        opacity: 0.7,
       }
     );
 
