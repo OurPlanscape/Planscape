@@ -1,10 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Feature, Geometry } from 'geojson';
 
-interface Boundary {
-  shape_name: string;
-}
-
 interface Project {
   PROJECT_NAME?: string;
   PROJECT_STATUS?: string;
@@ -32,24 +28,14 @@ interface Treatment {
 export class ProjectCardComponent implements OnInit {
   @Input() features!: Feature<Geometry, any>[];
 
-  boundaries!: Boundary[];
   projects!: Project[];
 
   ngOnInit() {
-    this.boundaries = this.getBoundaries();
     this.projects = this.getProjects();
   }
 
   isProject(feature: Feature<Geometry, any>): boolean {
     return !!feature.properties.PROJECT_NAME;
-  }
-
-  private getBoundaries(): Boundary[] {
-    return this.features
-      .filter(
-        (feature) => !this.isProject(feature) && !!feature.properties.shape_name
-      )
-      .map((feature) => feature.properties as Boundary);
   }
 
   private getProjects(): Project[] {

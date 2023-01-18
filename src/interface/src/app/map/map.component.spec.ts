@@ -753,22 +753,26 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
 
       // Add a polygon to map 3
+      const fakeGeometry: GeoJSON.Geometry = {
+        type: 'Polygon',
+        coordinates: [
+          [
+            [0, 0],
+            [1, 1],
+          ],
+        ],
+      };
       const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
         type: 'Feature',
-        geometry: {
-          type: 'Polygon',
-          coordinates: [
-            [
-              [0, 0],
-              [1, 1],
-            ],
-          ],
-        },
+        geometry: fakeGeometry,
         properties: {
-          shape_name: 'test_boundary',
+          PROJECT_NAME: 'test_project',
         },
       };
-      L.geoJSON(feature).addTo(component.maps[3].instance!);
+      component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
+      component.maps[3].existingProjectsLayerRef.addTo(
+        component.maps[3].instance!
+      );
     });
 
     it('attaches popup when feature polygon is clicked', () => {
