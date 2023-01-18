@@ -32,8 +32,15 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
+      scrollWheelZoom: false,
     });
     this.map.attributionControl.setPosition('topright');
+
+    // Add zoom controls to bottom right corner
+     const zoomControl = L.control.zoom({
+      position: 'bottomright',
+    });
+    zoomControl.addTo(this.map);
 
     this.plan
       .pipe(
@@ -85,7 +92,11 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /** Display rendered tiles for the provided condition filepath (or, if the filepath
+   *  string is empty, remove rendered tiles). */
   setCondition(filepath: string): void {
+    this.tileLayer?.remove();
+
     if (filepath?.length === 0 || !filepath) return;
 
     this.tileLayer?.remove();
