@@ -77,7 +77,7 @@ class RasterPixelAccumulatorTest(TestCase):
              (-2116371, 2101),
              (-2116971, 2101)))
         raster = GDALRaster({
-            'srid': 9822,  # 6326
+            'srid': 9822,
             'width': 4,
             'height': 4,
             'scale': [300, -300],
@@ -103,7 +103,7 @@ class RasterPixelAccumulatorTest(TestCase):
              (-2115000, 2100954),
              (-2116971, 2100954)))
         raster = GDALRaster({
-            'srid': 9822,  # 6326
+            'srid': 9822,
             'width': 4,
             'height': 4,
             'scale': [300, -300],
@@ -129,7 +129,7 @@ class RasterPixelAccumulatorTest(TestCase):
              (-2116371, 2100954),
              (-2116971, 2100954)))
         raster = GDALRaster({
-            'srid': 9822,  # 6326
+            'srid': 9822,
             'width': 4,
             'height': 4,
             'scale': [300, -300],
@@ -155,7 +155,7 @@ class RasterPixelAccumulatorTest(TestCase):
              (-2116371, 2100954),
              (-2116971, 2100954)))
         raster = GDALRaster({
-            'srid': 9822,  # 6326
+            'srid': 9822,
             'width': 4,
             'height': 4,
             'scale': [300, -300],
