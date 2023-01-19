@@ -10,7 +10,18 @@ export interface ConditionsConfig extends DataLayerConfig {
   pillars?: PillarConfig[];
 }
 
-export interface DataLayerConfig {
+export interface ConditionsMetadata {
+  data_download_link?: string;
+  data_provider?: string;
+  data_year?: string;
+  reference_link?: string;
+  source?: string;
+  source_link?: string;
+  min_value?: number;
+  max_value?: number;
+}
+
+export interface DataLayerConfig extends ConditionsMetadata {
   display_name?: string;
   filepath?: string;
   colormap?: string;
