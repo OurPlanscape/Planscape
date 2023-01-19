@@ -3,12 +3,15 @@ import json
 
 from base.region_name import (RegionName, display_name_to_region,
                               region_to_display_name)
-from django.contrib.gis.geos import GEOSGeometry
+from conditions.models import BaseCondition, Condition, ConditionRaster
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from plan.models import Plan, Project, ProjectArea
-from plan.serializers import PlanSerializer, ProjectSerializer, ProjectAreaSerializer
+from plan.raster_pixel_accumulator import RasterPixelAccumulator
+from plan.serializers import (
+    PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
 from planscape import settings
 from django.shortcuts import get_list_or_404
 
@@ -103,7 +106,9 @@ def delete(request: HttpRequest) -> HttpResponse:
         for plan in plans:
             plan.delete()
         response_data = {'id': plan_ids}
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
@@ -149,15 +154,28 @@ def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        return JsonResponse(_serialize_plan(get_plan_by_id(request.GET)[0], True))
+        return JsonResponse(
+            _serialize_plan(
+                get_plan_by_id(request.GET)[0],
+                True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
     try:
-        plans = get_plans_by_owner(request.GET)
-        return JsonResponse([_serialize_plan(plan, False) for plan in plans], safe=False)
+        owner_id = None
+        owner_str = request.GET.get('owner')
+        if owner_str is not None:
+            owner_id = int(owner_str)
+        elif request.user.is_authenticated:
+            owner_id = request.user.pk
+        plans = (Plan.objects.filter(owner=owner_id)
+                 .annotate(projects=Count('project', distinct=True))
+                 .annotate(scenarios=Count('project__scenario')))
+        return JsonResponse(
+            [_serialize_plan(plan, False) for plan in plans],
+            safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -274,3 +292,46 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return JsonResponse(response)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def get_scores(request: HttpRequest) -> HttpResponse:
+    try:
+        plan = get_plan_by_id(request.GET)[0]
+        geo = plan.geometry
+        reg = plan.region_name.removeprefix('RegionName.').lower()
+
+        accumulator = RasterPixelAccumulator(geo)
+
+        ids_to_conditions = {
+            c.id: c.condition_name
+            for c in BaseCondition.objects.filter(region_name=reg).all()}
+        raster_names_to_ids = {
+            c.raster_name: c.condition_dataset_id
+            for c in Condition.objects.filter(
+                condition_dataset_id__in=ids_to_conditions.keys()).filter(
+                is_raw=False).all()}
+
+        for r in ConditionRaster.objects.filter(
+                name__in=raster_names_to_ids.keys()).filter(
+                raster__bboverlaps=accumulator.geo).all():
+            id = raster_names_to_ids[r.name]
+            condition = ids_to_conditions[id]
+            accumulator.process_raster(
+                r.raster, condition)
+
+        conditions = []
+        for c in accumulator.stats.keys():
+            if accumulator.stats[c]['count'] == 0:
+                conditions.append({'condition': c})
+            else:
+                conditions.append(
+                    {'condition': c, 'mean_score': accumulator.stats[c]
+                     ['sum'] / accumulator.stats[c]['count']})
+
+        response = {'conditions': json.dumps(conditions)}
+        return HttpResponse(
+            JsonResponse(response),
+            content_type='application/json')
+
+    except Exception as e:
+        return HttpResponseBadRequest("failed score fetch: " + str(e))
