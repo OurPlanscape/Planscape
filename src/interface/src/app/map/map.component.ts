@@ -581,9 +581,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         return false;
       case 2:
       default:
-        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
-        if (index === 0 || index === 1) {
-          // TODO: 2 map view might go away or the logic here might change
+        // In 2 map view, if the 1st or 2nd map are selected, show maps 1 and 2
+        // Otherwise, show maps 3 and 4
+        // TODO: 2 map view might go away or the logic here might change
+        if (
+          Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
+          Math.floor(index / 2)
+        ) {
           return true;
         }
         return false;
@@ -599,9 +603,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       case 4:
         return '50%';
       case 2:
-        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
-        // TODO: 2 map view might go away or the logic here might change
-        return index === 0 ? '100%' : '0%';
       case 1:
       default:
         if (
