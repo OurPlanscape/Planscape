@@ -178,9 +178,10 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
 
         self.geometry = {'type': 'MultiPolygon',
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
-        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.plan_with_user = Plan.objects.create(
-            owner=self.user, name="plan", region_name='sierra_cascade_inyo', geometry=stored_geometry)
+            owner=self.user, name="plan", region_name='sierra_cascade_inyo', 
+            geometry=self.stored_geometry)
 
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_cost=100, )
@@ -188,7 +189,8 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
         self.project_with_user.priorities.add(self.condition2)
 
         self.project_area_with_user = ProjectArea.objects.create(
-            owner=self.user, project=self.project_with_user, project_area=stored_geometry, estimated_area_treated=200)
+            owner=self.user, project=self.project_with_user, project_area=self.stored_geometry, 
+            estimated_area_treated=200)
 
     def test_missing_project_id(self):
         qd = QueryDict('')
