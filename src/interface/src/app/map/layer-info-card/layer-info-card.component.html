@@ -14,9 +14,13 @@
     </span>
   </p>
 
-  <p *ngIf="hasDataProvider()">
-    DATA: <a [href]="dataLayerConfig?.data_download_link" target="_blank">Download from {{dataLayerConfig?.data_provider}}</a>
-  </p>
+  <div *ngIf="hasDataProvider()">
+    <p>
+      PROVIDER: {{dataLayerConfig?.data_provider}}
+    <p>
+      DATA: <a [href]="dataLayerConfig?.data_download_link" target="_blank">Download</a>
+    </p>
+  </div>
 
-  <a mat-button *ngIf="hasReferenceLink()" [href]="dataLayerConfig?.reference_link" target="_blank">Learn more</a>
+  <a mat-raised-button color="primary" *ngIf="hasReferenceLink()" [href]="dataLayerConfig?.reference_link" target="_blank">Learn more</a>
 </div>
