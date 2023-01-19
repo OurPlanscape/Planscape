@@ -9,14 +9,17 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.shortcuts import get_list_or_404
+from django.views.decorators.csrf import csrf_exempt
 from plan.models import Plan, Project, ProjectArea
 from plan.raster_pixel_accumulator import RasterPixelAccumulator
-from plan.serializers import (
-    PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
+from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
+                              ProjectSerializer)
 from planscape import settings
-from conditions.models import BaseCondition, Condition
+
+# TODO: remove csrf_exempt decorators when logged in users are required.
 
 
+@csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -72,6 +75,7 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     return actual_geometry
 
 
+@csrf_exempt
 def delete(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -174,6 +178,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
 def create_project(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -211,7 +216,8 @@ def create_project(request: HttpRequest) -> HttpResponse:
         project.save()
         for pri in priorities_list:
             base_condition = BaseCondition.objects.get(condition_name=pri)
-            condition = Condition.objects.get(condition_dataset=base_condition, condition_score_type=0)
+            condition = Condition.objects.get(
+                condition_dataset=base_condition, condition_score_type=0)
             project.priorities.add(condition)
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -228,6 +234,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
