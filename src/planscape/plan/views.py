@@ -299,20 +299,16 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         ids_to_conditions = {
             c.id: c.condition_name
             for c in BaseCondition.objects.filter(region_name=reg).all()}
-        ids_to_raster_names = {
-            c.condition_dataset_id: c.raster_name
-            for c in Condition.objects.filter(is_raw=False).all()}
-        filtered_raster_names_to_ids = {
-            ids_to_raster_names[id]: id for id in ids_to_raster_names
-            if id in ids_to_conditions}
+        raster_names_to_ids = {
+            c.raster_name: c.condition_dataset_id
+            for c in Condition.objects.filter(
+                condition_dataset_id__in=ids_to_conditions.keys()).filter(
+                is_raw=False).all()}
 
         for r in ConditionRaster.objects.filter(
-                name__in=filtered_raster_names_to_ids.keys()).filter(
-                raster__bboverlaps=geo).all():
-
-            if r.raster is None:
-                continue
-            id = filtered_raster_names_to_ids[r.name]
+                name__in=raster_names_to_ids.keys()).filter(
+                raster__bboverlaps=accumulator.geo).all():
+            id = raster_names_to_ids[r.name]
             condition = ids_to_conditions[id]
             accumulator.process_raster(
                 r.raster, condition)
