@@ -1,8 +1,22 @@
 <div class="layer-info-card">
   <h2>{{dataLayerConfig?.display_name}}</h2>
 
-  <p>Definition of what {{dataLayerConfig?.display_name}} means.</p>
-  <p>SOURCE: sourcename (link) date/year</p>
+  <p *ngIf="hasMinMax()">
+    VALUE RANGE: {{computeMinMax()}}
+  </p>
 
-  <button mat-button>Learn more</button>
+  <p>
+    <span *ngIf="hasSource()">
+      SOURCE: <a [href]="dataLayerConfig?.source_link" target="_blank">{{dataLayerConfig?.source}}</a>
+    </span>
+    <span *ngIf="hasYear()">
+      ({{dataLayerConfig?.data_year}})
+    </span>
+  </p>
+
+  <p *ngIf="hasDataProvider()">
+    DATA: <a [href]="dataLayerConfig?.data_download_link" target="_blank">Download from {{dataLayerConfig?.data_provider}}</a>
+  </p>
+
+  <a mat-button *ngIf="hasReferenceLink()" [href]="dataLayerConfig?.reference_link" target="_blank">Learn more</a>
 </div>
