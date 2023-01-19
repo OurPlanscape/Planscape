@@ -13,7 +13,7 @@
         <app-plan-overview [plan$]="currentPlan$" (createScenarioEvent)="currentPlanStep = 1" *ngIf="currentPlanStep === 0"></app-plan-overview>
         <ng-container *ngIf="currentPlanStep > 0">
           <div class="plan-map-container">
-            <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'"></app-plan-map>
+            <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'" [mapPadding]="[700, 0]"></app-plan-map>
           </div>
           <div class="plan-content-panel">
             <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep" (changeConditionEvent)="changeCondition($event)"></app-create-scenarios>
