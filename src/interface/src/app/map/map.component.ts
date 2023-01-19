@@ -324,10 +324,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.loadingIndicators[layerName] = false;
   }
 
-  private createDetailCardCallback(features: Feature<Geometry, any>[]): any {
+  private createDetailCardCallback(
+    features: Feature<Geometry, any>[],
+    onInitialized: () => void
+  ): any {
     let component = createComponent(ProjectCardComponent, {
       environmentInjector: this.environmentInjector,
     });
+    component.instance.initializedEvent.subscribe((_) => onInitialized());
     component.instance.features = features;
     this.applicationRef.attachView(component.hostView);
     return component.location.nativeElement;

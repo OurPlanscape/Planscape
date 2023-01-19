@@ -241,13 +241,13 @@ describe('MapComponent', () => {
       ).nativeElement;
     });
 
-    it('shows 2 maps by default', async () => {
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(2);
+    it('shows 4 maps by default', async () => {
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(4);
 
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
-      expect(map3.attributes['hidden']).toBeDefined();
-      expect(map4.attributes['hidden']).toBeDefined();
+      expect(map3.attributes['hidden']).toBeUndefined();
+      expect(map4.attributes['hidden']).toBeUndefined();
     });
 
     it('toggles to show 1 map', async () => {
@@ -264,18 +264,18 @@ describe('MapComponent', () => {
       expect(map4.attributes['hidden']).toBeDefined();
     });
 
-    it('toggles to show 4 maps', async () => {
+    it('toggles to show 2 maps', async () => {
       const childLoader = await loader.getChildLoader('.map-count-button-row');
       const buttonHarnesses = await childLoader.getAllHarnesses(
         MatButtonHarness
       );
-      await buttonHarnesses[2].click();
+      await buttonHarnesses[1].click();
 
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(4);
+      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(2);
       expect(map1.attributes['hidden']).toBeUndefined();
       expect(map2.attributes['hidden']).toBeUndefined();
-      expect(map3.attributes['hidden']).toBeUndefined();
-      expect(map4.attributes['hidden']).toBeUndefined();
+      expect(map3.attributes['hidden']).toBeDefined();
+      expect(map4.attributes['hidden']).toBeDefined();
     });
   });
 
@@ -768,57 +768,70 @@ describe('MapComponent', () => {
       spyOn(applicationRef, 'attachView').and.callThrough;
 
       component.ngAfterViewInit();
+    });
 
-      // Add a polygon to map 3
-      const fakeGeometry: GeoJSON.Geometry = {
-        type: 'Polygon',
-        coordinates: [
-          [
-            [0, 0],
-            [1, 1],
+    describe('popup triggering', () => {
+      beforeEach(() => {
+        // Add a polygon to map 3
+        const fakeGeometry: GeoJSON.Geometry = {
+          type: 'Polygon',
+          coordinates: [
+            [
+              [0, 0],
+              [1, 1],
+            ],
           ],
-        ],
-      };
-      const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
-        type: 'Feature',
-        geometry: fakeGeometry,
-        properties: {
-          PROJECT_NAME: 'test_project',
-        },
-      };
-      component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
-      component.maps[3].existingProjectsLayerRef.addTo(
-        component.maps[3].instance!
-      );
-    });
-
-    it('attaches popup when feature polygon is clicked', () => {
-      // Click on the polygon
-      component.maps[3].instance?.fireEvent('click', {
-        latlng: [0, 0],
+        };
+        const feature: GeoJSON.Feature<GeoJSON.Polygon, any> = {
+          type: 'Feature',
+          geometry: fakeGeometry,
+          properties: {
+            PROJECT_NAME: 'test_project',
+          },
+        };
+        component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
+        component.maps[3].existingProjectsLayerRef.addTo(
+          component.maps[3].instance!
+        );
       });
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
-    });
+      it('attaches popup when feature polygon is clicked', () => {
+        // Click on the polygon
+        component.maps[3].instance?.fireEvent('click', {
+          latlng: [0, 0],
+        });
 
-    it('does not attach popup when map is clicked outside the polygon', () => {
-      // Click outside the polygon
-      component.maps[3].instance?.fireEvent('click', {
-        latlng: [2, 2],
+        expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
       });
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
-    });
+      it('does not attach popup when map is clicked outside the polygon', () => {
+        // Click outside the polygon
+        component.maps[3].instance?.fireEvent('click', {
+          latlng: [2, 2],
+        });
 
-    it('does not attach popup if drawing mode is active', () => {
-      component.mapManager.isInDrawingMode = true;
-
-      // Click on the polygon
-      component.maps[3].instance?.fireEvent('click', {
-        latlng: [0, 0],
+        expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
       });
 
-      expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
+      it('does not attach popup if drawing mode is active', () => {
+        component.mapManager.isInDrawingMode = true;
+
+        // Click on the polygon
+        component.maps[3].instance?.fireEvent('click', {
+          latlng: [0, 0],
+        });
+
+        expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
+      });
+    });
+
+    it('popup is removed when existing project layer is removed', () => {
+      spyOn(component.maps[3].instance!, 'closePopup');
+
+      component.maps[3].instance?.openPopup('test', [0, 0]);
+      component.maps[3].existingProjectsLayerRef?.fire('remove');
+
+      expect(component.maps[3].instance?.closePopup).toHaveBeenCalled();
     });
   });
 

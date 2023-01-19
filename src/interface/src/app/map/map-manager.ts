@@ -60,7 +60,10 @@ export class MapManager {
     map: Map,
     mapId: string,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any,
+    createDetailCardCallback: (
+      features: Feature<Geometry, any>[],
+      onInitialized: () => void
+    ) => any,
     getBoundaryLayerGeoJsonCallback: (
       boundaryName: string
     ) => Observable<GeoJSON.GeoJSON>
@@ -183,11 +186,19 @@ export class MapManager {
     if (map.config.showExistingProjectsLayer) {
       map.instance?.addLayer(map.existingProjectsLayerRef);
     }
+
+    // When the existing projects layer is removed, close any popups.
+    map.existingProjectsLayerRef.addEventListener('remove', (_) => {
+      map.instance?.closePopup();
+    });
   }
 
   private setUpEventHandlers(
     map: Map,
-    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+    createDetailCardCallback: (
+      features: Feature<Geometry, any>[],
+      onInitialized: () => void
+    ) => any
   ) {
     this.setUpDrawingHandlers(map.instance!);
     this.setUpClickHandler(map, createDetailCardCallback);
@@ -353,7 +364,10 @@ export class MapManager {
 
   private setUpClickHandler(
     map: Map,
-    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+    createDetailCardCallback: (
+      features: Feature<Geometry, any>[],
+      onInitialized: () => void
+    ) => any
   ) {
     map.instance!.on('click', (e) => {
       if (!e.latlng) return;
@@ -387,16 +401,22 @@ export class MapManager {
       if (intersectingFeatureLayers.length === 0) return;
 
       // Open detail card with all the features present at the clicked point
-      map.instance!.openPopup(
-        createDetailCardCallback(
-          intersectingFeatureLayers
-            .map((featureLayer) => {
-              return (featureLayer as L.Polygon).feature;
-            })
-            .filter((feature) => !!feature) as Feature<Geometry, any>[]
-        ),
-        e.latlng
-      );
+      const popup: L.Popup = L.popup()
+        .setContent(
+          createDetailCardCallback(
+            intersectingFeatureLayers
+              .map((featureLayer) => {
+                return (featureLayer as L.Polygon).feature;
+              })
+              .filter((feature) => !!feature) as Feature<Geometry, any>[],
+            () => {
+              // After popup content is initialized, update its position and open it.
+              popup.update();
+              popup.openOn(map.instance!);
+            }
+          )
+        )
+        .setLatLng(e.latlng);
     });
   }
 
