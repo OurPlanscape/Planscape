@@ -10,6 +10,7 @@ export enum PlanStep {
   Overview,
   CreateScenarios,
   SetPriorities,
+  SetConstraints,
 }
 
 @Component({
