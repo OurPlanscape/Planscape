@@ -584,13 +584,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         // In 2 map view, if the 1st or 2nd map are selected, show maps 1 and 2
         // Otherwise, show maps 3 and 4
         // TODO: 2 map view might go away or the logic here might change
-        if (
+        return (
           Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
           Math.floor(index / 2)
-        ) {
-          return true;
-        }
-        return false;
+        );
     }
   }
 
