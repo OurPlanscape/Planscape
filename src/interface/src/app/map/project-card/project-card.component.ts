@@ -1,4 +1,11 @@
-import { Component, Input, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Feature, Geometry } from 'geojson';
 
 interface Project {
@@ -25,13 +32,18 @@ interface Treatment {
   templateUrl: './project-card.component.html',
   styleUrls: ['./project-card.component.scss'],
 })
-export class ProjectCardComponent implements OnInit {
+export class ProjectCardComponent implements AfterViewInit, OnInit {
   @Input() features!: Feature<Geometry, any>[];
+  @Output() initializedEvent = new EventEmitter<void>();
 
   projects!: Project[];
 
   ngOnInit() {
     this.projects = this.getProjects();
+  }
+
+  ngAfterViewInit(): void {
+    this.initializedEvent.emit();
   }
 
   isProject(feature: Feature<Geometry, any>): boolean {
