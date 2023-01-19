@@ -70,7 +70,7 @@ import { PlanStep } from './../plan.component';
 })
 export class CreateScenariosComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
-  @Input() planningStep: number = 1;
+  @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
   @Output() changeConstraintsEvent = new EventEmitter<Constraints>();
 
