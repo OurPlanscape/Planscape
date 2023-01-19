@@ -1,0 +1,133 @@
+<div class="constraints-panel">
+  <!-- Header -->
+  <div class="flex-row-space-between">
+    <h1>Set Constraints</h1>
+    <mat-chip-list>
+      <mat-chip>
+        <mat-chip-avatar>
+          <mat-icon class="material-symbols-outlined">info</mat-icon>
+        </mat-chip-avatar>
+        Required
+      </mat-chip>
+    </mat-chip-list>
+  </div>
+
+  <!-- Description -->
+  <p class="constraints-description">
+    Constraints will be used to inform project areas and scenario options
+  </p>
+
+  <!-- Form -->
+  <div class="constraints-content">
+    <form class="constraints-form" [formGroup]="constraintsForm">
+      <!-- Budget -->
+      <div formGroupName="budgetForm" required>
+        <label class="form-label required">Budget</label>
+        <mat-radio-group formControlName="optimizeBudget" required>
+          <!-- Custom Budget -->
+            <mat-radio-button [value]="false">
+              <!-- Min -->
+              <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+                <mat-label>min</mat-label>
+                <span matTextPrefix>$ &nbsp;</span>
+                <input [required]="!constraintsForm.controls.budgetForm.controls.optimizeBudget.value" formControlName="minBudget" matInput type="number">
+              </mat-form-field>
+
+              <!-- Max -->
+              <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+                <mat-label>max</mat-label>
+                <span matTextPrefix>$ &nbsp;</span>
+                <input [required]="!constraintsForm.controls.budgetForm.controls.optimizeBudget.value" formControlName="maxBudget" matInput type="number">
+              </mat-form-field>
+            </mat-radio-button>
+
+          <!-- Optimized Budget -->
+            <mat-radio-button [value]="true">
+              Show estimated cost based on most optimized outcome
+            </mat-radio-button>
+          <mat-error *ngIf="constraintsForm.get('optimizeBudget')?.touched">Required</mat-error>
+        </mat-radio-group>
+      </div>
+
+      <div formGroupName="treatmentForm">
+        <!-- Treatment Percentage -->
+        <label class="form-label required">Treatment percentage of total planning area</label>
+        <div class="input-wrapper">
+          <!-- Min -->
+          <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-label>min</mat-label>
+            <input formControlName="minArea" matInput type="number">
+            <span matSuffix>% &nbsp;</span>
+          </mat-form-field>
+
+          <!-- Max -->
+          <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-label>max</mat-label>
+            <input formControlName="maxArea" matInput type="number">
+            <span matSuffix>% &nbsp;</span>
+          </mat-form-field>
+          <div class="subtext">Cannot exceed 90%</div>
+        </div>
+      </div>
+
+      <div formGroupName="projectForm">
+        <!-- Project Size -->
+        <label class="form-label required">Project size</label>
+        <div class="input-wrapper">
+          <!-- Min -->
+          <div>
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+              <mat-label>min</mat-label>
+              <input formControlName="minAcres" matInput type="number">
+              <span matSuffix>ac</span>
+            </mat-form-field>
+
+            <!-- Max -->
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+              <mat-label>max</mat-label>
+              <input formControlName="maxAcres" matInput type="number">
+              <span matSuffix>ac</span>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <!-- Treatment type-->
+      <div class="form-section-treatment-type">
+        <label class="form-label">Treatment type</label>
+        <mat-form-field class="select-field" appearance="outline">
+          <mat-select multiple formControlName="treatmentType" placeholder="None" (selectionChange)="handleTreatmentTypeSelected($event)">
+            <mat-select-trigger>{{ treatmentTypeSelectTriggerText }}</mat-select-trigger>
+            <mat-option *ngFor="let treatment of treatmentTypes" [value]="treatment">{{treatment}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Land ownership-->
+      <div class="form-section-land-ownership">
+        <label class="form-label">Land ownership</label>
+        <mat-form-field class="select-field" appearance="outline">
+          <mat-select multiple formControlName="landOwnership" placeholder="None" (selectionChange)="handleOwnershipSelected($event)">
+            <mat-select-trigger>{{ landOwnershipSelectTriggerText }}</mat-select-trigger>
+            <mat-option *ngFor="let owner of landOwnerships" [value]="owner">{{owner}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Other Constraints-->
+      <div>
+        <label class="form-label">Other Constraints</label>
+          <mat-checkbox formControlName="excludeAreasByDegrees">Exclude areas that are >40 degrees</mat-checkbox>
+          <mat-checkbox formControlName="excludeAreasByDistance" (change)="toggleRequiredExcludeDistance()">Exclude areas off a road by</mat-checkbox>
+        <div>
+          <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-label>distance</mat-label>
+            <input formControlName="excludeDistance" matInput type="number">
+            <span matSuffix>ft.</span>
+          </mat-form-field>
+        </div>
+        <div class="error-text">*Required</div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
@@ -19,6 +19,7 @@ import { PlanTableComponent } from './plan-table/plan-table.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { ProgressPanelComponent } from './progress-panel/progress-panel.component';
+import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -37,12 +38,14 @@ import { ProgressPanelComponent } from './progress-panel/progress-panel.componen
     PlanBottomBarComponent,
     SetPrioritiesComponent,
     CreateScenariosIntroComponent,
+    ConstraintsPanelComponent,
   ],
   imports: [
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
     MaterialModule,
+    ReactiveFormsModule,
     SharedModule,
   ],
 })
