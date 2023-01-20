@@ -20,7 +20,7 @@ from planscape import settings
 RASTER_SCHEMA = 'public'
 RASTER_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
-RASTER_NAME_COLUMN = 'name'v
+RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 @csrf_exempt
@@ -305,8 +305,6 @@ def get_scores(request: HttpRequest) -> HttpResponse:
             plan = get_plan_by_id(request.GET)[0]
             geo = plan.geometry
             reg = plan.region_name.removeprefix('RegionName.').lower()
-
-            extent = geo.extent
 
             ids_to_conditions = {
                 c.id: c.condition_name
