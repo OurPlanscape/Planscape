@@ -169,7 +169,10 @@ export class MapManager {
       style: normalStyle,
       onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
         layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME)
+          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME),
+          {
+            sticky: true,
+          }
         );
         // Exact type of layer (polygon or line) is not known
         if ((layer as any).setStyle) {
@@ -612,7 +615,10 @@ export class MapManager {
       style: normalStyle,
       onEachFeature: (feature, layer) => {
         layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
+          this.popupService.makeDetailsPopup(feature.properties.shape_name),
+          {
+            sticky: true,
+          }
         );
         // Exact type of layer (polygon or line) is not known
         if ((layer as any).setStyle) {
