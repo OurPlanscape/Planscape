@@ -10,11 +10,7 @@ create or replace function get_mean_condition_score(
       param_raster_column text,
       param_raster_proj4 text,
       param_raster_srid integer,
-      param_bbox_xmin numeric,
-      param_bbox_xmax numeric,
-      param_bbox_ymin numeric,
-      param_bbox_ymax numeric,
-      param_bbox_srid integer) returns float
+      param_geom_ewkb bytea) returns float
     immutable
     parallel safe
     cost 1000
@@ -22,10 +18,10 @@ create or replace function get_mean_condition_score(
 as
 $$
 DECLARE
-    var_count integer; var_sql text; var_result raster; var_env geometry; var_env_trans geometry;
+    var_count integer; var_sql text; var_geo geometry; 
     var_raster raster; var_avg float;
 BEGIN  
-    /* Check that there is data for the raster requested */
+    /* Checks that there is data for the raster requested */
     EXECUTE
        'SELECT count(*) As count' ||
         ' FROM ' || quote_ident(param_schema) || '.' || quote_ident(param_table) ||
@@ -37,25 +33,16 @@ BEGIN
        RETURN NULL;
     END IF;
 
-    /* var_env := bounding box as a polygon in the output reference geometry. */
+    /* Parses geometry passed in ewkb format, then transforms it into a raster proj4 CRS and annotates it with the raster SRID. */
     EXECUTE
-       'SELECT ST_MakeEnvelope($1, $2, $3, $4, $5)::geometry'
-    INTO var_env
+       'SELECT ST_SetSRID(ST_Transform(ST_GeomFromEWKB($1), $2), $3)'
+    INTO var_geo
     USING
-      param_bbox_xmin,
-      param_bbox_ymin,
-      param_bbox_xmax,
-      param_bbox_ymax,
-      param_bbox_srid;
-
-    EXECUTE
-        'SELECT ST_SetSRID(ST_Transform($1, $2), $3)'
-    INTO var_env_trans
-    USING
-      var_env,
+      param_geom_ewkb,
       param_raster_proj4,
       param_raster_srid;
 
+    /* Retrieves, rasters with name, param_raster_name, clips them to the input geometry, and merges them. */
     EXECUTE
        'SELECT ST_Union(ST_Clip(' || quote_ident(param_table) || '.' || quote_ident(param_raster_column) || ', $2)) AS raster,' ||
        ' ' || quote_ident(param_table) || '.' || quote_ident(param_raster_name_column) || ' AS name' ||
@@ -66,8 +53,9 @@ BEGIN
     INTO var_raster
     USING
       param_raster_name,
-      var_env_trans;
+      var_geo;
 
+    /* Computes mean score over pixels of the merged raster. */
     EXECUTE 
         'SELECT mean' ||
         ' FROM ST_SummaryStats($1, 1, TRUE)'

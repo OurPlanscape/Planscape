@@ -312,11 +312,7 @@ def get_scores(request: HttpRequest) -> HttpResponse:
                     'get_mean_condition_score',
                     (RASTER_TABLE, RASTER_SCHEMA, raster_name, RASTER_NAME_COLUMN,
                      RASTER_COLUMN, settings.CRS_9822_PROJ4,
-                     settings.CRS_FOR_RASTERS, extent[0],
-                     extent[2],
-                     extent[1],
-                     extent[3],
-                     geo.srid))
+                     settings.CRS_FOR_RASTERS, geo.ewkb))
                 a = list(cursor.fetchone())
                 if a is None or len(a) == 0 or a[0] is None:
                     conditions.append(
