@@ -304,10 +304,10 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         accumulator = RasterPixelAccumulator(geo)
 
         ids_to_conditions = {
-            c.id: c.condition_name
+            c.pk: c.condition_name
             for c in BaseCondition.objects.filter(region_name=reg).all()}
         raster_names_to_ids = {
-            c.raster_name: c.condition_dataset_id
+            c.raster_name: c.condition_dataset.pk
             for c in Condition.objects.filter(
                 condition_dataset_id__in=ids_to_conditions.keys()).filter(
                 is_raw=False).all()}
@@ -326,8 +326,8 @@ def get_scores(request: HttpRequest) -> HttpResponse:
                 conditions.append({'condition': c})
             else:
                 conditions.append(
-                    {'condition': c, 'mean_score': accumulator.stats[c]
-                     ['sum'] / accumulator.stats[c]['count']})
+                    {'condition': str(c), 'mean_score': str(accumulator.stats[c]
+                     ['sum'] / accumulator.stats[c]['count'])})
 
         response = {'conditions': json.dumps(conditions)}
         return HttpResponse(
