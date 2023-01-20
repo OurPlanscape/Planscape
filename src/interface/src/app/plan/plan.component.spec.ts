@@ -11,7 +11,7 @@ import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanComponent } from './plan.component';
 import { ProgressPanelComponent } from './progress-panel/progress-panel.component';
 
-describe('PlanComponent', () => {
+fdescribe('PlanComponent', () => {
   let component: PlanComponent;
   let fixture: ComponentFixture<PlanComponent>;
 

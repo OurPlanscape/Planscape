@@ -10,6 +10,7 @@ export enum PlanStep {
   Overview,
   CreateScenarios,
   SetPriorities,
+  SetConstraints,
 }
 
 @Component({
@@ -20,6 +21,7 @@ export enum PlanStep {
 export class PlanComponent {
   @ViewChild(PlanMapComponent) map!: PlanMapComponent;
 
+  readonly PlanStep = PlanStep;
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
   currentPlanStep: PlanStep = PlanStep.Overview;
