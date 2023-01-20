@@ -69,10 +69,10 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     if geom['type'] == 'Polygon':
         geom['type'] = 'MultiPolygon'
         geom['coordinates'] = [feature['geometry']['coordinates']]
-    geometry = GEOSGeometry(json.dumps(geom))
-    if geometry.geom_type != 'MultiPolygon':
+    actual_geometry = GEOSGeometry(json.dumps(geom))
+    if actual_geometry.geom_type != 'MultiPolygon':
         raise ValueError("Could not parse geometry")
-    return geometry
+    return actual_geometry
 
 
 @csrf_exempt
@@ -124,13 +124,6 @@ def get_plan_by_id(params: QueryDict):
     return (Plan.objects.filter(id=int(plan_id))
                         .annotate(projects=Count('project', distinct=True))
                         .annotate(scenarios=Count('project__scenario')))
-
-
-def get_plans_by_owner(params: QueryDict):
-    owner_id = params.get('owner')
-    return (Plan.objects.filter(owner=owner_id)
-            .annotate(projects=Count('project', distinct=True))
-            .annotate(scenarios=Count('project__scenario')))
 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
@@ -311,10 +304,10 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         accumulator = RasterPixelAccumulator(geo)
 
         ids_to_conditions = {
-            c.id: c.condition_name
+            c.pk: c.condition_name
             for c in BaseCondition.objects.filter(region_name=reg).all()}
         raster_names_to_ids = {
-            c.raster_name: c.condition_dataset_id
+            c.raster_name: c.condition_dataset.pk
             for c in Condition.objects.filter(
                 condition_dataset_id__in=ids_to_conditions.keys()).filter(
                 is_raw=False).all()}
@@ -333,8 +326,8 @@ def get_scores(request: HttpRequest) -> HttpResponse:
                 conditions.append({'condition': c})
             else:
                 conditions.append(
-                    {'condition': c, 'mean_score': accumulator.stats[c]
-                     ['sum'] / accumulator.stats[c]['count']})
+                    {'condition': str(c), 'mean_score': str(accumulator.stats[c]
+                     ['sum'] / accumulator.stats[c]['count'])})
 
         response = {'conditions': json.dumps(conditions)}
         return HttpResponse(
