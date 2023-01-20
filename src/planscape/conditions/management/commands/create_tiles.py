@@ -6,25 +6,34 @@ from config.conditions_config import PillarConfig
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 
-ZOOM_LEVELS = '7-13'
-
 
 class Command(BaseCommand):
-    help = 'Converts a directory of rasters specified by config/conditions.json into tiles.'
+    help = ('Converts a directory of rasters <path>/data/... specified in '
+            'config/conditions.json into tile in <path/tiles/...')
 
     def add_arguments(self, parser):
-        parser.add_argument('data_directory', nargs='?', type=str)
+        parser.add_argument('data_directory', nargs='?', type=str,
+                            help='Location of the raster data.')
         parser.add_argument('--zoom_levels', nargs='?',
-                            type=str, default=ZOOM_LEVELS)
+                            type=str, default='7-13',
+                            help='Zoom levels in the output, e.g., 7-13.')
         parser.add_argument('--region_name', nargs='?',
-                            type=str, default='sierra_cascade_inyo')
+                            type=str, default='sierra_cascade_inyo',
+                            choices=['sierra_cascade_inyo', 'southern_california', 'coastal_inland',
+                                     'north_coast_inland'],
+                            help='Region for which to generate tiles.')
         parser.add_argument('--dry_run',
-                            type=bool, default=True, action=argparse.BooleanOptionalAction)
-        parser.add_argument('--colormap', nargs='?', type=str, default='turbo')
+                            type=bool, default=True, action=argparse.BooleanOptionalAction,
+                            help='Show the commands to be run but do not run them.')
+        parser.add_argument('--colormap', nargs='?', type=str, default='turbo',
+                            choices=['turbo', 'viridis'], help='Colormap used for the tiles.')
+        parser.add_argument('--force',
+                            type=bool, default=False, action=argparse.BooleanOptionalAction,
+                            help='Force overwrite of existing tiles output.')
 
     def _convert_tif_to_tiles(self, dry_run: bool, data_directory: str, filepath: str | None,
                               normalized: bool, invert: bool, colormap: str,
-                              zoom_levels: str) -> None:
+                              zoom_levels: str, force: bool) -> None:
         """
         Converts
             <data_directory>/data/<filepath>.tif (if normalized is false), or
@@ -71,7 +80,7 @@ class Command(BaseCommand):
                       '--xyz', '-z', zoom_levels, gdaldem_file, output_file]
         self.stdout.write('-----------------------')
         self.stdout.write(output_file)
-        if os.path.exists(output_file):
+        if os.path.exists(output_file) and not force:
             self.stdout.write('SKIPPING: ' + output_file)
             return
         self.stdout.write('Converting: ' + filepath)
@@ -92,6 +101,7 @@ class Command(BaseCommand):
         region_name = options['region_name']
         colormap = options['colormap']
         zoom_levels = options['zoom_levels']
+        force = options['force']
 
         config_path = os.path.join(settings.BASE_DIR, 'config/conditions.json')
         config = PillarConfig(config_path)
@@ -105,20 +115,20 @@ class Command(BaseCommand):
             self._convert_tif_to_tiles(dry_run, data_directory,
                                        pillar.get('filepath'),
                                        normalized=True, invert=False, colormap=colormap,
-                                       zoom_levels=zoom_levels)
+                                       zoom_levels=zoom_levels, force=force)
             for element in config.get_elements(pillar):
                 self._convert_tif_to_tiles(dry_run, data_directory,
                                            element.get('filepath'),
                                            normalized=True, invert=False, colormap=colormap,
-                                           zoom_levels=zoom_levels)
+                                           zoom_levels=zoom_levels, force=force)
                 for metric in config.get_metrics(element):
                     self._convert_tif_to_tiles(dry_run, data_directory,
                                                metric.get('filepath'),
                                                normalized=True, invert=False, colormap=colormap,
-                                               zoom_levels=zoom_levels)
+                                               zoom_levels=zoom_levels, force=force)
                     self._convert_tif_to_tiles(dry_run, data_directory,
                                                metric.get('filepath'),
                                                normalized=False,
                                                invert=metric.get(
                                                    'invert_raw', False),
-                                               colormap=colormap, zoom_levels=zoom_levels)
+                                               colormap=colormap, zoom_levels=zoom_levels, force=force)
