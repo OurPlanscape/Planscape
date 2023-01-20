@@ -74,4 +74,4 @@ class Migration(migrations.Migration):
       ('conditions', '0002_get_rast_tile')
     ]
 
-    operations = [migrations.RunSQL(sql=SQL, reverse_sql='DROP FUNCTION IF EXISTS get_raster_for_extent;')]
+    operations = [migrations.RunSQL(sql=SQL, reverse_sql='DROP FUNCTION IF EXISTS get_mean_condition_score;')]
