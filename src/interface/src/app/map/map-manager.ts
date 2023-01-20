@@ -30,6 +30,7 @@ export class MapManager {
   boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
+  isInDrawingMode: boolean = false;
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -59,7 +60,10 @@ export class MapManager {
     map: Map,
     mapId: string,
     existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
-    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any,
+    createDetailCardCallback: (
+      features: Feature<Geometry, any>[],
+      onInitialized: () => void
+    ) => any,
     getBoundaryLayerGeoJsonCallback: (
       boundaryName: string
     ) => Observable<GeoJSON.GeoJSON>
@@ -78,6 +82,7 @@ export class MapManager {
       layers: [map.baseLayerRef],
       zoomControl: false,
       pmIgnore: false,
+      scrollWheelZoom: false,
     });
 
     // Add zoom controls to bottom right corner
@@ -163,9 +168,11 @@ export class MapManager {
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
       style: normalStyle,
       onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        //layer.bindPopup(createDetailCardCallback(feature));
         layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME)
+          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME),
+          {
+            sticky: true,
+          }
         );
         // Exact type of layer (polygon or line) is not known
         if ((layer as any).setStyle) {
@@ -182,11 +189,19 @@ export class MapManager {
     if (map.config.showExistingProjectsLayer) {
       map.instance?.addLayer(map.existingProjectsLayerRef);
     }
+
+    // When the existing projects layer is removed, close any popups.
+    map.existingProjectsLayerRef.addEventListener('remove', (_) => {
+      map.instance?.closePopup();
+    });
   }
 
   private setUpEventHandlers(
     map: Map,
-    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+    createDetailCardCallback: (
+      features: Feature<Geometry, any>[],
+      onInitialized: () => void
+    ) => any
   ) {
     this.setUpDrawingHandlers(map.instance!);
     this.setUpClickHandler(map, createDetailCardCallback);
@@ -271,6 +286,7 @@ export class MapManager {
 
     /** Handles the process of drawing the polygon. */
     map.on('pm:drawstart', (event) => {
+      this.isInDrawingMode = true;
       event.workingLayer.on('pm:vertexadded', ({ workingLayer, latlng }) => {
         // Check if the vertex overlaps with an existing polygon
         let overlaps = false;
@@ -291,6 +307,11 @@ export class MapManager {
           return;
         }
       });
+    });
+
+    /** Handles exit from drawing mode. */
+    map.on('pm:drawend', (event) => {
+      this.isInDrawingMode = false;
     });
 
     /** Handles a polygon removal event. */
@@ -346,50 +367,59 @@ export class MapManager {
 
   private setUpClickHandler(
     map: Map,
-    createDetailCardCallback: (features: Feature<Geometry, any>[]) => any
+    createDetailCardCallback: (
+      features: Feature<Geometry, any>[],
+      onInitialized: () => void
+    ) => any
   ) {
     map.instance!.on('click', (e) => {
       if (!e.latlng) return;
+      if (!map.existingProjectsLayerRef) return;
+
+      // if the user is in drawing mode, don't open popups
+      if (this.isInDrawingMode) return;
 
       const intersectingFeatureLayers: L.Polygon[] = [];
 
-      map.instance!.eachLayer((layer) => {
-        // Loop through all GeoJSON layers except the region boundaries
-        if (layer instanceof L.GeoJSON && layer !== map.regionLayerRef) {
-          (layer as L.GeoJSON).eachLayer((featureLayer) => {
-            if (featureLayer instanceof L.Polygon && featureLayer.feature) {
-              const polygon = featureLayer as L.Polygon;
-              // If feature contains the point that was clicked, add to list
-              if (
-                booleanIntersects(
-                  point(L.GeoJSON.latLngToCoords(e.latlng)),
-                  polygon.feature!
-                ) ||
-                booleanWithin(
-                  point(L.GeoJSON.latLngToCoords(e.latlng)),
-                  polygon.feature!
-                )
-              ) {
-                intersectingFeatureLayers.push(polygon);
-              }
-            }
-          });
+      // Get all existing project polygons at the clicked point
+      (map.existingProjectsLayerRef as L.GeoJSON).eachLayer((featureLayer) => {
+        if (featureLayer instanceof L.Polygon && featureLayer.feature) {
+          const polygon = featureLayer as L.Polygon;
+          // If feature contains the point that was clicked, add to list
+          if (
+            booleanIntersects(
+              point(L.GeoJSON.latLngToCoords(e.latlng)),
+              polygon.feature!
+            ) ||
+            booleanWithin(
+              point(L.GeoJSON.latLngToCoords(e.latlng)),
+              polygon.feature!
+            )
+          ) {
+            intersectingFeatureLayers.push(polygon);
+          }
         }
       });
 
       if (intersectingFeatureLayers.length === 0) return;
 
       // Open detail card with all the features present at the clicked point
-      map.instance!.openPopup(
-        createDetailCardCallback(
-          intersectingFeatureLayers
-            .map((featureLayer) => {
-              return (featureLayer as L.Polygon).feature;
-            })
-            .filter((feature) => !!feature) as Feature<Geometry, any>[]
-        ),
-        e.latlng
-      );
+      const popup: L.Popup = L.popup()
+        .setContent(
+          createDetailCardCallback(
+            intersectingFeatureLayers
+              .map((featureLayer) => {
+                return (featureLayer as L.Polygon).feature;
+              })
+              .filter((feature) => !!feature) as Feature<Geometry, any>[],
+            () => {
+              // After popup content is initialized, update its position and open it.
+              popup.update();
+              popup.openOn(map.instance!);
+            }
+          )
+        )
+        .setLatLng(e.latlng);
     });
   }
 
@@ -573,23 +603,22 @@ export class MapManager {
   private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
     const normalStyle: L.PathOptions = {
       weight: 1,
-      opacity: 0.2,
       color: '#0000ff',
-      fillOpacity: 0.2,
-      fillColor: '#0000ff',
+      fillOpacity: 0,
     };
     const hoverStyle: L.PathOptions = {
-      weight: 3,
-      opacity: 0.5,
+      weight: 5,
       color: '#0000ff',
-      fillOpacity: 0.5,
-      fillColor: '#0000ff',
+      fillOpacity: 0,
     };
     return L.geoJSON(boundary, {
       style: normalStyle,
       onEachFeature: (feature, layer) => {
         layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name)
+          this.popupService.makeDetailsPopup(feature.properties.shape_name),
+          {
+            sticky: true,
+          }
         );
         // Exact type of layer (polygon or line) is not known
         if ((layer as any).setStyle) {
@@ -634,7 +663,7 @@ export class MapManager {
       {
         minZoom: 7,
         maxZoom: 13,
-        opacity: 0.7
+        opacity: 0.7,
       }
     );
 
