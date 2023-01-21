@@ -9,7 +9,6 @@ from django.db import connection
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from django.shortcuts import get_list_or_404
 from django.views.decorators.csrf import csrf_exempt
 from plan.models import Plan, Project, ProjectArea
 from plan.serializers import (
@@ -122,12 +121,15 @@ def delete(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
-def get_plan_by_id(params: QueryDict):
+def get_plan_by_id(user, params: QueryDict):
     assert isinstance(params['id'], str)
     plan_id = params.get('id', "0")
-    return (Plan.objects.filter(id=int(plan_id))
-                        .annotate(projects=Count('project', distinct=True))
-                        .annotate(scenarios=Count('project__scenario')))
+
+    plan = Plan.objects.filter(id=int(plan_id)).annotate(projects=Count(
+        'project', distinct=True)).annotate(scenarios=Count('project__scenario'))
+    if plan[0].owner != user:
+        raise ValueError("You do not have permission to view this plan.")
+    return plan[0]
 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
@@ -156,9 +158,15 @@ def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
+        user = None
+        if request.user.is_authenticated:
+            user = request.user
+        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+
         return JsonResponse(
             _serialize_plan(
-                get_plan_by_id(request.GET)[0],
+                get_plan_by_id(user, request.GET),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -232,8 +240,18 @@ def get_project(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['id'], str)
         project_id = request.GET.get('id', "0")
-        response = get_list_or_404(Project, id=project_id)
-        return JsonResponse(ProjectSerializer(response[0]).data)
+
+        user = None
+        if request.user.is_authenticated:
+            user = request.user
+        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+
+        project = Project.objects.get(id=project_id)
+        if project.owner != user:
+            raise ValueError(
+                "You do not have permission to view this project.")
+        return JsonResponse(ProjectSerializer(project).data)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -288,7 +306,18 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['project_id'], str)
         project_id = request.GET.get('project_id', "0")
-        project_exists = get_list_or_404(Project, id=project_id)
+        project_exists = Project.objects.get(id=project_id)
+
+        user = None
+        if request.user.is_authenticated:
+            user = request.user
+        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+            raise ValueError("Must be logged in")
+
+        if project_exists.owner != user:
+            raise ValueError(
+                "You do not have permission to view this project.")
+
         project_areas = ProjectArea.objects.filter(project=project_id)
         response = {}
         for area in project_areas:
