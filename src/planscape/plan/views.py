@@ -1,21 +1,28 @@
 import datetime
 import json
 
-from base.region_name import (RegionName, display_name_to_region,
+from base.region_name import (display_name_to_region,
                               region_to_display_name)
-from conditions.models import BaseCondition, Condition, ConditionRaster
-from django.contrib.gis.geos import GEOSGeometry, Polygon
+from conditions.models import BaseCondition, Condition
+from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+from django.views.decorators.csrf import csrf_exempt
 from plan.models import Plan, Project, ProjectArea
-from plan.raster_pixel_accumulator import RasterPixelAccumulator
 from plan.serializers import (
     PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
 from planscape import settings
-from conditions.models import BaseCondition, Condition
 
+# Name of the table and column from models.py.
+RASTER_SCHEMA = 'public'
+RASTER_TABLE = 'conditions_conditionraster'
+RASTER_COLUMN = 'raster'
+RASTER_NAME_COLUMN = 'name'
 
+# TODO: remove csrf_exempt decorators when logged in users are required.
+@csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -71,6 +78,7 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     return actual_geometry
 
 
+@csrf_exempt
 def delete(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -182,6 +190,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
 def create_project(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -247,6 +256,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -320,42 +330,39 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
 
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
-        plan = get_plan_by_id(request.GET)
-        geo = plan.geometry
-        reg = plan.region_name.removeprefix('RegionName.').lower()
+        with connection.cursor() as cursor:
+            plan = get_plan_by_id(request.GET)[0]
+            geo = plan.geometry
+            reg = plan.region_name.removeprefix('RegionName.').lower()
 
-        accumulator = RasterPixelAccumulator(geo)
+            ids_to_conditions = {
+                c.id: c.condition_name
+                for c in BaseCondition.objects.filter(region_name=reg).all()}
+            raster_names_to_ids = {
+                c.raster_name: c.condition_dataset_id
+                for c in Condition.objects.filter(
+                    condition_dataset_id__in=ids_to_conditions.keys()).filter(
+                    is_raw=False).all()}
 
-        ids_to_conditions = {
-            c.id: c.condition_name
-            for c in BaseCondition.objects.filter(region_name=reg).all()}
-        raster_names_to_ids = {
-            c.raster_name: c.condition_dataset_id
-            for c in Condition.objects.filter(
-                condition_dataset_id__in=ids_to_conditions.keys()).filter(
-                is_raw=False).all()}
+            conditions = []
+            for raster_name in raster_names_to_ids.keys():
+                cursor.callproc(
+                    'get_mean_condition_score',
+                    (RASTER_TABLE, RASTER_SCHEMA, raster_name, RASTER_NAME_COLUMN,
+                     RASTER_COLUMN, settings.CRS_9822_PROJ4,
+                     settings.CRS_FOR_RASTERS, geo.ewkb))
+                a = list(cursor.fetchone())
+                if a is None or len(a) == 0 or a[0] is None:
+                    conditions.append(
+                        {'condition': ids_to_conditions[raster_names_to_ids[raster_name]]})
+                else:
+                    conditions.append(
+                        {'condition': ids_to_conditions[raster_names_to_ids[raster_name]], 'mean_score': a[0]})
 
-        for r in ConditionRaster.objects.filter(
-                name__in=raster_names_to_ids.keys()).filter(
-                raster__bboverlaps=accumulator.geo).all():
-            id = raster_names_to_ids[r.name]
-            condition = ids_to_conditions[id]
-            accumulator.process_raster(
-                r.raster, condition)
-
-        conditions = []
-        for c in accumulator.stats.keys():
-            if accumulator.stats[c]['count'] == 0:
-                conditions.append({'condition': c})
-            else:
-                conditions.append(
-                    {'condition': c, 'mean_score': accumulator.stats[c]
-                     ['sum'] / accumulator.stats[c]['count']})
-
-        response = {'conditions': json.dumps(conditions)}
-        return HttpResponse(
-            JsonResponse(response),
-            content_type='application/json')
+            response = {'conditions': conditions}
+            return HttpResponse(
+                JsonResponse(response),
+                content_type='application/json')
 
     except Exception as e:
         return HttpResponseBadRequest("failed score fetch: " + str(e))
