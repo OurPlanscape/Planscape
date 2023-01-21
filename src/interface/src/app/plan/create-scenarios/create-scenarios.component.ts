@@ -15,6 +15,8 @@ import {
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan } from 'src/app/types';
+import { Constraints } from './constraints-panel/constraints-panel.component';
+import { PlanStep } from './../plan.component';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -26,7 +28,8 @@ import { Plan } from 'src/app/types';
         'expanded',
         style({
           backgroundColor: 'white',
-          width: '700px',
+          padding: '*',
+          maxWidth: '700px',
         })
       ),
       state(
@@ -67,8 +70,10 @@ import { Plan } from 'src/app/types';
 })
 export class CreateScenariosComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
-  @Input() planningStep: number = 1;
+  @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
+  @Output() changeConstraintsEvent = new EventEmitter<Constraints>();
 
+  readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
 }

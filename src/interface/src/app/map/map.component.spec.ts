@@ -353,6 +353,26 @@ describe('MapComponent', () => {
       });
     });
 
+    it('row containing selected map height is 100% in 2-map view', () => {
+      component.mapViewOptions$.getValue().numVisibleMaps = 2;
+
+      [0, 1].forEach((selectedMapIndex: number) => {
+        component.mapViewOptions$.getValue().selectedMapIndex =
+          selectedMapIndex;
+
+        expect(component.mapRowHeight(0)).toEqual('100%');
+        expect(component.mapRowHeight(1)).toEqual('0%');
+      });
+
+      [2, 3].forEach((selectedMapIndex: number) => {
+        component.mapViewOptions$.getValue().selectedMapIndex =
+          selectedMapIndex;
+
+        expect(component.mapRowHeight(0)).toEqual('0%');
+        expect(component.mapRowHeight(1)).toEqual('100%');
+      });
+    });
+
     it('all row heights are 50% in 4-map view', () => {
       component.mapViewOptions$.getValue().numVisibleMaps = 4;
 
