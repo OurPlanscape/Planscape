@@ -8,7 +8,6 @@ from django.contrib.gis.geos import GEOSGeometry, Polygon
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from django.shortcuts import get_list_or_404
 from plan.models import Plan, Project, ProjectArea
 from plan.raster_pixel_accumulator import RasterPixelAccumulator
 from plan.serializers import (
