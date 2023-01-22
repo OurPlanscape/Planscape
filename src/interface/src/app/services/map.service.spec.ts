@@ -54,7 +54,7 @@ describe('MapService', () => {
   });
 
   describe('getBoundaryShapes', () => {
-    it('makes request to backend', () => {
+    it('gets shapes from the assets', () => {
       service
         .getBoundaryShapes('huc12', Region.SIERRA_NEVADA)
         .subscribe((res) => {
@@ -62,8 +62,23 @@ describe('MapService', () => {
         });
 
       const req = httpTestingController.expectOne(
+          'assets/geojson/sierra_cascade_inyo/huc12.geojson'
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(fakeGeoJson);
+      httpTestingController.verify();
+    });
+
+    it('makes request to backend if unknown boundary shape', () => {
+      service
+        .getBoundaryShapes('huc12_fake', Region.SIERRA_NEVADA)
+        .subscribe((res) => {
+          expect(res).toEqual(fakeGeoJson);
+        });
+
+      const req = httpTestingController.expectOne(
         BackendConstants.END_POINT +
-          '/boundary/boundary_details/?boundary_name=huc12&region_name=sierra_cascade_inyo'
+          '/boundary/boundary_details/?boundary_name=huc12_fake&region_name=sierra_cascade_inyo'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);

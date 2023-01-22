@@ -15,11 +15,13 @@ import { BackendConstants } from './../../backend-constants';
 export class PlanMapComponent implements AfterViewInit, OnDestroy {
   @Input() plan = new BehaviorSubject<Plan | null>(null);
   @Input() mapId?: string;
+  /** The amount of padding in the top left corner when the map fits the plan boundaries. */
+  @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
-  tileLayer: L.TileLayer.WMS | undefined;
+  tileLayer: L.TileLayer | undefined;
 
   constructor(private router: Router) {}
 
@@ -32,8 +34,15 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
+      scrollWheelZoom: false,
     });
     this.map.attributionControl.setPosition('topright');
+
+    // Add zoom controls to bottom right corner
+    const zoomControl = L.control.zoom({
+      position: 'bottomright',
+    });
+    zoomControl.addTo(this.map);
 
     this.plan
       .pipe(
@@ -64,7 +73,9 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
         weight: 3,
       },
     }).addTo(this.map);
-    this.map.fitBounds(this.drawingLayer.getBounds());
+    this.map.fitBounds(this.drawingLayer.getBounds(), {
+      paddingTopLeft: this.mapPadding,
+    });
   }
 
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
@@ -85,21 +96,19 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /** Display rendered tiles for the provided condition filepath (or, if the filepath
+   *  string is empty, remove rendered tiles). */
   setCondition(filepath: string): void {
-    if (filepath?.length === 0 || !filepath) return;
-    filepath = filepath.substring(filepath.lastIndexOf('/') + 1) + '.tif';
-
     this.tileLayer?.remove();
 
-    this.tileLayer = L.tileLayer.wms(
-      BackendConstants.END_POINT + '/conditions/wms',
+    if (filepath?.length === 0 || !filepath) return;
+
+    this.tileLayer = L.tileLayer(
+      BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
       {
-        crs: L.CRS.EPSG4326,
         minZoom: 7,
-        maxZoom: 15,
-        format: 'image/png',
+        maxZoom: 13,
         opacity: 0.7,
-        layers: filepath,
       }
     );
 
