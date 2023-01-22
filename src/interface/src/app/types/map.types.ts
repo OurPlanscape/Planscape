@@ -49,7 +49,7 @@ export function defaultMapConfig(): MapConfig {
 export function defaultMapViewOptions(): MapViewOptions {
   return {
     selectedMapIndex: 0,
-    numVisibleMaps: 2,
+    numVisibleMaps: 4,
     zoom: 9,
     center: [38.646, -120.548],
   };

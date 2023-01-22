@@ -1,6 +1,7 @@
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
 from typing import TypedDict
+from plan.models import Project, ProjectArea
 
 import json
 
@@ -70,10 +71,18 @@ class ForsysProjectAreaRankingRequestParams():
             self.project_areas = self._get_default_project_areas()
 
     def _read_db_params(self, params: QueryDict) -> None:
-        # TODO: add db read logic.
-        raise Exception(
-            'WIP. ' +
-            'Please set set_all_params_via_url_with_default_values to true.')
+        try:
+            project_id = params['project_id']
+            project = Project.objects.get(id=project_id)
+            project_areas = ProjectArea.objects.filter(project=project_id)
+            self.region = project.plan.region_name
+            self.priorities = list(
+                project.priorities.values_list('id', flat=True))
+            self.project_areas = {}
+            for area in project_areas:
+                self.project_areas[area.pk] = area.project_area
+        except Exception as e:
+            raise Exception("Ill-formed request: " + str(e))
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
         srid = 4269
