@@ -1,5 +1,4 @@
 from django.contrib.gis.db import models
-from plan.models import Plan, ProjectArea
 from planscape.settings import CRS_FOR_RASTERS
 
 class BaseCondition(models.Model):
@@ -70,19 +69,3 @@ class ConditionRaster(models.Model):
 
     # A tile in the raster.
     raster = models.RasterField(null=True, srid=CRS_FOR_RASTERS)
-
-class ConditionScores(models.Model):
-    """
-    Condition scores are computed from statistics aggregated across all relevant stands
-    within a project area or planning area.
-    """
-    # Either plan or project should be present.
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)
-    project_area = models.ForeignKey(
-        ProjectArea, on_delete=models.CASCADE, null=True)
-    
-    # Condition
-    condition = models.ForeignKey(
-        Condition, on_delete=models.CASCADE, null=False)
-
-    mean_score = models.FloatField(null=False)
