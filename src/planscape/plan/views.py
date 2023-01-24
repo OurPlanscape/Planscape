@@ -4,6 +4,7 @@ import json
 from base.region_name import (display_name_to_region,
                               region_to_display_name)
 from conditions.models import BaseCondition, Condition
+from django.contrib.auth.models import AnonymousUser
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from django.db.models import Count
@@ -22,15 +23,12 @@ RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
+
+
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
-        # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = get_user(request)
 
         # Get the name of the plan.
         body = json.loads(request.body)
@@ -82,11 +80,7 @@ def _convert_polygon_to_multipolygon(geometry: dict):
 def delete(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = get_user(request)
         owner_id = None if owner is None else owner.pk
 
         # Get the plans
@@ -123,13 +117,29 @@ def delete(request: HttpRequest) -> HttpResponse:
 
 def get_plan_by_id(user, params: QueryDict):
     assert isinstance(params['id'], str)
-    plan_id = params.get('id', "0")
+    plan_id = int(params.get('id', "0"))
 
-    plan = Plan.objects.filter(id=int(plan_id)).annotate(projects=Count(
-        'project', distinct=True)).annotate(scenarios=Count('project__scenario'))
-    if plan[0].owner != user:
-        raise ValueError("You do not have permission to view this plan.")
-    return plan[0]
+    plan = Plan.objects.annotate(
+        projects=Count('project', distinct=True)).annotate(
+        scenarios=Count('project__scenario')).get(
+        id=plan_id)
+
+    if plan.public:
+        return plan
+
+    if user is None:
+        if plan.owner is None and settings.PLANSCAPE_GUEST_CAN_SAVE:
+            return plan
+    else:
+        if plan.owner == user:
+            return plan
+
+    # Situations that raise a permission error:
+    # - !public, no user, no owner, !PLANSCAPE_GUEST_CAN_SAVE
+    # - !public, no user, an owner exists
+    # - !public, user, no owner
+    # - !public, user, a different owner
+    raise ValueError("You do not have permission to view this plan.")
 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
@@ -156,13 +166,18 @@ def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
     return result
 
 
+def get_user(request: HttpRequest) -> str:
+    user = None
+    if request.user.is_authenticated:
+        user = request.user
+    if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+        raise ValueError("Must be logged in")
+    return user
+
+
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        user = None
-        if request.user.is_authenticated:
-            user = request.user
-        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        user = request.user if request.user.is_authenticated else None
 
         return JsonResponse(
             _serialize_plan(
@@ -194,11 +209,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
 def create_project(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = get_user(request)
 
         # Get the plan_id associated with the project.
         body = json.loads(request.body)
@@ -241,11 +252,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
         assert isinstance(request.GET['id'], str)
         project_id = request.GET.get('id', "0")
 
-        user = None
-        if request.user.is_authenticated:
-            user = request.user
-        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        user = get_user(request)
 
         project = Project.objects.get(id=project_id)
         if project.owner != user:
@@ -260,11 +267,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = get_user(request)
 
         body = json.loads(request.body)
 
@@ -308,11 +311,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         project_id = request.GET.get('project_id', "0")
         project_exists = Project.objects.get(id=project_id)
 
-        user = None
-        if request.user.is_authenticated:
-            user = request.user
-        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        user = get_user(request)
 
         if project_exists.owner != user:
             raise ValueError(
@@ -331,7 +330,8 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         with connection.cursor() as cursor:
-            plan = get_plan_by_id(request.GET)[0]
+            user = get_user(request)
+            plan = get_plan_by_id(user, request.GET)
             geo = plan.geometry
             reg = plan.region_name.removeprefix('RegionName.').lower()
 
