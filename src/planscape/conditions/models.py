@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from planscape.settings import CRS_FOR_RASTERS
 
+
 class BaseCondition(models.Model):
     """
     A BaseCondition has a name and level, and an optional display/region name and level.
