@@ -1,6 +1,6 @@
 from django.contrib.gis.db import models
+from plan.models import Plan, ProjectArea
 from planscape.settings import CRS_FOR_RASTERS
-
 
 class BaseCondition(models.Model):
     """
