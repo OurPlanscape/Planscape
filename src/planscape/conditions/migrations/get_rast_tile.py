@@ -1,5 +1,7 @@
-from django.db import migrations
 from typing import Tuple
+
+from django.contrib.postgres.operations import CreateExtension
+from django.db import migrations
 
 SQL = """
 create or replace function get_rast_tile(
@@ -118,4 +120,8 @@ class Migration(migrations.Migration):
     dependencies: list[Tuple[str, str]] = [
     ]
 
-    operations = [migrations.RunSQL(SQL)]
+    operations = [
+      CreateExtension('postgis'),
+      CreateExtension('postgis_raster'),
+      migrations.RunSQL(SQL)
+    ]
