@@ -8,7 +8,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ConstraintsPanelComponent } from './constraints-panel.component';
 import { MaterialModule } from 'src/app/material/material.module';
 
-fdescribe('ConstraintsPanelComponent', () => {
+describe('ConstraintsPanelComponent', () => {
   let component: ConstraintsPanelComponent;
   let fixture: ComponentFixture<ConstraintsPanelComponent>;
   let loader: HarnessLoader;

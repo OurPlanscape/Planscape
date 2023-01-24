@@ -23,8 +23,6 @@ RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
-
-
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
@@ -117,12 +115,10 @@ def delete(request: HttpRequest) -> HttpResponse:
 
 def get_plan_by_id(user, params: QueryDict):
     assert isinstance(params['id'], str)
-    plan_id = int(params.get('id', "0"))
+    plan_id = params.get('id', "0")
 
-    plan = Plan.objects.annotate(
-        projects=Count('project', distinct=True)).annotate(
-        scenarios=Count('project__scenario')).get(
-        id=plan_id)
+    plan = Plan.objects.annotate(projects=Count(
+        'project', distinct=True)).annotate(scenarios=Count('project__scenario')).get(id=int(plan_id))
 
     if plan.public:
         return plan

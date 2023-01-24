@@ -348,6 +348,12 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'public')
 
+    def test_get_nonexistent_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_plan'), {'id': 25},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
     def test_get_plan_bad_stored_region(self):
         self.client.force_login(self.user)
         plan = Plan.objects.create(
