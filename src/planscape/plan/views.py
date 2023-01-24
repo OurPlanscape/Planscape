@@ -330,7 +330,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         with connection.cursor() as cursor:
-            user = get_user(request)
+            user = request.user if request.user.is_authenticated else None
             plan = get_plan_by_id(user, request.GET)
             geo = plan.geometry
             reg = plan.region_name.removeprefix('RegionName.').lower()
