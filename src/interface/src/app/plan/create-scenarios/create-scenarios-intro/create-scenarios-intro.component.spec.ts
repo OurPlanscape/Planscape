@@ -1,9 +1,12 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
+import { MaterialModule } from 'src/app/material/material.module';
 import { colormapConfigToLegend } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
+import { SharedModule } from './../../../shared/shared.module';
 import { ColormapConfig } from './../../../types/legend.types';
 import { CreateScenariosIntroComponent } from './create-scenarios-intro.component';
 
@@ -27,7 +30,12 @@ describe('CreateScenariosIntroComponent', () => {
       getColormap: of(fakeColormapConfig),
     });
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [
+        BrowserAnimationsModule,
+        HttpClientTestingModule,
+        MaterialModule,
+        SharedModule,
+      ],
       declarations: [CreateScenariosIntroComponent],
       providers: [{ provide: MapService, useValue: fakeMapService }],
     }).compileComponents();
