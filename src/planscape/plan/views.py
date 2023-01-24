@@ -131,6 +131,12 @@ def get_plan_by_id(user, params: QueryDict):
         raise ValueError("You do not have permission to view this plan.")
     return plan[0]
 
+def _get_user(request: HttpRequest) -> HttpResponse:
+    user = None
+    if request.user.is_authenticated:
+        user = request.user
+    if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+        raise ValueError("Must be logged in") 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
     """
@@ -331,7 +337,8 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         with connection.cursor() as cursor:
-            plan = get_plan_by_id(request.GET)[0]
+            user = _get_user(request)
+            plan = get_plan_by_id(user, request.GET)
             geo = plan.geometry
             reg = plan.region_name.removeprefix('RegionName.').lower()
 
