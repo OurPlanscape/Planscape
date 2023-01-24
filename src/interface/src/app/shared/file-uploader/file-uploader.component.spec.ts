@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
+import { MaterialModule } from 'src/app/material/material.module';
 
 import { FileUploaderComponent } from './file-uploader.component';
 
@@ -9,9 +10,9 @@ describe('FileUploaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FileUploaderComponent ]
-    })
-    .compileComponents();
+      imports: [MaterialModule],
+      declarations: [FileUploaderComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FileUploaderComponent);
     component = fixture.componentInstance;
@@ -21,14 +22,14 @@ describe('FileUploaderComponent', () => {
   it('should update the file model when a file is loaded', () => {
     const fileList = new DataTransfer();
     fileList.items.add(new File([''], 'test-file.zip'));
-    const inputDebugEl  = fixture.debugElement.query(By.css('input[type=file]'));
+    const inputDebugEl = fixture.debugElement.query(By.css('input[type=file]'));
     inputDebugEl.nativeElement.files = fileList.files;
 
     inputDebugEl.nativeElement.dispatchEvent(new InputEvent('change'));
     fixture.detectChanges();
 
-    expect(component.file).toBeTruthy()
-    expect(component.fileName).toBe('test-file.zip')
+    expect(component.file).toBeTruthy();
+    expect(component.fileName).toBe('test-file.zip');
   });
 
   it('file upload event should emit the file', () => {
@@ -42,5 +43,5 @@ describe('FileUploaderComponent', () => {
 
     expect(component.onFileUploaded).toHaveBeenCalled();
     expect(component.fileEvent.emit).toHaveBeenCalled();
-});
+  });
 });
