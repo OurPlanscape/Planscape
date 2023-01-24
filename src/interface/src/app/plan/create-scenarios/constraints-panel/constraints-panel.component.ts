@@ -90,7 +90,6 @@ export class ConstraintsPanelComponent implements OnInit {
   ngOnInit(): void {
     // TODO: Save constraints when plan-bottom-bar's "next" is clicked
     this.constraintsForm.valueChanges.subscribe((formValue) => {
-      console.log({formValue});
       const currentBudget = formValue.budgetForm?.optimizeBudget
         ? {
             useMostOptimizedOutcome: true,
