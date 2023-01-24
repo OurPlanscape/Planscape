@@ -249,7 +249,6 @@ class GetPlanTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(reverse('plan:get_plan'), {'id': 25},
                                    content_type="application/json")
-        print(response.content)
         self.assertEqual(response.status_code, 400)
 
     def test_get_plan_does_not_belong_to_user(self):

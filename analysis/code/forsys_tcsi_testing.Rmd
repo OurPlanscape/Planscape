@@ -402,7 +402,6 @@ values.
 #     ll_range = map_dbl(df, calculate_latlon_range))
 # write_rds(x = grid_search_clusters, file = '../output/TCSI_geo_clustering.rds')
 grid_search_clusters <- read_rds(file = '../output/TCSI_geo_clustering.rds')
-
 ```
 
 ```{r optimize_geo_weight_plot, error = TRUE}
@@ -412,7 +411,7 @@ grid_search_clusters %>%
   mutate(
       sc_prop = normalize_values(sc_prop),
       sd_mean = normalize_values(sd_mean),
-      #vr_mean = normalize_values(vr_mean),
+      vr_mean = normalize_values(vr_mean),
       ll_range = normalize_values(ll_range),
       composite = normalize_values((sc_prop - sd_mean - ll_range) / 3)) %>%
   pivot_longer(
@@ -475,7 +474,7 @@ df_planning_clustered <- clusters_final %>%
     stand_area = sum(stand_area))
 ```
 
-```{r forsys, error = TRUE}
+```{r forsys_prep, error = TRUE}
 # Running ForSysR --------------------------------------------------------------
 # Calculating adjacency for polygons
 patchmax_adj <- Patchmax::calculate_adj(
@@ -484,34 +483,43 @@ patchmax_adj <- Patchmax::calculate_adj(
   method = 'buffer')
 
 patchmax_dist <- Patchmax::calculate_dist(df_planning_clustered)
+```
+
+```{r forsys_run1, error = TRUE}
+# TODO: note that forsys::run seems to be an imperfect function, meaning it manipulates its input arguments as well as its output arguments. The class of df_planning_clustered changes when the next cell is executed and this cell will not run anymore as a result! This is a bug and should be passed back to the ForSysR team.
+df_planning_clustered_dt <- df_planning_clustered
 
 # TODO: add patchmax_st_seed (pass top e.g. 20% of stand_id in terms of priority)
 forsys_output <- forsys::run(
   return_outputs = TRUE,
-  stand_data = df_planning_clustered,
+  stand_data = df_planning_clustered_dt,
   scenario_name = 'tcsi_testing_patchmax',
   stand_id_field = 'cluster',
   proj_id_field = 'proj_id',
   stand_area_field = 'stand_area',
-  stand_threshold = 'harvest_cost < 9000',#'harvest_system == 1',
+  # TODO: A threshold is needed for ForSysR to run. Also, all thresholds are interpreted as `>=`, no matter the user input (see warning message). If we want to use thresholds, e.g. for harvesting cost, we might have to convert the inputs accordingly.
+  stand_threshold = 'stand_area >= 1',#'harvest_system == 1',
   scenario_priorities = c('opportunity_score', 'harvest_cost'),
   scenario_output_fields = c('opportunity_score'),
   run_with_patchmax = TRUE,
   patchmax_stnd_adj = patchmax_adj,
-  patchmax_st_distance = patchmax_dist,
+  patchmax_st_distance = patchmax_dist * 100,#NULL, #patchmax_dist,
   #patchmax_SDW = 10,
   # TODO: take out *100, added to create more visible projects
   patchmax_proj_size = 4046860 * 100, #1000
   patchmax_proj_size_slack = 0.5,
   patchmax_candidate_min_size = 404686,
-  patchmax_proj_number = 3
+  patchmax_proj_number = 3,
+  # to control budget constraints
+  #proj_target_field =,
+  #proj_target_value = 
   )
 write_rds(x = forsys_output, file = '../output/TCSI_forsys_run.rds')
 ```
 
 
 ```{r plot_outputs_1, error = TRUE}
-df_planning_clustered %>%
+df_planning_clustered_backup %>%
   left_join(forsys_output$stand_output, by = 'cluster') %>%
   mutate(proj_id = replace_na(proj_id, replace = 0)) %>%
   select(proj_id, geometry) %>%
@@ -520,8 +528,28 @@ df_planning_clustered %>%
 ```
 
 ```{r plot_outputs_2, error = TRUE}
+df_planning_clustered_dt <- df_planning_clustered
+
+forsys_output2 <- forsys::run(
+  return_outputs = TRUE,
+  stand_data = df_planning_clustered_dt,
+  scenario_name = 'tcsi_testing_patchmax',
+  stand_id_field = 'cluster',
+  proj_id_field = 'proj_id',
+  stand_area_field = 'stand_area',
+  stand_threshold = 'stand_area >= 1',
+  scenario_priorities = c('opportunity_score'),
+  scenario_output_fields = c('opportunity_score'),
+  run_with_patchmax = TRUE,
+  patchmax_stnd_adj = patchmax_adj,
+  patchmax_st_distance = patchmax_dist * 100,
+  patchmax_proj_size = 4046860 * 100,
+  patchmax_proj_size_slack = 0.5,
+  patchmax_candidate_min_size = 404686,
+  patchmax_proj_number = 3)
+
 df_planning_clustered %>%
-  left_join(forsys_output$stand_output, by = 'cluster') %>%
+  left_join(forsys_output2$stand_output, by = 'cluster') %>%
   mutate(proj_id = replace_na(proj_id, replace = 0)) %>%
   select(proj_id, geometry) %>%
   st_as_sf() %>%
@@ -544,3 +572,53 @@ df_planning_clustered %>%
   plot(border = NA)
 ```
 
+
+
+
+
+
+
+
+
+```{r forsys_run2, error = TRUE}
+# TODO: add patchmax_st_seed (pass top e.g. 20% of stand_id in terms of priority)
+forsys_output2 <- forsys::run(
+  return_outputs = TRUE,
+  stand_data = df_planning_clustered,
+  scenario_name = 'tcsi_testing_patchmax',
+  stand_id_field = 'cluster',
+  proj_id_field = 'proj_id',
+  stand_area_field = 'stand_area',
+  stand_threshold = 'stand_area >= 1',
+  scenario_priorities = c('opportunity_score', 'harvest_cost'),
+  scenario_output_fields = c('opportunity_score'),
+  scenario_weighting_values = '1 1 1',#'1 3 1',
+  run_with_patchmax = TRUE,
+  patchmax_stnd_adj = patchmax_adj,
+  patchmax_st_distance = Inf, #patchmax_dist,
+  patchmax_proj_size = 4046860 * 100,
+  patchmax_proj_size_slack = 0.5,
+  patchmax_candidate_min_size = 404686,
+  patchmax_proj_number = NULL
+  )
+```
+
+```{r plot_outputs_2, error = TRUE}
+forsys_output2$stand_output %>%
+  # select scenario by priority weights
+  filter(
+    Pr_1_opportunity_score == 1 &
+    Pr_2_harvest_cost == 3) %>%
+  # join to spatial information
+  right_join(df_planning_clustered, by = 'cluster') %>%
+  mutate(proj_id = replace_na(proj_id, replace = 0)) %>%
+  select(proj_id, geometry) %>%
+  st_as_sf() %>%
+  plot(border = NA)
+```
+
+
+
+```{r}
+
+```
