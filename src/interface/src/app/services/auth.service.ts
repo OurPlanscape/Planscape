@@ -83,7 +83,6 @@ export class AuthGuard implements CanActivate {
     return this.authService.refreshToken().pipe(
       map((response: any) => response.access),
       catchError(err => {
-        console.log(err);
         return of(false);
       })
     );

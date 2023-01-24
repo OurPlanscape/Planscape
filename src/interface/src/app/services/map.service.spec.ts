@@ -95,7 +95,7 @@ describe('MapService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/projects'
+        BackendConstants.END_POINT + '/projects/calmapper'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJsonText);

@@ -382,7 +382,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
           planningArea: shape,
         })
         .subscribe((result) => {
-          console.log(result);
           this.router.navigate(['plan', result.result!.id]);
         });
     });
