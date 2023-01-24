@@ -153,6 +153,7 @@ Let's try to look within climate class so that we compare apples with apples.
 
 ```{r}
 climate_class <- st_read('../data/TCSI/ClimClass_TCSI/ClimateClasses_15m_TCSI_wClasses_LL.shp')
+climate_class <- raster('../data/TCSI/ClimateClasses/ClimateClasses.img')
 
 plot(climate_class[,c(1,8)])
 plot(rast$current_forres, add = TRUE)
