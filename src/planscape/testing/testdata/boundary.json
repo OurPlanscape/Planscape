@@ -1,0 +1,15 @@
+{
+    "boundaries": [
+        {
+            "boundary_name": "california",
+            "display_name": "California",
+            "region_name": "none",
+            "filepath": "boundary/california/CA_State_TIGER2016.shp",
+            "source_srs": 3857,
+            "geometry_type": "POLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "NAME"
+            }
+        }
+    ]
+}
