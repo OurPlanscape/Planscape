@@ -29,6 +29,7 @@ def _get_user(request: HttpRequest) -> HttpResponse:
         user = request.user
     if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
         raise ValueError("Must be logged in")
+    return user
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
