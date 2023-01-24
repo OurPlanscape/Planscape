@@ -154,7 +154,6 @@ export class ProgressPanelComponent implements OnChanges, AfterViewInit {
 
   /** Sets the current task and renders the corresponding view. */
   goToStep(node: ProgressFlatNode) {
-    console.log('clicked ' + node.name);
     this.currentTaskId = node.id;
   }
 
