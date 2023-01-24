@@ -245,6 +245,13 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.json()['name'], 'owned')
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
+    def test_get_nonexistent_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_plan'), {'id': 25},
+                                   content_type="application/json")
+        print(response.content)
+        self.assertEqual(response.status_code, 400)
+
     def test_get_plan_does_not_belong_to_user(self):
         self.client.force_login(self.user)
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},

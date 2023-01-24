@@ -22,6 +22,8 @@ RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
+
+
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
@@ -125,11 +127,11 @@ def get_plan_by_id(user, params: QueryDict):
     assert isinstance(params['id'], str)
     plan_id = params.get('id', "0")
 
-    plan = Plan.objects.filter(id=int(plan_id)).annotate(projects=Count(
-        'project', distinct=True)).annotate(scenarios=Count('project__scenario'))
-    if plan[0].owner != user:
+    plan = Plan.objects.annotate(projects=Count(
+        'project', distinct=True)).annotate(scenarios=Count('project__scenario')).get(id=int(plan_id))
+    if plan.owner != user:
         raise ValueError("You do not have permission to view this plan.")
-    return plan[0]
+    return plan
 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
