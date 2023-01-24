@@ -28,11 +28,7 @@ RASTER_NAME_COLUMN = 'name'
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = _get_user(request)
 
         # Get the name of the plan.
         body = json.loads(request.body)
@@ -84,11 +80,7 @@ def _convert_polygon_to_multipolygon(geometry: dict):
 def delete(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = _get_user(request)
         owner_id = None if owner is None else owner.pk
 
         # Get the plans
@@ -166,11 +158,7 @@ def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        user = None
-        if request.user.is_authenticated:
-            user = request.user
-        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        user = _get_user(request)
 
         return JsonResponse(
             _serialize_plan(
@@ -202,11 +190,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
 def create_project(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        owner = _get_user(request)
 
         # Get the plan_id associated with the project.
         body = json.loads(request.body)
@@ -249,11 +233,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
         assert isinstance(request.GET['id'], str)
         project_id = request.GET.get('id', "0")
 
-        user = None
-        if request.user.is_authenticated:
-            user = request.user
-        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        user = _get_user(request)
 
         project = Project.objects.get(id=project_id)
         if project.owner != user:
@@ -268,12 +248,8 @@ def get_project(request: HttpRequest) -> HttpResponse:
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = None
-        if request.user.is_authenticated:
-            owner = request.user
-        if owner is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
-
+        owner = _get_user(request)
+        
         body = json.loads(request.body)
 
         # Get the project_id. This may come from an existing project or a
@@ -316,11 +292,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         project_id = request.GET.get('project_id', "0")
         project_exists = Project.objects.get(id=project_id)
 
-        user = None
-        if request.user.is_authenticated:
-            user = request.user
-        if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-            raise ValueError("Must be logged in")
+        user = _get_user(request)
 
         if project_exists.owner != user:
             raise ValueError(
