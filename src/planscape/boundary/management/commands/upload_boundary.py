@@ -22,7 +22,7 @@ class Command(BaseCommand):
                             help=('Name of the boundary to upload; if missing, all '
                                   'boundaries are uploaded.'))
         parser.add_argument('--configuration_file', nargs='?', type=str,
-                            help='Path to the boundary.json file; default is config/boundary.json.')
+                            help='Path to the boundary.json file; default is BASE_DIR/config/boundary.json.')
         parser.add_argument('--force',
                             type=bool, default=False, action=argparse.BooleanOptionalAction,
                             help='Overwrite the boundary layer if it exists.')
@@ -37,7 +37,8 @@ class Command(BaseCommand):
                 'Must specify the data directory as an argument.')
         configuration_file = options['configuration_file']
         if configuration_file is None:
-            configuration_file = os.path.join(settings.BASE_DIR, 'config/boundary.json')
+            configuration_file = os.path.join(
+                settings.BASE_DIR, 'config/boundary.json')
         boundary_to_load = options['boundary']
         force = options['force']
         verbose = options['verbose']
@@ -65,20 +66,22 @@ class Command(BaseCommand):
                 region_name = None
             query = Boundary.objects.filter(boundary_name__exact=boundary_name)
             if len(query) > 0:
-                print('Boundary {0} exists in the database'.format(boundary_name))
+                self.stdout.write('Boundary {0} exists in the database'.format(
+                    boundary_name))
                 if not force:
-                    print('Exiting; use --force to overwrite the existing boundary.')
-                    return 
+                    self.stdout.write(
+                        'Exiting; use --force to overwrite the existing boundary.')
+                    return
                 query.delete()
-            boundary_obj = Boundary(boundary_name=boundary_name, display_name=display_name,
-                                    region_name=region_name)
+            boundary_obj=Boundary(boundary_name = boundary_name, display_name = display_name,
+                                    region_name = region_name)
             boundary_obj.save()
 
-            shapefile_field_mapping = dict(boundary['shapefile_field_mapping'])
-            shapefile_field_mapping['geometry'] = boundary['geometry_type']
-            filepath = Path(os.path.join(data_directory, boundary['filepath']))
-            srs = boundary['source_srs']
-            lm = LayerMapping(BoundaryDetails, filepath,
+            shapefile_field_mapping=dict(boundary['shapefile_field_mapping'])
+            shapefile_field_mapping['geometry']=boundary['geometry_type']
+            filepath=Path(os.path.join(data_directory, boundary['filepath']))
+            srs=boundary['source_srs']
+            lm=LayerMapping(BoundaryDetails, filepath,
                               shapefile_field_mapping, source_srs=srs, transform=True)
             presave_callback = presave_callback_generator(boundary_obj)
             pre_save.connect(presave_callback, sender=BoundaryDetails)
