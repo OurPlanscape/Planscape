@@ -23,6 +23,12 @@ RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
+def _get_user(request: HttpRequest) -> HttpResponse:
+    user = None
+    if request.user.is_authenticated:
+        user = request.user
+    if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
+        raise ValueError("Must be logged in")
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -125,12 +131,6 @@ def get_plan_by_id(user, params: QueryDict):
         raise ValueError("You do not have permission to view this plan.")
     return plan
 
-def _get_user(request: HttpRequest) -> HttpResponse:
-    user = None
-    if request.user.is_authenticated:
-        user = request.user
-    if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
-        raise ValueError("Must be logged in") 
 
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
     """
@@ -317,10 +317,10 @@ def get_scores(request: HttpRequest) -> HttpResponse:
             reg = plan.region_name.removeprefix('RegionName.').lower()
 
             ids_to_conditions = {
-                c.id: c.condition_name
+                c.pk: c.condition_name
                 for c in BaseCondition.objects.filter(region_name=reg).all()}
             raster_names_to_ids = {
-                c.raster_name: c.condition_dataset_id
+                c.raster_name: c.condition_dataset.pk
                 for c in Condition.objects.filter(
                     condition_dataset_id__in=ids_to_conditions.keys()).filter(
                     is_raw=False).all()}
