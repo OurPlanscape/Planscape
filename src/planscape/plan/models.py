@@ -52,8 +52,14 @@ class Project(models.Model):
     # TODO: Limit number of allowed priorities
     priorities = models.ManyToManyField('conditions.Condition')
 
-    # The maximum cost constraint. If null, no max cost.
-    max_cost: models.IntegerField = models.IntegerField(null=True)
+    # Max constraints. If null, no max value unless a system default is defined.
+    max_budget: models.FloatField = models.FloatField(null=True)
+
+    max_treatment_ratio: models.FloatField = models.FloatField(null=True)
+
+    max_road_distance: models.FloatField = models.FloatField(null=True)
+
+    max_slope: models.FloatField = models.FloatField(null=True)
 
     # TODO: Add more project parameters like min_acres_treated and
     # permitted_ownership = (1=federal, 2=state, 4=private)
@@ -114,9 +120,9 @@ class ConditionScores(models.Model):
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)
     project_area = models.ForeignKey(
         ProjectArea, on_delete=models.CASCADE, null=True)
-    
+
     # Condition
     condition = models.ForeignKey(
         Condition, on_delete=models.CASCADE, null=False)
-    
+
     mean_score = models.FloatField(null=False)

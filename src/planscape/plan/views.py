@@ -23,6 +23,7 @@ RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
+
 def _get_user(request: HttpRequest) -> HttpResponse:
     user = None
     if request.user.is_authenticated:
@@ -30,6 +31,7 @@ def _get_user(request: HttpRequest) -> HttpResponse:
     if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
         raise ValueError("Must be logged in")
     return user
+
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -208,17 +210,43 @@ def create_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
 
-        # Get the max_cost parameter.
-        # TODO: Add more parameters as necessary.
-        max_cost = body.get('max_cost', None)
+        # Parse constraints
+        max_budget = body.get('max_budget', None)
+        if max_budget is not None and not (isinstance(max_budget, float)):
+            raise ValueError("Max budget must be a float value")
 
-        priorities = body.get('priorities', None)
-        priorities_list = [] if priorities is None else priorities.split(',')
+        max_treatment_ratio = body.get('max_treatment_ratio', None)
+        if (max_treatment_ratio is not None and
+            (not (isinstance(max_treatment_ratio, float)) or max_treatment_ratio < 0 or
+             max_treatment_ratio > 1.0)):
+            raise ValueError(
+                "Max treatment must be a float value between 0.0 and 1.0")
+
+        max_road_distance = body.get('max_road_distance', None)
+        if max_road_distance is not None and not (isinstance(max_road_distance, float)):
+            raise ValueError("Max distance from road must be a float value")
+
+        max_slope = body.get('max_slope', None)
+        if (max_slope is not None and
+                (not (isinstance(max_slope, float)) or max_slope < 0 or max_slope > 1.0)):
+            raise ValueError(
+                "Max slope must be a float value between 0.0 and 1.0")
 
         # Create the project.
-        project = Project.objects.create(
-            owner=owner, plan=plan, max_cost=max_cost)
+        project = Project.objects.create(owner=owner, plan=plan)
+        if max_budget:
+            project.max_budget = max_budget
+        if max_treatment_ratio:
+            project.max_treatment_ratio = max_treatment_ratio
+        if max_road_distance:
+            project.max_road_distance = max_road_distance
+        if max_slope:
+            project.max_slope = max_slope
         project.save()
+
+        # Parse priorities
+        priorities = body.get('priorities', None)
+        priorities_list = [] if priorities is None else priorities.split(',')
         for pri in priorities_list:
             base_condition = BaseCondition.objects.get(condition_name=pri)
             condition = Condition.objects.get(
@@ -250,7 +278,7 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
         owner = _get_user(request)
-        
+
         body = json.loads(request.body)
 
         # Get the project_id. This may come from an existing project or a
