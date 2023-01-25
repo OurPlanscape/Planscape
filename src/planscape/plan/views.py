@@ -1,27 +1,25 @@
+from planscape import settings
+from plan.serializers import (
+    PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
+from plan.models import Plan, Project, ProjectArea
+from django.views.decorators.csrf import csrf_exempt
+from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse, QueryDict)
+from django.db.models import Count
+from django.db import connection
+from django.contrib.gis.geos import GEOSGeometry
 import datetime
 import json
 
 from base.region_name import (display_name_to_region,
                               region_to_display_name)
 from conditions.models import BaseCondition, Condition
-from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection
-from django.db.models import Count
-from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse, QueryDict)
-from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea
-from plan.serializers import (
-    PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
-from planscape import settings
+from conditions.raster_utils import get_mean_condition_scores
+from django.contrib.gis.gdal import CoordTransform, SpatialReference
 
-# Name of the table and column from models.py.
-RASTER_SCHEMA = 'public'
-RASTER_TABLE = 'conditions_conditionraster'
-RASTER_COLUMN = 'raster'
-RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
+
 
 def _get_user(request: HttpRequest) -> HttpResponse:
     user = None
@@ -30,6 +28,7 @@ def _get_user(request: HttpRequest) -> HttpResponse:
     if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
         raise ValueError("Must be logged in")
     return user
+
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -126,8 +125,10 @@ def get_plan_by_id(user, params: QueryDict):
     assert isinstance(params['id'], str)
     plan_id = params.get('id', "0")
 
-    plan = Plan.objects.annotate(projects=Count(
-        'project', distinct=True)).annotate(scenarios=Count('project__scenario')).get(id=int(plan_id))
+    plan = Plan.objects.annotate(
+        projects=Count('project', distinct=True)).annotate(
+        scenarios=Count('project__scenario')).get(
+        id=int(plan_id))
     if plan.owner != user:
         raise ValueError("You do not have permission to view this plan.")
     return plan
@@ -250,7 +251,7 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
         owner = _get_user(request)
-        
+
         body = json.loads(request.body)
 
         # Get the project_id. This may come from an existing project or a
@@ -317,29 +318,18 @@ def get_scores(request: HttpRequest) -> HttpResponse:
             geo = plan.geometry
             reg = plan.region_name.removeprefix('RegionName.').lower()
 
-            ids_to_conditions = {
-                c.pk: c.condition_name
-                for c in BaseCondition.objects.filter(region_name=reg).all()}
-            raster_names_to_ids = {
-                c.raster_name: c.condition_dataset.pk
-                for c in Condition.objects.filter(
-                    condition_dataset_id__in=ids_to_conditions.keys()).filter(
-                    is_raw=False).all()}
+            geo.transform(
+                CoordTransform(SpatialReference(geo.srid),
+                               SpatialReference(settings.CRS_9822_PROJ4)))
+            condition_scores = get_mean_condition_scores(geo, reg)
 
             conditions = []
-            for raster_name in raster_names_to_ids.keys():
-                cursor.callproc(
-                    'get_mean_condition_score',
-                    (RASTER_TABLE, RASTER_SCHEMA, raster_name, RASTER_NAME_COLUMN,
-                     RASTER_COLUMN, settings.CRS_9822_PROJ4,
-                     settings.CRS_FOR_RASTERS, geo.ewkb))
-                a = list(cursor.fetchone())
-                if a is None or len(a) == 0 or a[0] is None:
-                    conditions.append(
-                        {'condition': ids_to_conditions[raster_names_to_ids[raster_name]]})
+            for c in conditions.keys():
+                score = condition_scores[c]
+                if score is None:
+                    conditions.append({'condition': c})
                 else:
-                    conditions.append(
-                        {'condition': ids_to_conditions[raster_names_to_ids[raster_name]], 'mean_score': a[0]})
+                    conditions.append({'condition': c, 'mean_score': score})
 
             response = {'conditions': conditions}
             return HttpResponse(
