@@ -1,7 +1,7 @@
 from planscape import settings
 from plan.serializers import (
     PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
-from plan.models import Plan, Project, ProjectArea
+from plan.models import Plan, Project, ProjectArea, ConditionScores
 from django.views.decorators.csrf import csrf_exempt
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
@@ -14,8 +14,7 @@ import json
 from base.region_name import (display_name_to_region,
                               region_to_display_name)
 from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import get_mean_condition_scores
-from django.contrib.gis.gdal import CoordTransform, SpatialReference
+from conditions.raster_utils import fetch_or_compute_mean_condition_scores
 
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
@@ -312,29 +311,24 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
 
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
-        with connection.cursor() as cursor:
-            user = _get_user(request)
-            plan = get_plan_by_id(user, request.GET)
-            geo = plan.geometry
-            reg = plan.region_name.removeprefix('RegionName.').lower()
+        user = _get_user(request)
+        plan = get_plan_by_id(user, request.GET)
 
-            geo.transform(
-                CoordTransform(SpatialReference(geo.srid),
-                               SpatialReference(settings.CRS_9822_PROJ4)))
-            condition_scores = get_mean_condition_scores(geo, reg)
+        condition_scores = fetch_or_compute_mean_condition_scores(plan)
+        conditions = []
+        for c in condition_scores.keys():
+            score = condition_scores[c]
+            ConditionScores.objects.create(
+                plan=plan, condition=x, mean_score=score)
+            if score is None:
+                conditions.append({'condition': c})
+            else:
+                conditions.append({'condition': c, 'mean_score': score})
 
-            conditions = []
-            for c in conditions.keys():
-                score = condition_scores[c]
-                if score is None:
-                    conditions.append({'condition': c})
-                else:
-                    conditions.append({'condition': c, 'mean_score': score})
-
-            response = {'conditions': conditions}
-            return HttpResponse(
-                JsonResponse(response),
-                content_type='application/json')
+        response = {'conditions': conditions}
+        return HttpResponse(
+            JsonResponse(response),
+            content_type='application/json')
 
     except Exception as e:
         return HttpResponseBadRequest("failed score fetch: " + str(e))
