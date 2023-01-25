@@ -8,7 +8,10 @@ import { Plan, Region } from 'src/app/types';
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
-import { SetPrioritiesComponent } from './set-priorities.component';
+import {
+  ScoreColumn,
+  SetPrioritiesComponent,
+} from './set-priorities.component';
 
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
@@ -56,7 +59,7 @@ describe('SetPrioritiesComponent', () => {
             },
             {
               condition: 'test_element_1',
-              mean_score: 1.3,
+              mean_score: -0.7,
             },
             {
               condition: 'test_metric_1',
@@ -130,10 +133,28 @@ describe('SetPrioritiesComponent', () => {
       ownerId: '1',
       region: Region.SIERRA_NEVADA,
     };
-    const expectedMap = new Map<string, number>([
-      ['test_pillar_1', 0.1],
-      ['test_element_1', 1.3],
-      ['test_metric_1', 0.4],
+    const expectedMap = new Map<string, ScoreColumn>([
+      [
+        'test_pillar_1',
+        {
+          label: 'Medium',
+          score: 0.1,
+        },
+      ],
+      [
+        'test_element_1',
+        {
+          label: 'Lowest',
+          score: -0.7,
+        },
+      ],
+      [
+        'test_metric_1',
+        {
+          label: 'High',
+          score: 0.4,
+        },
+      ],
     ]);
 
     component.plan$.next(fakePlan);

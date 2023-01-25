@@ -60,7 +60,12 @@
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
         <mat-spinner [diameter]="24" *ngIf="!conditionScores.has(element.conditionName)"></mat-spinner>
-        <div *ngIf="conditionScores.has(element.conditionName)">{{ conditionScores.get(element.conditionName) | number: '1.1-1' }}</div>
+        <ng-container *ngIf="conditionScores.has(element.conditionName)">
+          <div>
+            <div><b>{{ getScoreLabel(element.conditionName) }}</b></div>
+            <div class="score">{{  getScore(element.conditionName) | number: '1.1-1' }}</div>
+          </div>
+        </ng-container>
       </mat-cell>
     </ng-container>
 

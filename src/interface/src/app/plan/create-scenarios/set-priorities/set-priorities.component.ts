@@ -9,6 +9,11 @@ import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import { PlanConditionScores } from './../../../types/plan.types';
 
+export interface ScoreColumn {
+  label: string;
+  score: number;
+}
+
 interface PriorityRow {
   selected?: boolean;
   visible?: boolean; // Visible as raster data on map
@@ -36,7 +41,7 @@ export class SetPrioritiesComponent implements OnInit {
     the data.
   `;
 
-  conditionScores = new Map<string, number>();
+  conditionScores = new Map<string, ScoreColumn>();
   displayedColumns: string[] = ['selected', 'visible', 'displayName', 'score'];
   datasource = new MatTableDataSource<PriorityRow>();
 
@@ -111,12 +116,32 @@ export class SetPrioritiesComponent implements OnInit {
 
   private convertConditionScoresToDictionary(
     scores: PlanConditionScores
-  ): Map<string, number> {
-    let scoreMap = new Map<string, number>();
+  ): Map<string, ScoreColumn> {
+    let scoreMap = new Map<string, ScoreColumn>();
     scores.conditions.forEach((condition) => {
-      scoreMap.set(condition.condition, condition.mean_score);
+      scoreMap.set(condition.condition, {
+        label: this.scoreToLabel(condition.mean_score),
+        score: condition.mean_score,
+      });
     });
     return scoreMap;
+  }
+
+  private scoreToLabel(score: number): string {
+    // TEMPORARY: use 5 equal buckets for scores [-1, 1] (Lowest, Low, Medium, High, Highest)
+    if (score < -0.6) return 'Lowest';
+    if (score < -0.2) return 'Low';
+    if (score < 0.2) return 'Medium';
+    if (score < 0.6) return 'High';
+    return 'Highest';
+  }
+
+  getScoreLabel(conditionName: string): string | undefined {
+    return this.conditionScores.get(conditionName)?.label;
+  }
+
+  getScore(conditionName: string): number | undefined {
+    return this.conditionScores.get(conditionName)?.score;
   }
 
   /** Toggle whether a priority condition's children are expanded. */
