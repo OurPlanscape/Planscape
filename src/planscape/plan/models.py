@@ -1,5 +1,6 @@
 import math
 
+from conditions.models import Condition
 from django.contrib.auth.models import User
 from django.contrib.gis.db import models
 
@@ -102,3 +103,20 @@ class ProjectArea(models.Model):
     # The sum total of the project area geometries.
     estimated_area_treated: models.IntegerField = models.IntegerField(
         null=True)
+
+
+class ConditionScores(models.Model):
+    """
+    Condition scores are computed from statistics aggregated across all relevant stands
+    within a project area or planning area.
+    """
+    # Either plan or project should be present.
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)
+    project_area = models.ForeignKey(
+        ProjectArea, on_delete=models.CASCADE, null=True)
+    
+    # Condition
+    condition = models.ForeignKey(
+        Condition, on_delete=models.CASCADE, null=False)
+    
+    mean_score = models.FloatField(null=False)

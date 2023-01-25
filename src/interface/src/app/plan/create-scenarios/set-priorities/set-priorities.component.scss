@@ -24,7 +24,7 @@
   width: 48px;
 }
 
-.mat-column-conditionName {
+.mat-column-displayName {
   box-sizing: border-box;
   flex: 2 0 auto;
   padding-right: 24px;
@@ -61,4 +61,8 @@
   -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
   background-color: rgba(0,0,0,.5);
   border-radius: 4px;
+}
+
+.score {
+  font-size: 12px;
 }
