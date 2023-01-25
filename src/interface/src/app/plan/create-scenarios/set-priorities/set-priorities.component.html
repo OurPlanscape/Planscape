@@ -43,14 +43,14 @@
       </mat-cell>
     </ng-container>
 
-    <ng-container matColumnDef="conditionName">
+    <ng-container matColumnDef="displayName">
       <mat-header-cell *matHeaderCellDef>
         Priorities
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
         <span class="indent-level-{{ element.level }}"></span>
         <button mat-icon-button *ngIf="element.children.length" (click)="toggleExpand(element)"><mat-icon>expand_more</mat-icon></button>
-        {{ element.conditionName }}
+        {{ element.displayName ? element.displayName : element.conditionName }}
       </mat-cell>
     </ng-container>
 
@@ -59,7 +59,8 @@
         Condition score
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
-        {{ element.score }}
+        <mat-spinner [diameter]="24" *ngIf="!conditionScores.has(element.conditionName)"></mat-spinner>
+        <div *ngIf="conditionScores.has(element.conditionName)">{{ conditionScores.get(element.conditionName) | number: '1.1-1' }}</div>
       </mat-cell>
     </ng-container>
 
