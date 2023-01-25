@@ -44,7 +44,7 @@ class MeanConditionScoresTest(TestCase):
         self.assertDictEqual(
             scores, {"foo": 36.0 / 8, "bar": 100.0 / 8, "baz": 10.0 / 2})
 
-    def test_gets_no_score_for_no_values(self):
+    def test_gets_no_score_for_nodata_values(self):
         geo = self._create_geo(0, 3, 0, 1)
 
         raster = self._create_raster(4, 4, (np.nan, np.nan, np.nan, np.nan,
