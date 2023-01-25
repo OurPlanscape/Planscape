@@ -46,6 +46,8 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     geo = plan.geometry
 
+    if geo is None:
+        raise AssertionError("plan is missing geometry")
     if geo.srid != settings.CRS_FOR_RASTERS:
         geo.transform(
             CoordTransform(SpatialReference(geo.srid),
@@ -55,6 +57,8 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
     ids_to_condition_names = {
         c.pk: c.condition_name
         for c in BaseCondition.objects.filter(region_name=reg).all()}
+    if len(ids_to_condition_names.keys()) == 0:
+        raise AssertionError("no conditions exist for region, %s"%reg)
 
     conditions = Condition.objects.filter(
         condition_dataset_id__in=ids_to_condition_names.keys()).filter(
@@ -66,7 +70,7 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
         name = ids_to_condition_names[id]
 
         score = _get_db_score_for_plan(plan.pk, condition.pk)
-        if not np.isnan(score):
+        if score is None or not np.isnan(score):
             condition_scores[name] = score
             continue
 
