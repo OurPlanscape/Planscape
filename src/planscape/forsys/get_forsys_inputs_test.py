@@ -1,6 +1,14 @@
 from django.test import TestCase
 from django.http import QueryDict
 from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
+import json
+
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry
+
+from plan.models import Plan, Project, ProjectArea
+from conditions.models import BaseCondition, Condition
+from base.condition_types import ConditionLevel
 
 
 class TestForsysProjectAreaRankingRequestParams(TestCase):
@@ -154,10 +162,57 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         self.assertEquals(
             str(context.exception), 'project area missing field, "id"')
 
-    def test_reads_from_db(self) -> None:
+
+class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
+    def setUp(self):
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1")
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name2")
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan_with_user = Plan.objects.create(
+            owner=self.user, name="plan", region_name='sierra_cascade_inyo', 
+            geometry=self.stored_geometry)
+
+        self.project_with_user = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_cost=100, )
+        self.project_with_user.priorities.add(self.condition1)
+        self.project_with_user.priorities.add(self.condition2)
+
+        self.project_area_with_user = ProjectArea.objects.create(
+            owner=self.user, project=self.project_with_user, project_area=self.stored_geometry, 
+            estimated_area_treated=200)
+
+    def test_missing_project_id(self):
         qd = QueryDict('')
-        with self.assertRaises(Exception) as context:
-            ForsysProjectAreaRankingRequestParams(qd)
-            self.assertEqual(
-                str(context.exception),
-                'WIP. Please set set_all_params_via_url_params to true.')
+        self.assertRaises(Exception, ForsysProjectAreaRankingRequestParams, qd)
+
+    def test_nonexistent_project_id(self):
+        qd = QueryDict('project_id=10')
+        self.assertRaises(Exception, ForsysProjectAreaRankingRequestParams, qd)
+
+    def test_empty_project_areas(self):
+        self.project_area_with_user.delete()
+        qd = QueryDict('project_id=' + str(self.project_with_user.pk))
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(len(params.project_areas), 0)
+
+    def test_read_ok(self) -> None:
+        qd = QueryDict('project_id=' + str(self.project_with_user.pk))
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(len(params.project_areas), 1)
+        self.assertTrue(params.project_areas[self.project_area_with_user.pk].equals(
+            self.stored_geometry))
+        self.assertEqual(params.priorities, [
+                         self.condition1.pk, self.condition2.pk])

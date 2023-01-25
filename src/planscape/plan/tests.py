@@ -238,11 +238,24 @@ class GetPlanTest(TransactionTestCase):
         self.plan_with_user = create_plan(self.user, 'owned', None, [])
 
     def test_get_plan_with_user(self):
+        self.client.force_login(self.user)
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'owned')
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
+
+    def test_get_nonexistent_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_plan'), {'id': 25},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_plan_does_not_belong_to_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
 
     def test_get_plan_no_user(self):
         response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
@@ -255,6 +268,7 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
     def test_get_plan_bad_stored_region(self):
+        self.client.force_login(self.user)
         plan = Plan.objects.create(
             owner=self.user, name='badregion', region_name='Sierra Nevada', geometry=None)
         plan.save()
@@ -519,6 +533,12 @@ class GetProjectTest(TransactionTestCase):
         self.condition2 = Condition.objects.create(
             condition_dataset=self.base_condition, raster_name="name2")
 
+    def test_get_project_does_not_belong_to_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
     def test_get_project_no_user_no_priorities(self):
         response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
                                    content_type="application/json")
@@ -603,6 +623,12 @@ class GetProjectAreaTest(TransactionTestCase):
         self.project_area_with_user = ProjectArea.objects.create(
             owner=self.user, project=self.project_with_user, project_area=stored_geometry, estimated_area_treated=200)
 
+    def test_get_project_does_not_belong_to_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('plan:get_project_areas'), {'id': self.project_no_user.pk},
+                                   content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
     def test_get_projectareas_for_nonexistent_project(self):
         response = self.client.get(reverse('plan:get_project_areas'), {'project_id': 10},
                                    content_type="application/json")
@@ -636,6 +662,7 @@ class GetProjectAreaTest(TransactionTestCase):
             response.json()[project_area_id]['geometry'], self.geometry)
 
     def test_get_projectareas_with_user(self):
+        self.client.force_login(self.user)
         response = self.client.get(reverse('plan:get_project_areas'), {'project_id': self.project_with_user.pk},
                                    content_type="application/json")
         self.assertEqual(response.status_code, 200)

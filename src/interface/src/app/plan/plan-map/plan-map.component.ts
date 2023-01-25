@@ -15,6 +15,8 @@ import { BackendConstants } from './../../backend-constants';
 export class PlanMapComponent implements AfterViewInit, OnDestroy {
   @Input() plan = new BehaviorSubject<Plan | null>(null);
   @Input() mapId?: string;
+  /** The amount of padding in the top left corner when the map fits the plan boundaries. */
+  @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
@@ -37,7 +39,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.map.attributionControl.setPosition('topright');
 
     // Add zoom controls to bottom right corner
-     const zoomControl = L.control.zoom({
+    const zoomControl = L.control.zoom({
       position: 'bottomright',
     });
     zoomControl.addTo(this.map);
@@ -71,7 +73,9 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
         weight: 3,
       },
     }).addTo(this.map);
-    this.map.fitBounds(this.drawingLayer.getBounds());
+    this.map.fitBounds(this.drawingLayer.getBounds(), {
+      paddingTopLeft: this.mapPadding,
+    });
   }
 
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */

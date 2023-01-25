@@ -10,12 +10,18 @@ import {
   Region,
 } from '../types';
 
-/** A map of Region to its corresponding geojson path. */
-const regionToGeojsonMap: Record<Region, string> = {
-  [Region.SIERRA_NEVADA]: 'assets/geojson/sierra_nevada_region.geojson',
-  [Region.CENTRAL_COAST]: '',
-  [Region.NORTHERN_CALIFORNIA]: '',
-  [Region.SOUTHERN_CALIFORNIA]: '',
+/** A map of Region to static assets for that region. */
+const regionToGeojsonMap: Record<Region, Record<string, string>> = {
+  [Region.SIERRA_NEVADA]: {
+    boundary: 'assets/geojson/sierra_nevada_region.geojson',
+    counties: 'assets/geojson/sierra_cascade_inyo/counties.geojson',
+    huc10: 'assets/geojson/sierra_cascade_inyo/huc10.geojson',
+    huc12: 'assets/geojson/sierra_cascade_inyo/huc12.geojson',
+    USFS: 'assets/geojson/sierra_cascade_inyo/USFS.geojson'
+  },
+  [Region.CENTRAL_COAST]: {},
+  [Region.NORTHERN_CALIFORNIA]: {},
+  [Region.SOUTHERN_CALIFORNIA]: {},
 };
 
 @Injectable({
@@ -51,8 +57,8 @@ export class MapService {
    * */
   getRegionBoundary(region: Region): Observable<GeoJSON.GeoJSON> {
     const path = regionToGeojsonMap[region];
-    if (!path) return EMPTY;
-    return this.http.get<GeoJSON.GeoJSON>(path);
+    if (!path || !path['boundary']) return EMPTY;
+    return this.http.get<GeoJSON.GeoJSON>(path['boundary']);
   }
 
   /**
@@ -81,26 +87,29 @@ export class MapService {
     }
   }
 
-  /** Get shapes for a boundary from the REST server, within a region if region is non-null. */
+  /** Get shapes for a boundary from assets, if possible.  Fall back to the
+   *  REST server, clipping the shapes to the region if the region is non-null. */
   getBoundaryShapes(
     boundaryName: string,
     region: Region | null
   ): Observable<GeoJSON.GeoJSON> {
-    // Get the shapes from the REST server.
-    var regionString: string = '';
     if (region != null) {
-      regionString = `&region_name=${this.regionToString(region)}`;
+      // Try to get the shapes from the assets.
+      const regionAssets = regionToGeojsonMap[region];
+      if (regionAssets && regionAssets[boundaryName]) {
+        return this.http.get<GeoJSON.GeoJSON>(regionAssets[boundaryName]);
+      }
     }
+    // Get the shapes from the REST server.
     return this.http.get<GeoJSON.GeoJSON>(
       BackendConstants.END_POINT +
         `/boundary/boundary_details/?boundary_name=${boundaryName}` +
-        regionString
-    );
+        (region == null ? '' : `&region_name=${this.regionToString(region)}`));
   }
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
   getExistingProjects(): Observable<GeoJSON.GeoJSON> {
-    return this.http.get<string>(BackendConstants.END_POINT + '/projects').pipe(
+    return this.http.get<string>(BackendConstants.END_POINT + '/projects/calmapper').pipe(
       map((response: string) => {
         return JSON.parse(response);
       })
