@@ -103,14 +103,12 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
 
     if (filepath?.length === 0 || !filepath) return;
 
-    this.tileLayer?.remove();
-
-    this.tileLayer =  L.tileLayer(
+    this.tileLayer = L.tileLayer(
       BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
       {
         minZoom: 7,
         maxZoom: 13,
-        opacity: 0.7
+        opacity: 0.7,
       }
     );
 
