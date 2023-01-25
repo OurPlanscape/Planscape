@@ -191,6 +191,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       .pipe(filter((config) => !!config))
       .subscribe((config) => {
         this.conditionDataSource.data = this.conditionsConfigToData(config!);
+        this.maps.forEach((map) => {
+          // Ensure the radio button corresponding to the saved selection is selected.
+          map.config.dataLayerConfig = this.findAndRevealNodeWithFilepath(
+            map.config.dataLayerConfig.filepath
+          );
+        });
       });
   }
 
@@ -247,9 +253,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
                   boundary.boundary_name ===
                   map.config.boundaryLayerConfig.boundary_name
               );
-              if (!!boundaryConfig) {
-                map.config.boundaryLayerConfig = boundaryConfig;
-              }
+              map.config.boundaryLayerConfig = boundaryConfig
+                ? boundaryConfig
+                : NONE_BOUNDARY_CONFIG;
             });
           });
       });
@@ -324,10 +330,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.loadingIndicators[layerName] = false;
   }
 
-  private createDetailCardCallback(features: Feature<Geometry, any>[]): any {
+  private createDetailCardCallback(
+    features: Feature<Geometry, any>[],
+    onInitialized: () => void
+  ): any {
     let component = createComponent(ProjectCardComponent, {
       environmentInjector: this.environmentInjector,
     });
+    component.instance.initializedEvent.subscribe((_) => onInitialized());
     component.instance.features = features;
     this.applicationRef.attachView(component.hostView);
     return component.location.nativeElement;
@@ -372,7 +382,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
           planningArea: shape,
         })
         .subscribe((result) => {
-          console.log(result);
           this.router.navigate(['plan', result.result!.id]);
         });
     });
@@ -577,12 +586,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         return false;
       case 2:
       default:
-        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
-        if (index === 0 || index === 1) {
-          // TODO: 2 map view might go away or the logic here might change
-          return true;
-        }
-        return false;
+        // In 2 map view, if the 1st or 2nd map are selected, show maps 1 and 2
+        // Otherwise, show maps 3 and 4
+        // TODO: 2 map view might go away or the logic here might change
+        return (
+          Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
+          Math.floor(index / 2)
+        );
     }
   }
 
@@ -595,9 +605,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       case 4:
         return '50%';
       case 2:
-        // In 2 map view, only the 1st and 2nd map are shown regardless of selection
-        // TODO: 2 map view might go away or the logic here might change
-        return index === 0 ? '100%' : '0%';
       case 1:
       default:
         if (
@@ -707,5 +714,46 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
           }),
       },
     ];
+  }
+
+  /** Find the node matching the given filepath in the condition tree (if any), and expand its ancestors
+   *  so it becomes visible.
+   */
+  private findAndRevealNodeWithFilepath(
+    filepath: string | undefined
+  ): ConditionsNode {
+    if (!filepath || filepath === NONE_DATA_LAYER_CONFIG.filepath)
+      return NONE_DATA_LAYER_CONFIG;
+    for (let tree of this.conditionDataSource.data) {
+      if (tree.filepath === filepath) return tree;
+      if (tree.children) {
+        for (let pillar of tree.children) {
+          if (pillar.filepath === filepath) {
+            this.conditionTreeControl.expand(tree);
+            return pillar;
+          }
+          if (pillar.children) {
+            for (let element of pillar.children) {
+              if (element.filepath === filepath) {
+                this.conditionTreeControl.expand(tree);
+                this.conditionTreeControl.expand(pillar);
+                return element;
+              }
+              if (element.children) {
+                for (let metric of element.children) {
+                  if (metric.filepath === filepath) {
+                    this.conditionTreeControl.expand(tree);
+                    this.conditionTreeControl.expand(pillar);
+                    this.conditionTreeControl.expand(element);
+                    return metric;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+    return NONE_DATA_LAYER_CONFIG;
   }
 }
