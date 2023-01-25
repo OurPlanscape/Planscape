@@ -27,7 +27,7 @@ class MeanConditionScoresTest(TestCase):
         self.xscale = 300
         self.yscale = -300
 
-    def test_gets_mean_scores(self):
+    def test_computes_mean_scores(self):
         geo = self._create_geo(0, 3, 0, 1)
         plan = Plan.objects.create(geometry=geo, region_name=self.region)
 
@@ -61,7 +61,36 @@ class MeanConditionScoresTest(TestCase):
         self.assertEqual(ConditionScores.objects.get(
             condition_id=baz_id).mean_score, 10.0 / 2)
 
-    def test_gets_no_score_for_nodata_values(self):
+    def test_raises_error_for_missing_geo(self):
+        plan = Plan.objects.create(geometry=None, region_name=self.region)
+
+        foo_raster = self._create_raster(4, 4, (1, 2, 3, 4,
+                                                5, 6, 7, 8,
+                                                9, 10, 11, 12,
+                                                13, 14, 15, 16))
+        self._create_condition_db("foo", "foo_normalized", foo_raster)
+        with self.assertRaises(Exception) as context:
+            fetch_or_compute_mean_condition_scores(plan)
+        self.assertEqual(
+            str(context.exception), "plan is missing geometry")
+
+    def test_raises_error_for_bad_region(self):
+        geo = self._create_geo(0, 3, 0, 1)
+        plan = Plan.objects.create(
+            geometry=geo, region_name="nonsensical region")
+
+        foo_raster = self._create_raster(4, 4, (1, 2, 3, 4,
+                                                5, 6, 7, 8,
+                                                9, 10, 11, 12,
+                                                13, 14, 15, 16))
+        self._create_condition_db("foo", "foo_normalized", foo_raster)
+        with self.assertRaises(Exception) as context:
+            fetch_or_compute_mean_condition_scores(plan)
+        self.assertEqual(
+            str(context.exception),
+            "no conditions exist for region, nonsensical region")
+
+    def test_computes_no_score_for_nodata_values(self):
         geo = self._create_geo(0, 3, 0, 1)
         plan = Plan.objects.create(geometry=geo, region_name=self.region)
 
@@ -79,7 +108,7 @@ class MeanConditionScoresTest(TestCase):
         self.assertEqual(ConditionScores.objects.get(
             condition_id=foo_id).mean_score, None)
 
-    def test_gets_no_score_for_no_intersection(self):
+    def test_computes_no_score_for_no_intersection(self):
         geo = self._create_geo(6, 10, 0, 1)
         plan = Plan.objects.create(geometry=geo, region_name=self.region)
 
@@ -121,6 +150,30 @@ class MeanConditionScoresTest(TestCase):
         self.assertEqual(len(ConditionScores.objects.all()), 1)
         self.assertEqual(ConditionScores.objects.get(
             condition_id=foo_id).mean_score, None)
+
+    def test_retrieves_mean_scores(self):
+        geo = self._create_geo(0, 3, 0, 1)
+        plan = Plan.objects.create(geometry=geo, region_name=self.region)
+
+        foo_raster = self._create_raster(4, 4, (1, 2, 3, 4,
+                                                5, 6, 7, 8,
+                                                9, 10, 11, 12,
+                                                13, 14, 15, 16))
+        foo_id = self._create_condition_db("foo", "foo_normalized", foo_raster)
+
+        bar_raster = self._create_raster(4, 4, (9, 10, 11, 12,
+                                                13, 14, 15, 16,
+                                                1, 2, 3, 4,
+                                                5, 6, 7, 8))
+        bar_id = self._create_condition_db("bar", "bar_normalized", bar_raster)
+
+        ConditionScores.objects.create(
+            plan=plan, condition_id=foo_id, mean_score=5.0)
+        ConditionScores.objects.create(
+            plan=plan, condition_id=bar_id, mean_score=None)
+
+        scores = fetch_or_compute_mean_condition_scores(plan)
+        self.assertDictEqual(scores, {"foo": 5.0, "bar": None})
 
     def _create_geo(
             self, xmin: int, xmax: int, ymin: int, ymax: int) -> MultiPolygon:
