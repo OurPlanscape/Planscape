@@ -1,21 +1,18 @@
-from planscape import settings
-from plan.serializers import (
-    PlanSerializer, ProjectAreaSerializer, ProjectSerializer)
-from plan.models import Plan, Project, ProjectArea, ConditionScores
-from django.views.decorators.csrf import csrf_exempt
-from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse, QueryDict)
-from django.db.models import Count
-from django.db import connection
-from django.contrib.gis.geos import GEOSGeometry
 import datetime
 import json
 
-from base.region_name import (display_name_to_region,
-                              region_to_display_name)
+from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_mean_condition_scores
-
+from django.contrib.gis.geos import GEOSGeometry
+from django.db.models import Count
+from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
+                         JsonResponse, QueryDict)
+from django.views.decorators.csrf import csrf_exempt
+from plan.models import Plan, Project, ProjectArea
+from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
+                              ProjectSerializer)
+from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -338,7 +335,7 @@ def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         user = _get_user(request)
         plan = get_plan_by_id(user, request.GET)
-        
+
         condition_scores = fetch_or_compute_mean_condition_scores(plan)
         conditions = []
         for c in condition_scores.keys():
