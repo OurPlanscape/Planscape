@@ -1,30 +1,19 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { concatMap, Observable, of, Subscription } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 
 import { AuthService, User } from '../services';
 
 @Component({
   selector: 'app-account-dialog',
   templateUrl: './account-dialog.component.html',
-  styleUrls: ['./account-dialog.component.scss']
+  styleUrls: ['./account-dialog.component.scss'],
 })
-export class AccountDialogComponent implements OnInit, OnDestroy {
+export class AccountDialogComponent implements OnInit {
+  user$!: Observable<User | null>;
 
-  user$!: Observable<User>;
-
-  private isLoggedInSubscription!: Subscription;
-
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.isLoggedInSubscription = this.authService.isLoggedIn$.subscribe();
-    this.user$ = this.authService.isLoggedIn$.pipe(concatMap(loggedIn => {
-      return loggedIn ? this.authService.getLoggedInUser() : of({ username: 'Guest' });
-    }));
+    this.user$ = this.authService.loggedInUser$;
   }
-
-  ngOnDestroy(): void {
-    this.isLoggedInSubscription.unsubscribe();
-  }
-
 }
