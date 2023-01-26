@@ -86,6 +86,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   readonly baseLayerTypes: number[] = [
     BaseLayerType.Road,
     BaseLayerType.Terrain,
+    BaseLayerType.Satellite,
   ];
   readonly BaseLayerType = BaseLayerType;
 
