@@ -378,14 +378,14 @@ class ProjectTest(TransactionTestCase):
 
     def test_missing_user(self):
         response = self.client.post(
-            reverse('plan:create_project'), {'max_cost': 100},
+            reverse('plan:create_project'), {},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_missing_plan(self):
         self.client.force_login(self.user)
         response = self.client.post(
-            reverse('plan:create_project'), {'max_cost': 100},
+            reverse('plan:create_project'), {},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -393,7 +393,7 @@ class ProjectTest(TransactionTestCase):
         settings.PLANSCAPE_GUEST_CAN_SAVE = True
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_with_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -401,7 +401,7 @@ class ProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_no_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_no_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -409,7 +409,7 @@ class ProjectTest(TransactionTestCase):
         settings.PLANSCAPE_GUEST_CAN_SAVE = True
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_no_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_no_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -417,9 +417,25 @@ class ProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_with_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_treatment_ratio_bad_format_negative(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'max_treatment_area_ratio': -1},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_max_slope_bad_format_negative(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'max_slope': -1},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
 
     def test_with_priority(self):
         self.client.force_login(self.user)
@@ -429,9 +445,8 @@ class ProjectTest(TransactionTestCase):
             condition_dataset=self.base_condition, condition_score_type=0)
 
         response = self.client.post(
-            reverse('plan:create_project'),
-            {'plan_id': self.plan_with_user.pk, 'max_cost': 100,
-             'priorities': 'condition1'},
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'priorities': 'condition1'},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -443,9 +458,8 @@ class ProjectTest(TransactionTestCase):
             condition_dataset=self.base_condition, condition_score_type=0)
 
         response = self.client.post(
-            reverse('plan:create_project'),
-            {'plan_id': self.plan_with_user.pk, 'max_cost': 100,
-             'priorities': 'condition3'},
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'priorities': 'condition3'},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -543,12 +557,12 @@ class GetProjectTest(TransactionTestCase):
 
         self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
         self.project_no_user_no_pri = Project.objects.create(
-            owner=None, plan=self.plan_no_user, max_cost=100)
+            owner=None, plan=self.plan_no_user, max_budget=100)
 
         self.plan_with_user = create_plan(
             self.user, 'ownerless', stored_geometry, [])
         self.project_with_user_no_pri = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user, max_cost=100)
+            owner=self.user, plan=self.plan_with_user, max_budget=100)
 
         self.base_condition = BaseCondition.objects.create(
             condition_name="name", condition_level=ConditionLevel.ELEMENT)
@@ -573,7 +587,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
 
     def test_get_project_no_priorities(self):
         self.client.force_login(self.user)
@@ -584,7 +598,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], self.user.pk)
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
 
     def test_get_nonexistent_project(self):
         self.client.force_login(self.user)
@@ -603,7 +617,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
         self.assertEqual(response.json()['priorities'], [
                          self.condition1.pk, self.condition2.pk])
 
@@ -619,7 +633,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], self.user.pk)
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
         self.assertEqual(response.json()['priorities'], [
                          self.condition1.pk, self.condition2.pk])
 
@@ -639,14 +653,14 @@ class GetProjectAreaTest(TransactionTestCase):
 
         self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
         self.project_no_user = Project.objects.create(
-            owner=None, plan=self.plan_no_user, max_cost=100)
+            owner=None, plan=self.plan_no_user, max_budget=100)
         self.project_area_no_user = ProjectArea.objects.create(
             owner=None, project=self.project_no_user,
             project_area=stored_geometry, estimated_area_treated=100)
         self.project_area_no_user2 = ProjectArea.objects.create(
             owner=None, project=self.project_no_user, project_area=stored_geometry)
         self.project_no_user_no_projectareas = Project.objects.create(
-            owner=None, plan=self.plan_no_user, max_cost=200)
+            owner=None, plan=self.plan_no_user, max_budget=200)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -654,7 +668,7 @@ class GetProjectAreaTest(TransactionTestCase):
         self.plan_with_user = create_plan(
             self.user, 'ownerless', stored_geometry, [])
         self.project_with_user = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user, max_cost=100)
+            owner=self.user, plan=self.plan_with_user, max_budget=100)
         self.project_area_with_user = ProjectArea.objects.create(
             owner=self.user, project=self.project_with_user,
             project_area=stored_geometry, estimated_area_treated=200)

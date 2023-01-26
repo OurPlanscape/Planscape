@@ -184,7 +184,7 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
             geometry=self.stored_geometry)
 
         self.project_with_user = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user, max_cost=100, )
+            owner=self.user, plan=self.plan_with_user, max_budget=100, )
         self.project_with_user.priorities.add(self.condition1)
         self.project_with_user.priorities.add(self.condition2)
 

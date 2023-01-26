@@ -72,8 +72,10 @@ export class MapManager {
 
     if (map.config.baseLayerType === BaseLayerType.Road) {
       map.baseLayerRef = this.stadiaAlidadeTiles();
-    } else {
+    } else if (map.config.baseLayerType == BaseLayerType.Terrain) {
       map.baseLayerRef = this.hillshadeTiles();
+    } else {
+      map.baseLayerRef = this.USGSTiles();
     }
 
     map.instance = L.map(mapId, {
@@ -148,6 +150,17 @@ export class MapManager {
           '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
         zIndex: 0,
       }
+    );
+  }
+
+  private USGSTiles() {
+    return L.tileLayer(
+      'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
+      {
+         zIndex: 0,
+         maxZoom: 20,
+         attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
+       }
     );
   }
 
@@ -563,6 +576,8 @@ export class MapManager {
       map.baseLayerRef = this.hillshadeTiles();
     } else if (baseLayerType === BaseLayerType.Road) {
       map.baseLayerRef = this.stadiaAlidadeTiles();
+    } else if (baseLayerType === BaseLayerType.Satellite) {
+      map.baseLayerRef = this.USGSTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
   }
