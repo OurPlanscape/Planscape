@@ -390,7 +390,7 @@ class ProjectTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_null_user_cannot_create_project_with_user(self):
-        settings.PLANSCAPE_GUEST_CAN_SAVE = False
+        settings.PLANSCAPE_GUEST_CAN_SAVE = True
         response = self.client.post(
             reverse('plan:create_project'), {
                 'plan_id': self.plan_with_user.pk, 'max_cost': 100},
@@ -406,7 +406,7 @@ class ProjectTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_no_user(self):
-        settings.PLANSCAPE_GUEST_CAN_SAVE = False
+        settings.PLANSCAPE_GUEST_CAN_SAVE = True
         response = self.client.post(
             reverse('plan:create_project'), {
                 'plan_id': self.plan_no_user.pk, 'max_cost': 100},
