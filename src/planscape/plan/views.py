@@ -313,13 +313,11 @@ def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         user = _get_user(request)
         plan = get_plan_by_id(user, request.GET)
-
+        
         condition_scores = fetch_or_compute_mean_condition_scores(plan)
         conditions = []
         for c in condition_scores.keys():
             score = condition_scores[c]
-            ConditionScores.objects.create(
-                plan=plan, condition=x, mean_score=score)
             if score is None:
                 conditions.append({'condition': c})
             else:
