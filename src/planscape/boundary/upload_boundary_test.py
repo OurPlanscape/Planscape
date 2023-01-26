@@ -44,10 +44,12 @@ class UploadBoundaryTest(TestCase):
         directory = os.path.join(settings.BASE_DIR, 'testing/testdata/')
         configuration_file = os.path.join(
             settings.BASE_DIR, 'testing/testdata/boundary.json')
-        self.call_command(
+        out = self.call_command(
             directory, '--configuration_file', configuration_file, '--boundary', 'foo')
         self.assertEqual(Boundary.objects.count(), 0)
         self.assertEqual(BoundaryDetails.objects.count(), 0)
+        self.assertIn(
+            'Warning: no boundaries updated; check the --boundary argument.', out)
 
     def test_matching_boundary(self):
         directory = os.path.join(settings.BASE_DIR, 'testing/testdata/')
