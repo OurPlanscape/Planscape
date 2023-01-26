@@ -53,12 +53,16 @@ class Project(models.Model):
     priorities = models.ManyToManyField('conditions.Condition')
 
     # Max constraints. If null, no max value unless a system default is defined.
+    # In USD
     max_budget: models.FloatField = models.FloatField(null=True)
 
-    max_treatment_ratio: models.FloatField = models.FloatField(null=True)
+    # Ratio of treatment area to planning area
+    max_treatment_area_ratio: models.FloatField = models.FloatField(null=True)
 
+    # In miles
     max_road_distance: models.FloatField = models.FloatField(null=True)
 
+    # Ratio of elevation to distance
     max_slope: models.FloatField = models.FloatField(null=True)
 
     # TODO: Add more project parameters like min_acres_treated and

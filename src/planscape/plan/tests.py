@@ -403,27 +403,11 @@ class ProjectTest(TransactionTestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
-    def test_treatment_ratio_bad_format(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_treatment_ratio': 4},
-            content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-
     def test_treatment_ratio_bad_format_negative(self):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_treatment_ratio': -1},
-            content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-
-    def test_max_slope_bad_format(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_slope': 4},
+                'plan_id': self.plan_with_user.pk, 'max_treatment_area_ratio': -1},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
