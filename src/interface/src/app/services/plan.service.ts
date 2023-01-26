@@ -1,4 +1,4 @@
-import { PlanPreview } from './../types/plan.types';
+import { PlanPreview, PlanConditionScores } from './../types/plan.types';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { BackendConstants } from '../backend-constants';
@@ -58,18 +58,16 @@ export class PlanService {
       tap(({ result: createdPlan }) => {
         this.addPlanToState(createdPlan);
       }),
-      catchError((e: HttpErrorResponse) => {
-        return of({
-          success: false,
-        });
-      })
     );
   }
 
   /** Makes a request to the backend to delete a plan with the given ID. */
   deletePlan(planIds: string[]): Observable<string> {
     return this.http.post<string>(
-      BackendConstants.END_POINT.concat('/plan/delete/?id=', planIds.toString()),
+      BackendConstants.END_POINT.concat(
+        '/plan/delete/?id=',
+        planIds.toString()
+      ),
       {
         id: planIds,
       },
@@ -112,6 +110,18 @@ export class PlanService {
           dbPlanList.map((dbPlan) => this.convertToPlanPreview(dbPlan))
         )
       );
+  }
+
+  /** Makes a request to the backend for the average condition scores in a planning area. */
+  getConditionScoresForPlanningArea(
+    planId: string
+  ): Observable<PlanConditionScores> {
+    let url = BackendConstants.END_POINT.concat('/plan/scores/?id=', planId);
+    return this.http
+      .get<PlanConditionScores>(url, {
+        withCredentials: true,
+      })
+      .pipe(take(1));
   }
 
   private convertToPlan(plan: BackendPlan): Plan {

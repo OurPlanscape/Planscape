@@ -1,10 +1,18 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { take } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { Plan } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
+import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
+import { PlanConditionScores } from './../../../types/plan.types';
+
+export interface ScoreColumn {
+  label: string;
+  score: number;
+}
 
 // Temporary priorities type
 export interface Priorities {
@@ -17,7 +25,7 @@ interface PriorityRow {
   expanded?: boolean; // Children in table are not hidden
   hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
   conditionName: string;
-  score: number;
+  displayName?: string;
   filepath: string;
   children: PriorityRow[];
   level: number;
@@ -29,6 +37,7 @@ interface PriorityRow {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
+  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Output() changeConditionEvent = new EventEmitter<string>();
   @Output() changePrioritiesEvent = new EventEmitter<Priorities>();
 
@@ -38,15 +47,14 @@ export class SetPrioritiesComponent implements OnInit {
     the data.
   `;
 
-  displayedColumns: string[] = [
-    'selected',
-    'visible',
-    'conditionName',
-    'score',
-  ];
+  conditionScores = new Map<string, ScoreColumn>();
+  displayedColumns: string[] = ['selected', 'visible', 'displayName', 'score'];
   datasource = new MatTableDataSource<PriorityRow>();
 
-  constructor(private mapService: MapService) {}
+  constructor(
+    private mapService: MapService,
+    private planService: PlanService
+  ) {}
 
   ngOnInit(): void {
     this.mapService.conditionsConfig$
@@ -59,19 +67,27 @@ export class SetPrioritiesComponent implements OnInit {
           conditionsConfig!
         );
       });
+    this.plan$.pipe(filter((plan) => !!plan)).subscribe((plan) => {
+      this.planService
+        .getConditionScoresForPlanningArea(plan!.id)
+        .subscribe((response) => {
+          this.conditionScores =
+            this.convertConditionScoresToDictionary(response);
+        });
+    });
   }
 
-  conditionsConfigToPriorityData(config: ConditionsConfig): PriorityRow[] {
+  private conditionsConfigToPriorityData(
+    config: ConditionsConfig
+  ): PriorityRow[] {
     let data: PriorityRow[] = [];
     config.pillars
       ?.filter((pillar) => pillar.display)
       .forEach((pillar) => {
         let pillarRow: PriorityRow = {
-          conditionName: pillar.display_name
-            ? pillar.display_name
-            : pillar.pillar_name!,
+          conditionName: pillar.pillar_name!,
+          displayName: pillar.display_name,
           filepath: pillar.filepath!.concat('_normalized'),
-          score: 0,
           children: [],
           level: 0,
           expanded: true,
@@ -79,11 +95,9 @@ export class SetPrioritiesComponent implements OnInit {
         data.push(pillarRow);
         pillar.elements?.forEach((element) => {
           let elementRow: PriorityRow = {
-            conditionName: element.display_name
-              ? element.display_name
-              : element.element_name!,
+            conditionName: element.element_name!,
+            displayName: element.display_name,
             filepath: element.filepath!.concat('_normalized'),
-            score: 0,
             children: [],
             level: 1,
             expanded: true,
@@ -92,11 +106,9 @@ export class SetPrioritiesComponent implements OnInit {
           pillarRow.children.push(elementRow);
           element.metrics?.forEach((metric) => {
             let metricRow: PriorityRow = {
-              conditionName: metric.display_name
-                ? metric.display_name
-                : metric.metric_name!,
+              conditionName: metric.metric_name!,
+              displayName: metric.display_name,
               filepath: metric.filepath!,
-              score: 0,
               children: [],
               level: 2,
             };
@@ -106,6 +118,36 @@ export class SetPrioritiesComponent implements OnInit {
         });
       });
     return data;
+  }
+
+  private convertConditionScoresToDictionary(
+    scores: PlanConditionScores
+  ): Map<string, ScoreColumn> {
+    let scoreMap = new Map<string, ScoreColumn>();
+    scores.conditions.forEach((condition) => {
+      scoreMap.set(condition.condition, {
+        label: this.scoreToLabel(condition.mean_score),
+        score: condition.mean_score,
+      });
+    });
+    return scoreMap;
+  }
+
+  private scoreToLabel(score: number): string {
+    // TEMPORARY: use 5 equal buckets for scores [-1, 1] (Lowest, Low, Medium, High, Highest)
+    if (score < -0.6) return 'Lowest';
+    if (score < -0.2) return 'Low';
+    if (score < 0.2) return 'Medium';
+    if (score < 0.6) return 'High';
+    return 'Highest';
+  }
+
+  getScoreLabel(conditionName: string): string | undefined {
+    return this.conditionScores.get(conditionName)?.label;
+  }
+
+  getScore(conditionName: string): number | undefined {
+    return this.conditionScores.get(conditionName)?.score;
   }
 
   /** Toggle whether a priority condition's children are expanded. */

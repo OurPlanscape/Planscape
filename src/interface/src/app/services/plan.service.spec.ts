@@ -6,7 +6,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
-import { PlanPreview } from './../types/plan.types';
+import { PlanConditionScores, PlanPreview } from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
 
 describe('PlanService', () => {
@@ -142,6 +142,29 @@ describe('PlanService', () => {
         BackendConstants.END_POINT.concat('/plan/list_plans_by_owner')
       );
       req.flush([backendPlan]);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getConditionScoresForPlanningArea', () => {
+    it('should make HTTP request to backend', () => {
+      const expectedScores: PlanConditionScores = {
+        conditions: [
+          {
+            condition: 'fake_condition',
+            mean_score: 1.3,
+          },
+        ],
+      };
+
+      service.getConditionScoresForPlanningArea('1').subscribe((res) => {
+        expect(res).toEqual(expectedScores);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/scores/?id=1')
+      );
+      req.flush(expectedScores);
       httpTestingController.verify();
     });
   });
