@@ -52,14 +52,16 @@ class Command(BaseCommand):
         config = BoundaryConfig(configuration_file)
 
         # Read the shapefiles and add Boundary and BoundaryDetail objects.
+        found: bool = False
         for boundary in config.get_boundaries():
             # Check if need to load just one boundary
             boundary_name = boundary['boundary_name']
             if boundary_to_load is not None and boundary_to_load != boundary_name:
                 continue
+            found = True
 
             # Create the new top-level Boundary
-            print("Creating boundary " + boundary_name)
+            self.stdout.write("Creating boundary " + boundary_name)
             display_name = boundary.get('display_name', None)
             region_name = boundary.get('region_name', None)
             if region_name is not None and region_name == "none":
@@ -87,3 +89,6 @@ class Command(BaseCommand):
             pre_save.connect(presave_callback, sender=BoundaryDetails)
             lm.save(strict=True, verbose=verbose)
             pre_save.disconnect(presave_callback, sender=BoundaryDetails)
+
+        if not found:
+            self.stdout.write('Warning: no boundaries updated; check the --boundary argument.')
