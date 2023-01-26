@@ -219,7 +219,7 @@ def create_project(request: HttpRequest) -> HttpResponse:
         if (max_treatment_area_ratio is not None and
                 (not (isinstance(max_treatment_area_ratio, float)) or max_treatment_area_ratio < 0)):
             raise ValueError(
-                "Max treatment must be a float value > 0.0")
+                "Max treatment must be a float value >= 0.0")
 
         max_road_distance = body.get('max_road_distance', None)
         if max_road_distance is not None and not (isinstance(max_road_distance, float)):
@@ -229,7 +229,7 @@ def create_project(request: HttpRequest) -> HttpResponse:
         if (max_slope is not None and
                 (not (isinstance(max_slope, float)) or max_slope < 0)):
             raise ValueError(
-                "Max slope must be a float value > 0.0")
+                "Max slope must be a float value >= 0.0")
 
         # Create the project.
         project = Project.objects.create(owner=owner, plan=plan)
