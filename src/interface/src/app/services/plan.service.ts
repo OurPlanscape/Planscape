@@ -58,11 +58,6 @@ export class PlanService {
       tap(({ result: createdPlan }) => {
         this.addPlanToState(createdPlan);
       }),
-      catchError((e: HttpErrorResponse) => {
-        return of({
-          success: false,
-        });
-      })
     );
   }
 
