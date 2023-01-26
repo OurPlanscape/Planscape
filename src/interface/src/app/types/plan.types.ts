@@ -29,3 +29,12 @@ export interface Scenario {
   id: string;
   createdTimestamp: number; //in milliseconds since epoch
 }
+
+export interface PlanConditionScores {
+  conditions: PlanConditionScore[];
+}
+
+export interface PlanConditionScore {
+  condition: string;
+  mean_score: number;
+}

@@ -1,15 +1,31 @@
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MaterialModule } from 'src/app/material/material.module';
+import { HarnessLoader } from '@angular/cdk/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject } from 'rxjs';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject, of } from 'rxjs';
+import { MaterialModule } from 'src/app/material/material.module';
+import { Plan, Region } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
+import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
-import { SetPrioritiesComponent } from './set-priorities.component';
+import {
+  ScoreColumn,
+  SetPrioritiesComponent,
+} from './set-priorities.component';
 
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
   let fixture: ComponentFixture<SetPrioritiesComponent>;
+  let loader: HarnessLoader;
 
   let fakeMapService: MapService;
+  let fakePlanService: PlanService;
 
   beforeEach(async () => {
     fakeMapService = jasmine.createSpyObj<MapService>(
@@ -39,18 +55,51 @@ describe('SetPrioritiesComponent', () => {
         }),
       }
     );
+    fakePlanService = jasmine.createSpyObj<PlanService>(
+      'PlanService',
+      {
+        getConditionScoresForPlanningArea: of({
+          conditions: [
+            {
+              condition: 'test_pillar_1',
+              mean_score: 0.1,
+            },
+            {
+              condition: 'test_element_1',
+              mean_score: -0.7,
+            },
+            {
+              condition: 'test_metric_1',
+              mean_score: 0.4,
+            },
+          ],
+        }),
+      },
+      {}
+    );
     await TestBed.configureTestingModule({
+      imports: [
+        BrowserAnimationsModule,
+        FormsModule,
+        MaterialModule,
+        ReactiveFormsModule,
+      ],
       declarations: [SetPrioritiesComponent],
       providers: [
         {
           provide: MapService,
           useValue: fakeMapService,
         },
+        {
+          provide: PlanService,
+          useValue: fakePlanService,
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SetPrioritiesComponent);
     component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
@@ -61,28 +110,64 @@ describe('SetPrioritiesComponent', () => {
   it('should populate datasource', () => {
     const metric = {
       conditionName: 'test_metric_1',
+      displayName: undefined,
       filepath: 'test_metric_1',
-      score: 0,
       children: [],
       level: 2,
     };
     const element = {
       conditionName: 'test_element_1',
+      displayName: undefined,
       filepath: 'test_element_1_normalized',
-      score: 0,
       children: [metric],
       level: 1,
       expanded: true,
     };
     const pillar = {
       conditionName: 'test_pillar_1',
+      displayName: undefined,
       filepath: 'test_pillar_1_normalized',
-      score: 0,
       children: [element],
       level: 0,
       expanded: true,
     };
     expect(component.datasource.data).toEqual([pillar, element, metric]);
+  });
+
+  it('should populate condition score map', () => {
+    const fakePlan: Plan = {
+      id: '1',
+      name: 'fakeplan',
+      ownerId: '1',
+      region: Region.SIERRA_NEVADA,
+    };
+    const expectedMap = new Map<string, ScoreColumn>([
+      [
+        'test_pillar_1',
+        {
+          label: 'Medium',
+          score: 0.1,
+        },
+      ],
+      [
+        'test_element_1',
+        {
+          label: 'Lowest',
+          score: -0.7,
+        },
+      ],
+      [
+        'test_metric_1',
+        {
+          label: 'High',
+          score: 0.4,
+        },
+      ],
+    ]);
+
+    component.plan$.next(fakePlan);
+
+    expect(component.conditionScores).toEqual(expectedMap);
   });
 
   it('should only have 1 condition visible at a time', () => {
@@ -133,6 +218,25 @@ describe('SetPrioritiesComponent', () => {
       child.children.forEach((grandchild) => {
         expect(grandchild.hidden).toBeTrue();
       });
+    });
+  });
+
+  it('selecting a priority should emit a priority change event', async () => {
+    spyOn(component.changePrioritiesEvent, 'emit');
+    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
+
+    // Check the first priority (should be 'test_pillar_1')
+    await checkboxHarnesses[0].check();
+
+    expect(component.changePrioritiesEvent.emit).toHaveBeenCalledOnceWith({
+      priorities: ['test_pillar_1'],
+    });
+
+    // Check the second priority (should be 'test_element_1')
+    await checkboxHarnesses[1].check();
+
+    expect(component.changePrioritiesEvent.emit).toHaveBeenCalledWith({
+      priorities: ['test_pillar_1', 'test_element_1'],
     });
   });
 });

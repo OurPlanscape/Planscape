@@ -208,17 +208,42 @@ def create_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
 
-        # Get the max_cost parameter.
-        # TODO: Add more parameters as necessary.
-        max_cost = body.get('max_cost', None)
+        # Parse constraints
+        max_budget = body.get('max_budget', None)
+        if max_budget is not None and not (isinstance(max_budget, float)):
+            raise ValueError("Max budget must be a float value")
 
-        priorities = body.get('priorities', None)
-        priorities_list = [] if priorities is None else priorities.split(',')
+        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+        if (max_treatment_area_ratio is not None and
+                (not (isinstance(max_treatment_area_ratio, float)) or max_treatment_area_ratio < 0)):
+            raise ValueError(
+                "Max treatment must be a float value >= 0.0")
+
+        max_road_distance = body.get('max_road_distance', None)
+        if max_road_distance is not None and not (isinstance(max_road_distance, float)):
+            raise ValueError("Max distance from road must be a float value")
+
+        max_slope = body.get('max_slope', None)
+        if (max_slope is not None and
+                (not (isinstance(max_slope, float)) or max_slope < 0)):
+            raise ValueError(
+                "Max slope must be a float value >= 0.0")
 
         # Create the project.
-        project = Project.objects.create(
-            owner=owner, plan=plan, max_cost=max_cost)
+        project = Project.objects.create(owner=owner, plan=plan)
+        if max_budget is not None:
+            project.max_budget = max_budget
+        if max_treatment_area_ratio is not None:
+            project.max_treatment_area_ratio = max_treatment_area_ratio
+        if max_road_distance is not None:
+            project.max_road_distance = max_road_distance
+        if max_slope is not None:
+            project.max_slope = max_slope
         project.save()
+
+        # Parse priorities
+        priorities = body.get('priorities', None)
+        priorities_list = [] if priorities is None else priorities.split(',')
         for pri in priorities_list:
             base_condition = BaseCondition.objects.get(condition_name=pri)
             condition = Condition.objects.get(
