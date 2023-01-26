@@ -1,6 +1,5 @@
 # Tool to clip a shapefile to California
 import geopandas as gpd
-from shapely.geometry import Polygon
 
 ORIGINAL_FILE="~/Downloads/S_USA.AdministrativeForest/S_USA.AdministrativeForest.shp"
 CALIFORNIA_BOUNDARY="~/cnra/env/Planscape/data/boundary/ca-state-boundary/CA_State_TIGER2016.shp"
