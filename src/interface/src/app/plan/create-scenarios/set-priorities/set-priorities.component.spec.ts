@@ -1,11 +1,8 @@
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MaterialModule } from 'src/app/material/material.module';
 import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
