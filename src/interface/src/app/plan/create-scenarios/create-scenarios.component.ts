@@ -15,8 +15,10 @@ import {
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan } from 'src/app/types';
-import { Constraints } from './constraints-panel/constraints-panel.component';
+
 import { PlanStep } from './../plan.component';
+import { Constraints } from './constraints-panel/constraints-panel.component';
+import { Priorities } from './set-priorities/set-priorities.component';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -73,6 +75,7 @@ export class CreateScenariosComponent {
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
   @Output() changeConstraintsEvent = new EventEmitter<Constraints>();
+  @Output() changePrioritiesEvent = new EventEmitter<Priorities>();
 
   readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
