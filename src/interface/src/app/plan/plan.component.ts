@@ -22,7 +22,7 @@ export class PlanComponent {
   readonly PlanStep = PlanStep;
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  currentPlanStep: PlanStep = PlanStep.CreateScenarios;
+  currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
 
   constructor(private planService: PlanService, private route: ActivatedRoute) {
