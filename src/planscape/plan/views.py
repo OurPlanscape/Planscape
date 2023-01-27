@@ -17,7 +17,7 @@ from planscape import settings
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
 
-def _get_user(request: HttpRequest) -> HttpResponse:
+def _get_user(request: HttpRequest):
     user = None
     if request.user.is_authenticated:
         user = request.user
