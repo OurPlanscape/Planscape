@@ -1,9 +1,9 @@
-import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
@@ -11,6 +11,7 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { PlanPreview, Region } from 'src/app/types';
 
 import { PlanService } from './../../services/plan.service';
+import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 import { PlanTableComponent } from './plan-table.component';
 
 describe('PlanTableComponent', () => {
@@ -33,7 +34,12 @@ describe('PlanTableComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, MaterialModule],
+      imports: [
+        BrowserAnimationsModule,
+        FormsModule,
+        MaterialModule,
+        ReactiveFormsModule,
+      ],
       declarations: [PlanTableComponent],
       providers: [
         { provide: PlanService, useValue: fakeService },

@@ -109,7 +109,7 @@ export class MapService {
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
   getExistingProjects(): Observable<GeoJSON.GeoJSON> {
-    return this.http.get<string>(BackendConstants.END_POINT + '/projects').pipe(
+    return this.http.get<string>(BackendConstants.END_POINT + '/projects/calmapper').pipe(
       map((response: string) => {
         return JSON.parse(response);
       })

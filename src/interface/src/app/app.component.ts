@@ -19,7 +19,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // Refresh the user's logged in status when the app initializes.
-    this.authService.refreshToken().pipe(take(1)).subscribe();
+    this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
   }
 
 }

@@ -38,3 +38,10 @@ From: <https://drive.google.com/file/d/1zNYZRTgNEX4mNAtU1I3-7RD8VSo8-ATH/view?us
 
 Contains Tiger Roads data for California which we use to calculate distance
 from nearest road for treatment cost calculations
+
+
+# Historic Landscape Management Layer
+
+A set of rasters from 1951 to 2019, one raster for each year. Each non-NA pixel represents some management that occurred at that pixel for a given year. The values range from 1-3 with 1 being low severity treatment, 2-moderate, and 3-high severity. You can probably ignore the 1-3 scale - that was based on some work a UC-Berkeley grad did where she lumped different treatment types into severity classes.
+
+Provided by Nicholas Povak.

@@ -1,1 +1,1 @@
-<p>You are logged in as {{ (user$ | async)?.username }}.</p>
+<p>You are logged in as {{ (user$ | async) ? (user$ | async)!.username : 'Guest' }}.</p>
