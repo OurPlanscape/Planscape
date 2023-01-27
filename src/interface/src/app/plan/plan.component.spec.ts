@@ -11,7 +11,6 @@ import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
-import { ProgressPanelComponent } from './progress-panel/progress-panel.component';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -71,12 +70,7 @@ describe('PlanComponent', () => {
         PlanModule,
         RouterTestingModule.withRoutes([]),
       ],
-      declarations: [
-        PlanComponent,
-        PlanMapComponent,
-        PlanOverviewComponent,
-        ProgressPanelComponent,
-      ],
+      declarations: [PlanComponent, PlanMapComponent, PlanOverviewComponent],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: PlanService, useValue: fakeService },
@@ -94,20 +88,6 @@ describe('PlanComponent', () => {
 
   it('currentPlanStep should be 0', () => {
     expect(component.currentPlanStep).toBe(0);
-  });
-
-  it('nextStep should increment currentPlanStep', () => {
-    component.nextStep();
-
-    expect(component.currentPlanStep).toBe(1);
-  });
-
-  it('previousStep should decrement currentPlanStep', () => {
-    component.nextStep();
-    component.nextStep();
-    component.previousStep();
-
-    expect(component.currentPlanStep).toBe(1);
   });
 
   it('fetches plan from service using ID', () => {
