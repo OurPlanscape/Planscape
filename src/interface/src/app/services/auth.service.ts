@@ -31,7 +31,6 @@ export class AuthService {
     private cookieService: CookieService,
     private snackbar: MatSnackBar) { }
 
-
   login(username: string, password: string) {
     return this.http.post(
       this.API_ROOT.concat('login/'),
