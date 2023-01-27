@@ -5,11 +5,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { SharedModule } from './../shared/shared.module';
+import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosIntroComponent } from './create-scenarios/create-scenarios-intro/create-scenarios-intro.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
-import { PlanBottomBarComponent } from './plan-bottom-bar/plan-bottom-bar.component';
 import { PlanMapComponent } from './plan-map/plan-map.component';
+import { PlanNavigationBarComponent } from './plan-navigation-bar/plan-navigation-bar.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
@@ -18,15 +19,12 @@ import { DeletePlanDialogComponent } from './plan-table/delete-plan-dialog/delet
 import { PlanTableComponent } from './plan-table/plan-table.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
-import { ProgressPanelComponent } from './progress-panel/progress-panel.component';
-import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [
     PlanComponent,
     PlanMapComponent,
-    ProgressPanelComponent,
     SavedScenariosComponent,
     SummaryPanelComponent,
     UnsavedScenariosComponent,
@@ -35,7 +33,7 @@ import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/
     DeletePlanDialogComponent,
     PlanOverviewComponent,
     CreateScenariosComponent,
-    PlanBottomBarComponent,
+    PlanNavigationBarComponent,
     SetPrioritiesComponent,
     CreateScenariosIntroComponent,
     ConstraintsPanelComponent,
