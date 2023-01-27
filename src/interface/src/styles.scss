@@ -123,6 +123,10 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   }
 }
 
+* {
+  outline: none;
+}
+
 // Geoman drawing vertex styling
 .marker-icon,
  .marker-icon:focus {
