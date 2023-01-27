@@ -1,7 +1,7 @@
 <div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
   <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
     <app-create-scenarios-intro *ngIf="planningStep === PlanStep.CreateScenarios"></app-create-scenarios-intro>
-    <app-set-priorities *ngIf="planningStep === PlanStep.SetPriorities" (changeConditionEvent)="changeConditionEvent.emit($event)"></app-set-priorities>
+    <app-set-priorities *ngIf="planningStep === PlanStep.SetPriorities" (changeConditionEvent)="changeConditionEvent.emit($event)" [plan$]="plan$"></app-set-priorities>
     <app-constraints-panel *ngIf="planningStep === PlanStep.SetConstraints" (changeConstraintsEvent)="changeConstraintsEvent.emit($event)"></app-constraints-panel>
   </div>
   <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded" [@expandCollapseButton]="panelExpanded ? 'colorA': 'colorB'">

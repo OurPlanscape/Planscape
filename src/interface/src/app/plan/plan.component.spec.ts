@@ -8,10 +8,12 @@ import { Plan, Region } from 'src/app/types';
 import { MaterialModule } from '../material/material.module';
 import { PlanService } from './../services/plan.service';
 import { PlanMapComponent } from './plan-map/plan-map.component';
+import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
+import { PlanModule } from './plan.module';
 import { ProgressPanelComponent } from './progress-panel/progress-panel.component';
 
-fdescribe('PlanComponent', () => {
+describe('PlanComponent', () => {
   let component: PlanComponent;
   let fixture: ComponentFixture<PlanComponent>;
 
@@ -66,9 +68,15 @@ fdescribe('PlanComponent', () => {
       imports: [
         HttpClientTestingModule,
         MaterialModule,
+        PlanModule,
         RouterTestingModule.withRoutes([]),
       ],
-      declarations: [PlanComponent, PlanMapComponent, ProgressPanelComponent],
+      declarations: [
+        PlanComponent,
+        PlanMapComponent,
+        PlanOverviewComponent,
+        ProgressPanelComponent,
+      ],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: PlanService, useValue: fakeService },
