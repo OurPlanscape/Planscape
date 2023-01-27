@@ -15,22 +15,17 @@ describe('AppComponent', () => {
   beforeEach(async () => {
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
-      { refreshToken: of({ access: true }) },
-      {},
+      { refreshLoggedInUser: of({ username: 'username' }) },
+      {}
     );
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        RouterTestingModule,
-      ],
+      imports: [HttpClientTestingModule, RouterTestingModule],
       declarations: [
         AppComponent,
         MockComponent(NavigationComponent),
         MockComponent(TopBarComponent),
       ],
-      providers: [
-        { provide: AuthService, useValue: fakeAuthService },
-      ],
+      providers: [{ provide: AuthService, useValue: fakeAuthService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(AppComponent);
@@ -44,10 +39,9 @@ describe('AppComponent', () => {
 
   describe('ngOnInit', () => {
     it('should refresh user token', () => {
-      const authServiceStub: AuthService = fixture.debugElement.injector.get(
-        AuthService
-      );
-      expect(authServiceStub.refreshToken).toHaveBeenCalled();
-    })
+      const authServiceStub: AuthService =
+        fixture.debugElement.injector.get(AuthService);
+      expect(authServiceStub.refreshLoggedInUser).toHaveBeenCalled();
+    });
   });
 });
