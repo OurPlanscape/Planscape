@@ -348,7 +348,7 @@ class ListPlansTest(TransactionTestCase):
                 self.assertTrue(False)
 
 
-class ProjectTest(TransactionTestCase):
+class CreateProjectTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -401,6 +401,7 @@ class ProjectTest(TransactionTestCase):
             reverse('plan:create_project'), {
                 'plan_id': self.plan_with_user.pk},
             content_type='application/json')
+        print(response.content)
         self.assertEqual(response.status_code, 200)
 
     def test_treatment_ratio_bad_format_negative(self):
@@ -435,7 +436,7 @@ class ProjectTest(TransactionTestCase):
     def test_with_nonexistent_priority(self):
         self.client.force_login(self.user)
         self.base_condition = BaseCondition.objects.create(
-            condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
+            condition_name="base_condition", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
             condition_dataset=self.base_condition, condition_score_type=0)
 
@@ -444,6 +445,82 @@ class ProjectTest(TransactionTestCase):
                 'plan_id': self.plan_with_user.pk, 'priorities': 'condition3'},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
+
+class UpdateProjectTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan_with_user = Plan.objects.create(
+            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition)
+
+        self.base_condition2 = BaseCondition.objects.create(
+            condition_name="condition2", condition_level=ConditionLevel.ELEMENT)
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition2, condition_score_type=0)
+
+        self.project_with_user = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_budget=100.0)
+        self.project_with_user.priorities.add(self.condition1)
+
+    def test_missing_id(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:update_project'), {}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_constraint_value_remove_priority(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk, 'max_budget': 200.0}, 
+                                             content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 200.0)
+        self.assertEqual(project.priorities.count(), 0)
+
+    def test_remove_constraint_remove_priority(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, None)
+        self.assertEqual(project.priorities.count(), 0)
+
+    def test_add_constraint(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk, 'max_slope': 0.5}, 
+                                             content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, None)
+        self.assertEqual(project.max_slope, 0.5)
+        self.assertEqual(project.priorities.count(), 0)
+
+    def test_add_priority(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk, 
+                                             'priorities': 'condition2'}, content_type='application/json')
+        print(response.content)
+        self.assertEqual(response.status_code, 200)
+
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, None)
+        self.assertEqual(project.priorities.count(), 1)
+        self.assertTrue(project.priorities.contains(self.condition2))
 
 
 class CreateProjectAreaTest(TransactionTestCase):
