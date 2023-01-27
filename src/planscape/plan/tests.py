@@ -1,14 +1,17 @@
 import datetime
 import json
+import numpy as np
 
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.gdal import GDALRaster
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.db import connection
 from django.test import TransactionTestCase
 from django.urls import reverse
-from planscape.settings import PLANSCAPE_GUEST_CAN_SAVE
+from planscape import settings
 
-from .models import Plan, Project, Scenario, ProjectArea
-from conditions.models import BaseCondition, Condition
+from .models import Plan, Project, Scenario, ProjectArea, ConditionScores
+from conditions.models import BaseCondition, Condition, ConditionRaster
 from base.condition_types import ConditionLevel
 
 
@@ -115,13 +118,16 @@ class CreatePlanTest(TransactionTestCase):
         self.assertEqual(plan.region_name, 'north_coast_inland')
 
 
-def create_plan(owner: User | None, name: str, geometry: GEOSGeometry | None, scenarios: list[int]):
+def create_plan(
+        owner: User | None, name: str, geometry: GEOSGeometry | None,
+        scenarios: list[int]):
     """
     Creates a plan with the given owner, name, geometry, and projects with the
     number of scenarios.
     """
     plan = Plan.objects.create(
-        owner=owner, name=name, region_name='sierra_cascade_inyo', geometry=geometry)
+        owner=owner, name=name, region_name='sierra_cascade_inyo',
+        geometry=geometry)
     plan.save()
     for num_scenarios in scenarios:
         project = Project.objects.create(owner=owner, plan=plan)
@@ -239,8 +245,10 @@ class GetPlanTest(TransactionTestCase):
 
     def test_get_plan_with_user(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_with_user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_plan'),
+            {'id': self.plan_with_user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'owned')
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
@@ -253,24 +261,30 @@ class GetPlanTest(TransactionTestCase):
 
     def test_get_plan_does_not_belong_to_user(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_plan'),
+            {'id': self.plan_no_user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
     def test_get_plan_no_user(self):
-        response = self.client.get(reverse('plan:get_plan'), {'id': self.plan_no_user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_plan'),
+            {'id': self.plan_no_user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['name'], 'ownerless')
         self.assertEqual(response.json()['geometry'], self.geometry)
         self.assertLessEqual(
-            response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
+            response.json()['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
         self.assertEqual(response.json()['region_name'], 'Sierra Nevada')
 
     def test_get_plan_bad_stored_region(self):
         self.client.force_login(self.user)
         plan = Plan.objects.create(
-            owner=self.user, name='badregion', region_name='Sierra Nevada', geometry=None)
+            owner=self.user, name='badregion', region_name='Sierra Nevada',
+            geometry=None)
         plan.save()
         response = self.client.get(reverse('plan:get_plan'), {'id': plan.pk},
                                    content_type="application/json")
@@ -278,7 +292,8 @@ class GetPlanTest(TransactionTestCase):
         self.assertEqual(response.json()['name'], 'badregion')
         self.assertTrue(isinstance(response.json()['creation_timestamp'], int))
         self.assertLessEqual(
-            response.json()['creation_timestamp'], round(datetime.datetime.now().timestamp()))
+            response.json()['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
         self.assertEqual(response.json()['region_name'], None)
 
 
@@ -331,8 +346,10 @@ class ListPlansTest(TransactionTestCase):
                 self.assertTrue(False)
 
     def test_list_plans_by_owner_with_user(self):
-        response = self.client.get(reverse('plan:list_plans_by_owner'), {'owner': self.user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:list_plans_by_owner'),
+            {'owner': self.user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
         for plan in response.json():
@@ -356,26 +373,27 @@ class ProjectTest(TransactionTestCase):
         self.plan_no_user = Plan.objects.create(
             owner=None, name='ownerless', region_name='sierra_cascade_inyo')
         self.plan_with_user = Plan.objects.create(
-            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
+            owner=self.user, name='with_owner',
+            region_name='sierra_cascade_inyo')
 
     def test_missing_user(self):
         response = self.client.post(
-            reverse('plan:create_project'), {'max_cost': 100},
+            reverse('plan:create_project'), {},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_missing_plan(self):
         self.client.force_login(self.user)
         response = self.client.post(
-            reverse('plan:create_project'), {'max_cost': 100},
+            reverse('plan:create_project'), {},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_null_user_cannot_create_project_with_user(self):
-        PLANSCAPE_GUEST_CAN_SAVE = False
+        settings.PLANSCAPE_GUEST_CAN_SAVE = True
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_with_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -383,15 +401,15 @@ class ProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_no_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_no_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_no_user(self):
-        PLANSCAPE_GUEST_CAN_SAVE = False
+        settings.PLANSCAPE_GUEST_CAN_SAVE = True
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_no_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_no_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -399,9 +417,25 @@ class ProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_cost': 100},
+                'plan_id': self.plan_with_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_treatment_ratio_bad_format_negative(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'max_treatment_area_ratio': -1},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_max_slope_bad_format_negative(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_project'), {
+                'plan_id': self.plan_with_user.pk, 'max_slope': -1},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
 
     def test_with_priority(self):
         self.client.force_login(self.user)
@@ -412,7 +446,7 @@ class ProjectTest(TransactionTestCase):
 
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_cost': 100, 'priorities': 'condition1'},
+                'plan_id': self.plan_with_user.pk, 'priorities': 'condition1'},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -425,7 +459,7 @@ class ProjectTest(TransactionTestCase):
 
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'max_cost': 100, 'priorities': 'condition3'},
+                'plan_id': self.plan_with_user.pk, 'priorities': 'condition3'},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -450,12 +484,16 @@ class CreateProjectAreaTest(TransactionTestCase):
 
     def test_missing_project(self):
         response = self.client.post(
-            reverse('plan:create_project_area'), {}, content_type='application/json')
+            reverse('plan:create_project_area'),
+            {},
+            content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_missing_geometry(self):
         response = self.client.post(
-            reverse('plan:create_project_area'), {'project_id': self.project_no_user.pk}, content_type='application/json')
+            reverse('plan:create_project_area'),
+            {'project_id': self.project_no_user.pk},
+            content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
     def test_missing_features(self):
@@ -519,12 +557,12 @@ class GetProjectTest(TransactionTestCase):
 
         self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
         self.project_no_user_no_pri = Project.objects.create(
-            owner=None, plan=self.plan_no_user, max_cost=100)
+            owner=None, plan=self.plan_no_user, max_budget=100)
 
         self.plan_with_user = create_plan(
             self.user, 'ownerless', stored_geometry, [])
         self.project_with_user_no_pri = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user, max_cost=100)
+            owner=self.user, plan=self.plan_with_user, max_budget=100)
 
         self.base_condition = BaseCondition.objects.create(
             condition_name="name", condition_level=ConditionLevel.ELEMENT)
@@ -535,26 +573,32 @@ class GetProjectTest(TransactionTestCase):
 
     def test_get_project_does_not_belong_to_user(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project'),
+            {'id': self.project_no_user_no_pri.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
     def test_get_project_no_user_no_priorities(self):
-        response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project'),
+            {'id': self.project_no_user_no_pri.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
 
     def test_get_project_no_priorities(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:get_project'), {'id': self.project_with_user_no_pri.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project'),
+            {'id': self.project_with_user_no_pri.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], self.user.pk)
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
 
     def test_get_nonexistent_project(self):
         self.client.force_login(self.user)
@@ -566,12 +610,14 @@ class GetProjectTest(TransactionTestCase):
         self.project_no_user_no_pri.priorities.add(self.condition1)
         self.project_no_user_no_pri.priorities.add(self.condition2)
 
-        response = self.client.get(reverse('plan:get_project'), {'id': self.project_no_user_no_pri.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project'),
+            {'id': self.project_no_user_no_pri.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
         self.assertEqual(response.json()['priorities'], [
                          self.condition1.pk, self.condition2.pk])
 
@@ -580,12 +626,14 @@ class GetProjectTest(TransactionTestCase):
         self.project_with_user_no_pri.priorities.add(self.condition1)
         self.project_with_user_no_pri.priorities.add(self.condition2)
 
-        response = self.client.get(reverse('plan:get_project'), {'id': self.project_with_user_no_pri.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project'),
+            {'id': self.project_with_user_no_pri.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['owner'], self.user.pk)
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
-        self.assertEqual(response.json()['max_cost'], 100)
+        self.assertEqual(response.json()['max_budget'], 100)
         self.assertEqual(response.json()['priorities'], [
                          self.condition1.pk, self.condition2.pk])
 
@@ -605,13 +653,14 @@ class GetProjectAreaTest(TransactionTestCase):
 
         self.plan_no_user = create_plan(None, 'ownerless', stored_geometry, [])
         self.project_no_user = Project.objects.create(
-            owner=None, plan=self.plan_no_user, max_cost=100)
+            owner=None, plan=self.plan_no_user, max_budget=100)
         self.project_area_no_user = ProjectArea.objects.create(
-            owner=None, project=self.project_no_user, project_area=stored_geometry, estimated_area_treated=100)
+            owner=None, project=self.project_no_user,
+            project_area=stored_geometry, estimated_area_treated=100)
         self.project_area_no_user2 = ProjectArea.objects.create(
             owner=None, project=self.project_no_user, project_area=stored_geometry)
         self.project_no_user_no_projectareas = Project.objects.create(
-            owner=None, plan=self.plan_no_user, max_cost=200)
+            owner=None, plan=self.plan_no_user, max_budget=200)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -619,19 +668,24 @@ class GetProjectAreaTest(TransactionTestCase):
         self.plan_with_user = create_plan(
             self.user, 'ownerless', stored_geometry, [])
         self.project_with_user = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user, max_cost=100)
+            owner=self.user, plan=self.plan_with_user, max_budget=100)
         self.project_area_with_user = ProjectArea.objects.create(
-            owner=self.user, project=self.project_with_user, project_area=stored_geometry, estimated_area_treated=200)
+            owner=self.user, project=self.project_with_user,
+            project_area=stored_geometry, estimated_area_treated=200)
 
     def test_get_project_does_not_belong_to_user(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:get_project_areas'), {'id': self.project_no_user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project_areas'),
+            {'id': self.project_no_user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
     def test_get_projectareas_for_nonexistent_project(self):
-        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': 10},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project_areas'),
+            {'project_id': 10},
+            content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
     def test_get_projectareas_no_project_id(self):
@@ -640,22 +694,26 @@ class GetProjectAreaTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_get_projectareas_no_results(self):
-        response = self.client.get(reverse('plan:get_project_areas'),
-                                   {'project_id': self.project_no_user_no_projectareas.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project_areas'),
+            {'project_id': self.project_no_user_no_projectareas.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
     def test_get_projectareas_no_user(self):
-        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': self.project_no_user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project_areas'),
+            {'project_id': self.project_no_user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
         project_area_id = str(self.project_area_no_user.pk)
         self.assertEqual(
             response.json()[project_area_id]['properties']['owner'], None)
-        self.assertEqual(response.json()[
-                         project_area_id]['properties']['project'], self.project_no_user.pk)
+        self.assertEqual(
+            response.json()[project_area_id]['properties']['project'],
+            self.project_no_user.pk)
         self.assertEqual(
             response.json()[project_area_id]['properties']['estimated_area_treated'], 100)
         self.assertEqual(
@@ -663,16 +721,96 @@ class GetProjectAreaTest(TransactionTestCase):
 
     def test_get_projectareas_with_user(self):
         self.client.force_login(self.user)
-        response = self.client.get(reverse('plan:get_project_areas'), {'project_id': self.project_with_user.pk},
-                                   content_type="application/json")
+        response = self.client.get(
+            reverse('plan:get_project_areas'),
+            {'project_id': self.project_with_user.pk},
+            content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
         project_area_id = str(self.project_area_with_user.pk)
         self.assertEqual(
-            response.json()[project_area_id]['properties']['owner'], self.user.pk)
-        self.assertEqual(response.json()[
-                         project_area_id]['properties']['project'], self.project_with_user.pk)
+            response.json()[project_area_id]['properties']['owner'],
+            self.user.pk)
+        self.assertEqual(
+            response.json()[project_area_id]['properties']['project'],
+            self.project_with_user.pk)
         self.assertEqual(
             response.json()[project_area_id]['properties']['estimated_area_treated'], 200)
         self.assertEqual(
             response.json()[project_area_id]['geometry'], self.geometry)
+
+
+class GetScoresTest(TransactionTestCase):
+    def setUp(self) -> None:
+        # Add a row for CRS 9822 to the spatial_ref_sys table, and the GeoTiff to the table.
+        # with connection.cursor() as cursor:
+        #     query = ("insert into spatial_ref_sys(srid, proj4text) values(9822, '{}')").format(
+        #         settings.CRS_9822_PROJ4)
+        #     cursor.execute(query)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.region = 'sierra_cascade_inyo'
+
+    def test_user_signed_in(self) -> None:
+        self._set_up_db(self.user)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:get_scores'),
+            {'id': self.plan.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {'conditions': [
+                             {'condition': 'foo', 'mean_score': 5.0}, {'condition': 'bar'}]})
+
+    def test_user_not_signed_but_guests_can_save(self) -> None:
+        settings.PLANSCAPE_GUEST_CAN_SAVE = True
+        self._set_up_db(None)
+        response = self.client.get(
+            reverse('plan:get_scores'),
+            {'id': self.plan.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertDictEqual(response.json(), {'conditions': [
+                             {'condition': 'foo', 'mean_score': 5.0}, {'condition': 'bar'}]})
+
+    def test_user_not_signed_and_guests_cant_save(self) -> None:
+        settings.PLANSCAPE_GUEST_CAN_SAVE = False
+        self._set_up_db(None)
+        response = self.client.get(
+            reverse('plan:get_scores'),
+            {'id': self.plan.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def _create_condition_db(self, condition_name: str,
+                             condition_raster_name: str) -> int:
+        base_condition = BaseCondition.objects.create(
+            condition_name=condition_name, region_name=self.region,
+            condition_level=ConditionLevel.METRIC)
+        condition = Condition.objects.create(
+            raster_name=condition_raster_name,
+            condition_dataset=base_condition, is_raw=False)
+        ConditionRaster.objects.create(name=condition_raster_name)
+        return condition.pk
+
+    def _set_up_db(self, plan_owner: User) -> None:
+        polygon = Polygon(
+            ((-120, 40),
+             (-120, 41),
+             (-121, 41),
+             (-121, 40),
+             (-120, 40)))
+        geo = MultiPolygon(polygon)
+        geo.srid = 4269
+        self.plan = create_plan(plan_owner, "my_plan", geo, [])
+
+        foo_id = self._create_condition_db("foo", "foo_normalized")
+        ConditionScores.objects.create(
+            plan=self.plan, condition_id=foo_id, mean_score=5.0)
+
+        bar_id = self._create_condition_db("bar", "bar_normalized")
+        ConditionScores.objects.create(
+            plan=self.plan, condition_id=bar_id, mean_score=None)
