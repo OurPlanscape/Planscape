@@ -23,7 +23,7 @@ RASTER_NAME_COLUMN = 'name'
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
-def _get_user(request: HttpRequest) -> HttpResponse:
+def _get_user(request: HttpRequest):
     user = None
     if request.user.is_authenticated:
         user = request.user
@@ -333,8 +333,8 @@ def get_scores(request: HttpRequest) -> HttpResponse:
                     (RASTER_TABLE, RASTER_SCHEMA, raster_name, RASTER_NAME_COLUMN,
                      RASTER_COLUMN, settings.CRS_9822_PROJ4,
                      settings.CRS_FOR_RASTERS, geo.ewkb))
-                a = list(cursor.fetchone())
-                if a is None or len(a) == 0 or a[0] is None:
+                a = cursor.fetchone()
+                if a is None or a[0] is None:
                     conditions.append(
                         {'condition': ids_to_conditions[raster_names_to_ids[raster_name]]})
                 else:
