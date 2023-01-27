@@ -1,7 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { BehaviorSubject, catchError, map, Observable, of, Subject, tap, concatMap, take } from 'rxjs';
 
@@ -29,7 +29,9 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private cookieService: CookieService,
-    private snackbar: MatSnackBar) { }
+    private snackbar: MatSnackBar,
+    private router: Router) { }
+
 
   login(username: string, password: string) {
     return this.http.post(
@@ -67,6 +69,12 @@ export class AuthService {
       tap(response => {
         this.loggedInStatus$.next(false);
         this.loggedInUser$.next(null);
+        var url = this.router.url;
+        if (url == '/plan') {
+          this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+            this.router.navigate([url]);
+          });
+        }
         this.snackbar.open(response.detail);
       })
     );
