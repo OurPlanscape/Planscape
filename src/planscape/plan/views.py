@@ -187,8 +187,9 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
             safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-    
-def _save_project_parameters(body, project : Project):
+
+
+def _save_project_parameters(body, project: Project):
     # Parse constraints
     max_budget = body.get('max_budget', None)
     if max_budget is not None and not (isinstance(max_budget, float)):
@@ -199,7 +200,7 @@ def _save_project_parameters(body, project : Project):
             (not (isinstance(max_treatment_area_ratio, float)) or max_treatment_area_ratio < 0)):
         raise ValueError(
             "Max treatment must be a float value >= 0.0")
-    
+
     max_road_distance = body.get('max_road_distance', None)
     if max_road_distance is not None and not (isinstance(max_road_distance, float)):
         raise ValueError("Max distance from road must be a float value")
@@ -245,34 +246,39 @@ def create_project(request: HttpRequest) -> HttpResponse:
                 (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
-        
+
         project = Project.objects.create(owner=owner, plan=plan)
         _save_project_parameters(body, project)
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-    
+
+
 @csrf_exempt
 def update_project(request: HttpRequest) -> HttpResponse:
     try:
-        # Check that the user is logged in.
-        owner = _get_user(request)
+        if request.method == "PUT":
+            # Check that the user is logged in.
+            owner = _get_user(request)
 
-        body = json.loads(request.body)
-        project_id = body.get('id', None)
-        if project_id is None or not (isinstance(project_id, int)):
-            raise ValueError("Must specify project_id as an integer")
+            body = json.loads(request.body)
+            project_id = body.get('id', None)
+            if project_id is None or not (isinstance(project_id, int)):
+                raise ValueError("Must specify project_id as an integer")
 
-        project = Project.objects.get(id=project_id)
-        if project.owner != owner:
-            raise ValueError(
-                "You do not have permission to view this project.")
-        
-        project.priorities.clear()
-        _save_project_parameters(body, project)
-        project.save()
-        return HttpResponse(str(project.pk))
+            project = Project.objects.get(id=project_id)
+            if project.owner != owner:
+                raise ValueError(
+                    "You do not have permission to view this project.")
+
+            project.priorities.clear()
+            _save_project_parameters(body, project)
+            project.save()
+            return HttpResponse(str(project.pk))
+        else:
+            raise KeyError(
+                "HTTP methods other than PUT are not yet implemented")
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
