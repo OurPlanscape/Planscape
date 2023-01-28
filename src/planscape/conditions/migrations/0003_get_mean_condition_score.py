@@ -8,8 +8,6 @@ create or replace function get_mean_condition_score(
       param_raster_name text,
       param_raster_name_column text,
       param_raster_column text,
-      param_raster_proj4 text,
-      param_raster_srid integer,
       param_geom_ewkb bytea) returns float
     immutable
     parallel safe
@@ -35,12 +33,10 @@ BEGIN
 
     /* Parses geometry passed in ewkb format, then transforms it into a raster proj4 CRS and annotates it with the raster SRID. */
     EXECUTE
-       'SELECT ST_SetSRID(ST_Transform(ST_GeomFromEWKB($1), $2), $3)'
+       'SELECT ST_GeomFromEWKB($1)'
     INTO var_geo
     USING
-      param_geom_ewkb,
-      param_raster_proj4,
-      param_raster_srid;
+      param_geom_ewkb;
 
     /* Retrieves, rasters with name, param_raster_name, clips them to the input geometry, and merges them. */
     EXECUTE

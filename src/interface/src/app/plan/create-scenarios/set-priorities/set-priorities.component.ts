@@ -14,6 +14,11 @@ export interface ScoreColumn {
   score: number;
 }
 
+// Temporary priorities type
+export interface Priorities {
+  priorities: string[];
+}
+
 interface PriorityRow {
   selected?: boolean;
   visible?: boolean; // Visible as raster data on map
@@ -34,6 +39,7 @@ interface PriorityRow {
 export class SetPrioritiesComponent implements OnInit {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Output() changeConditionEvent = new EventEmitter<string>();
+  @Output() changePrioritiesEvent = new EventEmitter<Priorities>();
 
   readonly text1: string = `
     Condition scores represent the condition of each priority within the defined planning area.
@@ -174,5 +180,15 @@ export class SetPrioritiesComponent implements OnInit {
     } else {
       this.changeConditionEvent.emit('');
     }
+  }
+
+  /** Update the priority list with the user's current selections. */
+  updateSelectedPriorities(): void {
+    const selectedPriorities: string[] = this.datasource.data
+      .filter((row) => row.selected)
+      .map((row) => row.conditionName);
+    this.changePrioritiesEvent.emit({
+      priorities: selectedPriorities,
+    });
   }
 }

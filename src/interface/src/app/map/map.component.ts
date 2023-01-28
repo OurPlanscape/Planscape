@@ -86,6 +86,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   readonly baseLayerTypes: number[] = [
     BaseLayerType.Road,
     BaseLayerType.Terrain,
+    BaseLayerType.Satellite,
   ];
   readonly BaseLayerType = BaseLayerType;
 
@@ -371,8 +372,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private createPlan(name: string, shape: GeoJSON.GeoJSON) {
-    this.selectedRegion$.subscribe((selectedRegion) => {
-      if (!selectedRegion) return;
+    this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
+      if (!selectedRegion) {
+        this.matSnackBar.open('[Error] Please select a region!', 'Dismiss', {
+          duration: 10000,
+          panelClass: ['snackbar-error'],
+          verticalPosition: 'top',
+        });
+        return;
+      }
 
       this.planService
         .createPlan({
@@ -381,8 +389,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
           region: selectedRegion,
           planningArea: shape,
         })
-        .subscribe((result) => {
-          this.router.navigate(['plan', result.result!.id]);
+        .pipe(take(1))
+        .subscribe({
+          next: (result) => {
+            this.router.navigate(['plan', result.result!.id]);
+          },
+          error: (e) => {
+            this.matSnackBar.open(
+              '[Error] Unable to create plan due to backend error.',
+              'Dismiss',
+              {
+                duration: 10000,
+                panelClass: ['snackbar-error'],
+                verticalPosition: 'top',
+              }
+            );
+          },
         });
     });
   }

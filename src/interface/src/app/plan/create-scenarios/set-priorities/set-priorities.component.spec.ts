@@ -1,5 +1,8 @@
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
@@ -16,6 +19,7 @@ import {
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
   let fixture: ComponentFixture<SetPrioritiesComponent>;
+  let loader: HarnessLoader;
 
   let fakeMapService: MapService;
   let fakePlanService: PlanService;
@@ -92,6 +96,7 @@ describe('SetPrioritiesComponent', () => {
 
     fixture = TestBed.createComponent(SetPrioritiesComponent);
     component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
@@ -210,6 +215,25 @@ describe('SetPrioritiesComponent', () => {
       child.children.forEach((grandchild) => {
         expect(grandchild.hidden).toBeTrue();
       });
+    });
+  });
+
+  it('selecting a priority should emit a priority change event', async () => {
+    spyOn(component.changePrioritiesEvent, 'emit');
+    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
+
+    // Check the first priority (should be 'test_pillar_1')
+    await checkboxHarnesses[0].check();
+
+    expect(component.changePrioritiesEvent.emit).toHaveBeenCalledOnceWith({
+      priorities: ['test_pillar_1'],
+    });
+
+    // Check the second priority (should be 'test_element_1')
+    await checkboxHarnesses[1].check();
+
+    expect(component.changePrioritiesEvent.emit).toHaveBeenCalledWith({
+      priorities: ['test_pillar_1', 'test_element_1'],
     });
   });
 });

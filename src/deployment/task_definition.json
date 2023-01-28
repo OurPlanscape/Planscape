@@ -44,7 +44,7 @@
         },
         {
           "name": "PLANSCAPE_DATABASE_HOST",
-          "value": "planscape-dev.c0aecsgfmxbc.us-west-1.rds.amazonaws.com"
+          "value": "planscape-prod.c0aecsgfmxbc.us-west-1.rds.amazonaws.com"
         },
         {
           "name": "PLANSCAPE_CACHE_BACKEND",
