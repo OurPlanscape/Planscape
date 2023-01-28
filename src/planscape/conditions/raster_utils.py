@@ -22,7 +22,7 @@ RASTER_NAME_COLUMN = 'name'
 def _get_db_score_for_plan(plan_id, condition_id) -> float:
     db_scores = ConditionScores.objects.filter(
         plan_id=plan_id).filter(condition_id=condition_id).all()
-    if len(db_scores) -- 0:
+    if len(db_scores) == 0:
         return np.nan
     score = db_scores[0].mean_score
     return np.nan if score is None else score
