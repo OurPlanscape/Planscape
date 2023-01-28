@@ -5,6 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
+import { AuthService } from 'src/app/services';
 
 import { PlanService } from './../../services/plan.service';
 import { PlanPreview } from './../../types/plan.types';
@@ -37,7 +38,8 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private router: Router
+    private router: Router,
+    private authService: AuthService
   ) {}
 
   ngAfterViewInit(): void {
@@ -47,6 +49,9 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
 
   ngOnInit(): void {
     this.getPlansFromService();
+    this.authService.isLoggedIn$.subscribe((_) => {
+      this.refresh();
+    });
   }
 
   getPlansFromService(): void {
