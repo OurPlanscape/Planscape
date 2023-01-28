@@ -22,24 +22,24 @@ RASTER_NAME_COLUMN = 'name'
 def _get_db_score_for_plan(plan_id, condition_id) -> float:
     db_scores = ConditionScores.objects.filter(
         plan_id=plan_id).filter(condition_id=condition_id).all()
-    if len(db_scores) > 0:
-        return db_scores[0].mean_score
-    return np.nan
+    if len(db_scores) -- 0:
+        return np.nan
+    score = db_scores[0].mean_score
+    return np.nan if score is None else score
 
 
 # Returns None if no intersection exists between a geometry and the condition
 # raster.
-def _compute_score_from_raster(geo: GEOSGeometry, raster_name: str) -> float:
+def _compute_score_from_raster(geo: GEOSGeometry, raster_name: str) -> float | None:
     with connection.cursor() as cursor:
         cursor.callproc(
             'get_mean_condition_score',
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
-        cursor_output = list(cursor.fetchone())
-        if (cursor_output is None or len(cursor_output) == 0
-                or cursor_output[0] is None):
+        fetch = cursor.fetchone()
+        if fetch is None or len(fetch) == 0 or fetch[0] is None:
             return None
-        return cursor_output[0]
+        return fetch[0]
 
 
 def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
@@ -58,7 +58,7 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
         c.pk: c.condition_name
         for c in BaseCondition.objects.filter(region_name=reg).all()}
     if len(ids_to_condition_names.keys()) == 0:
-        raise AssertionError("no conditions exist for region, %s"%reg)
+        raise AssertionError("no conditions exist for region, %s" % reg)
 
     conditions = Condition.objects.filter(
         condition_dataset_id__in=ids_to_condition_names.keys()).filter(
@@ -70,12 +70,12 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
         name = ids_to_condition_names[id]
 
         score = _get_db_score_for_plan(plan.pk, condition.pk)
-        if score is None or not np.isnan(score):
+        if not np.isnan(score):
             condition_scores[name] = score
             continue
 
-        score = _compute_score_from_raster(geo, condition.raster_name)
-        condition_scores[name] = score
+        computed_score = _compute_score_from_raster(geo, condition.raster_name)
+        condition_scores[name] = np.nan if computed_score is None else computed_score
         ConditionScores.objects.create(
             plan=plan, condition=condition, mean_score=score)
 
