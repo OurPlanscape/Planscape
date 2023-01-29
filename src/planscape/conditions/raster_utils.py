@@ -19,13 +19,12 @@ RASTER_NAME_COLUMN = 'name'
 # This should be differentiated from None, which is a possible value if the
 # score was previously computed, but no intersection exists between a plan
 # geometry and the condition raster.
-def _get_db_score_for_plan(plan_id, condition_id) -> float:
+def _get_db_score_for_plan(plan_id, condition_id) -> float | None:
     db_scores = ConditionScores.objects.filter(
         plan_id=plan_id).filter(condition_id=condition_id).all()
-    if len(db_scores) == 0:
-        return np.nan
-    score = db_scores[0].mean_score
-    return np.nan if score is None else score
+    if len(db_scores) > 0:
+        return db_scores[0].mean_score
+    return np.nan
 
 
 # Returns None if no intersection exists between a geometry and the condition
@@ -42,7 +41,7 @@ def _compute_score_from_raster(geo: GEOSGeometry, raster_name: str) -> float | N
         return fetch[0]
 
 
-def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
+def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float|None]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     geo = plan.geometry
 
@@ -70,12 +69,12 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
         name = ids_to_condition_names[id]
 
         score = _get_db_score_for_plan(plan.pk, condition.pk)
-        if not np.isnan(score):
+        if score is None or not np.isnan(score):
             condition_scores[name] = score
             continue
 
-        computed_score = _compute_score_from_raster(geo, condition.raster_name)
-        condition_scores[name] = np.nan if computed_score is None else computed_score
+        score = _compute_score_from_raster(geo, condition.raster_name)
+        condition_scores[name] = score
         ConditionScores.objects.create(
             plan=plan, condition=condition, mean_score=score)
 
