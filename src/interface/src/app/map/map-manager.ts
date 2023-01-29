@@ -18,6 +18,8 @@ import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
 import { BaseLayerType, DEFAULT_COLORMAP, Map, MapViewOptions } from '../types';
 
+import { FrontendConstants } from './../frontend-constants';
+
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
 
@@ -79,10 +81,10 @@ export class MapManager {
     }
 
     map.instance = L.map(mapId, {
-      center: [38.646, -120.548],
-      zoom: 9,
-      maxZoom: 13,
-      minZoom: 7,
+      center: [...FrontendConstants.MAP_CENTER],
+      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
+      minZoom: FrontendConstants.MAP_MIN_ZOOM,
+      maxZoom: FrontendConstants.MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],
       zoomControl: false,
       pmIgnore: false,
