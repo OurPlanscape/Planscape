@@ -29,7 +29,14 @@ def _get_db_score_for_plan(plan_id, condition_id) -> float:
 
 # Returns None if no intersection exists between a geometry and the condition
 # raster.
-def _compute_score_from_raster(geo: GEOSGeometry, raster_name: str) -> float:
+def compute_condition_score_from_raster(
+        geo: GEOSGeometry, raster_name: str) -> float:
+    if geo is None:
+        raise AssertionError("must define input geometry")
+    if geo.srid != settings.CRS_FOR_RASTERS:
+        raise AssertionError(
+            "geometry SRID is %d (expected %d" %
+            (geo.srid, settings.CRS_FOR_RASTERS))
     with connection.cursor() as cursor:
         cursor.callproc(
             'get_mean_condition_score',
@@ -58,7 +65,7 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
         c.pk: c.condition_name
         for c in BaseCondition.objects.filter(region_name=reg).all()}
     if len(ids_to_condition_names.keys()) == 0:
-        raise AssertionError("no conditions exist for region, %s"%reg)
+        raise AssertionError("no conditions exist for region, %s" % reg)
 
     conditions = Condition.objects.filter(
         condition_dataset_id__in=ids_to_condition_names.keys()).filter(
@@ -74,7 +81,7 @@ def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
             condition_scores[name] = score
             continue
 
-        score = _compute_score_from_raster(geo, condition.raster_name)
+        score = compute_condition_score_from_raster(geo, condition.raster_name)
         condition_scores[name] = score
         ConditionScores.objects.create(
             plan=plan, condition=condition, mean_score=score)
