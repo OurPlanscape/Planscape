@@ -81,6 +81,8 @@ export class MapManager {
     map.instance = L.map(mapId, {
       center: [38.646, -120.548],
       zoom: 9,
+      maxZoom: 13,
+      minZoom: 7,
       layers: [map.baseLayerRef],
       zoomControl: false,
       pmIgnore: false,

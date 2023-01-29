@@ -31,6 +31,8 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.map = L.map(this.mapId ? this.mapId : 'map', {
       center: [38.646, -120.548],
       zoom: 9,
+      maxZoom: 13,
+      minZoom: 7,
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
