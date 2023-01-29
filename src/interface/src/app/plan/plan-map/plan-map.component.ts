@@ -6,6 +6,7 @@ import { filter } from 'rxjs/operators';
 import { Plan } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
+import { FrontendConstants } from './../../frontend-constants';
 
 @Component({
   selector: 'app-plan-map',
@@ -29,10 +30,10 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     if (this.map != undefined) this.map.remove();
 
     this.map = L.map(this.mapId ? this.mapId : 'map', {
-      center: [38.646, -120.548],
-      zoom: 9,
-      maxZoom: 13,
-      minZoom: 7,
+      center: [...FrontendConstants.MAP_CENTER],
+      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
+      minZoom: FrontendConstants.MAP_MIN_ZOOM,
+      maxZoom: FrontendConstants.MAP_MAX_ZOOM,
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
