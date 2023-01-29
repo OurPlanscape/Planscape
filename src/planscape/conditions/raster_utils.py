@@ -32,10 +32,10 @@ def _get_db_score_for_plan(plan_id, condition_id) -> float:
 def compute_condition_score_from_raster(
         geo: GEOSGeometry, raster_name: str) -> float:
     if geo is None:
-        raise AssertionError("must define input geometry")
+        return None
     if geo.srid != settings.CRS_FOR_RASTERS:
         raise AssertionError(
-            "geometry SRID is %d (expected %d" %
+            "geometry SRID is %d (expected %d)" %
             (geo.srid, settings.CRS_FOR_RASTERS))
     with connection.cursor() as cursor:
         cursor.callproc(
