@@ -34,7 +34,7 @@ def _compute_score_from_raster(geo: GEOSGeometry, raster_name: str) -> float | N
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchone()
-        if fetch is None or len(fetch) == 0 or fetch[0] is None:
+        if fetch is None or len(fetch) == 0:
             return None
         return fetch[0]
 
