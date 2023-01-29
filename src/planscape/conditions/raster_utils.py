@@ -1,12 +1,10 @@
 import numpy as np
-
 from conditions.models import BaseCondition, Condition
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from plan.models import ConditionScores, Plan
 from planscape import settings
-
 
 # Name of the table and column from models.py.
 RASTER_SCHEMA = 'public'
@@ -41,7 +39,7 @@ def _compute_score_from_raster(geo: GEOSGeometry, raster_name: str) -> float | N
         return fetch[0]
 
 
-def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float|None]:
+def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float | None]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     geo = plan.geometry
 
