@@ -16,9 +16,13 @@ import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
-import { BaseLayerType, DEFAULT_COLORMAP, Map, MapViewOptions } from '../types';
-
-import { FrontendConstants } from './../frontend-constants';
+import {
+  BaseLayerType,
+  DEFAULT_COLORMAP,
+  FrontendConstants,
+  Map,
+  MapViewOptions,
+} from '../types';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -161,10 +165,11 @@ export class MapManager {
     return L.tileLayer(
       'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
       {
-         zIndex: 0,
-         maxZoom: 20,
-         attribution: 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
-       }
+        zIndex: 0,
+        maxZoom: 20,
+        attribution:
+          'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
+      }
     );
   }
 
