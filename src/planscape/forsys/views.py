@@ -7,9 +7,11 @@ from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import compute_condition_score_from_raster
 from django.conf import settings
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
+from django.contrib.gis.geos import GEOSGeometry
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
-from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
+from forsys.get_forsys_inputs import (
+    ForsysInputHeaders, ForsysProjectAreaRankingRequestParams)
 from forsys.parse_forsys_output import ForsysScenarioSetOutput
 from planscape import settings
 
@@ -48,13 +50,72 @@ def convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
+def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
+    if geo.srid == settings.CRS_FOR_RASTERS:
+        return geo
+    geo.transform(
+        CoordTransform(
+            SpatialReference(geo.srid),
+            SpatialReference(settings.CRS_9822_PROJ4)))
+    geo.srid = settings.CRS_FOR_RASTERS
+    return geo
+
+
+def get_forsys_input(
+        params: ForsysProjectAreaRankingRequestParams,
+        headers: ForsysInputHeaders) -> dict:
+    region = params.region
+    priorities = params.priorities
+    project_areas = params.project_areas
+
+    condition_ids_to_names = {
+        c.pk: c.condition_name
+        for c in BaseCondition.objects.filter(region_name=region).filter(
+            condition_name__in=priorities).all()}
+    if len(priorities) != len(condition_ids_to_names.keys()):
+        raise Exception("of %d priorities, only %d had conditions" % (
+            len(priorities), len(condition_ids_to_names.keys())))
+    conditions = Condition.objects.filter(
+        condition_dataset_id__in=condition_ids_to_names.keys()).filter(
+        is_raw=False).all()
+    if len(priorities) != len(conditions):
+        raise Exception("of %d priorities, only %d had condition rasters" % (
+            len(priorities), len(conditions)))
+
+    data = {}
+    data[headers.FORSYS_PROJECT_ID_HEADER] = []
+    data[headers.FORSYS_STAND_ID_HEADER] = []
+    data[headers.FORSYS_AREA_HEADER] = []
+    data[headers.FORSYS_COST_HEADER] = []
+    for p in priorities:
+        data[headers.condition_header(p)] = []
+        data[headers.priority_header(p)] = []
+
+    for proj_id in project_areas.keys():
+        geo = get_raster_geo(project_areas[proj_id])
+
+        data[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
+        data[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
+        data[headers.FORSYS_AREA_HEADER].append(geo.area)
+        data[headers.FORSYS_COST_HEADER].append(geo.area * 5000)
+        for c in conditions:
+            name = condition_ids_to_names[c.condition_dataset_id]
+            score = compute_condition_score_from_raster(
+                geo, c.raster_name)
+            if score is None:
+                raise Exception(
+                    "no score was retrieved for condition, %s" % name)
+            data[headers.condition_header(name)].append(score)
+            data[headers.priority_header(name)].append(1.0 - score)
+    return data
+
+
 # Runs a forsys scenario sets call.
 def run_forsys_scenario_sets(
         forsys_input_dict: dict[str, list],
-        priorities: list[str],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_header_prefix: str) -> ForsysScenarioSetOutput:
+        forsys_priority_headers: list[str],) -> ForsysScenarioSetOutput:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/scenario_sets.R'))
@@ -65,19 +126,15 @@ def run_forsys_scenario_sets(
     # scenario_sets_function_r.
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
-    priority_headers = []
-    for p in priorities:
-        priority_headers.append(forsys_priority_header_prefix + p)
-
     forsys_output = scenario_sets_function_r(forsys_input, robjects.StrVector(
-        priority_headers),
+        forsys_priority_headers),
         forsys_stand_id_header,
         forsys_proj_id_header,
         forsys_area_header,
         forsys_cost_header)
 
     parsed_output = ForsysScenarioSetOutput(
-        forsys_output, priority_headers, forsys_proj_id_header,
+        forsys_output, forsys_priority_headers, forsys_proj_id_header,
         forsys_area_header, forsys_cost_header)
 
     # TODO: add logic for applying constraints to forsys_output.
@@ -89,62 +146,18 @@ def run_forsys_scenario_sets(
 def scenario_set(request: HttpRequest) -> HttpResponse:
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
-        region = params.region
-        priorities = params.priorities
-        project_areas = params.project_areas
+        headers = ForsysInputHeaders(params.priorities)
 
-        condition_ids_to_names = {
-            c.pk: c.condition_name
-            for c in BaseCondition.objects.filter(region_name=region).filter(
-                condition_name__in=priorities).all()}
-        conditions = Condition.objects.filter(
-            condition_dataset_id__in=condition_ids_to_names.keys()).filter(
-            is_raw=False).all()
-
-        forsys_project_id_header = "proj_id"
-        forsys_stand_id_header = "stand_id"
-        forsys_area_header = "area"
-        forsys_cost_header = "cost"
-        kConditionPrefix = "c_"
-        kPriorityPrefix = "p_"
-        data = {}
-        data[forsys_project_id_header] = []
-        data[forsys_stand_id_header] = []
-        data[forsys_area_header] = []
-        data[forsys_cost_header] = []
-        for c in conditions:
-            name = condition_ids_to_names[c.condition_dataset_id]
-            data[kConditionPrefix + name] = []
-            data[kPriorityPrefix + name] = []
-        for proj_id in project_areas.keys():
-            geo = project_areas[proj_id]
-
-            raster_geo = geo.clone()
-            raster_geo.transform(
-                CoordTransform(
-                    SpatialReference(raster_geo.srid),
-                    SpatialReference(settings.CRS_9822_PROJ4)))
-            raster_geo.srid = settings.CRS_FOR_RASTERS
-
-            data[forsys_project_id_header].append(proj_id)
-            data[forsys_stand_id_header].append(proj_id)
-            data[forsys_area_header].append(raster_geo.area)
-            data[forsys_cost_header].append(raster_geo.area * 5000)
-            for c in conditions:
-                name = condition_ids_to_names[c.condition_dataset_id]
-                score = compute_condition_score_from_raster(
-                    raster_geo, c.raster_name)
-                data[kConditionPrefix + name].append(score)
-                data[kPriorityPrefix + name].append(1.0 - score)
+        forsys_input = get_forsys_input(params, headers)
 
         forsys_output = run_forsys_scenario_sets(
-            data, priorities, forsys_project_id_header,
-            forsys_stand_id_header, forsys_area_header, forsys_cost_header,
-            kPriorityPrefix)
+            forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
+            headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
+            headers.FORSYS_COST_HEADER, headers.priority_headers)
 
         response = {}
         response['forsys'] = {}
-        response['forsys']['input'] = data
+        response['forsys']['input'] = forsys_input
         response['forsys']['output_project'] = forsys_output.scenarios
 
         # TODO: configure response to potentially show stand coordinates and
