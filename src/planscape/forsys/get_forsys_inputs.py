@@ -143,3 +143,25 @@ class ForsysProjectAreaRankingRequestParams():
             raise Exception('project area field, "polygons" is an empty list')
         if 'id' not in project_area.keys():
             raise Exception('project area missing field, "id"')
+
+
+class ForsysInputHeaders():
+    FORSYS_PROJECT_ID_HEADER = "proj_id"
+    FORSYS_STAND_ID_HEADER = "stand_id"
+    FORSYS_AREA_HEADER = "area"
+    FORSYS_COST_HEADER = "cost"
+
+    _CONDITION_PREFIX = "c_"
+    _PRIORITY_PREFIX = "p_"
+
+    def __init__(self, priorities: list[str]) -> None:
+        self.priority_headers = []
+
+        for p in priorities:
+            self.priority_headers.append(self.priority_header(p))
+
+    def priority_header(self, priority: str) -> str:
+        return self._PRIORITY_PREFIX + priority
+
+    def condition_header(self, priority: str) -> str:
+        return self._CONDITION_PREFIX + priority
