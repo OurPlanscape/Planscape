@@ -145,14 +145,22 @@ class ForsysProjectAreaRankingRequestParams():
             raise Exception('project area missing field, "id"')
 
 
+# Forsys input dataframe headers.
 class ForsysInputHeaders():
+    # Constant headers for project and stand ID's, area, and cost.
     FORSYS_PROJECT_ID_HEADER = "proj_id"
     FORSYS_STAND_ID_HEADER = "stand_id"
     FORSYS_AREA_HEADER = "area"
     FORSYS_COST_HEADER = "cost"
 
+    # Header prefixes for conditions and priorities.
     _CONDITION_PREFIX = "c_"
     _PRIORITY_PREFIX = "p_"
+
+    # List of headers for priorities.
+    # Downstream, this must be in the same order as constructor input
+    # priorities.
+    priority_headers: list[str]
 
     def __init__(self, priorities: list[str]) -> None:
         self.priority_headers = []
@@ -160,8 +168,10 @@ class ForsysInputHeaders():
         for p in priorities:
             self.priority_headers.append(self.priority_header(p))
 
+    # Returns a priority header givn a priority string.
     def priority_header(self, priority: str) -> str:
         return self._PRIORITY_PREFIX + priority
 
-    def condition_header(self, priority: str) -> str:
-        return self._CONDITION_PREFIX + priority
+    # Reteurns a condition hader given a condition string.
+    def condition_header(self, condition: str) -> str:
+        return self._CONDITION_PREFIX + condition
