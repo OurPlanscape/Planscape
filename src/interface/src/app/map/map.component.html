@@ -44,6 +44,7 @@
         <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}">
           <mat-accordion multi displayMode="flat">
 
+            <!-- Basemap layer controls -->
             <mat-expansion-panel expanded="true">
               <mat-expansion-panel-header>
                 Basemaps
@@ -57,6 +58,7 @@
               </mat-radio-group>
             </mat-expansion-panel>
 
+            <!-- Boundary layer controls -->
             <mat-expansion-panel expanded="true">
               <mat-expansion-panel-header>
                 Boundaries
@@ -78,28 +80,7 @@
               </mat-radio-group>
             </mat-expansion-panel>
 
-            <mat-expansion-panel disabled="true">
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  Land types
-                </mat-panel-title>
-                <mat-panel-description>
-                  Coming soon!
-                </mat-panel-description>
-              </mat-expansion-panel-header>
-            </mat-expansion-panel>
-
-            <mat-expansion-panel disabled="true">
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  Operability
-                </mat-panel-title>
-                <mat-panel-description>
-                  Coming soon!
-                </mat-panel-description>
-              </mat-expansion-panel-header>
-            </mat-expansion-panel>
-
+            <!-- Recent treatment areas controls -->
             <mat-expansion-panel expanded="false">
               <mat-expansion-panel-header>
                 Recent treatment areas
@@ -114,28 +95,7 @@
               </div>
             </mat-expansion-panel>
 
-            <mat-expansion-panel disabled="true">
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  Disturbances
-                </mat-panel-title>
-                <mat-panel-description>
-                  Coming soon!
-                </mat-panel-description>
-              </mat-expansion-panel-header>
-            </mat-expansion-panel>
-
-            <mat-expansion-panel disabled="true">
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  HVRAs
-                </mat-panel-title>
-                <mat-panel-description>
-                  Coming soon!
-                </mat-panel-description>
-              </mat-expansion-panel-header>
-            </mat-expansion-panel>
-
+            <!-- Ecosystem scores controls -->
             <mat-expansion-panel expanded="false">
               <mat-expansion-panel-header>
                 Ecosystem scores
@@ -209,6 +169,54 @@
                   </mat-nested-tree-node>
                 </mat-tree>
               </mat-radio-group>
+            </mat-expansion-panel>
+
+            <!-- Disturbances controls -->
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Disturbances
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <!-- HVRAs controls -->
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  HVRAs
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <!-- Land types controls -->
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Land types
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
+            </mat-expansion-panel>
+
+            <!-- Operability controls -->
+            <mat-expansion-panel disabled="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  Operability
+                </mat-panel-title>
+                <mat-panel-description>
+                  Coming soon!
+                </mat-panel-description>
+              </mat-expansion-panel-header>
             </mat-expansion-panel>
 
           </mat-accordion>
