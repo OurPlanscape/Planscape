@@ -3,10 +3,9 @@ import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Plan } from 'src/app/types';
+import { FrontendConstants, Plan } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
-import { FrontendConstants } from './../../frontend-constants';
 
 @Component({
   selector: 'app-plan-map',
