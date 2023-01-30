@@ -1,14 +1,14 @@
-from django.test import TestCase
-from django.http import QueryDict
-from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
 import json
 
+from base.condition_types import ConditionLevel
+from conditions.models import BaseCondition, Condition
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-
+from django.http import QueryDict
+from django.test import TestCase
+from forsys.get_forsys_inputs import (ForsysInputHeaders,
+                                      ForsysProjectAreaRankingRequestParams)
 from plan.models import Plan, Project, ProjectArea
-from conditions.models import BaseCondition, Condition
-from base.condition_types import ConditionLevel
 
 
 class TestForsysProjectAreaRankingRequestParams(TestCase):
@@ -180,7 +180,7 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.plan_with_user = Plan.objects.create(
-            owner=self.user, name="plan", region_name='sierra_cascade_inyo', 
+            owner=self.user, name="plan", region_name='sierra_cascade_inyo',
             geometry=self.stored_geometry)
 
         self.project_with_user = Project.objects.create(
@@ -189,8 +189,8 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
         self.project_with_user.priorities.add(self.condition2)
 
         self.project_area_with_user = ProjectArea.objects.create(
-            owner=self.user, project=self.project_with_user, project_area=self.stored_geometry, 
-            estimated_area_treated=200)
+            owner=self.user, project=self.project_with_user,
+            project_area=self.stored_geometry, estimated_area_treated=200)
 
     def test_missing_project_id(self):
         qd = QueryDict('')
@@ -212,7 +212,23 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
         params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(len(params.project_areas), 1)
-        self.assertTrue(params.project_areas[self.project_area_with_user.pk].equals(
-            self.stored_geometry))
+        self.assertTrue(
+            params.project_areas[self.project_area_with_user.pk].equals(
+                self.stored_geometry))
         self.assertEqual(params.priorities, [
                          self.condition1.pk, self.condition2.pk])
+
+
+class ForsysInputHeadersTest(TestCase):
+    def test_sets_priority_headers(self):
+        headers = ForsysInputHeaders(["p1", "p2", "p3"])
+        self.assertListEqual(headers.priority_headers,
+                             ["p_p1", "p_p2", "p_p3"])
+
+    def test_priority(self):
+        headers = ForsysInputHeaders([])
+        self.assertEqual(headers.priority_header("priority"), "p_priority")
+
+    def test_condition(self):
+        headers = ForsysInputHeaders([])
+        self.assertEqual(headers.condition_header("condition"), "c_condition")
