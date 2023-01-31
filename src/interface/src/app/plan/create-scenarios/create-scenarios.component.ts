@@ -8,6 +8,7 @@ import {
   transition,
   trigger,
 } from '@angular/animations';
+import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import {
@@ -19,6 +20,11 @@ import { Plan } from 'src/app/types';
 import { PlanStep } from './../plan.component';
 import { Constraints } from './constraints-panel/constraints-panel.component';
 import { Priorities } from './set-priorities/set-priorities.component';
+
+interface StepState {
+  complete?: boolean;
+  opened?: boolean;
+}
 
 @Component({
   selector: 'app-create-scenarios',
@@ -79,4 +85,21 @@ export class CreateScenariosComponent {
 
   readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
+  stepStates: StepState[];
+
+  constructor() {
+    this.stepStates = [
+      {
+        opened: true,
+      },
+      {},
+      {},
+      {},
+      {},
+    ];
+  }
+
+  selectedStepChanged(event: StepperSelectionEvent): void {
+    this.stepStates[event.selectedIndex].opened = true;
+  }
 }

@@ -17,7 +17,9 @@ const regionToGeojsonMap: Record<Region, Record<string, string>> = {
     counties: 'assets/geojson/sierra_cascade_inyo/counties.geojson',
     huc10: 'assets/geojson/sierra_cascade_inyo/huc10.geojson',
     huc12: 'assets/geojson/sierra_cascade_inyo/huc12.geojson',
-    USFS: 'assets/geojson/sierra_cascade_inyo/USFS.geojson'
+    USFS: 'assets/geojson/sierra_cascade_inyo/USFS.geojson',
+    RecentFires: 'assets/geojson/sierra_cascade_inyo/recent_fires.geojson',
+    PrescribedBurns: 'assets/geojson/sierra_cascade_inyo/prescribed_burns.geojson'
   },
   [Region.CENTRAL_COAST]: {},
   [Region.NORTHERN_CALIFORNIA]: {},

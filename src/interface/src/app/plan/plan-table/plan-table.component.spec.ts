@@ -6,10 +6,11 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanPreview, Region } from 'src/app/types';
 
+import { AuthService } from './../../services/auth.service';
 import { PlanService } from './../../services/plan.service';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 import { PlanTableComponent } from './plan-table.component';
@@ -24,11 +25,21 @@ describe('PlanTableComponent', () => {
   let component: PlanTableComponent;
   let fixture: ComponentFixture<PlanTableComponent>;
   let loader: HarnessLoader;
-  let fakeService: PlanService;
+  let fakeAuthService: AuthService;
+  let loggedInStatus$: BehaviorSubject<boolean>;
+  let fakePlanService: PlanService;
   let routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
   beforeEach(async () => {
-    fakeService = jasmine.createSpyObj('PlanService', {
+    loggedInStatus$ = new BehaviorSubject(false);
+    fakeAuthService = jasmine.createSpyObj(
+      'AuthService',
+      {},
+      {
+        isLoggedIn$: loggedInStatus$,
+      }
+    );
+    fakePlanService = jasmine.createSpyObj('PlanService', {
       deletePlan: of('1'),
       listPlansByUser: of([fakePlan]),
     });
@@ -42,7 +53,11 @@ describe('PlanTableComponent', () => {
       ],
       declarations: [PlanTableComponent],
       providers: [
-        { provide: PlanService, useValue: fakeService },
+        {
+          provide: AuthService,
+          useValue: fakeAuthService,
+        },
+        { provide: PlanService, useValue: fakePlanService },
         { provide: Router, useFactory: routerStub },
       ],
     }).compileComponents();
@@ -59,7 +74,7 @@ describe('PlanTableComponent', () => {
 
   describe('ngOnInit', () => {
     it('should fetch plans from the DB', () => {
-      expect(fakeService.listPlansByUser).toHaveBeenCalledTimes(1);
+      expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
       expect(component.datasource.data).toEqual([
         {
           ...fakePlan,
@@ -84,7 +99,7 @@ describe('PlanTableComponent', () => {
   describe('refresh', () => {
     it('should fetch plans from the DB', () => {
       component.refresh();
-      expect(fakeService.listPlansByUser).toHaveBeenCalledTimes(2);
+      expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
       expect(component.datasource.data).toEqual([
         {
           ...fakePlan,
@@ -150,7 +165,7 @@ describe('PlanTableComponent', () => {
 
       component.delete('1');
 
-      expect(fakeService.deletePlan).toHaveBeenCalledOnceWith(['1']);
+      expect(fakePlanService.deletePlan).toHaveBeenCalledOnceWith(['1']);
     });
 
     it('when dialog is closed with value false, do nothing', () => {
@@ -163,7 +178,15 @@ describe('PlanTableComponent', () => {
 
       component.delete('1');
 
-      expect(fakeService.deletePlan).toHaveBeenCalledTimes(0);
+      expect(fakePlanService.deletePlan).toHaveBeenCalledTimes(0);
     });
+  });
+
+  it('when logged in status changes, refresh plans', () => {
+    expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
+
+    loggedInStatus$.next(true);
+
+    expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
   });
 });
