@@ -1,23 +1,19 @@
-import { NgModule } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { LegendComponent } from './legend/legend.component';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MaterialModule } from 'src/app/material/material.module';
+
 import { FileUploaderComponent } from './file-uploader/file-uploader.component';
+import { LegendComponent } from './legend/legend.component';
+import { OpacitySliderComponent } from './opacity-slider/opacity-slider.component';
 
 @NgModule({
   declarations: [
     FileUploaderComponent,
-    LegendComponent
+    LegendComponent,
+    OpacitySliderComponent,
   ],
-  exports: [
-    FileUploaderComponent,
-    LegendComponent
-  ],
-  imports: [
-    CommonModule,
-    MatButtonModule,
-    MatIconModule,
-  ]
+  exports: [FileUploaderComponent, LegendComponent, OpacitySliderComponent],
+  imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule],
 })
-export class SharedModule { }
+export class SharedModule {}

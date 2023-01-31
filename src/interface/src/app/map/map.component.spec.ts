@@ -10,14 +10,13 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSelectHarness } from '@angular/material/select/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject, of } from 'rxjs';
-import { featureCollection, point } from '@turf/helpers';
 import { Router } from '@angular/router';
+import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
+import { BehaviorSubject, of } from 'rxjs';
 import * as shp from 'shpjs';
 
 import {
@@ -40,13 +39,9 @@ import {
   Region,
 } from './../types';
 import { MapManager } from './map-manager';
-import { ConditionsNode, MapComponent } from './map.component';
+import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
-
-interface ExtendedWindow extends Window {
-  FileReader: FileReader;
-}
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -886,6 +881,43 @@ describe('MapComponent', () => {
         node.children?.forEach((child) => {
           expect(child.styleDisabled).toBeFalse();
         });
+      });
+    });
+  });
+
+  describe('data layer opacity functions', () => {
+    it('changeOpacity changes opacity on the currently selected data layer', () => {
+      spyOn(mapManager, 'changeOpacity').and.returnValue();
+
+      component.changeOpacity(0.5);
+
+      expect(component.maps[0].config.dataLayerConfig.opacity).toEqual(0.5);
+      expect(mapManager.changeOpacity).toHaveBeenCalledOnceWith(
+        component.maps[0]
+      );
+    });
+
+    it('getOpacityForSelectedMap gets opacity for selected map', () => {
+      component.maps[0].config.dataLayerConfig.opacity = 0.5;
+
+      component.getOpacityForSelectedMap().subscribe((opacity) => {
+        expect(opacity).toEqual(0.5);
+      });
+    });
+
+    it('mapHasDataLayer returns true if map has data layer', () => {
+      component.maps[0].config.dataLayerConfig.filepath = 'test_metric_1';
+
+      component.mapHasDataLayer().subscribe((result) => {
+        expect(result).toBeTrue();
+      });
+    });
+
+    it('mapHasDataLayer returns false if map does not have data layer', () => {
+      component.maps[0].config.dataLayerConfig.filepath = '';
+
+      component.mapHasDataLayer().subscribe((result) => {
+        expect(result).toBeFalse();
       });
     });
   });

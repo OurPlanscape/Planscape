@@ -15,11 +15,13 @@ export interface ColormapValue {
 export interface Legend {
   colors?: string[];
   labels?: string[];
+  minMaxValues?: number[];
 }
 
 /** Convert a colormap to a legend object. */
 export function colormapConfigToLegend(
-  colormap: ColormapConfig
+  colormap: ColormapConfig,
+  minMaxValues?: number[]
 ): Legend | undefined {
   const sortedValues = colormap.values?.sort((valueA, valueB) => {
     if (valueA?.percentile != undefined && valueB?.percentile != undefined) {
@@ -30,5 +32,6 @@ export function colormapConfigToLegend(
   return {
     colors: sortedValues?.map((value) => (!!value.rgb ? value.rgb : '')),
     labels: sortedValues?.map((value) => (!!value.name ? value.name : '')),
+    minMaxValues: minMaxValues,
   };
 }
