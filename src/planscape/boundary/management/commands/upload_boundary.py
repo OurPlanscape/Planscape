@@ -29,6 +29,9 @@ class Command(BaseCommand):
         parser.add_argument('--verbose',
                             type=bool, default=True, action=argparse.BooleanOptionalAction,
                             help='Show the commands to be run but do not run them.')
+        parser.add_argument('--strict',
+                            type=bool, default=True, action=argparse.BooleanOptionalAction,
+                            help='If false, ignore errors if a polygon cannot be converted and uploaded.')
 
     def handle(self, *args, **options):
         data_directory = options['data_directory']
@@ -42,6 +45,7 @@ class Command(BaseCommand):
         boundary_to_load = options['boundary']
         force = options['force']
         verbose = options['verbose']
+        strict = options['strict']
 
         def presave_callback_generator(fkey):
             def cb(sender, instance, *args, **kwargs):
@@ -87,7 +91,7 @@ class Command(BaseCommand):
                               shapefile_field_mapping, source_srs=srs, transform=True)
             presave_callback = presave_callback_generator(boundary_obj)
             pre_save.connect(presave_callback, sender=BoundaryDetails)
-            lm.save(strict=True, verbose=verbose)
+            lm.save(strict=strict, verbose=verbose)
             pre_save.disconnect(presave_callback, sender=BoundaryDetails)
 
         if not found:
