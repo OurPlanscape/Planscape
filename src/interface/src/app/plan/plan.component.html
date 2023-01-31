@@ -4,11 +4,9 @@
     <div class="plan-summary-panel" *ngIf="currentPlanStep === PlanStep.Overview">
       <summary-panel></summary-panel>
     </div>
-    <div class="plan-progress-panel" *ngIf="currentPlanStep > 0">
-      <progress-panel [plan]="currentPlan$ | async"></progress-panel>
-    </div>
     <mat-divider [vertical]="true"></mat-divider>
     <div class="plan-content">
+      <app-plan-navigation-bar (backToOverviewEvent)="currentPlanStep = PlanStep.Overview" *ngIf="currentPlanStep > PlanStep.Overview"></app-plan-navigation-bar>
       <div class="plan-content-inner">
         <app-plan-overview [plan$]="currentPlan$" (createScenarioEvent)="currentPlanStep = PlanStep.CreateScenarios" *ngIf="currentPlanStep === PlanStep.Overview"></app-plan-overview>
         <ng-container *ngIf="currentPlanStep > 0">
@@ -20,7 +18,6 @@
           </div>
         </ng-container>
       </div>
-      <app-plan-bottom-bar (nextEvent)="nextStep()" (previousEvent)="previousStep()" *ngIf="currentPlanStep > 0"></app-plan-bottom-bar>
     </div>
   </ng-container>
 </div>

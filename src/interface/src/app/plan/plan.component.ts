@@ -9,8 +9,6 @@ import { PlanMapComponent } from './plan-map/plan-map.component';
 export enum PlanStep {
   Overview,
   CreateScenarios,
-  SetPriorities,
-  SetConstraints,
 }
 
 @Component({
@@ -47,14 +45,6 @@ export class PlanComponent {
           this.planNotFound = true;
         }
       );
-  }
-
-  nextStep(): void {
-    this.currentPlanStep += 1;
-  }
-
-  previousStep(): void {
-    this.currentPlanStep -= 1;
   }
 
   changeCondition(filepath: string): void {

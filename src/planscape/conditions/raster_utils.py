@@ -1,12 +1,10 @@
 import numpy as np
-
 from conditions.models import BaseCondition, Condition
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from plan.models import ConditionScores, Plan
 from planscape import settings
-
 
 # Name of the table and column from models.py.
 RASTER_SCHEMA = 'public'
@@ -19,7 +17,7 @@ RASTER_NAME_COLUMN = 'name'
 # This should be differentiated from None, which is a possible value if the
 # score was previously computed, but no intersection exists between a plan
 # geometry and the condition raster.
-def _get_db_score_for_plan(plan_id, condition_id) -> float:
+def _get_db_score_for_plan(plan_id, condition_id) -> float | None:
     db_scores = ConditionScores.objects.filter(
         plan_id=plan_id).filter(condition_id=condition_id).all()
     if len(db_scores) > 0:
@@ -30,7 +28,7 @@ def _get_db_score_for_plan(plan_id, condition_id) -> float:
 # Returns None if no intersection exists between a geometry and the condition
 # raster.
 def compute_condition_score_from_raster(
-        geo: GEOSGeometry, raster_name: str) -> float:
+        geo: GEOSGeometry, raster_name: str) -> float | None:
     if geo is None:
         return None
     if geo.srid != settings.CRS_FOR_RASTERS:
@@ -42,14 +40,14 @@ def compute_condition_score_from_raster(
             'get_mean_condition_score',
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
-        cursor_output = list(cursor.fetchone())
-        if (cursor_output is None or len(cursor_output) == 0
-                or cursor_output[0] is None):
+        fetch = cursor.fetchone()
+        if fetch is None or len(fetch) == 0:
             return None
-        return cursor_output[0]
+        return fetch[0]
 
 
-def fetch_or_compute_mean_condition_scores(plan: Plan) -> dict[str, float]:
+def fetch_or_compute_mean_condition_scores(
+        plan: Plan) -> dict[str, float | None]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     geo = plan.geometry
 
