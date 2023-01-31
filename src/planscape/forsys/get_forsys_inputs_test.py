@@ -170,12 +170,14 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
 
 class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
     def setUp(self):
-        self.base_condition = BaseCondition.objects.create(
-            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.base_condition1 = BaseCondition.objects.create(
+            condition_name="name1", condition_level=ConditionLevel.ELEMENT)
+        self.base_condition2 = BaseCondition.objects.create(
+            condition_name="name2", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="name1")
+            condition_dataset=self.base_condition1, raster_name="name1")
         self.condition2 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="name2")
+            condition_dataset=self.base_condition2, raster_name="name2")
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -220,8 +222,7 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
         self.assertTrue(
             params.project_areas[self.project_area_with_user.pk].equals(
                 self.stored_geometry))
-        self.assertEqual(params.priorities, [
-                         self.condition1.pk, self.condition2.pk])
+        self.assertEqual(params.priorities, ["name1", "name2"])
 
 
 class ForsysInputHeadersTest(TestCase):
@@ -326,7 +327,6 @@ class ForsysProjectAreaRankingInputTest(TestCase):
             str(context.exception),
             "of 3 priorities, only 2 had conditions")
 
-
     def test_missing_condition_score(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
         params = ForsysProjectAreaRankingRequestParams(qd)
@@ -398,7 +398,6 @@ class ForsysProjectAreaRankingInputTest(TestCase):
                                   d1: dict[str, list],
                                   d2: dict[str, list]) -> None:
         for k in d1.keys():
-            print(k, d1[k], d2[k])
             l1 = d1[k]
             if len(l1) > 0 and type(l1[0]) is float:
                 np.testing.assert_array_almost_equal(l1, d2[k])
