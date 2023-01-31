@@ -21,11 +21,6 @@
   }
 }
 
-.flex-row-space-between {
-  display: flex;
-  justify-content: space-between;
-}
-
 label.required:after {
   content: '*';
   color: red;
