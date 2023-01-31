@@ -1,4 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
+import booleanIntersects from '@turf/boolean-intersects';
+import booleanWithin from '@turf/boolean-within';
+import { point } from '@turf/helpers';
 import {
   Feature,
   FeatureCollection,
@@ -8,9 +11,6 @@ import {
 } from 'geojson';
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
-import booleanIntersects from '@turf/boolean-intersects';
-import booleanWithin from '@turf/boolean-within';
-import { point } from '@turf/helpers';
 import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 
@@ -687,10 +687,18 @@ export class MapManager {
       {
         minZoom: 7,
         maxZoom: 13,
-        opacity: 0.7,
+        opacity:
+          map.config.dataLayerConfig.opacity !== undefined
+            ? map.config.dataLayerConfig.opacity
+            : FrontendConstants.MAP_DATA_LAYER_OPACITY,
       }
     );
 
     map.dataLayerRef.addTo(map.instance);
+  }
+
+  /** Change the opacity of a map's data layer. */
+  changeOpacity(map: Map) {
+    map.dataLayerRef?.setOpacity(map.config.dataLayerConfig.opacity!);
   }
 }

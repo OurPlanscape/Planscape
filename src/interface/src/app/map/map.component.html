@@ -3,14 +3,17 @@
   <!-- Map control panel -->
   <div id="controls" class="controls-container">
 
-    <div class="controls-header">
-      Highlighted map information
-    </div>
-
+    <ng-container *ngIf="mapHasDataLayer() | async">
       <!-- Legend for the currently shown map -->
       <app-legend [legend]="getSelectedLegend()"></app-legend>
 
-      <mat-divider class="layer-controls-divider"></mat-divider>
+      <!-- Opacity controls for the currently shown data layer -->
+      <app-opacity-slider (change)="changeOpacity($event)" [opacity]="getOpacityForSelectedMap() | async">
+      </app-opacity-slider>
+
+    </ng-container>
+
+    <mat-divider class="layer-controls-divider"></mat-divider>
 
       <!-- Controls for specifying how many maps should be shown -->
       <div class="map-count-button-row">

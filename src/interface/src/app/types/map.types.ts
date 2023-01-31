@@ -16,7 +16,7 @@ export interface Map {
   baseLayerRef?: L.Layer | undefined;
   boundaryLayerRef?: L.Layer | undefined;
   existingProjectsLayerRef?: L.Layer | undefined;
-  dataLayerRef?: L.Layer | undefined;
+  dataLayerRef?: L.TileLayer | undefined;
   clonedDrawingRef?: L.FeatureGroup | undefined;
   drawnPolygonLookup?: { [key: string]: L.Layer };
   legend?: Legend;
@@ -59,5 +59,6 @@ export const FrontendConstants = {
   MAP_CENTER: [38.646, -120.548],
   MAP_INITIAL_ZOOM: 9,
   MAP_MIN_ZOOM: 7,
-  MAP_MAX_ZOOM: 13
+  MAP_MAX_ZOOM: 13,
+  MAP_DATA_LAYER_OPACITY: 0.7,
 } as const;

@@ -26,6 +26,7 @@ export interface DataLayerConfig extends ConditionsMetadata {
   filepath?: string;
   colormap?: string;
   normalized?: boolean;
+  opacity?: number;
 }
 
 export interface ElementConfig extends DataLayerConfig {

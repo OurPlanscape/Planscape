@@ -13,7 +13,14 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
-import { BehaviorSubject, Observable, Subject, take, takeUntil } from 'rxjs';
+import {
+  BehaviorSubject,
+  map,
+  Observable,
+  Subject,
+  take,
+  takeUntil,
+} from 'rxjs';
 import { filter, switchMap } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
@@ -80,6 +87,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   conditionsConfig$: Observable<ConditionsConfig | null>;
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
+  selectedMap$: Observable<Map | undefined>;
 
   readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
 
@@ -173,6 +181,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
           config: defaultMapConfig(),
         };
       }
+    );
+
+    this.selectedMap$ = this.mapViewOptions$.pipe(
+      takeUntil(this.destroy$),
+      map((mapViewOptions) => this.maps[mapViewOptions.selectedMapIndex])
     );
 
     this.mapManager = new MapManager(
@@ -562,6 +575,27 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
             : undefined
         );
       });
+  }
+
+  /** Change the opacity of the currently shown data layer (if any). */
+  changeOpacity(opacity: number) {
+    const selectedMap = this.maps[this.mapViewOptions$.value.selectedMapIndex];
+    selectedMap.config.dataLayerConfig.opacity = opacity;
+    this.mapManager.changeOpacity(selectedMap);
+  }
+
+  /** Return the selected map's data layer opacity. */
+  getOpacityForSelectedMap(): Observable<number | undefined> {
+    return this.selectedMap$.pipe(
+      map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
+    );
+  }
+
+  /** Whether the currently selected map has a data layer active. */
+  mapHasDataLayer(): Observable<boolean> {
+    return this.selectedMap$.pipe(
+      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.filepath)
+    );
   }
 
   /** Change how many maps are displayed in the viewport. */
