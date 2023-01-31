@@ -297,7 +297,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     });
 
     // Initialize the legend with colormap values.
-    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
+    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap, [
+      map.config.dataLayerConfig.min_value,
+      map.config.dataLayerConfig.max_value,
+    ]);
 
     // Calculate the maximum width of the map nameplate.
     this.updateMapNameplateWidth(map);
@@ -530,10 +533,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     this.mapManager.changeConditionsLayer(map);
-    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap);
+    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap, [
+      map.config.dataLayerConfig.min_value,
+      map.config.dataLayerConfig.max_value,
+    ]);
   }
 
-  private updateLegendWithColormap(map: Map, colormap?: string) {
+  private updateLegendWithColormap(
+    map: Map,
+    colormap?: string,
+    minMaxValues?: (number | undefined)[]
+  ) {
     if (colormap == undefined) {
       colormap = DEFAULT_COLORMAP;
     } else if (colormap == NONE_COLORMAP) {
@@ -545,7 +555,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       .getColormap(colormap)
       .pipe(take(1))
       .subscribe((colormapConfig) => {
-        map.legend = colormapConfigToLegend(colormapConfig);
+        map.legend = colormapConfigToLegend(
+          colormapConfig,
+          minMaxValues?.every((val) => val !== undefined)
+            ? (minMaxValues as number[])
+            : undefined
+        );
       });
   }
 
