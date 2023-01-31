@@ -55,6 +55,30 @@
             "shapefile_field_mapping": {
                 "shape_name": "FORESTNAME"
             }
+        },
+        { 
+            "boundary_name": "RecentFires",
+            "display_name": "Fires (through 2021)",
+            "region_name": "none",
+            "filepath": "boundary/fire21_2.gdb/a000000af.gdbtable",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "FIRE_NAME",
+                "acres": "GIS_ACRES"
+            }           
+        },
+        { 
+            "boundary_name": "PrescribedBurns",
+            "display_name": "Prescribed Burns (through 2021)",
+            "region_name": "none",
+            "filepath": "boundary/fire21_2.gdb/a000000b6.gdbtable",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shapefile_field_mapping": {
+                "shape_name": "TREATMENT_NAME",
+                "acres": "TREATED_AC"
+            }          
         }
     ]
 }
