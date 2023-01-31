@@ -11,9 +11,9 @@
       <app-opacity-slider (change)="changeOpacity($event)" [opacity]="getOpacityForSelectedMap() | async">
       </app-opacity-slider>
 
-    </ng-container>
+      <mat-divider class="layer-controls-divider"></mat-divider>
 
-    <mat-divider class="layer-controls-divider"></mat-divider>
+    </ng-container>
 
       <!-- Controls for specifying how many maps should be shown -->
       <div class="map-count-button-row">
