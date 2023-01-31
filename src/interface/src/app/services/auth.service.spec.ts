@@ -11,7 +11,7 @@ import { of, throwError } from 'rxjs';
 import { BackendConstants } from '../backend-constants';
 import { AuthGuard, AuthService } from './auth.service';
 
-fdescribe('AuthService', () => {
+describe('AuthService', () => {
   let httpTestingController: HttpTestingController;
   let service: AuthService;
 
@@ -332,12 +332,23 @@ describe('AuthGuard', () => {
 
   beforeEach(() => {
     const cookieServiceStub = () => ({ get: (string: string) => ({}) });
+    const snackbarSpy = jasmine.createSpyObj<MatSnackBar>(
+      'MatSnackBar',
+      {
+        open: undefined,
+      },
+      {}
+    );
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
         AuthService,
         AuthGuard,
         { provide: CookieService, useFactory: cookieServiceStub },
+        {
+          provide: MatSnackBar,
+          useValue: snackbarSpy,
+        },
       ],
     });
     service = TestBed.inject(AuthGuard);
@@ -348,7 +359,7 @@ describe('AuthGuard', () => {
   });
 
   describe('canActivate', () => {
-    it('returns true if refreshToken succeeds', () => {
+    it('returns true if refreshLoggedInUser succeeds', () => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
         of({ username: 'username' })
@@ -359,7 +370,7 @@ describe('AuthGuard', () => {
       });
     });
 
-    it('returns false if refreshToken fails', () => {
+    it('returns false if refreshLoggedInUser fails', () => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
         throwError(() => new Error())
