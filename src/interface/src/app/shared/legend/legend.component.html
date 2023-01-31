@@ -1,9 +1,12 @@
 <div class="legend-wrapper" *ngIf="legend">
   <h1 *ngIf="!hideTitles">Legend</h1>
-  <div class="legend" [class.vertical]="vertical" [class.no-border]="hideOutline">
+  <div class="legend" [class.vertical]="vertical">
+    <!-- Gradient (if horizontal) -->
     <div class="gradient" [style.background-image]="gradient" *ngIf="!vertical"></div>
-    <div class="colors" [class.vertical]="vertical" *ngIf="vertical">
-      <div class="colorbox" [class.vertical]="vertical" *ngFor="let color of legend?.colors" [ngStyle]="{'background-color': color}"></div>
+
+    <!-- Colorboxes (if vertical) -->
+    <div class="colors" *ngIf="vertical">
+      <div class="colorbox" *ngFor="let color of legend?.colors" [ngStyle]="{'background-color': color}"></div>
     </div>
 
     <!-- Raw value labels (e.g. "0 => 10") -->

@@ -6,27 +6,19 @@
 }
 
 h1 {
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-}
-
-h2 {
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 500;
+  line-height: 15px;
   text-align: center;
 }
 
 .legend {
   align-items: center;
-  border: 1px solid #c4c4c4;
-  border-radius: 6px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   margin: 0px 48px 0px 48px;
-  padding: 12px;
 }
 
 .legend.vertical {
@@ -34,13 +26,7 @@ h2 {
   flex-direction: row;
   gap: 12px;
   justify-content: flex-start;
-}
-
-.legend.no-border {
-  border: none;
-  border-radius: 0px;
   margin: 0px;
-  padding: 0px;
 }
 
 .labels {
@@ -70,24 +56,14 @@ h2 {
 
 .colors {
   display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  width: 100%;
-}
-
-.colors.vertical {
   flex-direction: column;
+  flex-wrap: nowrap;
   gap: 8px;
-  width: unset;
 }
 
 .colorbox {
   flex: 1 1 auto;
   height: 24px;
-  min-width: 24px;
-}
-
-.colorbox.vertical {
   width: 36px;
 }
 
