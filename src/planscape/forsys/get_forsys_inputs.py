@@ -56,10 +56,8 @@ class ForsysProjectAreaRankingRequestParams():
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
-            self.save_debug_info = True
         else:
             self._read_db_params(params)
-            self.save_debug_info = False
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         self.region = params.get(
@@ -78,8 +76,12 @@ class ForsysProjectAreaRankingRequestParams():
             project = Project.objects.get(id=project_id)
             project_areas = ProjectArea.objects.filter(project=project_id)
             self.region = project.plan.region_name
-            self.priorities = list(
-                project.priorities.values_list('id', flat=True))
+
+            self.priorities = [
+                BaseCondition.objects.get(
+                    id=c.condition_dataset_id).condition_name
+                for c in project.priorities.all()]
+
             self.project_areas = {}
             for area in project_areas:
                 self.project_areas[area.pk] = area.project_area
@@ -219,7 +221,6 @@ class ForsysProjectAreaRankingInput():
                 self.forsys_input[headers.priority_header(
                     name)].append(1.0 - score)
 
-
     def _get_condition_ids_to_names(self, region: str,
                                     priorities: list) -> dict[int, str]:
         condition_ids_to_names = {
@@ -230,7 +231,6 @@ class ForsysProjectAreaRankingInput():
             raise Exception("of %d priorities, only %d had base conditions" % (
                 len(priorities), len(condition_ids_to_names.keys())))
         return condition_ids_to_names
-
 
     def _get_conditions(self, condition_ids: list[int]) -> list[Condition]:
         conditions = list(Condition.objects.filter(
@@ -255,8 +255,8 @@ class ForsysProjectAreaRankingInput():
             forsys_input[headers.priority_header(p)] = []
         return forsys_input
 
-
     # Transforms a geometry into the raster SRS.
+
     def _get_raster_geo(self, geo: GEOSGeometry) -> GEOSGeometry:
         if geo.srid == settings.CRS_FOR_RASTERS:
             return geo

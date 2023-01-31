@@ -98,9 +98,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
-
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
-
         forsys_output = run_forsys_scenario_sets(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
@@ -113,9 +111,7 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
 
         # TODO: configure response to potentially show stand coordinates and
         # other signals necessary for the UI.
-        return HttpResponse(
-            JsonResponse(response),
-            content_type='application/json')
+        return JsonResponse(response)
 
     except Exception as e:
         logger.error('scenario set error: ' + str(e))
