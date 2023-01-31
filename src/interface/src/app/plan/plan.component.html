@@ -2,7 +2,7 @@
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
     <div class="plan-summary-panel" *ngIf="currentPlanStep === PlanStep.Overview">
-      <summary-panel></summary-panel>
+      <summary-panel [plan]="currentPlan$ | async"></summary-panel>
     </div>
     <div class="plan-progress-panel" *ngIf="currentPlanStep > 0">
       <progress-panel [plan]="currentPlan$ | async"></progress-panel>
