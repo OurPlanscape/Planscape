@@ -11,7 +11,7 @@ import { of, throwError } from 'rxjs';
 import { BackendConstants } from '../backend-constants';
 import { AuthGuard, AuthService } from './auth.service';
 
-fdescribe('AuthService', () => {
+describe('AuthService', () => {
   let httpTestingController: HttpTestingController;
   let service: AuthService;
 

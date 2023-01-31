@@ -38,6 +38,7 @@ describe('PlanService', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
+        savedScenarios: 0,
       };
       service.createPlan(mockPlan).subscribe((res) => {
         expect(res).toEqual({ success: true, result: expectedPlan });
@@ -92,6 +93,8 @@ describe('PlanService', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
+        savedScenarios: 0,
+        createdTimestamp: undefined,
       };
 
       const backendPlan: BackendPlan = {
