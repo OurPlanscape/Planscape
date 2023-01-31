@@ -253,27 +253,27 @@ def create_project(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def update_project(request: HttpRequest) -> HttpResponse:
     try:
-        if request.method == "PUT":
-            # Check that the user is logged in.
-            owner = _get_user(request)
-
-            body = json.loads(request.body)
-            project_id = body.get('id', None)
-            if project_id is None or not (isinstance(project_id, int)):
-                raise ValueError("Must specify project_id as an integer")
-
-            project = Project.objects.get(id=project_id)
-            if project.owner != owner:
-                raise ValueError(
-                    "You do not have permission to view this project.")
-
-            project.priorities.clear()
-            _save_project_parameters(body, project)
-            project.save()
-            return HttpResponse(str(project.pk))
-        else:
+        if request.method != "PUT":
             raise KeyError(
                 "HTTP methods other than PUT are not yet implemented")
+
+        # Check that the user is logged in.
+        owner = _get_user(request)
+
+        body = json.loads(request.body)
+        project_id = body.get('id', None)
+        if project_id is None or not (isinstance(project_id, int)):
+            raise ValueError("Must specify project_id as an integer")
+
+        project = Project.objects.get(id=project_id)
+        if project.owner != owner:
+            raise ValueError(
+                "You do not have permission to view this project.")
+
+        project.priorities.clear()
+        _save_project_parameters(body, project)
+        project.save()
+        return HttpResponse(str(project.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 

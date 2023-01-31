@@ -419,7 +419,6 @@ class CreateProjectTest(TransactionTestCase):
             reverse('plan:create_project'), {
                 'plan_id': self.plan_with_user.pk},
             content_type='application/json')
-        print(response.content)
         self.assertEqual(response.status_code, 200)
 
     def test_treatment_ratio_bad_format_negative(self):
@@ -514,7 +513,7 @@ class UpdateProjectTest(TransactionTestCase):
     def test_remove_constraint_remove_priority(self):
         self.client.force_login(self.user)
         response = self.client.put(
-            reverse('plan:update_project'), {'id': self.project_with_user.pk}, 
+            reverse('plan:update_project'), {'id': self.project_with_user.pk},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         project = Project.objects.get(id=self.project_with_user.pk)
