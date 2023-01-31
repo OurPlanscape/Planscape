@@ -3,15 +3,14 @@ import os
 
 import numpy as np
 import pandas as pd
-from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import compute_condition_score_from_raster
 from django.conf import settings
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
-from forsys.get_forsys_inputs import (
-    ForsysInputHeaders, ForsysProjectAreaRankingRequestParams)
+from forsys.get_forsys_inputs import (ForsysInputHeaders,
+                                      ForsysProjectAreaRankingInput,
+                                      ForsysProjectAreaRankingRequestParams)
 from forsys.parse_forsys_output import ForsysScenarioSetOutput
 from planscape import settings
 
@@ -50,6 +49,7 @@ def convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
+# Transforms a geometry into the raster SRS.
 def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
     if geo.srid == settings.CRS_FOR_RASTERS:
         return geo
@@ -59,55 +59,6 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
             SpatialReference(settings.CRS_9822_PROJ4)))
     geo.srid = settings.CRS_FOR_RASTERS
     return geo
-
-
-def get_forsys_input(
-        params: ForsysProjectAreaRankingRequestParams,
-        headers: ForsysInputHeaders) -> dict:
-    region = params.region
-    priorities = params.priorities
-    project_areas = params.project_areas
-
-    condition_ids_to_names = {
-        c.pk: c.condition_name
-        for c in BaseCondition.objects.filter(region_name=region).filter(
-            condition_name__in=priorities).all()}
-    if len(priorities) != len(condition_ids_to_names.keys()):
-        raise Exception("of %d priorities, only %d had conditions" % (
-            len(priorities), len(condition_ids_to_names.keys())))
-    conditions = Condition.objects.filter(
-        condition_dataset_id__in=condition_ids_to_names.keys()).filter(
-        is_raw=False).all()
-    if len(priorities) != len(conditions):
-        raise Exception("of %d priorities, only %d had condition rasters" % (
-            len(priorities), len(conditions)))
-
-    data = {}
-    data[headers.FORSYS_PROJECT_ID_HEADER] = []
-    data[headers.FORSYS_STAND_ID_HEADER] = []
-    data[headers.FORSYS_AREA_HEADER] = []
-    data[headers.FORSYS_COST_HEADER] = []
-    for p in priorities:
-        data[headers.condition_header(p)] = []
-        data[headers.priority_header(p)] = []
-
-    for proj_id in project_areas.keys():
-        geo = get_raster_geo(project_areas[proj_id])
-
-        data[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
-        data[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
-        data[headers.FORSYS_AREA_HEADER].append(geo.area)
-        data[headers.FORSYS_COST_HEADER].append(geo.area * 5000)
-        for c in conditions:
-            name = condition_ids_to_names[c.condition_dataset_id]
-            score = compute_condition_score_from_raster(
-                geo, c.raster_name)
-            if score is None:
-                raise Exception(
-                    "no score was retrieved for condition, %s" % name)
-            data[headers.condition_header(name)].append(score)
-            data[headers.priority_header(name)].append(1.0 - score)
-    return data
 
 
 # Runs a forsys scenario sets call.
@@ -148,16 +99,16 @@ def scenario_set(request: HttpRequest) -> HttpResponse:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
 
-        forsys_input = get_forsys_input(params, headers)
+        forsys_input = ForsysProjectAreaRankingInput(params, headers)
 
         forsys_output = run_forsys_scenario_sets(
-            forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
+            forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.priority_headers)
 
         response = {}
         response['forsys'] = {}
-        response['forsys']['input'] = forsys_input
+        response['forsys']['input'] = forsys_input.forsys_input
         response['forsys']['output_project'] = forsys_output.scenarios
 
         # TODO: configure response to potentially show stand coordinates and
