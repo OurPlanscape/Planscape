@@ -10,7 +10,6 @@ export class LegendComponent implements OnChanges {
   @Input() legend?: Legend;
   @Input() vertical?: boolean;
   @Input() hideTitles?: boolean;
-  @Input() hideOutline?: boolean;
 
   gradient: string = '';
 
