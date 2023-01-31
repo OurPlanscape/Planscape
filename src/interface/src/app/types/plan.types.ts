@@ -6,6 +6,9 @@ export interface Plan extends BasePlan {
   ownerId: string;
   region: Region;
   planningArea?: GeoJSON.GeoJSON;
+  createdTimestamp?: number;
+  updatedTimestamp?: number;
+  savedScenarios?: number;
 }
 
 export interface BasePlan {
