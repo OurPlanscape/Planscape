@@ -17,14 +17,14 @@
       </mat-step>
 
       <!-- Step 2: Set constraints -->
-      <mat-step #step2>
+      <mat-step #step2 [stepControl]="formGroups[1]">
         <ng-template matStepLabel>
           <div class="step-label-header">Set constraints</div>
           <div class="step-label-description" *ngIf="!stepStates[1].opened">
             Constraints will be used to inform project areas and scenario options.
           </div>
         </ng-template>
-        <app-constraints-panel (changeConstraintsEvent)="changeConstraintsEvent.emit($event)">
+        <app-constraints-panel [constraintsForm]="formGroups[1]" (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()">
         </app-constraints-panel>
       </mat-step>
 
@@ -39,8 +39,7 @@
             XX priorities selected
           </div>
         </ng-template>
-        <app-set-priorities (changeConditionEvent)="changeConditionEvent.emit($event)"
-          (changePrioritiesEvent)="changePrioritiesEvent.emit($event)" [plan$]="plan$">
+        <app-set-priorities [plan$]="plan$">
         </app-set-priorities>
       </mat-step>
 
