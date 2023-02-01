@@ -1,18 +1,20 @@
-import { Component, Input, OnInit } from '@angular/core';
-import * as L from 'leaflet';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import area from '@turf/area';
+import { FeatureCollection } from 'geojson';
 
-import { Region } from '../../../types';
+import { Plan, Region } from '../../../types';
 
 export interface SummaryInput {
   id?: string;
   type: string;
   name: string;
-  owner: string;
+  ownerId: string; // Todo: Need to convert ownerId to username
   region: Region;
   area: GeoJSON.GeoJSON;
   status?: string;
-  createdTime: string;
-  updatedTime: string;
+  createdTime?: number;
+  scenarios: number;
+  acres: number;
 }
 
 // todo: move this to shared types
@@ -32,46 +34,42 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   [ConditionName.POOR]: '#fdd853',
 }
 
+const SQUARE_METERS_PER_ACRE = 0.0002471054;
+
 @Component({
   selector: 'summary-panel',
   templateUrl: './summary-panel.component.html',
   styleUrls: ['./summary-panel.component.scss']
 })
-export class SummaryPanelComponent implements OnInit {
-  @Input() summaryInput: SummaryInput | null = null;
-  // todo: pass these in as inputs
+export class SummaryPanelComponent implements OnChanges {
+  @Input() plan: Plan | null = null;
+  // Todo: update these when available.
+
+  summaryInput: SummaryInput | null = null;
   conditionScore: ConditionName = ConditionName.POOR;
   futureConditionScore: ConditionName = ConditionName.LEANING_GOOD;
-  acres = '123,456';
-
   conditionScoreColorMap = conditionScoreColorMap;
 
-  constructor() { }
+  ngOnChanges(): void {
+      if (!!this.plan) {
+        this.summaryInput = {
+          id: this.plan.id,
+          type: 'Plan',
+          name: this.plan.name,
+          ownerId: this.plan.ownerId? this.plan.ownerId : 'guest',
+          region: this.plan.region,
+          area: this.plan.planningArea!,
+          createdTime: this.plan.createdTimestamp,
+          scenarios: this.plan.savedScenarios? this.plan.savedScenarios : 0,
+          acres: this.calculateAcres(this.plan.planningArea!),
+          status: 'In progress',
+        }
+      }
+  }
 
-  ngOnInit(): void {
-    // todo: pass the summaryInput from plan component
-    const plan = {
-      id: 'fakeId',
-      name: 'placeholder plan name',
-      ownerId: 'fake',
-      region: Region.SIERRA_NEVADA,
-      planningArea: new L.Polygon([
-        new L.LatLng(38.715517043571914, -120.42857302225725),
-        new L.LatLng(38.47079787227401, -120.5164425608172),
-        new L.LatLng(38.52668443555346, -120.11828371421737),
-      ]).toGeoJSON(),
-    };
-
-    this.summaryInput = {
-      id: plan.id,
-      type: 'Plan',
-      name: plan.name,
-      owner: 'Player 456',
-      region: plan.region,
-      area: plan.planningArea,
-      status: 'Draft',
-      createdTime: '10/20/2022',
-      updatedTime: '2 hours ago',
-    }
+  calculateAcres(planningArea: GeoJSON.GeoJSON) {
+    const squareMeters = area(planningArea as FeatureCollection);
+    const acres = squareMeters * SQUARE_METERS_PER_ACRE;
+    return Math.round(acres);
   }
 }
