@@ -1,5 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormBuilder, Validators } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
@@ -37,11 +38,20 @@ describe('CreateScenariosIntroComponent', () => {
         SharedModule,
       ],
       declarations: [CreateScenariosIntroComponent],
-      providers: [{ provide: MapService, useValue: fakeMapService }],
+      providers: [
+        FormBuilder,
+        { provide: MapService, useValue: fakeMapService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreateScenariosIntroComponent);
     component = fixture.componentInstance;
+
+    const fb = fixture.componentRef.injector.get(FormBuilder);
+    component.formGroup = fb.group({
+      scoreSelectCtrl: ['', Validators.required],
+    });
+
     fixture.detectChanges();
   });
 
@@ -54,5 +64,14 @@ describe('CreateScenariosIntroComponent', () => {
     expect(component.legend).toEqual(
       colormapConfigToLegend(fakeColormapConfig)
     );
+  });
+
+  it('when form is valid, form complete event is emitted', () => {
+    spyOn(component.formCompleteEvent, 'emit');
+
+    // Fill out form to make it "valid"
+    component.formGroup?.get('scoreSelectCtrl')?.setValue('test');
+
+    expect(component.formCompleteEvent.emit).toHaveBeenCalledOnceWith();
   });
 });
