@@ -26,24 +26,18 @@ label.required:after {
   color: red;
 }
 
-.input-wrapper {
-  margin-left: 30px;
-}
-
 .input-field {
     padding-top: 18px;
-    width: 100px;
+    width: 170px;
 
-    &:not(:last-child) {
-      margin-right: 20px;
-    }
+  &.margin-left {
+    margin-left: 28px;
+  }
 }
 
 .subtext {
   color: #5F6368;
   font-size: 12px;
-  margin-right: 98px;
-  text-align: right;
 }
 
 .select-field {
@@ -65,4 +59,8 @@ label.required:after {
   -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
   background-color: rgba(0,0,0,.5);
   border-radius: 4px;
+}
+
+.flex-row {
+  display: flex;
 }
