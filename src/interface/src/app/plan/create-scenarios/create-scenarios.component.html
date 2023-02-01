@@ -3,17 +3,17 @@
   <div class="create-scenarios-panel-content"
     [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
 
-    <mat-stepper orientation="vertical" class="stepper"
+    <mat-stepper #stepper orientation="vertical" class="stepper" [linear]="true"
       (selectionChange)="selectedStepChanged($event)">
 
       <!-- Step 1: Select condition score -->
-      <mat-step #step1>
+      <mat-step #step1 [stepControl]="formGroups[0]">
         <ng-template matStepLabel>
           <div class="step-label-header">
             Select condition score
           </div>
         </ng-template>
-        <app-create-scenarios-intro></app-create-scenarios-intro>
+        <app-create-scenarios-intro [formGroup]="formGroups[0]" (formCompleteEvent)="stepper.next()"></app-create-scenarios-intro>
       </mat-step>
 
       <!-- Step 2: Set constraints -->

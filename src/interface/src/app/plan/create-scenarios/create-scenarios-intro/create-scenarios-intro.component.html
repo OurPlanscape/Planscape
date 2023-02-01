@@ -3,13 +3,15 @@
 
   <h4>Prioritize by:</h4>
 
-  <mat-form-field appearance="fill" class="select-box" subscriptSizing="dynamic">
-    <mat-label>Make Selection</mat-label>
-    <mat-select>
-      <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
-      <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
-    </mat-select>
-  </mat-form-field>
+  <form [formGroup]="formGroup!">
+    <mat-form-field appearance="fill" class="select-box" subscriptSizing="dynamic">
+      <mat-label>Make Selection</mat-label>
+      <mat-select formControlName="scoreSelectCtrl">
+        <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
+        <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
 
   <div class="row-div gap-60 shaded-box">
     <div>
