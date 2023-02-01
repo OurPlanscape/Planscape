@@ -4,9 +4,9 @@
     <div class="summary-subtitle">Status: {{summaryInput?.status}}</div>
   </div>
   <div class="summary-content">
-    <div>Owner: {{summaryInput?.owner}}</div>
-    <div>Created: {{summaryInput?.createdTime}}</div>
-    <div>Last updated: {{summaryInput?.updatedTime}}</div>
+    <div>Owner: Unavailable</div>
+    <div>Created: {{summaryInput?.createdTime | date}}</div>
+    <div>Last updated: Unavailable</div>
     <div>Region: {{summaryInput?.region}}</div>
 
     <div class="grid-container">
@@ -19,7 +19,7 @@
         <span class="grid-subtitle">future condition</span>
       </div>
       <div class="grid-item">
-        <span class="grid-title">{{acres}}</span>
+        <span class="grid-title">{{summaryInput?.acres}}</span>
         <span class="grid-subtitle">acres</span>
       </div>
       <div class="grid-item">

@@ -131,6 +131,10 @@ export class PlanService {
       name: plan.name,
       region: plan.region_name,
       planningArea: plan.geometry,
+      savedScenarios: plan.scenarios?? 0,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        plan.creation_timestamp
+      ),
     };
   }
 
@@ -189,6 +193,7 @@ export class PlanService {
           return {
             ...plan,
             id: result.toString(),
+            savedScenarios: 0,
           };
         })
       );
