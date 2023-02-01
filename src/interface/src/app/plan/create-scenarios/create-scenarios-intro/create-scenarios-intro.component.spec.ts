@@ -50,7 +50,7 @@ describe('CreateScenariosIntroComponent', () => {
   });
 
   it('should fetch colormap from service to create legend', () => {
-    expect(fakeMapService.getColormap).toHaveBeenCalledOnceWith('viridis');
+    expect(fakeMapService.getColormap).toHaveBeenCalledOnceWith('turbo');
     expect(component.legend).toEqual(
       colormapConfigToLegend(fakeColormapConfig)
     );

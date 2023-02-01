@@ -1,7 +1,7 @@
 .panel-container {
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 10px;
   height: 100%;
   width: 100%;
 }
@@ -13,4 +13,32 @@
 
 .gap-60 {
   gap: 60px;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.secondary-text {
+  font-size: 13px;
+  opacity: 0.66;
+  line-height: 20px;
+}
+
+h4 {
+  color: #474747;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.select-box {
+  align-self: flex-start;
+}
+
+.shaded-box {
+  background-color: rgba(220, 228, 244, 0.39);
+  border-radius: 21px;
+  box-sizing: border-box;
+  padding: 20px;
 }
