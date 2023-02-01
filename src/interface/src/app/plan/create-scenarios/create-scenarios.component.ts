@@ -9,8 +9,15 @@ import {
   trigger,
 } from '@angular/animations';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject } from 'rxjs';
 import {
   colorTransitionTrigger,
@@ -78,6 +85,8 @@ interface StepState {
   ],
 })
 export class CreateScenariosComponent {
+  @ViewChild(MatStepper) stepper: MatStepper | undefined;
+
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
