@@ -10,6 +10,7 @@ import {
 } from '@angular/animations';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
 import {
   colorTransitionTrigger,
@@ -83,11 +84,18 @@ export class CreateScenariosComponent {
   @Output() changeConstraintsEvent = new EventEmitter<Constraints>();
   @Output() changePrioritiesEvent = new EventEmitter<Priorities>();
 
+  formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
   stepStates: StepState[];
 
-  constructor() {
+  constructor(private fb: FormBuilder) {
+    this.formGroups = [
+      // Step 1: Select condition score
+      this.fb.group({
+        scoreSelectCtrl: ['', Validators.required],
+      }),
+    ];
     this.stepStates = [
       {
         opened: true,
