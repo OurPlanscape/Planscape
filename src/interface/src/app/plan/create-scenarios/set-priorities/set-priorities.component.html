@@ -1,16 +1,9 @@
 <div class="panel-container">
-  <div>
-    <mat-form-field appearance="fill">
-      <mat-label>
-        Generate scenarios using:
-      </mat-label>
-      <mat-select>
-        <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
-        <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
-      </mat-select>
-    </mat-form-field>
+  <div class="flex-row">
+    <p class="secondary-text">{{ text1 }}</p>
+    <app-legend [legend]="legend"></app-legend>
   </div>
-  <p>{{ text1 }}</p>
+
   <mat-table [dataSource]="datasource" class="priority-table">
     <ng-container matColumnDef="selected">
       <mat-header-cell *matHeaderCellDef>
@@ -21,24 +14,16 @@
       </mat-cell>
     </ng-container>
 
-    <ng-container matColumnDef="visible">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <button mat-icon-button>
-          <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)">
-            {{ element.visible ? 'visibility' : 'visibility_off' }}
-          </mat-icon>
-        </button>
-      </mat-cell>
-    </ng-container>
-
     <ng-container matColumnDef="displayName">
       <mat-header-cell *matHeaderCellDef>
         Priorities
       </mat-header-cell>
-      <mat-cell *matCellDef="let element">
+      <mat-cell *matCellDef="let element" class="level-{{ element.level }}">
         <span class="indent-level-{{ element.level }}"></span>
-        <button mat-icon-button *ngIf="element.children.length" (click)="toggleExpand(element)"><mat-icon>expand_more</mat-icon></button>
+        <button mat-icon-button *ngIf="element.children.length" class="expand-button"
+          (click)="toggleExpand(element)">
+          <mat-icon>{{ element.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+        </button>
         {{ element.displayName ? element.displayName : element.conditionName }}
       </mat-cell>
     </ng-container>
@@ -51,14 +36,32 @@
         <mat-spinner [diameter]="24" *ngIf="!conditionScores.has(element.conditionName)"></mat-spinner>
         <ng-container *ngIf="conditionScores.has(element.conditionName)">
           <div>
-            <div><b>{{ getScoreLabel(element.conditionName) }}</b></div>
+            <div>{{ getScoreLabel(element.conditionName) }}</div>
             <div class="score">{{  getScore(element.conditionName) | number: '1.1-1' }}</div>
           </div>
         </ng-container>
       </mat-cell>
     </ng-container>
 
+    <ng-container matColumnDef="visible">
+      <mat-header-cell *matHeaderCellDef></mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        <button mat-icon-button>
+          <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)">
+            {{ element.visible ? 'image' : 'hide_image' }}
+          </mat-icon>
+        </button>
+      </mat-cell>
+    </ng-container>
+
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
     <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hide-row]="row.hidden"></mat-row>
   </mat-table>
+
+  <mat-error *ngIf="formGroup?.invalid">Select at least one</mat-error>
+
+  <div class="flex-row">
+    <button mat-flat-button [disabled]="formGroup?.invalid" (click)="formNextEvent.emit()">NEXT</button>
+    <button mat-flat-button (click)="formBackEvent.emit()">BACK</button>
+  </div>
 </div>
