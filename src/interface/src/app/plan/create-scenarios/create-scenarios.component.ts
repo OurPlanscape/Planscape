@@ -26,8 +26,6 @@ import {
 import { Plan } from 'src/app/types';
 
 import { PlanStep } from './../plan.component';
-import { Constraints } from './constraints-panel/constraints-panel.component';
-import { Priorities } from './set-priorities/set-priorities.component';
 
 interface StepState {
   complete?: boolean;
@@ -90,8 +88,6 @@ export class CreateScenariosComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
-  @Output() changeConstraintsEvent = new EventEmitter<Constraints>();
-  @Output() changePrioritiesEvent = new EventEmitter<Priorities>();
 
   formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
@@ -99,10 +95,26 @@ export class CreateScenariosComponent {
   stepStates: StepState[];
 
   constructor(private fb: FormBuilder) {
+    // TODO: Get and populate saved scenario config
+
     this.formGroups = [
       // Step 1: Select condition score
       this.fb.group({
         scoreSelectCtrl: ['', Validators.required],
+      }),
+      // Step 2: Set constraints
+      this.fb.group({
+        budgetForm: this.fb.group({
+          maxBudget: [''],
+          optimizeBudget: [false, Validators.required],
+        }),
+        treatmentForm: this.fb.group({
+          maxArea: ['', Validators.required],
+        }),
+        excludeAreasByDegrees: [false],
+        excludeAreasByDistance: [false],
+        excludeSlope: [''],
+        excludeDistance: [''],
       }),
     ];
     this.stepStates = [
@@ -114,6 +126,13 @@ export class CreateScenariosComponent {
       {},
       {},
     ];
+
+    this.formGroups.every((formGroup) => {
+      formGroup.valueChanges.subscribe((value) => {
+        // TODO: save new values to backend
+        console.log(value);
+      });
+    });
   }
 
   selectedStepChanged(event: StepperSelectionEvent): void {
