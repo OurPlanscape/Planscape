@@ -47,7 +47,8 @@
       <mat-header-cell *matHeaderCellDef></mat-header-cell>
       <mat-cell *matCellDef="let element">
         <button mat-icon-button>
-          <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)">
+          <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)"
+            [class.grey-icon]="!element.visible">
             {{ element.visible ? 'image' : 'hide_image' }}
           </mat-icon>
         </button>
