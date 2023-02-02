@@ -3,7 +3,7 @@
   <!-- Map control panel -->
   <div id="controls" class="controls-container">
 
-    <ng-container *ngIf="mapHasDataLayer() | async">
+    <div *ngIf="mapHasDataLayer() | async" class="legend-container">
       <!-- Legend for the currently shown map -->
       <app-legend [legend]="getSelectedLegend()"></app-legend>
 
@@ -13,7 +13,7 @@
 
       <mat-divider class="layer-controls-divider"></mat-divider>
 
-    </ng-container>
+    </div>
 
       <!-- Controls for specifying how many maps should be shown -->
       <div class="map-count-button-row">

@@ -116,6 +116,10 @@ export class CreateScenariosComponent {
         excludeSlope: [''],
         excludeDistance: [''],
       }),
+      // Step 3: Select priorities
+      this.fb.group({
+        priorities: ['', Validators.required],
+      }),
     ];
     this.stepStates = [
       {
