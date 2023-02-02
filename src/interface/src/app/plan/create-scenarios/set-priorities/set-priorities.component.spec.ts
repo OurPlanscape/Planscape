@@ -1,16 +1,22 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { Plan, Region } from 'src/app/types';
+import { colormapConfigToLegend, Plan, Region } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
+import { ColormapConfig } from './../../../types/legend.types';
 import {
   ScoreColumn,
   SetPrioritiesComponent,
@@ -24,10 +30,22 @@ describe('SetPrioritiesComponent', () => {
   let fakeMapService: MapService;
   let fakePlanService: PlanService;
 
+  const fakeColormapConfig: ColormapConfig = {
+    name: 'fakecolormap',
+    values: [
+      {
+        rgb: '#000000',
+        name: 'fakelabel',
+      },
+    ],
+  };
+
   beforeEach(async () => {
     fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
-      {},
+      {
+        getColormap: of(fakeColormapConfig),
+      },
       {
         conditionsConfig$: new BehaviorSubject<ConditionsConfig | null>({
           pillars: [
@@ -83,6 +101,7 @@ describe('SetPrioritiesComponent', () => {
       ],
       declarations: [SetPrioritiesComponent],
       providers: [
+        FormBuilder,
         {
           provide: MapService,
           useValue: fakeMapService,
@@ -97,11 +116,25 @@ describe('SetPrioritiesComponent', () => {
     fixture = TestBed.createComponent(SetPrioritiesComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
+
+    const fb = fixture.componentRef.injector.get(FormBuilder);
+    component.formGroup = fb.group({
+      priorities: ['', Validators.required],
+    });
+
     fixture.detectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should fetch colormap from service to create legend', () => {
+    let legend = colormapConfigToLegend(fakeColormapConfig);
+    legend!.labels = ['Poor', 'OK', 'Excellent'];
+
+    expect(fakeMapService.getColormap).toHaveBeenCalledOnceWith('turbo');
+    expect(component.legend).toEqual(legend);
   });
 
   it('should populate datasource', () => {
@@ -111,6 +144,7 @@ describe('SetPrioritiesComponent', () => {
       filepath: 'test_metric_1',
       children: [],
       level: 2,
+      hidden: true,
     };
     const element = {
       conditionName: 'test_element_1',
@@ -118,7 +152,8 @@ describe('SetPrioritiesComponent', () => {
       filepath: 'test_element_1_normalized',
       children: [metric],
       level: 1,
-      expanded: true,
+      expanded: false,
+      hidden: true,
     };
     const pillar = {
       conditionName: 'test_pillar_1',
@@ -126,7 +161,7 @@ describe('SetPrioritiesComponent', () => {
       filepath: 'test_pillar_1_normalized',
       children: [element],
       level: 0,
-      expanded: true,
+      expanded: false,
     };
     expect(component.datasource.data).toEqual([pillar, element, metric]);
   });
@@ -187,13 +222,14 @@ describe('SetPrioritiesComponent', () => {
     ).toEqual(1);
   });
 
-  it('no rows should be hidden at first', () => {
+  it('only pillars should be visible at first', () => {
     expect(
-      component.datasource.data.find((element) => element.hidden)
-    ).toBeUndefined();
+      component.datasource.data.filter((element) => element.hidden).length
+    ).toEqual(2);
   });
 
   it('collapsing a row should hide all of its descendants', () => {
+    component.toggleExpand(component.datasource.data[0]);
     component.toggleExpand(component.datasource.data[0]);
 
     expect(component.datasource.data[0].expanded).toBeFalse();
@@ -207,7 +243,6 @@ describe('SetPrioritiesComponent', () => {
 
   it('expanding a row should unhide its immediate children', () => {
     component.toggleExpand(component.datasource.data[0]);
-    component.toggleExpand(component.datasource.data[0]);
 
     expect(component.datasource.data[0].expanded).toBeTrue();
     component.datasource.data[0].children.forEach((child) => {
@@ -218,22 +253,21 @@ describe('SetPrioritiesComponent', () => {
     });
   });
 
-  it('selecting a priority should emit a priority change event', async () => {
-    spyOn(component.changePrioritiesEvent, 'emit');
+  it('selecting a priority should update the form value', async () => {
     const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
 
     // Check the first priority (should be 'test_pillar_1')
     await checkboxHarnesses[0].check();
 
-    expect(component.changePrioritiesEvent.emit).toHaveBeenCalledOnceWith({
-      priorities: ['test_pillar_1'],
-    });
+    expect(component.formGroup?.get('priorities')?.value).toEqual(
+      'test_pillar_1'
+    );
 
     // Check the second priority (should be 'test_element_1')
     await checkboxHarnesses[1].check();
 
-    expect(component.changePrioritiesEvent.emit).toHaveBeenCalledWith({
-      priorities: ['test_pillar_1', 'test_element_1'],
-    });
+    expect(component.formGroup?.get('priorities')?.value).toEqual(
+      'test_pillar_1, test_element_1'
+    );
   });
 });
