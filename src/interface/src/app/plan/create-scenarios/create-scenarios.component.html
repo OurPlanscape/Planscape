@@ -39,7 +39,9 @@
             XX priorities selected
           </div>
         </ng-template>
-        <app-set-priorities [plan$]="plan$">
+        <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[2]"
+          (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()"
+          (changeConditionEvent)="changeConditionEvent.emit($event)">
         </app-set-priorities>
       </mat-step>
 
