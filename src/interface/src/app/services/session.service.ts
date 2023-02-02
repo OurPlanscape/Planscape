@@ -41,7 +41,12 @@ export class SessionService {
     ) {
       this.mapViewOptions$.next(JSON.parse(storedMapViewOptions));
     }
-    this.region$.next(localStorage.getItem('region') as Region | null);
+    const savedRegion = localStorage.getItem('region');
+    if (!!savedRegion) {
+      this.setRegion(savedRegion as Region);
+    } else {
+      this.setRegion(Region.SIERRA_NEVADA);
+    }
   }
 
   /** Emits the map configs and saves them in local storage. */
@@ -56,11 +61,17 @@ export class SessionService {
     this.mapViewOptions$.next(value);
   }
 
-  /** Emits the region and saves it in local storage. */
+  /**
+   * Emits the region and saves it in local storage. Saves the default region if local storage's
+   * value does not match a region (i.e. enum was changed, but user still has old value stored).
+   */
   setRegion(value: Region) {
     if (Object.values(Region).includes(value)) {
       localStorage.setItem('region', value);
       this.region$.next(value);
+    } else {
+      localStorage.setItem('region', Region.SIERRA_NEVADA);
+      this.region$.next(Region.SIERRA_NEVADA);
     }
   }
 
