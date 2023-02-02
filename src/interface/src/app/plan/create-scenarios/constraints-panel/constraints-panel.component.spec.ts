@@ -1,12 +1,17 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatSelectHarness } from '@angular/material/select/testing';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MaterialModule } from 'src/app/material/material.module';
 
 import { ConstraintsPanelComponent } from './constraints-panel.component';
-import { MaterialModule } from 'src/app/material/material.module';
 
 describe('ConstraintsPanelComponent', () => {
   let component: ConstraintsPanelComponent;
@@ -22,11 +27,28 @@ describe('ConstraintsPanelComponent', () => {
         NoopAnimationsModule,
       ],
       declarations: [ConstraintsPanelComponent],
+      providers: [FormBuilder],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ConstraintsPanelComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
+
+    const fb = fixture.componentRef.injector.get(FormBuilder);
+    component.constraintsForm = fb.group({
+      budgetForm: fb.group({
+        maxBudget: [''],
+        optimizeBudget: [false, Validators.required],
+      }),
+      treatmentForm: fb.group({
+        maxArea: ['', Validators.required],
+      }),
+      excludeAreasByDegrees: [false],
+      excludeAreasByDistance: [false],
+      excludeSlope: [''],
+      excludeDistance: [''],
+    });
+
     fixture.detectChanges();
   });
 
@@ -34,41 +56,45 @@ describe('ConstraintsPanelComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('Select fields', () => {
-    it('should have all treatment options selected by default', async () => {
-      const selectEl = await loader.getHarness(
-        MatSelectHarness.with({ selector: '[formControlName="treatmentType"]' })
-      );
-      const selectElText = await selectEl.getValueText();
-      expect(selectElText).toEqual('All treatment types selected')
+  it('should emit event when next button is clicked and form is valid', async () => {
+    spyOn(component.formNextEvent, 'emit');
+    const nextButton: MatButtonHarness = (
+      await loader.getAllHarnesses(MatButtonHarness)
+    )[0];
+    // Set form to valid state
+    component.constraintsForm?.get('budgetForm.maxBudget')?.setValue('1');
+    component.constraintsForm?.get('treatmentForm.maxArea')?.setValue('1');
 
-      await selectEl.open(); // need to open first to get options
+    expect(component.constraintsForm?.valid).toBeTrue();
+    expect(await nextButton.isDisabled()).toBeFalse();
 
-      const options = await selectEl.getOptions();
-      expect(options.length).toEqual(component.treatmentTypes.length);
+    // Click next button
+    await nextButton.click();
 
-      for (const option of options) {
-        const isSelected = await option.isSelected();
-        expect(isSelected).toBeTrue();
-      }
-    });
+    expect(component.formNextEvent.emit).toHaveBeenCalledOnceWith();
+  });
 
-    it('should have placeholder text when no options are selected', async () => {
-      const selectEl = await loader.getHarness(
-        MatSelectHarness.with({ selector: '[formControlName="treatmentType"]' })
-      );
+  it('should not emit event when next button is clicked and form is invalid', async () => {
+    spyOn(component.formNextEvent, 'emit');
+    const nextButton: MatButtonHarness = (
+      await loader.getAllHarnesses(MatButtonHarness)
+    )[0];
 
-      await selectEl.open(); // need to open first to get options
+    // Click next button
+    await nextButton.click();
 
-      const options = await selectEl.getOptions();
+    expect(component.formNextEvent.emit).toHaveBeenCalledTimes(0);
+  });
 
-      for (const option of options) {
-        await option.click(); // deselect each option
-      }
+  it('should emit event when previous button is clicked', async () => {
+    spyOn(component.formBackEvent, 'emit');
+    const backButton: MatButtonHarness = (
+      await loader.getAllHarnesses(MatButtonHarness)
+    )[1];
 
-      const selectElText = await selectEl.getValueText();
+    // Click back button
+    await backButton.click();
 
-      expect(selectElText).toEqual('None');
-    })
+    expect(component.formBackEvent.emit).toHaveBeenCalledOnceWith();
   });
 });

@@ -34,7 +34,7 @@ describe('CreateScenariosComponent', () => {
     expect(component.stepper?.selectedIndex).toEqual(0);
   });
 
-  it('stepper advances automatically when step form is valid', () => {
+  it('stepper advances automatically when step 1 form is valid', () => {
     component.formGroups[0].get('scoreSelectCtrl')?.setValue('test');
 
     expect(component.stepper?.selectedIndex).toEqual(1);
