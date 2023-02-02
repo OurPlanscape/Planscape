@@ -31,7 +31,7 @@ class LocalStorageMock {
   };
 }
 
-fdescribe('SessionService', () => {
+describe('SessionService', () => {
   describe('Initialization', () => {
     let service: SessionService;
     let mockLocalStorage: Storage;
