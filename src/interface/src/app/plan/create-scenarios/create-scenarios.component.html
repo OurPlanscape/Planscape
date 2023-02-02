@@ -49,6 +49,9 @@
       <mat-step>
         <ng-template matStepLabel>
           <div class="step-label-header">Generate scenario(s)</div>
+          <div class="step-label-description" *ngIf="!stepStates[3].opened">
+            Identify project areas and prioritize treatments for optimized outcomes.
+          </div>
         </ng-template>
       </mat-step>
 
@@ -56,6 +59,9 @@
       <mat-step>
         <ng-template matStepLabel>
           <div class="step-label-header">View scenario(s)</div>
+          <div class="step-label-description" *ngIf="!stepStates[4].opened">
+            Weigh priorities to determine acreage of treatment and estimated impact on priorities.
+          </div>
         </ng-template>
       </mat-step>
     </mat-stepper>
