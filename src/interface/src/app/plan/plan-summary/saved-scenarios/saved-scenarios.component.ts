@@ -15,13 +15,8 @@ export class SavedScenariosComponent {
   displayedColumns: string[] = ['id', 'createdTimestamp'];
 
   constructor() {
-    // TODO (leehana): populate scenarios from plan object
-    this.scenarios = [
-      {
-        id: '1',
-        createdTimestamp: now(),
-      },
-    ];
+    // TODO (leehana): query scenarios from backend
+    this.scenarios = [];
   }
 
   createScenario(): void {
