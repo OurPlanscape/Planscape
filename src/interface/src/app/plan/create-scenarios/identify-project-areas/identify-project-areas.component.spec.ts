@@ -1,3 +1,5 @@
+import { featureCollection, point } from '@turf/helpers';
+import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
@@ -11,9 +13,12 @@ import {
 } from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { IdentifyProjectAreasComponent } from './identify-project-areas.component';
+import * as shp from 'shpjs';
 
-fdescribe('IdentifyProjectAreasComponent', () => {
+import { IdentifyProjectAreasComponent } from './identify-project-areas.component';
+import { SharedModule } from 'src/app/shared/shared.module';
+
+describe('IdentifyProjectAreasComponent', () => {
   let component: IdentifyProjectAreasComponent;
   let fixture: ComponentFixture<IdentifyProjectAreasComponent>;
   let loader: HarnessLoader;
@@ -25,6 +30,7 @@ fdescribe('IdentifyProjectAreasComponent', () => {
         ReactiveFormsModule,
         MaterialModule,
         NoopAnimationsModule,
+        SharedModule,
       ],
       declarations: [IdentifyProjectAreasComponent],
       providers: [FormBuilder],
@@ -44,6 +50,91 @@ fdescribe('IdentifyProjectAreasComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should not require file upload when the "generate areas" button is selected', async () => {
+    const radioButtonGroup: MatRadioGroupHarness = await loader.getHarness(
+      MatRadioGroupHarness
+    );
+
+    // Select 'generate areas' button
+    await (await radioButtonGroup.getRadioButtons())[0].check();
+
+    expect(component.formGroup?.valid).toBeTrue();
+  });
+
+  it('should require file upload when the "upload files" button is selected', async () => {
+    const radioButtonGroup: MatRadioGroupHarness = await loader.getHarness(
+      MatRadioGroupHarness
+    );
+
+    // Select 'upload file' button
+    await (await radioButtonGroup.getRadioButtons())[1].check();
+
+    expect(component.formGroup?.valid).toBeFalse();
+
+    // Add fake uploaded file value
+    component.formGroup?.get('uploadedArea')?.setValue('fake');
+
+    expect(component.formGroup?.valid).toBeTrue();
+  });
+
+  describe('file uploader', () => {
+    function createSpy(mockReader: jasmine.SpyObj<FileReader>) {
+      spyOn(window as any, 'FileReader').and.returnValue(mockReader);
+    }
+
+    it('should show file uploader when upload button is clicked', async () => {
+      const uploadButton: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /UPLOAD/ })
+      );
+
+      // Click upload button
+      await uploadButton.click();
+
+      expect(component.showUploader).toBeTrue();
+    });
+
+    it('adds the geojson to the form given a valid shapefile', async () => {
+      const testFile = new File([], 'test.zip');
+      const fakeResult = featureCollection([point([-75.343, 39.984])]);
+      const mockReader = jasmine.createSpyObj('FileReader', [
+        'readAsArrayBuffer',
+        'onload',
+      ]);
+      mockReader.result = 'test content';
+      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
+      createSpy(mockReader);
+      spyOn(shp, 'parseZip').and.returnValue(Promise.resolve(fakeResult));
+
+      // Upload fake file
+      await component.loadFile({ type: 'area_upload', value: testFile });
+
+      expect(component.showSuccessText).toBeTrue();
+      expect(component.showErrorText).toBeFalse();
+      expect(component.formGroup?.get('uploadedArea')?.value).toEqual(
+        fakeResult
+      );
+    });
+
+    it('shows error when the file is invalid', async () => {
+      const testFile = new File([], 'test.zip');
+      const mockReader = jasmine.createSpyObj('FileReader', [
+        'readAsArrayBuffer',
+        'onload',
+      ]);
+      mockReader.result = 'test content';
+      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
+      createSpy(mockReader);
+      spyOn(shp, 'parseZip').and.returnValue(Promise.reject());
+
+      // Upload fake file
+      await component.loadFile({ type: 'area_upload', value: testFile });
+
+      expect(component.showErrorText).toBeTrue();
+      expect(component.showSuccessText).toBeFalse();
+      expect(component.formGroup?.get('uploadedArea')?.value).toBeFalsy();
+    });
   });
 
   it('should emit event when next button is clicked and form is valid', async () => {
