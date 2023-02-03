@@ -136,10 +136,10 @@ export class CreateScenariosComponent {
       {},
     ];
 
-    this.formGroups.every((formGroup) => {
-      formGroup.valueChanges.subscribe((value) => {
+    this.formGroups.forEach((formGroup) => {
+      formGroup.valueChanges.subscribe(_ => {
         // TODO: save new values to backend
-        console.log(value);
+        console.log(formGroup.value);
       });
     });
   }
