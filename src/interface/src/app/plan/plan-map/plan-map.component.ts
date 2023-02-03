@@ -21,6 +21,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
+  projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
 
   constructor(private router: Router) {}
@@ -115,6 +116,22 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     );
 
     this.map.addLayer(this.tileLayer);
+  }
+
+  /** Draw geojson shapes on the map, or erase currently drawn shapes. */
+  drawShapes(shapes: any): void {
+    this.projectAreasLayer?.remove();
+
+    if (!shapes) return;
+
+    this.projectAreasLayer = L.geoJSON(shapes, {
+      style: (_) => ({
+        color: '#ff4081',
+        fillColor: '#ff4081',
+        fillOpacity: 0.2,
+      })
+    });
+    this.projectAreasLayer.addTo(this.map);
   }
 
   expandMap() {
