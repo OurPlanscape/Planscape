@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 4px;
+  margin-bottom: 32px;
 
   mat-radio-group mat-radio-button {
     margin-bottom: 28px;
@@ -11,6 +11,23 @@
       margin-left: 12px;
     }
   }
+
+  mat-radio-group mat-radio-button:last-child {
+    margin-bottom: 0px;
+  }
+}
+
+.success-text {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.success-icon {
+  color: #00C752;
+  margin-right: 4px;
 }
 
 .flex-row {

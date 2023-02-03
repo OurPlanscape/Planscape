@@ -1,18 +1,28 @@
 <div>
   <form [formGroup]="formGroup!" class="form">
     Select one:
-      <mat-radio-group formControlName="generateAreas">
-        <mat-radio-button [value]="true">
-          I need project areas defined for me
-        </mat-radio-button>
-        <mat-radio-button [value]="false">
-          I need to upload shape files for my project areas
-          <button mat-stroked-button color="primary">
-            <mat-icon color="primary">upload</mat-icon>
-            UPLOAD
-          </button>
-        </mat-radio-button>
-      </mat-radio-group>
+    <mat-radio-group formControlName="generateAreas" (change)="validateFormRequirements()">
+      <mat-radio-button [value]="true">
+        I need project areas defined for me
+      </mat-radio-button>
+      <mat-radio-button [value]="false">
+        I need to upload shape files for my project areas
+        <button mat-stroked-button color="primary" (click)="showUploader = true">
+          <mat-icon color="primary">upload</mat-icon>
+          UPLOAD
+        </button>
+      </mat-radio-button>
+    </mat-radio-group>
+
+    <!-- File uploader -->
+    <file-uploader *ngIf="showUploader" class="file-uploader" requiredFileType="application/zip"
+      (fileEvent)="loadFile($event)"></file-uploader>
+
+    <mat-error *ngIf="showErrorText">[Error] Not a valid shapefile!</mat-error>
+    <div class="success-text" *ngIf="showSuccessText">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+      {{ filename }} uploaded
+    </div>
   </form>
 
   <div class="flex-row">
