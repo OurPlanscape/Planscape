@@ -88,6 +88,7 @@ export class CreateScenariosComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
+  @Output() drawShapesEvent = new EventEmitter<any>();
 
   formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
@@ -137,10 +138,22 @@ export class CreateScenariosComponent {
     ];
 
     this.formGroups.forEach((formGroup) => {
-      formGroup.valueChanges.subscribe(_ => {
+      formGroup.valueChanges.subscribe((_) => {
         // TODO: save new values to backend
         console.log(formGroup.value);
       });
+    });
+
+    // When an area is uploaded, issue an event to draw it on the map.
+    // If the "generate areas" option is selected, remove any drawn areas.
+    this.formGroups[3].valueChanges.subscribe((_) => {
+      const generateAreas = this.formGroups[3].get('generateAreas');
+      const uploadedArea = this.formGroups[3].get('uploadedArea');
+      if (generateAreas?.value) {
+        this.drawShapesEvent.emit(null);
+      } else {
+        this.drawShapesEvent.emit(uploadedArea?.value);
+      }
     });
   }
 
