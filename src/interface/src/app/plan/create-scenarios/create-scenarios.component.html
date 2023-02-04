@@ -45,17 +45,27 @@
         </app-set-priorities>
       </mat-step>
 
-      <!-- Step 4: Generate scenario(s) -->
+      <!-- Step 4: Identify project areas -->
       <mat-step>
         <ng-template matStepLabel>
-          <div class="step-label-header">Generate scenario(s)</div>
+          <div class="step-label-header">Identify project areas</div>
+          <div class="step-label-description" *ngIf="!stepStates[3].opened">
+            Identify project areas and prioritize treatments for optimized outcomes.
+          </div>
         </ng-template>
+        <app-identify-project-areas [formGroup]="formGroups[3]" (formNextEvent)="stepper.next()"
+          (formBackEvent)="stepper.previous()">
+
+        </app-identify-project-areas>
       </mat-step>
 
       <!-- Step 5: View scenario(s) -->
       <mat-step>
         <ng-template matStepLabel>
           <div class="step-label-header">View scenario(s)</div>
+          <div class="step-label-description" *ngIf="!stepStates[4].opened">
+            Weigh priorities to determine acreage of treatment and estimated impact on priorities.
+          </div>
         </ng-template>
       </mat-step>
     </mat-stepper>

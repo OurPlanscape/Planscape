@@ -120,6 +120,11 @@ export class CreateScenariosComponent {
       this.fb.group({
         priorities: ['', Validators.required],
       }),
+      // Step 4: Identify project areas
+      this.fb.group({
+        generateAreas: ['', Validators.required],
+        uploadedArea: [''],
+      }),
     ];
     this.stepStates = [
       {
