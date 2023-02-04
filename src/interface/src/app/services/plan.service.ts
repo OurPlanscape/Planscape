@@ -139,7 +139,6 @@ export class PlanService {
 
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
-    console.log(projectConfig);
     let url = BackendConstants.END_POINT.concat('/plan/update_project/');
     return this.http
       .put<number>(url, projectConfig, {

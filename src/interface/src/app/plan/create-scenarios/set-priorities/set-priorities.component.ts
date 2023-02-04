@@ -197,7 +197,5 @@ export class SetPrioritiesComponent implements OnInit {
       .filter((row) => row.selected)
       .map((row) => row.conditionName);
     this.formGroup?.get('priorities')?.setValue(selectedPriorities.join(','));
-    console.log(this.formGroup?.value);
-    console.log(this.formGroup?.valid);
   }
 }
