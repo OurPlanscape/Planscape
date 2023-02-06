@@ -39,4 +39,21 @@ describe('CreateScenariosComponent', () => {
 
     expect(component.stepper?.selectedIndex).toEqual(1);
   });
+
+  it('emits drawShapes event when "identify project areas" form inputs change', () => {
+    const generateAreas = component.formGroups[3].get('generateAreas');
+    const uploadedArea = component.formGroups[3].get('uploadedArea');
+    spyOn(component.drawShapesEvent, 'emit');
+
+    // Set "generate areas automatically" to true
+    generateAreas?.setValue(true);
+
+    expect(component.drawShapesEvent.emit).toHaveBeenCalledWith(null);
+
+    // Add an uploaded area and set "generate areas automatically" to false
+    generateAreas?.setValue(false);
+    uploadedArea?.setValue('testvalue');
+
+    expect(component.drawShapesEvent.emit).toHaveBeenCalledWith('testvalue');
+  });
 });
