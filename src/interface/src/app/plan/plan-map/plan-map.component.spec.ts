@@ -1,12 +1,13 @@
-import { BehaviorSubject } from 'rxjs';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { Router } from '@angular/router';
+import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
+import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { Region, Plan } from 'src/app/types';
+import { Plan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
 
@@ -85,5 +86,26 @@ describe('PlanMapComponent', () => {
 
         expect(routerStub.navigate).toHaveBeenCalledOnceWith(['map']);
       };
+  });
+
+  describe('draw shapes on map', () => {
+    it('should draw project areas when drawShapes is called with geojson', () => {
+      const shapes = featureCollection([point([-75.343, 39.984])]);
+
+      component.drawShapes(shapes);
+
+      expect(component.projectAreasLayer).toBeDefined();
+      expect(component.map.hasLayer(component.projectAreasLayer!)).toBeTrue();
+    });
+
+    it('should remove project areas layer when drawShapes is called with null', () => {
+      const shapes = featureCollection([point([-75.343, 39.984])]);
+
+      component.drawShapes(shapes);
+      component.drawShapes(null);
+
+      expect(component.projectAreasLayer).toBeDefined();
+      expect(component.map.hasLayer(component.projectAreasLayer!)).toBeFalse();
+    });
   });
 });
