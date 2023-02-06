@@ -17,13 +17,14 @@ RASTER_NAME_COLUMN = 'name'
 # This should be differentiated from None, which is a possible value if the
 # score was previously computed, but no intersection exists between a plan
 # geometry and the condition raster.
+# TODO: return enum values or status instead of None or np.nan.
 def _get_db_score_for_plan(plan_id, condition_id) -> float | None:
     db_scores = ConditionScores.objects.filter(
         plan_id=plan_id).filter(condition_id=condition_id).all()
     if len(db_scores) > 0:
         return db_scores[0].mean_score
     return np.nan
-    
+
 
 # Returns a geometry in the raster SRS.
 def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
@@ -35,7 +36,6 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
             SpatialReference(settings.CRS_9822_PROJ4)))
     geo.srid = settings.CRS_FOR_RASTERS
     return geo
- 
 
 
 # Returns None if no intersection exists between a geometry and the condition
@@ -43,7 +43,7 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
 def compute_condition_score_from_raster(
         geo: GEOSGeometry, raster_name: str) -> float | None:
     if geo is None:
-        return None
+        raise AssertionError("missing input geometry")
     if geo.srid != settings.CRS_FOR_RASTERS:
         raise AssertionError(
             "geometry SRID is %d (expected %d)" %
@@ -59,18 +59,20 @@ def compute_condition_score_from_raster(
         return fetch[0]
 
 
+# Returns a {condition name: condition score} dictionary for a given plan.
+# First tries to look up plan details in a database.
+# If that's unavailable, computes them from condition rasters and the plan
+# geometry.
+# Of note, condition score may be None. This occurs if there is no overlap
+# between the geometry and non-nan values in the raster.
 def fetch_or_compute_mean_condition_scores(
         plan: Plan) -> dict[str, float | None]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     geo = plan.geometry
-
     if geo is None:
         raise AssertionError("plan is missing geometry")
-    if geo.srid != settings.CRS_FOR_RASTERS:
-        geo.transform(
-            CoordTransform(SpatialReference(geo.srid),
-                           SpatialReference(settings.CRS_9822_PROJ4)))
-        geo.srid = settings.CRS_FOR_RASTERS
+
+    geo = get_raster_geo(geo)
 
     ids_to_condition_names = {
         c.pk: c.condition_name
@@ -87,6 +89,9 @@ def fetch_or_compute_mean_condition_scores(
         id = condition.condition_dataset.pk
         name = ids_to_condition_names[id]
 
+        # score is np.nan if no entries are available.
+        # score is None if it was previously computed, but no overlap exists.
+        # between the plan geometry and the condition raster.
         score = _get_db_score_for_plan(plan.pk, condition.pk)
         if score is None or not np.isnan(score):
             condition_scores[name] = score
