@@ -1,9 +1,9 @@
 import json
 from typing import TypedDict
 
-from conditions import get_raster_geo
 from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import compute_condition_score_from_raster
+from conditions.raster_utils import (
+    compute_condition_score_from_raster, get_raster_geo)
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
 from plan.models import Project, ProjectArea

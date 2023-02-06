@@ -64,7 +64,7 @@ class RasterConditionRetrievalTestCase(TestCase):
         ConditionRaster.objects.create(
             name=condition_raster_name, raster=condition_raster)
 
-    def _create_condition_db(self, condition_name: str,
+    def _save_condition_to_db(self, condition_name: str,
                              condition_raster_name: str,
                              condition_raster: GDALRaster) -> int:
         base_condition = BaseCondition.objects.create(

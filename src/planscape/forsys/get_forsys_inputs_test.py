@@ -250,14 +250,14 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
                          .05, .06, .07, .08,
                          .09, .10, .11, .12,
                          .13, .14, .15, .16))
-        RasterConditionRetrievalTestCase._create_condition_db(
+        RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
         bar_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (.1, .1, .1, .1,
                          .2, .2, .2, .2,
                          .3, .3, .3, .3,
                          .4, .4, .4, .4))
-        RasterConditionRetrievalTestCase._create_condition_db(
+        RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "bar", "bar_normalized", bar_raster)
 
     def test_gets_forsys_input(self):

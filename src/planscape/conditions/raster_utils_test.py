@@ -25,7 +25,7 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         score = compute_condition_score_from_raster(geo, "foo")
         self.assertEqual(score, 36.0 / 8)
 
-    def test_returns_none_for_no_geo(self):
+    def test_fails_for_missing_geo(self):
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
                          5, 6, 7, 8,
@@ -33,8 +33,10 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16))
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
-        score = compute_condition_score_from_raster(None, "foo")
-        self.assertIsNone(score)
+        with self.assertRaises(Exception) as context:
+            compute_condition_score_from_raster(None, "foo")
+        self.assertEqual(
+            str(context.exception), "missing input geometry")
 
     def test_fails_wrong_srid(self):
         polygon = Polygon(
@@ -89,7 +91,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          5, 6, 7, 8,
                          9, 10, 11, 12,
                          13, 14, 15, 16))
-        foo_id = RasterConditionRetrievalTestCase._create_condition_db(
+        foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
 
         bar_raster = RasterConditionRetrievalTestCase._create_raster(
@@ -97,7 +99,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16,
                          1, 2, 3, 4,
                          5, 6, 7, 8))
-        bar_id = RasterConditionRetrievalTestCase._create_condition_db(
+        bar_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "bar", "bar_normalized", bar_raster)
 
         baz_raster = RasterConditionRetrievalTestCase._create_raster(
@@ -106,7 +108,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
              np.nan, np.nan, 7, np.nan,
              1, 2, 3, 4,
              5, 6, 7, 8))
-        baz_id = RasterConditionRetrievalTestCase._create_condition_db(
+        baz_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "baz", "baz_normalized", baz_raster)
 
         scores = fetch_or_compute_mean_condition_scores(plan)
@@ -129,7 +131,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          5, 6, 7, 8,
                          9, 10, 11, 12,
                          13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_db(
+        RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
         with self.assertRaises(Exception) as context:
             fetch_or_compute_mean_condition_scores(plan)
@@ -146,7 +148,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          5, 6, 7, 8,
                          9, 10, 11, 12,
                          13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_db(
+        RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
         with self.assertRaises(Exception) as context:
             fetch_or_compute_mean_condition_scores(plan)
@@ -165,7 +167,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
              9, 10, 11, 12,
              13, 14, 15, 16))
 
-        foo_id = RasterConditionRetrievalTestCase._create_condition_db(
+        foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", raster)
 
         scores = fetch_or_compute_mean_condition_scores(plan)
@@ -185,7 +187,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          9, 10, 11, 12,
                          13, 14, 15, 16))
 
-        foo_id = RasterConditionRetrievalTestCase._create_condition_db(
+        foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", raster)
 
         scores = fetch_or_compute_mean_condition_scores(plan)
@@ -212,7 +214,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          9, 10, 11, 12,
                          13, 14, 15, 16))
 
-        foo_id = RasterConditionRetrievalTestCase._create_condition_db(
+        foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", raster)
 
         scores = fetch_or_compute_mean_condition_scores(plan)
@@ -231,7 +233,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          5, 6, 7, 8,
                          9, 10, 11, 12,
                          13, 14, 15, 16))
-        foo_id = RasterConditionRetrievalTestCase._create_condition_db(
+        foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
 
         bar_raster = RasterConditionRetrievalTestCase._create_raster(
@@ -239,7 +241,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16,
                          1, 2, 3, 4,
                          5, 6, 7, 8))
-        bar_id = RasterConditionRetrievalTestCase._create_condition_db(
+        bar_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "bar", "bar_normalized", bar_raster)
 
         ConditionScores.objects.create(
