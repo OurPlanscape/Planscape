@@ -1,25 +1,22 @@
 import json
-import numpy as np
 
-from conditions.raster_condition_retrieval_testcase import (
-    RasterConditionRetrievalTestCase)
+import numpy as np
 from base.condition_types import ConditionLevel
-from conditions.models import BaseCondition, Condition, ConditionRaster
+from conditions.models import BaseCondition, Condition
+from conditions.raster_condition_retrieval_testcase import \
+    RasterConditionRetrievalTestCase
 from django.contrib.auth.models import User
-from django.contrib.gis.gdal import GDALRaster
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.db import connection
+from django.contrib.gis.geos import GEOSGeometry
 from django.http import QueryDict
 from django.test import TestCase
 from forsys.get_forsys_inputs import (ForsysInputHeaders,
                                       ForsysProjectAreaRankingInput,
                                       ForsysProjectAreaRankingRequestParams)
 from plan.models import Plan, Project, ProjectArea
-from planscape import settings
 
 
 class TestForsysProjectAreaRankingRequestParams(TestCase):
-    def test_reads_default_url_params(self) -> None:
+    def test_reads_default_url_params(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
         params = ForsysProjectAreaRankingRequestParams(qd)
 
@@ -54,13 +51,13 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         )
         self.assertEqual(params.project_areas[2].srid, 4269)
 
-    def test_reads_region_from_url_params(self) -> None:
+    def test_reads_region_from_url_params(self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1&region=foo')
         params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.region, 'foo')
 
-    def test_reads_priorities_from_url_params(self) -> None:
+    def test_reads_priorities_from_url_params(self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&priorities=foo&priorities=bar&priorities=baz')
@@ -101,7 +98,8 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         )
         self.assertEqual(params.project_areas[2].srid, 4269)
 
-    def test_reads_project_areas_from_url_params_with_default_srid(self) -> None:
+    def test_reads_project_areas_from_url_params_with_default_srid(
+            self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&project_areas={ "id": 2, ' +
@@ -120,7 +118,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         self.assertEqual(params.project_areas[2].srid, 4269)
 
     def test_raises_error_for_url_params_project_areas_w_empty_polygons(
-            self) -> None:
+            self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&project_areas={ "id": 1, "srid": 4269, ' +
@@ -132,7 +130,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             'project area field, "polygons" is an empty list')
 
     def test_raises_error_for_invalid_project_areas_from_url_params(
-            self) -> None:
+            self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&project_areas={ "id": 1, "srid": 4269, ' +
@@ -143,7 +141,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             context.exception))
 
     def test_raises_error_for_url_params_project_areas_missing_polygons_field(
-            self) -> None:
+            self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&project_areas={ "id": 1, "srid": 4269 }')
@@ -153,7 +151,8 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             str(context.exception),
             'project area missing field, "polygons"')
 
-    def test_raises_error_for_url_params_project_areas_missing_id_field(self) -> None:
+    def test_raises_error_for_url_params_project_areas_missing_id_field(
+            self):
         qd = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&project_areas={ "srid": 4269, ' +
@@ -171,7 +170,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
 
 
 class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         self.base_condition1 = BaseCondition.objects.create(
             condition_name="name1", condition_level=ConditionLevel.ELEMENT)
         self.base_condition2 = BaseCondition.objects.create(
@@ -216,7 +215,7 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(len(params.project_areas), 0)
 
-    def test_read_ok(self) -> None:
+    def test_read_ok(self):
         qd = QueryDict('project_id=' + str(self.project_with_user.pk))
         params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.region, 'sierra_cascade_inyo')

@@ -196,7 +196,8 @@ class ForsysProjectAreaRankingInput():
             region, priorities)
         conditions = self._get_conditions(condition_ids_to_names.keys())
 
-        self.forsys_input = self._initialize_forsys_input(headers, priorities)
+        self.forsys_input = self._get_initialized_forsys_input(
+            headers, priorities)
 
         for proj_id in project_areas.keys():
             geo = self._get_raster_geo(project_areas[proj_id])
@@ -243,8 +244,8 @@ class ForsysProjectAreaRankingInput():
                  len(conditions)))
         return conditions
 
-    def _initialize_forsys_input(self, headers: ForsysInputHeaders,
-                                 priorities: list[str]) -> dict[str, list]:
+    def _get_initialized_forsys_input(self, headers: ForsysInputHeaders,
+                                      priorities: list[str]) -> dict[str, list]:
         forsys_input = {}
         forsys_input[headers.FORSYS_PROJECT_ID_HEADER] = []
         forsys_input[headers.FORSYS_STAND_ID_HEADER] = []
