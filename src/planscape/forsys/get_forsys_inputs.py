@@ -1,11 +1,10 @@
 import json
 from typing import TypedDict
 
+from conditions import get_raster_geo
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import compute_condition_score_from_raster
-from django.conf import settings
-from django.contrib.gis.gdal import CoordTransform, SpatialReference
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
 from plan.models import Project, ProjectArea
 
@@ -200,7 +199,7 @@ class ForsysProjectAreaRankingInput():
             headers, priorities)
 
         for proj_id in project_areas.keys():
-            geo = self._get_raster_geo(project_areas[proj_id])
+            geo = get_raster_geo(project_areas[proj_id])
 
             self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
             self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
@@ -255,15 +254,3 @@ class ForsysProjectAreaRankingInput():
             forsys_input[headers.condition_header(p)] = []
             forsys_input[headers.priority_header(p)] = []
         return forsys_input
-
-    # Transforms a geometry into the raster SRS.
-
-    def _get_raster_geo(self, geo: GEOSGeometry) -> GEOSGeometry:
-        if geo.srid == settings.CRS_FOR_RASTERS:
-            return geo
-        geo.transform(
-            CoordTransform(
-                SpatialReference(geo.srid),
-                SpatialReference(settings.CRS_9822_PROJ4)))
-        geo.srid = settings.CRS_FOR_RASTERS
-        return geo

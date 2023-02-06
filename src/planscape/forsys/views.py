@@ -4,8 +4,6 @@ import os
 import numpy as np
 import pandas as pd
 from django.conf import settings
-from django.contrib.gis.gdal import CoordTransform, SpatialReference
-from django.contrib.gis.geos import GEOSGeometry
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
 from forsys.get_forsys_inputs import (ForsysInputHeaders,
@@ -47,18 +45,6 @@ def convert_dictionary_of_lists_to_rdf(
 
     rdf = rpy2.robjects.vectors.DataFrame(data)
     return rdf
-
-
-# Transforms a geometry into the raster SRS.
-def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
-    if geo.srid == settings.CRS_FOR_RASTERS:
-        return geo
-    geo.transform(
-        CoordTransform(
-            SpatialReference(geo.srid),
-            SpatialReference(settings.CRS_9822_PROJ4)))
-    geo.srid = settings.CRS_FOR_RASTERS
-    return geo
 
 
 # Runs a forsys scenario sets call.

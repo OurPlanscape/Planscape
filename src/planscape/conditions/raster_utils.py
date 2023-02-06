@@ -23,6 +23,19 @@ def _get_db_score_for_plan(plan_id, condition_id) -> float | None:
     if len(db_scores) > 0:
         return db_scores[0].mean_score
     return np.nan
+    
+
+# Returns a geometry in the raster SRS.
+def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
+    if geo.srid == settings.CRS_FOR_RASTERS:
+        return geo
+    geo.transform(
+        CoordTransform(
+            SpatialReference(geo.srid),
+            SpatialReference(settings.CRS_9822_PROJ4)))
+    geo.srid = settings.CRS_FOR_RASTERS
+    return geo
+ 
 
 
 # Returns None if no intersection exists between a geometry and the condition
