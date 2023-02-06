@@ -10,7 +10,7 @@ from plan.models import Plan, ConditionScores
 
 
 class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
     def test_returns_score(self):
@@ -77,7 +77,7 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
 
 
 class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
     def test_computes_mean_scores(self):

@@ -10,7 +10,7 @@ from planscape import settings
 
 
 class RasterConditionRetrievalTestCase(TestCase):
-    def setUp(self):
+    def setUp(self) -> None:
         # Add a row for CRS 9822 to the spatial_ref_sys table, and the GeoTiff to the table.
         with connection.cursor() as cursor:
             query = ("insert into spatial_ref_sys(srid, proj4text) values(9822, '{}')").format(
@@ -59,7 +59,8 @@ class RasterConditionRetrievalTestCase(TestCase):
         return raster
 
     def _create_condition_raster(
-            self, condition_raster: GDALRaster, condition_raster_name: str):
+            self, condition_raster: GDALRaster,
+            condition_raster_name: str) -> None:
         ConditionRaster.objects.create(
             name=condition_raster_name, raster=condition_raster)
 
