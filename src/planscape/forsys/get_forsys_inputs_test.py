@@ -1,6 +1,8 @@
 import json
 import numpy as np
 
+from conditions.raster_condition_retrieval_testcase import (
+    RasterConditionRetrievalTestCase)
 from base.condition_types import ConditionLevel
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.auth.models import User
@@ -240,31 +242,24 @@ class ForsysInputHeadersTest(TestCase):
         self.assertEqual(headers.condition_header("condition"), "c_condition")
 
 
-class ForsysProjectAreaRankingInputTest(TestCase):
+class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
-        # Add a row for CRS 9822 to the spatial_ref_sys table, and the GeoTiff to the table.
-        with connection.cursor() as cursor:
-            query = ("insert into spatial_ref_sys(srid, proj4text) values(9822, '{}')").format(
-                settings.CRS_9822_PROJ4)
-            cursor.execute(query)
+        RasterConditionRetrievalTestCase.setUp(self)
 
-        self.region = 'sierra_cascade_inyo'
-
-        self.xorig = -2116971
-        self.yorig = 2100954
-        self.xscale = 300
-        self.yscale = -300
-
-        foo_raster = self._create_raster(4, 4, (.01, .02, .03, .04,
-                                                .05, .06, .07, .08,
-                                                .09, .10, .11, .12,
-                                                .13, .14, .15, .16))
-        self._create_condition_db("foo", "foo_normalized", foo_raster)
-        bar_raster = self._create_raster(4, 4, (.1, .1, .1, .1,
-                                                .2, .2, .2, .2,
-                                                .3, .3, .3, .3,
-                                                .4, .4, .4, .4))
-        self._create_condition_db("bar", "bar_normalized", bar_raster)
+        foo_raster = RasterConditionRetrievalTestCase._create_raster(
+            self, 4, 4, (.01, .02, .03, .04,
+                         .05, .06, .07, .08,
+                         .09, .10, .11, .12,
+                         .13, .14, .15, .16))
+        RasterConditionRetrievalTestCase._create_condition_db(
+            self, "foo", "foo_normalized", foo_raster)
+        bar_raster = RasterConditionRetrievalTestCase._create_raster(
+            self, 4, 4, (.1, .1, .1, .1,
+                         .2, .2, .2, .2,
+                         .3, .3, .3, .3,
+                         .4, .4, .4, .4))
+        RasterConditionRetrievalTestCase._create_condition_db(
+            self, "bar", "bar_normalized", bar_raster)
 
     def test_gets_forsys_input(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
@@ -272,8 +267,10 @@ class ForsysProjectAreaRankingInputTest(TestCase):
         params.region = self.region
         params.priorities = ["foo", "bar"]
         params.project_areas.clear()
-        params.project_areas[1] = self._create_geo(0, 3, 0, 1)
-        params.project_areas[2] = self._create_geo(0, 1, 2, 3)
+        params.project_areas[1] = RasterConditionRetrievalTestCase._create_geo(
+            self, 0, 3, 0, 1)
+        params.project_areas[2] = RasterConditionRetrievalTestCase._create_geo(
+            self, 0, 1, 2, 3)
 
         headers = ForsysInputHeaders(params.priorities)
 
@@ -296,7 +293,8 @@ class ForsysProjectAreaRankingInputTest(TestCase):
         # No base conditions exist for baz.
         params.priorities = ["foo", "bar", "baz"]
         params.project_areas.clear()
-        params.project_areas[1] = self._create_geo(0, 3, 0, 1)
+        params.project_areas[1] = RasterConditionRetrievalTestCase._create_geo(
+            self, 0, 3, 0, 1)
 
         headers = ForsysInputHeaders(params.priorities)
 
@@ -307,7 +305,7 @@ class ForsysProjectAreaRankingInputTest(TestCase):
             "of 3 priorities, only 2 had base conditions")
 
     def test_missing_condition(self):
-        # A base condition exists for baz, but a condition dosen't. 
+        # A base condition exists for baz, but a condition dosen't.
         BaseCondition.objects.create(
             condition_name="baz", region_name=self.region,
             condition_level=ConditionLevel.METRIC)
@@ -317,7 +315,8 @@ class ForsysProjectAreaRankingInputTest(TestCase):
         params.region = self.region
         params.priorities = ["foo", "bar", "baz"]
         params.project_areas.clear()
-        params.project_areas[1] = self._create_geo(0, 3, 0, 1)
+        params.project_areas[1] = RasterConditionRetrievalTestCase._create_geo(
+            self, 0, 3, 0, 1)
 
         headers = ForsysInputHeaders(params.priorities)
 
@@ -334,7 +333,8 @@ class ForsysProjectAreaRankingInputTest(TestCase):
         params.priorities = ["foo"]
         params.project_areas.clear()
         # project area doesn't interseect with the raster for "foo".
-        params.project_areas[1] = self._create_geo(5, 6, 0, 1)
+        params.project_areas[1] = RasterConditionRetrievalTestCase._create_geo(
+            self, 5, 6, 0, 1)
 
         headers = ForsysInputHeaders(params.priorities)
 
@@ -343,56 +343,6 @@ class ForsysProjectAreaRankingInputTest(TestCase):
         self.assertEqual(
             str(context.exception),
             "no score was retrieved for condition, foo")
-
-
-    # TODO: move create geo, create_raster, and create_condition_db to a test
-    # utils file.
-    def _create_geo(
-            self, xmin: int, xmax: int, ymin: int, ymax: int) -> MultiPolygon:
-        # ST_Clip seems to include pixels up to round((coord-origin)/scale) - 1.
-        buffer = 0.6
-
-        polygon = Polygon(
-            ((self.xorig + xmin*self.xscale, self.yorig + ymin*self.yscale),
-             (self.xorig + xmin*self.xscale,
-                self.yorig + (ymax + buffer) * self.yscale),
-             (self.xorig + (xmax + buffer) * self.xscale,
-                self.yorig + (ymax + buffer) * self.yscale),
-             (self.xorig + (xmax + buffer) * self.xscale,
-                self.yorig + ymin*self.yscale),
-             (self.xorig + xmin*self.xscale, self.yorig + ymin*self.yscale)))
-        geo = MultiPolygon(polygon)
-        geo.srid = settings.CRS_FOR_RASTERS
-        return geo
-
-    def _create_raster(
-            self, width: int, height: int, data: tuple) -> GDALRaster:
-        raster = GDALRaster({
-            'srid': settings.CRS_FOR_RASTERS,
-            'width': width,
-            'height': height,
-            'scale': [self.xscale, self.yscale],
-            'skew': [0, 0],
-            'origin': [self.xorig, self.yorig],
-            'bands': [{
-                'data': data,
-                'nodata_value': np.nan
-            }]
-        })
-        return raster
-
-    def _create_condition_db(self, condition_name: str,
-                             condition_raster_name: str,
-                             condition_raster: GDALRaster) -> int:
-        base_condition = BaseCondition.objects.create(
-            condition_name=condition_name, region_name=self.region,
-            condition_level=ConditionLevel.METRIC)
-        condition = Condition.objects.create(
-            raster_name=condition_raster_name,
-            condition_dataset=base_condition, is_raw=False)
-        ConditionRaster.objects.create(
-            name=condition_raster_name, raster=condition_raster)
-        return condition.pk
 
     def _assert_dict_almost_equal(self,
                                   d1: dict[str, list],
