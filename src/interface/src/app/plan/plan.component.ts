@@ -50,4 +50,8 @@ export class PlanComponent {
   changeCondition(filepath: string): void {
     this.map.setCondition(filepath);
   }
+
+  drawShapes(shapes: any): void {
+    this.map.drawShapes(shapes);
+  }
 }
