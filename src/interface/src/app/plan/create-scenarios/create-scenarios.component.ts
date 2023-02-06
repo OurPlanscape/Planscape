@@ -91,6 +91,7 @@ export class CreateScenariosComponent implements OnInit {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
+  @Output() drawShapesEvent = new EventEmitter<any>();
 
   formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
@@ -123,6 +124,11 @@ export class CreateScenariosComponent implements OnInit {
       // Step 3: Select priorities
       this.fb.group({
         priorities: ['', Validators.required],
+      }),
+      // Step 4: Identify project areas
+      this.fb.group({
+        generateAreas: ['', Validators.required],
+        uploadedArea: [''],
       }),
     ];
     this.stepStates = [
@@ -165,6 +171,18 @@ export class CreateScenariosComponent implements OnInit {
             .subscribe();
         }
       });
+    });
+
+    // When an area is uploaded, issue an event to draw it on the map.
+    // If the "generate areas" option is selected, remove any drawn areas.
+    this.formGroups[3].valueChanges.subscribe((_) => {
+      const generateAreas = this.formGroups[3].get('generateAreas');
+      const uploadedArea = this.formGroups[3].get('uploadedArea');
+      if (generateAreas?.value) {
+        this.drawShapesEvent.emit(null);
+      } else {
+        this.drawShapesEvent.emit(uploadedArea?.value);
+      }
     });
   }
 
