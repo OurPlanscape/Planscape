@@ -213,6 +213,7 @@ class ForsysProjectAreaRankingInput():
             self.forsys_input[headers.FORSYS_COST_HEADER].append(
                 geo.area * 5000)
             for c in conditions:
+                # TODO: replace this with select_related.
                 name = base_condition_ids_to_names[c.condition_dataset_id]
                 score = compute_condition_score_from_raster(
                     geo, c.raster_name)
