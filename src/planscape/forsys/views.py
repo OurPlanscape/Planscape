@@ -9,7 +9,8 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
 from forsys.get_forsys_inputs import (ForsysInputHeaders,
                                       ForsysProjectAreaRankingInput,
                                       ForsysProjectAreaRankingRequestParams)
-from forsys.parse_forsys_output import ForsysScenarioSetOutput
+from forsys.parse_forsys_output import (
+    ForsysScenarioOutput, ForsysScenarioSetOutput)
 from planscape import settings
 
 import rpy2
@@ -47,7 +48,6 @@ def convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
-# Runs a forsys scenario sets call.
 def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
@@ -93,7 +93,69 @@ def rank_project_areas_for_multiple_scenarios(
         response = {}
         response['forsys'] = {}
         response['forsys']['input'] = forsys_input.forsys_input
-        response['forsys']['output_project'] = forsys_output.scenarios
+        response['forsys']['output_scenarios'] = forsys_output.scenarios
+
+        # TODO: configure response to potentially show stand coordinates and
+        # other signals necessary for the UI.
+        return JsonResponse(response)
+
+    except Exception as e:
+        logger.error('project area ranking error: ' + str(e))
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def run_forsys_rank_project_areas_for_a_single_scenario(
+    forsys_input_dict: dict[str, list],
+        forsys_proj_id_header: str, forsys_stand_id_header: str,
+        forsys_area_header: str, forsys_cost_header: str,
+        forsys_priority_headers: list[str]) -> ForsysScenarioSetOutput:
+    import rpy2.robjects as robjects
+    robjects.r.source(os.path.join(
+        settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
+    rank_projects_for_a_single_scenario_function_r = robjects.globalenv[
+        'rank_projects_for_a_single_scenario']
+
+    # TODO: add inputs for thresholds.
+    # TODO: clean-up: pass header names (e.g. proj_id) into
+    # scenario_sets_function_r.
+    forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
+
+    priority_weights = [1 for p in forsys_priority_headers]
+    priority_pcps = [p + '_PCP' for p in forsys_priority_headers]
+
+    forsys_output = rank_projects_for_a_single_scenario_function_r(
+        forsys_input, robjects.StrVector(forsys_priority_headers),
+        robjects.StrVector(priority_pcps),
+        robjects.FloatVector(priority_weights),
+        forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
+        forsys_cost_header)
+
+    priority_weights_dict = {p: 1 for p in forsys_priority_headers}
+
+    parsed_output = ForsysScenarioOutput(
+        forsys_output, forsys_priority_headers, priority_weights_dict,
+        forsys_proj_id_header, forsys_area_header, forsys_cost_header)
+
+    # TODO: add logic for applying constraints to forsys_output.
+
+    return parsed_output
+
+
+def rank_project_areas_for_a_single_scenario(
+        request: HttpRequest) -> HttpRequest:
+    try:
+        params = ForsysProjectAreaRankingRequestParams(request.GET)
+        headers = ForsysInputHeaders(params.priorities)
+        forsys_input = ForsysProjectAreaRankingInput(params, headers)
+        forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
+            forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
+            headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
+            headers.FORSYS_COST_HEADER, headers.priority_headers)
+
+        response = {}
+        response['forsys'] = {}
+        response['forsys']['input'] = forsys_input.forsys_input
+        response['forsys']['output_scenario'] = forsys_output.scenario
 
         # TODO: configure response to potentially show stand coordinates and
         # other signals necessary for the UI.
