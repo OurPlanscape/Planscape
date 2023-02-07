@@ -1,12 +1,12 @@
 import numpy as np
-
-from conditions.raster_condition_retrieval_testcase import (
-    RasterConditionRetrievalTestCase)
-from conditions.raster_utils import (
-    compute_condition_score_from_raster,
-    fetch_or_compute_mean_condition_scores)
+from base.condition_types import ConditionLevel
+from conditions.models import BaseCondition, Condition
+from conditions.raster_condition_retrieval_testcase import \
+    RasterConditionRetrievalTestCase
+from conditions.raster_utils import (compute_condition_score_from_raster,
+                                     fetch_or_compute_mean_condition_scores)
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from plan.models import Plan, ConditionScores
+from plan.models import ConditionScores, Plan
 
 
 class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
@@ -64,7 +64,7 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         score = compute_condition_score_from_raster(geo, "foo")
         self.assertIsNone(score)
 
-    def test_returns_none_for_no_raster(self):
+    def test_fails_for_no_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
@@ -73,9 +73,12 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16))
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
-        score = compute_condition_score_from_raster(
-            geo, "nonexistent_raster_name")
-        self.assertIsNone(score)
+        with self.assertRaises(Exception) as context:
+            compute_condition_score_from_raster(
+                geo, "nonexistent_raster_name")
+        self.assertEqual(
+            str(context.exception),
+            "no rasters available for raster_name, nonexistent_raster_name")
 
 
 class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
@@ -138,6 +141,23 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
         self.assertEqual(
             str(context.exception), "plan is missing geometry")
 
+    def test_raises_error_for_missing_raster(self):
+        geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
+        plan = Plan.objects.create(geometry=geo, region_name=self.region)
+
+        base_condition = BaseCondition.objects.create(
+            condition_name="foo", region_name=self.region,
+            condition_level=ConditionLevel.METRIC)
+        Condition.objects.create(
+            raster_name="foo_normalized",
+            condition_dataset=base_condition, is_raw=False)
+
+        with self.assertRaises(Exception) as context:
+            fetch_or_compute_mean_condition_scores(plan)
+        self.assertEqual(
+            str(context.exception),
+            "no rasters available for raster_name, foo_normalized")
+
     def test_raises_error_for_bad_region(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         plan = Plan.objects.create(
@@ -153,8 +173,7 @@ class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
         with self.assertRaises(Exception) as context:
             fetch_or_compute_mean_condition_scores(plan)
         self.assertEqual(
-            str(context.exception),
-            "no conditions exist for region, nonsensical region")
+            str(context.exception), "region, nonsensical region, is invalid")
 
     def test_computes_no_score_for_nodata_values(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
