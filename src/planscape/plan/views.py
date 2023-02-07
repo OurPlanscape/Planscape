@@ -13,6 +13,7 @@ from plan.models import Plan, Project, ProjectArea
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer)
 from planscape import settings
+from django.shortcuts import get_list_or_404
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -274,6 +275,20 @@ def update_project(request: HttpRequest) -> HttpResponse:
         _save_project_parameters(body, project)
         project.save()
         return HttpResponse(str(project.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['plan_id'], str)
+        plan_id = request.GET.get('plan_id', "0")
+
+        user = _get_user(request)
+
+        projects = get_list_or_404(Project.objects.filter(owner=user, plan=int(plan_id)))
+        return JsonResponse([ProjectSerializer(project).data for project in projects], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
