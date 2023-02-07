@@ -195,9 +195,9 @@ class ForsysProjectAreaRankingInput():
         priorities = params.priorities
         project_areas = params.project_areas
 
-        condition_ids_to_names = self._get_condition_ids_to_names(
+        base_condition_ids_to_names = self._get_base_condition_ids_to_names(
             region, priorities)
-        conditions = self._get_conditions(condition_ids_to_names.keys())
+        conditions = self._get_conditions(base_condition_ids_to_names.keys())
 
         self.forsys_input = self._get_initialized_forsys_input(
             headers, priorities)
@@ -213,7 +213,7 @@ class ForsysProjectAreaRankingInput():
             self.forsys_input[headers.FORSYS_COST_HEADER].append(
                 geo.area * 5000)
             for c in conditions:
-                name = condition_ids_to_names[c.condition_dataset_id]
+                name = base_condition_ids_to_names[c.condition_dataset_id]
                 score = compute_condition_score_from_raster(
                     geo, c.raster_name)
                 if score is None:
@@ -225,16 +225,16 @@ class ForsysProjectAreaRankingInput():
                 self.forsys_input[headers.priority_header(
                     name)].append(1.0 - score)
 
-    def _get_condition_ids_to_names(self, region: str,
-                                    priorities: list) -> dict[int, str]:
-        condition_ids_to_names = {
+    def _get_base_condition_ids_to_names(self, region: str,
+                                         priorities: list) -> dict[int, str]:
+        base_condition_ids_to_names = {
             c.pk: c.condition_name
             for c in BaseCondition.objects.filter(region_name=region).filter(
                 condition_name__in=priorities).all()}
-        if len(priorities) != len(condition_ids_to_names.keys()):
+        if len(priorities) != len(base_condition_ids_to_names.keys()):
             raise Exception("of %d priorities, only %d had base conditions" % (
-                len(priorities), len(condition_ids_to_names.keys())))
-        return condition_ids_to_names
+                len(priorities), len(base_condition_ids_to_names.keys())))
+        return base_condition_ids_to_names
 
     def _get_conditions(self, condition_ids: list[int]) -> list[Condition]:
         conditions = list(Condition.objects.filter(
