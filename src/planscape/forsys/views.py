@@ -56,7 +56,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_multiple_scenarios.R'))
-    rank_projects_for_multiple_sceenarios_function_r = robjects.globalenv[
+    rank_projects_for_multiple_scenarios_function_r = robjects.globalenv[
         'rank_projects_for_multiple_scenarios']
 
     # TODO: add inputs for thresholds.
@@ -64,7 +64,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
     # scenario_sets_function_r.
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
-    forsys_output = rank_projects_for_multiple_sceenarios_function_r(
+    forsys_output = rank_projects_for_multiple_scenarios_function_r(
         forsys_input, robjects.StrVector(forsys_priority_headers),
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header)
