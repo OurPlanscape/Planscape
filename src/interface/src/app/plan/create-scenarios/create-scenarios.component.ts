@@ -96,7 +96,7 @@ export class CreateScenariosComponent implements OnInit {
   formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
-  projectId: number | undefined;
+  projectId?: number;
   stepStates: StepState[];
 
   constructor(private fb: FormBuilder, private planService: PlanService) {

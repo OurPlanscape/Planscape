@@ -8,7 +8,7 @@ import { Plan, Region } from 'src/app/types';
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
 
-fdescribe('CreateScenariosComponent', () => {
+describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanService: PlanService;
@@ -82,7 +82,6 @@ fdescribe('CreateScenariosComponent', () => {
     component.formGroups[1].get('budgetForm.maxBudget')?.setValue(-1);
 
     expect(fakePlanService.updateProject).toHaveBeenCalledTimes(0);
-
   });
 
   it('emits drawShapes event when "identify project areas" form inputs change', () => {
