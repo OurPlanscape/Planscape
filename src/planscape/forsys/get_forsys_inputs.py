@@ -1,9 +1,12 @@
+import json
+from typing import TypedDict
+
+from conditions.models import BaseCondition, Condition
+from conditions.raster_utils import (
+    compute_condition_score_from_raster, get_raster_geo)
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
-from typing import TypedDict
 from plan.models import Project, ProjectArea
-
-import json
 
 
 # A list of coordinates representing a polygon.
@@ -40,8 +43,6 @@ class ForsysProjectAreaRankingRequestParams():
 
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for constraints, costs, treatments, and thresholds.
-    # If true, additional debug information is sent to the HTTP response.
-    save_debug_info: bool
     # The planning region.
     region: str
     # Conditions whose AP scores will be considered when ranking projects.
@@ -54,10 +55,8 @@ class ForsysProjectAreaRankingRequestParams():
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
-            self.save_debug_info = True
         else:
             self._read_db_params(params)
-            self.save_debug_info = False
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         self.region = params.get(
@@ -76,8 +75,12 @@ class ForsysProjectAreaRankingRequestParams():
             project = Project.objects.get(id=project_id)
             project_areas = ProjectArea.objects.filter(project=project_id)
             self.region = project.plan.region_name
-            self.priorities = list(
-                project.priorities.values_list('id', flat=True))
+
+            self.priorities = [
+                BaseCondition.objects.get(
+                    id=c.condition_dataset_id).condition_name
+                for c in project.priorities.all()]
+
             self.project_areas = {}
             for area in project_areas:
                 self.project_areas[area.pk] = area.project_area
@@ -143,3 +146,114 @@ class ForsysProjectAreaRankingRequestParams():
             raise Exception('project area field, "polygons" is an empty list')
         if 'id' not in project_area.keys():
             raise Exception('project area missing field, "id"')
+
+
+# Forsys input dataframe headers.
+class ForsysInputHeaders():
+    # Constant headers for project and stand ID's, area, and cost.
+    FORSYS_PROJECT_ID_HEADER = "proj_id"
+    FORSYS_STAND_ID_HEADER = "stand_id"
+    FORSYS_AREA_HEADER = "area"
+    FORSYS_COST_HEADER = "cost"
+
+    # Header prefixes for conditions and priorities.
+    _CONDITION_PREFIX = "c_"
+    _PRIORITY_PREFIX = "p_"
+
+    # List of headers for priorities.
+    # Downstream, this must be in the same order as constructor input
+    # priorities.
+    priority_headers: list[str]
+
+    def __init__(self, priorities: list[str]) -> None:
+        self.priority_headers = []
+
+        for p in priorities:
+            self.priority_headers.append(self.get_priority_header(p))
+
+    # Returns a priority header givn a priority string.
+    def get_priority_header(self, priority: str) -> str:
+        return self._PRIORITY_PREFIX + priority
+
+    # Reteurns a condition hader given a condition string.
+    def get_condition_header(self, condition: str) -> str:
+        return self._CONDITION_PREFIX + condition
+
+
+class ForsysProjectAreaRankingInput():
+    # A dictionary representing a forsys input dataframe.
+    # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
+    # row represents a unique stand.
+    # Dictionary keys are dataframe headers. Dictionary values are lists
+    # corresponding to columns below each dataframe header.
+    forsys_input: dict[str, list]
+
+    def __init__(
+            self, params: ForsysProjectAreaRankingRequestParams,
+            headers: ForsysInputHeaders) -> None:
+        region = params.region
+        priorities = params.priorities
+        project_areas = params.project_areas
+
+        base_condition_ids_to_names = self._get_base_condition_ids_to_names(
+            region, priorities)
+        conditions = self._get_conditions(base_condition_ids_to_names.keys())
+
+        self.forsys_input = self._get_initialized_forsys_input(
+            headers, priorities)
+
+        for proj_id in project_areas.keys():
+            geo = get_raster_geo(project_areas[proj_id])
+
+            self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
+            self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
+            self.forsys_input[headers.FORSYS_AREA_HEADER].append(geo.area)
+            # TODO: figure out the right value for the units: 5000 is just a
+            # placeholder.
+            self.forsys_input[headers.FORSYS_COST_HEADER].append(
+                geo.area * 5000)
+            for c in conditions:
+                # TODO: replace this with select_related.
+                name = base_condition_ids_to_names[c.condition_dataset_id]
+                score = compute_condition_score_from_raster(
+                    geo, c.raster_name)
+                if score is None:
+                    raise Exception(
+                        "no score was retrieved for condition, %s" % name)
+                # TODO: fix this to be sum(1.0 - score) rather than
+                # mean(1.0 - score)
+                self.forsys_input[headers.get_priority_header(
+                    name)].append(1.0 - score)
+
+    def _get_base_condition_ids_to_names(self, region: str,
+                                         priorities: list) -> dict[int, str]:
+        base_condition_ids_to_names = {
+            c.pk: c.condition_name
+            for c in BaseCondition.objects.filter(region_name=region).filter(
+                condition_name__in=priorities).all()}
+        if len(priorities) != len(base_condition_ids_to_names.keys()):
+            raise Exception("of %d priorities, only %d had base conditions" % (
+                len(priorities), len(base_condition_ids_to_names.keys())))
+        return base_condition_ids_to_names
+
+    def _get_conditions(self, condition_ids: list[int]) -> list[Condition]:
+        conditions = list(Condition.objects.filter(
+            condition_dataset_id__in=condition_ids).filter(
+            is_raw=False).all())
+        if len(condition_ids) != len(conditions):
+            raise Exception(
+                "of %d priorities, only %d had conditions" %
+                (len(condition_ids),
+                 len(conditions)))
+        return conditions
+
+    def _get_initialized_forsys_input(self, headers: ForsysInputHeaders,
+                                      priorities: list[str]) -> dict[str, list]:
+        forsys_input = {}
+        forsys_input[headers.FORSYS_PROJECT_ID_HEADER] = []
+        forsys_input[headers.FORSYS_STAND_ID_HEADER] = []
+        forsys_input[headers.FORSYS_AREA_HEADER] = []
+        forsys_input[headers.FORSYS_COST_HEADER] = []
+        for p in priorities:
+            forsys_input[headers.get_priority_header(p)] = []
+        return forsys_input
