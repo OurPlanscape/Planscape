@@ -4,8 +4,12 @@ suppressMessages({
   library(sf)
 })
 
-scenario_sets <- function(input_stand_data, priorities, stand_id_field,
-                          proj_id_field, stand_area_field, stand_cost_field) {
+rank_projects_for_multiple_scenarios <- function(input_stand_data,
+                                                 priorities,
+                                                 stand_id_field,
+                                                 proj_id_field,
+                                                 stand_area_field,
+                                                 stand_cost_field) {
 
   scenario_output_fields <- c(priorities, stand_area_field, stand_cost_field)
 
