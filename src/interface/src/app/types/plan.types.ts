@@ -33,6 +33,15 @@ export interface Scenario {
   createdTimestamp: number; //in milliseconds since epoch
 }
 
+export interface ProjectConfig {
+  id: number;
+  max_budget?: number;
+  max_treatment_area_ratio?: number;
+  max_road_distance?: number;
+  max_slope?: number;
+  priorities?: string;
+}
+
 export interface PlanConditionScores {
   conditions: PlanConditionScore[];
 }

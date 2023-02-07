@@ -196,6 +196,6 @@ export class SetPrioritiesComponent implements OnInit {
     const selectedPriorities: string[] = this.datasource.data
       .filter((row) => row.selected)
       .map((row) => row.conditionName);
-    this.formGroup?.get('priorities')?.setValue(selectedPriorities.join(', '));
+    this.formGroup?.get('priorities')?.setValue(selectedPriorities.join(','));
   }
 }

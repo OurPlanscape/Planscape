@@ -267,7 +267,7 @@ describe('SetPrioritiesComponent', () => {
     await checkboxHarnesses[1].check();
 
     expect(component.formGroup?.get('priorities')?.value).toEqual(
-      'test_pillar_1, test_element_1'
+      'test_pillar_1,test_element_1'
     );
   });
 });
