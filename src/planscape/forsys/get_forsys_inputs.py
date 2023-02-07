@@ -169,14 +169,14 @@ class ForsysInputHeaders():
         self.priority_headers = []
 
         for p in priorities:
-            self.priority_headers.append(self.priority_header(p))
+            self.priority_headers.append(self.get_priority_header(p))
 
     # Returns a priority header givn a priority string.
-    def priority_header(self, priority: str) -> str:
+    def get_priority_header(self, priority: str) -> str:
         return self._PRIORITY_PREFIX + priority
 
     # Reteurns a condition hader given a condition string.
-    def condition_header(self, condition: str) -> str:
+    def get_condition_header(self, condition: str) -> str:
         return self._CONDITION_PREFIX + condition
 
 
@@ -220,10 +220,9 @@ class ForsysProjectAreaRankingInput():
                 if score is None:
                     raise Exception(
                         "no score was retrieved for condition, %s" % name)
-                self.forsys_input[headers.condition_header(name)].append(score)
                 # TODO: fix this to be sum(1.0 - score) rather than
                 # mean(1.0 - score)
-                self.forsys_input[headers.priority_header(
+                self.forsys_input[headers.get_priority_header(
                     name)].append(1.0 - score)
 
     def _get_base_condition_ids_to_names(self, region: str,
@@ -256,6 +255,5 @@ class ForsysProjectAreaRankingInput():
         forsys_input[headers.FORSYS_AREA_HEADER] = []
         forsys_input[headers.FORSYS_COST_HEADER] = []
         for p in priorities:
-            forsys_input[headers.condition_header(p)] = []
-            forsys_input[headers.priority_header(p)] = []
+            forsys_input[headers.get_priority_header(p)] = []
         return forsys_input

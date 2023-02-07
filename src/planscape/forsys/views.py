@@ -48,6 +48,7 @@ def convert_dictionary_of_lists_to_rdf(
 
 
 # Runs a forsys scenario sets call.
+# TODO: rename run_forsys_scenario_sets (now that prod goals are more defined)
 def run_forsys_scenario_sets(
         forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
