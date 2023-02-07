@@ -67,7 +67,7 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
             "no rasters available for raster_name, nonexistent_raster_name")
 
 
-class MeanConditionScoresTest(RasterConditionRetrievalTestCase):
+class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
