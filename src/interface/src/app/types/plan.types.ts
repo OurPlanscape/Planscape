@@ -25,6 +25,7 @@ export interface PlanPreview {
   createdTimestamp?: number;  // in milliseconds since epoch
   region?: Region;
   savedScenarios?: number;
+  configurations?: number;
   status?: string;
 }
 

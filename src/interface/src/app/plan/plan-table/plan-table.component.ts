@@ -31,6 +31,7 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
     'createdTimestamp',
     'region',
     'savedScenarios',
+    'configurations',
     'status',
     'options',
   ];
