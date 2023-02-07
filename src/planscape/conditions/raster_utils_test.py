@@ -31,7 +31,22 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         self.assertEqual(
             str(context.exception), "missing input geometry")
 
-    def test_fails_wrong_srid(self):
+    def test_fails_for_invalid_geo(self):
+        polygon = Polygon(
+            ((-120, 40),
+             (-120, 41),
+             (-121, 41),
+             (-121, 39),
+             (-120, 42),
+             (-120, 40)))
+        geo = MultiPolygon(polygon)
+        geo.srid = 4269
+        with self.assertRaises(Exception) as context:
+            compute_condition_score_from_raster(geo, "foo")
+        self.assertEqual(
+            str(context.exception), "invalid geo: Self-intersection[-120 40]")
+
+    def test_fails_for_wrong_srid(self):
         polygon = Polygon(
             ((-120, 40),
              (-120, 41),
@@ -126,6 +141,32 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
             fetch_or_compute_mean_condition_scores(plan)
         self.assertEqual(
             str(context.exception), "plan is missing geometry")
+
+    def test_raises_error_for_invalid_geo(self):
+        polygon = Polygon(
+            ((-120, 40),
+             (-120, 41),
+             (-121, 41),
+             (-121, 39),
+             (-120, 42),
+             (-120, 40)))
+        geo = MultiPolygon(polygon)
+        geo.srid = 4269
+        plan = Plan.objects.create(geometry=geo, region_name=self.region)
+
+        foo_raster = RasterConditionRetrievalTestCase._create_raster(
+            self, 4, 4, (1, 2, 3, 4,
+                         5, 6, 7, 8,
+                         9, 10, 11, 12,
+                         13, 14, 15, 16))
+        RasterConditionRetrievalTestCase._save_condition_to_db(
+            self, "foo", "foo_normalized", foo_raster)
+
+        with self.assertRaises(Exception) as context:
+            fetch_or_compute_mean_condition_scores(plan)
+        self.assertEqual(
+            str(context.exception),
+            "invalid geo: Self-intersection[-2009071.06243679 2257814.97146307]")
 
     def test_raises_error_for_missing_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
