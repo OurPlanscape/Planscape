@@ -26,13 +26,6 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         self.assertEqual(score, 36.0 / 8)
 
     def test_fails_for_missing_geo(self):
-        foo_raster = RasterConditionRetrievalTestCase._create_raster(
-            self, 4, 4, (1, 2, 3, 4,
-                         5, 6, 7, 8,
-                         9, 10, 11, 12,
-                         13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_raster(
-            self, foo_raster, "foo")
         with self.assertRaises(Exception) as context:
             compute_condition_score_from_raster(None, "foo")
         self.assertEqual(
@@ -64,15 +57,8 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         score = compute_condition_score_from_raster(geo, "foo")
         self.assertIsNone(score)
 
-    def test_fails_for_no_raster(self):
+    def test_fails_for_missing_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
-        foo_raster = RasterConditionRetrievalTestCase._create_raster(
-            self, 4, 4, (1, 2, 3, 4,
-                         5, 6, 7, 8,
-                         9, 10, 11, 12,
-                         13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_raster(
-            self, foo_raster, "foo")
         with self.assertRaises(Exception) as context:
             compute_condition_score_from_raster(
                 geo, "nonexistent_raster_name")
