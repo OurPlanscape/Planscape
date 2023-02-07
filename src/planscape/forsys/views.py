@@ -78,8 +78,45 @@ def run_forsys_rank_projects_for_multiple_scenarios(
     return parsed_output
 
 
+def run_forsys_rank_projects_for_a_single_scenario(
+    forsys_input_dict: dict[str, list],
+        forsys_proj_id_header: str, forsys_stand_id_header: str,
+        forsys_area_header: str, forsys_cost_header: str,
+        forsys_priority_headers: list[str],) -> ForsysScenarioSetOutput:
+    import rpy2.robjects as robjects
+    robjects.r.source(os.path.join(
+        settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
+    rank_projects_for_a_single_scenario_function_r = robjects.globalenv[
+        'rank_projects_for_a_single_scenario']
+
+    # TODO: add inputs for thresholds.
+    # TODO: clean-up: pass header names (e.g. proj_id) into
+    # scenario_sets_function_r.
+    forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
+
+    priority_weights = []
+    for p in forsys_priority_headers:
+        priority_weights.append(1)
+
+    print("calling rank_projects_for_a_single_scenario_function_r")
+    forsys_output = rank_projects_for_a_single_scenario_function_r(
+        forsys_input, robjects.StrVector(forsys_priority_headers),
+        robjects.FloatVector(priority_weights),
+        forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
+        forsys_cost_header)
+
+    parsed_output = ForsysScenarioSetOutput(
+        forsys_output, forsys_priority_headers, forsys_proj_id_header,
+        forsys_area_header, forsys_cost_header)
+
+    # TODO: add logic for applying constraints to forsys_output.
+
+    return parsed_output
+
+
 # Returns JSon data for a forsys scenario set call.
-def rank_projects_for_multiple_scenarios(request: HttpRequest) -> HttpResponse:
+def rank_project_areas_for_multiple_scenarios(
+        request: HttpRequest) -> HttpResponse:
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
@@ -99,5 +136,5 @@ def rank_projects_for_multiple_scenarios(request: HttpRequest) -> HttpResponse:
         return JsonResponse(response)
 
     except Exception as e:
-        logger.error('scenario set error: ' + str(e))
+        logger.error('project area ranking error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
