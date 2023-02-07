@@ -286,7 +286,7 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
 
         user = _get_user(request)
 
-        projects = Project.objects.filter(owner=user, plan=plan_id)
+        projects = Project.objects.filter(owner=user, plan=int(plan_id))
         return JsonResponse([ProjectSerializer(project).data for project in projects], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
