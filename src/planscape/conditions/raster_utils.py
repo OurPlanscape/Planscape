@@ -46,6 +46,8 @@ def compute_condition_score_from_raster(
         geo: GEOSGeometry, raster_name: str) -> float | None:
     if geo is None:
         raise AssertionError("missing input geometry")
+    if not geo.valid:
+        raise AssertionError("invalid geo: %s"%geo.valid_reason)
     if geo.srid != settings.CRS_FOR_RASTERS:
         raise AssertionError(
             "geometry SRID is %d (expected %d)" %
