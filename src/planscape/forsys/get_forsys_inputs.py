@@ -181,7 +181,11 @@ class ForsysInputHeaders():
 
 
 class ForsysProjectAreaRankingInput():
-    # dictionary representing a forsys input dataframe.
+    # A dictionary representing a forsys input dataframe.
+    # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
+    # row represents a unique stand.
+    # Dictionary keys are dataframe headers. Dictionary values are lists
+    # corresponding to columns below each dataframe header.
     forsys_input: dict[str, list]
 
     def __init__(

@@ -1,5 +1,7 @@
 import numpy as np
-from conditions.models import BaseCondition, Condition
+from base.region_name import RegionName
+from conditions.models import BaseCondition, Condition, ConditionRaster
+from config.conditions_config import PillarConfig
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
@@ -48,6 +50,9 @@ def compute_condition_score_from_raster(
         raise AssertionError(
             "geometry SRID is %d (expected %d)" %
             (geo.srid, settings.CRS_FOR_RASTERS))
+    if len(ConditionRaster.objects.filter(name=raster_name).all()) == 0:
+        raise AssertionError(
+            "no rasters available for raster_name, %s" % (raster_name))
     with connection.cursor() as cursor:
         cursor.callproc(
             'get_mean_condition_score',
@@ -68,6 +73,8 @@ def compute_condition_score_from_raster(
 def fetch_or_compute_mean_condition_scores(
         plan: Plan) -> dict[str, float | None]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
+    if reg not in RegionName.__members__.values():
+        raise AssertionError("region, %s, is invalid" % (reg))
     geo = plan.geometry
     if geo is None:
         raise AssertionError("plan is missing geometry")
