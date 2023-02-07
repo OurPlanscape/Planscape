@@ -730,6 +730,8 @@ class ListProjectsTest(TransactionTestCase):
 
         self.plan_with_user = create_plan(
             self.user, 'plan', stored_geometry, [])
+        self.plan_without_user = create_plan(
+            None, 'plan', stored_geometry, [])
 
     def test_list_no_plan_id(self):
         self.client.force_login(self.user)
@@ -739,14 +741,22 @@ class ListProjectsTest(TransactionTestCase):
             content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
-    def test_list_no_projects(self):
+    def test_list_no_matching_plan(self):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse('plan:list_projects_for_plan'),
             {'plan_id': 4},
             content_type="application/json")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 0)
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_no_projects(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:list_projects_for_plan'),
+            {'plan_id': self.plan_with_user.pk},
+            content_type="application/json")
+        print(response.content)
+        self.assertEqual(response.status_code, 400)
 
     def test_list_projects(self):
         self.client.force_login(self.user)
