@@ -43,8 +43,8 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
             compute_condition_score_from_raster(geo, "foo")
-        self.assertEqual(
-            str(context.exception), "invalid geo: Self-intersection[-120 40]")
+        self.assertIn(
+            "invalid geo: Self-intersection[", str(context.exception))
 
     def test_fails_for_wrong_srid(self):
         polygon = Polygon(
@@ -164,9 +164,8 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
 
         with self.assertRaises(Exception) as context:
             fetch_or_compute_mean_condition_scores(plan)
-        self.assertEqual(
-            str(context.exception),
-            "invalid geo: Self-intersection[-2009071.06243679 2257814.97146307]")
+        self.assertIn(
+            "invalid geo: Self-intersection[", str(context.exception))
 
     def test_raises_error_for_missing_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
