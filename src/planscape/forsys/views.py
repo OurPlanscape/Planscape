@@ -48,7 +48,7 @@ def convert_dictionary_of_lists_to_rdf(
 
 
 # Runs a forsys scenario sets call.
-def run_forsys_rank_projects_for_multiple_scenarios(
+def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
@@ -78,42 +78,6 @@ def run_forsys_rank_projects_for_multiple_scenarios(
     return parsed_output
 
 
-def run_forsys_rank_projects_for_a_single_scenario(
-    forsys_input_dict: dict[str, list],
-        forsys_proj_id_header: str, forsys_stand_id_header: str,
-        forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_headers: list[str],) -> ForsysScenarioSetOutput:
-    import rpy2.robjects as robjects
-    robjects.r.source(os.path.join(
-        settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
-    rank_projects_for_a_single_scenario_function_r = robjects.globalenv[
-        'rank_projects_for_a_single_scenario']
-
-    # TODO: add inputs for thresholds.
-    # TODO: clean-up: pass header names (e.g. proj_id) into
-    # scenario_sets_function_r.
-    forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
-
-    priority_weights = []
-    for p in forsys_priority_headers:
-        priority_weights.append(1)
-
-    print("calling rank_projects_for_a_single_scenario_function_r")
-    forsys_output = rank_projects_for_a_single_scenario_function_r(
-        forsys_input, robjects.StrVector(forsys_priority_headers),
-        robjects.FloatVector(priority_weights),
-        forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
-        forsys_cost_header)
-
-    parsed_output = ForsysScenarioSetOutput(
-        forsys_output, forsys_priority_headers, forsys_proj_id_header,
-        forsys_area_header, forsys_cost_header)
-
-    # TODO: add logic for applying constraints to forsys_output.
-
-    return parsed_output
-
-
 # Returns JSon data for a forsys scenario set call.
 def rank_project_areas_for_multiple_scenarios(
         request: HttpRequest) -> HttpResponse:
@@ -121,7 +85,7 @@ def rank_project_areas_for_multiple_scenarios(
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
-        forsys_output = run_forsys_rank_projects_for_multiple_scenarios(
+        forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.priority_headers)
