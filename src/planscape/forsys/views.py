@@ -49,22 +49,22 @@ def convert_dictionary_of_lists_to_rdf(
 
 # Runs a forsys scenario sets call.
 # TODO: rename run_forsys_scenario_sets (now that prod goals are more defined)
-def run_forsys_scenario_sets(
+def run_forsys_rank_projects_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_priority_headers: list[str],) -> ForsysScenarioSetOutput:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
-        settings.BASE_DIR, 'forsys/scenario_sets.R'))
-    scenario_sets_function_r = robjects.globalenv['scenario_sets']
+        settings.BASE_DIR, 'forsys/rank_projects_for_multiple_scenarios.R'))
+    rank_projects_for_multiple_sceenarios_function_r = robjects.globalenv['rank_projects_for_multiple_scenarios']
 
     # TODO: add inputs for thresholds.
     # TODO: clean-up: pass header names (e.g. proj_id) into
     # scenario_sets_function_r.
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
-    forsys_output = scenario_sets_function_r(forsys_input, robjects.StrVector(
+    forsys_output = rank_projects_for_multiple_sceenarios_function_r(forsys_input, robjects.StrVector(
         forsys_priority_headers),
         forsys_stand_id_header,
         forsys_proj_id_header,
@@ -81,12 +81,12 @@ def run_forsys_scenario_sets(
 
 
 # Returns JSon data for a forsys scenario set call.
-def scenario_set(request: HttpRequest) -> HttpResponse:
+def rank_projects_for_multiple_scenarios(request: HttpRequest) -> HttpResponse:
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
-        forsys_output = run_forsys_scenario_sets(
+        forsys_output = run_forsys_rank_projects_for_multiple_scenarios(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.priority_headers)
