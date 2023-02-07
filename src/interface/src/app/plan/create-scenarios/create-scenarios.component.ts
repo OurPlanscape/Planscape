@@ -13,17 +13,20 @@ import {
   Component,
   EventEmitter,
   Input,
+  OnInit,
   Output,
   ViewChild,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan } from 'src/app/types';
+import { Plan, ProjectConfig } from 'src/app/types';
 
 import { PlanStep } from './../plan.component';
 
@@ -82,7 +85,7 @@ interface StepState {
     }),
   ],
 })
-export class CreateScenariosComponent {
+export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
 
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
@@ -93,10 +96,11 @@ export class CreateScenariosComponent {
   formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
+  projectId?: number;
   stepStates: StepState[];
 
-  constructor(private fb: FormBuilder) {
-    // TODO: Get and populate saved scenario config
+  constructor(private fb: FormBuilder, private planService: PlanService) {
+    // TODO: Get and populate saved scenario config if applicable
 
     this.formGroups = [
       // Step 1: Select condition score
@@ -106,16 +110,16 @@ export class CreateScenariosComponent {
       // Step 2: Set constraints
       this.fb.group({
         budgetForm: this.fb.group({
-          maxBudget: [''],
+          maxBudget: ['', Validators.min(0)],
           optimizeBudget: [false, Validators.required],
         }),
         treatmentForm: this.fb.group({
-          maxArea: ['', Validators.required],
+          maxArea: ['', [Validators.required, Validators.min(0)]],
         }),
         excludeAreasByDegrees: [false],
         excludeAreasByDistance: [false],
-        excludeSlope: [''],
-        excludeDistance: [''],
+        excludeSlope: ['', Validators.min(0)],
+        excludeDistance: ['', Validators.min(0)],
       }),
       // Step 3: Select priorities
       this.fb.group({
@@ -136,11 +140,36 @@ export class CreateScenariosComponent {
       {},
       {},
     ];
+  }
+
+  ngOnInit(): void {
+    // Create a new saved scenario config
+    this.plan$
+      .pipe(
+        filter((plan) => !!plan),
+        take(1)
+      )
+      .subscribe((plan) => {
+        this.planService
+          .createProjectInPlan(plan!.id)
+          .subscribe((projectId) => {
+            this.projectId = projectId;
+          });
+      });
 
     this.formGroups.forEach((formGroup) => {
       formGroup.valueChanges.subscribe((_) => {
-        // TODO: save new values to backend
-        console.log(formGroup.value);
+        // Update scenario config in backend
+        if (
+          this.projectId &&
+          this.formGroups.every(
+            (formGroup) => formGroup.valid || formGroup.pristine
+          )
+        ) {
+          this.planService
+            .updateProject(this.formValueToProjectConfig())
+            .subscribe();
+        }
       });
     });
 
@@ -159,5 +188,28 @@ export class CreateScenariosComponent {
 
   selectedStepChanged(event: StepperSelectionEvent): void {
     this.stepStates[event.selectedIndex].opened = true;
+  }
+
+  formValueToProjectConfig(): ProjectConfig {
+    const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
+    const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
+    const excludeDistance = this.formGroups[1].get('excludeDistance');
+    const excludeSlope = this.formGroups[1].get('excludeSlope');
+    const priorities = this.formGroups[2].get('priorities');
+
+    let projectConfig: ProjectConfig = {
+      id: this.projectId!,
+    };
+    if (maxBudget?.valid)
+      projectConfig.max_budget = parseFloat(maxBudget.value);
+    if (maxArea?.valid)
+      projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
+    if (excludeDistance?.valid)
+      projectConfig.max_road_distance = parseFloat(excludeDistance.value);
+    if (excludeSlope?.valid)
+      projectConfig.max_slope = parseFloat(excludeSlope.value);
+    if (priorities?.valid) projectConfig.priorities = priorities.value;
+
+    return projectConfig;
   }
 }

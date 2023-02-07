@@ -1,18 +1,14 @@
-import { PlanPreview, PlanConditionScores } from './../types/plan.types';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BackendConstants } from '../backend-constants';
-import {
-  BehaviorSubject,
-  catchError,
-  map,
-  Observable,
-  of,
-  take,
-  tap,
-} from 'rxjs';
+import { BehaviorSubject, map, Observable, take, tap } from 'rxjs';
 
+import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
+import {
+  PlanConditionScores,
+  PlanPreview,
+  ProjectConfig,
+} from './../types/plan.types';
 
 export interface PlanState {
   all: {
@@ -57,7 +53,7 @@ export class PlanService {
       }),
       tap(({ result: createdPlan }) => {
         this.addPlanToState(createdPlan);
-      }),
+      })
     );
   }
 
@@ -124,6 +120,33 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  /** Creates a project in a plan, and returns an ID which can be used to get or update the
+   *  project. */
+  createProjectInPlan(planId: string): Observable<number> {
+    let url = BackendConstants.END_POINT.concat('/plan/create_project/');
+    return this.http
+      .post<number>(
+        url,
+        {
+          plan_id: Number(planId),
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(take(1));
+  }
+
+  /** Updates a project with new parameters. */
+  updateProject(projectConfig: ProjectConfig): Observable<number> {
+    let url = BackendConstants.END_POINT.concat('/plan/update_project/');
+    return this.http
+      .put<number>(url, projectConfig, {
+        withCredentials: true,
+      })
+      .pipe(take(1));
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
@@ -131,7 +154,7 @@ export class PlanService {
       name: plan.name,
       region: plan.region_name,
       planningArea: plan.geometry,
-      savedScenarios: plan.scenarios?? 0,
+      savedScenarios: plan.scenarios ?? 0,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         plan.creation_timestamp
       ),
