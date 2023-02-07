@@ -234,11 +234,13 @@ class ForsysInputHeadersTest(TestCase):
 
     def test_priority(self):
         headers = ForsysInputHeaders([])
-        self.assertEqual(headers.priority_header("priority"), "p_priority")
+        self.assertEqual(headers.get_priority_header("priority"), "p_priority")
 
     def test_condition(self):
         headers = ForsysInputHeaders([])
-        self.assertEqual(headers.condition_header("condition"), "c_condition")
+        self.assertEqual(
+            headers.get_condition_header("condition"),
+            "c_condition")
 
 
 class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
