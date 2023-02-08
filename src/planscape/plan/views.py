@@ -287,7 +287,7 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
 
         user = _get_user(request)
 
-        projects = get_list_or_404(Project.objects.filter(owner=user, plan=int(plan_id)))
+        projects = Project.objects.filter(owner=user, plan=int(plan_id))
         
         projects = [ProjectSerializer(project).data for project in projects]
 
@@ -311,6 +311,37 @@ def get_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "You do not have permission to view this project.")
         return JsonResponse(ProjectSerializer(project).data)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def delete_projects(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = _get_user(request)
+
+        body = json.loads(request.body)
+        project_ids = body.get('project_ids', None)
+        if project_ids is None or not (isinstance(project_ids, list)):
+            raise ValueError("Must specify project_ids as a list")
+
+        projects = [Project.objects.get(id=project_id) for project_id in project_ids]
+        
+        # Check that the user owns the projects
+        for project in projects:
+            if project.owner != owner:
+                raise ValueError(
+                    "You do not have permission to delete one or more of these projects.")
+        
+        for project in projects:
+            project.delete()
+        
+        response_data = project_ids
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
+
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
