@@ -168,6 +168,19 @@ export class PlanService {
       );
   }
 
+  /** Deletes one or more projects from the backend. */
+  deleteProjects(projectIds: number[]): Observable<number[]> {
+    return this.http.post<number[]>(
+      BackendConstants.END_POINT.concat('/plan/delete_projects/'),
+      {
+        project_ids: projectIds,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
