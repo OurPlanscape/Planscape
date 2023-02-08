@@ -13,6 +13,6 @@
       <button mat-raised-button color="primary" (click)="createScenario()">CREATE A NEW SCENARIO</button>
     </div>
     <app-saved-scenarios [plan]="plan$ | async" (createScenarioEvent)="createScenario()"></app-saved-scenarios>
-    <app-unsaved-scenarios [plan]="plan$ | async"></app-unsaved-scenarios>
+    <app-scenario-configurations [plan]="plan$ | async"></app-scenario-configurations>
   </div>
 </div>
