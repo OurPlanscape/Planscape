@@ -96,7 +96,6 @@ class ForsysScenarioSetOutput():
         rdf = raw_forsys_output[self._PROJECT_OUTPUT_INDEX]
         self._forsys_output_df = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
-        print(self._forsys_output_df)
 
     def _check_header_name(self, header) -> None:
         if header not in self._forsys_output_df.keys():
@@ -222,13 +221,12 @@ class ForsysScenarioOutput():
     # priorities.
     # Of note, priorities must be listed in the same format and order they're
     # listed for the forsys call.
-    def __init__(
-            self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
-            priorities: list[str], priority_weights: dict[str, float],
-            project_id_header: str, area_header: str, cost_header: str):
+    def __init__(self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
+                 priority_weights: dict[str, float],
+                 project_id_header: str, area_header: str, cost_header: str):
         self._save_raw_forsys_output_as_dict(raw_forsys_output)
 
-        self._set_header_names(priorities, area_header,
+        self._set_header_names(list(priority_weights.keys()), area_header,
                                cost_header, project_id_header)
 
         self.scenario = Scenario(
@@ -256,6 +254,8 @@ class ForsysScenarioOutput():
 
         self._priority_contribution_headers = [
             self._CONTRIBUTION_STRFORMAT % (p) for p in priorities]
+        for p in self._priority_contribution_headers:
+            self._check_header_name(p)
         self._area_contribution_header = self._CONTRIBUTION_STRFORMAT % area_header
         self._check_header_name(self._area_contribution_header)
         self._cost_contribution_header = self._CONTRIBUTION_STRFORMAT % cost_header
@@ -264,7 +264,8 @@ class ForsysScenarioOutput():
         self._check_header_name(self._project_id_header)
 
     def _create_scenario_project(
-            self, scenario_weights: dict, ind: int) -> RankedProject:
+            self, scenario_weights: dict[str, float],
+            ind: int) -> RankedProject:
         project: RankedProject = {
             'id': int(
                 self._forsys_output_df[self._project_id_header][ind]),
