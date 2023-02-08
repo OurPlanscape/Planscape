@@ -128,6 +128,7 @@ describe('PlanService', () => {
         name: mockPlan.name,
         region: mockPlan.region,
         savedScenarios: 1,
+        configurations: 2,
         createdTimestamp: 5000,
       };
 
@@ -138,6 +139,7 @@ describe('PlanService', () => {
         region_name: mockPlan.region,
         geometry: mockPlan.planningArea,
         scenarios: 1,
+        projects: 2,
         creation_timestamp: 5,
       };
 
@@ -209,6 +211,39 @@ describe('PlanService', () => {
       expect(req.request.body).toEqual(projectConfig);
       expect(req.request.method).toEqual('PUT');
       req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getProjects', () => {
+    it('should make HTTP request to backend', () => {
+      const projectConfigs: ProjectConfig[] = [
+        {
+          id: 1,
+          max_budget: 200,
+          max_road_distance: undefined,
+          max_slope: undefined,
+          max_treatment_area_ratio: undefined,
+          priorities: undefined,
+        },
+      ];
+
+      service.getProjects('1').subscribe((res) => {
+        expect(res).toEqual(projectConfigs);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat(
+          '/plan/list_projects_for_plan/?plan_id=1'
+        )
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush([
+        {
+          id: 1,
+          max_budget: 200,
+        },
+      ]);
       httpTestingController.verify();
     });
   });
