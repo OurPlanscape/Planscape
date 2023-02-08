@@ -2,13 +2,17 @@ from django.db import migrations
 from typing import Tuple
 
 SQL = """
-create or replace function get_mean_condition_score(
+create or replace function get_condition_stats(
       param_table text,
       param_schema text,
       param_raster_name text,
       param_raster_name_column text,
       param_raster_column text,
-      param_geom_ewkb bytea) returns float
+      param_geom_ewkb bytea) returns TABLE(
+                                         mean float,
+                                         sum float,
+                                         count bigint
+                                     )
     immutable
     parallel safe
     cost 1000
@@ -17,7 +21,8 @@ as
 $$
 DECLARE
     var_count integer; var_sql text; var_geo geometry; 
-    var_raster raster; var_avg float;
+    var_raster raster; var_avg float; var_sum float;
+    var_output RECORD;
 BEGIN  
     /* Checks that there is data for the raster requested */
     EXECUTE
@@ -28,7 +33,7 @@ BEGIN
     USING param_raster_name;
     
     IF var_count = 0 THEN
-       RETURN NULL;
+       RETURN;
     END IF;
 
     /* Parses geometry passed in ewkb format, then transforms it into a raster proj4 CRS and annotates it with the raster SRID. */
@@ -52,14 +57,11 @@ BEGIN
       var_geo;
 
     /* Computes mean score over pixels of the merged raster. */
-    EXECUTE 
-        'SELECT mean' ||
+    RETURN QUERY EXECUTE 
+        'SELECT mean,sum,count' ||
         ' FROM ST_SummaryStats($1, 1, TRUE)'
-    INTO var_avg
     USING
         var_raster;
-
-    RETURN var_avg;
 END;
 $$;
 """
@@ -70,4 +72,4 @@ class Migration(migrations.Migration):
       ('conditions', '0002_get_rast_tile')
     ]
 
-    operations = [migrations.RunSQL(sql=SQL, reverse_sql='DROP FUNCTION IF EXISTS get_mean_condition_score;')]
+    operations = [migrations.RunSQL(sql=SQL, reverse_sql='DROP FUNCTION IF EXISTS get_condition_stats;')]
