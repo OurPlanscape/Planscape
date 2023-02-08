@@ -760,8 +760,12 @@ class ListProjectsTest(TransactionTestCase):
 
     def test_list_projects(self):
         self.client.force_login(self.user)
+        base_condition = BaseCondition.objects.create(
+            condition_level=ConditionLevel.ELEMENT, display_name='test_condition')
+        self.condition = Condition.objects.create(condition_dataset=base_condition)
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100)
+        self.project_with_user.priorities.add(self.condition)
 
         response = self.client.get(
             reverse('plan:list_projects_for_plan'),
@@ -770,6 +774,7 @@ class ListProjectsTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]['id'], self.project_with_user.pk)
+        self.assertEqual(response.json()[0]['priorities'], ['test_condition'])
 
 
 class GetProjectAreaTest(TransactionTestCase):
