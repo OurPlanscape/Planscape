@@ -446,7 +446,7 @@ class CreateProjectTest(TransactionTestCase):
 
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'priorities': 'condition1'},
+                'plan_id': self.plan_with_user.pk, 'priorities': ['condition1']},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -459,7 +459,7 @@ class CreateProjectTest(TransactionTestCase):
 
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'priorities': 'condition3'},
+                'plan_id': self.plan_with_user.pk, 'priorities': ['condition3']},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -536,7 +536,7 @@ class UpdateProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.put(
             reverse('plan:update_project'), {'id': self.project_with_user.pk,
-                                             'priorities': 'condition2'}, content_type='application/json')
+                                             'priorities': ['condition2']}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         project = Project.objects.get(id=self.project_with_user.pk)
         self.assertEqual(project.max_budget, None)
@@ -761,7 +761,7 @@ class ListProjectsTest(TransactionTestCase):
     def test_list_projects(self):
         self.client.force_login(self.user)
         base_condition = BaseCondition.objects.create(
-            condition_level=ConditionLevel.ELEMENT, display_name='test_condition')
+            condition_level=ConditionLevel.ELEMENT, condition_name='test_condition')
         self.condition = Condition.objects.create(condition_dataset=base_condition)
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100)
