@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 import pandas as pd
+from conditions.models import BaseCondition
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)

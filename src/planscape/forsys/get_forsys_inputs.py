@@ -71,8 +71,12 @@ class ForsysProjectAreaRankingRequestParams():
         self.priority_weights = params.getlist(
             self._URL_PRIORITY_WEIGHTS,
             [1 for i in range(len(self.priorities))])
+        self.priority_weights = [float(pw) for pw in self.priority_weights]
         if len(self.priorities) != len(self.priority_weights):
-            AssertionError("")
+            raise AssertionError(
+                "expected %d priority weights, instead, %d were given" %
+                (len(self.priorities),
+                 len(self.priority_weights)))
         if self._URL_PROJECT_AREAS in params:
             self.project_areas = self._read_project_areas_from_url_params(
                 params)
