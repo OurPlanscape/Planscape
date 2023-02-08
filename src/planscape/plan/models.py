@@ -129,6 +129,7 @@ class ConditionScores(models.Model):
     condition = models.ForeignKey(
         Condition, on_delete=models.CASCADE, null=False)
    
-    # Mean score.
-    # This may be null if plan or project area geometry has no intersection with raster values. 
+    # The following scores may be null if plan or project area geometry has no intersection with raster values. 
     mean_score = models.FloatField(null=True)
+    sum = models.FloatField(null=True)
+    count = models.IntegerField(null=True)
