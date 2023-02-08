@@ -1,16 +1,42 @@
 .panel-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 12px;
   height: 100%;
+}
+
+.flex-row {
+  display: flex;
+}
+
+app-legend {
+  flex: 2 0 224px;
+}
+
+.secondary-text {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  opacity: 0.66;
 }
 
 .priority-table {
   overflow-y: auto;
 }
 
+.mat-header-cell {
+  color: black;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+  opacity: 0.5;
+}
+
 .mat-column-selected {
+  display: flex;
   flex: 0 0 auto;
+  justify-content: center;
+  padding-right: 24px;
   width: 36px;
 }
 
@@ -23,22 +49,38 @@
   box-sizing: border-box;
   flex: 2 0 auto;
   padding-right: 24px;
-  width: 300px;
+  width: 224px;
+
+  &.mat-cell {
+    font-size: 15px;
+    line-height: 20px;
+
+    &.level-0 {
+      font-weight: 500;
+    }
+  }
 }
 
 .mat-column-score {
   flex: 0 0 auto;
+  padding-right: 24px;
   width: 120px;
+
+  &.mat-cell {
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 20px;
+  }
 }
 
 .indent-level-1 {
   flex: 0 0 auto;
-  width: 24px;
+  width: 10px;
 }
 
 .indent-level-2 {
   flex: 0 0 auto;
-  width: 88px;
+  width: 44px;
 }
 
 .hide-row {
@@ -60,4 +102,16 @@
 
 .score {
   font-size: 12px;
+  font-weight: 400;
+  line-height: 16px;
+}
+
+.expand-button {
+  height: 24px;
+  line-height: 24px;
+  width: 24px;
+}
+
+.grey-icon {
+  color: #8e918f;
 }

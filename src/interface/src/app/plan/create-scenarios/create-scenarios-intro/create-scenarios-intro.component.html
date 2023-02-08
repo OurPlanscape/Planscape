@@ -1,47 +1,38 @@
 <div class="panel-container">
-  <div>
-    <p>{{ text1 }}</p>
-  </div>
-  <div class="row-div gap-60">
-      <div>
-        <mat-form-field appearance="fill">
-          <mat-label>
-            Generate scenarios using:
-          </mat-label>
-          <mat-select>
-            <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
-            <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
-          </mat-select>
-        </mat-form-field>
-      </div>
-      <div>
-        <p>
-          {{ text2 }}
-        </p>
-      </div>
-  </div>
-  <div class="row-div gap-60">
+  <p class="secondary-text">{{ text1 }}</p>
+
+  <h4>Prioritize by:</h4>
+
+  <form [formGroup]="formGroup!">
+    <mat-form-field appearance="fill" class="select-box" subscriptSizing="dynamic">
+      <mat-label>Make Selection</mat-label>
+      <mat-select formControlName="scoreSelectCtrl">
+        <mat-option value="Current conditions scores">Current Conditions scores</mat-option>
+        <mat-option value="Management opportunity scores" disabled>Opportunity scores (Coming soon)</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </form>
+
+  <div class="row-div gap-60 shaded-box">
     <div>
-      <h2>Current Conditions score</h2>
+      <h4>Current Conditions score</h4>
       <p>{{ text3 }}</p>
     </div>
     <div>
-      <h4>Condition Score Scale</h4>
-      <app-legend [legend]="legend" [vertical]="true" [hideTitles]="true" [hideOutline]="true"></app-legend>
+      <app-legend [legend]="legend" [vertical]="true" [hideTitles]="true"></app-legend>
     </div>
 </div>
-<div class="row-div gap-60">
+<div class="row-div gap-60 shaded-box">
     <div>
-      <h2>Opportunity score (Coming soon)</h2>
+      <h4>Opportunity score</h4>
       <p>{{ text4 }}</p>
     </div>
     <div>
-      <h4>Opportunity Score Scale</h4>
-      <app-legend [legend]="legend" [vertical]="true" [hideTitles]="true" [hideOutline]="true"></app-legend>
+      <app-legend [legend]="legend" [vertical]="true" [hideTitles]="true"></app-legend>
     </div>
   </div>
-  <div class="row-div">
+  <div class="row-div align-center">
     <button mat-icon-button><mat-icon class="material-symbols-outlined">info</mat-icon></button>
-    <div>{{ text5 }}</div>
+    <span><b><u>Learn more</u></b> about how data is used.</span>
   </div>
 </div>

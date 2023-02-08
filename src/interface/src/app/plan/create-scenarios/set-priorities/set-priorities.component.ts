@@ -1,8 +1,9 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Plan } from 'src/app/types';
+import { colormapConfigToLegend, Legend, Plan } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
@@ -12,11 +13,6 @@ import { PlanConditionScores } from './../../../types/plan.types';
 export interface ScoreColumn {
   label: string;
   score: number;
-}
-
-// Temporary priorities type
-export interface Priorities {
-  priorities: string[];
 }
 
 interface PriorityRow {
@@ -37,24 +33,35 @@ interface PriorityRow {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
+  @Input() formGroup: FormGroup | undefined;
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Output() changeConditionEvent = new EventEmitter<string>();
-  @Output() changePrioritiesEvent = new EventEmitter<Priorities>();
+  @Output() formNextEvent = new EventEmitter<void>();
+  @Output() formBackEvent = new EventEmitter<void>();
 
   readonly text1: string = `
-    Condition scores represent the condition of each priority within the defined planning area.
-    Select at least one priority to create scenarios. Note: Choosing more than 5 may dilute
-    the data.
+    Optimize your treatment objective by evaluating your planning area and selecting priorities.
+    Select at least one. Only selected priorities are used to identify project areas and prioritize
+    treatments. Note: For the most accurate estimated outcome, choose no more than 5.
   `;
 
   conditionScores = new Map<string, ScoreColumn>();
-  displayedColumns: string[] = ['selected', 'visible', 'displayName', 'score'];
+  displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
+  legend: Legend | undefined;
 
   constructor(
     private mapService: MapService,
     private planService: PlanService
-  ) {}
+  ) {
+    this.mapService
+      .getColormap('turbo')
+      .pipe(take(1))
+      .subscribe((colormapConfig) => {
+        this.legend = colormapConfigToLegend(colormapConfig);
+        this.legend!.labels = ['Poor', 'OK', 'Excellent'];
+      });
+  }
 
   ngOnInit(): void {
     this.mapService.conditionsConfig$
@@ -90,7 +97,7 @@ export class SetPrioritiesComponent implements OnInit {
           filepath: pillar.filepath!.concat('_normalized'),
           children: [],
           level: 0,
-          expanded: true,
+          expanded: false,
         };
         data.push(pillarRow);
         pillar.elements?.forEach((element) => {
@@ -100,7 +107,8 @@ export class SetPrioritiesComponent implements OnInit {
             filepath: element.filepath!.concat('_normalized'),
             children: [],
             level: 1,
-            expanded: true,
+            expanded: false,
+            hidden: true,
           };
           data.push(elementRow);
           pillarRow.children.push(elementRow);
@@ -111,6 +119,7 @@ export class SetPrioritiesComponent implements OnInit {
               filepath: metric.filepath!,
               children: [],
               level: 2,
+              hidden: true,
             };
             data.push(metricRow);
             elementRow.children.push(metricRow);
@@ -187,8 +196,6 @@ export class SetPrioritiesComponent implements OnInit {
     const selectedPriorities: string[] = this.datasource.data
       .filter((row) => row.selected)
       .map((row) => row.conditionName);
-    this.changePrioritiesEvent.emit({
-      priorities: selectedPriorities,
-    });
+    this.formGroup?.get('priorities')?.setValue(selectedPriorities.join(','));
   }
 }

@@ -6,6 +6,9 @@ export interface Plan extends BasePlan {
   ownerId: string;
   region: Region;
   planningArea?: GeoJSON.GeoJSON;
+  createdTimestamp?: number;
+  updatedTimestamp?: number;
+  savedScenarios?: number;
 }
 
 export interface BasePlan {
@@ -28,6 +31,15 @@ export interface PlanPreview {
 export interface Scenario {
   id: string;
   createdTimestamp: number; //in milliseconds since epoch
+}
+
+export interface ProjectConfig {
+  id: number;
+  max_budget?: number;
+  max_treatment_area_ratio?: number;
+  max_road_distance?: number;
+  max_slope?: number;
+  priorities?: string;
 }
 
 export interface PlanConditionScores {

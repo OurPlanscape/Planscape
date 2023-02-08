@@ -718,6 +718,60 @@ class GetProjectTest(TransactionTestCase):
                          self.condition1.pk, self.condition2.pk])
 
 
+class ListProjectsTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.plan_with_user = create_plan(
+            self.user, 'plan', stored_geometry, [])
+        self.plan_without_user = create_plan(
+            None, 'plan', stored_geometry, [])
+
+    def test_list_no_plan_id(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:list_projects_for_plan'),
+            {},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_no_matching_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:list_projects_for_plan'),
+            {'plan_id': 4},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_no_projects(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:list_projects_for_plan'),
+            {'plan_id': self.plan_with_user.pk},
+            content_type="application/json")
+        print(response.content)
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_projects(self):
+        self.client.force_login(self.user)
+        self.project_with_user = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_budget=100)
+
+        response = self.client.get(
+            reverse('plan:list_projects_for_plan'),
+            {'plan_id': self.plan_with_user.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 1)
+        self.assertEqual(response.json()[0]['id'], self.project_with_user.pk)
+
+
 class GetProjectAreaTest(TransactionTestCase):
     def setUp(self):
         self.geometry = {'type': 'MultiPolygon',

@@ -2,7 +2,7 @@
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
     <div class="plan-summary-panel" *ngIf="currentPlanStep === PlanStep.Overview">
-      <summary-panel></summary-panel>
+      <summary-panel [plan]="currentPlan$ | async"></summary-panel>
     </div>
     <mat-divider [vertical]="true"></mat-divider>
     <div class="plan-content">
@@ -14,7 +14,9 @@
             <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'" [mapPadding]="[700, 0]"></app-plan-map>
           </div>
           <div class="plan-content-panel">
-            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep" (changeConditionEvent)="changeCondition($event)"></app-create-scenarios>
+            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep"
+              (changeConditionEvent)="changeCondition($event)" (drawShapesEvent)="drawShapes($event)">
+            </app-create-scenarios>
           </div>
         </ng-container>
       </div>

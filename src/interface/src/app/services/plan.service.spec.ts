@@ -6,7 +6,11 @@ import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
-import { PlanConditionScores, PlanPreview } from './../types/plan.types';
+import {
+  PlanConditionScores,
+  PlanPreview,
+  ProjectConfig,
+} from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
 
 describe('PlanService', () => {
@@ -38,6 +42,7 @@ describe('PlanService', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
+        savedScenarios: 0,
       };
       service.createPlan(mockPlan).subscribe((res) => {
         expect(res).toEqual({ success: true, result: expectedPlan });
@@ -92,6 +97,8 @@ describe('PlanService', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
+        savedScenarios: 0,
+        createdTimestamp: undefined,
       };
 
       const backendPlan: BackendPlan = {
@@ -165,6 +172,43 @@ describe('PlanService', () => {
         BackendConstants.END_POINT.concat('/plan/scores/?id=1')
       );
       req.flush(expectedScores);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('createProjectInPlan', () => {
+    it('should make HTTP request to backend', () => {
+      service.createProjectInPlan('1').subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_project/')
+      );
+      expect(req.request.body).toEqual({ plan_id: 1 });
+      expect(req.request.method).toEqual('POST');
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('updateProject', () => {
+    it('should make HTTP request to backend', () => {
+      const projectConfig: ProjectConfig = {
+        id: 1,
+        max_budget: 200,
+      };
+
+      service.updateProject(projectConfig).subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/update_project/')
+      );
+      expect(req.request.body).toEqual(projectConfig);
+      expect(req.request.method).toEqual('PUT');
+      req.flush(1);
       httpTestingController.verify();
     });
   });

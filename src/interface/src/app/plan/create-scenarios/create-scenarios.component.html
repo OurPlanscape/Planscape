@@ -3,28 +3,28 @@
   <div class="create-scenarios-panel-content"
     [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
 
-    <mat-stepper orientation="vertical" class="stepper"
+    <mat-stepper #stepper orientation="vertical" class="stepper" [linear]="true"
       (selectionChange)="selectedStepChanged($event)">
 
       <!-- Step 1: Select condition score -->
-      <mat-step #step1>
+      <mat-step #step1 [stepControl]="formGroups[0]">
         <ng-template matStepLabel>
           <div class="step-label-header">
             Select condition score
           </div>
         </ng-template>
-        <app-create-scenarios-intro></app-create-scenarios-intro>
+        <app-create-scenarios-intro [formGroup]="formGroups[0]" (formCompleteEvent)="stepper.next()"></app-create-scenarios-intro>
       </mat-step>
 
       <!-- Step 2: Set constraints -->
-      <mat-step #step2>
+      <mat-step #step2 [stepControl]="formGroups[1]">
         <ng-template matStepLabel>
           <div class="step-label-header">Set constraints</div>
           <div class="step-label-description" *ngIf="!stepStates[1].opened">
             Constraints will be used to inform project areas and scenario options.
           </div>
         </ng-template>
-        <app-constraints-panel (changeConstraintsEvent)="changeConstraintsEvent.emit($event)">
+        <app-constraints-panel [constraintsForm]="formGroups[1]" (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()">
         </app-constraints-panel>
       </mat-step>
 
@@ -39,22 +39,33 @@
             XX priorities selected
           </div>
         </ng-template>
-        <app-set-priorities (changeConditionEvent)="changeConditionEvent.emit($event)"
-          (changePrioritiesEvent)="changePrioritiesEvent.emit($event)" [plan$]="plan$">
+        <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[2]"
+          (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()"
+          (changeConditionEvent)="changeConditionEvent.emit($event)">
         </app-set-priorities>
       </mat-step>
 
-      <!-- Step 4: Generate scenario(s) -->
+      <!-- Step 4: Identify project areas -->
       <mat-step>
         <ng-template matStepLabel>
-          <div class="step-label-header">Generate scenario(s)</div>
+          <div class="step-label-header">Identify project areas</div>
+          <div class="step-label-description" *ngIf="!stepStates[3].opened">
+            Identify project areas and prioritize treatments for optimized outcomes.
+          </div>
         </ng-template>
+        <app-identify-project-areas [formGroup]="formGroups[3]" (formNextEvent)="stepper.next()"
+          (formBackEvent)="stepper.previous()">
+
+        </app-identify-project-areas>
       </mat-step>
 
       <!-- Step 5: View scenario(s) -->
       <mat-step>
         <ng-template matStepLabel>
           <div class="step-label-header">View scenario(s)</div>
+          <div class="step-label-description" *ngIf="!stepStates[4].opened">
+            Weigh priorities to determine acreage of treatment and estimated impact on priorities.
+          </div>
         </ng-template>
       </mat-step>
     </mat-stepper>

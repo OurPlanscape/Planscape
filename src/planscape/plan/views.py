@@ -13,6 +13,7 @@ from plan.models import Plan, Project, ProjectArea
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer)
 from planscape import settings
+from django.shortcuts import get_list_or_404
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -187,29 +188,29 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
 def _save_project_parameters(body, project: Project):
     # Parse constraints
     max_budget = body.get('max_budget', None)
-    if max_budget is not None and not (isinstance(max_budget, float)):
-        raise ValueError("Max budget must be a float value")
+    if max_budget is not None and not (isinstance(max_budget, (int, float))):
+        raise ValueError("Max budget must be a number value")
 
     max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
     if (max_treatment_area_ratio is not None and
-            (not (isinstance(max_treatment_area_ratio, float)) or max_treatment_area_ratio < 0)):
+            (not (isinstance(max_treatment_area_ratio, (int, float))) or max_treatment_area_ratio < 0)):
         raise ValueError(
-            "Max treatment must be a float value >= 0.0")
+            "Max treatment must be a number value >= 0.0")
 
     max_road_distance = body.get('max_road_distance', None)
-    if max_road_distance is not None and not (isinstance(max_road_distance, float)):
-        raise ValueError("Max distance from road must be a float value")
+    if max_road_distance is not None and not (isinstance(max_road_distance, (int, float))):
+        raise ValueError("Max distance from road must be a number value")
 
     max_slope = body.get('max_slope', None)
     if (max_slope is not None and
-            (not (isinstance(max_slope, float)) or max_slope < 0)):
+            (not (isinstance(max_slope, (int, float))) or max_slope < 0)):
         raise ValueError(
-            "Max slope must be a float value >= 0.0")
+            "Max slope must be a number value >= 0.0")
 
-    project.max_budget = max_budget
-    project.max_treatment_area_ratio = max_treatment_area_ratio
-    project.max_road_distance = max_road_distance
-    project.max_slope = max_slope
+    project.max_budget = float(max_budget) if max_budget else None
+    project.max_treatment_area_ratio = float(max_treatment_area_ratio) if max_treatment_area_ratio else None
+    project.max_road_distance = float(max_road_distance) if max_road_distance else None
+    project.max_slope = float(max_slope) if max_slope else None
 
     # Parse priorities
     priorities = body.get('priorities', None)
@@ -274,6 +275,20 @@ def update_project(request: HttpRequest) -> HttpResponse:
         _save_project_parameters(body, project)
         project.save()
         return HttpResponse(str(project.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['plan_id'], str)
+        plan_id = request.GET.get('plan_id', "0")
+
+        user = _get_user(request)
+
+        projects = get_list_or_404(Project.objects.filter(owner=user, plan=int(plan_id)))
+        return JsonResponse([ProjectSerializer(project).data for project in projects], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
