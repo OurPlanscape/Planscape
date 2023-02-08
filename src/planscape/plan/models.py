@@ -115,6 +115,25 @@ class ProjectArea(models.Model):
         null=True)
 
 
+class RankedProjectArea(models.Model):
+    """
+    For a scenario and project area, stores project area rank and score.
+    """
+    project_area = models.ForeignKey(ProjectArea, on_delete=models.CASCADE)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    # The rank of the project area in the given scenario.
+    # rank = 0 is the highest rank.
+    rank = models.PositiveIntegerField()
+    
+    # The sum across all weighted priority impact scores.
+    # w1*p1 + w2*p2 + w3*p3 ...
+    # Priority weights are defined for each scenario.
+    # Priority impact is computed from condition rasters and project area
+    # geometry.
+    total_weighted_priority_score = models.FloatField(null=True)
+
+
 class ConditionScores(models.Model):
     """
     Condition scores are computed from statistics aggregated across all relevant stands
