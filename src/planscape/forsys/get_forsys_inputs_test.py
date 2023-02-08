@@ -24,6 +24,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         self.assertEqual(
             params.priorities,
             ['fire_dynamics', 'forest_resilience', 'species_diversity'])
+        self.assertEqual(params.priority_weights, [1, 1, 1])
 
         keys = list(params.project_areas.keys())
         keys.sort()
@@ -63,6 +64,26 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             '&priorities=foo&priorities=bar&priorities=baz')
         params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+
+    def test_reads_priorities_and_weights_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&priorities=foo&priorities=bar&priorities=baz' +
+            '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0')
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+        self.assertListEqual(params.priority_weights, [5, 2, 1])
+
+    def test_raises_error_for_wrong_num_priority_weights_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&priorities=foo&priorities=bar&priorities=baz' +
+            '&priority_weights=5.0&priority_weights=2.0')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(
+            str(context.exception),
+            'expected 3 priority weights, instead, 2 were given')
 
     def test_reads_project_areas_from_url_params(self) -> None:
         qd = QueryDict(
