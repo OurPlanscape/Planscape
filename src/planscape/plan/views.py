@@ -288,7 +288,13 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
 
         projects = get_list_or_404(Project.objects.filter(owner=user, plan=int(plan_id)))
-        return JsonResponse([ProjectSerializer(project).data for project in projects], safe=False)
+        
+        projects = [ProjectSerializer(project).data for project in projects]
+
+        for project in projects:
+            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.display_name for priority in project['priorities']]
+
+        return JsonResponse(projects, safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
