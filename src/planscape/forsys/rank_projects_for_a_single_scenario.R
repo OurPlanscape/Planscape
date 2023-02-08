@@ -6,7 +6,6 @@ suppressMessages({
 
 rank_projects_for_a_single_scenario <- function(input_stand_data,
                                                 priorities,
-                                                priorities_pcp,
                                                 priority_weights,
                                                 stand_id_field,
                                                 proj_id_field,
@@ -14,6 +13,8 @@ rank_projects_for_a_single_scenario <- function(input_stand_data,
                                                 stand_cost_field) {
 
   scenario_output_fields <- c(priorities, stand_area_field, stand_cost_field)
+
+  priorities_pcp <- paste(priorities, "_PCP", sep="")
 
   stand_data <- input_stand_data %>% 
                 forsys::calculate_spm(fields = priorities) %>%

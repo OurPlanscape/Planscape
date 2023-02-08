@@ -105,10 +105,11 @@ def rank_project_areas_for_multiple_scenarios(
 
 
 def run_forsys_rank_project_areas_for_a_single_scenario(
-    forsys_input_dict: dict[str, list],
+        forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_headers: list[str]) -> ForsysScenarioSetOutput:
+        forsys_priority_headers: list[str],
+        forsys_priority_weights: list[float]) -> ForsysScenarioSetOutput:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
@@ -120,18 +121,15 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
     # scenario_sets_function_r.
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
-    priority_weights = [1 for p in forsys_priority_headers]
-    priority_pcps = [p + '_PCP' for p in forsys_priority_headers]
-
     forsys_output = rank_projects_for_a_single_scenario_function_r(
         forsys_input, robjects.StrVector(forsys_priority_headers),
-        robjects.StrVector(priority_pcps),
-        robjects.FloatVector(priority_weights),
+        robjects.FloatVector(forsys_priority_weights),
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header)
 
-    priority_weights_dict = {p: 1 for p in forsys_priority_headers}
-
+    priority_weights_dict = {
+        forsys_priority_headers[i]: forsys_priority_weights[i]
+        for i in range(len(forsys_priority_headers))}
     parsed_output = ForsysScenarioOutput(
         forsys_output, forsys_priority_headers, priority_weights_dict,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
@@ -150,7 +148,8 @@ def rank_project_areas_for_a_single_scenario(
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
-            headers.FORSYS_COST_HEADER, headers.priority_headers)
+            headers.FORSYS_COST_HEADER, headers.priority_headers,
+            params.priority_weights)
 
         response = {}
         response['forsys'] = {}
