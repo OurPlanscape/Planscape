@@ -74,8 +74,11 @@ def compute_condition_stats_from_raster(
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchone()
-        if fetch is None or len(fetch) == 0:
-            return None
+        if fetch is None or len(fetch) != 3 or (
+                fetch[0] is None and fetch[1] is None and fetch[2] is None):
+            return ConditionStatistics({'mean': None,
+                                        'sum': 0.0,
+                                        'count': 0})
         return ConditionStatistics(
             {'mean': fetch[0],
              'sum': fetch[1],
