@@ -287,6 +287,9 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
 
         user = _get_user(request)
 
+        if Plan.objects.get(pk=plan_id) is None:
+            raise ValueError("Plan with id " + str(plan_id) + " does not exist")
+
         projects = Project.objects.filter(owner=user, plan=int(plan_id))
         
         projects = [ProjectSerializer(project).data for project in projects]

@@ -845,7 +845,8 @@ class ListProjectsTest(TransactionTestCase):
             {'plan_id': self.plan_with_user.pk},
             content_type="application/json")
         print(response.content)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
 
     def test_list_projects(self):
         self.client.force_login(self.user)
