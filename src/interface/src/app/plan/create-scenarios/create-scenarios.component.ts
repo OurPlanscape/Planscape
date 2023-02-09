@@ -88,6 +88,7 @@ interface StepState {
 export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
 
+  @Input() scenarioConfigId?: number;
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
   @Output() changeConditionEvent = new EventEmitter<string>();
@@ -96,12 +97,10 @@ export class CreateScenariosComponent implements OnInit {
   formGroups: FormGroup[];
   readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
-  projectId?: number;
   stepStates: StepState[];
 
   constructor(private fb: FormBuilder, private planService: PlanService) {
-    // TODO: Get and populate saved scenario config if applicable
-
+    // Initialize empty form
     this.formGroups = [
       // Step 1: Select condition score
       this.fb.group({
@@ -131,6 +130,8 @@ export class CreateScenariosComponent implements OnInit {
         uploadedArea: [''],
       }),
     ];
+
+    // Initialize step states (for showing preview text)
     this.stepStates = [
       {
         opened: true,
@@ -143,25 +144,17 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Create a new saved scenario config
-    this.plan$
-      .pipe(
-        filter((plan) => !!plan),
-        take(1)
-      )
-      .subscribe((plan) => {
-        this.planService
-          .createProjectInPlan(plan!.id)
-          .subscribe((projectId) => {
-            this.projectId = projectId;
-          });
-      });
+    if (this.scenarioConfigId !== undefined) {
+      this.loadExistingConfig();
+    } else {
+      this.createNewConfig();
+    }
 
     this.formGroups.forEach((formGroup) => {
       formGroup.valueChanges.subscribe((_) => {
         // Update scenario config in backend
         if (
-          this.projectId &&
+          this.scenarioConfigId &&
           this.formGroups.every(
             (formGroup) => formGroup.valid || formGroup.pristine
           )
@@ -186,6 +179,47 @@ export class CreateScenariosComponent implements OnInit {
     });
   }
 
+  private loadExistingConfig(): void {
+    this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
+      const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
+      const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
+      const excludeDistance = this.formGroups[1].get('excludeDistance');
+      const excludeSlope = this.formGroups[1].get('excludeSlope');
+      const priorities = this.formGroups[2].get('priorities');
+
+      if (config.max_budget) {
+        maxBudget?.setValue(config.max_budget);
+      }
+      if (config.max_treatment_area_ratio) {
+        maxArea?.setValue(config.max_treatment_area_ratio);
+      }
+      if (config.max_road_distance) {
+        excludeDistance?.setValue(config.max_road_distance);
+      }
+      if (config.max_slope) {
+        excludeSlope?.setValue(config.max_slope);
+      }
+      if (config.priorities) {
+        priorities?.setValue(config.priorities);
+      }
+    });
+  }
+
+  private createNewConfig(): void {
+    this.plan$
+      .pipe(
+        filter((plan) => !!plan),
+        take(1)
+      )
+      .subscribe((plan) => {
+        this.planService
+          .createProjectInPlan(plan!.id)
+          .subscribe((projectId) => {
+            this.scenarioConfigId = projectId;
+          });
+      });
+  }
+
   selectedStepChanged(event: StepperSelectionEvent): void {
     this.stepStates[event.selectedIndex].opened = true;
   }
@@ -198,7 +232,7 @@ export class CreateScenariosComponent implements OnInit {
     const priorities = this.formGroups[2].get('priorities');
 
     let projectConfig: ProjectConfig = {
-      id: this.projectId!,
+      id: this.scenarioConfigId!,
     };
     if (maxBudget?.valid)
       projectConfig.max_budget = parseFloat(maxBudget.value);

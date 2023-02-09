@@ -25,6 +25,8 @@ export class PlanComponent {
   currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
 
+  openConfigId?: number;
+
   constructor(private planService: PlanService, private route: ActivatedRoute) {
     const planId = this.route.snapshot.paramMap.get('id');
 
@@ -53,5 +55,10 @@ export class PlanComponent {
 
   drawShapes(shapes: any): void {
     this.map.drawShapes(shapes);
+  }
+
+  openConfig(configId: number): void {
+    this.openConfigId = configId;
+    this.currentPlanStep = PlanStep.CreateScenarios;
   }
 }

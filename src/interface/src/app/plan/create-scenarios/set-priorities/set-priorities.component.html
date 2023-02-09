@@ -10,7 +10,7 @@
         Select
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
-        <mat-checkbox name="${element.conditionName}-selected" [(ngModel)]="element.selected" (change)="updateSelectedPriorities()"></mat-checkbox>
+        <mat-checkbox name="${element.conditionName}-selected" [(ngModel)]="element.selected" (change)="updatePrioritiesFormControl()"></mat-checkbox>
       </mat-cell>
     </ng-container>
 
