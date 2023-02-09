@@ -21,8 +21,7 @@ as
 $$
 DECLARE
     var_count integer; var_sql text; var_geo geometry; 
-    var_raster raster; var_avg float; var_sum float;
-    var_output RECORD;
+    var_raster raster;
 BEGIN  
     /* Checks that there is data for the raster requested */
     EXECUTE
