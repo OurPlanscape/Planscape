@@ -117,8 +117,8 @@ class ProjectArea(models.Model):
 
 class ConditionScores(models.Model):
     """
-    Condition scores are computed from statistics aggregated across all relevant stands
-    within a project area or planning area.
+    Condition scores are computed from statistics aggregated across all
+    relevant stands within a project area or planning area.
     """
     # Either plan or project should be present.
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)
@@ -128,8 +128,11 @@ class ConditionScores(models.Model):
     # Condition
     condition = models.ForeignKey(
         Condition, on_delete=models.CASCADE, null=False)
-   
-    # The following scores may be null if plan or project area geometry has no intersection with raster values. 
+
+    # The following are ondition statistics computed across relevant raster
+    # pixels within a project or planning area.
+    # If plan or project area geometry has no intersection with non-nan raster
+    # pixels, mean_score=None, sum=0, and count=0.
     mean_score = models.FloatField(null=True)
     sum = models.FloatField(null=True)
     count = models.IntegerField(null=True)
