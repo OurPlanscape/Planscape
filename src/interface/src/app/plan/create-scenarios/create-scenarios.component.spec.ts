@@ -19,6 +19,10 @@ describe('CreateScenariosComponent', () => {
       {
         createProjectInPlan: of(1),
         getConditionScoresForPlanningArea: of(),
+        getProject: of({
+          id: 1,
+          maxBudget: 100,
+        }),
         updateProject: of(1),
       },
       {}
@@ -63,8 +67,21 @@ describe('CreateScenariosComponent', () => {
     expect(component.stepper?.selectedIndex).toEqual(1);
   });
 
-  it('should create a new project when initialized', () => {
+  it('should create a new project when initialized with no config ID', () => {
     expect(fakePlanService.createProjectInPlan).toHaveBeenCalledOnceWith('1');
+  });
+
+  it('should load existing config into form when initialized with config ID', () => {
+    component.scenarioConfigId = 1;
+    component.ngOnInit();
+
+    expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
+
+    component.formGroups[1].valueChanges.subscribe((_) => {
+      expect(
+        component.formGroups[1].get('budgetForm.maxBudget')?.value
+      ).toEqual(100);
+    });
   });
 
   it('should update project when values change', () => {

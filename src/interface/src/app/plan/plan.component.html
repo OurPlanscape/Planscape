@@ -8,13 +8,13 @@
     <div class="plan-content">
       <app-plan-navigation-bar (backToOverviewEvent)="currentPlanStep = PlanStep.Overview" *ngIf="currentPlanStep > PlanStep.Overview"></app-plan-navigation-bar>
       <div class="plan-content-inner">
-        <app-plan-overview [plan$]="currentPlan$" (createScenarioEvent)="currentPlanStep = PlanStep.CreateScenarios" *ngIf="currentPlanStep === PlanStep.Overview"></app-plan-overview>
+        <app-plan-overview [plan$]="currentPlan$" (openConfigEvent)="openConfig($event)" *ngIf="currentPlanStep === PlanStep.Overview"></app-plan-overview>
         <ng-container *ngIf="currentPlanStep > 0">
           <div class="plan-map-container">
             <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'" [mapPadding]="[700, 0]"></app-plan-map>
           </div>
           <div class="plan-content-panel">
-            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep"
+            <app-create-scenarios [plan$]="currentPlan$" [planningStep]="currentPlanStep" [scenarioConfigId]="openConfigId"
               (changeConditionEvent)="changeCondition($event)" (drawShapesEvent)="drawShapes($event)">
             </app-create-scenarios>
           </div>

@@ -46,7 +46,7 @@ describe('ScenarioConfigurationsComponent', () => {
       'PlanService',
       {
         deleteProjects: of([1]),
-        getProjects: of(fakeConfigs),
+        getProjectsForPlan: of(fakeConfigs),
       },
       {}
     );
@@ -77,7 +77,7 @@ describe('ScenarioConfigurationsComponent', () => {
   });
 
   it('should get a list of scenario configs', () => {
-    expect(fakePlanService.getProjects).toHaveBeenCalled();
+    expect(fakePlanService.getProjectsForPlan).toHaveBeenCalled();
     expect(component.configurations).toEqual(fakeConfigs);
   });
 
@@ -104,7 +104,9 @@ describe('ScenarioConfigurationsComponent', () => {
   it('should call service when delete button is clicked', async () => {
     component.configurations[0].selected = true;
     component.configurations[1].selected = true;
-    let deleteButton = await loader.getHarness(MatButtonHarness);
+    let deleteButton = await loader.getHarness(
+      MatButtonHarness.with({ text: /DELETE/ })
+    );
 
     await deleteButton.click();
 
@@ -115,5 +117,17 @@ describe('ScenarioConfigurationsComponent', () => {
     expect(component.displayPriorities(fakeConfigs[0].priorities!)).toEqual([
       'fake_display_priority',
     ]);
+  });
+
+  it('should open config when continue button is clicked', async () => {
+    spyOn(component.openConfigEvent, 'emit');
+    component.configurations[0].selected = true;
+    let continueButton = await loader.getHarness(
+      MatButtonHarness.with({ text: /CONTINUE/ })
+    );
+
+    await continueButton.click();
+
+    expect(component.openConfigEvent.emit).toHaveBeenCalledOnceWith(1);
   });
 });

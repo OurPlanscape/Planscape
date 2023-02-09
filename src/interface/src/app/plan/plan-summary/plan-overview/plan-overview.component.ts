@@ -9,9 +9,5 @@ import { Plan } from 'src/app/types';
 })
 export class PlanOverviewComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
-  @Output() createScenarioEvent = new EventEmitter<void>();
-
-  createScenario(): void {
-    this.createScenarioEvent.emit();
-  }
+  @Output() openConfigEvent = new EventEmitter<number>();
 }
