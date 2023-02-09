@@ -8,8 +8,8 @@ from typing import TypedDict
 class RankedProject(TypedDict):
     # Project ID.
     id: int
-    # Contribution of each priority to the total score
-    # The contribution is weighted according to a scenario's priority weights.
+    # Contribution of each priority to the total score.
+    # Contribution is priority weight * priority impact.
     weighted_priority_scores: dict[str, float]
     # The total score, summed across weighted priority scores.
     total_score: float
@@ -85,10 +85,10 @@ class ForsysScenarioSetOutput():
             scenario_weights, scenario_str = self._get_scenario(i)
 
             if scenario_str in self.scenarios.keys():
-                self._append_project_to_existing_scenario(
+                self._append_ranked_project_to_existing_scenario(
                     scenario_str, scenario_weights, i)
             else:
-                self._append_project_to_new_scenario(
+                self._append_ranked_project_to_new_scenario(
                     scenario_str, scenario_weights, i)
 
     def _save_raw_forsys_output_as_dict(
@@ -134,7 +134,7 @@ class ForsysScenarioSetOutput():
         }
         return weights, self._get_weights_str(weights)
 
-    def _create_scenario_project(
+    def _create_ranked_project(
             self, scenario_weights: dict, ind: int) -> RankedProject:
         project: RankedProject = {
             'id': int(
@@ -153,12 +153,12 @@ class ForsysScenarioSetOutput():
             project['total_score'] = project['total_score'] + contribution
         return project
 
-    def _append_project_to_existing_scenario(
+    def _append_ranked_project_to_existing_scenario(
             self, scenario_str: str, scenario_weights: dict, i: int) -> None:
         scenario = self.scenarios[scenario_str]
         ranked_projects = scenario['ranked_projects']
         scenario_ind = len(ranked_projects)
-        ranked_projects.append(self._create_scenario_project(
+        ranked_projects.append(self._create_ranked_project(
             scenario_weights, i))
         scenario['cumulative_ranked_project_area'].append(
             scenario['cumulative_ranked_project_area'][scenario_ind - 1] + self.
@@ -167,11 +167,11 @@ class ForsysScenarioSetOutput():
             scenario['cumulative_ranked_project_cost'][scenario_ind - 1] + self.
             _forsys_output_df[self._cost_contribution_header][i])
 
-    def _append_project_to_new_scenario(
+    def _append_ranked_project_to_new_scenario(
             self, scenario_str: str, scenario_weights: dict, i: int) -> None:
         scenario: Scenario = {
             'priority_weights': scenario_weights,
-            'ranked_projects': [self._create_scenario_project(
+            'ranked_projects': [self._create_ranked_project(
                 scenario_weights, i)],
             'cumulative_ranked_project_area': [
                 self._forsys_output_df[self._area_contribution_header][i]
@@ -193,8 +193,9 @@ class ForsysScenarioOutput():
     # ---------------------------
     # string patterns for headers
     # ---------------------------
-    # The priority contribution header in the "project output" dataframe.
-    # Weighted priority score is priority weight * priority contribution.
+    # The priority treatment impact header in the forsys "project output"
+    # dataframe.
+    # Weighted priority score is priority weight * priority treatment impact.
     _CONTRIBUTION_STRFORMAT = "ETrt_%s"
     # The project area rank header in the "project output" dataframe.
     _TREATMENT_RANK_HEADER = "treatment_rank"
@@ -205,10 +206,12 @@ class ForsysScenarioOutput():
     # The parsed scenario.
     scenario: Scenario
 
+    # The raw forsys output consists of 3 R dataframes.
     # The "project output" dataframe is converted into a dictionary of lists so
-    # that it's easier to parse.
+    # that it's easier to process in Python.
     _forsys_output_df: dict[str, list]
     # The conditions to be prioritized.
+    # This represents the keys of constructor input parameter, priority_weights.
     _priorities: list[str]
     # The headers used to parse the "project output" dataframe.
     _priority_contribution_headers: list[str]
@@ -216,7 +219,7 @@ class ForsysScenarioOutput():
     _area_contribution_header: str
     _cost_contribution_header: str
 
-    # Initializes a ForsysScenarioSetOutput instance given raw forsys output
+    # Initializes a ForsysScenarioOutput instance given raw forsys output
     # and the following inputs to the forsys call: header names, list of
     # priorities.
     # Of note, priorities must be listed in the same format and order they're
@@ -234,7 +237,7 @@ class ForsysScenarioOutput():
              'cumulative_ranked_project_area': [],
              'cumulative_ranked_project_cost': []})
         for i in range(len(self._forsys_output_df[project_id_header])):
-            self._append_project_to_scenario(i)
+            self._append_ranked_project_to_scenario(i)
 
     def _save_raw_forsys_output_as_dict(
             self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
@@ -263,7 +266,7 @@ class ForsysScenarioOutput():
         self._project_id_header = project_id_header
         self._check_header_name(self._project_id_header)
 
-    def _create_scenario_project(
+    def _create_ranked_project(
             self, scenario_weights: dict[str, float],
             ind: int) -> RankedProject:
         project: RankedProject = {
@@ -283,10 +286,10 @@ class ForsysScenarioOutput():
             project['total_score'] = project['total_score'] + contribution
         return project
 
-    def _append_project_to_scenario(self, i: int) -> None:
+    def _append_ranked_project_to_scenario(self, i: int) -> None:
         ranked_projects = self.scenario['ranked_projects']
         scenario_ind = len(ranked_projects)
-        ranked_projects.append(self._create_scenario_project(
+        ranked_projects.append(self._create_ranked_project(
             self.scenario['priority_weights'], i))
         if scenario_ind == 0:
             self.scenario['cumulative_ranked_project_area'].append(
