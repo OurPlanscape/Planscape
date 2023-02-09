@@ -132,7 +132,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
         forsys_priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(forsys_priority_headers))}
     parsed_output = ForsysScenarioOutput(
-        forsys_output, forsys_priority_headers, priority_weights_dict,
+        forsys_output, priority_weights_dict,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
 
     # TODO: add logic for applying constraints to forsys_output.
