@@ -40,7 +40,7 @@ export interface ProjectConfig {
   max_treatment_area_ratio?: number;
   max_road_distance?: number;
   max_slope?: number;
-  priorities?: string;
+  priorities?: string[];
 }
 
 export interface PlanConditionScores {

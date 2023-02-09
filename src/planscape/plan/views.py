@@ -214,7 +214,7 @@ def _save_project_parameters(body, project: Project):
 
     # Parse priorities
     priorities = body.get('priorities', None)
-    priorities_list = [] if priorities is None else priorities.split(',')
+    priorities_list = [] if priorities is None else priorities
     for pri in priorities_list:
         base_condition = BaseCondition.objects.get(condition_name=pri)
         condition = Condition.objects.get(
@@ -292,7 +292,7 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
         projects = [ProjectSerializer(project).data for project in projects]
 
         for project in projects:
-            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.display_name for priority in project['priorities']]
+            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in project['priorities']]
 
         return JsonResponse(projects, safe=False)
     except Exception as e:
