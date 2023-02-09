@@ -14,15 +14,18 @@ rank_projects_for_a_single_scenario <- function(input_stand_data,
 
   scenario_output_fields <- c(priorities, stand_area_field, stand_cost_field)
 
-  priorities_pcp <- paste(priorities, "_PCP", sep="")
+  priority_impact_fields <- paste(priorities, "_PCP", sep="")
 
+  # Appends spm and pcp data columns for each priority.
   stand_data <- input_stand_data %>% 
                 forsys::calculate_spm(fields = priorities) %>%
                 forsys::calculate_pcp(fields = priorities)
+  # Appends a preset_priority column, which contains total impact score values.
   stand_data <- stand_data %>%
-                forsys::combine_priorities(fields = priorities_pcp, 
-                                            weights = priority_weights, 
-                                            new_field = 'preset_priority')
+                forsys::combine_priorities(
+                  fields = priority_impact_fields, 
+                  weights = priority_weights, 
+                  new_field = 'preset_priority')
 
   suppressMessages (
     run_outputs <- forsys::run(

@@ -110,7 +110,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_priority_headers: list[str],
-        forsys_priority_weights: list[float]) -> ForsysScenarioSetOutput:
+        forsys_priority_weights: list[float]) -> ForsysScenarioOutput:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
