@@ -34,7 +34,7 @@ def _get_db_stats_for_plan(
     if len(db_scores) > 0:
         db_score = db_scores[0]
         return ConditionStatistics(
-            {'mean': db_scores.mean_score,
+            {'mean': db_score.mean_score,
              'sum': db_score.sum,
              'count': db_score.count})
     return None
@@ -74,22 +74,21 @@ def compute_condition_stats_from_raster(
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchone()
-        if fetch is None or len(fetch) != 3 or (
-                fetch[0] is None and fetch[1] is None and fetch[2] is None):
+        if fetch is None or len(fetch) != 3:
             return ConditionStatistics({'mean': None,
                                         'sum': 0.0,
                                         'count': 0})
         return ConditionStatistics(
             {'mean': fetch[0],
-             'sum': fetch[1],
-             'count': fetch[2]})
+             'sum': 0 if fetch[1] is None else fetch[1],
+             'count': 0 if fetch[2] is None else fetch[2]})
 
 
 # Returns a {condition name: ConditionStatistics} dictionary for a given plan.
 # First tries to look up plan details in a database.
 # If that's unavailable, computes them from condition rasters and the plan
 # geometry.
-def fetch_or_compute_mean_condition_scores(
+def fetch_or_compute_condition_stats(
         plan: Plan) -> dict[str, ConditionStatistics]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     if reg not in RegionName.__members__.values():

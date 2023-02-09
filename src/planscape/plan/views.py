@@ -3,7 +3,7 @@ import json
 
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import fetch_or_compute_mean_condition_scores
+from conditions.raster_utils import fetch_or_compute_condition_stats
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
@@ -384,10 +384,10 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
         plan = get_plan_by_id(user, request.GET)
 
-        condition_scores = fetch_or_compute_mean_condition_scores(plan)
+        condition_stats = fetch_or_compute_condition_stats(plan)
         conditions = []
-        for c in condition_scores.keys():
-            score = condition_scores[c]
+        for c in condition_stats.keys():
+            score = condition_stats[c]["mean"]
             if score is None:
                 conditions.append({'condition': c})
             else:
