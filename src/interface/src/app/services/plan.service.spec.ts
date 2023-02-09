@@ -215,7 +215,7 @@ describe('PlanService', () => {
     });
   });
 
-  describe('getProjects', () => {
+  describe('getProjectsForPlan', () => {
     it('should make HTTP request to backend', () => {
       const projectConfigs: ProjectConfig[] = [
         {
@@ -228,7 +228,7 @@ describe('PlanService', () => {
         },
       ];
 
-      service.getProjects('1').subscribe((res) => {
+      service.getProjectsForPlan('1').subscribe((res) => {
         expect(res).toEqual(projectConfigs);
       });
 
@@ -244,6 +244,30 @@ describe('PlanService', () => {
           max_budget: 200,
         },
       ]);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getProject', () => {
+    it('should make HTTP request to backend', () => {
+      const projectConfig: ProjectConfig = {
+        id: 1,
+        max_budget: 200,
+        max_road_distance: undefined,
+        max_slope: undefined,
+        max_treatment_area_ratio: undefined,
+        priorities: undefined,
+      };
+
+      service.getProject(1).subscribe((res) => {
+        expect(res).toEqual(projectConfig);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/get_project/?id=1')
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(projectConfig);
       httpTestingController.verify();
     });
   });
