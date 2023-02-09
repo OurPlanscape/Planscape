@@ -313,7 +313,11 @@ def get_project(request: HttpRequest) -> HttpResponse:
         if project.owner != user:
             raise ValueError(
                 "You do not have permission to view this project.")
-        return JsonResponse(ProjectSerializer(project).data)
+
+        project = ProjectSerializer(project).data
+        project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in project['priorities']]
+        
+        return JsonResponse(project)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
