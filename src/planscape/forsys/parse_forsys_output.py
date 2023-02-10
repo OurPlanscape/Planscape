@@ -43,7 +43,7 @@ class ForsysScenarioSetOutput():
     _PRIORITY_WEIGHT_STRFORMAT = "Pr_%d_%s"
     # The priority contribution header in the "project output" dataframe.
     # Weighted priority score is priority weight * priority contribution.
-    _CONTRIBUTION_STRFORMAT = "ETrt_%s"
+    _TREATMENT_IMPACT_STRFORMAT = "ETrt_%s"
     # The project area rank header in the "project output" dataframe.
     _TREATMENT_RANK_HEADER = "treatment_rank"
 
@@ -112,12 +112,12 @@ class ForsysScenarioSetOutput():
             self._check_header_name(h)
 
         self._priority_contribution_headers = [
-            self._CONTRIBUTION_STRFORMAT % (p) for p in priorities]
+            self._TREATMENT_IMPACT_STRFORMAT % (p) for p in priorities]
         for h in self._priority_contribution_headers:
             self._check_header_name(h)
-        self._area_contribution_header = self._CONTRIBUTION_STRFORMAT % area_header
+        self._area_contribution_header = self._TREATMENT_IMPACT_STRFORMAT % area_header
         self._check_header_name(self._area_contribution_header)
-        self._cost_contribution_header = self._CONTRIBUTION_STRFORMAT % cost_header
+        self._cost_contribution_header = self._TREATMENT_IMPACT_STRFORMAT % cost_header
         self._check_header_name(self._cost_contribution_header)
         self._project_id_header = project_id_header
         self._check_header_name(self._project_id_header)
@@ -199,7 +199,7 @@ class ForsysScenarioOutput():
     # individual stands [selected for treatment given global constraints].
     # - Treatment impact of individual stands is specified as part of the forsys
     # input dataframe.
-    _CONTRIBUTION_STRFORMAT = "ETrt_%s"
+    _TREATMENT_IMPACT_STRFORMAT = "ETrt_%s"
     # The project area rank header in the "project output" dataframe.
     _TREATMENT_RANK_HEADER = "treatment_rank"
 
@@ -259,12 +259,12 @@ class ForsysScenarioOutput():
         self._priorities = priorities
 
         self._priority_contribution_headers = [
-            self._CONTRIBUTION_STRFORMAT % (p) for p in priorities]
+            self._TREATMENT_IMPACT_STRFORMAT % (p) for p in priorities]
         for p in self._priority_contribution_headers:
             self._check_header_name(p)
-        self._area_contribution_header = self._CONTRIBUTION_STRFORMAT % area_header
+        self._area_contribution_header = self._TREATMENT_IMPACT_STRFORMAT % area_header
         self._check_header_name(self._area_contribution_header)
-        self._cost_contribution_header = self._CONTRIBUTION_STRFORMAT % cost_header
+        self._cost_contribution_header = self._TREATMENT_IMPACT_STRFORMAT % cost_header
         self._check_header_name(self._cost_contribution_header)
         self._project_id_header = project_id_header
         self._check_header_name(self._project_id_header)
