@@ -30,7 +30,13 @@
       <!-- Priorities Column -->
       <ng-container matColumnDef="priorities">
         <mat-header-cell *matHeaderCellDef> Selected Priorities </mat-header-cell>
-        <mat-cell *matCellDef="let element"> {{element.priorities}} </mat-cell>
+        <mat-cell *matCellDef="let element">
+          <div>
+            <div *ngFor="let priority of displayPriorities(element.priorities)">
+              {{priority}}
+            </div>
+          </div>
+        </mat-cell>
       </ng-container>
 
       <!-- Constraints Column -->

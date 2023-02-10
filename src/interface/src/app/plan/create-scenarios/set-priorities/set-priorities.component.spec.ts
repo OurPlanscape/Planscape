@@ -259,15 +259,16 @@ describe('SetPrioritiesComponent', () => {
     // Check the first priority (should be 'test_pillar_1')
     await checkboxHarnesses[0].check();
 
-    expect(component.formGroup?.get('priorities')?.value).toEqual(
-      'test_pillar_1'
-    );
+    expect(component.formGroup?.get('priorities')?.value).toEqual([
+      'test_pillar_1',
+    ]);
 
     // Check the second priority (should be 'test_element_1')
     await checkboxHarnesses[1].check();
 
-    expect(component.formGroup?.get('priorities')?.value).toEqual(
-      'test_pillar_1,test_element_1'
-    );
+    expect(component.formGroup?.get('priorities')?.value).toEqual([
+      'test_pillar_1',
+      'test_element_1',
+    ]);
   });
 });

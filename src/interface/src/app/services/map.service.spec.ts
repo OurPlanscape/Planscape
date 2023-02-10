@@ -21,7 +21,12 @@ describe('MapService', () => {
   const boundaryConfigs: BoundaryConfig[] = [];
 
   const conditionsConfig: ConditionsConfig = {
-    pillars: [],
+    pillars: [
+      {
+        pillar_name: 'pillar',
+        display_name: 'pillar_display',
+      },
+    ],
   };
 
   beforeEach(() => {
@@ -53,6 +58,12 @@ describe('MapService', () => {
     expect(service).toBeTruthy();
   });
 
+  it('populates condition display name map', () => {
+    const nameMap = new Map<string, string>([['pillar', 'pillar_display']]);
+
+    expect(service.conditionNameToDisplayNameMap$.value).toEqual(nameMap);
+  });
+
   describe('getBoundaryShapes', () => {
     it('gets shapes from the assets', () => {
       service
@@ -62,7 +73,7 @@ describe('MapService', () => {
         });
 
       const req = httpTestingController.expectOne(
-          'assets/geojson/sierra_cascade_inyo/huc12.geojson'
+        'assets/geojson/sierra_cascade_inyo/huc12.geojson'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(fakeGeoJson);
