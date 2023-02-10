@@ -4,6 +4,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlanService } from 'src/app/services';
 import { Plan, ProjectConfig } from 'src/app/types';
 
+import { MapService } from './../../../services/map.service';
+
 interface ProjectConfigRow extends ProjectConfig {
   selected?: boolean;
 }
@@ -25,6 +27,7 @@ export class ScenarioConfigurationsComponent implements OnInit {
   ];
 
   constructor(
+    private mapService: MapService,
     private planService: PlanService,
     private snackbar: MatSnackBar
   ) {}
@@ -71,5 +74,13 @@ export class ScenarioConfigurationsComponent implements OnInit {
           this.snackbar.open(`Error: ${err}`);
         },
       });
+  }
+
+  displayPriorities(priorities: string[]): string[] {
+    let nameMap = this.mapService.conditionNameToDisplayNameMap$.value;
+    return priorities.map((priority) => {
+      if (nameMap.has(priority)) return nameMap.get(priority)!;
+      return priority;
+    });
   }
 }

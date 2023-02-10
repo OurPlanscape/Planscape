@@ -123,7 +123,7 @@ export class CreateScenariosComponent implements OnInit {
       }),
       // Step 3: Select priorities
       this.fb.group({
-        priorities: ['', Validators.required],
+        priorities: [[], [Validators.required, Validators.minLength(1)]],
       }),
       // Step 4: Identify project areas
       this.fb.group({
