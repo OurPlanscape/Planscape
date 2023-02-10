@@ -25,6 +25,9 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             params.priorities,
             ['fire_dynamics', 'forest_resilience', 'species_diversity'])
 
+        self.assertIsNone(params.max_area_in_km2)
+        self.assertIsNone(params.max_cost_in_usd)
+
         keys = list(params.project_areas.keys())
         keys.sort()
         self.assertEqual(keys, [1, 2])
@@ -63,6 +66,40 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             '&priorities=foo&priorities=bar&priorities=baz')
         params = ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+
+    def test_reads_max_area_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_area=10000')
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.max_area_in_km2, 10000)
+
+    def test_raises_error_on_bad_max_area_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_area=-10')
+        with self.assertRaises(Exception) as context:
+           ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_area, to have a positive value')
+
+    def test_reads_max_cost_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_cost=600')
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.max_cost_in_usd, 600)
+
+    def test_raises_error_on_bad_max_cost_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_cost=0')
+        with self.assertRaises(Exception) as context:
+           ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_cost, to have a positive value')   
 
     def test_reads_project_areas_from_url_params(self) -> None:
         qd = QueryDict(
@@ -282,7 +319,7 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
             'area': [0.72, 0.36],
             'cost': [3600000000.0, 1800000000.0],
             'p_foo': [7.64, 3.54],
-            'p_bar': [6.8, 2.6]
+            'p_bar': [6.8, 2.6],
         })
 
     def test_missing_base_condition(self):

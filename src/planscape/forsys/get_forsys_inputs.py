@@ -36,6 +36,8 @@ class ForsysProjectAreaRankingRequestParams():
     _URL_REGION = 'region'
     _URL_PRIORITIES = 'priorities'
     _URL_PROJECT_AREAS = 'project_areas'
+    _URL_MAX_AREA = 'max_area'
+    _URL_MAX_COST = 'max_cost'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -51,6 +53,9 @@ class ForsysProjectAreaRankingRequestParams():
     # Project areas to be ranked. A project area may consist of multiple
     # disjoint polygons. The dict is keyed by project ID.
     project_areas: dict[int, MultiPolygon]
+    # Global constraints applied to the entire set of projects.
+    max_area_in_km2: float | None  # unit: km squared
+    max_cost_in_usd: float | None  # unit: USD
 
     def __init__(self, params: QueryDict) -> None:
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
@@ -70,6 +75,11 @@ class ForsysProjectAreaRankingRequestParams():
         else:
             self.project_areas = self._get_default_project_areas()
 
+        self.max_area_in_km2 = self._read_positive_float(params,
+                                                         self._URL_MAX_AREA)
+        self.max_cost_in_usd = self._read_positive_float(params,
+                                                         self._URL_MAX_COST)
+
     def _read_db_params(self, params: QueryDict) -> None:
         try:
             project_id = params['project_id']
@@ -85,8 +95,25 @@ class ForsysProjectAreaRankingRequestParams():
             self.project_areas = {}
             for area in project_areas:
                 self.project_areas[area.pk] = area.project_area
+
+            # TODO: read the following constraints from db.
+            self.max_area_in_km2 = self._read_positive_float(
+                params, self._URL_MAX_AREA)
+            self.max_cost_in_usd = self._read_positive_float(
+                params, self._URL_MAX_COST)
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
+
+    def _read_positive_float(
+            self, params: QueryDict, query_param: str) -> float | None:
+        v = params.get(query_param, None)
+        if v is None:
+            return None
+        v = float(v)
+        if v <= 0:
+            raise Exception(
+                "expected param, %s, to have a positive value" % query_param)
+        return v
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
         srid = 4269
@@ -182,10 +209,10 @@ class ForsysInputHeaders():
 
 
 class ForsysProjectAreaRankingInput():
-    # Treatment cost per meter-squared (in USD)
+    # Treatment cost per kilometer-squared (in USD)
     # TODO: make this variable based on a user input and/or a treatment cost
     # raster.
-    TREATMENT_COST_PER_METER_SQUARED = 5000
+    TREATMENT_COST_PER_KM_SQUARED = 5000 * 1000 * 1000
 
     # A dictionary representing a forsys input dataframe.
     # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
@@ -236,7 +263,7 @@ class ForsysProjectAreaRankingInput():
             area = num_pixels * settings.RASTER_PIXEL_AREA
             self.forsys_input[headers.FORSYS_AREA_HEADER].append(area)
             self.forsys_input[headers.FORSYS_COST_HEADER].append(
-                area * self.TREATMENT_COST_PER_METER_SQUARED)
+                area * self.TREATMENT_COST_PER_KM_SQUARED)
 
     def _get_base_condition_ids_to_names(self, region: str,
                                          priorities: list) -> dict[int, str]:
