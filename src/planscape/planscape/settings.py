@@ -216,8 +216,8 @@ CRS_9822_PROJ4 = (
     '+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 '
     '+datum=WGS84 +units=m +no_defs')
 
-# The area of a raster pixel (in meters-squared).
-RASTER_PIXEL_AREA = 300 * 300
+# The area of a raster pixel (in km-squared).
+RASTER_PIXEL_AREA = 0.300 * 0.300
 
 # Caching; this improves loading times especially for the boundary app.
 CACHES = {
