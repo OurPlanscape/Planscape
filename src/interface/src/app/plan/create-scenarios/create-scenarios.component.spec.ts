@@ -1,5 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormGroup } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { PlanService } from 'src/app/services';
@@ -78,10 +79,14 @@ describe('CreateScenariosComponent', () => {
   });
 
   it('should not update project if form is invalid', () => {
+    component.formGroups[0].get('scoreSelectCtrl')?.setValue('test');
+    expect(fakePlanService.updateProject).toHaveBeenCalledTimes(1);
+
     component.formGroups[1].markAsDirty();
     component.formGroups[1].get('budgetForm.maxBudget')?.setValue(-1);
+    component.stepper?.previous();
 
-    expect(fakePlanService.updateProject).toHaveBeenCalledTimes(0);
+    expect(fakePlanService.updateProject).toHaveBeenCalledTimes(1);
   });
 
   it('emits drawShapes event when "identify project areas" form inputs change', () => {
@@ -99,5 +104,19 @@ describe('CreateScenariosComponent', () => {
     uploadedArea?.setValue('testvalue');
 
     expect(component.drawShapesEvent.emit).toHaveBeenCalledWith('testvalue');
+  });
+
+  it('adds a priority weight form control for each priority', () => {
+    component.formGroups[2]
+      .get('priorities')
+      ?.setValue(['priority1', 'priority2']);
+    const priorityWeightsForm = component.formGroups[4].get(
+      'priorityWeightsForm'
+    ) as FormGroup;
+
+    expect(priorityWeightsForm.value).toEqual({
+      priority1: 1,
+      priority2: 1,
+    });
   });
 });
