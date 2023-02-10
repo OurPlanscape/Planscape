@@ -7,6 +7,7 @@ from conditions.raster_utils import (
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
 from plan.models import Project, ProjectArea
+from planscape import settings
 
 
 # A list of coordinates representing a polygon.
@@ -181,6 +182,11 @@ class ForsysInputHeaders():
 
 
 class ForsysProjectAreaRankingInput():
+    # Treatment cost per meter-squared (in USD)
+    # TODO: make this variable based on a user input and/or a treatment cost
+    # raster.
+    TREATMENT_COST_PER_METER_SQUARED = 5000
+
     # A dictionary representing a forsys input dataframe.
     # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
     # row represents a unique stand.
@@ -207,11 +213,8 @@ class ForsysProjectAreaRankingInput():
 
             self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
             self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
-            self.forsys_input[headers.FORSYS_AREA_HEADER].append(geo.area)
-            # TODO: figure out the right value for the units: 5000 is just a
-            # placeholder.
-            self.forsys_input[headers.FORSYS_COST_HEADER].append(
-                geo.area * 5000)
+
+            num_pixels = 0  # number of non-NaN raster pixels captured by geo.
             for c in conditions:
                 # TODO: replace this with select_related.
                 name = base_condition_ids_to_names[c.condition_dataset_id]
@@ -222,6 +225,18 @@ class ForsysProjectAreaRankingInput():
                         "no score was retrieved for condition, %s" % name)
                 self.forsys_input[headers.get_priority_header(
                     name)].append(stats['count'] - stats['sum'])
+
+                # The number of non-NaN pixels captured by geo may vary between
+                # condition rasters because some rasters have large undefined
+                # patches. Taking the maximum count across all conditions
+                # should account for the more egregious cases of undefined
+                # patches.
+                num_pixels = max(stats['count'], num_pixels)
+
+            area = num_pixels * settings.RASTER_PIXEL_AREA
+            self.forsys_input[headers.FORSYS_AREA_HEADER].append(area)
+            self.forsys_input[headers.FORSYS_COST_HEADER].append(
+                area * self.TREATMENT_COST_PER_METER_SQUARED)
 
     def _get_base_condition_ids_to_names(self, region: str,
                                          priorities: list) -> dict[int, str]:
