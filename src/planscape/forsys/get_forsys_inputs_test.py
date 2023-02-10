@@ -279,8 +279,8 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
         self._assert_dict_almost_equal(input.forsys_input, {
             'proj_id': [1, 2],
             'stand_id': [1, 2],
-            'area': [518400.0, 230400.0],
-            'cost': [2592000000.0, 1152000000.0],
+            'area': [720000, 360000],
+            'cost': [3600000000.0, 1800000000.0],
             'p_foo': [7.64, 3.54],
             'p_bar': [6.8, 2.6]
         })
