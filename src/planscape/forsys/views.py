@@ -52,7 +52,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_headers: list[str],) -> ForsysScenarioSetOutput:
+        forsys_priority_headers: list[str]) -> ForsysScenarioSetOutput:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_multiple_scenarios.R'))
@@ -70,8 +70,8 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_cost_header)
 
     parsed_output = ForsysScenarioSetOutput(
-        forsys_output, forsys_priority_headers, forsys_proj_id_header,
-        forsys_area_header, forsys_cost_header)
+        forsys_output, forsys_priority_headers, None, None,
+        forsys_proj_id_header, forsys_area_header, forsys_cost_header)
 
     # TODO: add logic for applying constraints to forsys_output.
 
