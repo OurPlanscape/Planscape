@@ -193,9 +193,12 @@ class ForsysScenarioOutput():
     # ---------------------------
     # string patterns for headers
     # ---------------------------
-    # The priority treatment impact header in the forsys "project output"
-    # dataframe.
-    # Weighted priority score is priority weight * priority treatment impact.
+    # The project-level treatment impact header format in the forsys "project
+    # output" dataframe. Recall:
+    # - Treatment impact for a project is the sum of the treatment impacts of
+    # individual stands [selected for treatment given global constraints].
+    # - Treatment impact of individual stands is specified as part of the forsys
+    # input dataframe.
     _CONTRIBUTION_STRFORMAT = "ETrt_%s"
     # The project area rank header in the "project output" dataframe.
     _TREATMENT_RANK_HEADER = "treatment_rank"
