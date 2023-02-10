@@ -55,18 +55,18 @@
         </ng-template>
         <app-identify-project-areas [formGroup]="formGroups[3]" (formNextEvent)="stepper.next()"
           (formBackEvent)="stepper.previous()">
-
         </app-identify-project-areas>
       </mat-step>
 
-      <!-- Step 5: View scenario(s) -->
+      <!-- Step 5: Generate scenarios -->
       <mat-step>
         <ng-template matStepLabel>
-          <div class="step-label-header">View scenario(s)</div>
+          <div class="step-label-header">Generate scenarios</div>
           <div class="step-label-description" *ngIf="!stepStates[4].opened">
             Weigh priorities to determine acreage of treatment and estimated impact on priorities.
           </div>
         </ng-template>
+        <app-generate-scenarios [formGroup]="formGroups[4]" (formBackEvent)="stepper.previous()"></app-generate-scenarios>
       </mat-step>
     </mat-stepper>
   </div>
