@@ -8,10 +8,10 @@
       <!-- Select Column -->
       <ng-container matColumnDef="select">
         <mat-header-cell *matHeaderCellDef>
-          <mat-checkbox></mat-checkbox>
+          <mat-checkbox (change)="selectAllConfigs($event)"></mat-checkbox>
         </mat-header-cell>
         <mat-cell *matCellDef="let element">
-          <mat-checkbox></mat-checkbox>
+          <mat-checkbox [(ngModel)]="element.selected"></mat-checkbox>
         </mat-cell>
       </ng-container>
 
@@ -66,12 +66,12 @@
   </mat-card-content>
 
   <mat-card-actions align="end">
-    <button mat-raised-button>
-      <mat-icon>open_in_new</mat-icon>
-      SEE ALL
+    <button mat-raised-button *ngIf="showDeleteButton()" (click)="deleteSelectedConfigs()">
+      <mat-icon>delete</mat-icon>
+      DELETE
     </button>
-    <button mat-raised-button color="primary">
-      OPEN
+    <button mat-raised-button *ngIf="showContinueButton()" color="primary">
+      CONTINUE PLANNING
     </button>
   </mat-card-actions>
 </mat-card>

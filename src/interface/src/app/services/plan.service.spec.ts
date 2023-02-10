@@ -247,4 +247,24 @@ describe('PlanService', () => {
       httpTestingController.verify();
     });
   });
+
+  describe('deleteProjects', () => {
+    it('should make HTTP request to backend', () => {
+      const projectIds = [1, 2];
+
+      service.deleteProjects(projectIds).subscribe((res) => {
+        expect(res).toEqual(projectIds);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/delete_projects/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({
+        project_ids: projectIds,
+      });
+      req.flush(projectIds);
+      httpTestingController.verify();
+    });
+  });
 });
