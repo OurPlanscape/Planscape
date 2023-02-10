@@ -1,6 +1,6 @@
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Component, Input, OnInit } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlanService } from 'src/app/services';
 import { Plan, ProjectConfig } from 'src/app/types';
 
@@ -24,7 +24,10 @@ export class ScenarioConfigurationsComponent implements OnInit {
     'constraints',
   ];
 
-  constructor(private planService: PlanService, private snackbar: MatSnackBar) {}
+  constructor(
+    private planService: PlanService,
+    private snackbar: MatSnackBar
+  ) {}
 
   ngOnInit(): void {
     this.fetchProjects();
@@ -49,13 +52,24 @@ export class ScenarioConfigurationsComponent implements OnInit {
   }
 
   deleteSelectedConfigs(): void {
-    this.planService.deleteProjects(
-      this.configurations
-        .filter((config) => config.selected)
-        .map((config) => config.id)
-    ).subscribe((deletedIds) => {
-      this.snackbar.open(`Deleted ${deletedIds.length} configuration${deletedIds.length > 1 ? 's' : ''}`);
-      this.fetchProjects();
-    });
+    this.planService
+      .deleteProjects(
+        this.configurations
+          .filter((config) => config.selected)
+          .map((config) => config.id)
+      )
+      .subscribe({
+        next: (deletedIds) => {
+          this.snackbar.open(
+            `Deleted ${deletedIds.length} configuration${
+              deletedIds.length > 1 ? 's' : ''
+            }`
+          );
+          this.fetchProjects();
+        },
+        error: (err) => {
+          this.snackbar.open(`Error: ${err}`);
+        },
+      });
   }
 }

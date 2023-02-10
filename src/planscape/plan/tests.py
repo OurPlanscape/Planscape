@@ -620,7 +620,7 @@ class DeleteProjectsTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Project.objects.count(), 3)
 
-    def test_delete_multiple_plans(self):
+    def test_delete_multiple_projects(self):
         self.client.force_login(self.user)
         self.assertEqual(Project.objects.count(), 3)
         project_ids = [self.project_with_user.pk, self.project_with_user2.pk]
