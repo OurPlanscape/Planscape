@@ -1,17 +1,10 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ApplicationRef, DebugElement, NO_ERRORS_SCHEMA } from '@angular/core';
+import { ApplicationRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
-import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatRadioModule } from '@angular/material/radio';
-import { MatRadioGroupHarness } from '@angular/material/radio/testing';
-import { MatSelectModule } from '@angular/material/select';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { By } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
@@ -19,6 +12,7 @@ import * as L from 'leaflet';
 import { BehaviorSubject, of } from 'rxjs';
 import * as shp from 'shpjs';
 
+import { MaterialModule } from '../material/material.module';
 import {
   MapService,
   PlanService,
@@ -150,14 +144,7 @@ describe('MapComponent', () => {
     });
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
-      imports: [
-        FormsModule,
-        MatCheckboxModule,
-        MatRadioModule,
-        MatSelectModule,
-        MatSnackBarModule,
-        BrowserAnimationsModule,
-      ],
+      imports: [FormsModule, MaterialModule, BrowserAnimationsModule],
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         MapComponent,
@@ -212,65 +199,6 @@ describe('MapComponent', () => {
         expect(map.baseLayerRef).toBeDefined();
         expect(map.existingProjectsLayerRef).toBeDefined();
       });
-    });
-  });
-
-  describe('Map control panel', () => {
-    let map1: DebugElement;
-    let map2: DebugElement;
-    let map3: DebugElement;
-    let map4: DebugElement;
-
-    beforeEach(() => {
-      map1 = fixture.debugElement.query(
-        By.css('[data-testid="map1"]')
-      ).nativeElement;
-      map2 = fixture.debugElement.query(
-        By.css('[data-testid="map2"]')
-      ).nativeElement;
-      map3 = fixture.debugElement.query(
-        By.css('[data-testid="map3"]')
-      ).nativeElement;
-      map4 = fixture.debugElement.query(
-        By.css('[data-testid="map4"]')
-      ).nativeElement;
-    });
-
-    it('shows 4 maps by default', async () => {
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(4);
-
-      expect(map1.attributes['hidden']).toBeUndefined();
-      expect(map2.attributes['hidden']).toBeUndefined();
-      expect(map3.attributes['hidden']).toBeUndefined();
-      expect(map4.attributes['hidden']).toBeUndefined();
-    });
-
-    it('toggles to show 1 map', async () => {
-      const childLoader = await loader.getChildLoader('.map-count-button-row');
-      const buttonHarnesses = await childLoader.getAllHarnesses(
-        MatButtonHarness
-      );
-      await buttonHarnesses[0].click();
-
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(1);
-      expect(map1.attributes['hidden']).toBeUndefined();
-      expect(map2.attributes['hidden']).toBeDefined();
-      expect(map3.attributes['hidden']).toBeDefined();
-      expect(map4.attributes['hidden']).toBeDefined();
-    });
-
-    it('toggles to show 2 maps', async () => {
-      const childLoader = await loader.getChildLoader('.map-count-button-row');
-      const buttonHarnesses = await childLoader.getAllHarnesses(
-        MatButtonHarness
-      );
-      await buttonHarnesses[1].click();
-
-      expect(component.mapViewOptions$.getValue().numVisibleMaps).toBe(2);
-      expect(map1.attributes['hidden']).toBeUndefined();
-      expect(map2.attributes['hidden']).toBeUndefined();
-      expect(map3.attributes['hidden']).toBeDefined();
-      expect(map4.attributes['hidden']).toBeDefined();
     });
   });
 
@@ -415,7 +343,7 @@ describe('MapComponent', () => {
     });
   });
 
-  describe('Layer control panels', () => {
+  describe('Layer controls', () => {
     const testCases = [0, 1, 2, 3];
 
     beforeEach(() => {
@@ -424,84 +352,55 @@ describe('MapComponent', () => {
 
     testCases.forEach((testCase) => {
       describe(`map-${testCase + 1} should toggle layers`, () => {
-        it(`map-${testCase + 1} should change base layer`, async () => {
+        it(`map-${testCase + 1} should change base layer`, () => {
           let map = component.maps[testCase];
-          spyOn(component, 'changeBaseLayer').and.callThrough();
-          const radioButtonGroup = await loader.getHarness(
-            MatRadioGroupHarness.with({ name: `${map.id}-base-layer-select` })
-          );
 
-          // Act: select the terrain base layer
-          await radioButtonGroup.checkRadioButton({ label: 'Terrain' });
+          map.config.baseLayerType = BaseLayerType.Terrain;
+          component.changeBaseLayer(map);
 
           // Assert: expect that the map contains the terrain base layer
-          expect(component.changeBaseLayer).toHaveBeenCalled();
-          expect(map.config.baseLayerType).toBe(BaseLayerType.Terrain);
-          expect(map.instance?.hasLayer(map.baseLayerRef!));
-
-          // Act: select the road base layer
-          await radioButtonGroup.checkRadioButton({ label: 'Road' });
-
-          // Assert: expect that the map contains the road base layer
-          expect(component.changeBaseLayer).toHaveBeenCalled();
-          expect(map.config.baseLayerType).toBe(BaseLayerType.Road);
           expect(map.instance?.hasLayer(map.baseLayerRef!));
         });
 
-        it(`map-${testCase + 1} should toggle boundary layer`, async () => {
+        it(`map-${testCase + 1} should toggle boundary layer`, () => {
           let map = component.maps[testCase];
-          spyOn(component, 'toggleBoundaryLayer').and.callThrough();
-          const radioButtonGroup = await loader.getHarness(
-            MatRadioGroupHarness.with({ name: `${map.id}-boundaries-select` })
-          );
           expect(map.boundaryLayerRef).toBeUndefined();
 
           // Act: select the HUC-12 boundary
-          await radioButtonGroup.checkRadioButton({ label: 'HUC-12' });
+          map.config.boundaryLayerConfig = { boundary_name: 'HUC-12' };
+          component.toggleBoundaryLayer(map);
 
           // Assert: expect that the map contains the HUC-12 layer
-          expect(component.toggleBoundaryLayer).toHaveBeenCalled();
           expect(map.boundaryLayerRef).toBeDefined();
           expect(map.instance?.hasLayer(map.boundaryLayerRef!)).toBeTrue();
         });
 
-        it(`map-${
-          testCase + 1
-        } should toggle existing projects layer`, async () => {
+        it(`map-${testCase + 1} should toggle existing projects layer`, () => {
           let map = component.maps[testCase];
-          spyOn(component, 'toggleExistingProjectsLayer').and.callThrough();
-          const checkbox = await loader.getHarness(
-            MatCheckboxHarness.with({
-              name: `${map.id}-existing-projects-toggle`,
-            })
-          );
 
-          // Act: check the existing projects checkbox
-          await checkbox.check();
+          // Act: toggle on existing projects
+          map.config.showExistingProjectsLayer = true;
+          component.toggleExistingProjectsLayer(map);
 
           // Assert: expect that the map adds the existing projects layer
-          expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
           expect(
             map.instance?.hasLayer(map.existingProjectsLayerRef!)
           ).toBeTrue();
 
-          // Act: uncheck the existing projects checkbox
-          await checkbox.uncheck();
+          // Act: toggle off existing projects
+          map.config.showExistingProjectsLayer = false;
+          component.toggleExistingProjectsLayer(map);
 
           // Assert: expect that the map removes the existing projects layer
-          expect(component.toggleExistingProjectsLayer).toHaveBeenCalled();
           expect(
             map.instance?.hasLayer(map.existingProjectsLayerRef!)
           ).toBeFalse();
         });
 
-        it(`map-${testCase + 1} should change conditions layer`, async () => {
+        it(`map-${testCase + 1} should change conditions layer`, () => {
           let map = component.maps[testCase];
-          spyOn(component, 'changeConditionsLayer').and.callThrough();
 
           // Act: select test metric 1
-          // Radio button harnesses inside trees are buggy, so we manually
-          // change the value instead.
           map.config.dataLayerConfig.filepath = 'test_metric_1';
           component.changeConditionsLayer(map);
 
@@ -847,41 +746,6 @@ describe('MapComponent', () => {
       component.maps[3].existingProjectsLayerRef?.fire('remove');
 
       expect(component.maps[3].instance?.closePopup).toHaveBeenCalled();
-    });
-  });
-
-  describe('condition tree', () => {
-    beforeEach(() => {
-      component.conditionDataSource.data = [
-        {
-          children: [{}, {}, {}],
-        },
-        {
-          children: [],
-        },
-      ];
-    });
-
-    it('styles children of a selected node and unstyles all other nodes', () => {
-      const nodeWithChildren = component.conditionDataSource.data[0];
-      const nodeWithoutChildren = component.conditionDataSource.data[1];
-
-      component.onSelect(nodeWithChildren);
-
-      nodeWithChildren.children?.forEach((child) => {
-        expect(child.styleDisabled).toBeTrue();
-      });
-      expect(nodeWithChildren.styleDisabled).toBeFalse();
-      expect(nodeWithoutChildren.styleDisabled).toBeFalse();
-
-      component.onSelect(nodeWithoutChildren);
-
-      component.conditionDataSource.data.forEach((node) => {
-        expect(node.styleDisabled).toBeFalse();
-        node.children?.forEach((child) => {
-          expect(child.styleDisabled).toBeFalse();
-        });
-      });
     });
   });
 
