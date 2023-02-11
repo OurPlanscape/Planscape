@@ -1,6 +1,11 @@
-import { Component, ViewChild } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { BehaviorSubject, take } from 'rxjs';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  Router,
+  Event as NavigationEvent,
+} from '@angular/router';
+import { BehaviorSubject, filter, map, Subject, take, takeUntil } from 'rxjs';
 
 import { Plan } from '../types';
 import { PlanService } from './../services/plan.service';
@@ -12,11 +17,12 @@ export enum PlanStep {
 }
 
 @Component({
+  // changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-plan',
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss'],
 })
-export class PlanComponent {
+export class PlanComponent implements OnInit, OnDestroy {
   @ViewChild(PlanMapComponent) map!: PlanMapComponent;
 
   readonly PlanStep = PlanStep;
@@ -24,8 +30,15 @@ export class PlanComponent {
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
   currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
+  viewScenario$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private planService: PlanService, private route: ActivatedRoute) {
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private planService: PlanService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
     const planId = this.route.snapshot.paramMap.get('id');
 
     if (planId === null) {
@@ -47,11 +60,45 @@ export class PlanComponent {
       );
   }
 
+  ngOnInit() {
+    this.planService.planState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        if (state.currentScenarioId) {
+          this.viewScenario$.next(true);
+        } else {
+          this.viewScenario$.next(false);
+        }
+      });
+    this.getScenarioFromRoute();
+
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEvent) => {
+        this.getScenarioFromRoute();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   changeCondition(filepath: string): void {
     this.map.setCondition(filepath);
   }
 
   drawShapes(shapes: any): void {
     this.map.drawShapes(shapes);
+  }
+
+  viewScenario(): void {
+    this.viewScenario$.next(true);
+  }
+
+  private getScenarioFromRoute() {
+    const scenarioId =
+      this.route.snapshot.firstChild?.paramMap.get('id') ?? null;
+    this.planService.updateStateWithScenario(scenarioId);
   }
 }
