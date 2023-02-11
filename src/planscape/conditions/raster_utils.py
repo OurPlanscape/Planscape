@@ -25,19 +25,18 @@ class ConditionStatistics(TypedDict):
     count: int
 
 
-# Returns None if no statistics are available.
-# Otherwise, returns ConditionStatistics.
+# Returns None if no statistics are stored in the database.
+# Otherwise, returns the fetched ConditionScores instance.
 def _get_db_stats_for_plan(
         plan_id, condition_id) -> ConditionStatistics | None:
-    db_scores = ConditionScores.objects.filter(
-        plan_id=plan_id).filter(condition_id=condition_id).all()
-    if len(db_scores) > 0:
-        db_score = db_scores[0]
-        return ConditionStatistics(
-            {'mean': db_score.mean_score,
-             'sum': db_score.sum,
-             'count': db_score.count})
-    return None
+    db_score = ConditionScores.objects.filter(
+        plan_id=plan_id).filter(condition_id=condition_id).first()
+    if db_score is None:
+        return None
+    return ConditionStatistics(
+        {'mean': db_score.mean_score,
+         'sum': db_score.sum,
+         'count': db_score.count})
 
 
 # Returns a geometry in the raster SRS.
