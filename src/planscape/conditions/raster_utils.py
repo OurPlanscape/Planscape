@@ -1,12 +1,12 @@
 import numpy as np
 from base.region_name import RegionName
 from conditions.models import BaseCondition, Condition, ConditionRaster
-from config.conditions_config import PillarConfig
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
 from plan.models import ConditionScores, Plan
 from planscape import settings
+from typing import TypedDict
 
 # Name of the table and column from models.py.
 RASTER_SCHEMA = 'public'
@@ -15,17 +15,28 @@ RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
 
-# Returns np.nan if no entries are available.
-# This should be differentiated from None, which is a possible value if the
-# score was previously computed, but no intersection exists between a plan
-# geometry and the condition raster.
-# TODO: return enum values or status instead of None or np.nan.
-def _get_db_score_for_plan(plan_id, condition_id) -> float | None:
-    db_scores = ConditionScores.objects.filter(
-        plan_id=plan_id).filter(condition_id=condition_id).all()
-    if len(db_scores) > 0:
-        return db_scores[0].mean_score
-    return np.nan
+# Statistics across stands within a subarea of a raster.
+class ConditionStatistics(TypedDict):
+    # Mean across stand values (sum / count)
+    mean: float
+    # Sum of stand values.
+    sum: float
+    # The number of stands counted.
+    count: int
+
+
+# Returns None if no statistics are stored in the database.
+# Otherwise, returns the fetched ConditionScores instance.
+def _get_db_stats_for_plan(
+        plan_id, condition_id) -> ConditionStatistics | None:
+    db_score = ConditionScores.objects.filter(
+        plan_id=plan_id).filter(condition_id=condition_id).first()
+    if db_score is None:
+        return None
+    return ConditionStatistics(
+        {'mean': db_score.mean_score,
+         'sum': db_score.sum,
+         'count': db_score.count})
 
 
 # Returns a geometry in the raster SRS.
@@ -42,12 +53,13 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
 
 # Returns None if no intersection exists between a geometry and the condition
 # raster.
-def compute_condition_score_from_raster(
-        geo: GEOSGeometry, raster_name: str) -> float | None:
+# Otherwise, returns ConditionStatistics.
+def compute_condition_stats_from_raster(
+        geo: GEOSGeometry, raster_name: str) -> ConditionStatistics | None:
     if geo is None:
         raise AssertionError("missing input geometry")
     if not geo.valid:
-        raise AssertionError("invalid geo: %s"%geo.valid_reason)
+        raise AssertionError("invalid geo: %s" % geo.valid_reason)
     if geo.srid != settings.CRS_FOR_RASTERS:
         raise AssertionError(
             "geometry SRID is %d (expected %d)" %
@@ -57,23 +69,26 @@ def compute_condition_score_from_raster(
             "no rasters available for raster_name, %s" % (raster_name))
     with connection.cursor() as cursor:
         cursor.callproc(
-            'get_mean_condition_score',
+            'get_condition_stats',
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchone()
-        if fetch is None or len(fetch) == 0:
-            return None
-        return fetch[0]
+        if fetch is None or len(fetch) != 3:
+            return ConditionStatistics({'mean': None,
+                                        'sum': 0.0,
+                                        'count': 0})
+        return ConditionStatistics(
+            {'mean': fetch[0],
+             'sum': 0 if fetch[1] is None else fetch[1],
+             'count': 0 if fetch[2] is None else fetch[2]})
 
 
-# Returns a {condition name: condition score} dictionary for a given plan.
+# Returns a {condition name: ConditionStatistics} dictionary for a given plan.
 # First tries to look up plan details in a database.
 # If that's unavailable, computes them from condition rasters and the plan
 # geometry.
-# Of note, condition score may be None. This occurs if there is no overlap
-# between the geometry and non-nan values in the raster.
-def fetch_or_compute_mean_condition_scores(
-        plan: Plan) -> dict[str, float | None]:
+def fetch_or_compute_condition_stats(
+        plan: Plan) -> dict[str, ConditionStatistics]:
     reg = plan.region_name.removeprefix('RegionName.').lower()
     if reg not in RegionName.__members__.values():
         raise AssertionError("region, %s, is invalid" % (reg))
@@ -93,22 +108,22 @@ def fetch_or_compute_mean_condition_scores(
         condition_dataset_id__in=ids_to_condition_names.keys()).filter(
         is_raw=False).all()
 
-    condition_scores = {}
+    condition_stats = {}
     for condition in conditions:
         id = condition.condition_dataset.pk
         name = ids_to_condition_names[id]
 
-        # score is np.nan if no entries are available.
-        # score is None if it was previously computed, but no overlap exists.
-        # between the plan geometry and the condition raster.
-        score = _get_db_score_for_plan(plan.pk, condition.pk)
-        if score is None or not np.isnan(score):
-            condition_scores[name] = score
+        stats = _get_db_stats_for_plan(plan.pk, condition.pk)
+        if stats is not None:
+            condition_stats[name] = stats
             continue
 
-        score = compute_condition_score_from_raster(geo, condition.raster_name)
-        condition_scores[name] = score
+        stats = compute_condition_stats_from_raster(
+            geo, condition.raster_name)
+        condition_stats[name] = stats
         ConditionScores.objects.create(
-            plan=plan, condition=condition, mean_score=score)
+            plan=plan, condition=condition, mean_score=stats['mean'],
+            sum=stats['sum'],
+            count=stats['count'])
 
-    return condition_scores
+    return condition_stats

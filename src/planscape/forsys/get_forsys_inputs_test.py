@@ -302,10 +302,8 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
             'stand_id': [1, 2],
             'area': [518400.0, 230400.0],
             'cost': [2592000000.0, 1152000000.0],
-            'c_foo': [.045, .115],
-            'c_bar': [.15, .35],
-            'p_foo': [.955, .885],
-            'p_bar': [.85, .65]
+            'p_foo': [7.64, 3.54],
+            'p_bar': [6.8, 2.6]
         })
 
     def test_missing_base_condition(self):
