@@ -60,6 +60,7 @@ describe('PlanComponent', () => {
     );
 
     const fakeService = jasmine.createSpyObj('PlanService', {
+      planState$: of({}),
       getPlan: of(fakePlan),
       getProjects: of([]),
     });
