@@ -1,0 +1,50 @@
+<div class="form-wrapper">
+  <div>
+    <h1>Adjust weights</h1>
+    <p>{{text1}}</p>
+  </div>
+
+  <form [formGroup]="formGroup!">
+
+    <!-- Priority weights -->
+    <div>
+      <div class="flex-row space-between">
+        <h2>Selected priorities</h2>
+        <h2>Relative importance (1-5)</h2>
+      </div>
+      <div class="flex-row space-between" *ngFor="let priority of priorityWeightControls">
+        <h3>{{displayNameForPriority(priority.priority)}}</h3>
+        <div class="flex-row">
+          <mat-slider [min]="1" [max]="5" [thumbLabel]="true" [value]="priority.control.value"
+            (input)="updateFormWithSliderValue($event, priority.control)"
+            color="primary" [step]="1">
+            <input matSliderThumb>
+          </mat-slider>
+          <div class="slider-label">{{priority.control.value}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Project area % -->
+    <div>
+      <h2>Project areas</h2>
+      <div class="flex-row space-between">
+        <h3>Show top % of project areas</h3>
+        <div class="flex-row">
+          <div class="slider-label">10%</div>
+          <mat-slider [min]="10" [max]="40" [thumbLabel]="true" [value]="formGroup?.get('areaPercent')?.value"
+            (input)="updateFormWithSliderValue($event, formGroup?.get('areaPercent'))" color="primary">
+            <input matSliderThumb>
+          </mat-slider>
+          <div class="slider-label">40%</div>
+        </div>
+      </div>
+    </div>
+
+</form>
+
+  <div class="flex-row gap-12">
+    <button mat-raised-button color="primary" [disabled]="formGroup?.invalid">GENERATE SCENARIO</button>
+    <button mat-flat-button (click)="formBackEvent.emit()">BACK</button>
+  </div>
+</div>
