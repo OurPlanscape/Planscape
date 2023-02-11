@@ -221,7 +221,7 @@ export class CreateScenariosComponent implements OnInit {
     return projectConfig;
   }
 
-  updatePriorityWeightsFormControls(): void {
+  private updatePriorityWeightsFormControls(): void {
     const priorities: string[] = this.formGroups[2].get('priorities')?.value;
     const priorityWeightsForm: FormGroup = this.formGroups[4].get(
       'priorityWeightsForm'
