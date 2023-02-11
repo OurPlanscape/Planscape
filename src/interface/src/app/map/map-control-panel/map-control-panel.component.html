@@ -117,8 +117,7 @@
               <!-- There is inline padding applied to this node using styles.
                 This padding value depends on the mat-icon-button width. -->
               <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-                <div class="mat-tree-node" (mouseenter)="node.showInfoIcon = true"
-                  (mouseleave)="node.showInfoIcon = false">
+                <div class="mat-tree-node">
                   <div [class.disabled]="node.styleDisabled">
                     <mat-radio-button [value]="node" *ngIf="!node.disableSelect"
                       (change)="onSelect(node)">
@@ -128,10 +127,10 @@
                       {{node.display_name}}
                     </span>
                     <button mat-icon-button
-                      [style.visibility]="showInfoIcon(node) ? 'visible': 'hidden'"
+                      *ngIf="!isNoneNode(node)"
                       [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
                       (menuClosed)="node.infoMenuOpen = false">
-                      <mat-icon>info_outline</mat-icon>
+                      <mat-icon color="primary">info_outline</mat-icon>
                     </button>
                     <mat-menu #popoverMenu="matMenu">
                       <app-layer-info-card [dataLayerConfig]="node"></app-layer-info-card>

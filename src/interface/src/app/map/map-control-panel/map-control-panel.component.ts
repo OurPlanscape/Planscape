@@ -15,7 +15,6 @@ import {
 import { Map, MapViewOptions } from './../../types/map.types';
 
 export interface ConditionsNode extends DataLayerConfig {
-  showInfoIcon?: boolean;
   infoMenuOpen?: boolean;
   disableSelect?: boolean; // Node should not include a radio button
   styleDisabled?: boolean; // Node should be greyed out but still selectable
@@ -92,13 +91,13 @@ export class MapControlPanelComponent implements OnInit {
   hasChild = (_: number, node: ConditionsNode) =>
     !!node.children && node.children.length > 0;
 
-  /** Used to compute whether to show the info button on a condition layer node. */
-  showInfoIcon = (node: ConditionsNode) =>
-    node.filepath?.length && (node.showInfoIcon || node.infoMenuOpen);
-
   onSelect(node: ConditionsNode): void {
     this.unstyleAllNodes();
     this.styleDescendantsDisabled(node);
+  }
+
+  isNoneNode(node: ConditionsNode): boolean {
+    return node === NONE_DATA_LAYER_CONFIG;
   }
 
   /** Unstyles all nodes in the tree using recursion. */
