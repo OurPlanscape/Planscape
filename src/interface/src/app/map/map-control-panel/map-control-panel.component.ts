@@ -169,6 +169,8 @@ export class MapControlPanelComponent implements OnInit {
                       ...metric,
                       filepath: metric.filepath?.concat('_normalized'),
                       normalized: true,
+                      min_value: undefined,
+                      max_value: undefined,
                     };
                   }),
                 };
