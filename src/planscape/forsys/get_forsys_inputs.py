@@ -3,7 +3,7 @@ from typing import TypedDict
 
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import (
-    compute_condition_score_from_raster, get_raster_geo)
+    compute_condition_stats_from_raster, get_raster_geo)
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
 from plan.models import Project, ProjectArea
@@ -231,15 +231,13 @@ class ForsysProjectAreaRankingInput():
             for c in conditions:
                 # TODO: replace this with select_related.
                 name = base_condition_ids_to_names[c.condition_dataset_id]
-                score = compute_condition_score_from_raster(
+                stats = compute_condition_stats_from_raster(
                     geo, c.raster_name)
-                if score is None:
+                if stats['count'] == 0:
                     raise Exception(
                         "no score was retrieved for condition, %s" % name)
-                # TODO: fix this to be sum(1.0 - score) rather than
-                # mean(1.0 - score)
                 self.forsys_input[headers.get_priority_header(
-                    name)].append(1.0 - score)
+                    name)].append(stats['count'] - stats['sum'])
 
     def _get_base_condition_ids_to_names(self, region: str,
                                          priorities: list) -> dict[int, str]:
