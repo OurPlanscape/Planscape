@@ -129,6 +129,14 @@ export class CreateScenariosComponent implements OnInit {
         generateAreas: ['', Validators.required],
         uploadedArea: [''],
       }),
+      // Step 5: Generate scenarios
+      this.fb.group({
+        priorityWeightsForm: this.fb.group({}),
+        areaPercent: [
+          10,
+          [Validators.required, Validators.min(10), Validators.max(40)],
+        ],
+      }),
     ];
 
     // Initialize step states (for showing preview text)
@@ -150,22 +158,6 @@ export class CreateScenariosComponent implements OnInit {
       this.createNewConfig();
     }
 
-    this.formGroups.forEach((formGroup) => {
-      formGroup.valueChanges.subscribe((_) => {
-        // Update scenario config in backend
-        if (
-          this.scenarioConfigId &&
-          this.formGroups.every(
-            (formGroup) => formGroup.valid || formGroup.pristine
-          )
-        ) {
-          this.planService
-            .updateProject(this.formValueToProjectConfig())
-            .subscribe();
-        }
-      });
-    });
-
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
     this.formGroups[3].valueChanges.subscribe((_) => {
@@ -176,6 +168,11 @@ export class CreateScenariosComponent implements OnInit {
       } else {
         this.drawShapesEvent.emit(uploadedArea?.value);
       }
+    });
+
+    // When priorities are chosen, update the form controls for step 5.
+    this.formGroups[2].get('priorities')?.valueChanges.subscribe((_) => {
+      this.updatePriorityWeightsFormControls();
     });
   }
 
@@ -222,6 +219,17 @@ export class CreateScenariosComponent implements OnInit {
 
   selectedStepChanged(event: StepperSelectionEvent): void {
     this.stepStates[event.selectedIndex].opened = true;
+    // Update scenario config in backend
+    if (
+      this.scenarioConfigId &&
+      this.formGroups.every(
+        (formGroup) => formGroup.valid || formGroup.pristine
+      )
+    ) {
+      this.planService
+        .updateProject(this.formValueToProjectConfig())
+        .subscribe();
+    }
   }
 
   formValueToProjectConfig(): ProjectConfig {
@@ -245,5 +253,21 @@ export class CreateScenariosComponent implements OnInit {
     if (priorities?.valid) projectConfig.priorities = priorities.value;
 
     return projectConfig;
+  }
+
+  private updatePriorityWeightsFormControls(): void {
+    const priorities: string[] = this.formGroups[2].get('priorities')?.value;
+    const priorityWeightsForm: FormGroup = this.formGroups[4].get(
+      'priorityWeightsForm'
+    ) as FormGroup;
+    priorityWeightsForm.controls = {};
+    priorities.forEach((priority) => {
+      const priorityControl = this.fb.control(1, [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(5),
+      ]);
+      priorityWeightsForm.addControl(priority, priorityControl);
+    });
   }
 }
