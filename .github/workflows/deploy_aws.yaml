@@ -76,7 +76,7 @@ jobs:
       - name: Build, tag, and push r
         id: build-r
         run: |
-          cd src/planscape-r
+          cd src/planscape_r
           docker build -t planscape-r .
           docker tag planscape-r:latest ${{ env.r_image }}
           docker push ${{ env.r_image }}
