@@ -24,6 +24,10 @@ services:
     ports:
       - 80:80
 
+  planscape_r:
+    build: ./planscape_r
+    image: planscape/backend_r
+
 # Shared volume; used to set up communication by sockets from
 # nginx -> uwsgi -> Django.
 volumes:
