@@ -10,6 +10,8 @@ COPY requirements.txt ./
 # install packages
 RUN yum install -y gcc-c++ pkgconfig poppler-cpp-devel
 RUN python3 -m pip install -r requirements.txt
+RUN apt-get --force-yes update \
+    && apt-get --assume-yes install r-base-core
 
 # run lambda handler
 CMD ["lambda_handler.lambda_handler"]
