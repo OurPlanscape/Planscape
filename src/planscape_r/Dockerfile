@@ -10,6 +10,7 @@ WORKDIR /src/planscape_r
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV R_VERSION=4.0.3
+ENV R_HOME /usr/lib/R
 
 # install binary dependencies
 RUN yum -y update 
@@ -18,6 +19,10 @@ RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 RUN yum install -y openblas-devel
 RUN wget https://cdn.rstudio.com/r/centos-7/pkgs/R-${R_VERSION}-1-1.x86_64.rpm \
   && yum -y install R-${R_VERSION}-1-1.x86_64.rpm
+
+ENV PATH="${PATH}:/opt/R/${R_VERSION}/bin/"
+
+RUN ls
 
 # install dependencies
 COPY ./requirements.txt .
