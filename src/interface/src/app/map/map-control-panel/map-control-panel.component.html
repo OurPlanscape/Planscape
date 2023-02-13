@@ -50,26 +50,29 @@
 
         <!-- Basemap layer controls -->
         <mat-expansion-panel expanded="true">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             Basemaps
           </mat-expansion-panel-header>
           <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
             class="layer-radio-group" [(ngModel)]="map.config.baseLayerType"
+            color="primary"
             (change)="changeBaseLayer.emit(map)">
-            <mat-radio-button *ngFor="let baseLayerType of baseLayerTypes" [value]="baseLayerType"
-              checked="{{ baseLayerType == map.config.baseLayerType }}" class="layer-radio-button">
-              {{ BaseLayerType[baseLayerType] }}
-            </mat-radio-button>
+            <div class="layer-control-container" *ngFor="let baseLayerType of baseLayerTypes">
+              <mat-radio-button [value]="baseLayerType"
+                checked="{{ baseLayerType == map.config.baseLayerType }}" class="layer-radio-button">
+                {{ BaseLayerType[baseLayerType] }}
+              </mat-radio-button>
+            </div>
           </mat-radio-group>
         </mat-expansion-panel>
 
         <!-- Boundary layer controls -->
         <mat-expansion-panel expanded="true">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             Boundaries
           </mat-expansion-panel-header>
           <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
-            class="layer-radio-group"
+            class="layer-radio-group" color="primary"
             [(ngModel)]="map.config.boundaryLayerConfig" (change)="changeBoundaryLayer.emit(map)">
             <div class="layer-control-container">
               <mat-radio-button class="layer-radio-button" [value]="noneBoundaryConfig">
@@ -88,12 +91,12 @@
 
         <!-- Recent treatment areas controls -->
         <mat-expansion-panel expanded="false">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             Recent treatment areas
           </mat-expansion-panel-header>
           <div class="layer-control-container">
             <mat-checkbox name="{{ map.id + '-existing-projects-toggle' }}"
-              aria-label="Select or deselect"
+              aria-label="Select or deselect" color="primary"
               class="layer-checkbox" [(ngModel)]="map.config.showExistingProjectsLayer"
               (change)="toggleExistingProjectsLayer.emit(map)">
               Existing projects
@@ -104,74 +107,15 @@
         </mat-expansion-panel>
 
         <!-- Ecosystem scores controls -->
-        <mat-expansion-panel expanded="false">
-          <mat-expansion-panel-header>
-            Ecosystem scores
-          </mat-expansion-panel-header>
-
-          <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
-            [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionLayer.emit(map)">
-            <mat-tree [dataSource]="conditionDataSource" [treeControl]="conditionTreeControl"
-              class="condition-tree">
-              <!-- This is the tree node template for leaf nodes -->
-              <!-- There is inline padding applied to this node using styles.
-                This padding value depends on the mat-icon-button width. -->
-              <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
-                <div class="mat-tree-node">
-                  <div [class.disabled]="node.styleDisabled">
-                    <mat-radio-button [value]="node" *ngIf="!node.disableSelect"
-                      (change)="onSelect(node)">
-                      {{node.display_name}}
-                    </mat-radio-button>
-                    <span *ngIf="node.disableSelect">
-                      {{node.display_name}}
-                    </span>
-                    <button mat-icon-button
-                      *ngIf="!isNoneNode(node)"
-                      [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
-                      (menuClosed)="node.infoMenuOpen = false">
-                      <mat-icon color="primary">info_outline</mat-icon>
-                    </button>
-                    <mat-menu #popoverMenu="matMenu">
-                      <app-layer-info-card [dataLayerConfig]="node"></app-layer-info-card>
-                    </mat-menu>
-                  </div>
-                </div>
-              </mat-tree-node>
-              <!-- This is the tree node template for expandable nodes -->
-              <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
-                <div class="mat-tree-node" (mouseenter)="node.showInfoIcon = true"
-                  (mouseleave)="node.showInfoIcon = false">
-                  <div [class.disabled]="node.styleDisabled">
-                    <mat-radio-button [value]="node" *ngIf="!node.disableSelect"
-                      (change)="onSelect(node)">
-                      {{node.display_name}}
-                    </mat-radio-button>
-                    <span *ngIf="node.disableSelect">
-                      {{node.display_name}}
-                    </span>
-                    <button mat-icon-button matTreeNodeToggle
-                            [attr.aria-label]="'Toggle ' + node.display_name">
-                      <mat-icon class="mat-icon-rtl-mirror">
-                        {{conditionTreeControl.isExpanded(node) ? 'expand_less' : 'expand_more'}}
-                      </mat-icon>
-                    </button>
-                  </div>
-                </div>
-                <!-- There is inline padding applied to this div using styles.
-                    This padding value depends on the mat-icon-button width.  -->
-                <div [class.condition-tree-invisible]="!conditionTreeControl.isExpanded(node)"
-                    role="group">
-                    <ng-container matTreeNodeOutlet></ng-container>
-                </div>
-              </mat-nested-tree-node>
-            </mat-tree>
-          </mat-radio-group>
-        </mat-expansion-panel>
+        <app-condition-tree
+          [conditionsConfig$]="conditionsConfig$"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event)">
+        </app-condition-tree>
 
         <!-- Disturbances controls -->
         <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             <mat-panel-title>
               Disturbances
             </mat-panel-title>
@@ -183,7 +127,7 @@
 
         <!-- HVRAs controls -->
         <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             <mat-panel-title>
               HVRAs
             </mat-panel-title>
@@ -195,7 +139,7 @@
 
         <!-- Land types controls -->
         <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             <mat-panel-title>
               Land types
             </mat-panel-title>
@@ -207,7 +151,7 @@
 
         <!-- Operability controls -->
         <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header>
+          <mat-expansion-panel-header class="layer-panel-header">
             <mat-panel-title>
               Operability
             </mat-panel-title>
