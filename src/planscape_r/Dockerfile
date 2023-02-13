@@ -23,6 +23,8 @@ RUN yum -y install R
 #   && yum -y install R-${R_VERSION}-1-1.x86_64.rpm
 
 RUN printenv 
+RUN which R
+# ENV R_HOME /usr/lib/R
 
 # RUN ~/R-${R_VERSION}/bin/R --version
 # set the PATH
@@ -33,8 +35,8 @@ RUN printenv
 # install dependencies
 # COPY ./requirements.txt .
 RUN pip install --upgrade pip
-RUN pip install rpy2
-# RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+# RUN pip install rpy2
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 
 ####################################################################################
