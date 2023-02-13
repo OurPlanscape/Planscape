@@ -129,7 +129,7 @@ class ConditionScores(models.Model):
     condition = models.ForeignKey(
         Condition, on_delete=models.CASCADE, null=False)
 
-    # The following are ondition statistics computed across relevant raster
+    # The following are condition statistics computed across relevant raster
     # pixels within a project or planning area.
     # If plan or project area geometry has no intersection with non-nan raster
     # pixels, mean_score=None, sum=0, and count=0.

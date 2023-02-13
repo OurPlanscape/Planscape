@@ -67,6 +67,16 @@
       </mat-cell>
     </ng-container>
 
+    <!-- Configurations Column -->
+    <ng-container matColumnDef="configurations">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Configurations
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{element.configurations}}
+      </mat-cell>
+    </ng-container>
+
     <!-- Status Column -->
     <ng-container matColumnDef="status">
       <mat-header-cell *matHeaderCellDef mat-sort-header>

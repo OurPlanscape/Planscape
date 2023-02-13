@@ -1,6 +1,23 @@
 from django.db import migrations
 from typing import Tuple
 
+# Get condition stats fetches condition score statistics across condition
+# raster pixels that intersect with a given geometry.
+# Statistics include sus, meean, and count.
+# Inputs include 1) raster details:
+#   - table name (table, schema),
+#   - raster name (raster_name)
+#   - and relevant raster fields (raster_name_column, raster_column)
+# and 2) geometry
+#   - a shape in EWKB format
+#
+# An example call from Django python may be ...
+# geo = Polygon(...)
+# with connection.cursor() as cursor:
+#     cursor.callproc(
+#                'get_condition_stats',
+#                ('conditions_conditionraster', 'public', 'biodiversity',
+#                 'name', 'raster', geo.ewkb))
 SQL = """
 create or replace function get_condition_stats(
       param_table text,

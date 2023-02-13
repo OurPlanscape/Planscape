@@ -1,0 +1,77 @@
+<mat-card [style.margin-top]="'24px'">
+  <mat-card-header>
+    <mat-card-title>Configurations ({{ configurations.length }})</mat-card-title>
+  </mat-card-header>
+
+  <mat-card-content>
+    <mat-table [dataSource]="configurations" >
+      <!-- Select Column -->
+      <ng-container matColumnDef="select">
+        <mat-header-cell *matHeaderCellDef>
+          <mat-checkbox (change)="selectAllConfigs($event)"></mat-checkbox>
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <mat-checkbox [(ngModel)]="element.selected"></mat-checkbox>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Timestamp Column -->
+      <ng-container matColumnDef="createdTimestamp">
+        <mat-header-cell *matHeaderCellDef> Date Created </mat-header-cell>
+        <mat-cell *matCellDef="let element"> {{element.createdTimestamp | date:'medium' }} </mat-cell>
+      </ng-container>
+
+      <!-- Score Type Column -->
+      <ng-container matColumnDef="scoreType">
+        <mat-header-cell *matHeaderCellDef> Calculating Score </mat-header-cell>
+        <mat-cell *matCellDef="let element"> Condition Score </mat-cell>
+      </ng-container>
+
+      <!-- Priorities Column -->
+      <ng-container matColumnDef="priorities">
+        <mat-header-cell *matHeaderCellDef> Selected Priorities </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div>
+            <div *ngFor="let priority of displayPriorities(element.priorities)">
+              {{priority}}
+            </div>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Constraints Column -->
+      <ng-container matColumnDef="constraints">
+        <mat-header-cell *matHeaderCellDef> Selected Constraints </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          <div>
+            <div *ngIf="element.max_budget">
+              Max budget: ${{element.max_budget}}
+            </div>
+            <div *ngIf="element.max_treatment_area_ratio">
+              Max treatment area: {{element.max_treatment_area_ratio}}%
+            </div>
+            <div *ngIf="element.max_slope">
+              Exclude slope > {{element.max_slope}} degrees
+            </div>
+            <div *ngIf="element.max_road_distance">
+              Exclude areas off road by {{element.max_road_distance}} ft.
+            </div>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+    </mat-table>
+  </mat-card-content>
+
+  <mat-card-actions align="end">
+    <button mat-raised-button *ngIf="showDeleteButton()" (click)="deleteSelectedConfigs()">
+      <mat-icon>delete</mat-icon>
+      DELETE
+    </button>
+    <button mat-raised-button *ngIf="showContinueButton()" color="primary">
+      CONTINUE PLANNING
+    </button>
+  </mat-card-actions>
+</mat-card>

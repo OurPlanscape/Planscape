@@ -1,0 +1,22 @@
+.mat-header-cell {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 18px;
+}
+
+.mat-cell {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 18px;
+}
+
+.mat-column-select {
+  flex: 0 1 16px;
+  padding-left: 16px;
+  padding-right: 32px;
+  width: 16px;
+}
+
+.mat-column-constraints.mat-cell {
+  opacity: 0.66;
+}

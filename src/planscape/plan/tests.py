@@ -446,7 +446,7 @@ class CreateProjectTest(TransactionTestCase):
 
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'priorities': 'condition1'},
+                'plan_id': self.plan_with_user.pk, 'priorities': ['condition1']},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
 
@@ -459,7 +459,7 @@ class CreateProjectTest(TransactionTestCase):
 
         response = self.client.post(
             reverse('plan:create_project'), {
-                'plan_id': self.plan_with_user.pk, 'priorities': 'condition3'},
+                'plan_id': self.plan_with_user.pk, 'priorities': ['condition3']},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
@@ -536,12 +536,101 @@ class UpdateProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.put(
             reverse('plan:update_project'), {'id': self.project_with_user.pk,
-                                             'priorities': 'condition2'}, content_type='application/json')
+                                             'priorities': ['condition2']}, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         project = Project.objects.get(id=self.project_with_user.pk)
         self.assertEqual(project.max_budget, None)
         self.assertEqual(project.priorities.count(), 1)
         self.assertTrue(project.priorities.contains(self.condition2))
+
+
+class DeleteProjectsTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan_with_user = Plan.objects.create(
+            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
+        self.plan_with_no_user = Plan.objects.create(
+            owner=None, name='without owner', region_name='sierra_cascade_inyo')
+
+        self.project_with_user = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_budget=100.0)
+        self.project_with_user2 = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_budget=50.0)
+
+        self.project_with_no_user = Project.objects.create(
+            owner=None, plan=self.plan_with_no_user, max_budget=100.0)
+    
+    def test_delete_user_not_logged_in(self):
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': [self.project_with_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Project.objects.all().count(), 3)
+
+    def test_user_logged_in_tries_to_delete_ownerless_project(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': [self.project_with_no_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Project.objects.count(), 3)
+
+    def test_delete_wrong_user(self):
+        new_user = User.objects.create(username='newuser')
+        new_user.set_password('12345')
+        new_user.save()
+        self.client.force_login(new_user)
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': [self.project_with_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Project.objects.count(), 3)
+
+    def test_delete_ownerless_project(self):
+        self.assertEqual(Project.objects.count(), 3)
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': [self.project_with_no_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, json.dumps(
+            [self.project_with_no_user.pk]).encode())
+        self.assertEqual(Project.objects.count(), 2)
+
+    def test_delete_owned_project(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Project.objects.count(), 3)
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': [self.project_with_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, json.dumps(
+            [self.project_with_user.pk]).encode())
+        self.assertEqual(Project.objects.count(), 2)
+
+    def test_delete_multiple_projects_fails_if_any_not_owner(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Project.objects.count(), 3)
+        project_ids = [self.project_with_no_user.pk, self.project_with_user.pk]
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': project_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Project.objects.count(), 3)
+
+    def test_delete_multiple_projects(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Project.objects.count(), 3)
+        project_ids = [self.project_with_user.pk, self.project_with_user2.pk]
+        response = self.client.post(
+            reverse('plan:delete_projects'), {'project_ids': project_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, json.dumps(
+            project_ids).encode())
+        self.assertEqual(Project.objects.count(), 1)
 
 
 class CreateProjectAreaTest(TransactionTestCase):
@@ -756,12 +845,13 @@ class ListProjectsTest(TransactionTestCase):
             {'plan_id': self.plan_with_user.pk},
             content_type="application/json")
         print(response.content)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 0)
 
     def test_list_projects(self):
         self.client.force_login(self.user)
         base_condition = BaseCondition.objects.create(
-            condition_level=ConditionLevel.ELEMENT, display_name='test_condition')
+            condition_level=ConditionLevel.ELEMENT, condition_name='test_condition')
         self.condition = Condition.objects.create(condition_dataset=base_condition)
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100)

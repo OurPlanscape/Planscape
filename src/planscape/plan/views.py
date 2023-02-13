@@ -214,7 +214,7 @@ def _save_project_parameters(body, project: Project):
 
     # Parse priorities
     priorities = body.get('priorities', None)
-    priorities_list = [] if priorities is None else priorities.split(',')
+    priorities_list = [] if priorities is None else priorities
     for pri in priorities_list:
         base_condition = BaseCondition.objects.get(condition_name=pri)
         condition = Condition.objects.get(
@@ -287,12 +287,15 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
 
         user = _get_user(request)
 
-        projects = get_list_or_404(Project.objects.filter(owner=user, plan=int(plan_id)))
+        if Plan.objects.get(pk=plan_id) is None:
+            raise ValueError("Plan with id " + str(plan_id) + " does not exist")
+
+        projects = Project.objects.filter(owner=user, plan=int(plan_id))
         
         projects = [ProjectSerializer(project).data for project in projects]
 
         for project in projects:
-            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.display_name for priority in project['priorities']]
+            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in project['priorities']]
 
         return JsonResponse(projects, safe=False)
     except Exception as e:
@@ -311,6 +314,37 @@ def get_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "You do not have permission to view this project.")
         return JsonResponse(ProjectSerializer(project).data)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def delete_projects(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = _get_user(request)
+
+        body = json.loads(request.body)
+        project_ids = body.get('project_ids', None)
+        if project_ids is None or not (isinstance(project_ids, list)):
+            raise ValueError("Must specify project_ids as a list")
+
+        projects = [Project.objects.get(id=project_id) for project_id in project_ids]
+        
+        # Check that the user owns the projects
+        for project in projects:
+            if project.owner != owner:
+                raise ValueError(
+                    "You do not have permission to delete one or more of these projects.")
+        
+        for project in projects:
+            project.delete()
+        
+        response_data = project_ids
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
+
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
