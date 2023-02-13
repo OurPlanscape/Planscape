@@ -1,0 +1,48 @@
+.layer-panel-header {
+  background-color: #D8D8D8 !important;
+  font-size: 14px;
+  font-weight: 700;
+  height: 40px !important;
+  line-height: 20px;
+}
+
+::ng-deep .mat-expansion-panel-body {
+  padding-bottom: 0px !important;
+}
+
+.condition-tree-invisible {
+  display: none;
+}
+
+.condition-tree ul,
+.condition-tree li {
+  margin-top: 0;
+  margin-bottom: 0;
+  list-style-type: none;
+}
+
+/*
+ * This padding sets alignment of the nested nodes.
+ */
+.condition-tree .mat-nested-tree-node div[role=group] {
+  padding-left: 20px;
+}
+
+/*
+ * Padding for leaf nodes.
+ * Leaf nodes need to have padding so as to align with other non-leaf nodes
+ * under the same parent.
+ */
+.condition-tree div[role=group] > .mat-tree-node {
+  padding-left: 20px;
+}
+
+.mat-tree-node > .disabled {
+  opacity: 0.5;
+}
+
+.expandable-condition-node {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}

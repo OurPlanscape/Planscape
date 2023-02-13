@@ -38,6 +38,7 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/condition-tree.component';
 
 @NgModule({
   declarations: [
@@ -55,6 +56,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     PlanCreateDialogComponent,
     LayerInfoCardComponent,
     MapControlPanelComponent,
+    ConditionTreeComponent,
   ],
   imports: [
     AppRoutingModule,

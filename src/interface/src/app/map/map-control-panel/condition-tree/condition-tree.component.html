@@ -1,0 +1,64 @@
+<mat-expansion-panel expanded="false">
+  <mat-expansion-panel-header class="layer-panel-header">
+    Ecosystem scores
+  </mat-expansion-panel-header>
+
+  <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
+    color="primary"
+    [(ngModel)]="map.config.dataLayerConfig" (change)="changeConditionLayer.emit(map)">
+    <mat-tree [dataSource]="conditionDataSource" [treeControl]="conditionTreeControl"
+      class="condition-tree">
+      <!-- This is the tree node template for leaf nodes -->
+      <!-- There is inline padding applied to this node using styles.
+        This padding value depends on the mat-icon-button width. -->
+      <mat-tree-node *matTreeNodeDef="let node" matTreeNodeToggle>
+        <div class="mat-tree-node">
+          <div [class.disabled]="node.styleDisabled">
+            <mat-radio-button [value]="node" *ngIf="!node.disableSelect"
+              (change)="onSelect(node)">
+              {{node.display_name}}
+            </mat-radio-button>
+            <span *ngIf="node.disableSelect">
+              {{node.display_name}}
+            </span>
+            <button mat-icon-button
+              *ngIf="!isNoneNode(node)"
+              [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
+              (menuClosed)="node.infoMenuOpen = false">
+              <mat-icon color="primary">info_outline</mat-icon>
+            </button>
+            <mat-menu #popoverMenu="matMenu">
+              <app-layer-info-card [dataLayerConfig]="node"></app-layer-info-card>
+            </mat-menu>
+          </div>
+        </div>
+      </mat-tree-node>
+      <!-- This is the tree node template for expandable nodes -->
+      <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+        <div class="mat-tree-node expandable-condition-node" [class.selected]="node.selected">
+          <div [class.disabled]="node.styleDisabled">
+            <mat-radio-button [value]="node" *ngIf="!node.disableSelect"
+              (change)="onSelect(node)">
+              {{node.display_name}}
+            </mat-radio-button>
+            <span *ngIf="node.disableSelect">
+              {{node.display_name}}
+            </span>
+          </div>
+            <button mat-icon-button matTreeNodeToggle
+                    [attr.aria-label]="'Toggle ' + node.display_name">
+              <mat-icon class="mat-icon-rtl-mirror">
+                {{conditionTreeControl.isExpanded(node) ? 'expand_less' : 'expand_more'}}
+              </mat-icon>
+            </button>
+        </div>
+        <!-- There is inline padding applied to this div using styles.
+            This padding value depends on the mat-icon-button width.  -->
+        <div [class.condition-tree-invisible]="!conditionTreeControl.isExpanded(node)"
+            role="group">
+            <ng-container matTreeNodeOutlet></ng-container>
+        </div>
+      </mat-nested-tree-node>
+    </mat-tree>
+  </mat-radio-group>
+</mat-expansion-panel>

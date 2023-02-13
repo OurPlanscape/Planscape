@@ -38,7 +38,6 @@ describe('MapControlPanelComponent', () => {
         display_name: 'HUC-12',
       },
     ];
-    component.conditionsConfig$ = of({});
     component.maps = [1, 2, 3, 4].map((id) => {
       return {
         id: `map${id}`,
@@ -46,7 +45,6 @@ describe('MapControlPanelComponent', () => {
         config: defaultMapConfig(),
       };
     });
-    console.log(component.maps);
     component.mapViewOptions = defaultMapViewOptions();
 
     fixture.detectChanges();
@@ -75,41 +73,6 @@ describe('MapControlPanelComponent', () => {
       await buttonHarnesses[1].click();
 
       expect(component.changeMapCount.emit).toHaveBeenCalledOnceWith(2);
-    });
-  });
-
-  describe('condition tree', () => {
-    beforeEach(() => {
-      component.conditionDataSource.data = [
-        {
-          children: [{}, {}, {}],
-        },
-        {
-          children: [],
-        },
-      ];
-    });
-
-    it('styles children of a selected node and unstyles all other nodes', () => {
-      const nodeWithChildren = component.conditionDataSource.data[0];
-      const nodeWithoutChildren = component.conditionDataSource.data[1];
-
-      component.onSelect(nodeWithChildren);
-
-      nodeWithChildren.children?.forEach((child) => {
-        expect(child.styleDisabled).toBeTrue();
-      });
-      expect(nodeWithChildren.styleDisabled).toBeFalse();
-      expect(nodeWithoutChildren.styleDisabled).toBeFalse();
-
-      component.onSelect(nodeWithoutChildren);
-
-      component.conditionDataSource.data.forEach((node) => {
-        expect(node.styleDisabled).toBeFalse();
-        node.children?.forEach((child) => {
-          expect(child.styleDisabled).toBeFalse();
-        });
-      });
     });
   });
 
