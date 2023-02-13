@@ -9,11 +9,13 @@ WORKDIR /src/planscape_r
 # set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
+ENV R_VERSION=4.0.3
 
 # install binary dependencies
 RUN yum -y update 
-RUN yum -y install R-core R-devel
-
+RUN yum -y install wget
+RUN wget https://cdn.rstudio.com/r/centos-7/pkgs/R-${R_VERSION}-1-1.x86_64.rpm \
+  && yum -y install R-${R_VERSION}-1-1.x86_64.rpm 
 
 # install dependencies
 COPY ./requirements.txt .
