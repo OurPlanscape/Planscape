@@ -12,7 +12,7 @@ ENV PYTHONUNBUFFERED 1
 
 # install binary dependencies
 RUN yum -y update 
-RUN yum -y install R-devel
+RUN yum -y install R-core R-devel
 
 
 # install dependencies
