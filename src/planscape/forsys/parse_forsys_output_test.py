@@ -25,7 +25,6 @@ def _convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
-
 class TestForsysScenarioSetOutput(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
@@ -154,10 +153,13 @@ class TestForsysScenarioSetOutput(TestCase):
 class TestForsysScenarioOutput(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(raw_forsys_output,
-                                             {"p1": 1, "p2": 2},
-                                             "proj_id", "area", "cost")
-        self.assertDictEqual(parsed_output.scenario,
+        parsed_output = ForsysScenarioOutput(
+            raw_forsys_output, {"p1": 1, "p2": 2},
+            None, None, "proj_id", "area", "cost")
+
+        scenario = parsed_output.scenario
+
+        self.assertDictEqual(scenario,
                              {
                                  'priority_weights': {'p1': 1, 'p2': 2},
                                  'ranked_projects': [
@@ -186,9 +188,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # priority weights are specified for "p1" and "p3" - missing "p2"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p3": 2},
-                                 "proj_id", "area", "cost")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p3": 2},
+                None, None, "proj_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, ETrt_p3, is not a forsys output header')
@@ -198,9 +200,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p2": 2},
-                                 "project_id", "area", "cost")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p2": 2},
+                None, None, "project_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, project_id, is not a forsys output header')
@@ -210,9 +212,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p2": 2},
-                                 "proj_id", "area_ha", "cost")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p2": 2},
+                None, None, "proj_id", "area_ha", "cost")
 
         self.assertEqual(
             str(context.exception),
@@ -223,9 +225,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p2": 2},
-                                 "proj_id", "area", "c")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p2": 2},
+                None, None, "proj_id", "area", "c")
 
         self.assertEqual(
             str(context.exception),
