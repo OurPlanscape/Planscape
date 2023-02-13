@@ -22,7 +22,7 @@ RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requir
 ####################################################################################
 # Deployed image
 
-FROM python:3.10.9
+FROM public.ecr.aws/lambda/python:latest
 
 # create the appropriate directories
 ENV APP_HOME=/home/planscape/backend_r
