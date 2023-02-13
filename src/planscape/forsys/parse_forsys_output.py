@@ -80,7 +80,8 @@ class ForsysScenarioSetOutput():
     # listed for the forsys call.
     def __init__(
             self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
-            priorities, max_area: float, max_cost: float, project_id_header: str,
+            priorities: list[str],
+            max_area: float, max_cost: float, project_id_header: str,
             area_header: str, cost_header: str):
         self._save_raw_forsys_output_as_dict(raw_forsys_output)
 
@@ -188,7 +189,6 @@ class ForsysScenarioSetOutput():
 
     def _append_ranked_project_to_new_scenario(
             self, scenario_str: str, scenario_weights: dict, i: int) -> None:
-
         area = self._forsys_output_df[self._area_contribution_header][i]
         if self._max_area is not None and self._max_area < area:
             return
