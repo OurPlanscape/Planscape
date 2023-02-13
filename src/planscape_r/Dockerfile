@@ -14,6 +14,7 @@ ENV R_VERSION=4.0.3
 # install binary dependencies
 RUN yum -y update 
 RUN yum -y install wget
+RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum install openblas-devel
 RUN wget https://cdn.rstudio.com/r/centos-7/pkgs/R-${R_VERSION}-1-1.x86_64.rpm \
   && yum -y install R-${R_VERSION}-1-1.x86_64.rpm
