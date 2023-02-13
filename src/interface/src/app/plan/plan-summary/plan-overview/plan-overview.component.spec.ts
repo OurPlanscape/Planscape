@@ -1,6 +1,7 @@
-import { PlanModule } from './../../plan.module';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { PlanModule } from './../../plan.module';
 import { PlanOverviewComponent } from './plan-overview.component';
 
 describe('PlanOverviewComponent', () => {
@@ -9,7 +10,7 @@ describe('PlanOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PlanModule],
+      imports: [HttpClientTestingModule, PlanModule],
       declarations: [PlanOverviewComponent],
     }).compileComponents();
 

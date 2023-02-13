@@ -24,6 +24,7 @@ export interface BackendPlan {
   region_name: Region;
   geometry?: GeoJSON.GeoJSON;
   scenarios?: number;
+  projects?: number;
   creation_timestamp?: number; // in seconds since epoch
 }
 
@@ -147,6 +148,39 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  /** Fetches the projects for a plan from the backend. */
+  getProjects(planId: string): Observable<ProjectConfig[]> {
+    let url = BackendConstants.END_POINT.concat(
+      '/plan/list_projects_for_plan/?plan_id=',
+      planId
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response) =>
+          (response as any[]).map((config) =>
+            this.convertToProjectConfig(config)
+          )
+        )
+      );
+  }
+
+  /** Deletes one or more projects from the backend. */
+  deleteProjects(projectIds: number[]): Observable<number[]> {
+    return this.http.post<number[]>(
+      BackendConstants.END_POINT.concat('/plan/delete_projects/'),
+      {
+        project_ids: projectIds,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
@@ -176,9 +210,21 @@ export class PlanService {
       name: plan.name,
       region: plan.region_name,
       savedScenarios: plan.scenarios,
+      configurations: plan.projects,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         plan.creation_timestamp
       ),
+    };
+  }
+
+  private convertToProjectConfig(config: any): ProjectConfig {
+    return {
+      id: config.id,
+      max_budget: config.max_budget,
+      max_road_distance: config.max_road_distance,
+      max_slope: config.max_slope,
+      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      priorities: config.priorities,
     };
   }
 

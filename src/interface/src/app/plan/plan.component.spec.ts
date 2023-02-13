@@ -61,6 +61,7 @@ describe('PlanComponent', () => {
 
     const fakeService = jasmine.createSpyObj('PlanService', {
       getPlan: of(fakePlan),
+      getProjects: of([]),
     });
 
     await TestBed.configureTestingModule({

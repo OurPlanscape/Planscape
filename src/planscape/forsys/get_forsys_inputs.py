@@ -35,6 +35,7 @@ class ForsysProjectAreaRankingRequestParams():
     _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
     _URL_REGION = 'region'
     _URL_PRIORITIES = 'priorities'
+    _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PROJECT_AREAS = 'project_areas'
     _URL_MAX_AREA = 'max_area'
     _URL_MAX_COST = 'max_cost'
@@ -50,6 +51,10 @@ class ForsysProjectAreaRankingRequestParams():
     region: str
     # Conditions whose AP scores will be considered when ranking projects.
     priorities: list[str]
+    # Optional. Weights associated with the priorities.
+    # Must be same length as priorities.
+    # If unset, this is a vector of 1's by default.
+    priority_weights: list[float]
     # Project areas to be ranked. A project area may consist of multiple
     # disjoint polygons. The dict is keyed by project ID.
     project_areas: dict[int, MultiPolygon]
@@ -69,6 +74,15 @@ class ForsysProjectAreaRankingRequestParams():
             self._URL_REGION, self._DEFAULT_REGION)
         self.priorities = params.getlist(
             self._URL_PRIORITIES, self._DEFAULT_PRIORITIES)
+        self.priority_weights = params.getlist(
+            self._URL_PRIORITY_WEIGHTS,
+            [1 for i in range(len(self.priorities))])
+        self.priority_weights = [float(pw) for pw in self.priority_weights]
+        if len(self.priorities) != len(self.priority_weights):
+            raise AssertionError(
+                "expected %d priority weights, instead, %d were given" %
+                (len(self.priorities),
+                 len(self.priority_weights)))
         if self._URL_PROJECT_AREAS in params:
             self.project_areas = self._read_project_areas_from_url_params(
                 params)
@@ -91,6 +105,8 @@ class ForsysProjectAreaRankingRequestParams():
                 BaseCondition.objects.get(
                     id=c.condition_dataset_id).condition_name
                 for c in project.priorities.all()]
+            # TODO: add logic for reading priority weights from db.
+            self.priority_weights = [1 for p in self.priorities]
 
             self.project_areas = {}
             for area in project_areas:

@@ -34,6 +34,7 @@ export class MapService {
   readonly conditionsConfig$ = new BehaviorSubject<ConditionsConfig | null>(
     null
   );
+  readonly conditionNameToDisplayNameMap$ = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
 
   constructor(private http: HttpClient) {
     this.http
@@ -50,6 +51,7 @@ export class MapService {
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
         this.conditionsConfig$.next(config);
+        this.populateConditionNameMap(config);
       });
   }
 
@@ -125,5 +127,25 @@ export class MapService {
         `/conditions/colormap/?colormap=${colormap}`
       )
     );
+  }
+
+  private populateConditionNameMap(config: ConditionsConfig) {
+    let nameMap = this.conditionNameToDisplayNameMap$.value;
+    config.pillars?.forEach(pillar => {
+      if (!!pillar.pillar_name && !!pillar.display_name) {
+        nameMap.set(pillar.pillar_name, pillar.display_name);
+      }
+      pillar.elements?.forEach(element => {
+        if (!!element.element_name && !!element.display_name) {
+          nameMap.set(element.element_name, element.display_name);
+        }
+        element.metrics?.forEach(metric => {
+          if (!!metric.metric_name && !!metric.display_name) {
+            nameMap.set(metric.metric_name, metric.display_name);
+          }
+        });
+      });
+    });
+    this.conditionNameToDisplayNameMap$.next(nameMap);
   }
 }
