@@ -113,26 +113,6 @@
       "dockerLabels": {},
       "ulimits": [],
       "systemControls": []
-    },
-    {
-      "name": "r",
-      "image": "r",
-      "cpu": 0,
-      "links": [],
-      "essential": true,
-      "entryPoint": [],
-      "command": [],
-      "environment": [],
-      "environmentFiles": [],
-      "volumesFrom": [],
-      "secrets": [],
-      "dnsServers": [],
-      "dnsSearchDomains": [],
-      "extraHosts": [],
-      "dockerSecurityOptions": [],
-      "dockerLabels": {},
-      "ulimits": [],
-      "systemControls": []
     }
   ],
   "taskRoleArn": "arn:aws:iam::705618310400:role/PlanscapeDevRole",
