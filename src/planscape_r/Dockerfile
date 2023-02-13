@@ -11,7 +11,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install binary dependencies
-RUN apt-get update && apt-get install -y  r-base r-base-core
+RUN yum update && yum -y install r-base r-base-core
 
 # install dependencies
 COPY ./requirements.txt .
@@ -32,6 +32,7 @@ WORKDIR $APP_HOME
 # install dependencies
 COPY --from=builder /usr/src/app/wheels /wheels
 COPY --from=builder /src/planscape_r/requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install --no-cache /wheels/*
 
 # copy project
