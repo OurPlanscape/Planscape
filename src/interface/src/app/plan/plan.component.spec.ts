@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
@@ -60,10 +60,11 @@ describe('PlanComponent', () => {
     );
 
     const fakeService = jasmine.createSpyObj('PlanService', {
-      planState$: of({}),
       getPlan: of(fakePlan),
       getProjects: of([]),
+      updateStateWithScenario: of(fakePlan),
     });
+    fakeService.planState$ = of({});
 
     await TestBed.configureTestingModule({
       imports: [

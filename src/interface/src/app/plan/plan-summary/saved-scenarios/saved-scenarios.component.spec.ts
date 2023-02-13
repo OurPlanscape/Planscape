@@ -1,5 +1,7 @@
 import { MaterialModule } from 'src/app/material/material.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { SavedScenariosComponent } from './saved-scenarios.component';
 
@@ -8,9 +10,22 @@ describe('SavedScenariosComponent', () => {
   let fixture: ComponentFixture<SavedScenariosComponent>;
 
   beforeEach(async () => {
+    const fakeRoute = jasmine.createSpyObj(
+      'ActivatedRoute',
+      {},
+      {
+        snapshot: {
+          paramMap: convertToParamMap({ id: '24' }),
+        },
+      }
+    );
+
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [HttpClientTestingModule, MaterialModule],
       declarations: [SavedScenariosComponent],
+      providers: [
+        { provide: ActivatedRoute, useValue: fakeRoute },
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SavedScenariosComponent);
