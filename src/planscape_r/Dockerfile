@@ -1,7 +1,7 @@
 ####################################################################################
 # Builder; this creates Python Wheels, which makes the deployed image smaller
 
-FROM python:3.10.9 as builder
+FROM public.ecr.aws/lambda/python:latest as builder
 
 # set work directory
 WORKDIR /src/planscape_r
