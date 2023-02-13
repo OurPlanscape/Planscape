@@ -20,14 +20,18 @@ RUN yum install -y openblas-devel
 RUN wget https://cdn.rstudio.com/r/centos-7/pkgs/R-${R_VERSION}-1-1.x86_64.rpm \
   && yum -y install R-${R_VERSION}-1-1.x86_64.rpm
 
-ENV PATH="${PATH}:/opt/R/${R_VERSION}/bin/"
+RUN ~/R-${R_VERSION}/bin/R --version
+# set the PATH
+RUN export PATH=${PATH}:~/R-${R_VERSION}/bin/
+# unset R_HOME if needed
+RUN unset R_HOME
 
-RUN ls
 
 # install dependencies
 COPY ./requirements.txt .
 RUN pip install --upgrade pip
-RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
+RUN pip install rpy2
+# RUN pip wheel --no-cache-dir --no-deps --wheel-dir /usr/src/app/wheels -r requirements.txt
 
 
 ####################################################################################
