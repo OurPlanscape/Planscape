@@ -11,7 +11,9 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # install binary dependencies
-RUN yum update && yum install -y R
+RUN yum -y update 
+RUN yum -y install R-devel
+
 
 # install dependencies
 COPY ./requirements.txt .
