@@ -31,7 +31,7 @@ WORKDIR $APP_HOME
 
 # install dependencies
 COPY --from=builder /usr/src/app/wheels /wheels
-COPY --from=builder /src/planscape/requirements.txt .
+COPY --from=builder /src/planscape_r/requirements.txt .
 RUN pip install --no-cache /wheels/*
 
 # copy project
