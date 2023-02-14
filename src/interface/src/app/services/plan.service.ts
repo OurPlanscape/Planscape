@@ -244,6 +244,9 @@ export class PlanService {
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       priorities: config.priorities,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        config.creation_timestamp
+      ),
     };
   }
 

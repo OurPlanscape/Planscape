@@ -225,6 +225,7 @@ describe('PlanService', () => {
           max_slope: undefined,
           max_treatment_area_ratio: undefined,
           priorities: undefined,
+          createdTimestamp: undefined,
         },
       ];
 
@@ -257,6 +258,7 @@ describe('PlanService', () => {
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
         priorities: undefined,
+        createdTimestamp: undefined,
       };
 
       service.getProject(1).subscribe((res) => {
