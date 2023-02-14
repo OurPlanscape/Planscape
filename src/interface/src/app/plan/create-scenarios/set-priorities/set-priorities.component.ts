@@ -121,7 +121,7 @@ export class SetPrioritiesComponent implements OnInit {
             let metricRow: PriorityRow = {
               conditionName: metric.metric_name!,
               displayName: metric.display_name,
-              filepath: metric.filepath!,
+              filepath: metric.filepath!.concat('_normalized'),
               children: [],
               level: 2,
               hidden: true,
