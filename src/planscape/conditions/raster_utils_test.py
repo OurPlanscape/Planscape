@@ -364,7 +364,7 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
 
     def test_fails_for_missing_geo(self):
         with self.assertRaises(Exception) as context:
-            compute_condition_stats_from_raster(None, "foo")
+            get_condition_values_from_raster(None, "foo")
         self.assertEqual(
             str(context.exception), "missing input geometry")
 
@@ -379,7 +379,7 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
         geo = MultiPolygon(polygon)
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
-            compute_condition_stats_from_raster(geo, "foo")
+            get_condition_values_from_raster(geo, "foo")
         self.assertIn(
             "invalid geo: Self-intersection[", str(context.exception))
 
@@ -393,7 +393,7 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
         geo = MultiPolygon(polygon)
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
-            compute_condition_stats_from_raster(geo, "foo")
+            get_condition_values_from_raster(geo, "foo")
         self.assertEqual(
             str(context.exception), "geometry SRID is 4269 (expected 9822)")
 
@@ -412,8 +412,7 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
     def test_fails_for_missing_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         with self.assertRaises(Exception) as context:
-            compute_condition_stats_from_raster(
-                geo, "nonexistent_raster_name")
+            get_condition_values_from_raster(geo, "nonexistent_raster_name")
         self.assertEqual(
             str(context.exception),
             "no rasters available for raster_name, nonexistent_raster_name")
