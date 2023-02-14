@@ -29,7 +29,8 @@ class TestForsysScenarioSetOutput(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysScenarioSetOutput(
-            raw_forsys_output, ["p1", "p2"], "proj_id", "area", "cost")
+            raw_forsys_output, ["p1", "p2"],
+            None, None, "proj_id", "area", "cost")
 
         scenarios = parsed_output.scenarios
 
@@ -87,7 +88,8 @@ class TestForsysScenarioSetOutput(TestCase):
         with self.assertRaises(Exception) as context:
             # priority order is ["p2", "p1"] instead of ["p1", "p2"]
             ForsysScenarioSetOutput(
-                raw_forsys_output, ["p2", "p1"], "proj_id", "area", "cost")
+                raw_forsys_output, ["p2", "p1"],
+                None, None, "proj_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, Pr_1_p2, is not a forsys output header')
@@ -98,7 +100,8 @@ class TestForsysScenarioSetOutput(TestCase):
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
             ForsysScenarioSetOutput(
-                raw_forsys_output, ["p1", "p2"], "project_id", "area", "cost")
+                raw_forsys_output, ["p1", "p2"],
+                None, None, "project_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, project_id, is not a forsys output header')
@@ -109,7 +112,8 @@ class TestForsysScenarioSetOutput(TestCase):
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
             ForsysScenarioSetOutput(
-                raw_forsys_output, ["p1", "p2"], "proj_id", "area_ha", "cost")
+                raw_forsys_output, ["p1", "p2"],
+                None, None, "proj_id", "area_ha", "cost")
 
         self.assertEqual(
             str(context.exception),
@@ -121,11 +125,176 @@ class TestForsysScenarioSetOutput(TestCase):
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
             ForsysScenarioSetOutput(
-                raw_forsys_output, ["p1", "p2"], "proj_id", "area", "c")
+                raw_forsys_output, ["p1", "p2"],
+                None, None, "proj_id", "area", "c")
 
         self.assertEqual(
             str(context.exception),
             'header, ETrt_c, is not a forsys output header')
+
+    def test_limits_area(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioSetOutput(
+            raw_forsys_output, ["p1", "p2"],
+            25, None, "proj_id", "area", "cost")
+
+        scenarios = parsed_output.scenarios
+
+        self.assertDictEqual(scenarios,
+                             {
+                                 'p1:1 p2:1': {
+                                     'priority_weights': {'p1': 1, 'p2': 1},
+                                     'ranked_projects': [
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.1},
+                                          'total_score': 0.6,
+                                          'rank': 1},
+                                         {'id': 2,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.1, 'p2': 0.4},
+                                          'total_score': 0.5,
+                                          'rank': 2},
+                                     ],
+                                     'cumulative_ranked_project_area': [10, 21],
+                                     'cumulative_ranked_project_cost': [500, 1100]
+                                 },
+                                 'p1:1 p2:2': {
+                                     'priority_weights': {'p1': 1, 'p2': 2},
+                                     'ranked_projects': [
+                                         {'id': 2,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.1, 'p2': 0.8},
+                                          'total_score': 0.9,
+                                          'rank': 1},
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.2},
+                                          'total_score': 0.7,
+                                          'rank': 2},
+                                     ],
+                                     'cumulative_ranked_project_area': [11, 21],
+                                     'cumulative_ranked_project_cost': [600, 1100]
+                                 }
+                             })
+
+    def test_limits_area_by_skipping_top_project(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioSetOutput(
+            raw_forsys_output, ["p1", "p2"],
+            10, None, "proj_id", "area", "cost")
+
+        scenarios = parsed_output.scenarios
+
+        self.assertDictEqual(scenarios,
+                             {
+                                 'p1:1 p2:1': {
+                                     'priority_weights': {'p1': 1, 'p2': 1},
+                                     'ranked_projects': [
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.1},
+                                          'total_score': 0.6,
+                                          'rank': 1},
+                                     ],
+                                     'cumulative_ranked_project_area': [10],
+                                     'cumulative_ranked_project_cost': [500]
+                                 },
+                                 'p1:1 p2:2': {
+                                     'priority_weights': {'p1': 1, 'p2': 2},
+                                     'ranked_projects': [
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.2},
+                                          'total_score': 0.7,
+                                          'rank': 2},
+                                     ],
+                                     'cumulative_ranked_project_area': [10],
+                                     'cumulative_ranked_project_cost': [500]
+                                 }
+                             })
+
+    def test_limits_cost(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioSetOutput(
+            raw_forsys_output, ["p1", "p2"],
+            None, 1200, "proj_id", "area", "cost")
+
+        scenarios = parsed_output.scenarios
+
+        self.assertDictEqual(scenarios,
+                             {
+                                 'p1:1 p2:1': {
+                                     'priority_weights': {'p1': 1, 'p2': 1},
+                                     'ranked_projects': [
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.1},
+                                          'total_score': 0.6,
+                                          'rank': 1},
+                                         {'id': 2,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.1, 'p2': 0.4},
+                                          'total_score': 0.5,
+                                          'rank': 2},
+                                     ],
+                                     'cumulative_ranked_project_area': [10, 21],
+                                     'cumulative_ranked_project_cost': [500, 1100]
+                                 },
+                                 'p1:1 p2:2': {
+                                     'priority_weights': {'p1': 1, 'p2': 2},
+                                     'ranked_projects': [
+                                         {'id': 2,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.1, 'p2': 0.8},
+                                          'total_score': 0.9,
+                                          'rank': 1},
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.2},
+                                          'total_score': 0.7,
+                                          'rank': 2},
+                                     ],
+                                     'cumulative_ranked_project_area': [11, 21],
+                                     'cumulative_ranked_project_cost': [600, 1100]
+                                 }
+                             })
+
+    def test_limits_cost_by_skipping_top_project(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioSetOutput(
+            raw_forsys_output, ["p1", "p2"],
+            None, 550, "proj_id", "area", "cost")
+
+        scenarios = parsed_output.scenarios
+
+        self.assertDictEqual(scenarios,
+                             {
+                                 'p1:1 p2:1': {
+                                     'priority_weights': {'p1': 1, 'p2': 1},
+                                     'ranked_projects': [
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.1},
+                                          'total_score': 0.6,
+                                          'rank': 1}
+                                     ],
+                                     'cumulative_ranked_project_area': [10],
+                                     'cumulative_ranked_project_cost': [500]
+                                 },
+                                 'p1:1 p2:2': {
+                                     'priority_weights': {'p1': 1, 'p2': 2},
+                                     'ranked_projects': [
+                                         {'id': 1,
+                                          'weighted_priority_scores': {
+                                              'p1': 0.5, 'p2': 0.2},
+                                          'total_score': 0.7,
+                                          'rank': 2},
+                                     ],
+                                     'cumulative_ranked_project_area': [10],
+                                     'cumulative_ranked_project_cost': [500]
+                                 }
+                             })
 
     def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
         data = {
@@ -148,10 +317,13 @@ class TestForsysScenarioSetOutput(TestCase):
 class TestForsysScenarioOutput(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(raw_forsys_output,
-                                             {"p1": 1, "p2": 2},
-                                             "proj_id", "area", "cost")
-        self.assertDictEqual(parsed_output.scenario,
+        parsed_output = ForsysScenarioOutput(
+            raw_forsys_output, {"p1": 1, "p2": 2},
+            None, None, "proj_id", "area", "cost")
+
+        scenario = parsed_output.scenario
+
+        self.assertDictEqual(scenario,
                              {
                                  'priority_weights': {'p1': 1, 'p2': 2},
                                  'ranked_projects': [
@@ -180,9 +352,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # priority weights are specified for "p1" and "p3" - missing "p2"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p3": 2},
-                                 "proj_id", "area", "cost")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p3": 2},
+                None, None, "proj_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, ETrt_p3, is not a forsys output header')
@@ -192,9 +364,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p2": 2},
-                                 "project_id", "area", "cost")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p2": 2},
+                None, None, "project_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, project_id, is not a forsys output header')
@@ -204,9 +376,9 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p2": 2},
-                                 "proj_id", "area_ha", "cost")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p2": 2},
+                None, None, "proj_id", "area_ha", "cost")
 
         self.assertEqual(
             str(context.exception),
@@ -217,13 +389,111 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
-            ForsysScenarioOutput(raw_forsys_output,
-                                 {"p1": 1, "p2": 2},
-                                 "proj_id", "area", "c")
+            ForsysScenarioOutput(
+                raw_forsys_output, {"p1": 1, "p2": 2},
+                None, None, "proj_id", "area", "c")
 
         self.assertEqual(
             str(context.exception),
             'header, ETrt_c, is not a forsys output header')
+
+    def test_limits_area(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioOutput(
+            raw_forsys_output,  {"p1": 1, "p2": 2},
+            25, None, "proj_id", "area", "cost")
+
+        scenario = parsed_output.scenario
+
+        self.assertDictEqual(scenario,
+                             {
+                                 'priority_weights': {'p1': 1, 'p2': 2},
+                                 'ranked_projects': [
+                                     {'id': 2,
+                                      'weighted_priority_scores': {
+                                          'p1': 0.1, 'p2': 0.8},
+                                      'total_score': 0.9,
+                                      'rank': 1},
+                                     {'id': 1,
+                                         'weighted_priority_scores': {
+                                             'p1': 0.5, 'p2': 0.2},
+                                         'total_score': 0.7,
+                                         'rank': 2},
+                                 ],
+                                 'cumulative_ranked_project_area': [11, 21],
+                                 'cumulative_ranked_project_cost': [600, 1100],
+                             })
+
+    def test_limits_area_by_skipping_top_project(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioOutput(
+            raw_forsys_output, {"p1": 1, "p2": 2},
+            10, None, "proj_id", "area", "cost")
+
+        scenario = parsed_output.scenario
+
+        self.assertDictEqual(scenario,
+                             {
+                                 'priority_weights': {'p1': 1, 'p2': 2},
+                                 'ranked_projects': [
+                                     {'id': 1,
+                                         'weighted_priority_scores': {
+                                             'p1': 0.5, 'p2': 0.2},
+                                         'total_score': 0.7,
+                                         'rank': 2},
+                                 ],
+                                 'cumulative_ranked_project_area': [10],
+                                 'cumulative_ranked_project_cost': [500],
+                             })
+
+    def test_limits_cost(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioOutput(
+            raw_forsys_output, {"p1": 1, "p2": 2},
+            None, 1200, "proj_id", "area", "cost")
+
+        scenario = parsed_output.scenario
+
+        self.assertDictEqual(scenario,
+                             {
+                                 'priority_weights': {'p1': 1, 'p2': 2},
+                                 'ranked_projects': [
+                                     {'id': 2,
+                                      'weighted_priority_scores': {
+                                          'p1': 0.1, 'p2': 0.8},
+                                      'total_score': 0.9,
+                                      'rank': 1},
+                                     {'id': 1,
+                                         'weighted_priority_scores': {
+                                             'p1': 0.5, 'p2': 0.2},
+                                         'total_score': 0.7,
+                                         'rank': 2},
+                                 ],
+                                 'cumulative_ranked_project_area': [11, 21],
+                                 'cumulative_ranked_project_cost': [600, 1100],
+                             })
+
+    def test_limits_cost_by_skipping_top_project(self) -> None:
+        raw_forsys_output = self._get_raw_forsys_output()
+        parsed_output = ForsysScenarioOutput(
+            raw_forsys_output, {"p1": 1, "p2": 2},
+            None, 550, "proj_id", "area", "cost")
+
+        scenario = parsed_output.scenario
+
+        self.assertDictEqual(scenario,
+                             {
+                                 'priority_weights': {'p1': 1, 'p2': 2},
+                                 'ranked_projects': [
+                                     {'id': 1,
+                                         'weighted_priority_scores': {
+                                             'p1': 0.5, 'p2': 0.2},
+                                         'total_score': 0.7,
+                                         'rank': 2},
+                                 ],
+                                 'cumulative_ranked_project_area': [10],
+                                 'cumulative_ranked_project_cost': [500],
+                             })
 
     def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
         data = {
