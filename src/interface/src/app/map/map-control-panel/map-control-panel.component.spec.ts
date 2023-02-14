@@ -38,6 +38,7 @@ describe('MapControlPanelComponent', () => {
         display_name: 'HUC-12',
       },
     ];
+    component.conditionsConfig$ = of({});
     component.maps = [1, 2, 3, 4].map((id) => {
       return {
         id: `map${id}`,

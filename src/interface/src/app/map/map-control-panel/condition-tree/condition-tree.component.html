@@ -1,6 +1,6 @@
 <mat-expansion-panel expanded="false">
   <mat-expansion-panel-header class="layer-panel-header">
-    Ecosystem scores
+    {{header}}
   </mat-expansion-panel-header>
 
   <mat-radio-group name="{{ map.id + '-conditions-select' }}" aria-label="Select an option"
@@ -22,7 +22,6 @@
               {{node.display_name}}
             </span>
             <button mat-icon-button
-              *ngIf="!isNoneNode(node)"
               [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
               (menuClosed)="node.infoMenuOpen = false">
               <mat-icon color="primary">info_outline</mat-icon>

@@ -59,7 +59,7 @@
             (change)="changeBaseLayer.emit(map)">
             <div class="layer-control-container" *ngFor="let baseLayerType of baseLayerTypes">
               <mat-radio-button [value]="baseLayerType"
-                checked="{{ baseLayerType == map.config.baseLayerType }}" class="layer-radio-button">
+                checked="{{ baseLayerType == map.config.baseLayerType }}">
                 {{ BaseLayerType[baseLayerType] }}
               </mat-radio-button>
             </div>
@@ -75,12 +75,12 @@
             class="layer-radio-group" color="primary"
             [(ngModel)]="map.config.boundaryLayerConfig" (change)="changeBoundaryLayer.emit(map)">
             <div class="layer-control-container">
-              <mat-radio-button class="layer-radio-button" [value]="noneBoundaryConfig">
+              <mat-radio-button [value]="noneBoundaryConfig">
                 None
               </mat-radio-button>
             </div>
             <div *ngFor="let boundary of boundaryConfig" class="layer-control-container">
-              <mat-radio-button class="layer-radio-button" [value]="boundary">
+              <mat-radio-button [value]="boundary">
                 {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
               </mat-radio-button>
               <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]">
@@ -107,8 +107,36 @@
         </mat-expansion-panel>
 
         <!-- Ecosystem scores controls -->
+        <mat-expansion-panel expanded="false">
+          <mat-expansion-panel-header class="layer-panel-header">
+            <mat-panel-title>
+              Ecosystem scores
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="layer-control-container flex-center">
+            <mat-radio-group class="layer-radio-group">
+              <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff()"
+                [checked]="map.config.dataLayerConfig.filepath === ''">
+                All Layers Off
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Current condition controls -->
         <app-condition-tree
-          [conditionsConfig$]="conditionsConfig$"
+          #conditionTreeRaw
+          [conditionsData$]="conditionDataRaw$"
+          [header]="'Current Condition'"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event)">
+        </app-condition-tree>
+
+        <!-- Normalized current condition controls -->
+        <app-condition-tree
+          #conditionTreeNormalized
+          [conditionsData$]="conditionDataNormalized$"
+          [header]="'Current Condition (Normalized)'"
           [map]="map"
           (changeConditionLayer)="changeConditionLayer.emit($event)">
         </app-condition-tree>

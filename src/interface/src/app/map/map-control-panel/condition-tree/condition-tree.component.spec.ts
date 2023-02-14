@@ -16,7 +16,14 @@ describe('ConditionTreeComponent', () => {
     fixture = TestBed.createComponent(ConditionTreeComponent);
     component = fixture.componentInstance;
 
-    component.conditionsConfig$ = of({});
+    component.conditionsData$ = of([
+      {
+        children: [{}, {}, {}],
+      },
+      {
+        children: [],
+      },
+    ]);
     component.map = {
       id: 'map1',
       name: 'Map 1',
