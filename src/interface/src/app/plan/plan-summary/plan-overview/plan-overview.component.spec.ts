@@ -1,9 +1,10 @@
-import { MaterialModule } from 'src/app/material/material.module';
-import { MatButtonHarness } from '@angular/material/button/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { RouterTestingModule } from '@angular/router/testing';
+import { MaterialModule } from 'src/app/material/material.module';
 
 import { PlanModule } from './../../plan.module';
 import { PlanOverviewComponent } from './plan-overview.component';
@@ -15,7 +16,12 @@ describe('PlanOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule, PlanModule],
+      imports: [
+        HttpClientTestingModule,
+        MaterialModule,
+        PlanModule,
+        RouterTestingModule,
+      ],
       declarations: [PlanOverviewComponent],
     }).compileComponents();
 
