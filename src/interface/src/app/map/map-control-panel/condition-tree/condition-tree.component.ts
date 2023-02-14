@@ -5,7 +5,6 @@ import { filter, Observable, take } from 'rxjs';
 import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG } from 'src/app/types';
 
 export interface ConditionsNode extends DataLayerConfig {
-  selected?: boolean;
   infoMenuOpen?: boolean;
   disableSelect?: boolean; // Node should not include a radio button
   styleDisabled?: boolean; // Node should be greyed out but still selectable
@@ -40,8 +39,8 @@ export class ConditionTreeComponent implements OnInit {
       .subscribe((data) => {
         this.conditionDataSource.data = data;
         // Ensure the radio button corresponding to the saved selection is selected.
-        this.map.config.dataLayerConfig = this.findAndRevealNodeWithFilepath(
-          this.map.config.dataLayerConfig.filepath
+        this.map.config.dataLayerConfig = this.findAndRevealNode(
+          this.map.config.dataLayerConfig
         );
       });
   }
@@ -58,7 +57,6 @@ export class ConditionTreeComponent implements OnInit {
 
   onSelect(node: ConditionsNode): void {
     this.unstyleAndDeselectAllNodes();
-    node.selected = true;
     this.styleDescendantsDisabled(node);
   }
 
@@ -70,7 +68,6 @@ export class ConditionTreeComponent implements OnInit {
       );
     } else if (node) {
       node.styleDisabled = false;
-      node.selected = false;
       node.children?.forEach((child) => this.unstyleAndDeselectAllNodes(child));
     }
   }
@@ -85,44 +82,34 @@ export class ConditionTreeComponent implements OnInit {
     });
   }
 
-  /** Find the node matching the given filepath in the condition tree (if any), and expand its ancestors
+  /** Find the node matching the given config in the condition tree (if any), and expand its ancestors
    *  so it becomes visible.
    */
-  private findAndRevealNodeWithFilepath(
-    filepath: string | undefined
-  ): ConditionsNode {
-    if (!filepath || filepath === NONE_DATA_LAYER_CONFIG.filepath)
+  private findAndRevealNode(config: DataLayerConfig): ConditionsNode {
+    if (!config.filepath || config.filepath === NONE_DATA_LAYER_CONFIG.filepath)
       return NONE_DATA_LAYER_CONFIG;
-    for (let tree of this.conditionDataSource.data) {
-      if (tree.filepath === filepath) return tree;
-      if (tree.children) {
-        for (let pillar of tree.children) {
-          if (pillar.filepath === filepath) {
-            this.conditionTreeControl.expand(tree);
-            return pillar;
+    for (let pillar of this.conditionDataSource.data) {
+      if (pillar.filepath === config.filepath) {
+        return pillar;
+      }
+      if (pillar.children) {
+        for (let element of pillar.children) {
+          if (element.filepath === config.filepath) {
+            this.conditionTreeControl.expand(pillar);
+            return element;
           }
-          if (pillar.children) {
-            for (let element of pillar.children) {
-              if (element.filepath === filepath) {
-                this.conditionTreeControl.expand(tree);
+          if (element.children) {
+            for (let metric of element.children) {
+              if (metric.filepath === config.filepath) {
                 this.conditionTreeControl.expand(pillar);
-                return element;
-              }
-              if (element.children) {
-                for (let metric of element.children) {
-                  if (metric.filepath === filepath) {
-                    this.conditionTreeControl.expand(tree);
-                    this.conditionTreeControl.expand(pillar);
-                    this.conditionTreeControl.expand(element);
-                    return metric;
-                  }
-                }
+                this.conditionTreeControl.expand(element);
+                return metric;
               }
             }
           }
         }
       }
     }
-    return NONE_DATA_LAYER_CONFIG;
+    return config;
   }
 }
