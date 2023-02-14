@@ -41,6 +41,39 @@ def _read_common_url_params(self, params: QueryDict) -> None:
                 len(self.priority_weights)))
 
 
+def _check_project_area_from_url_params_fields_exist(
+        project_area: ProjectAreaFromUrlParams) -> None:
+    if 'polygons' not in project_area.keys():
+        raise Exception('project area missing field, "polygons"')
+    if len(project_area['polygons']) == 0:
+        raise Exception('project area field, "polygons" is an empty list')
+    if 'id' not in project_area.keys():
+        raise Exception('project area missing field, "id"')
+
+
+def _parse_project_area_from_url_params(
+        project_area: ProjectAreaFromUrlParams) -> MultiPolygon:
+    _check_project_area_from_url_params_fields_exist(project_area)
+    srid = 4269 if 'srid' not in project_area.keys(
+    ) else project_area['srid']  # TODO: make 4269 a constant.
+    polygons: list[Polygon] = []
+    for p in project_area['polygons']:
+        polygon = Polygon(tuple(p['coordinates']))
+        polygon.srid = srid
+        if not polygon.valid:
+            raise Exception(
+                "polygon described by %s is invalid - %s" %
+                (json.dumps(project_area), polygon.valid_reason))
+        polygons.append(polygon)
+    if len(polygons) == 0:
+        raise Exception(
+            "multipolygon described by %s missing polygons" % json.dumps(
+                project_area))
+    m = MultiPolygon(polygons)
+    m.srid = srid
+    return m
+
+
 # Gathers forsys input parameters from url params, database lookups, or a
 # combination of the two.
 # Of note, the option to set all forsys input paramters via url parameters is
@@ -141,32 +174,9 @@ class ForsysProjectAreaRankingRequestParams():
         for project_area_str in params.getlist(self._URL_PROJECT_AREAS):
             project_area = ProjectAreaFromUrlParams(
                 json.loads(project_area_str))
-            self._check_project_area_from_url_params_fields_exist(project_area)
-            srid = 4269 if 'srid' not in project_area.keys(
-            ) else project_area['srid']  # TODO: make 4269 a constant.
-            polygons: list[Polygon] = []
-            for p in project_area['polygons']:
-                polygon = Polygon(tuple(p['coordinates']))
-                polygon.srid = srid
-                if not polygon.valid:
-                    raise Exception("polygon described by %s is invalid - %s" %
-                                    (project_area_str, polygon.valid_reason))
-                polygons.append(polygon)
-            if len(polygons) == 0:
-                continue
-            m = MultiPolygon(polygons)
-            m.srid = srid
-            project_areas[project_area['id']] = m
+            multipolygon = _parse_project_area_from_url_params(project_area)
+            project_areas[project_area['id']] = multipolygon
         return project_areas
-
-    def _check_project_area_from_url_params_fields_exist(
-            self, project_area: ProjectAreaFromUrlParams) -> None:
-        if 'polygons' not in project_area.keys():
-            raise Exception('project area missing field, "polygons"')
-        if len(project_area['polygons']) == 0:
-            raise Exception('project area field, "polygons" is an empty list')
-        if 'id' not in project_area.keys():
-            raise Exception('project area missing field, "id"')
 
 
 # Gathers forsys input parameters from url params, database lookups, or a
@@ -211,9 +221,12 @@ class ForsysProjectAreaGenerationRequestParams():
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
-        if self._URL_PROJECT_AREAS in params:
-            self.project_areas = self._read_project_areas_from_url_params(
-                params)
+        if self._URL_PLANNING_AREA in params:
+            project_area_str = params.get(self._URL_PLANNING_AREA, "")
+            project_area = ProjectAreaFromUrlParams(
+                json.loads(project_area_str))
+            self.planning_area = _parse_project_area_from_url_params(
+                project_area)
         else:
             self.project_areas = self._get_default_project_areas()
 
