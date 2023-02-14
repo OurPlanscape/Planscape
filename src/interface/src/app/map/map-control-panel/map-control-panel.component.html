@@ -114,10 +114,11 @@
             </mat-panel-title>
           </mat-expansion-panel-header>
           <div class="layer-control-container flex-center">
-            <mat-radio-group class="layer-radio-group">
+            <mat-radio-group class="layer-radio-group" color="primary" [(ngModel)]="map.config.dataLayerConfig">
               <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff();
                 conditionTreeNormalized.toggleAllLayersOff()"
-                [checked]="map.config.dataLayerConfig.filepath === ''">
+                color="primary"
+                [value]="noneDataLayerConfig">
                 All Layers Off
               </mat-radio-button>
             </mat-radio-group>
