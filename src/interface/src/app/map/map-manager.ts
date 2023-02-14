@@ -120,17 +120,20 @@ export class MapManager {
       snappable: false,
       removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
-        color: '#7b61ff',
+        color: '#3367D6',
+        weight: 8,
       },
       templineStyle: {
-        color: '#7b61ff',
+        color: '#3367D6',
+        weight: 8,
       },
       layerGroup: this.drawingLayer,
     });
     map.instance!.pm.setPathOptions({
-      color: '#7b61ff',
-      fillColor: '#7b61ff',
-      fillOpacity: 0.2,
+      color: '#3367D6',
+      fillColor: '#3367D6',
+      fillOpacity: 0.1,
+      weight: 8,
     });
 
     this.setUpEventHandlers(map, createDetailCardCallback);
