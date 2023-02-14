@@ -120,6 +120,9 @@ class ForsysProjectAreaRankingRequestParams():
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
 
+    # If field is present, returns field value but raises an exception if the
+    # field value isn't positive.
+    # IF field isn't present, returns None.
     def _read_positive_float(
             self, params: QueryDict, query_param: str) -> float | None:
         v = params.get(query_param, None)
