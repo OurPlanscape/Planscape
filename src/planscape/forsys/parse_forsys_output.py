@@ -322,6 +322,9 @@ class ForsysScenarioOutput():
             project['total_score'] = project['total_score'] + contribution
         return project
 
+    # TODO: merge logic in _append_ranked_project_to_scenario
+    # _append_ranked_project_to_new_scenario, and
+    # _append_ranked_project_to_existing_scenario into a single function.
     def _append_ranked_project_to_scenario(
             self, priority_weights: dict[str, float],
             i: int) -> None:
