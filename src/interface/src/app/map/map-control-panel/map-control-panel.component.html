@@ -115,7 +115,8 @@
           </mat-expansion-panel-header>
           <div class="layer-control-container flex-center">
             <mat-radio-group class="layer-radio-group">
-              <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff()"
+              <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff();
+                conditionTreeNormalized.toggleAllLayersOff()"
                 [checked]="map.config.dataLayerConfig.filepath === ''">
                 All Layers Off
               </mat-radio-button>
