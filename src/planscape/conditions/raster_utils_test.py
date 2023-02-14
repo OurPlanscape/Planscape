@@ -3,17 +3,17 @@ from base.condition_types import ConditionLevel
 from conditions.models import BaseCondition, Condition
 from conditions.raster_condition_retrieval_testcase import \
     RasterConditionRetrievalTestCase
-from conditions.raster_utils import (compute_condition_score_from_raster,
-                                     fetch_or_compute_mean_condition_scores)
+from conditions.raster_utils import (compute_condition_stats_from_raster,
+                                     fetch_or_compute_condition_stats)
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from plan.models import ConditionScores, Plan
 
 
-class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
+class ConditionStatsTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
-    def test_returns_score(self):
+    def test_returns_stats(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
@@ -22,12 +22,13 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16))
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
-        score = compute_condition_score_from_raster(geo, "foo")
-        self.assertEqual(score, 36.0 / 8)
+        stats = compute_condition_stats_from_raster(geo, "foo")
+        self.assertDictEqual(
+            stats, {'mean': 36.0 / 8, 'sum': 36.0, 'count': 8})
 
     def test_fails_for_missing_geo(self):
         with self.assertRaises(Exception) as context:
-            compute_condition_score_from_raster(None, "foo")
+            compute_condition_stats_from_raster(None, "foo")
         self.assertEqual(
             str(context.exception), "missing input geometry")
 
@@ -42,7 +43,7 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         geo = MultiPolygon(polygon)
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
-            compute_condition_score_from_raster(geo, "foo")
+            compute_condition_stats_from_raster(geo, "foo")
         self.assertIn(
             "invalid geo: Self-intersection[", str(context.exception))
 
@@ -56,11 +57,11 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
         geo = MultiPolygon(polygon)
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
-            compute_condition_score_from_raster(geo, "foo")
+            compute_condition_stats_from_raster(geo, "foo")
         self.assertEqual(
             str(context.exception), "geometry SRID is 4269 (expected 9822)")
 
-    def test_returns_none_for_no_intersection(self):
+    def test_returns_stats_for_no_intersection(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 7, 10, 0, 1)
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
@@ -69,24 +70,24 @@ class MeanConditionScoreTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16))
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
-        score = compute_condition_score_from_raster(geo, "foo")
-        self.assertIsNone(score)
+        stats = compute_condition_stats_from_raster(geo, "foo")
+        self.assertDictEqual(stats, {'mean': None, 'sum': 0.0, 'count': 0.0})
 
     def test_fails_for_missing_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         with self.assertRaises(Exception) as context:
-            compute_condition_score_from_raster(
+            compute_condition_stats_from_raster(
                 geo, "nonexistent_raster_name")
         self.assertEqual(
             str(context.exception),
             "no rasters available for raster_name, nonexistent_raster_name")
 
 
-class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
+class AllConditionStatsTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
-    def test_computes_mean_scores(self):
+    def test_computes_stats(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         plan = Plan.objects.create(geometry=geo, region_name=self.region)
 
@@ -115,17 +116,28 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
         baz_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "baz", "baz_normalized", baz_raster)
 
-        scores = fetch_or_compute_mean_condition_scores(plan)
+        scores = fetch_or_compute_condition_stats(plan)
 
         self.assertDictEqual(
-            scores, {"foo": 36.0 / 8, "bar": 100.0 / 8, "baz": 10.0 / 2})
+            scores, {"foo": {"mean": 36.0 / 8, "sum": 36.0, "count": 8},
+                     "bar": {"mean": 100.0 / 8, "sum": 100.0, "count": 8},
+                     "baz": {"mean": 10.0 / 2, "sum": 10.0, "count": 2}})
         self.assertEqual(len(ConditionScores.objects.all()), 3)
-        self.assertEqual(ConditionScores.objects.get(
-            condition_id=foo_id).mean_score, 36.0 / 8)
-        self.assertEqual(ConditionScores.objects.get(
-            condition_id=bar_id).mean_score, 100.0 / 8)
-        self.assertEqual(ConditionScores.objects.get(
-            condition_id=baz_id).mean_score, 10.0 / 2)
+        foo_condition = ConditionScores.objects.get(
+            condition_id=foo_id)
+        self.assertEqual(foo_condition.mean_score, 36.0 / 8)
+        self.assertEqual(foo_condition.sum, 36.0)
+        self.assertEqual(foo_condition.count, 8)
+        bar_condition = ConditionScores.objects.get(
+            condition_id=bar_id)
+        self.assertEqual(bar_condition.mean_score, 100.0 / 8)
+        self.assertEqual(bar_condition.sum, 100.0)
+        self.assertEqual(bar_condition.count, 8)
+        baz_condition = ConditionScores.objects.get(
+            condition_id=baz_id)
+        self.assertEqual(baz_condition.mean_score, 10.0 / 2)
+        self.assertEqual(baz_condition.sum, 10.0)
+        self.assertEqual(baz_condition.count, 2)
 
     def test_raises_error_for_missing_geo(self):
         plan = Plan.objects.create(geometry=None, region_name=self.region)
@@ -138,7 +150,7 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
         RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
         with self.assertRaises(Exception) as context:
-            fetch_or_compute_mean_condition_scores(plan)
+            fetch_or_compute_condition_stats(plan)
         self.assertEqual(
             str(context.exception), "plan is missing geometry")
 
@@ -163,7 +175,7 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
             self, "foo", "foo_normalized", foo_raster)
 
         with self.assertRaises(Exception) as context:
-            fetch_or_compute_mean_condition_scores(plan)
+            fetch_or_compute_condition_stats(plan)
         self.assertIn(
             "invalid geo: Self-intersection[", str(context.exception))
 
@@ -179,7 +191,7 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
             condition_dataset=base_condition, is_raw=False)
 
         with self.assertRaises(Exception) as context:
-            fetch_or_compute_mean_condition_scores(plan)
+            fetch_or_compute_condition_stats(plan)
         self.assertEqual(
             str(context.exception),
             "no rasters available for raster_name, foo_normalized")
@@ -197,7 +209,7 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
         RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", foo_raster)
         with self.assertRaises(Exception) as context:
-            fetch_or_compute_mean_condition_scores(plan)
+            fetch_or_compute_condition_stats(plan)
         self.assertEqual(
             str(context.exception), "region, nonsensical region, is invalid")
 
@@ -215,12 +227,16 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
         foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", raster)
 
-        scores = fetch_or_compute_mean_condition_scores(plan)
+        stats = fetch_or_compute_condition_stats(plan)
 
-        self.assertDictEqual(scores, {"foo": None})
+        self.assertDictEqual(
+            stats, {"foo": {"mean": None, "sum": 0.0, "count": 0.0}})
         self.assertEqual(len(ConditionScores.objects.all()), 1)
-        self.assertEqual(ConditionScores.objects.get(
-            condition_id=foo_id).mean_score, None)
+        foo_condition = ConditionScores.objects.get(
+            condition_id=foo_id)
+        self.assertIsNone(foo_condition.mean_score)
+        self.assertEqual(foo_condition.sum, 0.0)
+        self.assertEqual(foo_condition.count, 0)
 
     def test_computes_no_score_for_no_intersection(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 6, 10, 0, 1)
@@ -235,12 +251,16 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
         foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", raster)
 
-        scores = fetch_or_compute_mean_condition_scores(plan)
+        stats = fetch_or_compute_condition_stats(plan)
 
-        self.assertDictEqual(scores, {"foo": None})
+        self.assertDictEqual(
+            stats, {"foo": {"mean": None, "sum": 0.0, "count": 0.0}})
         self.assertEqual(len(ConditionScores.objects.all()), 1)
-        self.assertEqual(ConditionScores.objects.get(
-            condition_id=foo_id).mean_score, None)
+        foo_condition = ConditionScores.objects.get(
+            condition_id=foo_id)
+        self.assertIsNone(foo_condition.mean_score)
+        self.assertEqual(foo_condition.sum, 0.0)
+        self.assertEqual(foo_condition.count, 0)
 
     def test_transforms_geo(self):
         polygon = Polygon(
@@ -262,14 +282,18 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
         foo_id = RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "foo", "foo_normalized", raster)
 
-        scores = fetch_or_compute_mean_condition_scores(plan)
+        stats = fetch_or_compute_condition_stats(plan)
 
-        self.assertDictEqual(scores, {"foo": None})
+        self.assertDictEqual(
+            stats, {"foo": {"mean": None, "sum": 0.0, "count": 0.0}})
         self.assertEqual(len(ConditionScores.objects.all()), 1)
-        self.assertEqual(ConditionScores.objects.get(
-            condition_id=foo_id).mean_score, None)
+        foo_condition = ConditionScores.objects.get(
+            condition_id=foo_id)
+        self.assertIsNone(foo_condition.mean_score)
+        self.assertEqual(foo_condition.sum, 0.0)
+        self.assertEqual(foo_condition.count, 0)
 
-    def test_retrieves_mean_scores(self):
+    def test_retrieves_mean_scores_from_db(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         plan = Plan.objects.create(geometry=geo, region_name=self.region)
 
@@ -290,9 +314,11 @@ class AllMeanConditionScoresTest(RasterConditionRetrievalTestCase):
             self, "bar", "bar_normalized", bar_raster)
 
         ConditionScores.objects.create(
-            plan=plan, condition_id=foo_id, mean_score=5.0)
+            plan=plan, condition_id=foo_id, mean_score=5.0, sum=10.0, count=2)
         ConditionScores.objects.create(
-            plan=plan, condition_id=bar_id, mean_score=None)
+            plan=plan, condition_id=bar_id, mean_score=None, sum=0.0, count=0)
 
-        scores = fetch_or_compute_mean_condition_scores(plan)
-        self.assertDictEqual(scores, {"foo": 5.0, "bar": None})
+        scores = fetch_or_compute_condition_stats(plan)
+        self.assertDictEqual(
+            scores, {"foo": {"mean": 5.0, "sum": 10.0, "count": 2},
+                     "bar": {"mean": None, "sum": 0.0, "count": 0}})

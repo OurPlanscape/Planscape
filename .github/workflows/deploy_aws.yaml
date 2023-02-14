@@ -54,6 +54,7 @@ jobs:
         run: |
           echo "frontend_image=$ECR_REGISTRY/$ECR_REPOSITORY:frontend-$IMAGE_TAG" >> $GITHUB_ENV
           echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG" >> $GITHUB_ENV
+          echo "r_image=$ECR_REGISTRY/$ECR_REPOSITORY:r-$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Build, tag, and push frontend
         id: build-frontend
@@ -71,6 +72,14 @@ jobs:
           docker build -t planscape-backend .
           docker tag planscape-backend:latest ${{ env.backend_image }}
           docker push ${{ env.backend_image }}
+        
+      - name: Build, tag, and push r
+        id: build-r
+        run: |
+          cd src/planscape_r
+          docker build -t planscape-r .
+          docker tag planscape-r:latest ${{ env.r_image }}
+          docker push ${{ env.r_image }}
 
       - name: Render backend
         id: render-backend-container
@@ -90,6 +99,14 @@ jobs:
           task-definition: ${{ steps.render-backend-container.outputs.task-definition }}
           container-name: frontend
           image: ${{ env.frontend_image }}
+
+      # - name: Modify Amazon ECS task definition with r container
+      #   id: render-r-container
+      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+      #   with:
+      #     task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
+      #     container-name: r
+      #     image: ${{ env.r_image }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1

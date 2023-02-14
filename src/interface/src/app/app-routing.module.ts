@@ -14,6 +14,7 @@ import { PlanTableComponent } from './plan/plan-table/plan-table.component';
 import { PlanComponent } from './plan/plan.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import { SignupComponent } from './signup/signup.component';
+import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
 
 const routes: Routes = [
   {
@@ -39,7 +40,18 @@ const routes: Routes = [
         component: RegionSelectionComponent,
       },
       { path: 'map', title: 'Explore', component: MapComponent },
-      { path: 'plan/:id', title: 'Plan Details', component: PlanComponent },
+      {
+        path: 'plan/:id',
+        title: 'Plan Details',
+        component: PlanComponent,
+        children: [
+          {
+            path: `scenario/:id`,
+            title: 'Saved Scenario Details',
+            component: ScenarioDetailsComponent,
+          },
+        ],
+      },
       { path: 'plan', title: 'My Plans', component: PlanTableComponent },
     ],
   },
