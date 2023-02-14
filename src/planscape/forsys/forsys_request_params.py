@@ -86,6 +86,8 @@ class ForsysProjectAreaRankingRequestParams():
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PROJECT_AREAS = 'project_areas'
+    _URL_MAX_AREA = 'max_area'
+    _URL_MAX_COST = 'max_cost'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -105,6 +107,10 @@ class ForsysProjectAreaRankingRequestParams():
     # Project areas to be ranked. A project area may consist of multiple
     # disjoint polygons. The dict is keyed by project ID.
     project_areas: dict[int, MultiPolygon]
+    # Global constraints applied to the entire set of projects.
+    max_area_in_km2: float | None  # unit: km squared
+    max_cost_in_usd: float | None  # unit: USD
+
 
     def __init__(self, params: QueryDict) -> None:
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
@@ -113,6 +119,7 @@ class ForsysProjectAreaRankingRequestParams():
         else:
             self._read_db_params(params)
 
+
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         if self._URL_PROJECT_AREAS in params:
@@ -120,6 +127,11 @@ class ForsysProjectAreaRankingRequestParams():
                 params)
         else:
             self.project_areas = self._get_default_project_areas()
+        self.max_area_in_km2 = self._read_positive_float(params,
+                                                         self._URL_MAX_AREA)
+        self.max_cost_in_usd = self._read_positive_float(params,
+                                                         self._URL_MAX_COST)
+
 
     def _read_db_params(self, params: QueryDict) -> None:
         try:
@@ -140,6 +152,22 @@ class ForsysProjectAreaRankingRequestParams():
                 self.project_areas[area.pk] = area.project_area
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
+
+
+    # If field is present, returns field value but raises an exception if the
+    # field value isn't positive.
+    # IF field isn't present, returns None.
+    def _read_positive_float(
+            self, params: QueryDict, query_param: str) -> float | None:
+        v = params.get(query_param, None)
+        if v is None:
+            return None
+        v = float(v)
+        if v <= 0:
+            raise Exception(
+                "expected param, %s, to have a positive value" % query_param)
+        return v
+
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
         srid = 4269
@@ -198,7 +226,8 @@ class ForsysProjectAreaGenerationRequestParams():
                            'forest_resilience', 'species_diversity']
 
     # TODO: make regions and priorities enums to make error checking easier.
-    # TODO: add fields for costs, treatments, and stand-level constraints.
+    # TODO: add fields for costs, treatments, and global, project-level, and
+    # stand-level constraints.
     # The planning region.
     region: str
     # Conditions whose AP scores will be considered when ranking projects.
