@@ -73,6 +73,11 @@ export class SetPrioritiesComponent implements OnInit {
         this.datasource.data = this.conditionsConfigToPriorityData(
           conditionsConfig!
         );
+        // Prefill checkboxes for priorities that are already in the form.
+        this.formGroup
+          ?.get('priorities')
+          ?.valueChanges.pipe(take(1))
+          .subscribe((_) => this.updateSelectedPriorities());
       });
     this.plan$.pipe(filter((plan) => !!plan)).subscribe((plan) => {
       this.planService
@@ -192,11 +197,22 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   /** Update the priority list with the user's current selections. */
-  updateSelectedPriorities(): void {
+  updatePrioritiesFormControl(): void {
     const selectedPriorities: string[] = this.datasource.data
       .filter((row) => row.selected)
       .map((row) => row.conditionName);
     this.formGroup?.get('priorities')?.setValue(selectedPriorities);
     this.formGroup?.get('priorities')?.markAsDirty();
+  }
+
+  /** Update the checkboxes with the current form value. */
+  updateSelectedPriorities(): void {
+    const priorities: string[] = this.formGroup?.get('priorities')?.value;
+    this.datasource.data = this.datasource.data.map((row) => {
+      if (priorities.includes(row.conditionName)) {
+        row.selected = true;
+      }
+      return row;
+    });
   }
 }

@@ -733,12 +733,14 @@ class GetProjectTest(TransactionTestCase):
         self.project_with_user_no_pri = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100)
 
-        self.base_condition = BaseCondition.objects.create(
-            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.base_condition1 = BaseCondition.objects.create(
+            condition_name="name1", condition_level=ConditionLevel.ELEMENT)
+        self.base_condition2 = BaseCondition.objects.create(
+            condition_name="name2", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="name1")
+            condition_dataset=self.base_condition1, raster_name="name1")
         self.condition2 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="name2")
+            condition_dataset=self.base_condition2, raster_name="name2")
 
     def test_get_project_does_not_belong_to_user(self):
         self.client.force_login(self.user)
@@ -787,8 +789,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
         self.assertEqual(response.json()['max_budget'], 100)
-        self.assertEqual(response.json()['priorities'], [
-                         self.condition1.pk, self.condition2.pk])
+        self.assertEqual(response.json()['priorities'], ["name1", "name2"])
 
     def test_get_project_with_priorities(self):
         self.client.force_login(self.user)
@@ -803,8 +804,7 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['owner'], self.user.pk)
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
         self.assertEqual(response.json()['max_budget'], 100)
-        self.assertEqual(response.json()['priorities'], [
-                         self.condition1.pk, self.condition2.pk])
+        self.assertEqual(response.json()['priorities'], ["name1", "name2"])
 
 
 class ListProjectsTest(TransactionTestCase):

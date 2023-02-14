@@ -271,4 +271,19 @@ describe('SetPrioritiesComponent', () => {
       'test_element_1',
     ]);
   });
+
+  it('updateSelectedPriorities should update checkboxes', async () => {
+    component.formGroup?.get('priorities')?.setValue([]);
+    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
+    const conditionCheckbox1 = checkboxHarnesses[0];
+
+    expect(component.datasource.data[0].selected).toBeFalsy();
+    expect(await conditionCheckbox1.isChecked()).toBeFalse();
+
+    component.formGroup?.get('priorities')?.setValue(['test_pillar_1']);
+    component.updateSelectedPriorities();
+
+    expect(component.datasource.data[0].selected).toBeTrue();
+    expect(await conditionCheckbox1.isChecked()).toBeTrue();
+  });
 });
