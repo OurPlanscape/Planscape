@@ -8,6 +8,7 @@ import {
   PlanConditionScores,
   PlanPreview,
   ProjectConfig,
+  Scenario,
 } from './../types/plan.types';
 
 export interface PlanState {
@@ -15,6 +16,7 @@ export interface PlanState {
     [planId: string]: Plan;
   };
   currentPlanId: Plan['id'] | null;
+  currentScenarioId: Scenario['id'] | null;
 }
 
 export interface BackendPlan {
@@ -36,6 +38,7 @@ export class PlanService {
   readonly planState$ = new BehaviorSubject<PlanState>({
     all: {}, // All plans indexed by id
     currentPlanId: null,
+    currentScenarioId: null,
   });
 
   constructor(private http: HttpClient) {}
@@ -245,6 +248,19 @@ export class PlanService {
         ...currentState.all,
         [plan.id]: plan,
       },
+    });
+
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithScenario(scenarioId: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      currentScenarioId: scenarioId,
     });
 
     this.planState$.next(updatedState);
