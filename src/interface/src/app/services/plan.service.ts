@@ -152,7 +152,7 @@ export class PlanService {
   }
 
   /** Fetches the projects for a plan from the backend. */
-  getProjects(planId: string): Observable<ProjectConfig[]> {
+  getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
     let url = BackendConstants.END_POINT.concat(
       '/plan/list_projects_for_plan/?plan_id=',
       planId
@@ -168,6 +168,22 @@ export class PlanService {
             this.convertToProjectConfig(config)
           )
         )
+      );
+  }
+
+  /** Fetches a project by its ID from the backend. */
+  getProject(projectId: number): Observable<ProjectConfig> {
+    let url = BackendConstants.END_POINT.concat(
+      '/plan/get_project/?id=',
+      projectId.toString()
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response) => this.convertToProjectConfig(response))
       );
   }
 

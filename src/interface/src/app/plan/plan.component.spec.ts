@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
@@ -61,7 +61,7 @@ describe('PlanComponent', () => {
 
     const fakeService = jasmine.createSpyObj('PlanService', {
       getPlan: of(fakePlan),
-      getProjects: of([]),
+      getProjectsForPlan: of([]),
       updateStateWithScenario: of(fakePlan),
     });
     fakeService.planState$ = of({});
@@ -96,5 +96,12 @@ describe('PlanComponent', () => {
   it('fetches plan from service using ID', () => {
     expect(component.planNotFound).toBeFalse();
     expect(component.plan).toEqual(fakePlan);
+  });
+
+  it('opening a config advances the plan step', () => {
+    component.openConfig(1);
+
+    expect(component.openConfigId).toEqual(1);
+    expect(component.currentPlanStep).toBe(1);
   });
 });

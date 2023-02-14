@@ -1,9 +1,9 @@
-import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   ActivatedRoute,
+  Event as NavigationEvent,
   NavigationEnd,
   Router,
-  Event as NavigationEvent,
 } from '@angular/router';
 import { BehaviorSubject, filter, map, Subject, take, takeUntil } from 'rxjs';
 
@@ -30,6 +30,8 @@ export class PlanComponent implements OnInit, OnDestroy {
   currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
   viewScenario$ = new BehaviorSubject<boolean>(false);
+
+  openConfigId?: number;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -89,6 +91,11 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   drawShapes(shapes: any): void {
     this.map.drawShapes(shapes);
+  }
+
+  openConfig(configId: number): void {
+    this.openConfigId = configId;
+    this.currentPlanStep = PlanStep.CreateScenarios;
   }
 
   viewScenario(): void {
