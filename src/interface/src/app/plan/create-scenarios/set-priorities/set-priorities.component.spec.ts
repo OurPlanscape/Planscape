@@ -141,7 +141,7 @@ describe('SetPrioritiesComponent', () => {
     const metric = {
       conditionName: 'test_metric_1',
       displayName: undefined,
-      filepath: 'test_metric_1',
+      filepath: 'test_metric_1_normalized',
       children: [],
       level: 2,
       hidden: true,
