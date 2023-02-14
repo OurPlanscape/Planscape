@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.http import QueryDict
 from django.test import TestCase
-from forsys.get_forsys_inputs import ForsysProjectAreaRankingRequestParams
+from forsys.forsys_request_params import ForsysProjectAreaRankingRequestParams
 from plan.models import Plan, Project, ProjectArea
 
 

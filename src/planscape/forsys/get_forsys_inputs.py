@@ -1,6 +1,7 @@
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import (
     compute_condition_stats_from_raster, get_raster_geo)
+from forsys.forsys_request_params import ForsysProjectAreaRankingRequestParams
 
 
 # Forsys input dataframe headers.
