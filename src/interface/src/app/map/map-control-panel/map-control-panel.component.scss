@@ -81,6 +81,10 @@ $primary-palette: map.get($color-config, 'primary');
   margin: 15px 0;
 }
 
+.layer-single-radio-button {
+  margin: 15px 0;
+}
+
 .layer-checkbox {
   margin: 15px 0;
 }
@@ -91,6 +95,11 @@ $primary-palette: map.get($color-config, 'primary');
   font-weight: 700;
   height: 40px !important;
   line-height: 20px;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
 }
 
 // Overrides of Material component styles

@@ -1,13 +1,8 @@
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
-import { filter, Observable } from 'rxjs';
-import {
-  ConditionsConfig,
-  DataLayerConfig,
-  Map,
-  NONE_DATA_LAYER_CONFIG,
-} from 'src/app/types';
+import { filter, Observable, take } from 'rxjs';
+import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG } from 'src/app/types';
 
 export interface ConditionsNode extends DataLayerConfig {
   selected?: boolean;
@@ -23,7 +18,8 @@ export interface ConditionsNode extends DataLayerConfig {
   styleUrls: ['./condition-tree.component.scss'],
 })
 export class ConditionTreeComponent implements OnInit {
-  @Input() conditionsConfig$!: Observable<ConditionsConfig | null>;
+  @Input() conditionsData$!: Observable<ConditionsNode[]>;
+  @Input() header: string = '';
   @Input() map!: Map;
 
   @Output() changeConditionLayer = new EventEmitter<Map>();
@@ -33,20 +29,27 @@ export class ConditionTreeComponent implements OnInit {
   );
   conditionDataSource = new MatTreeNestedDataSource<ConditionsNode>();
 
-  constructor() {
-    this.conditionDataSource.data = [NONE_DATA_LAYER_CONFIG];
-  }
+  constructor() {}
 
   ngOnInit(): void {
-    this.conditionsConfig$
-      .pipe(filter((config) => !!config))
-      .subscribe((config) => {
-        this.conditionDataSource.data = this.conditionsConfigToData(config!);
+    this.conditionsData$
+      .pipe(
+        filter((data) => data.length > 0),
+        take(1)
+      )
+      .subscribe((data) => {
+        this.conditionDataSource.data = data;
         // Ensure the radio button corresponding to the saved selection is selected.
         this.map.config.dataLayerConfig = this.findAndRevealNodeWithFilepath(
           this.map.config.dataLayerConfig.filepath
         );
       });
+  }
+
+  toggleAllLayersOff(): void {
+    this.unstyleAndDeselectAllNodes();
+    this.map.config.dataLayerConfig = NONE_DATA_LAYER_CONFIG;
+    this.changeConditionLayer.emit(this.map);
   }
 
   /** Used to compute whether a node in the condition layer tree has children. */
@@ -57,10 +60,6 @@ export class ConditionTreeComponent implements OnInit {
     this.unstyleAndDeselectAllNodes();
     node.selected = true;
     this.styleDescendantsDisabled(node);
-  }
-
-  isNoneNode(node: ConditionsNode): boolean {
-    return node === NONE_DATA_LAYER_CONFIG;
   }
 
   /** Unstyles and deselects all nodes in the tree using recursion. */
@@ -84,64 +83,6 @@ export class ConditionTreeComponent implements OnInit {
       child.styleDisabled = true;
       this.styleDescendantsDisabled(child);
     });
-  }
-
-  private conditionsConfigToData(config: ConditionsConfig): ConditionsNode[] {
-    return [
-      NONE_DATA_LAYER_CONFIG,
-      {
-        ...config,
-        display_name: 'Current condition',
-        disableSelect: true,
-        children: config.pillars
-          ?.filter((pillar) => pillar.display)
-          .map((pillar): ConditionsNode => {
-            return {
-              ...pillar,
-              disableSelect: true,
-              children: pillar.elements?.map((element): ConditionsNode => {
-                return {
-                  ...element,
-                  disableSelect: true,
-                  children: element.metrics,
-                };
-              }),
-            };
-          }),
-      },
-      {
-        display_name: 'Current condition (normalized)',
-        filepath: config.filepath?.concat('_normalized'),
-        colormap: config.colormap,
-        normalized: true,
-        disableSelect: true,
-        children: config.pillars
-          ?.filter((pillar) => pillar.display)
-          .map((pillar): ConditionsNode => {
-            return {
-              ...pillar,
-              filepath: pillar.filepath?.concat('_normalized'),
-              normalized: true,
-              children: pillar.elements?.map((element): ConditionsNode => {
-                return {
-                  ...element,
-                  filepath: element.filepath?.concat('_normalized'),
-                  normalized: true,
-                  children: element.metrics?.map((metric): ConditionsNode => {
-                    return {
-                      ...metric,
-                      filepath: metric.filepath?.concat('_normalized'),
-                      normalized: true,
-                      min_value: undefined,
-                      max_value: undefined,
-                    };
-                  }),
-                };
-              }),
-            };
-          }),
-      },
-    ];
   }
 
   /** Find the node matching the given filepath in the condition tree (if any), and expand its ancestors
