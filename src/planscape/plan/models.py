@@ -47,6 +47,10 @@ class Project(models.Model):
 
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)  # type: ignore
 
+    # The creation time of the project, automatically set when the project is created.
+    creation_time: models.DateTimeField = models.DateTimeField(
+        null=True, auto_now_add=True)
+
     # Project Parameters:
 
     # TODO: Limit number of allowed priorities

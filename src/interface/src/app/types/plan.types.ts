@@ -41,6 +41,7 @@ export interface ProjectConfig {
   max_road_distance?: number;
   max_slope?: number;
   priorities?: string[];
+  createdTimestamp? : number;
 }
 
 export interface PlanConditionScores {
