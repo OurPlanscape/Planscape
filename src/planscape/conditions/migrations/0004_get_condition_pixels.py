@@ -31,10 +31,10 @@ create or replace function get_condition_pixels(
       param_raster_name_column text,
       param_raster_column text,
       param_geom_ewkb bytea) returns TABLE(
-                                         xcoord float,
-                                         ycoord float,
-                                         x integer,
-                                         y integer,
+                                         upper_left_coord_x float,
+                                         upper_left_coord_y float,
+                                         pixel_dist_x integer,
+                                         pixel_dist_y integer,
                                          value float
                                      )
     immutable
