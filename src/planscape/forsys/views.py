@@ -51,9 +51,10 @@ def convert_dictionary_of_lists_to_rdf(
 
 def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
+        max_area_in_km2: float | None, max_cost_in_usd: float | None,
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_headers: list[str],) -> ForsysScenarioSetOutput:
+        forsys_priority_headers: list[str]) -> ForsysScenarioSetOutput:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_multiple_scenarios.R'))
@@ -71,8 +72,8 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_cost_header)
 
     parsed_output = ForsysScenarioSetOutput(
-        forsys_output, forsys_priority_headers, forsys_proj_id_header,
-        forsys_area_header, forsys_cost_header)
+        forsys_output, forsys_priority_headers, max_area_in_km2, max_cost_in_usd,
+        forsys_proj_id_header, forsys_area_header, forsys_cost_header)
 
     # TODO: add logic for applying constraints to forsys_output.
 
@@ -87,7 +88,7 @@ def rank_project_areas_for_multiple_scenarios(
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
-            forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
+            forsys_input.forsys_input, params.max_area_in_km2, params.max_cost_in_usd, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.priority_headers)
 
@@ -107,6 +108,7 @@ def rank_project_areas_for_multiple_scenarios(
 
 def run_forsys_rank_project_areas_for_a_single_scenario(
         forsys_input_dict: dict[str, list],
+        max_area_in_km2: float | None, max_cost_in_usd: float | None,
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_priority_headers: list[str],
@@ -132,7 +134,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
         forsys_priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(forsys_priority_headers))}
     parsed_output = ForsysScenarioOutput(
-        forsys_output, priority_weights_dict,
+        forsys_output, priority_weights_dict, max_area_in_km2, max_cost_in_usd,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
 
     # TODO: add logic for applying constraints to forsys_output.
@@ -147,7 +149,8 @@ def rank_project_areas_for_a_single_scenario(
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
-            forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
+            forsys_input.forsys_input, params.max_area_in_km2,
+            params.max_cost_in_usd, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.priority_headers,
             params.priority_weights)
