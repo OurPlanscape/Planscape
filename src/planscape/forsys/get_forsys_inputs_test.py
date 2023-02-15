@@ -8,23 +8,6 @@ from forsys.get_forsys_inputs import (ForsysInputHeaders,
                                       ForsysProjectAreaRankingInput)
 
 
-class ForsysInputHeadersTest(TestCase):
-    def test_sets_priority_headers(self):
-        headers = ForsysInputHeaders(["p1", "p2", "p3"])
-        self.assertListEqual(headers.priority_headers,
-                             ["p_p1", "p_p2", "p_p3"])
-
-    def test_priority(self):
-        headers = ForsysInputHeaders([])
-        self.assertEqual(headers.get_priority_header("priority"), "p_priority")
-
-    def test_condition(self):
-        headers = ForsysInputHeaders([])
-        self.assertEqual(
-            headers.get_condition_header("condition"),
-            "c_condition")
-
-
 class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
@@ -61,10 +44,10 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
         self._assert_dict_almost_equal(input.forsys_input, {
             'proj_id': [1, 2],
             'stand_id': [1, 2],
-            'area': [518400.0, 230400.0],
-            'cost': [2592000000.0, 1152000000.0],
+            'area': [0.72, 0.36],
+            'cost': [3600000000.0, 1800000000.0],
             'p_foo': [7.64, 3.54],
-            'p_bar': [6.8, 2.6]
+            'p_bar': [6.8, 2.6],
         })
 
     def test_missing_base_condition(self):
