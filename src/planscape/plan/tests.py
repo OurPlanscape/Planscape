@@ -759,6 +759,9 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['owner'], None)
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
         self.assertEqual(response.json()['max_budget'], 100)
+        self.assertLessEqual(
+            response.json()['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
 
     def test_get_project_no_priorities(self):
         self.client.force_login(self.user)
@@ -770,6 +773,9 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['owner'], self.user.pk)
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
         self.assertEqual(response.json()['max_budget'], 100)
+        self.assertLessEqual(
+            response.json()['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
 
     def test_get_nonexistent_project(self):
         self.client.force_login(self.user)
@@ -790,6 +796,9 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['plan'], self.plan_no_user.pk)
         self.assertEqual(response.json()['max_budget'], 100)
         self.assertEqual(response.json()['priorities'], ["name1", "name2"])
+        self.assertLessEqual(
+            response.json()['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
 
     def test_get_project_with_priorities(self):
         self.client.force_login(self.user)
@@ -805,6 +814,9 @@ class GetProjectTest(TransactionTestCase):
         self.assertEqual(response.json()['plan'], self.plan_with_user.pk)
         self.assertEqual(response.json()['max_budget'], 100)
         self.assertEqual(response.json()['priorities'], ["name1", "name2"])
+        self.assertLessEqual(
+            response.json()['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
 
 
 class ListProjectsTest(TransactionTestCase):
@@ -865,6 +877,9 @@ class ListProjectsTest(TransactionTestCase):
         self.assertEqual(len(response.json()), 1)
         self.assertEqual(response.json()[0]['id'], self.project_with_user.pk)
         self.assertEqual(response.json()[0]['priorities'], ['test_condition'])
+        self.assertLessEqual(
+            response.json()[0]['creation_timestamp'],
+            round(datetime.datetime.now().timestamp()))
 
 
 class GetProjectAreaTest(TransactionTestCase):
