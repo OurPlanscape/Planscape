@@ -70,7 +70,7 @@
       <mat-icon>delete</mat-icon>
       DELETE
     </button>
-    <button mat-raised-button *ngIf="showContinueButton()" color="primary">
+    <button mat-raised-button *ngIf="showContinueButton()" color="primary" (click)="openConfig()">
       CONTINUE PLANNING
     </button>
   </mat-card-actions>

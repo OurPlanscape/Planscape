@@ -66,6 +66,13 @@ class ForsysScenarioSetOutput():
     _area_contribution_header: str
     _cost_contribution_header: str
 
+    # Global constraints.
+    # If set, as projects are appended to scenarios by order of impact, they
+    # are ignored if their addition causes cumulative_area or cumulative_cost
+    # to surpass _max_area and _max_cost.
+    _max_area: float | None
+    _max_cost: float | None
+
     # Initializes a ForsysScenarioSetOutput instance given raw forsys output
     # and the following inputs to the forsys call: header names, list of
     # priorities.
@@ -74,11 +81,15 @@ class ForsysScenarioSetOutput():
     def __init__(
             self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
             priorities: list[str],
-            project_id_header: str, area_header: str, cost_header: str):
+            max_area: float, max_cost: float, project_id_header: str,
+            area_header: str, cost_header: str):
         self._save_raw_forsys_output_as_dict(raw_forsys_output)
 
         self._set_header_names(priorities, area_header,
                                cost_header, project_id_header)
+
+        self._max_area = max_area
+        self._max_cost = max_cost
 
         self.scenarios = {}
         for i in range(len(self._forsys_output_df[project_id_header])):
@@ -158,27 +169,39 @@ class ForsysScenarioSetOutput():
         scenario = self.scenarios[scenario_str]
         ranked_projects = scenario['ranked_projects']
         scenario_ind = len(ranked_projects)
+
+        cumulative_area = scenario['cumulative_ranked_project_area'][
+            scenario_ind - 1] + self._forsys_output_df[
+            self._area_contribution_header][i]
+        if self._max_area is not None and self._max_area < cumulative_area:
+            return
+
+        cumulative_cost = scenario['cumulative_ranked_project_cost'][
+            scenario_ind - 1] + self._forsys_output_df[
+            self._cost_contribution_header][i]
+        if self._max_cost is not None and self._max_cost < cumulative_cost:
+            return
+
         ranked_projects.append(self._create_ranked_project(
             scenario_weights, i))
-        scenario['cumulative_ranked_project_area'].append(
-            scenario['cumulative_ranked_project_area'][scenario_ind - 1] + self.
-            _forsys_output_df[self._area_contribution_header][i])
-        scenario['cumulative_ranked_project_cost'].append(
-            scenario['cumulative_ranked_project_cost'][scenario_ind - 1] + self.
-            _forsys_output_df[self._cost_contribution_header][i])
+        scenario['cumulative_ranked_project_area'].append(cumulative_area)
+        scenario['cumulative_ranked_project_cost'].append(cumulative_cost)
 
     def _append_ranked_project_to_new_scenario(
             self, scenario_str: str, scenario_weights: dict, i: int) -> None:
+        area = self._forsys_output_df[self._area_contribution_header][i]
+        if self._max_area is not None and self._max_area < area:
+            return
+        cost = self._forsys_output_df[self._cost_contribution_header][i]
+        if self._max_cost is not None and self._max_cost < cost:
+            return
+
         scenario: Scenario = {
             'priority_weights': scenario_weights,
             'ranked_projects': [self._create_ranked_project(
                 scenario_weights, i)],
-            'cumulative_ranked_project_area': [
-                self._forsys_output_df[self._area_contribution_header][i]
-            ],
-            'cumulative_ranked_project_cost': [
-                self._forsys_output_df[self._cost_contribution_header][i]
-            ],
+            'cumulative_ranked_project_area': [area],
+            'cumulative_ranked_project_cost': [cost],
         }
         self.scenarios[scenario_str] = scenario
 
@@ -222,25 +245,35 @@ class ForsysScenarioOutput():
     _area_contribution_header: str
     _cost_contribution_header: str
 
+    # Global constraints.
+    # If set, as projects are appended to scenarios by order of impact, they
+    # are ignored if their addition causes cumulative_area or cumulative_cost
+    # to surpass _max_area and _max_cost.
+    _max_area: float | None
+    _max_cost: float | None
+
     # Initializes a ForsysScenarioOutput instance given raw forsys output
     # and the following inputs to the forsys call: header names, list of
     # priorities.
     # Of note, priorities must be listed in the same format and order they're
     # listed for the forsys call.
     def __init__(self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
-                 priority_weights: dict[str, float],
+                 priority_weights: dict[str, float], max_area, max_cost,
                  project_id_header: str, area_header: str, cost_header: str):
         self._save_raw_forsys_output_as_dict(raw_forsys_output)
 
         self._set_header_names(list(priority_weights.keys()), area_header,
                                cost_header, project_id_header)
 
+        self._max_area = max_area
+        self._max_cost = max_cost
+
         self.scenario = Scenario(
             {'priority_weights': priority_weights, 'ranked_projects': [],
              'cumulative_ranked_project_area': [],
              'cumulative_ranked_project_cost': []})
         for i in range(len(self._forsys_output_df[project_id_header])):
-            self._append_ranked_project_to_scenario(i)
+            self._append_ranked_project_to_scenario(priority_weights, i)
 
     def _save_raw_forsys_output_as_dict(
             self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
@@ -289,22 +322,34 @@ class ForsysScenarioOutput():
             project['total_score'] = project['total_score'] + contribution
         return project
 
-    def _append_ranked_project_to_scenario(self, i: int) -> None:
+    # TODO: merge logic in _append_ranked_project_to_scenario
+    # _append_ranked_project_to_new_scenario, and
+    # _append_ranked_project_to_existing_scenario into a single function.
+    def _append_ranked_project_to_scenario(
+            self, priority_weights: dict[str, float],
+            i: int) -> None:
         ranked_projects = self.scenario['ranked_projects']
         scenario_ind = len(ranked_projects)
+
+        cumulative_area = self._forsys_output_df[
+            self._area_contribution_header][i]
+        if scenario_ind > 0:
+            cumulative_area = cumulative_area + \
+                self.scenario['cumulative_ranked_project_area'][scenario_ind - 1]
+        if self._max_area is not None and self._max_area < cumulative_area:
+            return
+
+        cumulative_cost = self._forsys_output_df[
+            self._cost_contribution_header][i]
+        if scenario_ind > 0:
+            cumulative_cost = cumulative_cost + \
+                self.scenario['cumulative_ranked_project_cost'][scenario_ind - 1]
+        if self._max_cost is not None and self._max_cost < cumulative_cost:
+            return
+
         ranked_projects.append(self._create_ranked_project(
-            self.scenario['priority_weights'], i))
-        if scenario_ind == 0:
-            self.scenario['cumulative_ranked_project_area'].append(
-                self._forsys_output_df[self._area_contribution_header][i])
-            self.scenario['cumulative_ranked_project_cost'].append(
-                self._forsys_output_df[self._cost_contribution_header][i])
-        else:
-            self.scenario['cumulative_ranked_project_area'].append(
-                self.scenario['cumulative_ranked_project_area']
-                [scenario_ind - 1] + self._forsys_output_df
-                [self._area_contribution_header][i])
-            self.scenario['cumulative_ranked_project_cost'].append(
-                self.scenario['cumulative_ranked_project_cost']
-                [scenario_ind - 1] + self._forsys_output_df
-                [self._cost_contribution_header][i])
+            priority_weights, i))
+        self.scenario['cumulative_ranked_project_area'].append(
+            cumulative_area)
+        self.scenario['cumulative_ranked_project_cost'].append(
+            cumulative_cost)
