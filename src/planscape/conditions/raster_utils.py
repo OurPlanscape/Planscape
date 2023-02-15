@@ -25,6 +25,42 @@ class ConditionStatistics(TypedDict):
     count: int
 
 
+# A collection of raw raster pixel values.
+class ConditionPixelValues(TypedDict):
+    # x indices of pixels relative to top-left coordinate
+    pixel_dist_x: list[int]
+    # y indices of pixels relative to top-left coordinate
+    pixel_dist_y: list[int]
+    # Raster values corresponding to the (x, y) position denoted by
+    # pixel_dist_x and pixel_dist_y data columns.
+    values: list[float]
+    # x coordinate of the upper-left corner of a Raster image.
+    upper_left_coord_x: float
+    # y coordinate of the upper-left corner of a Raster image.
+    upper_left_coord_y: float
+
+
+# Validates that a geomeetry is compatible with rasters stored in the DB.
+# This must be called before a postGIS function call.
+def _validate_geo(geo: GEOSGeometry) -> None:
+    if geo is None:
+        raise AssertionError("missing input geometry")
+    if not geo.valid:
+        raise AssertionError("invalid geo: %s" % geo.valid_reason)
+    if geo.srid != settings.CRS_FOR_RASTERS:
+        raise AssertionError(
+            "geometry SRID is %d (expected %d)" %
+            (geo.srid, settings.CRS_FOR_RASTERS))
+
+
+# Validates that the raster name exists.
+# This should be called before a postGIS function call.
+def _validate_condition_raster_name(raster_name: str) -> None:
+    if len(ConditionRaster.objects.filter(name=raster_name).all()) == 0:
+        raise AssertionError(
+            "no rasters available for raster_name, %s" % (raster_name))
+
+
 # Returns None if no statistics are stored in the database.
 # Otherwise, returns the fetched ConditionScores instance.
 def _get_db_stats_for_plan(
@@ -37,6 +73,24 @@ def _get_db_stats_for_plan(
         {'mean': db_score.mean_score,
          'sum': db_score.sum,
          'count': db_score.count})
+
+
+# Sets a dictionary key value if it doesn't exist.
+def _set_if_not_none(
+        values: dict, key: str, value: float) -> None:
+    if key not in values.keys():
+        values[key] = value
+
+
+# With the expectation that a dictionary key value is a list, either appends
+# the input value to the list or sets the key value to a list with the input
+# value.
+def _append_to_list(
+        values: dict, key: str, value: int | float) -> None:
+    if key in values.keys():
+        values[key].append(value)
+    else:
+        values[key] = [value]
 
 
 # Returns a geometry in the raster SRS.
@@ -56,17 +110,8 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
 # Otherwise, returns ConditionStatistics.
 def compute_condition_stats_from_raster(
         geo: GEOSGeometry, raster_name: str) -> ConditionStatistics | None:
-    if geo is None:
-        raise AssertionError("missing input geometry")
-    if not geo.valid:
-        raise AssertionError("invalid geo: %s" % geo.valid_reason)
-    if geo.srid != settings.CRS_FOR_RASTERS:
-        raise AssertionError(
-            "geometry SRID is %d (expected %d)" %
-            (geo.srid, settings.CRS_FOR_RASTERS))
-    if len(ConditionRaster.objects.filter(name=raster_name).all()) == 0:
-        raise AssertionError(
-            "no rasters available for raster_name, %s" % (raster_name))
+    _validate_geo(geo)
+    _validate_condition_raster_name(raster_name)
     with connection.cursor() as cursor:
         cursor.callproc(
             'get_condition_stats',
@@ -127,3 +172,26 @@ def fetch_or_compute_condition_stats(
             count=stats['count'])
 
     return condition_stats
+
+
+# Fetches raw raster pixel values for all non-NaN pixels that intersect with
+# geo.
+def get_condition_values_from_raster(
+        geo: GEOSGeometry, raster_name: str) -> ConditionPixelValues:
+    _validate_geo(geo)
+    _validate_condition_raster_name(raster_name)
+    with connection.cursor() as cursor:
+        cursor.callproc(
+            'get_condition_pixels',
+            (RASTER_TABLE, RASTER_SCHEMA, raster_name,
+             RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
+        fetch = cursor.fetchall()
+    values = {}
+    for entry in fetch:
+        _set_if_not_none(values, 'upper_left_coord_x', entry[0])
+        _set_if_not_none(values, 'upper_left_coord_y', entry[1])
+        # Pixel 1 is located at index 1 (not 0).
+        _append_to_list(values, 'pixel_dist_x', entry[2] - 1)
+        _append_to_list(values, 'pixel_dist_y', entry[3] - 1)
+        _append_to_list(values, 'values', entry[4])
+    return ConditionPixelValues(values)

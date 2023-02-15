@@ -291,13 +291,8 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
             raise ValueError("Plan with id " + str(plan_id) + " does not exist")
 
         projects = Project.objects.filter(owner=user, plan=int(plan_id))
-        
-        projects = [ProjectSerializer(project).data for project in projects]
 
-        for project in projects:
-            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in project['priorities']]
-
-        return JsonResponse(projects, safe=False)
+        return JsonResponse([_serialize_project(project) for project in projects], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -313,13 +308,26 @@ def get_project(request: HttpRequest) -> HttpResponse:
         if project.owner != user:
             raise ValueError(
                 "You do not have permission to view this project.")
-
-        project = ProjectSerializer(project).data
-        project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in project['priorities']]
         
-        return JsonResponse(project)
+        return JsonResponse(_serialize_project(project))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        
+
+def _serialize_project(project: Project) -> dict:
+    """
+    Serializes a Project into a dictionary.
+    1. Replaces 'creation_time' with a Posix timestamp.
+    2. Replaces the priority IDs with the condition name.
+    """
+    result = ProjectSerializer(project).data
+    if 'creation_time' in result:
+        result['creation_timestamp'] = round(datetime.datetime.fromisoformat(
+            result['creation_time'].replace('Z', '+00:00')).timestamp())
+        del result['creation_time']
+    if 'priorities' in result:
+        result['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in result['priorities']]
+    return result
 
 
 @csrf_exempt
