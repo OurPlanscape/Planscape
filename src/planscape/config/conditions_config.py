@@ -42,7 +42,8 @@ class PillarConfig:
                    'data_download_link',
                    'data_year',
                    'reference_link',
-                   'invert_raw'}.union(COMMON_METADATA)
+                   'invert_raw',
+                   'data_units'}.union(COMMON_METADATA)
 
     @classmethod
     def build_condition_metadata(cls, config: list[Region]):
