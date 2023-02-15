@@ -27,20 +27,20 @@ class ConditionStatistics(TypedDict):
 
 # A collection of raw raster pixel values.
 class ConditionPixelValues(TypedDict):
-    # Pixel x-indices relative to top-left coordinate
-    x: list[int]
-    # Pixel y-indices relative to top-left coordinate
-    y: list[int]
-    # Raw raster values corresponding to the (x, y) position denoted by x and y
-    # data columns.
+    # x indices of pixels relative to top-left coordinate
+    pixel_dist_x: list[int]
+    # y indices of pixels relative to top-left coordinate
+    pixel_dist_y: list[int]
+    # Raster values corresponding to the (x, y) position denoted by
+    # pixel_dist_x and pixel_dist_y data columns.
     values: list[float]
-    # top-left x coordinate.
-    xcoord: float
-    # top-left y coordinate.
-    ycoord: float
+    # x coordinate of the upper-left corner of a Raster image.
+    upper_left_coord_x: float
+    # y coordinate of the upper-left corner of a Raster image.
+    upper_left_coord_y: float
 
 
-# Validates that is compatible with rasters stored in the DB.
+# Validates that a geomeetry is compatible with rasters stored in the DB.
 # This must be called before a postGIS function call.
 def _validate_geo(geo: GEOSGeometry) -> None:
     if geo is None:
@@ -188,10 +188,10 @@ def get_condition_values_from_raster(
         fetch = cursor.fetchall()
     values = {}
     for entry in fetch:
-        _set_if_not_none(values, 'xcoord', entry[0])
-        _set_if_not_none(values, 'ycoord', entry[1])
+        _set_if_not_none(values, 'upper_left_coord_x', entry[0])
+        _set_if_not_none(values, 'upper_left_coord_y', entry[1])
         # Pixel 1 is located at index 1 (not 0).
-        _append_to_list(values, 'x', entry[2] - 1)
-        _append_to_list(values, 'y', entry[3] - 1)
+        _append_to_list(values, 'pixel_dist_x', entry[2] - 1)
+        _append_to_list(values, 'pixel_dist_y', entry[3] - 1)
         _append_to_list(values, 'values', entry[4])
     return ConditionPixelValues(values)
