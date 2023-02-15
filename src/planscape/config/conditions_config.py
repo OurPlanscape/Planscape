@@ -63,10 +63,10 @@ class PillarConfig:
         for region in config:
             for pillar in region['pillars']:
                 update_metadata(pillar['pillar_name'],
-                                pillar.get('filepath', None), -1, 1)
+                                pillar.get('filepath', None), -1, 1, '')
                 for element in pillar['elements']:
                     update_metadata(element['element_name'], element.get(
-                        'filepath', None), -1, 1)
+                        'filepath', None), -1, 1, '')
                     for metric in element['metrics']:
                         min = metric.get('min_value', -1)
                         max = metric.get('max_value', 1)
