@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlanService } from 'src/app/services';
@@ -17,6 +17,7 @@ interface ProjectConfigRow extends ProjectConfig {
 })
 export class ScenarioConfigurationsComponent implements OnInit {
   @Input() plan: Plan | null = null;
+  @Output() openConfigEvent = new EventEmitter<number>();
   configurations: ProjectConfigRow[] = [];
   displayedColumns: string[] = [
     'select',
@@ -37,7 +38,7 @@ export class ScenarioConfigurationsComponent implements OnInit {
   }
 
   fetchProjects(): void {
-    this.planService.getProjects(this.plan?.id!).subscribe((result) => {
+    this.planService.getProjectsForPlan(this.plan?.id!).subscribe((result) => {
       this.configurations = result;
     });
   }
@@ -82,5 +83,12 @@ export class ScenarioConfigurationsComponent implements OnInit {
       if (nameMap.has(priority)) return nameMap.get(priority)!;
       return priority;
     });
+  }
+
+  openConfig(config?: ProjectConfigRow): void {
+    if (!config) {
+      config = this.configurations.find((item) => item.selected);
+    }
+    this.openConfigEvent.emit(config?.id);
   }
 }

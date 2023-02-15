@@ -7,6 +7,7 @@ from conditions.raster_utils import (
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import QueryDict
 from plan.models import Project, ProjectArea
+from planscape import settings
 
 
 # A list of coordinates representing a polygon.
@@ -36,6 +37,8 @@ class ForsysProjectAreaRankingRequestParams():
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PROJECT_AREAS = 'project_areas'
+    _URL_MAX_AREA = 'max_area'
+    _URL_MAX_COST = 'max_cost'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -55,6 +58,9 @@ class ForsysProjectAreaRankingRequestParams():
     # Project areas to be ranked. A project area may consist of multiple
     # disjoint polygons. The dict is keyed by project ID.
     project_areas: dict[int, MultiPolygon]
+    # Global constraints applied to the entire set of projects.
+    max_area_in_km2: float | None  # unit: km squared
+    max_cost_in_usd: float | None  # unit: USD
 
     def __init__(self, params: QueryDict) -> None:
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
@@ -83,6 +89,11 @@ class ForsysProjectAreaRankingRequestParams():
         else:
             self.project_areas = self._get_default_project_areas()
 
+        self.max_area_in_km2 = self._read_positive_float(params,
+                                                         self._URL_MAX_AREA)
+        self.max_cost_in_usd = self._read_positive_float(params,
+                                                         self._URL_MAX_COST)
+
     def _read_db_params(self, params: QueryDict) -> None:
         try:
             project_id = params['project_id']
@@ -100,8 +111,28 @@ class ForsysProjectAreaRankingRequestParams():
             self.project_areas = {}
             for area in project_areas:
                 self.project_areas[area.pk] = area.project_area
+
+            # TODO: read the following constraints from db.
+            self.max_area_in_km2 = self._read_positive_float(
+                params, self._URL_MAX_AREA)
+            self.max_cost_in_usd = self._read_positive_float(
+                params, self._URL_MAX_COST)
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
+
+    # If field is present, returns field value but raises an exception if the
+    # field value isn't positive.
+    # IF field isn't present, returns None.
+    def _read_positive_float(
+            self, params: QueryDict, query_param: str) -> float | None:
+        v = params.get(query_param, None)
+        if v is None:
+            return None
+        v = float(v)
+        if v <= 0:
+            raise Exception(
+                "expected param, %s, to have a positive value" % query_param)
+        return v
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
         srid = 4269
@@ -197,6 +228,11 @@ class ForsysInputHeaders():
 
 
 class ForsysProjectAreaRankingInput():
+    # Treatment cost per kilometer-squared (in USD)
+    # TODO: make this variable based on a user input and/or a treatment cost
+    # raster.
+    TREATMENT_COST_PER_KM_SQUARED = 5000 * 1000 * 1000
+
     # A dictionary representing a forsys input dataframe.
     # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
     # row represents a unique stand.
@@ -223,11 +259,8 @@ class ForsysProjectAreaRankingInput():
 
             self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
             self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
-            self.forsys_input[headers.FORSYS_AREA_HEADER].append(geo.area)
-            # TODO: figure out the right value for the units: 5000 is just a
-            # placeholder.
-            self.forsys_input[headers.FORSYS_COST_HEADER].append(
-                geo.area * 5000)
+
+            num_pixels = 0  # number of non-NaN raster pixels captured by geo.
             for c in conditions:
                 # TODO: replace this with select_related.
                 name = base_condition_ids_to_names[c.condition_dataset_id]
@@ -238,6 +271,18 @@ class ForsysProjectAreaRankingInput():
                         "no score was retrieved for condition, %s" % name)
                 self.forsys_input[headers.get_priority_header(
                     name)].append(stats['count'] - stats['sum'])
+
+                # The number of non-NaN pixels captured by geo may vary between
+                # condition rasters because some rasters have large undefined
+                # patches. Taking the maximum count across all conditions
+                # should account for the more egregious cases of undefined
+                # patches.
+                num_pixels = max(stats['count'], num_pixels)
+
+            area = num_pixels * settings.RASTER_PIXEL_AREA
+            self.forsys_input[headers.FORSYS_AREA_HEADER].append(area)
+            self.forsys_input[headers.FORSYS_COST_HEADER].append(
+                area * self.TREATMENT_COST_PER_KM_SQUARED)
 
     def _get_base_condition_ids_to_names(self, region: str,
                                          priorities: list) -> dict[int, str]:

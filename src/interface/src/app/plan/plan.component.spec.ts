@@ -61,8 +61,10 @@ describe('PlanComponent', () => {
 
     const fakeService = jasmine.createSpyObj('PlanService', {
       getPlan: of(fakePlan),
-      getProjects: of([]),
+      getProjectsForPlan: of([]),
+      updateStateWithScenario: of(fakePlan),
     });
+    fakeService.planState$ = of({});
 
     await TestBed.configureTestingModule({
       imports: [
@@ -94,5 +96,12 @@ describe('PlanComponent', () => {
   it('fetches plan from service using ID', () => {
     expect(component.planNotFound).toBeFalse();
     expect(component.plan).toEqual(fakePlan);
+  });
+
+  it('opening a config advances the plan step', () => {
+    component.openConfig(1);
+
+    expect(component.openConfigId).toEqual(1);
+    expect(component.currentPlanStep).toBe(1);
   });
 });

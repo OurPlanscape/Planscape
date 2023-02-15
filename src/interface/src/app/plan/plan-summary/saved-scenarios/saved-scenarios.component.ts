@@ -1,5 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { now } from 'moment';
+import { ActivatedRoute, Router } from '@angular/router';
+
+import { PlanService } from 'src/app/services';
 import { Plan, Scenario } from 'src/app/types';
 
 @Component({
@@ -14,12 +16,29 @@ export class SavedScenariosComponent {
   scenarios: Scenario[];
   displayedColumns: string[] = ['id', 'createdTimestamp'];
 
-  constructor() {
-    // TODO (leehana): query scenarios from backend
-    this.scenarios = [];
+  constructor(
+    private planService: PlanService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    // TODO (leehana): query scenarios from backend, fake scenarios below.
+    this.scenarios = [
+      {
+        id: '20',
+        createdTimestamp: 12300000,
+      },
+      {
+        id: '21',
+        createdTimestamp: 12300000,
+      },
+    ];
   }
 
   createScenario(): void {
     this.createScenarioEvent.emit();
+  }
+
+  viewScenario(id: string): void {
+    this.router.navigate(['scenario', id], { relativeTo: this.route });
   }
 }
