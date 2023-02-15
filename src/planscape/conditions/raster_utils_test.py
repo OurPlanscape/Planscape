@@ -397,7 +397,7 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
         self.assertEqual(
             str(context.exception), "geometry SRID is 4269 (expected 9822)")
 
-    def test_returns_stats_for_no_intersection(self):
+    def test_returns_pixel_values_for_no_intersection(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 7, 10, 0, 1)
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
