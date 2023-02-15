@@ -121,11 +121,11 @@ export class MapManager {
       removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
         color: '#3367D6',
-        weight: 8,
+        weight: 5,
       },
       templineStyle: {
         color: '#3367D6',
-        weight: 8,
+        weight: 5,
       },
       layerGroup: this.drawingLayer,
     });
@@ -133,7 +133,7 @@ export class MapManager {
       color: '#3367D6',
       fillColor: '#3367D6',
       fillOpacity: 0.1,
-      weight: 8,
+      weight: 5,
     });
 
     this.setUpEventHandlers(map, createDetailCardCallback);
@@ -246,9 +246,10 @@ export class MapManager {
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
     L.geoJSON(area, {
       style: (_) => ({
-        color: '#7b61ff',
-        fillColor: '#7b61ff',
-        fillOpacity: 0.2,
+        color: '#3367D6',
+        fillColor: '#3367D6',
+        fillOpacity: 0.1,
+        weight: 5,
       }),
       pmIgnore: false,
       onEachFeature: (_, layer) => {
@@ -272,6 +273,7 @@ export class MapManager {
       const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
         color: '#ffde9e',
         fillColor: '#ffde9e',
+        weight: 5,
       });
       currMap.clonedDrawingRef?.addLayer(clonedLayer);
       currMap.drawnPolygonLookup![originalId] = clonedLayer;
