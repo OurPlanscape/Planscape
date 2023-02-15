@@ -40,7 +40,7 @@ class ConditionPixelValues(TypedDict):
     upper_left_coord_y: float
 
 
-# Validates that is compatible with rasters stored in the DB.
+# Validates that a geomeetry is compatible with rasters stored in the DB.
 # This must be called before a postGIS function call.
 def _validate_geo(geo: GEOSGeometry) -> None:
     if geo is None:
