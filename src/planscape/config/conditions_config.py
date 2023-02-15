@@ -52,11 +52,13 @@ class PillarConfig:
         """
         metadata = dict()
 
-        def update_metadata(name, filepath, min_value, max_value):
+        def update_metadata(name, filepath, min_value, max_value, data_units):
             if filepath is not None:
                 key = filepath.split('/')[-1]
                 metadata[key + '.tif'] = {'name': name,
-                                          'min_value': min_value, 'max_value': max_value}
+                                          'min_value': min_value,
+                                          'max_value': max_value,
+                                          'data_units': data_units}
 
         for region in config:
             for pillar in region['pillars']:
@@ -68,8 +70,9 @@ class PillarConfig:
                     for metric in element['metrics']:
                         min = metric.get('min_value', -1)
                         max = metric.get('max_value', 1)
+                        data_units = metric.get('data_units', '')
                         update_metadata(metric['metric_name'], metric.get(
-                            'filepath', None), min, max)
+                            'filepath', None), min, max, data_units)
         return metadata
 
     def __init__(self, filename: str):
@@ -212,3 +215,9 @@ class PillarConfig:
         if metadata is None:
             return (-1, 1)
         return (metadata.get('min_value', -1), metadata.get('max_value', 1))
+
+    def get_data_units(self, name: str) -> str:
+        metadata = self._condition_metadata.get(name, None)
+        if metadata is None:
+            return (-1, 1)
+        return metadata.get('data_units', '')
