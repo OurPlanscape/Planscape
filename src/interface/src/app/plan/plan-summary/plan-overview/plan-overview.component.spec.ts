@@ -35,10 +35,10 @@ describe('PlanOverviewComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('clicking create scenario button should emit event', async () => {
+  it('clicking new configuration button should emit event', async () => {
     spyOn(component.openConfigEvent, 'emit');
     let createScenarioButton = await loader.getHarness(
-      MatButtonHarness.with({ text: 'CREATE A NEW SCENARIO' })
+      MatButtonHarness.with({ text: /NEW CONFIGURATION/ })
     );
 
     await createScenarioButton.click();
