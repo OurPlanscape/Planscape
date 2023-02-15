@@ -182,7 +182,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             ForsysProjectAreaRankingRequestParams(qd)
         self.assertEqual(
             str(context.exception),
-            'project area field, "polygons" is an empty list')
+            'url parameter, project_areas, field, "polygons" is an empty list')
 
     def test_raises_error_for_invalid_project_areas_from_url_params(
             self):
@@ -204,7 +204,7 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
             ForsysProjectAreaRankingRequestParams(qd)
         self.assertEquals(
             str(context.exception),
-            'project area missing field, "polygons"')
+            'url parameter, project_areas, missing field, "polygons"')
 
     def test_raises_error_for_url_params_project_areas_missing_id_field(
             self):
@@ -221,7 +221,8 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         with self.assertRaises(Exception) as context:
             ForsysProjectAreaRankingRequestParams(qd)
         self.assertEquals(
-            str(context.exception), 'project area missing field, "id"')
+            str(context.exception),
+            'url params, project_areas, missing field, "id"')
 
 
 class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
@@ -395,7 +396,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
             ForsysProjectAreaGenerationRequestParams(request)
         self.assertEqual(
             str(context.exception),
-            'project area field, "polygons" is an empty list')
+            'url parameter, planning_area, field, "polygons" is an empty list')
 
     def test_raises_error_for_invalid_planning_area_from_url_params(
             self):
@@ -419,7 +420,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
             ForsysProjectAreaGenerationRequestParams(request)
         self.assertEquals(
             str(context.exception),
-            'project area missing field, "polygons"')
+            'url parameter, planning_area, missing field, "polygons"')
 
     def test_raises_error_for_url_params_planning_area_missing_id_field(
             self):
@@ -434,7 +435,8 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
         with self.assertRaises(Exception) as context:
             ForsysProjectAreaGenerationRequestParams(request)
         self.assertEquals(
-            str(context.exception), 'project area missing field, "id"')
+            str(context.exception),
+            'url params, planning_area, missing field, "id"')
 
 
 class TestForsysProjectAreaGenerationRequestParams_ReadFromDb(TestCase):
