@@ -321,7 +321,7 @@ def _serialize_project(project: Project) -> dict:
     2. Replaces the priority IDs with the condition name.
     """
     result = ProjectSerializer(project).data
-    if 'creation_time' in result:
+    if 'creation_time' in result and result['creation_time'] is not None:
         result['creation_timestamp'] = round(datetime.datetime.fromisoformat(
             result['creation_time'].replace('Z', '+00:00')).timestamp())
         del result['creation_time']
