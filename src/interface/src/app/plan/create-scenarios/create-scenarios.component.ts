@@ -17,7 +17,12 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -107,19 +112,22 @@ export class CreateScenariosComponent implements OnInit {
         scoreSelectCtrl: ['', Validators.required],
       }),
       // Step 2: Set constraints
-      this.fb.group({
-        budgetForm: this.fb.group({
-          maxBudget: ['', Validators.min(0)],
-          optimizeBudget: [false, Validators.required],
-        }),
-        treatmentForm: this.fb.group({
-          maxArea: ['', [Validators.required, Validators.min(0)]],
-        }),
-        excludeAreasByDegrees: [false],
-        excludeAreasByDistance: [false],
-        excludeSlope: ['', Validators.min(0)],
-        excludeDistance: ['', Validators.min(0)],
-      }),
+      this.fb.group(
+        {
+          budgetForm: this.fb.group({
+            maxBudget: ['', Validators.min(0)],
+            optimizeBudget: [false],
+          }),
+          treatmentForm: this.fb.group({
+            maxArea: ['', [Validators.min(0), Validators.max(90)]],
+          }),
+          excludeAreasByDegrees: [false],
+          excludeAreasByDistance: [false],
+          excludeSlope: ['', Validators.min(0)],
+          excludeDistance: ['', Validators.min(0)],
+        },
+        { validators: this.constraintsFormValidator }
+      ),
       // Step 3: Select priorities
       this.fb.group({
         priorities: [[], [Validators.required, Validators.minLength(1)]],
@@ -174,6 +182,18 @@ export class CreateScenariosComponent implements OnInit {
     this.formGroups[2].get('priorities')?.valueChanges.subscribe((_) => {
       this.updatePriorityWeightsFormControls();
     });
+  }
+
+  private constraintsFormValidator(constraintsForm: AbstractControl): boolean {
+    // Only one of budget or max treatment percentage is required.
+    const maxBudget = constraintsForm.get('budgetForm.maxBudget');
+    const optimizeBudget = constraintsForm.get('budgetForm.optimizeBudget');
+    const maxArea = constraintsForm.get('treatmentForm.maxArea');
+    console.log(constraintsForm.value);
+    console.log(
+      !!maxBudget?.value || !!optimizeBudget?.value || !!maxArea?.value
+    );
+    return !!maxBudget?.value || !!optimizeBudget?.value || !!maxArea?.value;
   }
 
   private loadExistingConfig(): void {
