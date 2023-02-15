@@ -5,8 +5,8 @@
       <div class="flex-row">
         <!-- Budget -->
         <div formGroupName="budgetForm" required>
-          <label class="form-label required">Budget</label>
-          <mat-radio-group formControlName="optimizeBudget" required>
+          <label class="form-label" [class.required]="!hasBudgetOrMaxArea()">Budget</label>
+          <mat-radio-group formControlName="optimizeBudget" [required]="!hasBudgetOrMaxArea()">
             <!-- Custom Budget -->
               <mat-radio-button [value]="false">
 
@@ -14,7 +14,10 @@
                 <mat-form-field class="input-field" appearance="outline" floatLabel="always">
                   <mat-label>Max</mat-label>
                   <span matTextPrefix>$ &nbsp;</span>
-                  <input [required]="!constraintsForm?.get('budgetForm.optimizeBudget')?.value" formControlName="maxBudget" matInput type="number">
+                  <input
+                    [required]="maxBudgetRequired()"
+                    formControlName="maxBudget"
+                    matInput type="number">
                 </mat-form-field>
               </mat-radio-button>
 
@@ -27,7 +30,9 @@
 
         <div formGroupName="treatmentForm">
           <!-- Treatment Percentage -->
-          <label class="form-label required">Max treatment percentage of total planning area</label>
+          <label class="form-label" [class.required]="!hasBudgetOrMaxArea()">
+            Max treatment percentage of total planning area
+          </label>
 
           <!-- Max -->
           <mat-form-field class="input-field" appearance="outline" floatLabel="always">
@@ -39,14 +44,18 @@
         </div>
       </div>
 
-      <mat-error *ngIf="constraintsForm?.get('budgetForm.optimizeBudget')?.touched">One required</mat-error>
+      <mat-error *ngIf="constraintsForm?.touched && !hasBudgetOrMaxArea()">One required</mat-error>
 
       <!-- Other Constraints-->
       <div>
         <label class="form-label">Other Constraints</label>
         <div class="flex-row">
           <div>
-            <mat-checkbox formControlName="excludeAreasByDistance" (change)="toggleRequiredExcludeDistance()">Exclude areas off a road by</mat-checkbox>
+            <mat-checkbox
+              formControlName="excludeAreasByDistance"
+              (change)="toggleRequiredExcludeDistance()">
+              Exclude areas off a road by
+            </mat-checkbox>
             <mat-form-field class="input-field margin-left" appearance="outline" floatLabel="always">
               <mat-label>Distance</mat-label>
               <input formControlName="excludeDistance" matInput type="number">
