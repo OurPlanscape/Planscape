@@ -9,6 +9,23 @@
   display: flex;
 }
 
+h4 {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.mat-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-left: 44px;
+}
+
+::ng-deep .mat-radio-label-content {
+  white-space: normal !important;
+}
+
 app-legend {
   flex: 2 0 224px;
 }

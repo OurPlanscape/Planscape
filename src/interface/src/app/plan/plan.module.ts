@@ -7,7 +7,6 @@ import { RouterModule } from '@angular/router';
 
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
-import { CreateScenariosIntroComponent } from './create-scenarios/create-scenarios-intro/create-scenarios-intro.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { GenerateScenariosComponent } from './create-scenarios/generate-scenarios/generate-scenarios.component';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
@@ -39,7 +38,6 @@ import { ScenarioDetailsComponent } from './scenario-details/scenario-details.co
     CreateScenariosComponent,
     PlanNavigationBarComponent,
     SetPrioritiesComponent,
-    CreateScenariosIntroComponent,
     ConstraintsPanelComponent,
     IdentifyProjectAreasComponent,
     GenerateScenariosComponent,
