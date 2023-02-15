@@ -25,6 +25,9 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         keys.sort()
         self.assertEqual(keys, [1, 2])
 
+        self.assertIsNone(params.max_area_in_km2)
+        self.assertIsNone(params.max_cost_in_usd)
+
         self.assertEqual(params.project_areas[1].coords, (
             (((-120.14015536869722, 39.05413814388948),
               (-120.18409937110482, 39.48622140686506),
@@ -79,6 +82,40 @@ class TestForsysProjectAreaRankingRequestParams(TestCase):
         self.assertEqual(
             str(context.exception),
             'expected 3 priority weights, instead, 2 were given')
+
+    def test_reads_max_area_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_area=10000')
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.max_area_in_km2, 10000)
+
+    def test_raises_error_on_bad_max_area_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_area=-10')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_area, to have a positive value')
+
+    def test_reads_max_cost_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_cost=600')
+        params = ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(params.max_cost_in_usd, 600)
+
+    def test_raises_error_on_bad_max_cost_from_url_params(self):
+        qd = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&max_cost=0')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaRankingRequestParams(qd)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_cost, to have a positive value')
 
     def test_reads_project_areas_from_url_params(self) -> None:
         qd = QueryDict(
