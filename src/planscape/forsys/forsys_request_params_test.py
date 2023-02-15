@@ -284,7 +284,8 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
 class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_reads_default_url_params(self):
         request = HttpRequest()
-        request.POST = QueryDict('set_all_params_via_url_with_default_values=1')
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1')
         params = ForsysProjectAreaGenerationRequestParams(request)
 
         self.assertEqual(params.region, 'sierra_cascade_inyo')
@@ -434,3 +435,49 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
             ForsysProjectAreaGenerationRequestParams(request)
         self.assertEquals(
             str(context.exception), 'project area missing field, "id"')
+
+
+class TestForsysProjectAreaGenerationRequestParams_ReadFromDb(TestCase):
+    def setUp(self) -> None:
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan_with_user = Plan.objects.create(
+            owner=self.user, name="plan", region_name='sierra_cascade_inyo',
+            geometry=self.stored_geometry)
+
+    def test_read_ok(self):
+        request = HttpRequest()
+        request.POST = QueryDict('id=' + str(self.plan_with_user.pk))
+        request.user = self.user
+        params = ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.planning_area.coords, ((
+            ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
+
+    def test_fails_on_no_user(self):
+        request = HttpRequest()
+        request.POST = QueryDict('id=' + str(self.plan_with_user.pk))
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEquals(
+            str(context.exception),
+            "Ill-formed request: 'HttpRequest' object has no attribute 'user'")
+
+    def test_fails_on_wrong_user(self):
+        wrong_user = User.objects.create(username='wrong_user')
+        wrong_user.set_password('12345')
+        wrong_user.save()
+
+        request = HttpRequest()
+        request.POST = QueryDict('id=' + str(self.plan_with_user.pk))
+        request.user = wrong_user
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEquals(
+            str(context.exception),
+            "Ill-formed request: You do not have permission to view this plan.")
