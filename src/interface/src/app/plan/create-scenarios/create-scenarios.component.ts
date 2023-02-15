@@ -102,9 +102,10 @@ export class CreateScenariosComponent implements OnInit {
   constructor(private fb: FormBuilder, private planService: PlanService) {
     // Initialize empty form
     this.formGroups = [
-      // Step 1: Select condition score
+      // Step 1: Select priorities
       this.fb.group({
-        scoreSelectCtrl: ['', Validators.required],
+        scoreType: [0, Validators.required],
+        priorities: [[], [Validators.required, Validators.minLength(1)]],
       }),
       // Step 2: Set constraints
       this.fb.group({
@@ -120,16 +121,12 @@ export class CreateScenariosComponent implements OnInit {
         excludeSlope: ['', Validators.min(0)],
         excludeDistance: ['', Validators.min(0)],
       }),
-      // Step 3: Select priorities
-      this.fb.group({
-        priorities: [[], [Validators.required, Validators.minLength(1)]],
-      }),
-      // Step 4: Identify project areas
+      // Step 3: Identify project areas
       this.fb.group({
         generateAreas: ['', Validators.required],
         uploadedArea: [''],
       }),
-      // Step 5: Generate scenarios
+      // Step 4: Generate scenarios
       this.fb.group({
         priorityWeightsForm: this.fb.group({}),
         areaPercent: [
@@ -147,7 +144,6 @@ export class CreateScenariosComponent implements OnInit {
       {},
       {},
       {},
-      {},
     ];
   }
 
@@ -160,9 +156,9 @@ export class CreateScenariosComponent implements OnInit {
 
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
-    this.formGroups[3].valueChanges.subscribe((_) => {
-      const generateAreas = this.formGroups[3].get('generateAreas');
-      const uploadedArea = this.formGroups[3].get('uploadedArea');
+    this.formGroups[2].valueChanges.subscribe((_) => {
+      const generateAreas = this.formGroups[2].get('generateAreas');
+      const uploadedArea = this.formGroups[2].get('uploadedArea');
       if (generateAreas?.value) {
         this.drawShapesEvent.emit(null);
       } else {
@@ -170,8 +166,8 @@ export class CreateScenariosComponent implements OnInit {
       }
     });
 
-    // When priorities are chosen, update the form controls for step 5.
-    this.formGroups[2].get('priorities')?.valueChanges.subscribe((_) => {
+    // When priorities are chosen, update the form controls for step 4.
+    this.formGroups[0].get('priorities')?.valueChanges.subscribe((_) => {
       this.updatePriorityWeightsFormControls();
     });
   }
@@ -182,7 +178,7 @@ export class CreateScenariosComponent implements OnInit {
       const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
       const excludeDistance = this.formGroups[1].get('excludeDistance');
       const excludeSlope = this.formGroups[1].get('excludeSlope');
-      const priorities = this.formGroups[2].get('priorities');
+      const priorities = this.formGroups[0].get('priorities');
 
       if (config.max_budget) {
         maxBudget?.setValue(config.max_budget);
@@ -237,7 +233,7 @@ export class CreateScenariosComponent implements OnInit {
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
     const excludeDistance = this.formGroups[1].get('excludeDistance');
     const excludeSlope = this.formGroups[1].get('excludeSlope');
-    const priorities = this.formGroups[2].get('priorities');
+    const priorities = this.formGroups[0].get('priorities');
 
     let projectConfig: ProjectConfig = {
       id: this.scenarioConfigId!,
@@ -256,8 +252,8 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   private updatePriorityWeightsFormControls(): void {
-    const priorities: string[] = this.formGroups[2].get('priorities')?.value;
-    const priorityWeightsForm: FormGroup = this.formGroups[4].get(
+    const priorities: string[] = this.formGroups[0].get('priorities')?.value;
+    const priorityWeightsForm: FormGroup = this.formGroups[3].get(
       'priorityWeightsForm'
     ) as FormGroup;
     priorityWeightsForm.controls = {};

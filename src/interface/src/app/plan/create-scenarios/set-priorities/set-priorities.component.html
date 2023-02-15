@@ -1,6 +1,27 @@
 <div class="panel-container">
+  <p class="secondary-text">{{ text1 }}</p>
+
+  <h4>First, choose a score to inform prioritization calculations:</h4>
+  <form [formGroup]="formGroup!">
+    <mat-radio-group formControlName="scoreType" color="primary">
+      <mat-radio-button [value]="0">
+        <b>Current Conditions score</b>
+        <p>
+          Uses the current condition of the defined planning area. Future modeling is not considered.
+        </p>
+      </mat-radio-button>
+
+      <mat-radio-button [value]="1" [disabled]="true">
+        <b>Management Opportunity score</b>
+        <p>
+          Uses both current and future conditions of the defined planning area.
+        </p>
+      </mat-radio-button>
+    </mat-radio-group>
+  </form>
+
   <div class="flex-row">
-    <p class="secondary-text">{{ text1 }}</p>
+    <h4>{{ text2 }}</h4>
     <app-legend [legend]="legend"></app-legend>
   </div>
 
