@@ -10,18 +10,19 @@ from plan.views import (get_plan_by_id, get_user)
 
 
 # A list of coordinates representing a polygon.
-class PolygonFromUrlParams(TypedDict):
+class PolygonCoordinatesFromUrlParams(TypedDict):
     coordinates: list[tuple[float, float]]
 
 
-# A project area composed of multiple disjoint polygons.
-class ProjectAreaFromUrlParams(TypedDict):
-    # Project ID
-    id: int
+# A shape composed of multiple disjoint polygons.
+# Accompanied by SRID and an ID denoting project or plan ID.
+class GeoFromUrlParams(TypedDict):
+    # Project or Plan ID.
+    id: int | None
     # SRID
     srid: int
     # Disjoint polygons that are part of the project area.
-    polygons: list[PolygonFromUrlParams]
+    polygons: list[PolygonCoordinatesFromUrlParams]
 
 
 def _read_common_url_params(self, params: QueryDict) -> None:
@@ -40,29 +41,32 @@ def _read_common_url_params(self, params: QueryDict) -> None:
                 len(self.priority_weights)))
 
 
-def _check_project_area_from_url_params_fields_exist(
-        project_area: ProjectAreaFromUrlParams) -> None:
-    if 'polygons' not in project_area.keys():
-        raise Exception('project area missing field, "polygons"')
-    if len(project_area['polygons']) == 0:
-        raise Exception('project area field, "polygons" is an empty list')
-    if 'id' not in project_area.keys():
-        raise Exception('project area missing field, "id"')
+def _check_geo_from_url_params_fields_exist(
+        geo: GeoFromUrlParams, field_name: str) -> None:
+    if "polygons" not in geo.keys():
+        raise Exception(
+            'url parameter, %s, missing field, "polygons"' % field_name)
+    if len(geo["polygons"]) == 0:
+        raise Exception(
+            'url parameter, %s, field, "polygons" is an empty list' %
+            (field_name))
+    if 'id' not in geo.keys():
+        raise Exception('url params, %s, missing field, "id"' % field_name)
 
 
-def _parse_project_area_from_url_params(
-        project_area: ProjectAreaFromUrlParams) -> MultiPolygon:
-    _check_project_area_from_url_params_fields_exist(project_area)
-    srid = 4269 if 'srid' not in project_area.keys(
-    ) else project_area['srid']  # TODO: make 4269 a constant.
+def _transform_geo_from_url_params_into_multipolygon(
+        geo: GeoFromUrlParams, field_name: str) -> MultiPolygon:
+    _check_geo_from_url_params_fields_exist(geo, field_name)
+    srid = 4269 if 'srid' not in geo.keys(
+    ) else geo['srid']  # TODO: make 4269 a constant.
     polygons: list[Polygon] = []
-    for p in project_area['polygons']:
+    for p in geo['polygons']:
         polygon = Polygon(tuple(p['coordinates']))
         polygon.srid = srid
         if not polygon.valid:
             raise Exception(
                 "polygon described by %s is invalid - %s" %
-                (json.dumps(project_area), polygon.valid_reason))
+                (json.dumps(geo), polygon.valid_reason))
         polygons.append(polygon)
     if len(polygons) == 0:
         raise Exception(
@@ -110,14 +114,12 @@ class ForsysProjectAreaRankingRequestParams():
     max_area_in_km2: float | None  # unit: km squared
     max_cost_in_usd: float | None  # unit: USD
 
-
     def __init__(self, params: QueryDict) -> None:
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
         else:
             self._read_db_params(params)
-
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
@@ -130,7 +132,6 @@ class ForsysProjectAreaRankingRequestParams():
                                                          self._URL_MAX_AREA)
         self.max_cost_in_usd = self._read_positive_float(params,
                                                          self._URL_MAX_COST)
-
 
     def _read_db_params(self, params: QueryDict) -> None:
         try:
@@ -152,10 +153,10 @@ class ForsysProjectAreaRankingRequestParams():
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
 
-
     # If field is present, returns field value but raises an exception if the
     # field value isn't positive.
     # IF field isn't present, returns None.
+
     def _read_positive_float(
             self, params: QueryDict, query_param: str) -> float | None:
         v = params.get(query_param, None)
@@ -166,7 +167,6 @@ class ForsysProjectAreaRankingRequestParams():
             raise Exception(
                 "expected param, %s, to have a positive value" % query_param)
         return v
-
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
         srid = 4269
@@ -199,10 +199,11 @@ class ForsysProjectAreaRankingRequestParams():
             self, params: QueryDict) -> dict[int, MultiPolygon]:
         project_areas = {}
         for project_area_str in params.getlist(self._URL_PROJECT_AREAS):
-            project_area = ProjectAreaFromUrlParams(
+            geo = GeoFromUrlParams(
                 json.loads(project_area_str))
-            multipolygon = _parse_project_area_from_url_params(project_area)
-            project_areas[project_area['id']] = multipolygon
+            multipolygon = _transform_geo_from_url_params_into_multipolygon(
+                geo, self._URL_PROJECT_AREAS)
+            project_areas[geo['id']] = multipolygon
         return project_areas
 
 
@@ -250,11 +251,10 @@ class ForsysProjectAreaGenerationRequestParams():
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         if self._URL_PLANNING_AREA in params:
-            project_area_str = params.get(self._URL_PLANNING_AREA, "")
-            project_area = ProjectAreaFromUrlParams(
-                json.loads(project_area_str))
-            self.planning_area = _parse_project_area_from_url_params(
-                project_area)
+            geo_str = params.get(self._URL_PLANNING_AREA, "")
+            geo = GeoFromUrlParams(json.loads(geo_str))
+            self.planning_area = _transform_geo_from_url_params_into_multipolygon(
+                geo, self._URL_PLANNING_AREA)
         else:
             self.planning_area = self._get_default_planning_area()
 
