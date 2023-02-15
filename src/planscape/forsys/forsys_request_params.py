@@ -257,7 +257,7 @@ class ForsysProjectAreaGenerationRequestParams():
             self.planning_area = _parse_project_area_from_url_params(
                 project_area)
         else:
-            self.project_areas = self._get_default_project_areas()
+            self.planning_area = self._get_default_planning_area()
 
     def _read_db_params(self, request: HttpRequest) -> None:
         try:
@@ -271,7 +271,25 @@ class ForsysProjectAreaGenerationRequestParams():
             self.region = plan.region_name
             self.planning_area = plan.geometry
 
-            # TODO: read priorities and weights fromo once DB configuration has
-            # been updated.
+            # TODO: read priorities and weights from DB once models have been
+            # updated.
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
+
+    def _get_default_planning_area(self) -> MultiPolygon:
+        srid = 4269
+        p1 = Polygon(((-120.14015536869722, 39.05413814388948),
+                     (-120.18409937110482, 39.48622140686506),
+                     (-119.93422142411087, 39.48622140686506),
+                     (-119.93422142411087, 39.05413814388948),
+                     (-120.14015536869722, 39.05413814388948)))
+        p1.srid = srid
+        p2 = Polygon(((-120.14015536869722, 38.05413814388948),
+                     (-120.18409937110482, 38.48622140686506),
+                     (-119.93422142411087, 38.48622140686506),
+                     (-119.93422142411087, 38.05413814388948),
+                     (-120.14015536869722, 38.05413814388948)))
+        p2.srid = srid
+        mp = MultiPolygon(p1, p2)
+        mp.srid = srid
+        return mp

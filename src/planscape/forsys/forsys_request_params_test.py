@@ -4,9 +4,11 @@ from base.condition_types import ConditionLevel
 from conditions.models import BaseCondition, Condition
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.http import QueryDict
+from django.http import HttpRequest, QueryDict
 from django.test import TestCase
-from forsys.forsys_request_params import ForsysProjectAreaRankingRequestParams
+from forsys.forsys_request_params import (
+    ForsysProjectAreaGenerationRequestParams,
+    ForsysProjectAreaRankingRequestParams)
 from plan.models import Plan, Project, ProjectArea
 
 
@@ -277,3 +279,158 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
             params.project_areas[self.project_area_with_user.pk].equals(
                 self.stored_geometry))
         self.assertEqual(params.priorities, ["name1", "name2"])
+
+
+class TestForsysProjectAreaGenerationRequestParams(TestCase):
+    def test_reads_default_url_params(self):
+        request = HttpRequest()
+        request.POST = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysProjectAreaGenerationRequestParams(request)
+
+        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(
+            params.priorities,
+            ['fire_dynamics', 'forest_resilience', 'species_diversity'])
+        self.assertEqual(params.priority_weights, [1, 1, 1])
+
+        self.assertEqual(params.planning_area.coords, (
+            (((-120.14015536869722, 39.05413814388948),
+              (-120.18409937110482, 39.48622140686506),
+              (-119.93422142411087, 39.48622140686506),
+              (-119.93422142411087, 39.05413814388948),
+              (-120.14015536869722, 39.05413814388948)),),
+            (((-120.14015536869722, 38.05413814388948),
+              (-120.18409937110482, 38.48622140686506),
+              (-119.93422142411087, 38.48622140686506),
+              (-119.93422142411087, 38.05413814388948),
+              (-120.14015536869722, 38.05413814388948)),))
+        )
+        self.assertEqual(params.planning_area.srid, 4269)
+
+    def test_reads_region_from_url_params(self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1&region=foo')
+        params = ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEqual(params.region, 'foo')
+
+    def test_reads_priorities_from_url_params(self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&priorities=foo&priorities=bar&priorities=baz')
+        params = ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+
+    def test_reads_priorities_and_weights_from_url_params(self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&priorities=foo&priorities=bar&priorities=baz' +
+            '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0')
+        params = ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+        self.assertListEqual(params.priority_weights, [5, 2, 1])
+
+    def test_raises_error_for_wrong_num_priority_weights_from_url_params(self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&priorities=foo&priorities=bar&priorities=baz' +
+            '&priority_weights=5.0&priority_weights=2.0')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected 3 priority weights, instead, 2 were given')
+
+    def test_reads_planning_area_from_url_params(self) -> None:
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&planning_area={ "id": 1, "srid": 4269, ' +
+            '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39], ' +
+            '[-119, 39], [-120, 40] ] }, ' +
+            '{ "coordinates": [ [-118, 39], [-119, 38], [-119, 39], ' +
+            '[-118, 39] ] } ] }')
+        params = ForsysProjectAreaGenerationRequestParams(request)
+
+        self.assertEqual(params.planning_area.coords, (
+            (((-120.0, 40.0),
+              (-120.0, 39.0),
+              (-119.0, 39.0),
+              (-120.0, 40.0)),),
+            (((-118.0, 39.0),
+              (-119.0, 38.0),
+              (-119.0, 39.0),
+              (-118.0, 39.0)),))
+        )
+        self.assertEqual(params.planning_area.srid, 4269)
+
+    def test_reads_planning_area_from_url_params_with_default_srid(
+            self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&planning_area={ "id": 2, ' +
+            '"polygons": [ { "coordinates": [ [-121, 42], [-120, 40], ' +
+            '[-121, 41], [-121, 42] ] } ] }')
+        params = ForsysProjectAreaGenerationRequestParams(request)
+
+        self.assertEqual(params.planning_area.coords, (
+            (((-121.0, 42.0), (-120.0, 40.0),
+              (-121.0, 41.0), (-121.0, 42.0)),),)
+        )
+        self.assertEqual(params.planning_area.srid, 4269)
+
+    def test_raises_error_for_url_params_planning_area_w_empty_polygons(
+            self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&planning_area={ "id": 1, "srid": 4269, ' +
+            '"polygons": [ ] }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            'project area field, "polygons" is an empty list')
+
+    def test_raises_error_for_invalid_planning_area_from_url_params(
+            self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&planning_area={ "id": 1, "srid": 4269, ' +
+            '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39] ] } ] }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertIn("LinearRing requires at least 4 points, got 2", str(
+            context.exception))
+
+    def test_raises_error_for_url_params_planning_area_missing_polygons_field(
+            self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&planning_area={ "id": 1, "srid": 4269 }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEquals(
+            str(context.exception),
+            'project area missing field, "polygons"')
+
+    def test_raises_error_for_url_params_planning_area_missing_id_field(
+            self):
+        request = HttpRequest()
+        request.POST = QueryDict(
+            'set_all_params_via_url_with_default_values=1' +
+            '&planning_area={ "srid": 4269, ' +
+            '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39], ' +
+            '[-119, 39], [-120, 40] ] }, ' +
+            '{ "coordinates": [ [-118, 39], [-119, 38], [-119, 39], ' +
+            '[-118, 39] ] } ] }')
+        with self.assertRaises(Exception) as context:
+            ForsysProjectAreaGenerationRequestParams(request)
+        self.assertEquals(
+            str(context.exception), 'project area missing field, "id"')
