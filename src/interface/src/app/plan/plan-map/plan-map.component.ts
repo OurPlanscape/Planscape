@@ -70,10 +70,10 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.drawingLayer = L.geoJSON(plan.planningArea, {
       pane: 'overlayPane',
       style: {
-        color: '#7b61ff',
-        fillColor: '#7b61ff',
-        fillOpacity: 0.2,
-        weight: 3,
+        color: '#3367D6',
+        fillColor: '#3367D6',
+        fillOpacity: 0.1,
+        weight: 5,
       },
     }).addTo(this.map);
     this.map.fitBounds(this.drawingLayer.getBounds(), {
@@ -128,7 +128,8 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       style: (_) => ({
         color: '#ff4081',
         fillColor: '#ff4081',
-        fillOpacity: 0.2,
+        fillOpacity: 0.1,
+        weight: 5,
       })
     });
     this.projectAreasLayer.addTo(this.map);
