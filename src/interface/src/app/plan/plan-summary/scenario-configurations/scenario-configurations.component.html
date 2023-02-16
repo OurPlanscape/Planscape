@@ -12,6 +12,7 @@
             <mat-checkbox (change)="selectAllConfigs($event)"></mat-checkbox>
           </mat-header-cell>
           <mat-cell *matCellDef="let element">
+            <div class="hover-indicator"></div>
             <mat-checkbox [(ngModel)]="element.selected" (click)="$event.stopPropagation()"></mat-checkbox>
           </mat-cell>
         </ng-container>
