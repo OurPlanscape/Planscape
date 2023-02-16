@@ -90,6 +90,7 @@ describe('CreateScenariosComponent', () => {
 
     expect(fakePlanService.updateProject).toHaveBeenCalledOnceWith({
       id: 1,
+      max_treatment_area_ratio: NaN,
       max_road_distance: NaN,
       max_slope: NaN,
     });
