@@ -217,8 +217,9 @@ def _save_project_parameters(body, project: Project):
     priorities_list = [] if priorities is None else priorities
     for pri in priorities_list:
         base_condition = BaseCondition.objects.get(condition_name=pri)
+        # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0)
+            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
         project.priorities.add(condition)
 
 
