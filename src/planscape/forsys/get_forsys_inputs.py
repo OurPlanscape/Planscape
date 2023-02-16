@@ -80,7 +80,7 @@ def _get_conditions(condition_ids: list[int]) -> list[Condition]:
     return conditions
 
 
-class ForsysProjectAreaRankingInput():
+class ForsysRankingInput():
     # Treatment cost per kilometer-squared (in USD)
     # TODO: make this variable based on a user input and/or a treatment cost
     # raster.
@@ -138,7 +138,7 @@ class ForsysProjectAreaRankingInput():
                 area * self.TREATMENT_COST_PER_KM_SQUARED)
 
 
-class ForsysProjectAreaGenerationInput():
+class ForsysGenerationInput():
     # Treatment cost per kilometer-squared (in USD)
     # TODO: make this variable based on a user input and/or a treatment cost
     # raster.
