@@ -82,7 +82,7 @@ def _transform_geo_from_url_params_into_multipolygon(
 # Of note, the option to set all forsys input paramters via url parameters is
 # intended for backend debugging purposes while the option to set most forsys
 # input parameters via database lookups is intended for production.
-class ForsysProjectAreaRankingRequestParams():
+class ForsysRankingRequestParams():
     # Constants for parsing url parameters.
     _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
     _URL_REGION = 'region'
@@ -135,6 +135,7 @@ class ForsysProjectAreaRankingRequestParams():
 
     def _read_db_params(self, params: QueryDict) -> None:
         try:
+            # TODO: re-use plan/views retrieval methods.
             project_id = params['project_id']
             project = Project.objects.get(id=project_id)
             project_areas = ProjectArea.objects.filter(project=project_id)
@@ -212,7 +213,7 @@ class ForsysProjectAreaRankingRequestParams():
 # Of note, the option to set all forsys input paramters via url parameters is
 # intended for backend debugging purposes while the option to set most forsys
 # input parameters via database lookups is intended for production.
-class ForsysProjectAreaGenerationRequestParams():
+class ForsysGenerationRequestParams():
     # Constants for parsing url parameters.
     _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
     _URL_REGION = 'region'
@@ -236,12 +237,11 @@ class ForsysProjectAreaGenerationRequestParams():
     # Must be same length as priorities.
     # If not set explicitly, this is a vector of 1's by default.
     priority_weights: list[float]
-    # Project areas to be ranked. A project area may consist of multiple
-    # disjoint polygons. The dict is keyed by project ID.
+    # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
 
     def __init__(self, request: HttpRequest) -> None:
-        params = request.POST
+        params = request.GET
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
@@ -259,21 +259,18 @@ class ForsysProjectAreaGenerationRequestParams():
             self.planning_area = self._get_default_planning_area()
 
     def _read_db_params(self, request: HttpRequest) -> None:
-        try:
-            params = request.POST
+        params = request.GET
 
-            # TODO: remove once DB configuratino has been updated.
-            _read_common_url_params(self, params)
+        # TODO: remove once DB configuratino has been updated.
+        _read_common_url_params(self, params)
 
-            user = get_user(request)
-            plan = get_plan_by_id(user, params)
-            self.region = plan.region_name
-            self.planning_area = plan.geometry
+        user = get_user(request)
+        plan = get_plan_by_id(user, params)
+        self.region = plan.region_name
+        self.planning_area = plan.geometry
 
-            # TODO: read priorities and weights from DB once models have been
-            # updated.
-        except Exception as e:
-            raise Exception("Ill-formed request: " + str(e))
+        # TODO: read priorities and weights from DB once models have been
+        # updated.
 
     def _get_default_planning_area(self) -> MultiPolygon:
         srid = 4269
