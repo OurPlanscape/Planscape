@@ -3,7 +3,7 @@ from conditions.raster_utils import (ConditionPixelValues,
                                      compute_condition_stats_from_raster,
                                      get_condition_values_from_raster,
                                      get_raster_geo)
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, Polygon
 from forsys.forsys_request_params import (
     ForsysProjectAreaGenerationRequestParams,
     ForsysProjectAreaRankingRequestParams)
@@ -17,6 +17,7 @@ class ForsysInputHeaders():
     FORSYS_STAND_ID_HEADER = "stand_id"
     FORSYS_AREA_HEADER = "area"
     FORSYS_COST_HEADER = "cost"
+    FORSYS_GEO_WKT_HEADER = "geo"
 
     # Header prefixes for conditions and priorities.
     _CONDITION_PREFIX = "c_"
@@ -46,6 +47,7 @@ def _get_initialized_forsys_input_with_common_headers(
         headers: ForsysInputHeaders,
         priorities: list[str]) -> dict[str, list]:
     forsys_input = {}
+    forsys_input[headers.FORSYS_PROJECT_ID_HEADER] = []
     forsys_input[headers.FORSYS_STAND_ID_HEADER] = []
     forsys_input[headers.FORSYS_AREA_HEADER] = []
     forsys_input[headers.FORSYS_COST_HEADER] = []
@@ -104,7 +106,6 @@ class ForsysProjectAreaRankingInput():
 
         self.forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
-        self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER] = []
 
         for proj_id in project_areas.keys():
             geo = get_raster_geo(project_areas[proj_id])
@@ -171,6 +172,7 @@ class ForsysProjectAreaGenerationInput():
 
         self.forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
+        self.forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
 
         geo = get_raster_geo(planning_area)
 
@@ -260,10 +262,24 @@ class ForsysProjectAreaGenerationInput():
                 stand_id = stand_id + 1
                 self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(
                     stand_id)
+                self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(0)
                 self.forsys_input[headers.FORSYS_AREA_HEADER].append(
                     settings.RASTER_PIXEL_AREA)
                 self.forsys_input[headers.FORSYS_COST_HEADER].append(
                     settings.RASTER_PIXEL_AREA * self.TREATMENT_COST_PER_KM_SQUARED)
+
+                xmin = self.topleft_coords[0] + settings.CRS_9822_SCALE[0] * x
+                xmax = xmin + settings.CRS_9822_SCALE[0]
+                ymin = self.topleft_coords[1] + settings.CRS_9822_SCALE[1] * y
+                ymax = ymin + settings.CRS_9822_SCALE[1]
+                geo = Polygon(((xmin, ymin),
+                               (xmin, ymax),
+                               (xmax, ymax),
+                               (xmax, ymin),
+                               (xmin, ymin)))
+                geo.srid = settings.CRS_FOR_RASTERS
+                self.forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(
+                    geo.wkt)
                 for p in self.pixel_dist_x_to_y_to_condition_to_values[x][y].keys():
                     self.forsys_input[headers.get_priority_header(p)].append(
                         self.pixel_dist_x_to_y_to_condition_to_values[x][y][p]

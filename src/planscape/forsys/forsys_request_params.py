@@ -242,7 +242,6 @@ class ForsysProjectAreaGenerationRequestParams():
 
     def __init__(self, request: HttpRequest) -> None:
         params = request.GET
-        print(params)
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
@@ -250,7 +249,6 @@ class ForsysProjectAreaGenerationRequestParams():
             self._read_db_params(request)
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
-        print("calling _read_url_params_with_defaults")
         _read_common_url_params(self, params)
         if self._URL_PLANNING_AREA in params:
             geo_str = params.get(self._URL_PLANNING_AREA, "")
@@ -261,7 +259,6 @@ class ForsysProjectAreaGenerationRequestParams():
             self.planning_area = self._get_default_planning_area()
 
     def _read_db_params(self, request: HttpRequest) -> None:
-        print("calling _read_db_params")
         try:
             params = request.POST
 

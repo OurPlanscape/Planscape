@@ -63,9 +63,6 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
     rank_projects_for_multiple_scenarios_function_r = robjects.globalenv[
         'rank_projects_for_multiple_scenarios']
 
-    # TODO: add inputs for thresholds.
-    # TODO: clean-up: pass header names (e.g. proj_id) into
-    # scenario_sets_function_r.
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
     forsys_output = rank_projects_for_multiple_scenarios_function_r(
@@ -76,8 +73,6 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
     parsed_output = ForsysScenarioSetOutput(
         forsys_output, forsys_priority_headers, max_area_in_km2, max_cost_in_usd,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
-
-    # TODO: add logic for applying constraints to forsys_output.
 
     return parsed_output
 
@@ -99,8 +94,6 @@ def rank_project_areas_for_multiple_scenarios(
         response['forsys']['input'] = forsys_input.forsys_input
         response['forsys']['output_scenarios'] = forsys_output.scenarios
 
-        # TODO: configure response to potentially show stand coordinates and
-        # other signals necessary for the UI.
         return JsonResponse(response)
 
     except Exception as e:
@@ -121,9 +114,6 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
     rank_projects_for_a_single_scenario_function_r = robjects.globalenv[
         'rank_projects_for_a_single_scenario']
 
-    # TODO: add inputs for thresholds.
-    # TODO: clean-up: pass header names (e.g. proj_id) into
-    # scenario_sets_function_r.
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
     forsys_output = rank_projects_for_a_single_scenario_function_r(
@@ -138,8 +128,6 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
     parsed_output = ForsysScenarioOutput(
         forsys_output, priority_weights_dict, max_area_in_km2, max_cost_in_usd,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
-
-    # TODO: add logic for applying constraints to forsys_output.
 
     return parsed_output
 
@@ -162,13 +150,35 @@ def rank_project_areas_for_a_single_scenario(
         response['forsys']['input'] = forsys_input.forsys_input
         response['forsys']['output_scenario'] = forsys_output.scenario
 
-        # TODO: configure response to potentially show stand coordinates and
-        # other signals necessary for the UI.
         return JsonResponse(response)
 
     except Exception as e:
         logger.error('project area ranking error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def run_forsys_generate_project_areas_for_a_single_scenario(
+        forsys_input_dict: dict[str, list],
+        forsys_proj_id_header: str, forsys_stand_id_header: str,
+        forsys_area_header: str, forsys_cost_header: str,
+        forsys_geo_wkt_header: str, forsys_priority_headers: list[str],
+        forsys_priority_weights: list[float]) -> ForsysScenarioOutput:
+    import rpy2.robjects as robjects
+    robjects.r.source(os.path.join(
+        settings.BASE_DIR, 'forsys/generate_projects_for_a_single_scenario.R'))
+    generate_projects_for_a_single_scenario_function_r = robjects.globalenv[
+        'generate_projects_for_a_single_scenario']
+
+    forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
+
+    forsys_output = generate_projects_for_a_single_scenario_function_r(
+        forsys_input, robjects.StrVector(forsys_priority_headers),
+        robjects.FloatVector(forsys_priority_weights),
+        forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
+        forsys_cost_header, forsys_geo_wkt_header)
+
+    # TODO: add logic for parsing this output.
+    print(forsys_output)
 
 
 def generate_project_areas_for_a_single_scenario(
@@ -177,6 +187,12 @@ def generate_project_areas_for_a_single_scenario(
         params = ForsysProjectAreaGenerationRequestParams(request)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaGenerationInput(params, headers)
+
+        run_forsys_generate_project_areas_for_a_single_scenario(
+            forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
+            headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
+            headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
+            headers.priority_headers, params.priority_weights)
 
         response = {}
         response['forsys'] = {}
