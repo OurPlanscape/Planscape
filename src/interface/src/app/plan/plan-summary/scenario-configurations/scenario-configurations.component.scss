@@ -1,3 +1,11 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@import "../../../../styles.scss";
+
+$color-config:    mat.get-color-config($planscape-frontend-theme);
+$primary-palette: map.get($color-config, 'primary');
+
 .configurations-wrapper {
   position: relative;
 }
@@ -48,10 +56,14 @@
 }
 
 .mat-column-select {
-  flex: 0 1 16px;
+  flex: 0 1 38px;
   padding-left: 16px;
   padding-right: 32px;
-  width: 16px;
+  width: 38px;
+
+  &.mat-header-cell {
+    padding-left: 22px;
+  }
 }
 
 .mat-column-constraints.mat-cell {
@@ -60,4 +72,19 @@
 
 .config-row {
   cursor: pointer;
+
+  &:hover {
+    background-color: transparentize($color: mat.get-color-from-palette($primary-palette, 500), $amount: 0.9);
+
+    mat-cell div.hover-indicator {
+      background-color: mat.get-color-from-palette($primary-palette, 500);
+    }
+  }
+}
+
+.hover-indicator {
+  height: 48px;
+  margin-left: -16px;
+  margin-right: 18px;
+  width: 4px;
 }

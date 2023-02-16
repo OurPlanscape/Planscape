@@ -1,8 +1,7 @@
 <div class="saved-scenarios-wrapper">
   <mat-card [style.margin-top]="'24px'">
     <mat-card-header>
-      <mat-card-title>Saved Scenarios</mat-card-title>
-      <mat-card-subtitle>{{ scenarios.length }}</mat-card-subtitle>
+      <mat-card-title>Saved Scenarios ({{ scenarios.length }})</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
@@ -10,7 +9,10 @@
         <!-- ID Column -->
         <ng-container matColumnDef="id">
           <mat-header-cell *matHeaderCellDef> Scenario </mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{element.id}} </mat-cell>
+          <mat-cell *matCellDef="let element">
+            <div class="hover-indicator"></div>
+            {{element.id}}
+          </mat-cell>
         </ng-container>
 
         <!-- Timestamp Column -->
