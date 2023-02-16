@@ -55,7 +55,7 @@ export const opacityTransitionTrigger = (params: {
     transition('transparent => opaque', [animate(params.timingB)]),
   ]);
 
-export const triggerAnimation = trigger('expandCollapsePanel', [
+export const expandCollapsePanelTrigger = trigger('expandCollapsePanel', [
   state(
     'expanded',
     style({

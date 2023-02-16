@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import {
   colorTransitionTrigger,
   opacityTransitionTrigger,
-  triggerAnimation,
+  expandCollapsePanelTrigger,
 } from 'src/app/shared/animations';
 
 @Component({
@@ -10,7 +10,7 @@ import {
   templateUrl: './scenario-details.component.html',
   styleUrls: ['./scenario-details.component.scss'],
   animations: [
-    triggerAnimation,
+    expandCollapsePanelTrigger,
     colorTransitionTrigger({
       triggerName: 'expandCollapseButton',
       colorA: 'white',

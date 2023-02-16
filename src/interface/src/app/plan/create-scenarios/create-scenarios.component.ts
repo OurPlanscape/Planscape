@@ -15,7 +15,7 @@ import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
   opacityTransitionTrigger,
-  triggerAnimation,
+  expandCollapsePanelTrigger,
 } from 'src/app/shared/animations';
 import { Plan, ProjectConfig } from 'src/app/types';
 
@@ -31,7 +31,7 @@ interface StepState {
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
   animations: [
-    triggerAnimation,
+    expandCollapsePanelTrigger,
     colorTransitionTrigger({
       triggerName: 'expandCollapseButton',
       colorA: 'white',
