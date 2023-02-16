@@ -3,15 +3,17 @@ import os
 
 import numpy as np
 import pandas as pd
-from conditions.models import BaseCondition
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
+from forsys.forsys_request_params import (
+    ForsysProjectAreaGenerationRequestParams,
+    ForsysProjectAreaRankingRequestParams)
 from forsys.get_forsys_inputs import (ForsysInputHeaders,
-                                      ForsysProjectAreaRankingInput,
-                                      ForsysProjectAreaRankingRequestParams)
-from forsys.parse_forsys_output import (
-    ForsysScenarioOutput, ForsysScenarioSetOutput)
+                                      ForsysProjectAreaGenerationInput,
+                                      ForsysProjectAreaRankingInput)
+from forsys.parse_forsys_output import (ForsysScenarioOutput,
+                                        ForsysScenarioSetOutput)
 from planscape import settings
 
 import rpy2
@@ -143,7 +145,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
 
 
 def rank_project_areas_for_a_single_scenario(
-        request: HttpRequest) -> HttpRequest:
+        request: HttpRequest) -> HttpResponse:
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
@@ -166,4 +168,26 @@ def rank_project_areas_for_a_single_scenario(
 
     except Exception as e:
         logger.error('project area ranking error: ' + str(e))
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def generate_project_areas_for_a_single_scenario(
+        request: HttpRequest) -> HttpResponse:
+    try:
+        params = ForsysProjectAreaGenerationRequestParams(request)
+        print("params", params)
+        headers = ForsysInputHeaders(params.priorities)
+        print("headers", headers)
+        forsys_input = ForsysProjectAreaGenerationInput(params, headers)
+        print("forsys_input", forsys_input)
+
+        response = {}
+        response['forsys'] = {}
+        response['forsys']['input'] = forsys_input.forsys_input
+
+        # TODO: add logic for parsing forsys output.
+
+        return JsonResponse(response)
+    except Exception as e:
+        logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
