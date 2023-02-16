@@ -107,4 +107,9 @@ export class PlanComponent implements OnInit, OnDestroy {
       this.route.snapshot.firstChild?.paramMap.get('id') ?? null;
     this.planService.updateStateWithScenario(scenarioId);
   }
+
+  backToOverview() {
+    this.currentPlanStep = PlanStep.Overview;
+    this.router.navigate(['plan', this.plan!.id]);
+  }
 }
