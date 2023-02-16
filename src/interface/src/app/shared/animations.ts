@@ -1,5 +1,8 @@
 import {
   animate,
+  animateChild,
+  group,
+  query,
   state,
   style,
   transition,
@@ -51,3 +54,35 @@ export const opacityTransitionTrigger = (params: {
     transition('opaque => transparent', [animate(params.timingA)]),
     transition('transparent => opaque', [animate(params.timingB)]),
   ]);
+
+export const triggerAnimation = trigger('expandCollapsePanel', [
+  state(
+    'expanded',
+    style({
+      backgroundColor: 'white',
+      padding: '*',
+      maxWidth: '700px',
+    })
+  ),
+  state(
+    'collapsed',
+    style({
+      backgroundColor: '#ebebeb',
+      width: '36px',
+    })
+  ),
+  transition('expanded => collapsed', [
+    group([
+      query('@expandCollapseButton', animateChild()),
+      query('@expandCollapsePanelContent', animateChild()),
+      animate('300ms 100ms ease-out'),
+    ]),
+  ]),
+  transition('collapsed => expanded', [
+    group([
+      query('@expandCollapseButton', animateChild()),
+      query('@expandCollapsePanelContent', animateChild()),
+      animate('250ms ease-out'),
+    ]),
+  ]),
+]);
