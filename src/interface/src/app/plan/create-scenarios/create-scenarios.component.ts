@@ -1,13 +1,3 @@
-import {
-  animate,
-  animateChild,
-  group,
-  query,
-  state,
-  style,
-  transition,
-  trigger,
-} from '@angular/animations';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import {
   Component,
@@ -25,6 +15,7 @@ import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
   opacityTransitionTrigger,
+  triggerAnimation,
 } from 'src/app/shared/animations';
 import { Plan, ProjectConfig } from 'src/app/types';
 
@@ -40,37 +31,7 @@ interface StepState {
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
   animations: [
-    trigger('expandCollapsePanel', [
-      state(
-        'expanded',
-        style({
-          backgroundColor: 'white',
-          padding: '*',
-          maxWidth: '700px',
-        })
-      ),
-      state(
-        'collapsed',
-        style({
-          backgroundColor: '#ebebeb',
-          width: '36px',
-        })
-      ),
-      transition('expanded => collapsed', [
-        group([
-          query('@expandCollapseButton', animateChild()),
-          query('@expandCollapsePanelContent', animateChild()),
-          animate('300ms 100ms ease-out'),
-        ]),
-      ]),
-      transition('collapsed => expanded', [
-        group([
-          query('@expandCollapseButton', animateChild()),
-          query('@expandCollapsePanelContent', animateChild()),
-          animate('250ms ease-out'),
-        ]),
-      ]),
-    ]),
+    triggerAnimation,
     colorTransitionTrigger({
       triggerName: 'expandCollapseButton',
       colorA: 'white',
