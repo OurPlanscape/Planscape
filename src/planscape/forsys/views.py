@@ -9,9 +9,8 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
 from forsys.forsys_request_params import (
     ForsysProjectAreaGenerationRequestParams,
     ForsysProjectAreaRankingRequestParams)
-from forsys.get_forsys_inputs import (ForsysInputHeaders,
-                                      ForsysProjectAreaGenerationInput,
-                                      ForsysProjectAreaRankingInput)
+from forsys.get_forsys_inputs import (
+    ForsysInputHeaders, ForsysGenerationInput, ForsysRankingInput)
 from forsys.parse_forsys_output import (ForsysScenarioOutput,
                                         ForsysScenarioSetOutput)
 from planscape import settings
@@ -83,7 +82,7 @@ def rank_project_areas_for_multiple_scenarios(
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
-        forsys_input = ForsysProjectAreaRankingInput(params, headers)
+        forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
             forsys_input.forsys_input, params.max_area_in_km2, params.max_cost_in_usd, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
@@ -137,7 +136,7 @@ def rank_project_areas_for_a_single_scenario(
     try:
         params = ForsysProjectAreaRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
-        forsys_input = ForsysProjectAreaRankingInput(params, headers)
+        forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, params.max_area_in_km2,
             params.max_cost_in_usd, headers.FORSYS_PROJECT_ID_HEADER,
@@ -186,7 +185,7 @@ def generate_project_areas_for_a_single_scenario(
     try:
         params = ForsysProjectAreaGenerationRequestParams(request)
         headers = ForsysInputHeaders(params.priorities)
-        forsys_input = ForsysProjectAreaGenerationInput(params, headers)
+        forsys_input = ForsysGenerationInput(params, headers)
 
         run_forsys_generate_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,

@@ -6,8 +6,7 @@ from conditions.raster_condition_retrieval_testcase import \
 from django.http import QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import ForsysProjectAreaRankingRequestParams
-from forsys.get_forsys_inputs import (ForsysInputHeaders,
-                                      ForsysProjectAreaRankingInput)
+from forsys.get_forsys_inputs import (ForsysInputHeaders, ForsysRankingInput)
 
 
 class ForsysInputHeadersTest(TestCase):
@@ -27,7 +26,7 @@ class ForsysInputHeadersTest(TestCase):
             "c_condition")
 
 
-class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
+class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
@@ -59,7 +58,7 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
 
         headers = ForsysInputHeaders(params.priorities)
 
-        input = ForsysProjectAreaRankingInput(params, headers)
+        input = ForsysRankingInput(params, headers)
         self._assert_dict_almost_equal(input.forsys_input, {
             'proj_id': [1, 2],
             'stand_id': [1, 2],
@@ -82,7 +81,7 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         with self.assertRaises(Exception) as context:
-            ForsysProjectAreaRankingInput(params, headers)
+            ForsysRankingInput(params, headers)
         self.assertEqual(
             str(context.exception),
             "of 3 priorities, only 2 had base conditions")
@@ -104,7 +103,7 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         with self.assertRaises(Exception) as context:
-            ForsysProjectAreaRankingInput(params, headers)
+            ForsysRankingInput(params, headers)
         self.assertEqual(
             str(context.exception),
             "of 3 priorities, only 2 had conditions")
@@ -122,7 +121,7 @@ class ForsysProjectAreaRankingInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         with self.assertRaises(Exception) as context:
-            ForsysProjectAreaRankingInput(params, headers)
+            ForsysRankingInput(params, headers)
         self.assertEqual(
             str(context.exception),
             "no score was retrieved for condition, foo")
