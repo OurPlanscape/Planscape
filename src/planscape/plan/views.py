@@ -9,7 +9,7 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea
+from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer)
 from planscape import settings
@@ -185,31 +185,37 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _save_project_parameters(body, project: Project):
-    # Parse constraints
-    max_budget = body.get('max_budget', None)
+def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
     if max_budget is not None and not (isinstance(max_budget, (int, float))):
         raise ValueError("Max budget must be a number value")
 
-    max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
     if (max_treatment_area_ratio is not None and
             (not (isinstance(max_treatment_area_ratio, (int, float))) or max_treatment_area_ratio < 0)):
         raise ValueError(
             "Max treatment must be a number value >= 0.0")
 
-    max_road_distance = body.get('max_road_distance', None)
     if max_road_distance is not None and not (isinstance(max_road_distance, (int, float))):
         raise ValueError("Max distance from road must be a number value")
 
-    max_slope = body.get('max_slope', None)
     if (max_slope is not None and
             (not (isinstance(max_slope, (int, float))) or max_slope < 0)):
         raise ValueError(
             "Max slope must be a number value >= 0.0")
 
+def _save_project_parameters(body, project: Project):
+    max_budget = body.get('max_budget', None)
+    max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+    max_road_distance = body.get('max_road_distance', None)
+    max_slope = body.get('max_slope', None)
+
+    _validate_constraint_values(
+        max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
     project.max_budget = float(max_budget) if max_budget else None
-    project.max_treatment_area_ratio = float(max_treatment_area_ratio) if max_treatment_area_ratio else None
-    project.max_road_distance = float(max_road_distance) if max_road_distance else None
+    project.max_treatment_area_ratio = float(
+        max_treatment_area_ratio) if max_treatment_area_ratio else None
+    project.max_road_distance = float(
+        max_road_distance) if max_road_distance else None
     project.max_slope = float(max_slope) if max_slope else None
 
     # Parse priorities
@@ -288,7 +294,8 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
 
         if Plan.objects.get(pk=plan_id) is None:
-            raise ValueError("Plan with id " + str(plan_id) + " does not exist")
+            raise ValueError("Plan with id " +
+                             str(plan_id) + " does not exist")
 
         projects = Project.objects.filter(owner=user, plan=int(plan_id))
 
@@ -308,11 +315,11 @@ def get_project(request: HttpRequest) -> HttpResponse:
         if project.owner != user:
             raise ValueError(
                 "You do not have permission to view this project.")
-        
+
         return JsonResponse(_serialize_project(project))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-        
+
 
 def _serialize_project(project: Project) -> dict:
     """
@@ -326,7 +333,8 @@ def _serialize_project(project: Project) -> dict:
             result['creation_time'].replace('Z', '+00:00')).timestamp())
         del result['creation_time']
     if 'priorities' in result:
-        result['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in result['priorities']]
+        result['priorities'] = [Condition.objects.get(
+            pk=priority).condition_dataset.condition_name for priority in result['priorities']]
     return result
 
 
@@ -341,17 +349,18 @@ def delete_projects(request: HttpRequest) -> HttpResponse:
         if project_ids is None or not (isinstance(project_ids, list)):
             raise ValueError("Must specify project_ids as a list")
 
-        projects = [Project.objects.get(id=project_id) for project_id in project_ids]
-        
+        projects = [Project.objects.get(id=project_id)
+                    for project_id in project_ids]
+
         # Check that the user owns the projects
         for project in projects:
             if project.owner != owner:
                 raise ValueError(
                     "You do not have permission to delete one or more of these projects.")
-        
+
         for project in projects:
             project.delete()
-        
+
         response_data = project_ids
         return HttpResponse(
             json.dumps(response_data),
@@ -421,6 +430,73 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
             data = ProjectAreaSerializer(area).data
             response[data['id']] = data
         return JsonResponse(response)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def _save_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, max_slope, priorities, weights, scenario: Scenario):
+    scenario.max_budget = float(max_budget) if max_budget else None
+    scenario.max_treatment_area_ratio = float(
+        max_treatment_area_ratio) if max_treatment_area_ratio else None
+    scenario.max_road_distance = float(
+        max_road_distance) if max_road_distance else None
+    scenario.max_slope = float(max_slope) if max_slope else None
+
+    for i in range(len(priorities)):
+        base_condition = BaseCondition.objects.get(
+            condition_name=priorities[i])
+        condition = Condition.objects.get(
+            condition_dataset=base_condition, condition_score_type=0)
+        weight = weights[i] if weights is not None else None
+        weighted_pri = ScenarioWeightedPriority.objects.create(
+            scenario=scenario, priority=condition, weight=weight)
+
+
+@csrf_exempt
+def create_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = _get_user(request)
+
+        body = json.loads(request.body)
+        plan_id = body.get('plan_id', None)
+        if plan_id is None or not (isinstance(plan_id, int)):
+            raise ValueError("Must specify plan_id as an integer")
+
+        # Get the plan, and if the user is logged in, make sure either
+        # 1. the plan owner and the owner are both None, or
+        # 2. the plan owner and the owner are both not None, and are equal.
+        plan = Plan.objects.get(pk=int(plan_id))
+        if not ((owner is None and plan.owner is None) or
+                (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
+            raise ValueError(
+                "Cannot create scenario; plan is not owned by user")
+
+        max_budget = body.get('max_budget', None)
+        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+        max_road_distance = body.get('max_road_distance', None)
+        max_slope = body.get('max_slope', None)
+        priorities = body.get('priorities', None)
+        weights = body.get('weights', None)
+
+        _validate_constraint_values(
+            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
+        if priorities is None:
+            raise ValueError(
+                "At least one priority must be selected.")
+        if weights is None:
+            raise ValueError(
+                "Scenario must have weights for priorites")
+        if (len(priorities) != len(weights)):
+            raise ValueError(
+                "Each priority must have a single assigned weight")
+
+        scenario = Scenario.objects.create(owner=owner, plan=plan)
+        _save_scenario_metadata(max_budget, max_treatment_area_ratio,
+                                max_road_distance, max_slope, priorities, weights, scenario)
+        scenario.save()
+        return HttpResponse(str(scenario.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
