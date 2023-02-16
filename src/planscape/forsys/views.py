@@ -3,15 +3,14 @@ import os
 
 import numpy as np
 import pandas as pd
-from conditions.models import BaseCondition
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
+from forsys.forsys_request_params import ForsysRankingRequestParams
 from forsys.get_forsys_inputs import (ForsysInputHeaders,
-                                      ForsysProjectAreaRankingInput,
-                                      ForsysProjectAreaRankingRequestParams)
-from forsys.parse_forsys_output import (
-    ForsysScenarioOutput, ForsysScenarioSetOutput)
+                                      ForsysProjectAreaRankingInput)
+from forsys.parse_forsys_output import (ForsysScenarioOutput,
+                                        ForsysScenarioSetOutput)
 from planscape import settings
 
 import rpy2
@@ -84,7 +83,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
 def rank_project_areas_for_multiple_scenarios(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysProjectAreaRankingRequestParams(request.GET)
+        params = ForsysRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
@@ -145,7 +144,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
 def rank_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpRequest:
     try:
-        params = ForsysProjectAreaRankingRequestParams(request.GET)
+        params = ForsysRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysProjectAreaRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(

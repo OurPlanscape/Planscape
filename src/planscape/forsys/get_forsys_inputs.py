@@ -1,7 +1,7 @@
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import (
     compute_condition_stats_from_raster, get_raster_geo)
-from forsys.forsys_request_params import ForsysProjectAreaRankingRequestParams
+from forsys.forsys_request_params import ForsysRankingRequestParams
 from planscape import settings
 
 
@@ -51,7 +51,7 @@ class ForsysProjectAreaRankingInput():
     forsys_input: dict[str, list]
 
     def __init__(
-            self, params: ForsysProjectAreaRankingRequestParams,
+            self, params: ForsysRankingRequestParams,
             headers: ForsysInputHeaders) -> None:
         region = params.region
         priorities = params.priorities
