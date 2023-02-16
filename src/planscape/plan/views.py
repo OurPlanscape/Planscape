@@ -18,7 +18,7 @@ from django.shortcuts import get_list_or_404
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
 
-def _get_user(request: HttpRequest):
+def get_user(request: HttpRequest):
     user = None
     if request.user.is_authenticated:
         user = request.user
@@ -31,7 +31,7 @@ def _get_user(request: HttpRequest):
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         # Get the name of the plan.
         body = json.loads(request.body)
@@ -83,7 +83,7 @@ def _convert_polygon_to_multipolygon(geometry: dict):
 def delete(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
         owner_id = None if owner is None else owner.pk
 
         # Get the plans
@@ -157,7 +157,7 @@ def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        user = _get_user(request)
+        user = get_user(request)
 
         return JsonResponse(
             _serialize_plan(
@@ -226,7 +226,7 @@ def _save_project_parameters(body, project: Project):
 def create_project(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         # Get the plan_id associated with the project.
         body = json.loads(request.body)
@@ -259,7 +259,7 @@ def update_project(request: HttpRequest) -> HttpResponse:
                 "HTTP methods other than PUT are not yet implemented")
 
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
         project_id = body.get('id', None)
@@ -285,7 +285,7 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
         assert isinstance(request.GET['plan_id'], str)
         plan_id = request.GET.get('plan_id', "0")
 
-        user = _get_user(request)
+        user = get_user(request)
 
         if Plan.objects.get(pk=plan_id) is None:
             raise ValueError("Plan with id " + str(plan_id) + " does not exist")
@@ -302,7 +302,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
         assert isinstance(request.GET['id'], str)
         project_id = request.GET.get('id', "0")
 
-        user = _get_user(request)
+        user = get_user(request)
 
         project = Project.objects.get(id=project_id)
         if project.owner != user:
@@ -334,7 +334,7 @@ def _serialize_project(project: Project) -> dict:
 def delete_projects(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
         project_ids = body.get('project_ids', None)
@@ -365,7 +365,7 @@ def delete_projects(request: HttpRequest) -> HttpResponse:
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
 
@@ -409,7 +409,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         project_id = request.GET.get('project_id', "0")
         project_exists = Project.objects.get(id=project_id)
 
-        user = _get_user(request)
+        user = get_user(request)
 
         if project_exists.owner != user:
             raise ValueError(
@@ -427,7 +427,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
 
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
-        user = _get_user(request)
+        user = get_user(request)
         plan = get_plan_by_id(user, request.GET)
 
         condition_stats = fetch_or_compute_condition_stats(plan)
