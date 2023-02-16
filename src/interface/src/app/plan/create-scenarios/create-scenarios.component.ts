@@ -189,10 +189,6 @@ export class CreateScenariosComponent implements OnInit {
     const maxBudget = constraintsForm.get('budgetForm.maxBudget');
     const optimizeBudget = constraintsForm.get('budgetForm.optimizeBudget');
     const maxArea = constraintsForm.get('treatmentForm.maxArea');
-    console.log(constraintsForm.value);
-    console.log(
-      !!maxBudget?.value || !!optimizeBudget?.value || !!maxArea?.value
-    );
     return !!maxBudget?.value || !!optimizeBudget?.value || !!maxArea?.value;
   }
 

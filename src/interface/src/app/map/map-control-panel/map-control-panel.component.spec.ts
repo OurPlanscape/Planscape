@@ -46,7 +46,6 @@ describe('MapControlPanelComponent', () => {
         config: defaultMapConfig(),
       };
     });
-    console.log(component.maps);
     component.mapViewOptions = defaultMapViewOptions();
 
     fixture.detectChanges();
@@ -125,16 +124,13 @@ describe('MapControlPanelComponent', () => {
         it(`map-${testCase} should change base layer`, async () => {
           let map = component.maps[testCase - 1];
           spyOn(component.changeBaseLayer, 'emit');
-          console.log(await loader.getAllHarnesses(MatRadioGroupHarness));
           const radioButtonGroup = await loader.getHarness(
             MatRadioGroupHarness.with({ name: `${map.id}-base-layer-select` })
           );
-          console.log(testCase, map.config.baseLayerType);
 
           // Act: select the terrain base layer
           await radioButtonGroup.checkRadioButton({ label: 'Terrain' });
 
-          console.log(testCase, map.config.baseLayerType);
 
           // Assert: expect that the map contains the terrain base layer
           expect(component.changeBaseLayer.emit).toHaveBeenCalledWith(map);
