@@ -175,11 +175,8 @@ def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
         params = ForsysProjectAreaGenerationRequestParams(request)
-        print("params", params)
         headers = ForsysInputHeaders(params.priorities)
-        print("headers", headers)
         forsys_input = ForsysProjectAreaGenerationInput(params, headers)
-        print("forsys_input", forsys_input)
 
         response = {}
         response['forsys'] = {}

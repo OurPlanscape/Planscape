@@ -285,7 +285,7 @@ class TestForsysProjectAreaRankingRequestParams_ReadFromDb(TestCase):
 class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_reads_default_url_params(self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1')
         params = ForsysProjectAreaGenerationRequestParams(request)
 
@@ -311,14 +311,14 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1&region=foo')
         params = ForsysProjectAreaGenerationRequestParams(request)
         self.assertEqual(params.region, 'foo')
 
     def test_reads_priorities_from_url_params(self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&priorities=foo&priorities=bar&priorities=baz')
         params = ForsysProjectAreaGenerationRequestParams(request)
@@ -326,7 +326,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
 
     def test_reads_priorities_and_weights_from_url_params(self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&priorities=foo&priorities=bar&priorities=baz' +
             '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0')
@@ -336,7 +336,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
 
     def test_raises_error_for_wrong_num_priority_weights_from_url_params(self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&priorities=foo&priorities=bar&priorities=baz' +
             '&priority_weights=5.0&priority_weights=2.0')
@@ -348,7 +348,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
 
     def test_reads_planning_area_from_url_params(self) -> None:
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&planning_area={ "id": 1, "srid": 4269, ' +
             '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39], ' +
@@ -372,7 +372,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_reads_planning_area_from_url_params_with_default_srid(
             self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&planning_area={ "id": 2, ' +
             '"polygons": [ { "coordinates": [ [-121, 42], [-120, 40], ' +
@@ -388,7 +388,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_raises_error_for_url_params_planning_area_w_empty_polygons(
             self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&planning_area={ "id": 1, "srid": 4269, ' +
             '"polygons": [ ] }')
@@ -401,7 +401,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_raises_error_for_invalid_planning_area_from_url_params(
             self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&planning_area={ "id": 1, "srid": 4269, ' +
             '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39] ] } ] }')
@@ -413,7 +413,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_raises_error_for_url_params_planning_area_missing_polygons_field(
             self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&planning_area={ "id": 1, "srid": 4269 }')
         with self.assertRaises(Exception) as context:
@@ -425,7 +425,7 @@ class TestForsysProjectAreaGenerationRequestParams(TestCase):
     def test_raises_error_for_url_params_planning_area_missing_id_field(
             self):
         request = HttpRequest()
-        request.POST = QueryDict(
+        request.GET = QueryDict(
             'set_all_params_via_url_with_default_values=1' +
             '&planning_area={ "srid": 4269, ' +
             '"polygons": [ { "coordinates": [ [-120, 40], [-120, 39], ' +
@@ -454,7 +454,7 @@ class TestForsysProjectAreaGenerationRequestParams_ReadFromDb(TestCase):
 
     def test_read_ok(self):
         request = HttpRequest()
-        request.POST = QueryDict('id=' + str(self.plan_with_user.pk))
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk))
         request.user = self.user
         params = ForsysProjectAreaGenerationRequestParams(request)
         self.assertEqual(params.region, 'sierra_cascade_inyo')
@@ -463,7 +463,7 @@ class TestForsysProjectAreaGenerationRequestParams_ReadFromDb(TestCase):
 
     def test_fails_on_no_user(self):
         request = HttpRequest()
-        request.POST = QueryDict('id=' + str(self.plan_with_user.pk))
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk))
         with self.assertRaises(Exception) as context:
             ForsysProjectAreaGenerationRequestParams(request)
         self.assertEquals(
@@ -476,7 +476,7 @@ class TestForsysProjectAreaGenerationRequestParams_ReadFromDb(TestCase):
         wrong_user.save()
 
         request = HttpRequest()
-        request.POST = QueryDict('id=' + str(self.plan_with_user.pk))
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk))
         request.user = wrong_user
         with self.assertRaises(Exception) as context:
             ForsysProjectAreaGenerationRequestParams(request)
