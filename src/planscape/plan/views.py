@@ -185,6 +185,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+# TODO: add validation for requiring either max budget or max area to be set for a generation run
 def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
     if max_budget is not None and not (isinstance(max_budget, (int, float))):
         raise ValueError("Max budget must be a number value")
