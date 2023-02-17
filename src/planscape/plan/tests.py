@@ -10,7 +10,7 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 from planscape import settings
 
-from .models import Plan, Project, Scenario, ProjectArea, ConditionScores
+from .models import Plan, Project, Scenario, ProjectArea, ConditionScores, ScenarioWeightedPriority
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from base.condition_types import ConditionLevel
 
@@ -566,10 +566,11 @@ class DeleteProjectsTest(TransactionTestCase):
 
         self.project_with_no_user = Project.objects.create(
             owner=None, plan=self.plan_with_no_user, max_budget=100.0)
-    
+
     def test_delete_user_not_logged_in(self):
         response = self.client.post(
-            reverse('plan:delete_projects'), {'project_ids': [self.project_with_user.pk]},
+            reverse('plan:delete_projects'), {
+                'project_ids': [self.project_with_user.pk]},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Project.objects.all().count(), 3)
@@ -577,7 +578,8 @@ class DeleteProjectsTest(TransactionTestCase):
     def test_user_logged_in_tries_to_delete_ownerless_project(self):
         self.client.force_login(self.user)
         response = self.client.post(
-            reverse('plan:delete_projects'), {'project_ids': [self.project_with_no_user.pk]},
+            reverse('plan:delete_projects'), {
+                'project_ids': [self.project_with_no_user.pk]},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Project.objects.count(), 3)
@@ -588,7 +590,8 @@ class DeleteProjectsTest(TransactionTestCase):
         new_user.save()
         self.client.force_login(new_user)
         response = self.client.post(
-            reverse('plan:delete_projects'), {'project_ids': [self.project_with_user.pk]},
+            reverse('plan:delete_projects'), {
+                'project_ids': [self.project_with_user.pk]},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Project.objects.count(), 3)
@@ -596,7 +599,8 @@ class DeleteProjectsTest(TransactionTestCase):
     def test_delete_ownerless_project(self):
         self.assertEqual(Project.objects.count(), 3)
         response = self.client.post(
-            reverse('plan:delete_projects'), {'project_ids': [self.project_with_no_user.pk]},
+            reverse('plan:delete_projects'), {
+                'project_ids': [self.project_with_no_user.pk]},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, json.dumps(
@@ -607,7 +611,8 @@ class DeleteProjectsTest(TransactionTestCase):
         self.client.force_login(self.user)
         self.assertEqual(Project.objects.count(), 3)
         response = self.client.post(
-            reverse('plan:delete_projects'), {'project_ids': [self.project_with_user.pk]},
+            reverse('plan:delete_projects'), {
+                'project_ids': [self.project_with_user.pk]},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, json.dumps(
@@ -868,7 +873,8 @@ class ListProjectsTest(TransactionTestCase):
         self.client.force_login(self.user)
         base_condition = BaseCondition.objects.create(
             condition_level=ConditionLevel.ELEMENT, condition_name='test_condition')
-        self.condition = Condition.objects.create(condition_dataset=base_condition)
+        self.condition = Condition.objects.create(
+            condition_dataset=base_condition)
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100)
         self.project_with_user.priorities.add(self.condition)
@@ -1062,3 +1068,107 @@ class GetScoresTest(TransactionTestCase):
         bar_id = self._create_condition_db("bar", "bar_normalized")
         ConditionScores.objects.create(
             plan=self.plan, condition_id=bar_id, mean_score=None)
+
+
+class CreateScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="cond", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="raster_name", condition_score_type=0)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan = create_plan(
+            self.user, 'plan', self.stored_geometry, [])
+        self.project = Project.objects.create(
+            owner=self.user, plan=self.plan, max_budget=100)
+        self.project_area = ProjectArea.objects.create(
+            owner=self.user, project=self.project,
+            project_area=self.stored_geometry, estimated_area_treated=200)
+
+    def test_create_scenario_for_nonexistent_plan(self):
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': 10},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_for_not_owned_plan(self):
+        self.client.force_login(self.user)
+        not_my_plan = create_plan(
+            None, 'not_my_plan', self.stored_geometry, [])
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': not_my_plan.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_invalid_budget(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'max_budget': "string"},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_invalid_treatment_area_ratio(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'max_treatment_area_ratio': -1},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_invalid_road_dist(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'max_road_distance': -1},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_invalid_slope(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'max_slope': -1},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_no_priorities(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'priorities': []},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenrio_priorites_and_weights_dont_match(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'priorities': [
+                'cond1'], 'weights': [3, 4, 5]},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_with_weights(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_scenario'),
+            {'plan_id': self.plan.pk, 'priorities': [
+                'cond'], 'weights': [1], 'max_budget': 100},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenario = Scenario.objects.get(id=response.content)
+        self.assertEqual(scenario.max_budget, 100)
+        weighted_pris = ScenarioWeightedPriority.objects.filter(
+            scenario=scenario.pk)
+        self.assertEqual(weighted_pris.count(), 1)
