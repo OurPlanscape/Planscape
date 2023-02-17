@@ -217,8 +217,9 @@ def _save_project_parameters(body, project: Project):
     priorities_list = [] if priorities is None else priorities
     for pri in priorities_list:
         base_condition = BaseCondition.objects.get(condition_name=pri)
+        # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0)
+            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
         project.priorities.add(condition)
 
 
@@ -321,7 +322,7 @@ def _serialize_project(project: Project) -> dict:
     2. Replaces the priority IDs with the condition name.
     """
     result = ProjectSerializer(project).data
-    if 'creation_time' in result:
+    if 'creation_time' in result and result['creation_time'] is not None:
         result['creation_timestamp'] = round(datetime.datetime.fromisoformat(
             result['creation_time'].replace('Z', '+00:00')).timestamp())
         del result['creation_time']

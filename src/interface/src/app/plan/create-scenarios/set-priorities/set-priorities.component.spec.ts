@@ -119,6 +119,7 @@ describe('SetPrioritiesComponent', () => {
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.formGroup = fb.group({
+      scoreType: [0, Validators.required],
       priorities: ['', Validators.required],
     });
 

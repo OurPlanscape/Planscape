@@ -1,3 +1,11 @@
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+@import "../../../../styles.scss";
+
+$color-config:    mat.get-color-config($planscape-frontend-theme);
+$primary-palette: map.get($color-config, 'primary');
+
 .saved-scenarios-wrapper {
   position: relative;
 }
@@ -30,4 +38,19 @@
 
 .scenario-row {
   cursor: pointer;
+
+  &:hover {
+    background-color: transparentize($color: mat.get-color-from-palette($primary-palette, 500), $amount: 0.9);
+
+    mat-cell div.hover-indicator {
+      background-color: mat.get-color-from-palette($primary-palette, 500);
+    }
+  }
+}
+
+.hover-indicator {
+  height: 48px;
+  margin-left: -24px;
+  margin-right: 18px;
+  width: 4px;
 }
