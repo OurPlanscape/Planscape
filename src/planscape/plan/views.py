@@ -434,7 +434,8 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _save_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, max_slope, priorities, weights, scenario: Scenario):
+def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, 
+                           max_slope, priorities, weights, scenario: Scenario):
     scenario.max_budget = float(max_budget) if max_budget else None
     scenario.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
@@ -493,8 +494,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                 "Each priority must have a single assigned weight")
 
         scenario = Scenario.objects.create(owner=owner, plan=plan)
-        _save_scenario_metadata(max_budget, max_treatment_area_ratio,
-                                max_road_distance, max_slope, priorities, weights, scenario)
+        _set_scenario_metadata(max_budget, max_treatment_area_ratio,
+                               max_road_distance, max_slope, priorities, weights, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
     except Exception as e:
