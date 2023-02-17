@@ -150,7 +150,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       (id: string, index: number) => {
         return {
           id: id,
-          name: 'Map ' + (index + 1),
+          name: `${index + 1}`,
           config: defaultMapConfig(),
         };
       }
