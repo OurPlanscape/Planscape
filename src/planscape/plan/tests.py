@@ -441,8 +441,10 @@ class CreateProjectTest(TransactionTestCase):
         self.client.force_login(self.user)
         self.base_condition = BaseCondition.objects.create(
             condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
-        self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0)
+        self.raw_condition = Condition.objects.create(
+            condition_dataset=self.base_condition, condition_score_type=0, is_raw=True)
+        self.normalized_condition = Condition.objects.create(
+            condition_dataset=self.base_condition, condition_score_type=0, is_raw=False)
 
         response = self.client.post(
             reverse('plan:create_project'), {
@@ -480,8 +482,10 @@ class UpdateProjectTest(TransactionTestCase):
 
         self.base_condition2 = BaseCondition.objects.create(
             condition_name="condition2", condition_level=ConditionLevel.ELEMENT)
-        self.condition2 = Condition.objects.create(
-            condition_dataset=self.base_condition2, condition_score_type=0)
+        self.condition2_raw = Condition.objects.create(
+            condition_dataset=self.base_condition2, condition_score_type=0, is_raw=True)
+        self.condition2_normalized = Condition.objects.create(
+            condition_dataset=self.base_condition2, condition_score_type=0, is_raw=False)
 
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100.0)
@@ -541,7 +545,7 @@ class UpdateProjectTest(TransactionTestCase):
         project = Project.objects.get(id=self.project_with_user.pk)
         self.assertEqual(project.max_budget, None)
         self.assertEqual(project.priorities.count(), 1)
-        self.assertTrue(project.priorities.contains(self.condition2))
+        self.assertTrue(project.priorities.contains(self.condition2_normalized))
 
 
 class DeleteProjectsTest(TransactionTestCase):
