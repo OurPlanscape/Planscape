@@ -209,6 +209,10 @@ class ForsysGenerationInput():
             # TODO: replace this with select_related.
             name = base_condition_ids_to_names[c.condition_dataset_id]
             values = get_condition_values_from_raster(geo, c.raster_name)
+            if values is None:
+                raise Exception(
+                    "plan has no intersection with condition raster, %s" %
+                    name)
             self._conditions_to_raster_values[name] = values
             self._update_topleft_coords(values)
 
@@ -309,8 +313,10 @@ class ForsysGenerationInput():
                 self.forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(
                     self._get_raster_pixel_geo(x, y).wkt)
                 for p in dict_condition.keys():
+                    # TODO: save AP score rather than 1 - normalized condition
+                    # score.
                     self.forsys_input[headers.get_priority_header(
-                        p)].append(dict_condition[p])
+                        p)].append(1 - dict_condition[p])
 
     # Returns a Polygon representing the raster pixel at pixel position,
     # (x, y).

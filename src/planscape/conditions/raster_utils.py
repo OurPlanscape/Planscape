@@ -176,8 +176,9 @@ def fetch_or_compute_condition_stats(
 
 # Fetches raw raster pixel values for all non-NaN pixels that intersect with
 # geo.
+# If no intersection exists, returns None.
 def get_condition_values_from_raster(
-        geo: GEOSGeometry, raster_name: str) -> ConditionPixelValues:
+        geo: GEOSGeometry, raster_name: str) -> ConditionPixelValues | None:
     _validate_geo(geo)
     _validate_condition_raster_name(raster_name)
     with connection.cursor() as cursor:
@@ -186,6 +187,8 @@ def get_condition_values_from_raster(
             (RASTER_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchall()
+    if len(fetch) == 0:
+        return None
     values = {}
     for entry in fetch:
         _set_if_not_none(values, 'upper_left_coord_x', entry[0])
