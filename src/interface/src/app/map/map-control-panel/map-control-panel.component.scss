@@ -30,7 +30,8 @@ h1 {
 h2 {
   font-size: 14px;
   font-weight: 600;
-  line-height: 15px;
+  line-height: 40px;
+  margin: 0px;
   text-align: center;
 }
 
@@ -38,6 +39,7 @@ h3 {
   font-size: 12px;
   font-weight: 400;
   line-height: 15px;
+  margin: 0px;
   text-align: center;
 }
 
@@ -45,6 +47,12 @@ h3 {
   border: 1px solid #B3B3B3;
   border-radius: 8px;
   padding: 12px 16px;
+}
+
+.legend-title {
+  align-items: center;
+  display: flex;
+  justify-content: center;
 }
 
 // Styling for the buttons to switch between 1, 2, and 4 maps
