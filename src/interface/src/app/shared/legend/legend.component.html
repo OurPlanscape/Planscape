@@ -1,21 +1,18 @@
-<div class="legend-wrapper" *ngIf="legend">
-  <h1>Legend</h1>
-  <div class="legend">
-    <!-- Gradient -->
-    <div class="gradient" [style.background-image]="gradient"></div>
+<div class="legend" *ngIf="legend">
+  <!-- Gradient -->
+  <div class="gradient" [style.background-image]="gradient"></div>
 
-    <!-- Raw value labels (e.g. "0 => 10") -->
-    <ng-container *ngIf="legend.minMaxValues; else strLabels">
-      <div class="labels">
-        <div class="label" *ngFor="let value of legend.minMaxValues">{{ value | number}}</div>
-      </div>
-    </ng-container>
+  <!-- Raw value labels (e.g. "0 => 10") -->
+  <ng-container *ngIf="legend.minMaxValues; else strLabels">
+    <div class="labels">
+      <div class="label" *ngFor="let value of legend.minMaxValues">{{ value | number}}</div>
+    </div>
+  </ng-container>
 
-    <!-- String labels (e.g. "Low => High") -->
-    <ng-template #strLabels>
-      <div class="labels">
-        <div class="label" *ngFor="let label of legend?.labels">{{ label }}</div>
-      </div>
-    </ng-template>
-  </div>
+  <!-- String labels (e.g. "Low => High") -->
+  <ng-template #strLabels>
+    <div class="labels">
+      <div class="label" *ngFor="let label of legend?.labels">{{ label }}</div>
+    </div>
+  </ng-template>
 </div>
