@@ -88,6 +88,8 @@ class Scenario(models.Model):
 
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, null=True)  # type: ignore
+    
+    notes: models.TextField = models.TextField(null=True)
 
     # Max constraints. If null, no max value unless a system default is defined.
     # In USD
