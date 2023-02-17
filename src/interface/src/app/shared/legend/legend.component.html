@@ -1,16 +1,11 @@
 <div class="legend-wrapper" *ngIf="legend">
-  <h1 *ngIf="!hideTitles">Legend</h1>
-  <div class="legend" [class.vertical]="vertical">
-    <!-- Gradient (if horizontal) -->
-    <div class="gradient" [style.background-image]="gradient" *ngIf="!vertical"></div>
-
-    <!-- Colorboxes (if vertical) -->
-    <div class="colors" *ngIf="vertical">
-      <div class="colorbox" *ngFor="let color of legend?.colors" [ngStyle]="{'background-color': color}"></div>
-    </div>
+  <h1>Legend</h1>
+  <div class="legend">
+    <!-- Gradient -->
+    <div class="gradient" [style.background-image]="gradient"></div>
 
     <!-- Raw value labels (e.g. "0 => 10") -->
-    <ng-container *ngIf="!vertical && legend.minMaxValues; else strLabels">
+    <ng-container *ngIf="legend.minMaxValues; else strLabels">
       <div class="labels">
         <div class="label" *ngFor="let value of legend.minMaxValues">{{ value | number}}</div>
       </div>
@@ -18,8 +13,8 @@
 
     <!-- String labels (e.g. "Low => High") -->
     <ng-template #strLabels>
-      <div class="labels" [class.vertical]="vertical">
-        <div class="label" [class.vertical]="vertical" *ngFor="let label of legend?.labels">{{ label }}</div>
+      <div class="labels">
+        <div class="label" *ngFor="let label of legend?.labels">{{ label }}</div>
       </div>
     </ng-template>
   </div>
