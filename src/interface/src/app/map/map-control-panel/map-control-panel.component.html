@@ -1,16 +1,23 @@
 <div class="controls-container">
 
   <div *ngIf="mapHasDataLayer" class="legend-container">
-    <!-- Legend for the currently shown map -->
-    <app-legend [legend]="getSelectedLegend()"></app-legend>
+    <h1><b>Map {{selectedMap?.name}}</b> Legend</h1>
 
-    <!-- Opacity controls for the currently shown data layer -->
-    <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity">
-    </app-opacity-slider>
+    <div class="legend-box">
+      <h3>Current Condition {{selectedMap?.config?.dataLayerConfig?.normalized ? '(Normalized)' : ''}}</h3>
+      <h2>{{selectedMap?.config?.dataLayerConfig?.display_name}}</h2>
 
-    <mat-divider class="layer-controls-divider"></mat-divider>
+      <!-- Legend for the currently shown map -->
+      <app-legend [legend]="getSelectedLegend()"></app-legend>
+
+      <!-- Opacity controls for the currently shown data layer -->
+      <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity">
+      </app-opacity-slider>
+    </div>
 
   </div>
+
+  <h3><b>Map Views</b></h3>
 
   <!-- Controls for specifying how many maps should be shown -->
   <div class="map-count-button-row">
