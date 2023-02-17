@@ -6,12 +6,12 @@ import pandas as pd
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
-from forsys.forsys_request_params import (
-    ForsysRankingRequestParams, ForsysGenerationRequestParams)
-from forsys.get_forsys_inputs import (ForsysInputHeaders,
-                                      ForsysRankingInput)
-from forsys.parse_forsys_output import (
-    ForsysScenarioOutput, ForsysScenarioSetOutput)
+from forsys.forsys_request_params import (ForsysGenerationRequestParams,
+                                          ForsysRankingRequestParams)
+from forsys.get_forsys_inputs import (ForsysGenerationInput,
+                                      ForsysInputHeaders, ForsysRankingInput)
+from forsys.parse_forsys_output import (ForsysScenarioOutput,
+                                        ForsysScenarioSetOutput)
 from planscape import settings
 
 import rpy2
