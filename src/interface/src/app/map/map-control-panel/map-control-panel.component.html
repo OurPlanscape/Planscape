@@ -5,7 +5,17 @@
 
     <div class="legend-box">
       <h3>Current Condition {{selectedMap?.config?.dataLayerConfig?.normalized ? '(Normalized)' : ''}}</h3>
-      <h2>{{selectedMap?.config?.dataLayerConfig?.display_name}}</h2>
+
+      <div class="legend-title">
+        <h2>{{selectedMap?.config?.dataLayerConfig?.display_name}}</h2>
+        <button mat-icon-button
+          [matMenuTriggerFor]="popoverMenu">
+          <mat-icon color="primary">info_outline</mat-icon>
+        </button>
+        <mat-menu #popoverMenu="matMenu">
+          <app-layer-info-card [dataLayerConfig]="selectedMap?.config?.dataLayerConfig"></app-layer-info-card>
+        </mat-menu>
+      </div>
 
       <!-- Legend for the currently shown map -->
       <app-legend [legend]="getSelectedLegend()"></app-legend>
