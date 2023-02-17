@@ -5,8 +5,7 @@ from conditions.raster_utils import (ConditionPixelValues,
                                      get_raster_geo)
 from django.contrib.gis.geos import GEOSGeometry, Polygon
 from forsys.forsys_request_params import (
-    ForsysProjectAreaGenerationRequestParams,
-    ForsysProjectAreaRankingRequestParams)
+    ForsysGenerationRequestParams, ForsysRankingRequestParams)
 from planscape import settings
 
 
@@ -106,7 +105,7 @@ class ForsysRankingInput():
     forsys_input: dict[str, list]
 
     def __init__(
-            self, params: ForsysProjectAreaRankingRequestParams,
+            self, params: ForsysRankingRequestParams,
             headers: ForsysInputHeaders) -> None:
         region = params.region
         priorities = params.priorities
@@ -176,7 +175,7 @@ class ForsysGenerationInput():
                                                           dict[str, float]]]
 
     def __init__(
-            self, params: ForsysProjectAreaGenerationRequestParams,
+            self, params: ForsysGenerationRequestParams,
             headers: ForsysInputHeaders) -> None:
         region = params.region
         priorities = params.priorities

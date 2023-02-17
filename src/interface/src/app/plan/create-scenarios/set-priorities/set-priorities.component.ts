@@ -40,9 +40,13 @@ export class SetPrioritiesComponent implements OnInit {
   @Output() formBackEvent = new EventEmitter<void>();
 
   readonly text1: string = `
-    Optimize your treatment objective by evaluating your planning area and selecting priorities.
-    Select at least one. Only selected priorities are used to identify project areas and prioritize
-    treatments. Note: For the most accurate estimated outcome, choose no more than 5.
+    Priorities are based on the Pillars of Resilience Framework. Only selected priorities are
+    used to identify project areas and prioritize treatment. Note: For the most accurate estimated
+    outcome, choose no more than 5.
+  `;
+
+  readonly text2: string = `
+    Next, select at least one priority. You will have the opportunity to weigh your selections later:
   `;
 
   conditionScores = new Map<string, ScoreColumn>();

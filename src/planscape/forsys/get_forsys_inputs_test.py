@@ -5,7 +5,7 @@ from conditions.raster_condition_retrieval_testcase import \
     RasterConditionRetrievalTestCase
 from django.http import QueryDict
 from django.test import TestCase
-from forsys.forsys_request_params import ForsysProjectAreaRankingRequestParams
+from forsys.forsys_request_params import ForsysRankingRequestParams
 from forsys.get_forsys_inputs import (ForsysInputHeaders, ForsysRankingInput)
 
 
@@ -47,7 +47,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
 
     def test_gets_forsys_input(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysProjectAreaRankingRequestParams(qd)
+        params = ForsysRankingRequestParams(qd)
         params.region = self.region
         params.priorities = ["foo", "bar"]
         params.project_areas.clear()
@@ -70,7 +70,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
 
     def test_missing_base_condition(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysProjectAreaRankingRequestParams(qd)
+        params = ForsysRankingRequestParams(qd)
         params.region = self.region
         # No base conditions exist for baz.
         params.priorities = ["foo", "bar", "baz"]
@@ -93,7 +93,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             condition_level=ConditionLevel.METRIC)
 
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysProjectAreaRankingRequestParams(qd)
+        params = ForsysRankingRequestParams(qd)
         params.region = self.region
         params.priorities = ["foo", "bar", "baz"]
         params.project_areas.clear()
@@ -110,7 +110,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
 
     def test_missing_condition_score(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysProjectAreaRankingRequestParams(qd)
+        params = ForsysRankingRequestParams(qd)
         params.region = self.region
         params.priorities = ["foo"]
         params.project_areas.clear()

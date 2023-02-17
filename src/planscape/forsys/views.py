@@ -7,12 +7,11 @@ from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
 from forsys.forsys_request_params import (
-    ForsysProjectAreaGenerationRequestParams,
-    ForsysProjectAreaRankingRequestParams)
-from forsys.get_forsys_inputs import (
-    ForsysInputHeaders, ForsysGenerationInput, ForsysRankingInput)
-from forsys.parse_forsys_output import (ForsysScenarioOutput,
-                                        ForsysScenarioSetOutput)
+    ForsysRankingRequestParams, ForsysGenerationRequestParams)
+from forsys.get_forsys_inputs import (ForsysInputHeaders,
+                                      ForsysRankingInput)
+from forsys.parse_forsys_output import (
+    ForsysScenarioOutput, ForsysScenarioSetOutput)
 from planscape import settings
 
 import rpy2
@@ -80,7 +79,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
 def rank_project_areas_for_multiple_scenarios(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysProjectAreaRankingRequestParams(request.GET)
+        params = ForsysRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
@@ -134,7 +133,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
 def rank_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysProjectAreaRankingRequestParams(request.GET)
+        params = ForsysRankingRequestParams(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
@@ -183,7 +182,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
 def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysProjectAreaGenerationRequestParams(request)
+        params = ForsysGenerationRequestParams(request)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysGenerationInput(params, headers)
 
