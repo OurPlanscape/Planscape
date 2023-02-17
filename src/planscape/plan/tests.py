@@ -1166,7 +1166,6 @@ class CreateScenarioTest(TransactionTestCase):
             {'plan_id': self.plan.pk, 'priorities': [
                 'cond'], 'weights': [1], 'max_budget': 100, 'notes': 'this is my note'},
             content_type="application/json")
-        print(response.content)
         self.assertEqual(response.status_code, 200)
         scenario = Scenario.objects.get(id=response.content)
         self.assertEqual(scenario.max_budget, 100)
