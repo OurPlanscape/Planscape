@@ -1164,11 +1164,13 @@ class CreateScenarioTest(TransactionTestCase):
         response = self.client.post(
             reverse('plan:create_scenario'),
             {'plan_id': self.plan.pk, 'priorities': [
-                'cond'], 'weights': [1], 'max_budget': 100},
+                'cond'], 'weights': [1], 'max_budget': 100, 'notes': 'this is my note'},
             content_type="application/json")
+        print(response.content)
         self.assertEqual(response.status_code, 200)
         scenario = Scenario.objects.get(id=response.content)
         self.assertEqual(scenario.max_budget, 100)
+        self.assertEqual(scenario.notes, 'this is my note')
         weighted_pris = ScenarioWeightedPriority.objects.filter(
             scenario=scenario.pk)
         self.assertEqual(weighted_pris.count(), 1)
