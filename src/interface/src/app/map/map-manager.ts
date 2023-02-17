@@ -93,6 +93,7 @@ export class MapManager {
       zoomControl: false,
       pmIgnore: false,
       scrollWheelZoom: false,
+      preferCanvas: true,
     });
 
     // Add zoom controls to bottom right corner
