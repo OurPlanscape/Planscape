@@ -29,10 +29,14 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                   weights = priority_weights, 
                   new_field = 'preset_priority')
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
+  # Patchmax expects column name to be "geometry" - do not change the variable
+  # name.
+  # Internally, Patchmax calls st_sf on geometry column values. This results in
+  # an error unless st_as_sfc is called on the wkt first.
   geometry = lapply(forsys_input_data[geo_wkt_field], st_as_sfc)
   forsys_input_data <- cbind(forsys_input_data, geometry)
 
-  # TODO: optimize project area generation parameters.
+  # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
   suppressMessages (
     run_outputs <- forsys::run(
       return_outputs = TRUE,
@@ -46,11 +50,15 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                  stand_area_field,
                                  stand_cost_field),
       run_with_patchmax = TRUE,
-      patchmax_proj_size = 30000, # target area per project
-      patchmax_proj_number = 3, # number of projects
+      # target area per project? TODO: clarify what this does, and clarify
+      # whether there's also a target cost per project.
+      patchmax_proj_size = 30000, 
+       # number of projects - TODO: clarify whether this should be a user input.
+      patchmax_proj_number = 3,
       patchmax_SDW = 0.5,
       patchmax_EPW = 0.5, 
       patchmax_sample_frac = 0.01,
+      # TODO: clarify how to set global constraints.
       proj_fixed_target = FALSE,
       proj_target_field = stand_area_field,
       proj_target_value = 0.5
