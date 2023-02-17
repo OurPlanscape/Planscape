@@ -123,6 +123,11 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   }
 }
 
+// Leaflet attribution box
+.leaflet-control-attribution {
+  max-width: calc(100% - 200px);
+}
+
 // Removes the box when a boundary is clicked. https://github.com/OurPlanscape/Planscape/issues/357
 * {
   outline: none;
