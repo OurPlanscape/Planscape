@@ -11,7 +11,7 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
 from django.views.decorators.csrf import csrf_exempt
 from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer)
+                              ProjectSerializer, ScenarioSerializer)
 from planscape import settings
 from django.shortcuts import get_list_or_404
 
@@ -502,6 +502,22 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                                max_road_distance, max_slope, priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+    
+def get_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['id'], str)
+        scenario_id = request.GET.get('id', "0")
+        scenario_exists = Scenario.objects.get(id=scenario_id)
+
+        user = get_user(request)
+
+        if scenario_exists.owner != user:
+            raise ValueError(
+                "You do not have permission to view this scenario.")
+
+        return JsonResponse(ScenarioSerializer(scenario_exists).data, safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
