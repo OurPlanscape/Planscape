@@ -2,7 +2,7 @@ from django.urls import path
 from plan.views import (
     create_plan, create_project, delete, get_plan, get_project,
     get_project_areas, get_scores, list_plans_by_owner, delete_projects,
-    create_project_area, update_project, list_projects_for_plan, create_scenario)
+    create_project_area, update_project, list_projects_for_plan, create_scenario, get_scenario)
 
 app_name = 'plan'
 
@@ -23,4 +23,5 @@ urlpatterns = [
     path('create_project_area/', create_project_area, name='create_project_area'),
     path('get_project_areas/', get_project_areas, name='get_project_areas'),
     path('create_scenario/', create_scenario, name='create_scenario'),
+    path('get_scenario/', get_scenario, name='get_scenario'),
 ]
