@@ -545,7 +545,8 @@ class UpdateProjectTest(TransactionTestCase):
         project = Project.objects.get(id=self.project_with_user.pk)
         self.assertEqual(project.max_budget, None)
         self.assertEqual(project.priorities.count(), 1)
-        self.assertTrue(project.priorities.contains(self.condition2_normalized))
+        self.assertTrue(project.priorities.contains(
+            self.condition2_normalized))
 
 
 class DeleteProjectsTest(TransactionTestCase):
@@ -1173,3 +1174,57 @@ class CreateScenarioTest(TransactionTestCase):
         weighted_pris = ScenarioWeightedPriority.objects.filter(
             scenario=scenario.pk)
         self.assertEqual(weighted_pris.count(), 1)
+
+
+class GetScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan = create_plan(
+            self.user, 'plan', stored_geometry, [])
+        self.project = Project.objects.create(
+            owner=self.user, plan=self.plan, max_budget=100)
+        self.project_area = ProjectArea.objects.create(
+            owner=self.user, project=self.project,
+            project_area=stored_geometry, estimated_area_treated=200)
+        self.scenario = Scenario.objects.create(
+            owner=self.user, plan=self.plan, project=self.project, notes='my note')
+
+    def test_get_nonexistent_scenario(self):
+        response = self.client.get(
+            reverse('plan:get_scenario'),
+            {'id': 10},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_scenario_does_not_belong_to_user(self):
+        not_owned_scenario = Scenario.objects.create(owner=None)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:get_scenario'),
+            {'id': not_owned_scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_scenario_ok(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:get_scenario'),
+            {'id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['owner'], self.user.pk)
+        self.assertEqual(response.json()['project'], self.project.pk)
+        self.assertEqual(response.json()['plan'], self.plan.pk)
+        self.assertEqual(response.json()['notes'], 'my note')
