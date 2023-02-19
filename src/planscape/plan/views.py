@@ -9,11 +9,11 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
+from plan.models import (Plan, Project, ProjectArea, Scenario,
+                         ScenarioWeightedPriority)
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer)
+                              ProjectSerializer, ScenarioSerializer)
 from planscape import settings
-from django.shortcuts import get_list_or_404
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -502,6 +502,23 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                                max_road_distance, max_slope, priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+    
+def get_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['id'], str)
+        scenario_id = request.GET.get('id', "0")
+        scenario = Scenario.objects.get(id=scenario_id)
+
+        user = get_user(request)
+
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to view this scenario.")
+
+        # TODO: retrieve and return weights as part of Scenario
+        return JsonResponse(ScenarioSerializer(scenario).data, safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 

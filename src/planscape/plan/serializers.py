@@ -2,7 +2,7 @@ from rest_framework.serializers import IntegerField
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 
-from .models import Plan, Project, ProjectArea
+from .models import Plan, Project, ProjectArea, Scenario
 from conditions.models import Condition
 
 
@@ -22,6 +22,11 @@ class ConditionSerializer(serializers.ModelSerializer):
         model = Condition
         fields = '__all__'
 
+
+class ScenarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Scenario
+        fields = '__all__'
 
 class ProjectSerializer(serializers.ModelSerializer):
     priorities = serializers.SlugRelatedField(
