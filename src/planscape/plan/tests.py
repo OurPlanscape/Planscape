@@ -1228,3 +1228,56 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.json()['project'], self.project.pk)
         self.assertEqual(response.json()['plan'], self.plan.pk)
         self.assertEqual(response.json()['notes'], 'my note')
+
+
+class ListScenariosTest(TransactionTestCase):
+    def setUp(self):
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan = create_plan(
+            self.user, 'plan', stored_geometry, [])
+        self.project = Project.objects.create(
+            owner=self.user, plan=self.plan, max_budget=100)
+        self.project_area = ProjectArea.objects.create(
+            owner=self.user, project=self.project,
+            project_area=stored_geometry, estimated_area_treated=200)
+        self.scenario1 = Scenario.objects.create(
+            owner=self.user, plan=self.plan, project=self.project, notes='my note')
+        self.scenario2 = Scenario.objects.create(
+            owner=self.user, plan=self.plan, project=self.project, notes='my note2')
+
+    def test_list_nonexistent_plan(self):
+        response = self.client.get(
+            reverse('plan:list_scenarios_for_plan'),
+            {'plan_id': 10},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_does_not_belong_to_user(self):
+        not_owned_plan = Plan.objects.create(owner=None)
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:list_scenarios_for_plan'),
+            {'plan_id': not_owned_plan.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_list_scenario_ok(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('plan:list_scenarios_for_plan'),
+            {'plan_id': self.plan.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), 2)
