@@ -11,9 +11,10 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
 from django.views.decorators.csrf import csrf_exempt
 from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer, ScenarioSerializer)
+                              ProjectSerializer, ScenarioSerializer, ScenarioWeightedPrioritySerializer)
 from planscape import settings
 from django.shortcuts import get_list_or_404
+from django.db.models.query import QuerySet
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -202,6 +203,7 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
             (not (isinstance(max_slope, (int, float))) or max_slope < 0)):
         raise ValueError(
             "Max slope must be a number value >= 0.0")
+
 
 def _save_project_parameters(body, project: Project):
     max_budget = body.get('max_budget', None)
@@ -505,23 +507,37 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+
+def _serialize_scenario(scenario: Scenario, weights: QuerySet) -> dict:
+    result = ScenarioSerializer(scenario).data
+    result['priorities'] = {}
+
+    for weight in weights:
+        serialized_weight = ScenarioWeightedPrioritySerializer(weight).data
+        if 'priority' in serialized_weight and 'weight' in serialized_weight:
+            result['priorities'][Condition.objects.get(
+                pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
+    return result
+
+
 @csrf_exempt
 def get_scenario(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['id'], str)
         scenario_id = request.GET.get('id', "0")
-        scenario_exists = Scenario.objects.get(id=scenario_id)
+        scenario = Scenario.objects.get(id=scenario_id)
 
         user = get_user(request)
 
-        if scenario_exists.owner != user:
+        if scenario.owner != user:
             raise ValueError(
                 "You do not have permission to view this scenario.")
-
-        return JsonResponse(ScenarioSerializer(scenario_exists).data, safe=False)
+        weights = ScenarioWeightedPriority.objects.select_related().filter(scenario=scenario)
+        return JsonResponse(_serialize_scenario(scenario, weights), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-    
+
+
 @csrf_exempt
 def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
     try:
@@ -536,10 +552,11 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
                 "You do not have permission to view scenarios for this plan.")
 
         scenarios = Scenario.objects.filter(owner=user, plan=plan_id)
-        
+
         # TODO: return config details when behavior is agreed upon
 
-        return JsonResponse([ScenarioSerializer(scenario).data for scenario in scenarios], safe=False)
+        return JsonResponse([_serialize_scenario(scenario, weights=ScenarioWeightedPriority.objects.select_related().filter(
+            scenario=scenario)) for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
