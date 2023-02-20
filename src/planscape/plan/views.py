@@ -205,15 +205,8 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
             "Max slope must be a number value >= 0.0")
 
 
-def _save_project_parameters(body, project: Project):
-    max_budget = body.get('max_budget', None)
-    max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
-    max_road_distance = body.get('max_road_distance', None)
-    max_slope = body.get('max_slope', None)
-
-    _validate_constraint_values(
-        max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
-
+def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_distance,
+                            max_slope, priorities, project: Project):
     project.max_budget = float(max_budget) if max_budget else None
     project.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
@@ -221,15 +214,14 @@ def _save_project_parameters(body, project: Project):
         max_road_distance) if max_road_distance else None
     project.max_slope = float(max_slope) if max_slope else None
 
-    # Parse priorities
-    priorities = body.get('priorities', None)
-    priorities_list = [] if priorities is None else priorities
-    for pri in priorities_list:
-        base_condition = BaseCondition.objects.get(condition_name=pri)
-        # is_raw=False required because for metrics, we store both current raw and current normalized data.
-        condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
-        project.priorities.add(condition)
+    if priorities is not None:
+        for i in range(len(priorities)):
+            base_condition = BaseCondition.objects.get(
+                condition_name=priorities[i])
+            # is_raw=False required because for metrics, we store both current raw and current normalized data.
+            condition = Condition.objects.get(
+                condition_dataset=base_condition, condition_score_type=0, is_raw=False)
+            project.priorities.add(condition)
 
 
 @csrf_exempt
@@ -253,8 +245,18 @@ def create_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
 
+        max_budget = body.get('max_budget', None)
+        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+        max_road_distance = body.get('max_road_distance', None)
+        max_slope = body.get('max_slope', None)
+        priorities = body.get('priorities', None)
+
+        _validate_constraint_values(
+            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
         project = Project.objects.create(owner=owner, plan=plan)
-        _save_project_parameters(body, project)
+        _set_project_parameters(max_budget, max_treatment_area_ratio,
+                                max_road_distance, max_slope, priorities, project)
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -280,9 +282,19 @@ def update_project(request: HttpRequest) -> HttpResponse:
         if project.owner != owner:
             raise ValueError(
                 "You do not have permission to view this project.")
+        
+        max_budget = body.get('max_budget', None)
+        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+        max_road_distance = body.get('max_road_distance', None)
+        max_slope = body.get('max_slope', None)
+        priorities = body.get('priorities', None)
+
+        _validate_constraint_values(
+            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
 
         project.priorities.clear()
-        _save_project_parameters(body, project)
+        _set_project_parameters(max_budget, max_treatment_area_ratio,
+                                max_road_distance, max_slope, priorities, project)
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -438,21 +450,15 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance,
-                           max_slope, priorities, weights, notes, scenario: Scenario):
-    scenario.max_budget = float(max_budget) if max_budget else None
-    scenario.max_treatment_area_ratio = float(
-        max_treatment_area_ratio) if max_treatment_area_ratio else None
-    scenario.max_road_distance = float(
-        max_road_distance) if max_road_distance else None
-    scenario.max_slope = float(max_slope) if max_slope else None
+def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
     scenario.notes = notes if notes else None
 
     for i in range(len(priorities)):
         base_condition = BaseCondition.objects.get(
             condition_name=priorities[i])
+        # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0)
+            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
         weight = weights[i] if weights is not None else None
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
@@ -478,16 +484,9 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create scenario; plan is not owned by user")
 
-        max_budget = body.get('max_budget', None)
-        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
-        max_road_distance = body.get('max_road_distance', None)
-        max_slope = body.get('max_slope', None)
         priorities = body.get('priorities', None)
         weights = body.get('weights', None)
         notes = body.get('notes', None)
-
-        _validate_constraint_values(
-            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
 
         if priorities is None:
             raise ValueError(
@@ -500,8 +499,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                 "Each priority must have a single assigned weight")
 
         scenario = Scenario.objects.create(owner=owner, plan=plan)
-        _set_scenario_metadata(max_budget, max_treatment_area_ratio,
-                               max_road_distance, max_slope, priorities, weights, notes, scenario)
+        _set_scenario_metadata(priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
     except Exception as e:
