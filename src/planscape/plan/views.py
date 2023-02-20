@@ -504,7 +504,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponse(str(scenario.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-    
+
+@csrf_exempt
 def get_scenario(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['id'], str)
@@ -518,6 +519,27 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
                 "You do not have permission to view this scenario.")
 
         return JsonResponse(ScenarioSerializer(scenario_exists).data, safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+    
+@csrf_exempt
+def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['plan_id'], str)
+        plan_id = request.GET.get('plan_id', "0")
+        plan_exists = Plan.objects.get(id=plan_id)
+
+        user = get_user(request)
+
+        if plan_exists.owner != user:
+            raise ValueError(
+                "You do not have permission to view scenarios for this plan.")
+
+        scenarios = Scenario.objects.filter(owner=user, plan=plan_id)
+        
+        # TODO: return config details when behavior is agreed upon
+
+        return JsonResponse([ScenarioSerializer(scenario).data for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
