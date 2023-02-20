@@ -1183,9 +1183,13 @@ class GetScenarioTest(TransactionTestCase):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
         self.base_condition = BaseCondition.objects.create(
-            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+            condition_name="cond1", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
             condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
+        self.base_condition2 = BaseCondition.objects.create(
+            condition_name="cond2", condition_level=ConditionLevel.ELEMENT)
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition2, raster_name="name2", is_raw=False)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -1200,6 +1204,10 @@ class GetScenarioTest(TransactionTestCase):
             project_area=stored_geometry, estimated_area_treated=200)
         self.scenario = Scenario.objects.create(
             owner=self.user, plan=self.plan, project=self.project, notes='my note')
+        self.weight = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario, priority=self.condition1, weight=2)
+        self.weight2 = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario, priority=self.condition2, weight=3)
 
     def test_get_nonexistent_scenario(self):
         response = self.client.get(
@@ -1228,6 +1236,7 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.json()['project'], self.project.pk)
         self.assertEqual(response.json()['plan'], self.plan.pk)
         self.assertEqual(response.json()['notes'], 'my note')
+        self.assertEqual(response.json()['priorities'], {'cond1' : 2, 'cond2': 3})
 
 
 class ListScenariosTest(TransactionTestCase):
@@ -1237,9 +1246,13 @@ class ListScenariosTest(TransactionTestCase):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
         self.base_condition = BaseCondition.objects.create(
-            condition_name="name", condition_level=ConditionLevel.ELEMENT)
+            condition_name="cond1", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
             condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
+        self.base_condition2 = BaseCondition.objects.create(
+            condition_name="cond2", condition_level=ConditionLevel.ELEMENT)
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition2, raster_name="name2", is_raw=False)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -1254,9 +1267,17 @@ class ListScenariosTest(TransactionTestCase):
             project_area=stored_geometry, estimated_area_treated=200)
         self.scenario1 = Scenario.objects.create(
             owner=self.user, plan=self.plan, project=self.project, notes='my note')
+        self.weight = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario1, priority=self.condition1, weight=2)
+        self.weight2 = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario1, priority=self.condition2, weight=3)
         self.scenario2 = Scenario.objects.create(
             owner=self.user, plan=self.plan, project=self.project, notes='my note2')
-
+        self.weight = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario2, priority=self.condition1, weight=4)
+        self.weight2 = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario2, priority=self.condition2, weight=5)
+        
     def test_list_nonexistent_plan(self):
         response = self.client.get(
             reverse('plan:list_scenarios_for_plan'),
@@ -1281,3 +1302,7 @@ class ListScenariosTest(TransactionTestCase):
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
+        self.assertEqual(response.json()[0]['id'], self.scenario1.pk)
+        self.assertEqual(response.json()[0]['priorities'], {'cond1' : 2, 'cond2': 3})
+        self.assertEqual(response.json()[1]['id'], self.scenario2.pk)
+        self.assertEqual(response.json()[1]['priorities'], {'cond1' : 4, 'cond2': 5})
