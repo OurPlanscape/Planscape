@@ -175,7 +175,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         input = ForsysGenerationInput(params, headers)
         _assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
-            'stand_id': [1, 2, 3, 4, 5, 6, 7, 8],
+            'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
             'area': [.09, .09, .09, .09, .09, .09, .09, .09],
             'cost': [450000000, 450000000, 450000000, 450000000,
                      450000000, 450000000, 450000000, 450000000],
@@ -213,7 +213,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         input = ForsysGenerationInput(params, headers)
         _assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0],
-            'stand_id': [1, 2, 3, 4],
+            'stand_id': [0, 1, 2, 3],
             'area': [.09, .09, .09, .09],
             'cost': [450000000, 450000000, 450000000, 450000000],
             'p_foo': [.95, .94, .93, .92],

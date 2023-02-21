@@ -122,7 +122,7 @@ class ForsysRankingInput():
             geo = get_raster_geo(project_areas[proj_id])
 
             self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
-            # The entire projoect area is represented by a single stand.
+            # The entire project area is represented by a single stand.
             self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
 
             num_pixels = 0  # number of non-NaN raster pixels captured by geo.
@@ -181,30 +181,30 @@ class ForsysGenerationInput():
         priorities = params.priorities
         planning_area = params.planning_area
 
-        self.forsys_input = _get_initialized_forsys_input_with_common_headers(
-            headers, priorities)
-        self.forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
-
         geo = get_raster_geo(planning_area)
 
-        self._fetch_condition_raster_values(geo, priorities, region)
-        self._merge_condition_raster_values()
-        self._convert_merged_condition_rasters_to_input_df(
-            headers, len(priorities))
+        output = self._fetch_condition_raster_values(geo, priorities, region)
+        self._conditions_to_raster_values = output[0]
+        self._topleft_coords = output[1]
+        # This populates self._pixel_dist_x_to_y_to_condition_to_values.
+        self._pixel_dist_x_to_y_to_condition_to_values = self._merge_condition_raster_values(
+            self._conditions_to_raster_values, self._topleft_coords)
+        self.forsys_input = self._convert_merged_condition_rasters_to_input_df(
+            headers, priorities)
 
     # Fetches ConditionPixelValues instances and places them in
     # self._conditions_to_raster_values, a dictionary mapping condition names
     # to the ConditionPixelValues instances.
     def _fetch_condition_raster_values(
             self, geo: GEOSGeometry, priorities: list[str],
-            region: str) -> None:
-
+            region: str) -> tuple[dict[str, ConditionPixelValues],
+                                  tuple[float, float]]:
         base_condition_ids_to_names = _get_base_condition_ids_to_names(
             region, priorities)
         conditions = _get_conditions(base_condition_ids_to_names.keys())
 
-        self._conditions_to_raster_values = {}
-        self._topleft_coords = None
+        conditions_to_raster_values = {}
+        topleft_coords = None
         for c in conditions:
             # TODO: replace this with select_related.
             name = base_condition_ids_to_names[c.condition_dataset_id]
@@ -213,32 +213,36 @@ class ForsysGenerationInput():
                 raise Exception(
                     "plan has no intersection with condition raster, %s" %
                     name)
-            self._conditions_to_raster_values[name] = values
-            self._update_topleft_coords(values)
+            conditions_to_raster_values[name] = values
+            topleft_coords = self._get_updated_topleft_coords(
+                values, topleft_coords)
+        return conditions_to_raster_values, topleft_coords
 
     # Updates self._topleft_coords if the one represented by
     # condition_pixel_values is further to the top-left corner according to the
     # raster scale.
-    def _update_topleft_coords(
-            self, condition_pixel_values: ConditionPixelValues) -> None:
+    def _get_updated_topleft_coords(
+            self, condition_pixel_values: ConditionPixelValues,
+            topleft_coords: tuple[float, float] | None) -> tuple[float, float]:
         if condition_pixel_values["upper_left_coord_x"] is None:
-            raise Exception("fetched poorly-formatted raster pixel data")
+            raise Exception(
+                "fetched poorly-formatted raster pixel data" +
+                " - missing upper_left_coord_x")
         if condition_pixel_values["upper_left_coord_y"] is None:
-            raise Exception("fetched poorly-formatted raster pixel data")
-        if self._topleft_coords is None:
-            self._topleft_coords = (
-                condition_pixel_values["upper_left_coord_x"],
-                condition_pixel_values["upper_left_coord_y"])
-            return
-        self._topleft_coords = (
+            raise Exception(
+                "fetched poorly-formatted raster pixel data" +
+                " - missing upper_left_coord_y")
+        if topleft_coords is None:
+            return (condition_pixel_values["upper_left_coord_x"],
+                    condition_pixel_values["upper_left_coord_y"])
+        return (self._select_topleft_coord(
+            topleft_coords[0],
+            condition_pixel_values["upper_left_coord_x"],
+            settings.CRS_9822_SCALE[0]),
             self._select_topleft_coord(
-                self._topleft_coords[0],
-                condition_pixel_values["upper_left_coord_x"],
-                settings.CRS_9822_SCALE[0]),
-            self._select_topleft_coord(
-                self._topleft_coords[1],
-                condition_pixel_values["upper_left_coord_y"],
-                settings.CRS_9822_SCALE[1]))
+            topleft_coords[1],
+            condition_pixel_values["upper_left_coord_y"],
+            settings.CRS_9822_SCALE[1]))
 
     # Given two coordinates, selects the one that represents a lower pixel
     # distance index according to the scale.
@@ -250,24 +254,30 @@ class ForsysGenerationInput():
     # _conditions_to_raster_values into a dictionary mapping x pixel positions
     # to y pixel positions to condition names to values. x and y pixels are
     # computed using self._topleft_coords.
-    def _merge_condition_raster_values(self) -> None:
-        self._pixel_dist_x_to_y_to_condition_to_values = {}
-        for condition_name in self._conditions_to_raster_values.keys():
-            values = self._conditions_to_raster_values[condition_name]
+    def _merge_condition_raster_values(
+            self,
+            conditions_to_raster_values: dict[str, ConditionPixelValues],
+            topleft_coords: tuple[float, float]
+    ) -> dict[int, dict[int, dict[str, float]]]:
+        pixel_dist_x_to_y_to_condition_to_values = {}
+        for condition_name in conditions_to_raster_values.keys():
+            values = conditions_to_raster_values[condition_name]
             xdiff = self._get_pixel_dist_diff(
                 values["upper_left_coord_x"],
-                self._topleft_coords[0],
+                topleft_coords[0],
                 settings.CRS_9822_SCALE[0])
             ydiff = self._get_pixel_dist_diff(
                 values["upper_left_coord_y"],
-                self._topleft_coords[1],
+                topleft_coords[1],
                 settings.CRS_9822_SCALE[1])
             for i in range(len(values["pixel_dist_x"])):
                 x = values["pixel_dist_x"][i] + xdiff
                 y = values["pixel_dist_y"][i] + ydiff
                 value = values["values"][i]
                 self._insert_value_in_position_and_condition_dict(
-                    x, y, condition_name, value)
+                    x, y, condition_name, value,
+                    pixel_dist_x_to_y_to_condition_to_values)
+        return pixel_dist_x_to_y_to_condition_to_values
 
     # Computes the distance, in pixels, between two coordinates.
     def _get_pixel_dist_diff(
@@ -276,8 +286,8 @@ class ForsysGenerationInput():
 
     # Inserts a value into self._pixel_dist_x_to_y_to_condition_to_values.
     def _insert_value_in_position_and_condition_dict(
-            self, x: int, y: int, condition: str, value: float) -> None:
-        d = self._pixel_dist_x_to_y_to_condition_to_values
+            self, x: int, y: int, condition: str, value: float,
+            d: dict[int, dict[int, dict[str, float]]]) -> None:
         if x not in d.keys():
             d[x] = {}
 
@@ -291,7 +301,15 @@ class ForsysGenerationInput():
     # Converts self._pixel_dist_x_to_y_to_condition_to_values into forsys input
     # dataframe data.
     def _convert_merged_condition_rasters_to_input_df(
-            self, headers: ForsysInputHeaders, num_priorities: int) -> None:
+            self, headers: ForsysInputHeaders,
+            priorities: list[str]) -> dict[str, list]:
+        forsys_input = _get_initialized_forsys_input_with_common_headers(
+            headers, priorities)
+        # Stand geometries are not necessary for a ranking input dataframe, but
+        # they are necessary for a generation input dataframe.
+        forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
+
+        num_priorities = len(priorities)
         DUMMY_PROJECT_ID = 0
         stand_id = 0
         dict_x = self._pixel_dist_x_to_y_to_condition_to_values
@@ -301,22 +319,22 @@ class ForsysGenerationInput():
                 dict_condition = dict_y[y]
                 if num_priorities != len(dict_condition.keys()):
                     continue
-                stand_id = stand_id + 1
-                self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(
-                    stand_id)
-                self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(
+                forsys_input[headers.FORSYS_STAND_ID_HEADER].append(stand_id)
+                forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(
                     DUMMY_PROJECT_ID)
-                self.forsys_input[headers.FORSYS_AREA_HEADER].append(
+                forsys_input[headers.FORSYS_AREA_HEADER].append(
                     settings.RASTER_PIXEL_AREA)
-                self.forsys_input[headers.FORSYS_COST_HEADER].append(
+                forsys_input[headers.FORSYS_COST_HEADER].append(
                     settings.RASTER_PIXEL_AREA * self.TREATMENT_COST_PER_KM_SQUARED)
-                self.forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(
+                forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(
                     self._get_raster_pixel_geo(x, y).wkt)
                 for p in dict_condition.keys():
                     # TODO: save AP score rather than 1 - normalized condition
                     # score.
-                    self.forsys_input[headers.get_priority_header(
+                    forsys_input[headers.get_priority_header(
                         p)].append(1 - dict_condition[p])
+                stand_id = stand_id + 1
+        return forsys_input
 
     # Returns a Polygon representing the raster pixel at pixel position,
     # (x, y).

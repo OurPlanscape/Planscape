@@ -13,9 +13,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     stand_area_field,
                                                     stand_cost_field,
                                                     geo_wkt_field) {
-
-  scenario_output_fields <- c(priorities, stand_area_field, stand_cost_field)
-
   priority_impact_fields <- paste(priorities, "_PCP", sep="")
 
   # Appends spm and pcp data columns for each priority.
@@ -27,7 +24,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                 forsys::combine_priorities(
                   fields = priority_impact_fields, 
                   weights = priority_weights, 
-                  new_field = 'preset_priority')
+                  new_field = 'weighted_priorities')
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
   # Patchmax expects column name to be "geometry" - do not change the variable
   # name.
@@ -45,7 +42,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
       stand_area_field = stand_area_field,
-      scenario_priorities = c("preset_priority"),
+      scenario_priorities = c("weighted_priorities"),
       scenario_output_fields = c(priorities,
                                  stand_area_field,
                                  stand_cost_field),
