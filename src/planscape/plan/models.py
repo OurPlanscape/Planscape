@@ -69,9 +69,6 @@ class Project(models.Model):
     # Ratio of elevation to distance
     max_slope: models.FloatField = models.FloatField(null=True)
 
-    # TODO: Add more project parameters like min_acres_treated and
-    # permitted_ownership = (1=federal, 2=state, 4=private)
-
 
 class Scenario(models.Model):
     """
@@ -82,16 +79,39 @@ class Scenario(models.Model):
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True)  # type: ignore
+    
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)  # type: ignore
+
+    # The creation time of the project, automatically set when the project is created.
+    creation_time: models.DateTimeField = models.DateTimeField(
+        null=True, auto_now_add=True)
 
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE)  # type: ignore
+        Project, on_delete=models.CASCADE, null=True)  # type: ignore
 
-    # TODO: Add project area ranking
+    # Max constraints. If null, no max value unless a system default is defined.
+    # In USD
+    max_budget: models.FloatField = models.FloatField(null=True)
 
-    # TODO: Add flag to indicate whether this was a 'selected' scenario
+    # Ratio of treatment area to planning area
+    max_treatment_area_ratio: models.FloatField = models.FloatField(null=True)
 
-    # TODO: Add estimated cost
+    # In miles
+    max_road_distance: models.FloatField = models.FloatField(null=True)
 
+    # Ratio of elevation to distance
+    max_slope: models.FloatField = models.FloatField(null=True)
+
+class ScenarioWeightedPriority(models.Model):
+    """
+    Assigns a weight for a Priority used an input to a Scenario. 
+    """  
+    scenario = models.ForeignKey(
+        Scenario, on_delete=models.CASCADE)  # type: ignore
+    
+    priority = models.ForeignKey('conditions.Condition', on_delete=models.CASCADE) # type: ignore
+
+    weight: models.IntegerField = models.IntegerField(null=True)
 
 class ProjectArea(models.Model):
     """

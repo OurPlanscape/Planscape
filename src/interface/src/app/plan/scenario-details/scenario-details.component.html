@@ -1,11 +1,15 @@
-<div class="scenario-details-container">
-  <div class="details-panel">
+<div class="scenario-details-panel mat-elevation-z2"
+  [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
+  <div class="scenario-details-panel-content"
+    [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
+
     <h1>Scenario Details</h1>
-  </div>
-  <mat-divider [vertical]="true"></mat-divider>
-  <div class="plan-map-container">
-    <div class="plan-map-view">
-      <p>Here is a map view</p>
-    </div>
+
+    <!-- Expand/collapse button -->
+    <div class="scenario-details-panel-expand-button" [class.collapsed]="!panelExpanded"
+      [@expandCollapseButton]="panelExpanded ? 'colorA': 'colorB'">
+    <button mat-icon-button (click)="panelExpanded = !panelExpanded">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
   </div>
 </div>
