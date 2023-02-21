@@ -45,7 +45,7 @@
   <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true"
     [selectedIndex]="mapViewOptions?.selectedMapIndex"
     class="layer-controls-tab-group" (selectedIndexChange)="selectMap.emit($event)">
-    <mat-tab *ngFor="let map of maps; index as i" label="{{ map.name }}">
+    <mat-tab *ngFor="let map of maps; index as i" label="MAP {{ map.name }}">
       <mat-accordion multi displayMode="flat">
 
         <!-- Basemap layer controls -->
