@@ -74,18 +74,13 @@ describe('PlanMapComponent', () => {
   });
 
   describe('expand map button', () => {
-    it('should navigate to map view when clicked'),
-      async () => {
-        const routerStub: Router = fixture.debugElement.injector.get(Router);
-        spyOn(routerStub, 'navigate').and.callThrough();
-        const button = await loader.getHarness(
-          MatButtonHarness.with({ text: 'EXPAND MAP' })
-        );
+    it('button is disabled', async () => {
+      const button = await loader.getHarness(
+        MatButtonHarness.with({ text: 'EXPAND MAP' })
+      );
 
-        await button.click();
-
-        expect(routerStub.navigate).toHaveBeenCalledOnceWith(['map']);
-      };
+      expect(await button.isDisabled()).toBeTrue();
+    });
   });
 
   describe('draw shapes on map', () => {
