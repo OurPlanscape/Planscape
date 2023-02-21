@@ -206,7 +206,7 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
 
 
 def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_distance,
-                            max_slope, priorities, project: Project):
+                            max_slope, project: Project):
     project.max_budget = float(max_budget) if max_budget else None
     project.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
@@ -214,6 +214,7 @@ def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_dista
         max_road_distance) if max_road_distance else None
     project.max_slope = float(max_slope) if max_slope else None
 
+def _set_priorities(priorities, project: Project):
     if priorities is not None:
         for i in range(len(priorities)):
             base_condition = BaseCondition.objects.get(
@@ -256,7 +257,8 @@ def create_project(request: HttpRequest) -> HttpResponse:
 
         project = Project.objects.create(owner=owner, plan=plan)
         _set_project_parameters(max_budget, max_treatment_area_ratio,
-                                max_road_distance, max_slope, priorities, project)
+                                max_road_distance, max_slope, project)
+        _set_priorities(priorities, project)
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -266,10 +268,6 @@ def create_project(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def update_project(request: HttpRequest) -> HttpResponse:
     try:
-        if request.method != "PUT":
-            raise KeyError(
-                "HTTP methods other than PUT are not yet implemented")
-
         # Check that the user is logged in.
         owner = get_user(request)
 
@@ -291,12 +289,29 @@ def update_project(request: HttpRequest) -> HttpResponse:
 
         _validate_constraint_values(
             max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+        
+        if request.method == "PUT":
+            project.priorities.clear()
+            _set_project_parameters(max_budget, max_treatment_area_ratio,
+                                    max_road_distance, max_slope, project)
+            _set_priorities(priorities, project)
+            project.save()
+            return HttpResponse(str(project.pk))
+        elif request.method == "PATCH":
+            del body['id']
+            body.pop('priorities', None)
+            s = ProjectSerializer(project, data=body, partial=True)
+            s.is_valid()
+            s.save()
 
-        project.priorities.clear()
-        _set_project_parameters(max_budget, max_treatment_area_ratio,
-                                max_road_distance, max_slope, priorities, project)
-        project.save()
-        return HttpResponse(str(project.pk))
+            if priorities is not None:
+                project.priorities.clear()
+                _set_priorities(priorities, project)
+            project.save()
+            return HttpResponse(str(project.pk))
+        else:
+            raise KeyError(
+                    "HTTP methods other than PUT are not yet implemented")
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 

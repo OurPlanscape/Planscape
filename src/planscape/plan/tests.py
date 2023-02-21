@@ -478,7 +478,7 @@ class UpdateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition)
+            condition_dataset=self.base_condition, condition_score_type=0, is_raw=False)
 
         self.base_condition2 = BaseCondition.objects.create(
             condition_name="condition2", condition_level=ConditionLevel.ELEMENT)
@@ -547,6 +547,78 @@ class UpdateProjectTest(TransactionTestCase):
         self.assertEqual(project.priorities.count(), 1)
         self.assertTrue(project.priorities.contains(
             self.condition2_normalized))
+
+    def test_patch_update_constraint(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_budget': 200.0},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 200.0)
+        self.assertEqual(project.priorities.count(), 1)
+
+    def test_patch_remove_constraint(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_budget': None},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, None)
+        self.assertEqual(project.priorities.count(), 1)
+
+    def test_patch_add_constraint(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.max_slope, None)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_slope': 0.5},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100)
+        self.assertEqual(project.max_slope, 0.5)
+        self.assertEqual(project.priorities.count(), 1)
+
+    def test_patch_add_priority(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk,
+                                             'priorities': ['condition1', 'condition2']}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100)
+        self.assertEqual(project.priorities.count(), 2)
+        self.assertTrue(project.priorities.contains(
+            self.condition2_normalized))
+
+    def test_patch_remove_priority(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk,
+                                             'priorities': []}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100)
+        self.assertEqual(project.priorities.count(), 0)
 
 
 class DeleteProjectsTest(TransactionTestCase):
@@ -866,7 +938,6 @@ class ListProjectsTest(TransactionTestCase):
             reverse('plan:list_projects_for_plan'),
             {'plan_id': self.plan_with_user.pk},
             content_type="application/json")
-        print(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
@@ -1235,7 +1306,8 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.json()['project'], self.project.pk)
         self.assertEqual(response.json()['plan'], self.plan.pk)
         self.assertEqual(response.json()['notes'], 'my note')
-        self.assertEqual(response.json()['priorities'], {'cond1' : 2, 'cond2': 3})
+        self.assertEqual(response.json()['priorities'], {
+                         'cond1': 2, 'cond2': 3})
 
 
 class ListScenariosTest(TransactionTestCase):
@@ -1276,7 +1348,7 @@ class ListScenariosTest(TransactionTestCase):
             scenario=self.scenario2, priority=self.condition1, weight=4)
         self.weight2 = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario2, priority=self.condition2, weight=5)
-        
+
     def test_list_nonexistent_plan(self):
         response = self.client.get(
             reverse('plan:list_scenarios_for_plan'),
@@ -1302,6 +1374,8 @@ class ListScenariosTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
         self.assertEqual(response.json()[0]['id'], self.scenario1.pk)
-        self.assertEqual(response.json()[0]['priorities'], {'cond1' : 2, 'cond2': 3})
+        self.assertEqual(response.json()[0]['priorities'], {
+                         'cond1': 2, 'cond2': 3})
         self.assertEqual(response.json()[1]['id'], self.scenario2.pk)
-        self.assertEqual(response.json()[1]['priorities'], {'cond1' : 4, 'cond2': 5})
+        self.assertEqual(response.json()[1]['priorities'], {
+                         'cond1': 4, 'cond2': 5})
