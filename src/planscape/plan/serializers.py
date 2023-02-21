@@ -1,4 +1,4 @@
-from conditions.models import Condition
+from conditions.models import BaseCondition, Condition
 from rest_framework import serializers
 from rest_framework.serializers import IntegerField
 from rest_framework_gis import serializers as gis_serializers
@@ -41,7 +41,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = '__all__'
-
 
 class ProjectAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:
