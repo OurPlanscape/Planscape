@@ -3,10 +3,10 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
+import { RouterModule } from '@angular/router';
 
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
-import { CreateScenariosIntroComponent } from './create-scenarios/create-scenarios-intro/create-scenarios-intro.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { GenerateScenariosComponent } from './create-scenarios/generate-scenarios/generate-scenarios.component';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
@@ -21,6 +21,7 @@ import { DeletePlanDialogComponent } from './plan-table/delete-plan-dialog/delet
 import { PlanTableComponent } from './plan-table/plan-table.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
+import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -37,10 +38,10 @@ import { PlanComponent } from './plan.component';
     CreateScenariosComponent,
     PlanNavigationBarComponent,
     SetPrioritiesComponent,
-    CreateScenariosIntroComponent,
     ConstraintsPanelComponent,
     IdentifyProjectAreasComponent,
     GenerateScenariosComponent,
+    ScenarioDetailsComponent,
   ],
   imports: [
     BrowserAnimationsModule,
@@ -48,6 +49,7 @@ import { PlanComponent } from './plan.component';
     FormsModule,
     MaterialModule,
     ReactiveFormsModule,
+    RouterModule,
     SharedModule,
   ],
 })

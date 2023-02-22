@@ -8,6 +8,7 @@ import {
   PlanConditionScores,
   PlanPreview,
   ProjectConfig,
+  Scenario,
 } from './../types/plan.types';
 
 export interface PlanState {
@@ -15,6 +16,7 @@ export interface PlanState {
     [planId: string]: Plan;
   };
   currentPlanId: Plan['id'] | null;
+  currentScenarioId: Scenario['id'] | null;
 }
 
 export interface BackendPlan {
@@ -36,6 +38,7 @@ export class PlanService {
   readonly planState$ = new BehaviorSubject<PlanState>({
     all: {}, // All plans indexed by id
     currentPlanId: null,
+    currentScenarioId: null,
   });
 
   constructor(private http: HttpClient) {}
@@ -149,7 +152,7 @@ export class PlanService {
   }
 
   /** Fetches the projects for a plan from the backend. */
-  getProjects(planId: string): Observable<ProjectConfig[]> {
+  getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
     let url = BackendConstants.END_POINT.concat(
       '/plan/list_projects_for_plan/?plan_id=',
       planId
@@ -165,6 +168,22 @@ export class PlanService {
             this.convertToProjectConfig(config)
           )
         )
+      );
+  }
+
+  /** Fetches a project by its ID from the backend. */
+  getProject(projectId: number): Observable<ProjectConfig> {
+    let url = BackendConstants.END_POINT.concat(
+      '/plan/get_project/?id=',
+      projectId.toString()
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response) => this.convertToProjectConfig(response))
       );
   }
 
@@ -225,6 +244,9 @@ export class PlanService {
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       priorities: config.priorities,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        config.creation_timestamp
+      ),
     };
   }
 
@@ -245,6 +267,19 @@ export class PlanService {
         ...currentState.all,
         [plan.id]: plan,
       },
+    });
+
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithScenario(scenarioId: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      currentScenarioId: scenarioId,
     });
 
     this.planState$.next(updatedState);

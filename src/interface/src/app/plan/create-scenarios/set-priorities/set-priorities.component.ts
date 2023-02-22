@@ -40,9 +40,13 @@ export class SetPrioritiesComponent implements OnInit {
   @Output() formBackEvent = new EventEmitter<void>();
 
   readonly text1: string = `
-    Optimize your treatment objective by evaluating your planning area and selecting priorities.
-    Select at least one. Only selected priorities are used to identify project areas and prioritize
-    treatments. Note: For the most accurate estimated outcome, choose no more than 5.
+    Priorities are based on the Pillars of Resilience Framework. Only selected priorities are
+    used to identify project areas and prioritize treatment. Note: For the most accurate estimated
+    outcome, choose no more than 5.
+  `;
+
+  readonly text2: string = `
+    Next, select at least one priority. You will have the opportunity to weigh your selections later:
   `;
 
   conditionScores = new Map<string, ScoreColumn>();
@@ -73,6 +77,11 @@ export class SetPrioritiesComponent implements OnInit {
         this.datasource.data = this.conditionsConfigToPriorityData(
           conditionsConfig!
         );
+        // Prefill checkboxes for priorities that are already in the form.
+        this.formGroup
+          ?.get('priorities')
+          ?.valueChanges.pipe(take(1))
+          .subscribe((_) => this.updateSelectedPriorities());
       });
     this.plan$.pipe(filter((plan) => !!plan)).subscribe((plan) => {
       this.planService
@@ -116,7 +125,7 @@ export class SetPrioritiesComponent implements OnInit {
             let metricRow: PriorityRow = {
               conditionName: metric.metric_name!,
               displayName: metric.display_name,
-              filepath: metric.filepath!,
+              filepath: metric.filepath!.concat('_normalized'),
               children: [],
               level: 2,
               hidden: true,
@@ -192,11 +201,22 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   /** Update the priority list with the user's current selections. */
-  updateSelectedPriorities(): void {
+  updatePrioritiesFormControl(): void {
     const selectedPriorities: string[] = this.datasource.data
       .filter((row) => row.selected)
       .map((row) => row.conditionName);
     this.formGroup?.get('priorities')?.setValue(selectedPriorities);
     this.formGroup?.get('priorities')?.markAsDirty();
+  }
+
+  /** Update the checkboxes with the current form value. */
+  updateSelectedPriorities(): void {
+    const priorities: string[] = this.formGroup?.get('priorities')?.value;
+    this.datasource.data = this.datasource.data.map((row) => {
+      if (priorities.includes(row.conditionName)) {
+        row.selected = true;
+      }
+      return row;
+    });
   }
 }

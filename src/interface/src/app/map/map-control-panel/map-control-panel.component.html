@@ -1,0 +1,197 @@
+<div class="controls-container">
+
+  <div *ngIf="mapHasDataLayer" class="legend-container">
+    <!-- Legend for the currently shown map -->
+    <app-legend [legend]="getSelectedLegend()"></app-legend>
+
+    <!-- Opacity controls for the currently shown data layer -->
+    <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity">
+    </app-opacity-slider>
+
+    <mat-divider class="layer-controls-divider"></mat-divider>
+
+  </div>
+
+  <!-- Controls for specifying how many maps should be shown -->
+  <div class="map-count-button-row">
+    <button mat-button class="map-count-button" (click)="changeMapCount.emit(1)"
+      aria-label="Show 1 map"
+      [ngClass]="{'selected': mapViewOptions?.numVisibleMaps === 1}">
+      <div class="map-count-button-grid-cell"></div>
+    </button>
+    <button mat-button class="map-count-button" (click)="changeMapCount.emit(2)"
+      aria-label="Show 2 maps"
+      [ngClass]="{'selected': mapViewOptions?.numVisibleMaps === 2}">
+      <div class="map-count-button-grid-row">
+        <div class="map-count-button-grid-cell"></div>
+        <div class="map-count-button-grid-cell"></div>
+      </div>
+    </button>
+    <button mat-button class="map-count-button" (click)="changeMapCount.emit(4)"
+      aria-label="Show 4 maps"
+      [ngClass]="{'selected': mapViewOptions?.numVisibleMaps === 4}">
+    <div class="map-count-button-grid-row">
+      <div class="map-count-button-grid-cell"></div>
+      <div class="map-count-button-grid-cell"></div>
+    </div>
+    <div class="map-count-button-grid-row">
+      <div class="map-count-button-grid-cell"></div>
+      <div class="map-count-button-grid-cell"></div>
+    </div>
+    </button>
+  </div>
+
+  <!-- Layer controls for each map, displayed in tabs -->
+  <mat-tab-group mat-align-tabs="center" mat-stretch-tabs="true"
+    [selectedIndex]="mapViewOptions?.selectedMapIndex"
+    class="layer-controls-tab-group" (selectedIndexChange)="selectMap.emit($event)">
+    <mat-tab *ngFor="let map of maps; index as i" label="MAP {{ map.name }}">
+      <mat-accordion multi displayMode="flat">
+
+        <!-- Basemap layer controls -->
+        <mat-expansion-panel expanded="true">
+          <mat-expansion-panel-header class="layer-panel-header">
+            Basemaps
+          </mat-expansion-panel-header>
+          <mat-radio-group name="{{ map.id + '-base-layer-select' }}" aria-label="Select an option"
+            class="layer-radio-group" [(ngModel)]="map.config.baseLayerType"
+            color="primary"
+            (change)="changeBaseLayer.emit(map)">
+            <div class="layer-control-container" *ngFor="let baseLayerType of baseLayerTypes">
+              <mat-radio-button [value]="baseLayerType"
+                checked="{{ baseLayerType == map.config.baseLayerType }}">
+                {{ BaseLayerType[baseLayerType] }}
+              </mat-radio-button>
+            </div>
+          </mat-radio-group>
+        </mat-expansion-panel>
+
+        <!-- Boundary layer controls -->
+        <mat-expansion-panel expanded="true">
+          <mat-expansion-panel-header class="layer-panel-header">
+            Boundaries
+          </mat-expansion-panel-header>
+          <mat-radio-group name="{{ map.id + '-boundaries-select' }}" aria-label="Select an option"
+            class="layer-radio-group" color="primary"
+            [(ngModel)]="map.config.boundaryLayerConfig" (change)="changeBoundaryLayer.emit(map)">
+            <div class="layer-control-container">
+              <mat-radio-button [value]="noneBoundaryConfig">
+                None
+              </mat-radio-button>
+            </div>
+            <div *ngFor="let boundary of boundaryConfig" class="layer-control-container">
+              <mat-radio-button [value]="boundary">
+                {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
+              </mat-radio-button>
+              <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]">
+              </mat-spinner>
+            </div>
+          </mat-radio-group>
+        </mat-expansion-panel>
+
+        <!-- Recent treatment areas controls -->
+        <mat-expansion-panel expanded="false">
+          <mat-expansion-panel-header class="layer-panel-header">
+            Recent treatment areas
+          </mat-expansion-panel-header>
+          <div class="layer-control-container">
+            <mat-checkbox name="{{ map.id + '-existing-projects-toggle' }}"
+              aria-label="Select or deselect" color="primary"
+              class="layer-checkbox" [(ngModel)]="map.config.showExistingProjectsLayer"
+              (change)="toggleExistingProjectsLayer.emit(map)">
+              Existing projects
+            </mat-checkbox>
+            <mat-spinner [diameter]="24" *ngIf="loadingIndicators['existing_projects']">
+            </mat-spinner>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Ecosystem scores controls -->
+        <mat-expansion-panel expanded="false">
+          <mat-expansion-panel-header class="layer-panel-header">
+            <mat-panel-title>
+              Ecosystem scores
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+          <div class="layer-control-container flex-center">
+            <mat-radio-group class="layer-radio-group" color="primary" [(ngModel)]="map.config.dataLayerConfig">
+              <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff();
+                conditionTreeNormalized.toggleAllLayersOff()"
+                color="primary"
+                [value]="noneDataLayerConfig">
+                All Layers Off
+              </mat-radio-button>
+            </mat-radio-group>
+          </div>
+        </mat-expansion-panel>
+
+        <!-- Current condition controls -->
+        <app-condition-tree
+          #conditionTreeRaw
+          [conditionsData$]="conditionDataRaw$"
+          [header]="'Current Condition'"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event)">
+        </app-condition-tree>
+
+        <!-- Normalized current condition controls -->
+        <app-condition-tree
+          #conditionTreeNormalized
+          [conditionsData$]="conditionDataNormalized$"
+          [header]="'Current Condition (Normalized)'"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event)">
+        </app-condition-tree>
+
+        <!-- Disturbances controls -->
+        <mat-expansion-panel disabled="true">
+          <mat-expansion-panel-header class="layer-panel-header">
+            <mat-panel-title>
+              Disturbances
+            </mat-panel-title>
+            <mat-panel-description>
+              Coming soon!
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+        </mat-expansion-panel>
+
+        <!-- HVRAs controls -->
+        <mat-expansion-panel disabled="true">
+          <mat-expansion-panel-header class="layer-panel-header">
+            <mat-panel-title>
+              HVRAs
+            </mat-panel-title>
+            <mat-panel-description>
+              Coming soon!
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+        </mat-expansion-panel>
+
+        <!-- Land types controls -->
+        <mat-expansion-panel disabled="true">
+          <mat-expansion-panel-header class="layer-panel-header">
+            <mat-panel-title>
+              Land types
+            </mat-panel-title>
+            <mat-panel-description>
+              Coming soon!
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+        </mat-expansion-panel>
+
+        <!-- Operability controls -->
+        <mat-expansion-panel disabled="true">
+          <mat-expansion-panel-header class="layer-panel-header">
+            <mat-panel-title>
+              Operability
+            </mat-panel-title>
+            <mat-panel-description>
+              Coming soon!
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+        </mat-expansion-panel>
+
+      </mat-accordion>
+    </mat-tab>
+  </mat-tab-group>
+</div>

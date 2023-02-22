@@ -9,7 +9,7 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea
+from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer)
 from planscape import settings
@@ -18,7 +18,7 @@ from django.shortcuts import get_list_or_404
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
 
-def _get_user(request: HttpRequest):
+def get_user(request: HttpRequest):
     user = None
     if request.user.is_authenticated:
         user = request.user
@@ -31,7 +31,7 @@ def _get_user(request: HttpRequest):
 def create_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         # Get the name of the plan.
         body = json.loads(request.body)
@@ -157,7 +157,7 @@ def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
 
 def get_plan(request: HttpRequest) -> HttpResponse:
     try:
-        user = _get_user(request)
+        user = get_user(request)
 
         return JsonResponse(
             _serialize_plan(
@@ -185,31 +185,38 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _save_project_parameters(body, project: Project):
-    # Parse constraints
-    max_budget = body.get('max_budget', None)
+# TODO: add validation for requiring either max budget or max area to be set for a generation run
+def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
     if max_budget is not None and not (isinstance(max_budget, (int, float))):
         raise ValueError("Max budget must be a number value")
 
-    max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
     if (max_treatment_area_ratio is not None and
             (not (isinstance(max_treatment_area_ratio, (int, float))) or max_treatment_area_ratio < 0)):
         raise ValueError(
             "Max treatment must be a number value >= 0.0")
 
-    max_road_distance = body.get('max_road_distance', None)
     if max_road_distance is not None and not (isinstance(max_road_distance, (int, float))):
         raise ValueError("Max distance from road must be a number value")
 
-    max_slope = body.get('max_slope', None)
     if (max_slope is not None and
             (not (isinstance(max_slope, (int, float))) or max_slope < 0)):
         raise ValueError(
             "Max slope must be a number value >= 0.0")
 
+def _save_project_parameters(body, project: Project):
+    max_budget = body.get('max_budget', None)
+    max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+    max_road_distance = body.get('max_road_distance', None)
+    max_slope = body.get('max_slope', None)
+
+    _validate_constraint_values(
+        max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
     project.max_budget = float(max_budget) if max_budget else None
-    project.max_treatment_area_ratio = float(max_treatment_area_ratio) if max_treatment_area_ratio else None
-    project.max_road_distance = float(max_road_distance) if max_road_distance else None
+    project.max_treatment_area_ratio = float(
+        max_treatment_area_ratio) if max_treatment_area_ratio else None
+    project.max_road_distance = float(
+        max_road_distance) if max_road_distance else None
     project.max_slope = float(max_slope) if max_slope else None
 
     # Parse priorities
@@ -217,8 +224,9 @@ def _save_project_parameters(body, project: Project):
     priorities_list = [] if priorities is None else priorities
     for pri in priorities_list:
         base_condition = BaseCondition.objects.get(condition_name=pri)
+        # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0)
+            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
         project.priorities.add(condition)
 
 
@@ -226,7 +234,7 @@ def _save_project_parameters(body, project: Project):
 def create_project(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         # Get the plan_id associated with the project.
         body = json.loads(request.body)
@@ -259,7 +267,7 @@ def update_project(request: HttpRequest) -> HttpResponse:
                 "HTTP methods other than PUT are not yet implemented")
 
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
         project_id = body.get('id', None)
@@ -285,19 +293,15 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
         assert isinstance(request.GET['plan_id'], str)
         plan_id = request.GET.get('plan_id', "0")
 
-        user = _get_user(request)
+        user = get_user(request)
 
         if Plan.objects.get(pk=plan_id) is None:
-            raise ValueError("Plan with id " + str(plan_id) + " does not exist")
+            raise ValueError("Plan with id " +
+                             str(plan_id) + " does not exist")
 
         projects = Project.objects.filter(owner=user, plan=int(plan_id))
-        
-        projects = [ProjectSerializer(project).data for project in projects]
 
-        for project in projects:
-            project['priorities'] = [Condition.objects.get(pk=priority).condition_dataset.condition_name for priority in project['priorities']]
-
-        return JsonResponse(projects, safe=False)
+        return JsonResponse([_serialize_project(project) for project in projects], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -307,39 +311,58 @@ def get_project(request: HttpRequest) -> HttpResponse:
         assert isinstance(request.GET['id'], str)
         project_id = request.GET.get('id', "0")
 
-        user = _get_user(request)
+        user = get_user(request)
 
         project = Project.objects.get(id=project_id)
         if project.owner != user:
             raise ValueError(
                 "You do not have permission to view this project.")
-        return JsonResponse(ProjectSerializer(project).data)
+
+        return JsonResponse(_serialize_project(project))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def _serialize_project(project: Project) -> dict:
+    """
+    Serializes a Project into a dictionary.
+    1. Replaces 'creation_time' with a Posix timestamp.
+    2. Replaces the priority IDs with the condition name.
+    """
+    result = ProjectSerializer(project).data
+    if 'creation_time' in result and result['creation_time'] is not None:
+        result['creation_timestamp'] = round(datetime.datetime.fromisoformat(
+            result['creation_time'].replace('Z', '+00:00')).timestamp())
+        del result['creation_time']
+    if 'priorities' in result:
+        result['priorities'] = [Condition.objects.get(
+            pk=priority).condition_dataset.condition_name for priority in result['priorities']]
+    return result
 
 
 @csrf_exempt
 def delete_projects(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
         project_ids = body.get('project_ids', None)
         if project_ids is None or not (isinstance(project_ids, list)):
             raise ValueError("Must specify project_ids as a list")
 
-        projects = [Project.objects.get(id=project_id) for project_id in project_ids]
-        
+        projects = [Project.objects.get(id=project_id)
+                    for project_id in project_ids]
+
         # Check that the user owns the projects
         for project in projects:
             if project.owner != owner:
                 raise ValueError(
                     "You do not have permission to delete one or more of these projects.")
-        
+
         for project in projects:
             project.delete()
-        
+
         response_data = project_ids
         return HttpResponse(
             json.dumps(response_data),
@@ -353,7 +376,7 @@ def delete_projects(request: HttpRequest) -> HttpResponse:
 def create_project_area(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
 
@@ -397,7 +420,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         project_id = request.GET.get('project_id', "0")
         project_exists = Project.objects.get(id=project_id)
 
-        user = _get_user(request)
+        user = get_user(request)
 
         if project_exists.owner != user:
             raise ValueError(
@@ -413,8 +436,11 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> de272289b672c6a233740f8470e449d95d7502cb
 def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, 
                            max_slope, priorities, weights, scenario: Scenario):
     scenario.max_budget = float(max_budget) if max_budget else None
@@ -483,10 +509,13 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> de272289b672c6a233740f8470e449d95d7502cb
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
-        user = _get_user(request)
+        user = get_user(request)
         plan = get_plan_by_id(user, request.GET)
 
         condition_stats = fetch_or_compute_condition_stats(plan)

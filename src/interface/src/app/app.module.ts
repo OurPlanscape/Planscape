@@ -17,6 +17,7 @@ import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
 import { LoginComponent } from './login/login.component';
 import { LayerInfoCardComponent } from './map/layer-info-card/layer-info-card.component';
+import { MapControlPanelComponent } from './map/map-control-panel/map-control-panel.component';
 import { MapNameplateComponent } from './map/map-nameplate/map-nameplate.component';
 import { MapComponent } from './map/map.component';
 import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-dialog.component';
@@ -37,6 +38,7 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/condition-tree.component';
 
 @NgModule({
   declarations: [
@@ -53,6 +55,8 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     MapNameplateComponent,
     PlanCreateDialogComponent,
     LayerInfoCardComponent,
+    MapControlPanelComponent,
+    ConditionTreeComponent,
   ],
   imports: [
     AppRoutingModule,

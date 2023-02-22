@@ -119,6 +119,7 @@ describe('SetPrioritiesComponent', () => {
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.formGroup = fb.group({
+      scoreType: [0, Validators.required],
       priorities: ['', Validators.required],
     });
 
@@ -141,7 +142,7 @@ describe('SetPrioritiesComponent', () => {
     const metric = {
       conditionName: 'test_metric_1',
       displayName: undefined,
-      filepath: 'test_metric_1',
+      filepath: 'test_metric_1_normalized',
       children: [],
       level: 2,
       hidden: true,
@@ -270,5 +271,20 @@ describe('SetPrioritiesComponent', () => {
       'test_pillar_1',
       'test_element_1',
     ]);
+  });
+
+  it('updateSelectedPriorities should update checkboxes', async () => {
+    component.formGroup?.get('priorities')?.setValue([]);
+    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
+    const conditionCheckbox1 = checkboxHarnesses[0];
+
+    expect(component.datasource.data[0].selected).toBeFalsy();
+    expect(await conditionCheckbox1.isChecked()).toBeFalse();
+
+    component.formGroup?.get('priorities')?.setValue(['test_pillar_1']);
+    component.updateSelectedPriorities();
+
+    expect(component.datasource.data[0].selected).toBeTrue();
+    expect(await conditionCheckbox1.isChecked()).toBeTrue();
   });
 });

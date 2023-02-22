@@ -20,6 +20,10 @@ describe('CreateScenariosComponent', () => {
       {
         createProjectInPlan: of(1),
         getConditionScoresForPlanningArea: of(),
+        getProject: of({
+          id: 1,
+          maxBudget: 100,
+        }),
         updateProject: of(1),
       },
       {}
@@ -52,46 +56,49 @@ describe('CreateScenariosComponent', () => {
     expect(component.stepper?.selectedIndex).toEqual(0);
   });
 
-  it('advancing the stepper is blocked if the step form is invalid', () => {
-    component.stepper?.next();
-
-    expect(component.stepper?.selectedIndex).toEqual(0);
-  });
-
-  it('stepper advances automatically when step 1 form is valid', () => {
-    component.formGroups[0].get('scoreSelectCtrl')?.setValue('test');
-
-    expect(component.stepper?.selectedIndex).toEqual(1);
-  });
-
-  it('should create a new project when initialized', () => {
+  it('should create a new project when initialized with no config ID', () => {
     expect(fakePlanService.createProjectInPlan).toHaveBeenCalledOnceWith('1');
   });
 
-  it('should update project when values change', () => {
-    component.formGroups[0].get('scoreSelectCtrl')?.setValue('test');
+  it('should load existing config into form when initialized with config ID', () => {
+    component.scenarioConfigId = 1;
+    component.ngOnInit();
+
+    expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
+
+    component.formGroups[1].valueChanges.subscribe((_) => {
+      expect(
+        component.formGroups[1].get('budgetForm.maxBudget')?.value
+      ).toEqual(100);
+    });
+  });
+
+  it('should update project when stepper advances', () => {
+    component.formGroups[0].get('priorities')?.setValue(['test']);
+    component.stepper?.next();
 
     expect(fakePlanService.updateProject).toHaveBeenCalledOnceWith({
       id: 1,
+      max_treatment_area_ratio: NaN,
       max_road_distance: NaN,
       max_slope: NaN,
+      priorities: ['test'],
     });
   });
 
   it('should not update project if form is invalid', () => {
-    component.formGroups[0].get('scoreSelectCtrl')?.setValue('test');
-    expect(fakePlanService.updateProject).toHaveBeenCalledTimes(1);
+    expect(fakePlanService.updateProject).toHaveBeenCalledTimes(0);
 
-    component.formGroups[1].markAsDirty();
-    component.formGroups[1].get('budgetForm.maxBudget')?.setValue(-1);
-    component.stepper?.previous();
+    component.formGroups[0].markAsDirty();
+    component.formGroups[0].get('priorities')?.setValue(['test']);
+    component.stepper?.next();
 
     expect(fakePlanService.updateProject).toHaveBeenCalledTimes(1);
   });
 
   it('emits drawShapes event when "identify project areas" form inputs change', () => {
-    const generateAreas = component.formGroups[3].get('generateAreas');
-    const uploadedArea = component.formGroups[3].get('uploadedArea');
+    const generateAreas = component.formGroups[2].get('generateAreas');
+    const uploadedArea = component.formGroups[2].get('uploadedArea');
     spyOn(component.drawShapesEvent, 'emit');
 
     // Set "generate areas automatically" to true
@@ -107,10 +114,10 @@ describe('CreateScenariosComponent', () => {
   });
 
   it('adds a priority weight form control for each priority', () => {
-    component.formGroups[2]
+    component.formGroups[0]
       .get('priorities')
       ?.setValue(['priority1', 'priority2']);
-    const priorityWeightsForm = component.formGroups[4].get(
+    const priorityWeightsForm = component.formGroups[3].get(
       'priorityWeightsForm'
     ) as FormGroup;
 

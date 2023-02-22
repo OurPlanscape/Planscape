@@ -79,9 +79,9 @@ export class MapManager {
     if (map.config.baseLayerType === BaseLayerType.Road) {
       map.baseLayerRef = this.stadiaAlidadeTiles();
     } else if (map.config.baseLayerType == BaseLayerType.Terrain) {
-      map.baseLayerRef = this.hillshadeTiles();
+      map.baseLayerRef = this.terrainTiles();
     } else {
-      map.baseLayerRef = this.USGSTiles();
+      map.baseLayerRef = this.satelliteTiles();
     }
 
     map.instance = L.map(mapId, {
@@ -120,30 +120,32 @@ export class MapManager {
       snappable: false,
       removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
-        color: '#7b61ff',
+        color: '#3367D6',
+        weight: 5,
       },
       templineStyle: {
-        color: '#7b61ff',
+        color: '#3367D6',
+        weight: 5,
       },
       layerGroup: this.drawingLayer,
     });
     map.instance!.pm.setPathOptions({
-      color: '#7b61ff',
-      fillColor: '#7b61ff',
-      fillOpacity: 0.2,
+      color: '#3367D6',
+      fillColor: '#3367D6',
+      fillOpacity: 0.1,
+      weight: 5,
     });
 
     this.setUpEventHandlers(map, createDetailCardCallback);
   }
 
-  /** Creates a basemap layer using the Hillshade tiles. */
-  private hillshadeTiles() {
+  /** Creates a basemap layer using the Esri.WorldTerrain tiles. */
+  private terrainTiles() {
     return L.tileLayer(
-      'https://api.mapbox.com/styles/v1/tsuga11/ckcng1sjp2kat1io3rv2croyl/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoidHN1Z2ExMSIsImEiOiJjanFmaTA5cGIyaXFoM3hqd3R5dzd3bzU3In0.TFqMjIIYtpcyhzNh4iMcQA',
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
       {
-        zIndex: 0,
-        tileSize: 512,
-        zoomOffset: -1,
+        maxZoom: 13,
+        attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
       }
     );
   }
@@ -161,14 +163,12 @@ export class MapManager {
     );
   }
 
-  private USGSTiles() {
+  /** Creates a basemap layer using the Esri.WorldImagery tiles. */
+  private satelliteTiles() {
     return L.tileLayer(
-      'https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}',
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {
-        zIndex: 0,
-        maxZoom: 20,
-        attribution:
-          'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>',
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       }
     );
   }
@@ -243,9 +243,10 @@ export class MapManager {
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
     L.geoJSON(area, {
       style: (_) => ({
-        color: '#7b61ff',
-        fillColor: '#7b61ff',
-        fillOpacity: 0.2,
+        color: '#3367D6',
+        fillColor: '#3367D6',
+        fillOpacity: 0.1,
+        weight: 5,
       }),
       pmIgnore: false,
       onEachFeature: (_, layer) => {
@@ -269,6 +270,7 @@ export class MapManager {
       const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
         color: '#ffde9e',
         fillColor: '#ffde9e',
+        weight: 5,
       });
       currMap.clonedDrawingRef?.addLayer(clonedLayer);
       currMap.drawnPolygonLookup![originalId] = clonedLayer;
@@ -582,11 +584,11 @@ export class MapManager {
     let baseLayerType = map.config.baseLayerType;
     map.baseLayerRef?.remove();
     if (baseLayerType === BaseLayerType.Terrain) {
-      map.baseLayerRef = this.hillshadeTiles();
+      map.baseLayerRef = this.terrainTiles();
     } else if (baseLayerType === BaseLayerType.Road) {
       map.baseLayerRef = this.stadiaAlidadeTiles();
     } else if (baseLayerType === BaseLayerType.Satellite) {
-      map.baseLayerRef = this.USGSTiles();
+      map.baseLayerRef = this.satelliteTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
   }
