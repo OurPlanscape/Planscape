@@ -111,6 +111,7 @@ class ScenarioWeightedPriority(models.Model):
     scenario = models.ForeignKey(
         Scenario, on_delete=models.CASCADE)  # type: ignore
     
+    # TODO: swap with config priority in schema migration
     priority = models.ForeignKey('conditions.Condition', on_delete=models.CASCADE) # type: ignore
 
     weight: models.IntegerField = models.IntegerField(null=True)
