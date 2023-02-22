@@ -1,20 +1,22 @@
 import datetime
 import json
 
+from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
+from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
+from plan.models import (Plan, Project, ProjectArea, Scenario,
+                         ScenarioWeightedPriority)
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer, ScenarioSerializer, ScenarioWeightedPrioritySerializer)
+                              ProjectSerializer, ScenarioSerializer,
+                              ScenarioWeightedPrioritySerializer)
 from planscape import settings
-from django.shortcuts import get_list_or_404
-from django.db.models.query import QuerySet
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -221,7 +223,7 @@ def _set_priorities(priorities, project: Project):
                 condition_name=priorities[i])
             # is_raw=False required because for metrics, we store both current raw and current normalized data.
             condition = Condition.objects.get(
-                condition_dataset=base_condition, condition_score_type=0, is_raw=False)
+                condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
             project.priorities.add(condition)
 
 
@@ -301,17 +303,17 @@ def update_project(request: HttpRequest) -> HttpResponse:
             del body['id']
             body.pop('priorities', None)
             s = ProjectSerializer(project, data=body, partial=True)
-            s.is_valid()
+            s.is_valid(raise_exception=True)
             s.save()
 
             if priorities is not None:
                 project.priorities.clear()
                 _set_priorities(priorities, project)
-            project.save()
-            return HttpResponse(str(project.pk))
         else:
             raise KeyError(
                     "HTTP methods other than PUT are not yet implemented")
+        project.save()
+        return HttpResponse(str(project.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -473,7 +475,7 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
             condition_name=priorities[i])
         # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
+            condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
         weight = weights[i] if weights is not None else None
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
