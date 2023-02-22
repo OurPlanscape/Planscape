@@ -1,7 +1,11 @@
 from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import (
-    compute_condition_stats_from_raster, get_raster_geo)
-from forsys.forsys_request_params import ForsysRankingRequestParams
+from conditions.raster_utils import (ConditionPixelValues,
+                                     compute_condition_stats_from_raster,
+                                     get_condition_values_from_raster,
+                                     get_raster_geo)
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from forsys.forsys_request_params import (
+    ForsysGenerationRequestParams, ForsysRankingRequestParams)
 from planscape import settings
 
 
@@ -12,13 +16,16 @@ class ForsysInputHeaders():
     FORSYS_STAND_ID_HEADER = "stand_id"
     FORSYS_AREA_HEADER = "area"
     FORSYS_COST_HEADER = "cost"
+    # Constant header for geo wkt.
+    # Only used for generation, not prioritization.
+    FORSYS_GEO_WKT_HEADER = "geo"
 
     # Header prefixes for conditions and priorities.
     _CONDITION_PREFIX = "c_"
     _PRIORITY_PREFIX = "p_"
 
     # List of headers for priorities.
-    # Downstream, this must be in the same order as constructor input
+    # Downstream, this must be listed in the same order as constructor input
     # priorities.
     priority_headers: list[str]
 
@@ -37,7 +44,54 @@ class ForsysInputHeaders():
         return self._CONDITION_PREFIX + condition
 
 
-class ForsysProjectAreaRankingInput():
+# Creates a dictionary keyed by ForsysInputHeaders with values of empty lists.
+# This is the starting point for both generation and prioritization.
+def _get_initialized_forsys_input_with_common_headers(
+        headers: ForsysInputHeaders,
+        priorities: list[str]) -> dict[str, list]:
+    forsys_input = {}
+    forsys_input[headers.FORSYS_PROJECT_ID_HEADER] = []
+    forsys_input[headers.FORSYS_STAND_ID_HEADER] = []
+    forsys_input[headers.FORSYS_AREA_HEADER] = []
+    forsys_input[headers.FORSYS_COST_HEADER] = []
+    for p in priorities:
+        forsys_input[headers.get_priority_header(p)] = []
+    return forsys_input
+
+
+# Given a list of priorities (i.e. condition names), returns a dictionary
+# mapping condition ID's to condition names.
+# Raises an error if any of the priorities don't have a corresponding condition.
+# TODO: this may not be necessary if we use Django's "select_related" function.
+def _get_base_condition_ids_to_names(region: str,
+                                     priorities: list) -> dict[int, str]:
+    base_condition_ids_to_names = {
+        c.pk: c.condition_name
+        for c in BaseCondition.objects.filter(region_name=region).filter(
+            condition_name__in=priorities).all()}
+    if len(priorities) != len(base_condition_ids_to_names.keys()):
+        raise Exception("of %d priorities, only %d had base conditions" % (
+            len(priorities), len(base_condition_ids_to_names.keys())))
+    return base_condition_ids_to_names
+
+
+# Given a list of condition ID's, returns a list of conditions.
+# Output conditions may not be listed in the same order as condition_ids.
+# Raises an error if any of the input condition ID's don't have a corresponding
+# condition.
+def _get_conditions(condition_ids: list[int]) -> list[Condition]:
+    conditions = list(Condition.objects.filter(
+        condition_dataset_id__in=condition_ids).filter(
+        is_raw=False).all())
+    if len(condition_ids) != len(conditions):
+        raise Exception(
+            "of %d priorities, only %d had conditions" %
+            (len(condition_ids),
+                len(conditions)))
+    return conditions
+
+
+class ForsysRankingInput():
     # Treatment cost per kilometer-squared (in USD)
     # TODO: make this variable based on a user input and/or a treatment cost
     # raster.
@@ -57,17 +111,18 @@ class ForsysProjectAreaRankingInput():
         priorities = params.priorities
         project_areas = params.project_areas
 
-        base_condition_ids_to_names = self._get_base_condition_ids_to_names(
+        base_condition_ids_to_names = _get_base_condition_ids_to_names(
             region, priorities)
-        conditions = self._get_conditions(base_condition_ids_to_names.keys())
+        conditions = _get_conditions(base_condition_ids_to_names.keys())
 
-        self.forsys_input = self._get_initialized_forsys_input(
+        self.forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
 
         for proj_id in project_areas.keys():
             geo = get_raster_geo(project_areas[proj_id])
 
             self.forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(proj_id)
+            # The entire project area is represented by a single stand.
             self.forsys_input[headers.FORSYS_STAND_ID_HEADER].append(proj_id)
 
             num_pixels = 0  # number of non-NaN raster pixels captured by geo.
@@ -94,35 +149,204 @@ class ForsysProjectAreaRankingInput():
             self.forsys_input[headers.FORSYS_COST_HEADER].append(
                 area * self.TREATMENT_COST_PER_KM_SQUARED)
 
-    def _get_base_condition_ids_to_names(self, region: str,
-                                         priorities: list) -> dict[int, str]:
-        base_condition_ids_to_names = {
-            c.pk: c.condition_name
-            for c in BaseCondition.objects.filter(region_name=region).filter(
-                condition_name__in=priorities).all()}
-        if len(priorities) != len(base_condition_ids_to_names.keys()):
-            raise Exception("of %d priorities, only %d had base conditions" % (
-                len(priorities), len(base_condition_ids_to_names.keys())))
-        return base_condition_ids_to_names
 
-    def _get_conditions(self, condition_ids: list[int]) -> list[Condition]:
-        conditions = list(Condition.objects.filter(
-            condition_dataset_id__in=condition_ids).filter(
-            is_raw=False).all())
-        if len(condition_ids) != len(conditions):
+class ForsysGenerationInput():
+    # Treatment cost per kilometer-squared (in USD)
+    # TODO: make this variable based on a user input and/or a treatment cost
+    # raster.
+    TREATMENT_COST_PER_KM_SQUARED = 5000 * 1000 * 1000
+
+    # A dictionary representing a forsys input dataframe.
+    # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
+    # row represents a unique stand.
+    # Dictionary keys are dataframe headers. Dictionary values are lists
+    # corresponding to columns below each dataframe header.
+    forsys_input: dict[str, list]
+
+    # ----- Intermediate data -----
+    # Maps condition names to retrieved ConditionPixelValues instances.
+    _conditions_to_raster_values: dict[str, ConditionPixelValues]
+    # The origin coordinate used when merging ConditionPixelValues instances, which may have different top-left coordinates, across all conditions.
+    _topleft_coords: tuple[float, float]
+    # Raw condition values merged via embedded dictionaries keyed by x pixel
+    # index, y pixel index, and condition name.
+    _pixel_dist_x_to_y_to_condition_to_values = dict[int,
+                                                     dict[int,
+                                                          dict[str, float]]]
+
+    def __init__(
+            self, params: ForsysGenerationRequestParams,
+            headers: ForsysInputHeaders) -> None:
+        region = params.region
+        priorities = params.priorities
+        planning_area = params.planning_area
+
+        geo = get_raster_geo(planning_area)
+
+        output = self._fetch_condition_raster_values(geo, priorities, region)
+        self._conditions_to_raster_values = output[0]
+        self._topleft_coords = output[1]
+        # This populates self._pixel_dist_x_to_y_to_condition_to_values.
+        self._pixel_dist_x_to_y_to_condition_to_values = self._merge_condition_raster_values(
+            self._conditions_to_raster_values, self._topleft_coords)
+        self.forsys_input = self._convert_merged_condition_rasters_to_input_df(
+            headers, priorities)
+
+    # Fetches ConditionPixelValues instances and places them in
+    # self._conditions_to_raster_values, a dictionary mapping condition names
+    # to the ConditionPixelValues instances.
+    def _fetch_condition_raster_values(
+            self, geo: GEOSGeometry, priorities: list[str],
+            region: str) -> tuple[dict[str, ConditionPixelValues],
+                                  tuple[float, float]]:
+        base_condition_ids_to_names = _get_base_condition_ids_to_names(
+            region, priorities)
+        conditions = _get_conditions(base_condition_ids_to_names.keys())
+
+        conditions_to_raster_values = {}
+        topleft_coords = None
+        for c in conditions:
+            # TODO: replace this with select_related.
+            name = base_condition_ids_to_names[c.condition_dataset_id]
+            values = get_condition_values_from_raster(geo, c.raster_name)
+            if values is None:
+                raise Exception(
+                    "plan has no intersection with condition raster, %s" %
+                    name)
+            conditions_to_raster_values[name] = values
+            topleft_coords = self._get_updated_topleft_coords(
+                values, topleft_coords)
+        return conditions_to_raster_values, topleft_coords
+
+    # Updates self._topleft_coords if the one represented by
+    # condition_pixel_values is further to the top-left corner according to the
+    # raster scale.
+    def _get_updated_topleft_coords(
+            self, condition_pixel_values: ConditionPixelValues,
+            topleft_coords: tuple[float, float] | None) -> tuple[float, float]:
+        if condition_pixel_values["upper_left_coord_x"] is None:
             raise Exception(
-                "of %d priorities, only %d had conditions" %
-                (len(condition_ids),
-                 len(conditions)))
-        return conditions
+                "fetched poorly-formatted raster pixel data" +
+                " - missing upper_left_coord_x")
+        if condition_pixel_values["upper_left_coord_y"] is None:
+            raise Exception(
+                "fetched poorly-formatted raster pixel data" +
+                " - missing upper_left_coord_y")
+        if topleft_coords is None:
+            return (condition_pixel_values["upper_left_coord_x"],
+                    condition_pixel_values["upper_left_coord_y"])
+        return (self._select_topleft_coord(
+            topleft_coords[0],
+            condition_pixel_values["upper_left_coord_x"],
+            settings.CRS_9822_SCALE[0]),
+            self._select_topleft_coord(
+            topleft_coords[1],
+            condition_pixel_values["upper_left_coord_y"],
+            settings.CRS_9822_SCALE[1]))
 
-    def _get_initialized_forsys_input(self, headers: ForsysInputHeaders,
-                                      priorities: list[str]) -> dict[str, list]:
-        forsys_input = {}
-        forsys_input[headers.FORSYS_PROJECT_ID_HEADER] = []
-        forsys_input[headers.FORSYS_STAND_ID_HEADER] = []
-        forsys_input[headers.FORSYS_AREA_HEADER] = []
-        forsys_input[headers.FORSYS_COST_HEADER] = []
-        for p in priorities:
-            forsys_input[headers.get_priority_header(p)] = []
+    # Given two coordinates, selects the one that represents a lower pixel
+    # distance index according to the scale.
+    def _select_topleft_coord(
+            self, coord1: float, coord2: float, scale: float) -> float:
+        return min(coord1, coord2) if scale > 0 else max(coord1, coord2)
+
+    # Merges the conditionPixelValues instances in self
+    # _conditions_to_raster_values into a dictionary mapping x pixel positions
+    # to y pixel positions to condition names to values. x and y pixels are
+    # computed using self._topleft_coords.
+    def _merge_condition_raster_values(
+            self,
+            conditions_to_raster_values: dict[str, ConditionPixelValues],
+            topleft_coords: tuple[float, float]
+    ) -> dict[int, dict[int, dict[str, float]]]:
+        pixel_dist_x_to_y_to_condition_to_values = {}
+        for condition_name in conditions_to_raster_values.keys():
+            values = conditions_to_raster_values[condition_name]
+            xdiff = self._get_pixel_dist_diff(
+                values["upper_left_coord_x"],
+                topleft_coords[0],
+                settings.CRS_9822_SCALE[0])
+            ydiff = self._get_pixel_dist_diff(
+                values["upper_left_coord_y"],
+                topleft_coords[1],
+                settings.CRS_9822_SCALE[1])
+            for i in range(len(values["pixel_dist_x"])):
+                x = values["pixel_dist_x"][i] + xdiff
+                y = values["pixel_dist_y"][i] + ydiff
+                value = values["values"][i]
+                self._insert_value_in_position_and_condition_dict(
+                    x, y, condition_name, value,
+                    pixel_dist_x_to_y_to_condition_to_values)
+        return pixel_dist_x_to_y_to_condition_to_values
+
+    # Computes the distance, in pixels, between two coordinates.
+    def _get_pixel_dist_diff(
+            self, coord: float, origin_coord: float, scale: float) -> int:
+        return int((coord - origin_coord) / scale)
+
+    # Inserts a value into self._pixel_dist_x_to_y_to_condition_to_values.
+    def _insert_value_in_position_and_condition_dict(
+            self, x: int, y: int, condition: str, value: float,
+            d: dict[int, dict[int, dict[str, float]]]) -> None:
+        if x not in d.keys():
+            d[x] = {}
+
+        d = d[x]
+        if y not in d.keys():
+            d[y] = {}
+
+        d = d[y]
+        d[condition] = value
+
+    # Converts self._pixel_dist_x_to_y_to_condition_to_values into forsys input
+    # dataframe data.
+    def _convert_merged_condition_rasters_to_input_df(
+            self, headers: ForsysInputHeaders,
+            priorities: list[str]) -> dict[str, list]:
+        forsys_input = _get_initialized_forsys_input_with_common_headers(
+            headers, priorities)
+        # Stand geometries are not necessary for a ranking input dataframe, but
+        # they are necessary for a generation input dataframe.
+        forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
+
+        num_priorities = len(priorities)
+        DUMMY_PROJECT_ID = 0
+        stand_id = 0
+        dict_x = self._pixel_dist_x_to_y_to_condition_to_values
+        for x in dict_x.keys():
+            dict_y = dict_x[x]
+            for y in dict_y.keys():
+                dict_condition = dict_y[y]
+                if num_priorities != len(dict_condition.keys()):
+                    continue
+                forsys_input[headers.FORSYS_STAND_ID_HEADER].append(stand_id)
+                forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(
+                    DUMMY_PROJECT_ID)
+                forsys_input[headers.FORSYS_AREA_HEADER].append(
+                    settings.RASTER_PIXEL_AREA)
+                forsys_input[headers.FORSYS_COST_HEADER].append(
+                    settings.RASTER_PIXEL_AREA * self.TREATMENT_COST_PER_KM_SQUARED)
+                forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(
+                    self._get_raster_pixel_geo(x, y).wkt)
+                for p in dict_condition.keys():
+                    # TODO: save AP score rather than 1 - normalized condition
+                    # score.
+                    forsys_input[headers.get_priority_header(
+                        p)].append(1 - dict_condition[p])
+                stand_id = stand_id + 1
         return forsys_input
+
+    # Returns a Polygon representing the raster pixel at pixel position,
+    # (x, y).
+    def _get_raster_pixel_geo(self, x: int, y: int) -> Polygon:
+        xmin = self._topleft_coords[0] + settings.CRS_9822_SCALE[0] * x
+        xmax = xmin + settings.CRS_9822_SCALE[0]
+        ymin = self._topleft_coords[1] + settings.CRS_9822_SCALE[1] * y
+        ymax = ymin + settings.CRS_9822_SCALE[1]
+        geo = Polygon(((xmin, ymin),
+                       (xmin, ymax),
+                       (xmax, ymax),
+                       (xmax, ymin),
+                       (xmin, ymin)))
+        geo.srid = settings.CRS_FOR_RASTERS
+        return geo
