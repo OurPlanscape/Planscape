@@ -1,8 +1,9 @@
 from django.urls import path
-from plan.views import (
-    create_plan, create_project, delete, get_plan, get_project,
-    get_project_areas, get_scores, list_plans_by_owner, delete_projects,
-    create_project_area, update_project, list_projects_for_plan, create_scenario, get_scenario)
+from plan.views import (create_plan, create_project, create_project_area,
+                        create_scenario, delete, delete_projects, get_plan,
+                        get_project, get_project_areas, get_scenario,
+                        get_scores, list_plans_by_owner,
+                        list_projects_for_plan, update_project)
 
 app_name = 'plan'
 
