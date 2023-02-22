@@ -11,6 +11,7 @@ from forsys.forsys_request_params import (ForsysGenerationRequestParams,
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
 from forsys.parse_forsys_output import (
+    ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
 from planscape import settings
@@ -161,7 +162,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_geo_wkt_header: str, forsys_priority_headers: list[str],
-        forsys_priority_weights: list[float]) -> ForsysRankingOutputForASingleScenario:
+        forsys_priority_weights: list[float]) -> ForsysGenerationOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/generate_projects_for_a_single_scenario.R'))
@@ -176,8 +177,13 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header, forsys_geo_wkt_header)
 
-    # TODO: add logic for parsing this output.
-    print(forsys_output)
+    priority_weights_dict = {
+        forsys_priority_headers[i]: forsys_priority_weights[i]
+        for i in range(len(forsys_priority_headers))}
+    parsed_output = ForsysGenerationOutputForASingleScenario(
+        forsys_output, priority_weights_dict,
+        forsys_proj_id_header, forsys_area_header, forsys_cost_header)
+    return parsed_output
 
 
 def generate_project_areas_for_a_single_scenario(
@@ -186,8 +192,7 @@ def generate_project_areas_for_a_single_scenario(
         params = ForsysGenerationRequestParams(request)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysGenerationInput(params, headers)
-
-        run_forsys_generate_project_areas_for_a_single_scenario(
+        forsys_output = run_forsys_generate_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
@@ -196,6 +201,7 @@ def generate_project_areas_for_a_single_scenario(
         response = {}
         response['forsys'] = {}
         response['forsys']['input'] = forsys_input.forsys_input
+        response['forsys']['output'] = forsys_output.scenario
 
         # TODO: add logic for parsing forsys output.
 
