@@ -1,11 +1,12 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { BehaviorSubject, of } from 'rxjs';
-import { MapService, PlanService } from 'src/app/services';
-import { MaterialModule } from 'src/app/material/material.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { BehaviorSubject, of } from 'rxjs';
+import { MaterialModule } from 'src/app/material/material.module';
+import { MapService, PlanService } from 'src/app/services';
 import { ProjectConfig } from 'src/app/types';
 
 import { ScenarioConfigurationsComponent } from './scenario-configurations.component';
@@ -52,7 +53,7 @@ describe('ScenarioConfigurationsComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [MaterialModule, NoopAnimationsModule],
+      imports: [FormsModule, MaterialModule, NoopAnimationsModule],
       declarations: [ScenarioConfigurationsComponent],
       providers: [
         {
