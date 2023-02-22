@@ -20,6 +20,12 @@ from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
+MAX_BUDGET = 'max_budget'
+MAX_TREATMENT_AREA_RATIO = 'max_treatment_area_ratio'
+MAX_ROAD_DIST = 'max_road_distance'
+MAX_SLOPE = 'max_slope'
+PRIORITIES = 'priorities'
+
 
 def get_user(request: HttpRequest):
     user = None
@@ -249,11 +255,11 @@ def create_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
 
-        max_budget = body.get('max_budget', None)
-        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
-        max_road_distance = body.get('max_road_distance', None)
-        max_slope = body.get('max_slope', None)
-        priorities = body.get('priorities', None)
+        max_budget = body.get(MAX_BUDGET, None)
+        max_treatment_area_ratio = body.get(MAX_TREATMENT_AREA_RATIO, None)
+        max_road_distance = body.get(MAX_ROAD_DIST, None)
+        max_slope = body.get(MAX_SLOPE, None)
+        priorities = body.get(PRIORITIES, None)
 
         _validate_constraint_values(
             max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
@@ -284,11 +290,11 @@ def update_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "You do not have permission to view this project.")
 
-        max_budget = body.get('max_budget', None)
-        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
-        max_road_distance = body.get('max_road_distance', None)
-        max_slope = body.get('max_slope', None)
-        priorities = body.get('priorities', None)
+        max_budget = body.get(MAX_BUDGET, None)
+        max_treatment_area_ratio = body.get(MAX_TREATMENT_AREA_RATIO, None)
+        max_road_distance = body.get(MAX_ROAD_DIST, None)
+        max_slope = body.get(MAX_SLOPE, None)
+        priorities = body.get(PRIORITIES, None)
 
         _validate_constraint_values(
             max_budget, max_treatment_area_ratio, max_road_distance, max_slope)

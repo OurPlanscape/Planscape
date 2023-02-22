@@ -1,11 +1,9 @@
 import datetime
 import json
 
-import numpy as np
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.auth.models import User
-from django.contrib.gis.gdal import GDALRaster
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
 from django.test import TransactionTestCase
@@ -608,8 +606,8 @@ class UpdateProjectTest(TransactionTestCase):
         self.assertEqual(project.priorities.count(), 1)
         response = self.client.patch(
             reverse('plan:update_project'), {'id': self.project_with_user.pk,
-                                             'priorities': ['condition1', 'condition2']}, 
-                                             content_type='application/json')
+                                             'priorities': ['condition1', 'condition2']},
+            content_type='application/json')
         self.assertEqual(response.status_code, 200)
         project = Project.objects.get(id=self.project_with_user.pk)
         self.assertEqual(project.max_budget, 100)
@@ -1161,7 +1159,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="cond", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="raster_name", 
+            condition_dataset=self.base_condition, raster_name="raster_name",
             condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.user = User.objects.create(username='testuser')
