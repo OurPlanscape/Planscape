@@ -220,12 +220,14 @@ describe('PlanService', () => {
       const projectConfigs: ProjectConfig[] = [
         {
           id: 1,
+          planId: undefined,
           max_budget: 200,
           max_road_distance: undefined,
           max_slope: undefined,
           max_treatment_area_ratio: undefined,
           priorities: undefined,
           createdTimestamp: undefined,
+          weights: undefined,
         },
       ];
 
@@ -253,12 +255,14 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
         id: 1,
+        planId: undefined,
         max_budget: 200,
         max_road_distance: undefined,
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
         priorities: undefined,
         createdTimestamp: undefined,
+        weights: undefined,
       };
 
       service.getProject(1).subscribe((res) => {
