@@ -4,8 +4,13 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 20px;
-  width: 450px;
+  padding: 0;
+  width: 565px;
+}
+
+.scenario-details-header {
+  font-size: 18px;
+  padding: 12px 24px;
 }
 
 .plan-map-container {
@@ -43,9 +48,10 @@
 .scenario-details-panel-content {
   box-sizing: border-box;
   display: flex;
+  flex-direction: column;
   height: 100%;
   overflow-y: scroll;
-  padding: 16px 80px 32px 32px;
+  padding: 0;
 }
 
 /** Always show scrollbar. */
@@ -59,4 +65,8 @@
   -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
   background-color: rgba(0,0,0,.5);
   border-radius: 4px;
+}
+
+:host ::ng-deep .mat-tab-label-content {
+  font-size: 13px;
 }
