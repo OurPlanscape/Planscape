@@ -7,7 +7,7 @@ import { DataLayerConfig } from 'src/app/types';
   styleUrls: ['./layer-info-card.component.scss'],
 })
 export class LayerInfoCardComponent {
-  @Input() dataLayerConfig!: DataLayerConfig | null;
+  @Input() dataLayerConfig?: DataLayerConfig | null;
 
   hasDataProvider(): boolean {
     return (

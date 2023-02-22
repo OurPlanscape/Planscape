@@ -12,4 +12,8 @@ urlpatterns = [
         'rank_project_areas/single_scenario/',
         views.rank_project_areas_for_a_single_scenario,
         name='rank_project_areas_for_a_single_scenario'),
+    path(
+        'generate_project_areas/single_scenario/',
+        views.generate_project_areas_for_a_single_scenario,
+        name='generate_project_areas_for_a_single_scenario'),
 ]
