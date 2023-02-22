@@ -9,97 +9,114 @@ library(zeallot)
 library(mice)
 library(corrr)
 
-# Data loading -----------------------------------------------------------------
-
-# Using this raster as the target resolution and extent
-default_raster <- raster('analysis/data/ACCEL RRK - all layers/airQuality/particulate/PotentialSmokeHighSeverity_2021_300m_base.tif')
-# TODO: Get standard extent raster from Nick
-
-resample_if_needed <- function(r, default_raster, silent = TRUE, ...) {
-  if (!all(dim(r) == dim(default_raster))) {
-    if (!compareCRS(r, default_raster)) {
-      message(paste('reprojecting raster', names(r)))
-      # climate class layer has coded NA values
-      if (names(r) == 'climClass') {
-        r[r == 128] <- NA
-      }
-      r <- projectRaster(from = r, to = default_raster, method = 'ngb')
-    }
-    message(paste('resampling raster', names(r)))
-    r <- raster::resample(x = r, y = default_raster, 'ngb')
-  } else {
-    if (!silent) message(paste('no need to resample', names(r)))
-  }
-  return(r)
-}
-
-# getting file paths of all metrics
-metrics <- tibble(
-  filename = 'analysis/data/ACCEL RRK - all layers/' |>
-    dir_ls(recurse = TRUE) |>
-    str_subset('(\\.tif$)|(\\.img$)'))
-
-# getting name hierarchy
-metrics <- metrics |>
-  mutate(
-    subfolder = str_extract(
-      string = filename,
-      pattern = '(?<=analysis\\/data\\/ACCEL RRK - all layers\\/).+(?=(\\.tif$)|(\\.img$))')) |>
-  separate(
-    col = subfolder,
-    into = c('pillar', 'element', 'folder', 'metric'),
-    sep = '/',
-    fill = 'left') |>
-  mutate(
-    folder = coalesce(folder, metric),
-    element = coalesce(element, folder),
-    pillar = coalesce(pillar, element)) |>
-  # filtering out 30m rasters
-  # TODO: revisit this filter, some may be native 30m
-  filter(str_detect(metric, '30m', negate = TRUE)) |>
-  # filtering out normalized rasters
-  filter(str_detect(metric, '[Nn]ormalized', negate = FALSE)) |>
-  # removing socioeconomic metrics
-  filter(!metric %in% c(
-    'LowIncome_CCI_2021_300m_normalized',
-    'UnemploymentPctl_2021_300m_normalized',
-    #'DamagePotential_WUI_2022_300m_normalized',
-    #'StructureExposureScore_WUI_2022_300m_normalized',
-    'HousingBurdenPctl_2021_300m_normalized'
-  ))
-  # TODO: Should meadows be set to 0 or -1  where NA instead?
-
-# adding climate class
-# TODO: Get raw data that went into climate class
-metrics <- tibble(
-  filename = 'analysis/data/Sierra Nevada ACCEL/ClimateClasses/ClimateClasses.img',
-  pillar = 'climClass',
-  element = 'climClass',
-  folder = 'climClass',
-  metric = 'climClass') |>
-  bind_rows(metrics)
-
-# adding ACCEL mask
-metrics <- tibble(
-  filename = 'analysis/data/ACCEL_MASK.tif',
-  pillar = 'mask',
-  element = 'mask',
-  folder = 'mask',
-  metric = 'mask') |>
-  bind_rows(metrics)
-
-# loading rasters
-rasters <- metrics |>
-  mutate(r = filename |>
-           map(.f = raster) |>
-           map2(.y = metric, .f = ~purrr::0set_names(.x, .y))) |>
-  mutate(r = map(r, resample_if_needed, default_raster = default_raster))
-
-# persisting data for faster restarting from here
-write_rds(rasters, 'analysis/output/rrk_rasters_processed.rds')
+#' # Data loading -----------------------------------------------------------------
+#' 
+#' # Using this raster as the target resolution and extent
+#' default_raster <- raster('analysis/data/ACCEL RRK - all layers/airQuality/particulate/PotentialSmokeHighSeverity_2021_300m_base.tif')
+#' # TODO: Get standard extent raster from Nick
+#' 
+#' resample_if_needed <- function(r, default_raster, silent = TRUE, ...) {
+#'   if (!all(dim(r) == dim(default_raster))) {
+#'     if (!compareCRS(r, default_raster)) {
+#'       message(paste('reprojecting raster', names(r)))
+#'       # climate class layer has coded NA values
+#'       if (names(r) == 'climClass') {
+#'         r[r == 128] <- NA
+#'       }
+#'       r <- projectRaster(from = r, to = default_raster, method = 'ngb')
+#'     }
+#'     message(paste('resampling raster', names(r)))
+#'     r <- raster::resample(x = r, y = default_raster, 'ngb')
+#'   } else {
+#'     if (!silent) message(paste('no need to resample', names(r)))
+#'   }
+#'   return(r)
+#' }
+#' 
+#' # getting file paths of all metrics
+#' metrics <- tibble(
+#'   filename = 'analysis/data/ACCEL RRK - all layers/' |>
+#'     dir_ls(recurse = TRUE) |>
+#'     str_subset('(\\.tif$)|(\\.img$)'))
+#' 
+#' # getting name hierarchy
+#' metrics <- metrics |>
+#'   mutate(
+#'     subfolder = str_extract(
+#'       string = filename,
+#'       pattern = '(?<=analysis\\/data\\/ACCEL RRK - all layers\\/).+(?=(\\.tif$)|(\\.img$))')) |>
+#'   separate(
+#'     col = subfolder,
+#'     into = c('pillar', 'element', 'folder', 'metric'),
+#'     sep = '/',
+#'     fill = 'left') |>
+#'   mutate(
+#'     folder = coalesce(folder, metric),
+#'     element = coalesce(element, folder),
+#'     pillar = coalesce(pillar, element)) |>
+#'   # filtering out 30m rasters
+#'   # TODO: revisit this filter, some may be native 30m
+#'   filter(str_detect(metric, '30m', negate = TRUE)) |>
+#'   # filtering out normalized rasters
+#'   filter(str_detect(metric, '[Nn]ormalized', negate = FALSE)) |>
+#'   # removing socioeconomic metrics
+#'   filter(!metric %in% c(
+#'     'LowIncome_CCI_2021_300m_normalized',
+#'     'UnemploymentPctl_2021_300m_normalized',
+#'     #'DamagePotential_WUI_2022_300m_normalized',
+#'     #'StructureExposureScore_WUI_2022_300m_normalized',
+#'     'HousingBurdenPctl_2021_300m_normalized'
+#'   ))
+#'   # TODO: Should meadows be set to 0 or -1  where NA instead?
+#' 
+#' # # adding climate class
+#' # # TODO: Get raw data that went into climate class
+#' # metrics <- tibble(
+#' #   filename = 'analysis/data/Sierra Nevada ACCEL/ClimateClasses/ClimateClasses.img',
+#' #   pillar = 'climClass',
+#' #   element = 'climClass',
+#' #   folder = 'climClass',
+#' #   metric = 'climClass') |>
+#' #   bind_rows(metrics)
+#' 
+#' metrics <- tibble(
+#'   filename = c(
+#'     "analysis/data/Climate Class/input rasters/aet1981_2010.tif",
+#'     "analysis/data/Climate Class/input rasters/cwd1981_2010.tif",
+#'     "analysis/data/Climate Class/input rasters/tmn1981_2010.tif",
+#'     "analysis/data/Climate Class/input rasters/tmx1981_2010.tif"),
+#'   pillar = 'climate',
+#'   element = 'climate',
+#'   folder = 'climate',
+#'   metric = 'climate') |>
+#'   bind_rows(metrics)
+#' 
+#' # adding ACCEL mask
+#' metrics <- tibble(
+#'   filename = 'analysis/data/ACCEL_MASK.tif',
+#'   pillar = 'mask',
+#'   element = 'mask',
+#'   folder = 'mask',
+#'   metric = 'mask') |>
+#'   bind_rows(metrics)
+#' 
+#' # loading rasters
+#' rasters <- metrics |>
+#'   mutate(r = filename |>
+#'            map(.f = raster) |>
+#'            map2(.y = metric, .f = ~set_names(.x, .y))) |>
+#'   mutate(r = map(r, resample_if_needed, default_raster = default_raster))
+#' 
+#' # persisting data for faster restarting from here
+#' write_rds(
+#'   x = rasters,
+#'   file = 'analysis/output/rrk_rasters_processed.rds')
 
 
 # Data processing --------------------------------------------------------------
+
+# restoring pre-loaded data
+rasters <- read_rds(file = 'analysis/output/rrk_rasters_processed.rds')
 
 # converting raster values into dataframe
 df <- rasters %>%
@@ -107,7 +124,7 @@ df <- rasters %>%
   stack() %>%
   values() %>%
   as_tibble() %>%
-  mutate(climClass = as.factor(climClass)) %>%
+  #mutate(climClass = as.factor(climClass)) %>%
   # dropping anything outside of study area
   filter(!is.na(mask))
   
@@ -124,16 +141,16 @@ df_missingness <- df %>%
 
 # drop all rows with NAs
 df <- df %>%
-  select(
-    -mask
+  dplyr::select(
+    -mask,
     -Meadow_SensNDWI_2019_300m_normalized,
     -DamagePotential_WUI_2022_300m_normalized,
     -StructureExposureScore_WUI_2022_300m_normalized) %>%
-  # dropping all rows that are all-NA
-  filter(rowSums(!is.na(.)) > 0) %>%
-  # dropping all rows without climate class for now
-  # TODO: get climate class values for all cells
-  filter(!is.na(climClass))
+  # dropping all rows that are mostly NA
+  filter(rowSums(!is.na(.)) > 4)
+  # # dropping all rows without climate class for now
+  # # TODO: get climate class values for all cells
+  # filter(!is.na(climClass))
 
 # creating test and validation split
 set.seed(42)
@@ -143,7 +160,7 @@ df_test  <- testing(data_split)
 
 # plotting a histogram for each metric
 df_train %>%
-  pivot_longer(-climClass) %>%
+  pivot_longer(everything()) %>%
   filter(complete.cases(.)) %>%
   ggplot(aes(x = value)) +
   geom_histogram(bins = 30) +
@@ -191,13 +208,16 @@ source('analysis/code/utils.R')
 # building models for each metric
 # TODO: Re-run this with just a select few predictor variables that are directly impacted / distal factors
 predictors <- c(
-  'climClass',
+  'climate.1',
+  'climate.2',
+  'climate.3',
+  'climate.4',
   'BASATOT_2021_300m_normalized',
   'TPA_2021_300m_normalized',
   'TPA_30in_up_2021_300m_normalized')
 x <- df %>%
   # generating a table with one row per response metric
-  select(-climClass, -one_of(predictors)) %>%
+  select(-one_of(predictors)) %>%
   colnames() %>%
   tibble(metric = .) %>%
   # getting training response variable
@@ -233,14 +253,14 @@ x <- df %>%
 # looking and strength of prediction
 x %>%
   select(metric, cod) %>%
-  arrange(cod)
+  arrange(desc(cod))
 
 # extracting coefficients for direct impact variables
 x %>%
   select(metric, cod, coeff) %>%
   unnest_wider(coeff) %>%
   select(-starts_with('climClass'), -`(Intercept)`) %>%
-  View()
+  write_csv('analysis/output/impact_of_treatment_models.csv')
 
 
 # WIP --------------------------------------------------------------------------

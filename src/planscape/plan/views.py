@@ -6,15 +6,17 @@ from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
+from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
-from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
-from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer, ScenarioSerializer, ScenarioWeightedPrioritySerializer)
-from planscape import settings
 from django.shortcuts import get_list_or_404
-from django.db.models.query import QuerySet
+from django.views.decorators.csrf import csrf_exempt
+from plan.models import (Plan, Project, ProjectArea, Scenario,
+                         ScenarioWeightedPriority)
+from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
+                              ProjectSerializer, ScenarioSerializer,
+                              ScenarioWeightedPrioritySerializer)
+from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
