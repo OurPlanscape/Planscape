@@ -191,7 +191,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id);
     });
-    this.mapManager.syncAllMaps();
+    this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
   }
 
   ngOnDestroy(): void {
@@ -563,6 +563,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     const mapViewOptions = this.mapViewOptions$.getValue();
     mapViewOptions.numVisibleMaps = mapCount;
     this.mapViewOptions$.next(mapViewOptions);
+    this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
     setTimeout(() => {
       this.maps.forEach((map: Map) => {
         map.instance?.invalidateSize();
