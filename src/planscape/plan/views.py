@@ -557,11 +557,11 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['plan_id'], str)
         plan_id = request.GET.get('plan_id', "0")
-        plan_exists = Plan.objects.get(id=plan_id)
+        plan = Plan.objects.get(id=plan_id)
 
         user = get_user(request)
 
-        if plan_exists.owner != user:
+        if plan.owner != user:
             raise ValueError(
                 "You do not have permission to view scenarios for this plan.")
 

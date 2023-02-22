@@ -360,7 +360,7 @@ describe('MapComponent', () => {
           component.changeBaseLayer(map);
 
           // Assert: expect that the map contains the terrain base layer
-          expect(map.instance?.hasLayer(map.baseLayerRef!));
+          expect(map.instance?.hasLayer(map.baseLayerRef!)).toBeTrue();
         });
 
         it(`map-${testCase + 1} should toggle boundary layer`, () => {
