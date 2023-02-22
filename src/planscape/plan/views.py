@@ -9,11 +9,11 @@ from django.db.models import Count
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
+from plan.models import (Plan, Project, ProjectArea, Scenario,
+                         ScenarioWeightedPriority)
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer)
+                              ProjectSerializer, ScenarioSerializer)
 from planscape import settings
-from django.shortcuts import get_list_or_404
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -436,14 +436,15 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, 
-                           max_slope, priorities, weights, scenario: Scenario):
+def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance,
+                           max_slope, priorities, weights, notes, scenario: Scenario):
     scenario.max_budget = float(max_budget) if max_budget else None
     scenario.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
     scenario.max_road_distance = float(
         max_road_distance) if max_road_distance else None
     scenario.max_slope = float(max_slope) if max_slope else None
+    scenario.notes = notes if notes else None
 
     for i in range(len(priorities)):
         base_condition = BaseCondition.objects.get(
@@ -481,6 +482,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         max_slope = body.get('max_slope', None)
         priorities = body.get('priorities', None)
         weights = body.get('weights', None)
+        notes = body.get('notes', None)
 
         _validate_constraint_values(
             max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
@@ -497,9 +499,26 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 
         scenario = Scenario.objects.create(owner=owner, plan=plan)
         _set_scenario_metadata(max_budget, max_treatment_area_ratio,
-                               max_road_distance, max_slope, priorities, weights, scenario)
+                               max_road_distance, max_slope, priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+    
+def get_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['id'], str)
+        scenario_id = request.GET.get('id', "0")
+        scenario = Scenario.objects.get(id=scenario_id)
+
+        user = get_user(request)
+
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to view this scenario.")
+
+        # TODO: retrieve and return weights as part of Scenario
+        return JsonResponse(ScenarioSerializer(scenario).data, safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
