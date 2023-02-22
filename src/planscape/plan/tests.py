@@ -1,10 +1,9 @@
 import datetime
 import json
-import numpy as np
+
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.auth.models import User
-from django.contrib.gis.gdal import GDALRaster
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import connection
 from django.test import TransactionTestCase
@@ -442,9 +441,9 @@ class CreateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
         self.raw_condition = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0, is_raw=True)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=True)
         self.normalized_condition = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0, is_raw=False)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         response = self.client.post(
             reverse('plan:create_project'), {
@@ -457,7 +456,7 @@ class CreateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="base_condition", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT)
 
         response = self.client.post(
             reverse('plan:create_project'), {
@@ -478,14 +477,14 @@ class UpdateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.base_condition2 = BaseCondition.objects.create(
             condition_name="condition2", condition_level=ConditionLevel.ELEMENT)
         self.condition2_raw = Condition.objects.create(
-            condition_dataset=self.base_condition2, condition_score_type=0, is_raw=True)
+            condition_dataset=self.base_condition2, condition_score_type=ConditionScoreType.CURRENT, is_raw=True)
         self.condition2_normalized = Condition.objects.create(
-            condition_dataset=self.base_condition2, condition_score_type=0, is_raw=False)
+            condition_dataset=self.base_condition2, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100.0)
@@ -547,6 +546,87 @@ class UpdateProjectTest(TransactionTestCase):
         self.assertEqual(project.priorities.count(), 1)
         self.assertTrue(project.priorities.contains(
             self.condition2_normalized))
+
+    def test_patch_invalid_body(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_budget': 'invalid_string'},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_patch_update_constraint(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_budget': 200.0},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 200.0)
+        self.assertEqual(project.priorities.count(), 1)
+
+    def test_patch_remove_constraint(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_budget': None},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, None)
+        self.assertEqual(project.priorities.count(), 1)
+
+    def test_patch_add_constraint(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.max_slope, None)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_slope': 0.5},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100)
+        self.assertEqual(project.max_slope, 0.5)
+        self.assertEqual(project.priorities.count(), 1)
+
+    def test_patch_add_priority(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk,
+                                             'priorities': ['condition1', 'condition2']},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100)
+        self.assertEqual(project.priorities.count(), 2)
+        self.assertTrue(project.priorities.contains(
+            self.condition2_normalized))
+
+    def test_patch_remove_priority(self):
+        self.client.force_login(self.user)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100.0)
+        self.assertEqual(project.priorities.count(), 1)
+        response = self.client.patch(
+            reverse('plan:update_project'), {'id': self.project_with_user.pk,
+                                             'priorities': []}, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        project = Project.objects.get(id=self.project_with_user.pk)
+        self.assertEqual(project.max_budget, 100)
+        self.assertEqual(project.priorities.count(), 0)
 
 
 class DeleteProjectsTest(TransactionTestCase):
@@ -866,7 +946,6 @@ class ListProjectsTest(TransactionTestCase):
             reverse('plan:list_projects_for_plan'),
             {'plan_id': self.plan_with_user.pk},
             content_type="application/json")
-        print(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
@@ -1080,7 +1159,8 @@ class CreateScenarioTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="cond", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="raster_name", condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+            condition_dataset=self.base_condition, raster_name="raster_name",
+            condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
