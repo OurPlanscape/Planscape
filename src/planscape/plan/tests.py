@@ -608,7 +608,8 @@ class UpdateProjectTest(TransactionTestCase):
         self.assertEqual(project.priorities.count(), 1)
         response = self.client.patch(
             reverse('plan:update_project'), {'id': self.project_with_user.pk,
-                                             'priorities': ['condition1', 'condition2']}, content_type='application/json')
+                                             'priorities': ['condition1', 'condition2']}, 
+                                             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         project = Project.objects.get(id=self.project_with_user.pk)
         self.assertEqual(project.max_budget, 100)
