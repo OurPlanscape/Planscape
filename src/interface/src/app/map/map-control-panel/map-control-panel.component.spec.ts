@@ -15,6 +15,7 @@ import {
 } from 'src/app/types';
 
 import { LayerInfoCardComponent } from './../layer-info-card/layer-info-card.component';
+import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
 import { MapControlPanelComponent } from './map-control-panel.component';
 
 describe('MapControlPanelComponent', () => {
@@ -25,7 +26,11 @@ describe('MapControlPanelComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [FormsModule, MaterialModule, NoopAnimationsModule],
-      declarations: [LayerInfoCardComponent, MapControlPanelComponent],
+      declarations: [
+        ConditionTreeComponent,
+        LayerInfoCardComponent,
+        MapControlPanelComponent,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapControlPanelComponent);
@@ -95,7 +100,6 @@ describe('MapControlPanelComponent', () => {
 
           // Act: select the terrain base layer
           await radioButtonGroup.checkRadioButton({ label: 'Terrain' });
-
 
           // Assert: expect that the map contains the terrain base layer
           expect(component.changeBaseLayer.emit).toHaveBeenCalledWith(map);

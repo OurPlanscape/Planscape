@@ -1,11 +1,14 @@
 <div class="root-container">
-  <h1>Heat Map Opacity</h1>
-
   <div class="opacity-slider-wrapper">
-    0
-    <mat-slider class="opacity-slider" [min]="0" [max]="100" [thumbLabel]="true" [value]="opacityPercentage" (input)="onChange($event.value)">
+    <mat-slider
+      class="opacity-slider"
+      color="primary"
+      [min]="0"
+      [max]="100"
+      [thumbLabel]="true"
+      [value]="opacityPercentage"
+      (input)="onChange($event.value)">
       <input matSliderThumb>
     </mat-slider>
-    100
   </div>
 </div>

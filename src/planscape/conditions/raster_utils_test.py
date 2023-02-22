@@ -407,7 +407,7 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
         values = get_condition_values_from_raster(geo, "foo")
-        self.assertDictEqual(values, {})
+        self.assertIsNone(values)
 
     def test_fails_for_missing_raster(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
