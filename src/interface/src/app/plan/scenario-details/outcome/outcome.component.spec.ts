@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormBuilder } from '@angular/forms';
 
 import { OutcomeComponent } from './outcome.component';
 
@@ -8,7 +9,8 @@ describe('OutcomeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ OutcomeComponent ]
+      declarations: [ OutcomeComponent ],
+      providers: [ FormBuilder ],
     })
     .compileComponents();
 
