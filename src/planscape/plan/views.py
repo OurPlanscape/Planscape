@@ -436,6 +436,74 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, 
+                           max_slope, priorities, weights, scenario: Scenario):
+    scenario.max_budget = float(max_budget) if max_budget else None
+    scenario.max_treatment_area_ratio = float(
+        max_treatment_area_ratio) if max_treatment_area_ratio else None
+    scenario.max_road_distance = float(
+        max_road_distance) if max_road_distance else None
+    scenario.max_slope = float(max_slope) if max_slope else None
+
+    for i in range(len(priorities)):
+        base_condition = BaseCondition.objects.get(
+            condition_name=priorities[i])
+        condition = Condition.objects.get(
+            condition_dataset=base_condition, condition_score_type=0)
+        weight = weights[i] if weights is not None else None
+        weighted_pri = ScenarioWeightedPriority.objects.create(
+            scenario=scenario, priority=condition, weight=weight)
+
+
+@csrf_exempt
+def create_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = _get_user(request)
+
+        body = json.loads(request.body)
+        plan_id = body.get('plan_id', None)
+        if plan_id is None or not (isinstance(plan_id, int)):
+            raise ValueError("Must specify plan_id as an integer")
+
+        # Get the plan, and if the user is logged in, make sure either
+        # 1. the plan owner and the owner are both None, or
+        # 2. the plan owner and the owner are both not None, and are equal.
+        plan = Plan.objects.get(pk=int(plan_id))
+        if not ((owner is None and plan.owner is None) or
+                (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
+            raise ValueError(
+                "Cannot create scenario; plan is not owned by user")
+
+        max_budget = body.get('max_budget', None)
+        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
+        max_road_distance = body.get('max_road_distance', None)
+        max_slope = body.get('max_slope', None)
+        priorities = body.get('priorities', None)
+        weights = body.get('weights', None)
+
+        _validate_constraint_values(
+            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
+        if priorities is None:
+            raise ValueError(
+                "At least one priority must be selected.")
+        if weights is None:
+            raise ValueError(
+                "Scenario must have weights for priorites")
+        if (len(priorities) != len(weights)):
+            raise ValueError(
+                "Each priority must have a single assigned weight")
+
+        scenario = Scenario.objects.create(owner=owner, plan=plan)
+        _set_scenario_metadata(max_budget, max_treatment_area_ratio,
+                               max_road_distance, max_slope, priorities, weights, scenario)
+        scenario.save()
+        return HttpResponse(str(scenario.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
 <<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
