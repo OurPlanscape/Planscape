@@ -31,7 +31,7 @@ class Scenario(TypedDict):
 
 # Transforms the output of a Forsys scenario set run into a more
 # easily-interpreted version.
-class ForsysScenarioSetOutput():
+class ForsysRankingOutputForMultipleScenarios():
     # The raw forsys output consists of 3 R dataframes. This is the index of
     # the "project output" dataframe.
     _PROJECT_OUTPUT_INDEX = 1
@@ -208,7 +208,7 @@ class ForsysScenarioSetOutput():
 
 # Transforms the output of a Forsys scenario run into a more
 # easily-interpreted version.
-class ForsysScenarioOutput():
+class ForsysRankingOutputForASingleScenario():
     # The raw forsys output consists of 3 R dataframes. This is the index of
     # the "project output" dataframe.
     _PROJECT_OUTPUT_INDEX = 1
