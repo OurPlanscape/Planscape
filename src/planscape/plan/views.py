@@ -459,7 +459,7 @@ def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distan
 def create_scenario(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
-        owner = _get_user(request)
+        owner = get_user(request)
 
         body = json.loads(request.body)
         plan_id = body.get('plan_id', None)
