@@ -11,6 +11,7 @@ import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 import { colormapConfigToLegend, Plan, Region } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
@@ -98,6 +99,7 @@ describe('SetPrioritiesComponent', () => {
         FormsModule,
         MaterialModule,
         ReactiveFormsModule,
+        SharedModule,
       ],
       declarations: [SetPrioritiesComponent],
       providers: [

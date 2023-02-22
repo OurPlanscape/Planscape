@@ -4,6 +4,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of, Subject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 
+import { FeaturesModule } from '../features/features.module';
 import { AuthService } from '../services';
 import { NavigationComponent } from './navigation.component';
 
@@ -23,7 +24,12 @@ describe('NavigationComponent', () => {
     fakeLoggedInStatus = new BehaviorSubject(true);
     fakeAuthService.isLoggedIn$ = fakeLoggedInStatus;
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, MaterialModule, RouterTestingModule],
+      imports: [
+        BrowserAnimationsModule,
+        FeaturesModule,
+        MaterialModule,
+        RouterTestingModule,
+      ],
       declarations: [NavigationComponent],
       providers: [{ provide: AuthService, useValue: fakeAuthService }],
     });

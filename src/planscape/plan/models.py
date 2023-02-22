@@ -54,7 +54,7 @@ class Project(models.Model):
     # Project Parameters:
 
     # TODO: Limit number of allowed priorities
-    priorities = models.ManyToManyField('conditions.Condition')
+    priorities = models.ManyToManyField('conditions.Condition') # type: ignore
 
     # Max constraints. If null, no max value unless a system default is defined.
     # In USD
@@ -98,6 +98,7 @@ class ScenarioWeightedPriority(models.Model):
     scenario = models.ForeignKey(
         Scenario, on_delete=models.CASCADE)  # type: ignore
     
+    # TODO: swap with config priority in schema migration
     priority = models.ForeignKey('conditions.Condition', on_delete=models.CASCADE) # type: ignore
 
     weight: models.IntegerField = models.IntegerField(null=True)
@@ -134,13 +135,13 @@ class ConditionScores(models.Model):
     relevant stands within a project area or planning area.
     """
     # Either plan or project should be present.
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True) # type: ignore
     project_area = models.ForeignKey(
-        ProjectArea, on_delete=models.CASCADE, null=True)
+        ProjectArea, on_delete=models.CASCADE, null=True) # type: ignore
 
     # Condition
     condition = models.ForeignKey(
-        Condition, on_delete=models.CASCADE, null=False)
+        Condition, on_delete=models.CASCADE, null=False) # type: ignore
 
     # The following are condition statistics computed across relevant raster
     # pixels within a project or planning area.

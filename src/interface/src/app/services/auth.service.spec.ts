@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import {
   HttpClientTestingModule,
   HttpTestingController,
@@ -48,13 +47,14 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('makes request to backend /login endpoint', () => {
+    it('makes request to backend /login endpoint', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
 
       service.login('username', 'password').subscribe((res) => {
         expect(res).toEqual(mockResponse);
+        done();
       });
 
       const req = httpTestingController.expectOne(
@@ -68,13 +68,14 @@ describe('AuthService', () => {
       httpTestingController.verify();
     });
 
-    it('if successful, updates logged in status to true', () => {
+    it('if successful, updates logged in status to true', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
 
       service.login('username', 'password').subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeTrue();
+        done();
       });
 
       const req = httpTestingController.expectOne(
@@ -83,11 +84,12 @@ describe('AuthService', () => {
       req.flush(mockResponse);
     });
 
-    it('if unsuccessful, does not update logged in status', () => {
+    it('if unsuccessful, does not update logged in status', (done) => {
       service.login('username', 'password').subscribe(
         (_) => {},
         (_) => {
           expect(service.loggedInStatus$.value).toBeFalse();
+          done();
         }
       );
 
@@ -97,7 +99,7 @@ describe('AuthService', () => {
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
     });
 
-    it('if successful, makes request to backend /user endpoint', () => {
+    it('if successful, makes request to backend /user endpoint', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
@@ -105,7 +107,10 @@ describe('AuthService', () => {
         username: 'username',
       };
 
-      service.login('username', 'password').subscribe();
+      service.login('username', 'password').subscribe((_) => {
+        expect(service.loggedInStatus$.value).toBeTrue();
+        done();
+      });
 
       const req1 = httpTestingController.expectOne(
         BackendConstants.END_POINT + '/dj-rest-auth/login/'
@@ -118,12 +123,16 @@ describe('AuthService', () => {
       req2.flush(mockUser);
     });
 
-    it('if unsuccessful, does not make request to backend /user endpoint', () => {
+    it('if unsuccessful, does not make request to backend /user endpoint', (done) => {
       service.login('username', 'password').subscribe(
         (_) => {
           expect(service.loggedInStatus$.value).toBeFalse();
+          done();
         },
-        (_) => {}
+        (_) => {
+          expect(service.loggedInStatus$.value).toBeFalse();
+          done();
+        }
       );
 
       const req = httpTestingController.expectOne(
@@ -135,7 +144,7 @@ describe('AuthService', () => {
   });
 
   describe('signup', () => {
-    it('makes request to /registration backend endpoint', () => {
+    it('makes request to /registration backend endpoint', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
@@ -144,6 +153,7 @@ describe('AuthService', () => {
         .signup('username', 'email', 'password1', 'password2')
         .subscribe((res) => {
           expect(res).toEqual(mockResponse);
+          done();
         });
 
       const req = httpTestingController.expectOne(
@@ -157,7 +167,7 @@ describe('AuthService', () => {
       httpTestingController.verify();
     });
 
-    it('if successful, updates logged in status to true', () => {
+    it('if successful, updates logged in status to true', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
@@ -166,6 +176,7 @@ describe('AuthService', () => {
         .signup('username', 'email', 'password1', 'password2')
         .subscribe((_) => {
           expect(service.loggedInStatus$.value).toBeTrue();
+          done();
         });
 
       const req = httpTestingController.expectOne(
@@ -174,11 +185,12 @@ describe('AuthService', () => {
       req.flush(mockResponse);
     });
 
-    it('if unsuccessful, does not update logged in status', () => {
+    it('if unsuccessful, does not update logged in status', (done) => {
       service.signup('username', 'email', 'password1', 'password2').subscribe(
         (_) => {},
         (_) => {
           expect(service.loggedInStatus$.value).toBeFalse();
+          done();
         }
       );
 
@@ -188,7 +200,7 @@ describe('AuthService', () => {
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
     });
 
-    it('if successful, makes request to backend /user endpoint', () => {
+    it('if successful, makes request to backend /user endpoint', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
@@ -196,7 +208,12 @@ describe('AuthService', () => {
         username: 'username',
       };
 
-      service.signup('username', 'email', 'password1', 'password2').subscribe();
+      service
+        .signup('username', 'email', 'password1', 'password2')
+        .subscribe((_) => {
+          expect(service.loggedInStatus$.value).toBeTrue();
+          done();
+        });
 
       const req1 = httpTestingController.expectOne(
         BackendConstants.END_POINT + '/dj-rest-auth/registration/'
@@ -209,11 +226,12 @@ describe('AuthService', () => {
       req2.flush(mockUser);
     });
 
-    it('if unsuccessful, does not make request to backend /user endpoint', () => {
+    it('if unsuccessful, does not make request to backend /user endpoint', (done) => {
       service.signup('username', 'email', 'password1', 'password2').subscribe(
         (_) => {},
         (_) => {
           expect(service.loggedInStatus$.value).toBeFalse();
+          done();
         }
       );
 
@@ -226,13 +244,14 @@ describe('AuthService', () => {
   });
 
   describe('logout', () => {
-    it('makes request to backend', () => {
+    it('makes request to backend', (done) => {
       const mockResponse = {
         detail: 'Successfully logged out',
       };
 
       service.logout().subscribe((res) => {
         expect(res).toEqual(mockResponse);
+        done();
       });
 
       const req = httpTestingController.expectOne(
@@ -243,7 +262,7 @@ describe('AuthService', () => {
       httpTestingController.verify();
     });
 
-    it('updates logged in status to false and logged in user to be null', () => {
+    it('updates logged in status to false and logged in user to be null', (done) => {
       const mockResponse = {
         detail: 'Successfully logged out',
       };
@@ -251,6 +270,7 @@ describe('AuthService', () => {
       service.logout().subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeFalse();
         expect(service.loggedInUser$.value).toBeNull();
+        done();
       });
 
       const req = httpTestingController.expectOne(
@@ -261,7 +281,7 @@ describe('AuthService', () => {
   });
 
   describe('refreshLoggedInUser', () => {
-    it('makes request to backend for access token and user', () => {
+    it('makes request to backend for access token and user', (done) => {
       const cookieServiceStub: CookieService = TestBed.inject(CookieService);
       spyOn(cookieServiceStub, 'get').and.callThrough();
       const mockResponse = { access: true };
@@ -271,6 +291,7 @@ describe('AuthService', () => {
 
       service.refreshLoggedInUser().subscribe((res) => {
         expect(res).toEqual(mockUser);
+        done();
       });
 
       const req1 = httpTestingController.expectOne(
@@ -289,7 +310,7 @@ describe('AuthService', () => {
       httpTestingController.verify();
     });
 
-    it('updates loggedInStatus to true when token is refreshed', () => {
+    it('updates loggedInStatus to true when token is refreshed', (done) => {
       const mockResponse = { access: true };
       const mockUser = {
         username: 'username',
@@ -298,6 +319,7 @@ describe('AuthService', () => {
       service.refreshLoggedInUser().subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeTrue();
         expect(service.loggedInUser$.value).toEqual(mockUser);
+        done();
       });
 
       httpTestingController
@@ -308,21 +330,24 @@ describe('AuthService', () => {
         .flush(mockUser);
     });
 
-    it('updates loggedInStatus to false when token cannot be refreshed', () => {
-      const errorResponse = new HttpErrorResponse({
-        error: 'test 404 error',
-        status: 404,
-        statusText: 'Not Found',
-      });
-
-      service.refreshLoggedInUser().subscribe((_) => {
-        expect(service.loggedInStatus$.value).toBeFalse();
-        expect(service.loggedInUser$.value).toBeNull();
-      });
+    it('updates loggedInStatus to false when token cannot be refreshed', (done) => {
+      service.refreshLoggedInUser().subscribe(
+        (_) => {
+          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInUser$.value).toBeNull();
+          done();
+        },
+        (_) => {
+          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInUser$.value).toBeNull();
+          done();
+        }
+      );
 
       httpTestingController
         .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/')
-        .flush(errorResponse);
+        .flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
+      httpTestingController.verify();
     });
   });
 });
@@ -359,7 +384,7 @@ describe('AuthGuard', () => {
   });
 
   describe('canActivate', () => {
-    it('returns true if refreshLoggedInUser succeeds', () => {
+    it('returns true if refreshLoggedInUser succeeds', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
         of({ username: 'username' })
@@ -367,10 +392,11 @@ describe('AuthGuard', () => {
 
       service.canActivate().subscribe((result) => {
         expect(result).toBeTrue();
+        done();
       });
     });
 
-    it('returns false if refreshLoggedInUser fails', () => {
+    it('returns false if refreshLoggedInUser fails', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
         throwError(() => new Error())
@@ -378,6 +404,7 @@ describe('AuthGuard', () => {
 
       service.canActivate().subscribe((result) => {
         expect(result).toBeFalse();
+        done();
       });
     });
   });

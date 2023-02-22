@@ -568,12 +568,14 @@ export class MapManager {
     }).addTo(map);
   }
 
-  /** Sync pan, zoom, etc. between all maps. */
-  syncAllMaps() {
-    this.maps.forEach((mapA) => {
-      this.maps.forEach((mapB) => {
-        if (mapA !== mapB) {
+  /** Sync pan, zoom, etc. between all maps visible onscreen. */
+  syncVisibleMaps(isMapVisible: (index: number) => boolean) {
+    this.maps.forEach((mapA, indexA) => {
+      this.maps.forEach((mapB, indexB) => {
+        if (mapA !== mapB && isMapVisible(indexA) && isMapVisible(indexB)) {
           (mapA.instance as any).sync(mapB.instance);
+        } else {
+          (mapA.instance as any).unsync(mapB.instance);
         }
       });
     });
