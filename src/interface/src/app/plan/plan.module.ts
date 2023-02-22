@@ -22,6 +22,7 @@ import { PlanTableComponent } from './plan-table/plan-table.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
+import { OutcomeComponent } from './scenario-details/outcome/outcome.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -42,6 +43,7 @@ import { ScenarioDetailsComponent } from './scenario-details/scenario-details.co
     IdentifyProjectAreasComponent,
     GenerateScenariosComponent,
     ScenarioDetailsComponent,
+    OutcomeComponent,
   ],
   imports: [
     BrowserAnimationsModule,
