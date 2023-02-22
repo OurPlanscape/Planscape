@@ -1,7 +1,9 @@
 import datetime
 import json
-import numpy as np
 
+import numpy as np
+from base.condition_types import ConditionLevel, ConditionScoreType
+from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.auth.models import User
 from django.contrib.gis.gdal import GDALRaster
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -10,9 +12,8 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 from planscape import settings
 
-from .models import Plan, Project, Scenario, ProjectArea, ConditionScores, ScenarioWeightedPriority
-from conditions.models import BaseCondition, Condition, ConditionRaster
-from base.condition_types import ConditionLevel
+from .models import (ConditionScores, Plan, Project, ProjectArea, Scenario,
+                     ScenarioWeightedPriority)
 
 
 class CreatePlanTest(TransactionTestCase):
@@ -442,9 +443,9 @@ class CreateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
         self.raw_condition = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0, is_raw=True)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=True)
         self.normalized_condition = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0, is_raw=False)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         response = self.client.post(
             reverse('plan:create_project'), {
@@ -457,7 +458,7 @@ class CreateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="base_condition", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT)
 
         response = self.client.post(
             reverse('plan:create_project'), {
@@ -478,14 +479,14 @@ class UpdateProjectTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="condition1", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, condition_score_type=0, is_raw=False)
+            condition_dataset=self.base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.base_condition2 = BaseCondition.objects.create(
             condition_name="condition2", condition_level=ConditionLevel.ELEMENT)
         self.condition2_raw = Condition.objects.create(
-            condition_dataset=self.base_condition2, condition_score_type=0, is_raw=True)
+            condition_dataset=self.base_condition2, condition_score_type=ConditionScoreType.CURRENT, is_raw=True)
         self.condition2_normalized = Condition.objects.create(
-            condition_dataset=self.base_condition2, condition_score_type=0, is_raw=False)
+            condition_dataset=self.base_condition2, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.project_with_user = Project.objects.create(
             owner=self.user, plan=self.plan_with_user, max_budget=100.0)
@@ -547,6 +548,14 @@ class UpdateProjectTest(TransactionTestCase):
         self.assertEqual(project.priorities.count(), 1)
         self.assertTrue(project.priorities.contains(
             self.condition2_normalized))
+
+    def test_patch_invalid_body(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_project'), {
+                'id': self.project_with_user.pk, 'max_budget': 'invalid_string'},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
 
     def test_patch_update_constraint(self):
         self.client.force_login(self.user)
@@ -1151,7 +1160,8 @@ class CreateScenarioTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="cond", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="raster_name", condition_score_type=0)
+            condition_dataset=self.base_condition, raster_name="raster_name", 
+            condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
