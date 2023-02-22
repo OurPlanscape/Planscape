@@ -10,8 +10,9 @@ from forsys.forsys_request_params import (ForsysGenerationRequestParams,
                                           ForsysRankingRequestParams)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
-from forsys.parse_forsys_output import (ForsysScenarioOutput,
-                                        ForsysScenarioSetOutput)
+from forsys.parse_forsys_output import (
+    ForsysRankingOutputForASingleScenario,
+    ForsysRankingOutputForMultipleScenarios)
 from planscape import settings
 
 import rpy2
@@ -54,7 +55,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         max_area_in_km2: float | None, max_cost_in_usd: float | None,
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_headers: list[str]) -> ForsysScenarioSetOutput:
+        forsys_priority_headers: list[str]) -> ForsysRankingOutputForMultipleScenarios:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_multiple_scenarios.R'))
@@ -68,7 +69,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header)
 
-    parsed_output = ForsysScenarioSetOutput(
+    parsed_output = ForsysRankingOutputForMultipleScenarios(
         forsys_output, forsys_priority_headers, max_area_in_km2, max_cost_in_usd,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
 
@@ -105,7 +106,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_priority_headers: list[str],
-        forsys_priority_weights: list[float]) -> ForsysScenarioOutput:
+        forsys_priority_weights: list[float]) -> ForsysRankingOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
@@ -123,7 +124,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
     priority_weights_dict = {
         forsys_priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(forsys_priority_headers))}
-    parsed_output = ForsysScenarioOutput(
+    parsed_output = ForsysRankingOutputForASingleScenario(
         forsys_output, priority_weights_dict, max_area_in_km2, max_cost_in_usd,
         forsys_proj_id_header, forsys_area_header, forsys_cost_header)
 
@@ -160,7 +161,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_geo_wkt_header: str, forsys_priority_headers: list[str],
-        forsys_priority_weights: list[float]) -> ForsysScenarioOutput:
+        forsys_priority_weights: list[float]) -> ForsysRankingOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/generate_projects_for_a_single_scenario.R'))

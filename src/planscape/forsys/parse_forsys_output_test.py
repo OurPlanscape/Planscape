@@ -4,7 +4,8 @@ import rpy2.robjects as ro
 
 from django.test import TestCase
 from forsys.parse_forsys_output import (
-    ForsysScenarioOutput, ForsysScenarioSetOutput)
+    ForsysRankingOutputForASingleScenario,
+    ForsysRankingOutputForMultipleScenarios)
 
 
 def _convert_dictionary_of_lists_to_rdf(
@@ -25,10 +26,10 @@ def _convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
-class TestForsysScenarioSetOutput(TestCase):
+class TestForsysRankingOutputForMultipleScenarios(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioSetOutput(
+        parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, None, "proj_id", "area", "cost")
 
@@ -87,7 +88,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # priority order is ["p2", "p1"] instead of ["p1", "p2"]
-            ForsysScenarioSetOutput(
+            ForsysRankingOutputForMultipleScenarios(
                 raw_forsys_output, ["p2", "p1"],
                 None, None, "proj_id", "area", "cost")
 
@@ -99,7 +100,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
-            ForsysScenarioSetOutput(
+            ForsysRankingOutputForMultipleScenarios(
                 raw_forsys_output, ["p1", "p2"],
                 None, None, "project_id", "area", "cost")
 
@@ -111,7 +112,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
-            ForsysScenarioSetOutput(
+            ForsysRankingOutputForMultipleScenarios(
                 raw_forsys_output, ["p1", "p2"],
                 None, None, "proj_id", "area_ha", "cost")
 
@@ -124,7 +125,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
-            ForsysScenarioSetOutput(
+            ForsysRankingOutputForMultipleScenarios(
                 raw_forsys_output, ["p1", "p2"],
                 None, None, "proj_id", "area", "c")
 
@@ -134,7 +135,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
     def test_limits_area(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioSetOutput(
+        parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             25, None, "proj_id", "area", "cost")
 
@@ -180,7 +181,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
     def test_limits_area_by_skipping_top_project(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioSetOutput(
+        parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             10, None, "proj_id", "area", "cost")
 
@@ -216,7 +217,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
     def test_limits_cost(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioSetOutput(
+        parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, 1200, "proj_id", "area", "cost")
 
@@ -262,7 +263,7 @@ class TestForsysScenarioSetOutput(TestCase):
 
     def test_limits_cost_by_skipping_top_project(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioSetOutput(
+        parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, 550, "proj_id", "area", "cost")
 
@@ -314,10 +315,10 @@ class TestForsysScenarioSetOutput(TestCase):
         return raw_forsys_output
 
 
-class TestForsysScenarioOutput(TestCase):
+class TestForsysRankingOutputForASingleScenario(TestCase):
     def test_parses_output(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(
+        parsed_output = ForsysRankingOutputForASingleScenario(
             raw_forsys_output, {"p1": 1, "p2": 2},
             None, None, "proj_id", "area", "cost")
 
@@ -352,7 +353,7 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # priority weights are specified for "p1" and "p3" - missing "p2"
-            ForsysScenarioOutput(
+            ForsysRankingOutputForASingleScenario(
                 raw_forsys_output, {"p1": 1, "p3": 2},
                 None, None, "proj_id", "area", "cost")
 
@@ -364,7 +365,7 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
-            ForsysScenarioOutput(
+            ForsysRankingOutputForASingleScenario(
                 raw_forsys_output, {"p1": 1, "p2": 2},
                 None, None, "project_id", "area", "cost")
 
@@ -376,7 +377,7 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
-            ForsysScenarioOutput(
+            ForsysRankingOutputForASingleScenario(
                 raw_forsys_output, {"p1": 1, "p2": 2},
                 None, None, "proj_id", "area_ha", "cost")
 
@@ -389,7 +390,7 @@ class TestForsysScenarioOutput(TestCase):
 
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
-            ForsysScenarioOutput(
+            ForsysRankingOutputForASingleScenario(
                 raw_forsys_output, {"p1": 1, "p2": 2},
                 None, None, "proj_id", "area", "c")
 
@@ -399,7 +400,7 @@ class TestForsysScenarioOutput(TestCase):
 
     def test_limits_area(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(
+        parsed_output = ForsysRankingOutputForASingleScenario(
             raw_forsys_output,  {"p1": 1, "p2": 2},
             25, None, "proj_id", "area", "cost")
 
@@ -426,7 +427,7 @@ class TestForsysScenarioOutput(TestCase):
 
     def test_limits_area_by_skipping_top_project(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(
+        parsed_output = ForsysRankingOutputForASingleScenario(
             raw_forsys_output, {"p1": 1, "p2": 2},
             10, None, "proj_id", "area", "cost")
 
@@ -448,7 +449,7 @@ class TestForsysScenarioOutput(TestCase):
 
     def test_limits_cost(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(
+        parsed_output = ForsysRankingOutputForASingleScenario(
             raw_forsys_output, {"p1": 1, "p2": 2},
             None, 1200, "proj_id", "area", "cost")
 
@@ -475,7 +476,7 @@ class TestForsysScenarioOutput(TestCase):
 
     def test_limits_cost_by_skipping_top_project(self) -> None:
         raw_forsys_output = self._get_raw_forsys_output()
-        parsed_output = ForsysScenarioOutput(
+        parsed_output = ForsysRankingOutputForASingleScenario(
             raw_forsys_output, {"p1": 1, "p2": 2},
             None, 550, "proj_id", "area", "cost")
 
