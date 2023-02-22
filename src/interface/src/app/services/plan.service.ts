@@ -17,6 +17,7 @@ export interface PlanState {
   };
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
+  currentScenario?: Scenario;
 }
 
 export interface BackendPlan {
@@ -198,6 +199,37 @@ export class PlanService {
         withCredentials: true,
       }
     );
+  }
+
+  /** Fetches a scenario by its id from the backend. */
+  getScenario(scenarioId: string): Observable<Scenario> {
+    const url = BackendConstants.END_POINT.concat(
+      '/plan/get_scenario/?id=',
+      scenarioId
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response) => this.convertToScenario(response))
+      );
+  }
+
+  private convertToScenario(backendScenario: any): Scenario {
+    return {
+      id: backendScenario.id,
+      planId: backendScenario.plan_id,
+      maxBudget: backendScenario.max_budget,
+      maxRoadDistance: backendScenario.max_road_distance,
+      maxSlope: backendScenario.max_slope,
+      maxTreatmentAreaRatio: backendScenario.max_treatment_area_ratio,
+      priorities: backendScenario.priorities,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        backendScenario.creation_time
+      ),
+    };
   }
 
   private convertToPlan(plan: BackendPlan): Plan {

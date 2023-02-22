@@ -10,6 +10,7 @@ import {
   PlanConditionScores,
   PlanPreview,
   ProjectConfig,
+  Scenario,
 } from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
 
@@ -290,6 +291,31 @@ describe('PlanService', () => {
         project_ids: projectIds,
       });
       req.flush(projectIds);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getScenario', () => {
+    it('should make HTTP request to backend', () => {
+      const scenario: Scenario = {
+        id: '1',
+        planId: undefined,
+        maxBudget: undefined,
+        maxRoadDistance: undefined,
+        maxSlope: undefined,
+        maxTreatmentAreaRatio: undefined,
+        priorities: undefined,
+        createdTimestamp: undefined,
+      };
+
+      service.getScenario('1').subscribe((res) => {
+        expect(res).toEqual(scenario);
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/get_scenario/?id=1')
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(scenario);
       httpTestingController.verify();
     });
   });
