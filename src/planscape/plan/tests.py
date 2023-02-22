@@ -1,7 +1,8 @@
 import datetime
 import json
 import numpy as np
-
+from base.condition_types import ConditionLevel, ConditionScoreType
+from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.auth.models import User
 from django.contrib.gis.gdal import GDALRaster
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -10,9 +11,8 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 from planscape import settings
 
-from .models import Plan, Project, Scenario, ProjectArea, ConditionScores, ScenarioWeightedPriority
-from conditions.models import BaseCondition, Condition, ConditionRaster
-from base.condition_types import ConditionLevel
+from .models import (ConditionScores, Plan, Project, ProjectArea, Scenario,
+                     ScenarioWeightedPriority)
 
 
 class CreatePlanTest(TransactionTestCase):
@@ -1080,7 +1080,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.base_condition = BaseCondition.objects.create(
             condition_name="cond", condition_level=ConditionLevel.ELEMENT)
         self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="raster_name", condition_score_type=0)
+            condition_dataset=self.base_condition, raster_name="raster_name", condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -1235,7 +1235,8 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.json()['project'], self.project.pk)
         self.assertEqual(response.json()['plan'], self.plan.pk)
         self.assertEqual(response.json()['notes'], 'my note')
-        self.assertEqual(response.json()['priorities'], {'cond1' : 2, 'cond2': 3})
+        self.assertEqual(response.json()['priorities'], {
+                         'cond1': 2, 'cond2': 3})
 
 
 class ListScenariosTest(TransactionTestCase):
@@ -1276,7 +1277,7 @@ class ListScenariosTest(TransactionTestCase):
             scenario=self.scenario2, priority=self.condition1, weight=4)
         self.weight2 = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario2, priority=self.condition2, weight=5)
-        
+
     def test_list_nonexistent_plan(self):
         response = self.client.get(
             reverse('plan:list_scenarios_for_plan'),
@@ -1302,6 +1303,8 @@ class ListScenariosTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
         self.assertEqual(response.json()[0]['id'], self.scenario1.pk)
-        self.assertEqual(response.json()[0]['priorities'], {'cond1' : 2, 'cond2': 3})
+        self.assertEqual(response.json()[0]['priorities'], {
+                         'cond1': 2, 'cond2': 3})
         self.assertEqual(response.json()[1]['id'], self.scenario2.pk)
-        self.assertEqual(response.json()[1]['priorities'], {'cond1' : 4, 'cond2': 5})
+        self.assertEqual(response.json()[1]['priorities'], {
+                         'cond1': 4, 'cond2': 5})
