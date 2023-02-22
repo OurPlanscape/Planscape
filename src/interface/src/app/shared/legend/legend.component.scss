@@ -1,32 +1,17 @@
-.legend-wrapper {
-  align-items: stretch;
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-h1 {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 15px;
-  text-align: center;
-}
-
 .legend {
   align-items: center;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
-  margin: 0px 24px 0px 24px;
+  width: 100%;
 }
 
-.legend.vertical {
-  align-items: flex-start;
-  flex-direction: row;
-  gap: 12px;
-  justify-content: flex-start;
-  margin: 0px;
+h1 {
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 15px;
+  text-align: center;
 }
 
 .labels {
@@ -37,37 +22,15 @@ h1 {
   width: 100%;
 }
 
-.labels.vertical {
-  flex-direction: column;
-  gap: 8px;
-}
-
 .label {
   margin-top: 5px;
   min-width: 24px;
   text-align: center;
 }
 
-.label.vertical {
-  height: 24px;
-  line-height: 24px;
-  margin-top: 0px;
-}
-
-.colors {
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  gap: 8px;
-}
-
-.colorbox {
-  flex: 1 1 auto;
-  height: 24px;
-  width: 36px;
-}
-
 .gradient {
-  height: 24px;
+  border: 1px solid #E2E2E2;
+  border-radius: 8px;
+  height: 30px;
   width: 100%;
 }
