@@ -24,6 +24,7 @@ export class MapControlPanelComponent implements OnInit {
   @Input() mapHasDataLayer: boolean | null = false;
   @Input() maps: Map[] = [];
   @Input() mapViewOptions: MapViewOptions | null = null;
+  @Input() selectedMap?: Map | null;
   @Input() selectedMapOpacity?: number | null = null;
 
   @Output() changeBaseLayer = new EventEmitter<Map>();

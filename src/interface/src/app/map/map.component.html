@@ -8,6 +8,7 @@
     [mapHasDataLayer]="mapHasDataLayer() | async"
     [maps]="maps"
     [mapViewOptions]="mapViewOptions$ | async"
+    [selectedMap]="selectedMap$ | async"
     [selectedMapOpacity]="getOpacityForSelectedMap() | async"
     (changeBaseLayer)="changeBaseLayer($event)"
     (changeBoundaryLayer)="toggleBoundaryLayer($event)"
