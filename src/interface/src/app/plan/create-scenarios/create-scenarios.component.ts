@@ -19,8 +19,8 @@ import { filter } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
-  opacityTransitionTrigger,
   expandCollapsePanelTrigger,
+  opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan, ProjectConfig } from 'src/app/types';
 
@@ -57,6 +57,7 @@ export class CreateScenariosComponent implements OnInit {
   @Input() scenarioConfigId?: number;
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
+  @Output() backToOverviewEvent = new EventEmitter<void>();
   @Output() changeConditionEvent = new EventEmitter<string>();
   @Output() drawShapesEvent = new EventEmitter<any>();
 
@@ -213,7 +214,7 @@ export class CreateScenariosComponent implements OnInit {
     }
   }
 
-  formValueToProjectConfig(): ProjectConfig {
+  private formValueToProjectConfig(): ProjectConfig {
     const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
     const excludeDistance = this.formGroups[1].get('excludeDistance');
@@ -255,5 +256,13 @@ export class CreateScenariosComponent implements OnInit {
       ]);
       priorityWeightsForm.addControl(priority, priorityControl);
     });
+  }
+
+  createScenario(): void {
+    this.planService
+      .createScenario(this.formValueToProjectConfig())
+      .subscribe((_) => {
+        this.backToOverviewEvent.emit();
+      });
   }
 }

@@ -25,6 +25,7 @@ describe('CreateScenariosComponent', () => {
           maxBudget: 100,
         }),
         updateProject: of(1),
+        createScenario: of('1'),
       },
       {}
     );
@@ -126,6 +127,23 @@ describe('CreateScenariosComponent', () => {
     expect(priorityWeightsForm.value).toEqual({
       priority1: 1,
       priority2: 1,
+    });
+  });
+
+  it('creates scenario when event is emitted', () => {
+    component.scenarioConfigId = 1;
+    component.formGroups[0].get('priorities')?.setValue(['test']);
+
+    component.createScenario();
+
+    expect(fakePlanService.createScenario).toHaveBeenCalledOnceWith({
+      id: 1,
+      planId: 1,
+      max_treatment_area_ratio: NaN,
+      max_road_distance: NaN,
+      max_slope: NaN,
+      priorities: ['test'],
+      weights: [1],
     });
   });
 });
