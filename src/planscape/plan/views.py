@@ -216,6 +216,7 @@ def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_dista
         max_road_distance) if max_road_distance else None
     project.max_slope = float(max_slope) if max_slope else None
 
+
 def _set_priorities(priorities, project: Project):
     if priorities is not None:
         for i in range(len(priorities)):
@@ -282,7 +283,7 @@ def update_project(request: HttpRequest) -> HttpResponse:
         if project.owner != owner:
             raise ValueError(
                 "You do not have permission to view this project.")
-        
+
         max_budget = body.get('max_budget', None)
         max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
         max_road_distance = body.get('max_road_distance', None)
@@ -291,14 +292,12 @@ def update_project(request: HttpRequest) -> HttpResponse:
 
         _validate_constraint_values(
             max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
-        
+
         if request.method == "PUT":
             project.priorities.clear()
             _set_project_parameters(max_budget, max_treatment_area_ratio,
                                     max_road_distance, max_slope, project)
             _set_priorities(priorities, project)
-            project.save()
-            return HttpResponse(str(project.pk))
         elif request.method == "PATCH":
             del body['id']
             body.pop('priorities', None)
@@ -311,7 +310,7 @@ def update_project(request: HttpRequest) -> HttpResponse:
                 _set_priorities(priorities, project)
         else:
             raise KeyError(
-                    "HTTP methods other than PUT are not yet implemented")
+                "HTTP methods other than PUT are not yet implemented")
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -570,8 +569,10 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 
         # TODO: return config details when behavior is agreed upon
 
-        return JsonResponse([_serialize_scenario(scenario, weights=ScenarioWeightedPriority.objects.select_related().filter(
-            scenario=scenario)) for scenario in scenarios], safe=False)
+        return JsonResponse(
+            [_serialize_scenario(scenario,
+                                 weights=ScenarioWeightedPriority.objects.select_related().filter(
+                                     scenario=scenario)) for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
