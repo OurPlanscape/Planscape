@@ -200,6 +200,21 @@ export class PlanService {
     );
   }
 
+  /** Fetches the scenarios for a plan from the backend. */
+  getScenariosForPlan(planId: string): Observable<Scenario[]> {
+    return this.http
+      .get<any[]>(
+        BackendConstants.END_POINT.concat(
+          '/plan/list_scenarios_for_plan/?plan_id=',
+          planId
+        ),
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(map((scenarios) => scenarios.map(this.convertToScenario.bind(this))));
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
@@ -246,6 +261,15 @@ export class PlanService {
       priorities: config.priorities,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
+      ),
+    };
+  }
+
+  private convertToScenario(scenario: any): Scenario {
+    return {
+      id: scenario.id,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        scenario.creation_timestamp
       ),
     };
   }

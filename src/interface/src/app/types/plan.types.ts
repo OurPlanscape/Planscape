@@ -31,7 +31,7 @@ export interface PlanPreview {
 
 export interface Scenario {
   id: string;
-  createdTimestamp: number; //in milliseconds since epoch
+  createdTimestamp?: number; //in milliseconds since epoch
 }
 
 export interface ProjectConfig {
