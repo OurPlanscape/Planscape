@@ -383,6 +383,8 @@ class ForsysGenerationOutputForASingleScenario(
         ForsysRankingOutputForASingleScenario.__init__(
             self, raw_forsys_output, priority_weights, None, None,
             project_id_header, area_header, cost_header)
+        ForsysRankingOutputForASingleScenario._check_header_name(
+            self, geo_wkt_header)
         self._geo_wkt_header = geo_wkt_header
 
         project_area_geometries = self._get_project_area_geometries(
@@ -405,6 +407,7 @@ class ForsysGenerationOutputForASingleScenario(
         rdf = raw_forsys_output[self._STAND_OUTPUT_INDEX]
         stand_output_df = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
+        print(stand_output_df.keys())
         project_area_geometries = {}
         for i in range(len(stand_output_df[self._project_id_header])):
             id = stand_output_df[self._project_id_header][i]
