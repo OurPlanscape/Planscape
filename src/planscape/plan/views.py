@@ -1,21 +1,30 @@
 import datetime
 import json
 
+from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
+from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from plan.models import Plan, Project, ProjectArea, Scenario, ScenarioWeightedPriority
+from plan.models import (Plan, Project, ProjectArea, Scenario,
+                         ScenarioWeightedPriority)
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
-                              ProjectSerializer)
+                              ProjectSerializer, ScenarioSerializer,
+                              ScenarioWeightedPrioritySerializer)
 from planscape import settings
-from django.shortcuts import get_list_or_404
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
+
+MAX_BUDGET = 'max_budget'
+MAX_TREATMENT_AREA_RATIO = 'max_treatment_area_ratio'
+MAX_ROAD_DIST = 'max_road_distance'
+MAX_SLOPE = 'max_slope'
+PRIORITIES = 'priorities'
 
 
 def get_user(request: HttpRequest):
@@ -203,15 +212,9 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
         raise ValueError(
             "Max slope must be a number value >= 0.0")
 
-def _save_project_parameters(body, project: Project):
-    max_budget = body.get('max_budget', None)
-    max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
-    max_road_distance = body.get('max_road_distance', None)
-    max_slope = body.get('max_slope', None)
 
-    _validate_constraint_values(
-        max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
-
+def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_distance,
+                            max_slope, project: Project):
     project.max_budget = float(max_budget) if max_budget else None
     project.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
@@ -219,15 +222,16 @@ def _save_project_parameters(body, project: Project):
         max_road_distance) if max_road_distance else None
     project.max_slope = float(max_slope) if max_slope else None
 
-    # Parse priorities
-    priorities = body.get('priorities', None)
-    priorities_list = [] if priorities is None else priorities
-    for pri in priorities_list:
-        base_condition = BaseCondition.objects.get(condition_name=pri)
-        # is_raw=False required because for metrics, we store both current raw and current normalized data.
-        condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0, is_raw=False)
-        project.priorities.add(condition)
+
+def _set_priorities(priorities, project: Project):
+    if priorities is not None:
+        for i in range(len(priorities)):
+            base_condition = BaseCondition.objects.get(
+                condition_name=priorities[i])
+            # is_raw=False required because for metrics, we store both current raw and current normalized data.
+            condition = Condition.objects.get(
+                condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+            project.priorities.add(condition)
 
 
 @csrf_exempt
@@ -251,8 +255,19 @@ def create_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create project; plan is not owned by user")
 
+        max_budget = body.get(MAX_BUDGET, None)
+        max_treatment_area_ratio = body.get(MAX_TREATMENT_AREA_RATIO, None)
+        max_road_distance = body.get(MAX_ROAD_DIST, None)
+        max_slope = body.get(MAX_SLOPE, None)
+        priorities = body.get(PRIORITIES, None)
+
+        _validate_constraint_values(
+            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
         project = Project.objects.create(owner=owner, plan=plan)
-        _save_project_parameters(body, project)
+        _set_project_parameters(max_budget, max_treatment_area_ratio,
+                                max_road_distance, max_slope, project)
+        _set_priorities(priorities, project)
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -262,10 +277,6 @@ def create_project(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 def update_project(request: HttpRequest) -> HttpResponse:
     try:
-        if request.method != "PUT":
-            raise KeyError(
-                "HTTP methods other than PUT are not yet implemented")
-
         # Check that the user is logged in.
         owner = get_user(request)
 
@@ -279,8 +290,33 @@ def update_project(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "You do not have permission to view this project.")
 
-        project.priorities.clear()
-        _save_project_parameters(body, project)
+        max_budget = body.get(MAX_BUDGET, None)
+        max_treatment_area_ratio = body.get(MAX_TREATMENT_AREA_RATIO, None)
+        max_road_distance = body.get(MAX_ROAD_DIST, None)
+        max_slope = body.get(MAX_SLOPE, None)
+        priorities = body.get(PRIORITIES, None)
+
+        _validate_constraint_values(
+            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+
+        if request.method == "PUT":
+            project.priorities.clear()
+            _set_project_parameters(max_budget, max_treatment_area_ratio,
+                                    max_road_distance, max_slope, project)
+            _set_priorities(priorities, project)
+        elif request.method == "PATCH":
+            del body['id']
+            body.pop('priorities', None)
+            s = ProjectSerializer(project, data=body, partial=True)
+            s.is_valid(raise_exception=True)
+            s.save()
+
+            if priorities is not None:
+                project.priorities.clear()
+                _set_priorities(priorities, project)
+        else:
+            raise KeyError(
+                "HTTP methods other than PUT are not yet implemented")
         project.save()
         return HttpResponse(str(project.pk))
     except Exception as e:
@@ -436,20 +472,15 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _set_scenario_metadata(max_budget, max_treatment_area_ratio, max_road_distance, 
-                           max_slope, priorities, weights, scenario: Scenario):
-    scenario.max_budget = float(max_budget) if max_budget else None
-    scenario.max_treatment_area_ratio = float(
-        max_treatment_area_ratio) if max_treatment_area_ratio else None
-    scenario.max_road_distance = float(
-        max_road_distance) if max_road_distance else None
-    scenario.max_slope = float(max_slope) if max_slope else None
+def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
+    scenario.notes = notes if notes else None
 
     for i in range(len(priorities)):
         base_condition = BaseCondition.objects.get(
             condition_name=priorities[i])
+        # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=0)
+            condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
         weight = weights[i] if weights is not None else None
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
@@ -475,15 +506,9 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Cannot create scenario; plan is not owned by user")
 
-        max_budget = body.get('max_budget', None)
-        max_treatment_area_ratio = body.get('max_treatment_area_ratio', None)
-        max_road_distance = body.get('max_road_distance', None)
-        max_slope = body.get('max_slope', None)
         priorities = body.get('priorities', None)
         weights = body.get('weights', None)
-
-        _validate_constraint_values(
-            max_budget, max_treatment_area_ratio, max_road_distance, max_slope)
+        notes = body.get('notes', None)
 
         if priorities is None:
             raise ValueError(
@@ -496,10 +521,64 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                 "Each priority must have a single assigned weight")
 
         scenario = Scenario.objects.create(owner=owner, plan=plan)
-        _set_scenario_metadata(max_budget, max_treatment_area_ratio,
-                               max_road_distance, max_slope, priorities, weights, scenario)
+        _set_scenario_metadata(priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def _serialize_scenario(scenario: Scenario, weights: QuerySet) -> dict:
+    result = ScenarioSerializer(scenario).data
+    result['priorities'] = {}
+
+    for weight in weights:
+        serialized_weight = ScenarioWeightedPrioritySerializer(weight).data
+        if 'priority' in serialized_weight and 'weight' in serialized_weight:
+            result['priorities'][Condition.objects.get(
+                pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
+    return result
+
+
+@csrf_exempt
+def get_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['id'], str)
+        scenario_id = request.GET.get('id', "0")
+        scenario = Scenario.objects.get(id=scenario_id)
+
+        user = get_user(request)
+
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to view this scenario.")
+        weights = ScenarioWeightedPriority.objects.select_related().filter(scenario=scenario)
+        return JsonResponse(_serialize_scenario(scenario, weights), safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['plan_id'], str)
+        plan_id = request.GET.get('plan_id', "0")
+        plan = Plan.objects.get(id=plan_id)
+
+        user = get_user(request)
+
+        if plan.owner != user:
+            raise ValueError(
+                "You do not have permission to view scenarios for this plan.")
+
+        scenarios = Scenario.objects.filter(owner=user, plan=plan_id)
+
+        # TODO: return config details when behavior is agreed upon
+
+        return JsonResponse(
+            [_serialize_scenario(scenario,
+                                 weights=ScenarioWeightedPriority.objects.select_related().filter(
+                                     scenario=scenario)) for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 

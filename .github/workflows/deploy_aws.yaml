@@ -75,8 +75,11 @@ jobs:
         
       - name: Build, tag, and push r
         id: build-r
+        env:
+          GIT_TOKEN: ${{ secrets.FORSYS_TOKEN }}
         run: |
           cd src/planscape_r
+          git clone https://$GIT_TOKEN:@github.com/forsys-sp/forsysr.git
           docker build -t planscape-r .
           docker tag planscape-r:latest ${{ env.r_image }}
           docker push ${{ env.r_image }}

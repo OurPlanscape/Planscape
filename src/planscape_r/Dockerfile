@@ -5,6 +5,17 @@ RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
 
+#   library(dplyr)
+#   library(forsys)
+#   library(sf)
+
+RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+COPY ./forsysr .
+
+RUN ls
+
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
 # Install any dependencies under the ${LAMBDA_TASK_ROOT} directory 

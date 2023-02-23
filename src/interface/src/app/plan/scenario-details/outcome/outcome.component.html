@@ -1,0 +1,43 @@
+<!-- Plan Info -->
+<div class="plan-info">
+  <span>Creator: First Name, Last Name, Department</span>
+  <br>
+  <span>Created:</span>
+</div>
+
+<div class="outcome-content">
+  <mat-accordion class="example-headers-align" multi>
+    <!-- Configuration -->
+    <mat-expansion-panel class="mat-elevation-z0" expanded="true">
+      <mat-expansion-panel-header class="scenario-panel-header">
+        Configuration
+      </mat-expansion-panel-header>
+      content
+    </mat-expansion-panel>
+
+    <!-- Outcome -->
+    <mat-expansion-panel class="mat-elevation-z0" expanded="true">
+      <mat-expansion-panel-header class="scenario-panel-header">
+        Outcome
+      </mat-expansion-panel-header>
+      content
+    </mat-expansion-panel>
+  </mat-accordion>
+
+  <!-- Notes -->
+  <div class="scenario-notes">
+    <div class="notes-header">Scenario creator's notes</div>
+    <form [formGroup] = "scenarioNotes">
+      <div>
+        <textarea
+          class="notes-text"
+          formControlName="notes"
+          cols="64"
+          rows="10">
+        </textarea>
+        <button class="notes-button" type="submit">SEND</button>
+      </div>
+    </form>
+  </div>
+</div>
+
