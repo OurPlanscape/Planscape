@@ -1,3 +1,4 @@
 times2 <- function(number) {
-  list(newvalue = number * 2)
+  newvalue = number * 2
+  return(newvalue)
 }
