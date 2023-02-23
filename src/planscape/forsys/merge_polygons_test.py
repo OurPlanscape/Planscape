@@ -17,13 +17,17 @@ class MergePolygonsTest(TestCase):
 
         self.srid = settings.CRS_FOR_RASTERS
 
-        self.margin = np.sqrt(2) * self.side / 2
+        self.margin_for_unit_pixels = np.sqrt(2) * self.side / 2
+
+    # -----------------------------------------------------------------------
+    # The following tests are for validating merging (with simplify_margin=0)
+    # -----------------------------------------------------------------------
 
     def test_merges_contiguous_polygons(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
         # p2 is contiguous with p1.
         p2 = self._create_polygon(((5, 0), (5, 3), (8, 3), (8, 0), (5, 0)))
-        poly = merge_polygons([p1, p2], self.margin)
+        poly = merge_polygons([p1, p2], 0)
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(len(poly.coords), 1)
@@ -35,7 +39,7 @@ class MergePolygonsTest(TestCase):
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
         # p2 overlaps with p1.
         p2 = self._create_polygon(((4, 0), (4, 3), (8, 3), (8, 0), (4, 0)))
-        poly = merge_polygons([p1, p2], self.margin)
+        poly = merge_polygons([p1, p2], 0)
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(len(poly.coords), 1)
@@ -49,12 +53,14 @@ class MergePolygonsTest(TestCase):
         p2 = self._create_polygon(((6, 0), (6, 3), (8, 3), (8, 0), (6, 0)))
         # p3 is contiguous with p1 and not contiguous or overlapping with p2.
         p3 = self._create_polygon(((0, 0), (0, 1), (-1, 1), (-1, 0), (0, 0)))
-        poly = merge_polygons([p1, p2, p3], self.margin)
+        poly = merge_polygons([p1, p2, p3], 0)
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "MultiPolygon")
         self.assertEqual(len(poly.coords), 2)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0][0]),
-                         ((5, 0), (5, 5), (0, 5), (0, 1), (-1, 0), (5, 0)))
+        # The first polygon is a merging of p1 and p3.
+        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0][0]), ((
+            5, 0), (5, 5), (0, 5), (0, 1), (-1, 1), (-1, 0), (5, 0)))
+        # The second polygon is p2.
         self.assertEqual(self._coords_to_pixel_coords(poly.coords[1][0]),
                          ((8, 0), (8, 3), (6, 3), (6, 0), (8, 0)))
 
@@ -64,7 +70,7 @@ class MergePolygonsTest(TestCase):
         p2 = self._create_polygon(((6, 0), (6, 3), (8, 3), (8, 0), (6, 0)))
         # p3 is contiguous with p1 and p2.
         p3 = self._create_polygon(((5, 0), (5, 5), (6, 5), (6, 0), (5, 0)))
-        poly = merge_polygons([p1, p2, p3], self.margin)
+        poly = merge_polygons([p1, p2, p3], 0)
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(len(poly.coords), 1)
@@ -77,7 +83,7 @@ class MergePolygonsTest(TestCase):
         p2 = self._create_polygon(((0, 0), (0, 1), (5, 1), (5, 0), (0, 0)))
         p3 = self._create_polygon(((4, 0), (4, 5), (5, 5), (5, 0), (4, 0)))
         p4 = self._create_polygon(((0, 4), (0, 5), (5, 5), (5, 4), (0, 4)))
-        poly = merge_polygons([p1, p2, p3, p4], self.margin)
+        poly = merge_polygons([p1, p2, p3, p4], 0)
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(poly.num_interior_rings, 1)
@@ -90,7 +96,7 @@ class MergePolygonsTest(TestCase):
     def test_merges_polygons_along_diagonal(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
         p2 = self._create_polygon(((0, 0), (0, -5), (-5, -5), (-5, 0), (0, 0)))
-        poly = merge_polygons([p1, p2], self.margin)
+        poly = merge_polygons([p1, p2], 0)
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "MultiPolygon")
         self.assertEqual(len(poly.coords), 2)
@@ -99,33 +105,146 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(self._coords_to_pixel_coords(poly.coords[1][0]),
                          ((-5, 0), (-5, -5), (0, -5), (0, 0), (-5, 0)))
 
-    def test_merges_unit_polygons_along_diagonal(self) -> None:
-        p1 = self._create_polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)))
-        p2 = self._create_polygon(((0, 0), (0, -1), (-1, -1), (-1, 0), (0, 0)))
-        poly = merge_polygons([p1, p2], self.margin)
-        self.assertEqual(poly.srid, self.srid)
-        self.assertEqual(poly.geom_type, "MultiPolygon")
-        self.assertEqual(len(poly.coords), 2)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0][0]),
-                         ((1, 0), (1, 1), (0, 1), (0, 0), (1, 0)))
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[1][0]),
-                         ((-1, 0), (-1, -1), (0, -1), (0, 0), (-1, 0)))
+    # ------------------------------------------------------
+    # The following tests are for validating simplify_margin
+    # ------------------------------------------------------
 
-    def test_merges_contiguous_unit_polygons_along_diagonal(self) -> None:
-        p1 = self._create_polygon(((0, 0), (0, 1), (1, 1), (1, 0), (0, 0)))
-        p2 = self._create_polygon(((0, 0), (0, -1), (-1, -1), (-1, 0), (0, 0)))
-        p3 = self._create_polygon(((0, 0), (0, -1), (1, -1), (1, 0), (0, 0)))
-        poly = merge_polygons([p1, p2, p3], self.margin)
-        self.assertEqual(poly.srid, self.srid)
-        self.assertEqual(poly.geom_type, "Polygon")
-        self.assertEqual(len(poly.coords), 1)
-        # Because of the smiplify_margin value, the merged polygon doesn't have
-        # points, (0, 0) and (-1, 0).
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0]),
-                         ((1, 1), (0, 1), (-1, -1), (1, -1), (1, 1)))
+    def test_merges_unit_polygons_along_line(self) -> None:
+        polygons = []
+        for i in range(5):
+            polygons.append(
+                self._create_polygon(
+                    ((0, i),
+                     (0, i + 1),
+                     (1, i + 1),
+                     (1, i),
+                     (0, i))))
+        poly_no_simplification = merge_polygons(polygons, None)
+        self.assertEqual(poly_no_simplification.srid, self.srid)
+        self.assertEqual(poly_no_simplification.geom_type, "Polygon")
+        self.assertEqual(len(poly_no_simplification.coords[0]), 13)
+
+        poly_simplification_margin_0 = merge_polygons(polygons, 0)
+        self.assertEqual(poly_simplification_margin_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_0.geom_type, "Polygon")
+        # expected 5, but it turned out to be 6 because the start/end point
+        # isn't a corner.
+        self.assertEqual(len(poly_simplification_margin_0.coords[0]), 6)
+
+        poly_simplification_margin_gt_0 = merge_polygons(
+            polygons, self.margin_for_unit_pixels)
+        self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_gt_0.geom_type, "Polygon")
+        # expected 5, but it turned out to be 6 because the start/end point
+        # isn't a corner.
+        self.assertEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+
+    def test_merges_unit_polygons_along_diagonal(self) -> None:
+        # Polygons that share a common point are not considered contiguous;
+        # thus, no merging occurs.
+        polygons = []
+        for i in range(5):
+            polygons.append(
+                self._create_polygon(
+                    ((i, i),
+                     (i, i + 1),
+                     (i + 1, i + 1),
+                     (i + 1, i),
+                     (i, i))))
+        poly_no_simplification = merge_polygons(polygons, None)
+        self.assertEqual(poly_no_simplification.srid, self.srid)
+        self.assertEqual(poly_no_simplification.geom_type, "MultiPolygon")
+        self.assertEqual(len(poly_no_simplification.coords), 5)
+
+        poly_simplification_margin_0 = merge_polygons(polygons, 0)
+        self.assertEqual(poly_simplification_margin_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_0.geom_type, "MultiPolygon")
+        self.assertEqual(len(poly_simplification_margin_0.coords), 5)
+
+        poly_simplification_margin_gt_0 = merge_polygons(
+            polygons, self.margin_for_unit_pixels)
+        self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_gt_0.geom_type, "MultiPolygon")
+        self.assertEqual(len(poly_simplification_margin_gt_0.coords), 5)
+
+    def test_merges_unit_polygons_within_rectangle(self) -> None:
+        polygons = []
+        for i in range(5):
+            for j in range(3):
+                polygons.append(
+                self._create_polygon(
+                    ((j, i),
+                     (j, i + 1),
+                     (j + 1, i + 1),
+                     (j + 1, i),
+                     (j, i))))
+        poly_no_simplification = merge_polygons(polygons, None)
+        self.assertEqual(poly_no_simplification.srid, self.srid)
+        self.assertEqual(poly_no_simplification.geom_type, "Polygon")
+        self.assertEqual(len(poly_no_simplification.coords[0]), 17)
+
+        poly_simplification_margin_0 = merge_polygons(polygons, 0)
+        self.assertEqual(poly_simplification_margin_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_0.geom_type, "Polygon")
+        self.assertEqual(len(poly_simplification_margin_0.coords[0]), 5)
+
+        poly_simplification_margin_gt_0 = merge_polygons(
+            polygons, self.margin_for_unit_pixels)
+        self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_gt_0.geom_type, "Polygon")
+        self.assertEqual(len(poly_simplification_margin_gt_0.coords[0]), 5)
+
+    def test_merges_unit_polygons_within_right_triangle(self) -> None:
+        polygons = []
+        for i in range(5):
+            for j in range(0, i+1):
+                polygons.append(
+                self._create_polygon(
+                    ((j, i),
+                     (j, i + 1),
+                     (j + 1, i + 1),
+                     (j + 1, i),
+                     (j, i))))
+        poly_no_simplification = merge_polygons(polygons, None)
+        self.assertEqual(poly_no_simplification.srid, self.srid)
+        self.assertEqual(poly_no_simplification.geom_type, "Polygon")
+        self.assertEqual(len(poly_no_simplification.coords[0]), 21)
+
+        poly_simplification_margin_0 = merge_polygons(polygons, 0)
+        self.assertEqual(poly_simplification_margin_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_0.geom_type, "Polygon")
+        self.assertEqual(len(poly_simplification_margin_0.coords[0]), 13)
+
+        poly_simplification_margin_gt_0 = merge_polygons(
+            polygons, self.margin_for_unit_pixels)
+        self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
+        self.assertEqual(
+            poly_simplification_margin_gt_0.geom_type, "Polygon")
+        # expected 5, but it turned out to be 6 because the start/end point
+        # isn't a corner.
+        self.assertEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+
+    # -------------------------------------------------------
+    # The following tests are for validating input parameters
+    # -------------------------------------------------------
+
+    def test_raises_error_for_negative_simplify_margin(self) -> None:
+        p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
+        p2 = self._create_polygon(((5, 0), (5, 3), (8, 3), (8, 0), (5, 0)))
+        with self.assertRaises(Exception) as context:
+            merge_polygons([p1, p2], -5)
+        self.assertEqual(str(context.exception),
+                         "parameter, simpify_margin, must be gte 0")
 
     def test_returns_none_for_empty_polygons_list(self) -> None:
-        poly = merge_polygons([], self.margin)
+        poly = merge_polygons([], 0)
         self.assertIsNone(poly)
 
     def test_raises_error_for_polygons_with_different_srids(self) -> None:
@@ -133,9 +252,13 @@ class MergePolygonsTest(TestCase):
         p2 = self._create_polygon(((5, 0), (5, 3), (8, 3), (8, 0), (5, 0)))
         p2.srid = 4632
         with self.assertRaises(Exception) as context:
-            merge_polygons([p1, p2], self.margin)
+            merge_polygons([p1, p2], 0)
         self.assertEqual(str(context.exception),
                          "merge_polygon input polygons have different SRID's")
+
+    # ---------------------
+    # Test helper functions
+    # ---------------------
 
     def _create_polygon(self, pixel_coords: list[tuple[int, int]]) -> Polygon:
         coords = []
