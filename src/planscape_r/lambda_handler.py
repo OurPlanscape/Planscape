@@ -6,5 +6,5 @@ def lambda_handler(event, context):
     r_f = robjects.r['times2']
     result = r_f(4)
     return { 
-        'message' : result
+        'message' : str(result)
     }

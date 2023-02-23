@@ -19,8 +19,8 @@ import { filter } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
-  opacityTransitionTrigger,
   expandCollapsePanelTrigger,
+  opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan, ProjectConfig } from 'src/app/types';
 
@@ -57,6 +57,7 @@ export class CreateScenariosComponent implements OnInit {
   @Input() scenarioConfigId?: number;
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
   @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
+  @Output() backToOverviewEvent = new EventEmitter<void>();
   @Output() changeConditionEvent = new EventEmitter<string>();
   @Output() drawShapesEvent = new EventEmitter<any>();
 
@@ -117,12 +118,6 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.scenarioConfigId !== undefined) {
-      this.loadExistingConfig();
-    } else {
-      this.createNewConfig();
-    }
-
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
     this.formGroups[2].valueChanges.subscribe((_) => {
@@ -139,6 +134,12 @@ export class CreateScenariosComponent implements OnInit {
     this.formGroups[0].get('priorities')?.valueChanges.subscribe((_) => {
       this.updatePriorityWeightsFormControls();
     });
+
+    if (this.scenarioConfigId !== undefined) {
+      this.loadExistingConfig();
+    } else {
+      this.createNewConfig();
+    }
   }
 
   private constraintsFormValidator(constraintsForm: AbstractControl): boolean {
@@ -156,6 +157,9 @@ export class CreateScenariosComponent implements OnInit {
       const excludeDistance = this.formGroups[1].get('excludeDistance');
       const excludeSlope = this.formGroups[1].get('excludeSlope');
       const priorities = this.formGroups[0].get('priorities');
+      const weights = this.formGroups[3].get(
+        'priorityWeightsForm'
+      ) as FormGroup;
 
       if (config.max_budget) {
         maxBudget?.setValue(config.max_budget);
@@ -171,6 +175,11 @@ export class CreateScenariosComponent implements OnInit {
       }
       if (config.priorities) {
         priorities?.setValue(config.priorities);
+      }
+      if (config.weights) {
+        config.priorities?.forEach((priority, index) => {
+          weights.controls[priority].setValue(config.weights![index]);
+        });
       }
     });
   }
@@ -205,15 +214,17 @@ export class CreateScenariosComponent implements OnInit {
     }
   }
 
-  formValueToProjectConfig(): ProjectConfig {
+  private formValueToProjectConfig(): ProjectConfig {
     const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
     const excludeDistance = this.formGroups[1].get('excludeDistance');
     const excludeSlope = this.formGroups[1].get('excludeSlope');
     const priorities = this.formGroups[0].get('priorities');
+    const weights = this.formGroups[3].get('priorityWeightsForm') as FormGroup;
 
     let projectConfig: ProjectConfig = {
       id: this.scenarioConfigId!,
+      planId: Number(this.plan$.getValue()?.id),
     };
     if (maxBudget?.valid)
       projectConfig.max_budget = parseFloat(maxBudget.value);
@@ -224,6 +235,9 @@ export class CreateScenariosComponent implements OnInit {
     if (excludeSlope?.valid)
       projectConfig.max_slope = parseFloat(excludeSlope.value);
     if (priorities?.valid) projectConfig.priorities = priorities.value;
+    projectConfig.weights = Object.values(weights.controls).map(
+      (control) => control.value
+    );
 
     return projectConfig;
   }
@@ -242,5 +256,14 @@ export class CreateScenariosComponent implements OnInit {
       ]);
       priorityWeightsForm.addControl(priority, priorityControl);
     });
+  }
+
+  createScenario(): void {
+    this.planService
+      .createScenario(this.formValueToProjectConfig())
+      .pipe(take(1))
+      .subscribe((_) => {
+        this.backToOverviewEvent.emit();
+      });
   }
 }
