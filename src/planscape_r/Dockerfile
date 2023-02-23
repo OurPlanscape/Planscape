@@ -12,6 +12,10 @@ RUN yum -y install R
 RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
+COPY ./forsys .
+
+RUN ls
+
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
 # Install any dependencies under the ${LAMBDA_TASK_ROOT} directory 
