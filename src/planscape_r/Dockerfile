@@ -12,7 +12,7 @@ RUN yum -y install R
 RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 
-COPY ./forsys .
+COPY ./forsysr .
 
 RUN ls
 
