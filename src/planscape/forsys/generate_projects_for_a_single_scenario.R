@@ -62,5 +62,12 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
     )
   )
 
+  # Adds the input geo_wkt column to the stand output df.
+  input_stand_ids_and_geometries = select(forsys_input_data,
+                                          c(stand_id_field, geo_wkt_field)) 
+  run_outputs$stand_output <- merge(run_outputs$stand_output, 
+                                    input_stand_ids_and_geometries,
+                                    by=stand_id_field)
+
   return(run_outputs)
 }
