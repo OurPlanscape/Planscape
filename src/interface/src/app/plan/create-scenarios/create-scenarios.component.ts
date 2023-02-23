@@ -261,6 +261,7 @@ export class CreateScenariosComponent implements OnInit {
   createScenario(): void {
     this.planService
       .createScenario(this.formValueToProjectConfig())
+      .pipe(take(1))
       .subscribe((_) => {
         this.backToOverviewEvent.emit();
       });
