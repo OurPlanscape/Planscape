@@ -181,8 +181,8 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(forsys_priority_headers))}
     parsed_output = ForsysGenerationOutputForASingleScenario(
-        forsys_output, priority_weights_dict,
-        forsys_proj_id_header, forsys_area_header, forsys_cost_header)
+        forsys_output, priority_weights_dict, forsys_proj_id_header,
+        forsys_area_header, forsys_cost_header, forsys_geo_wkt_header)
     return parsed_output
 
 
@@ -202,8 +202,6 @@ def generate_project_areas_for_a_single_scenario(
         response['forsys'] = {}
         response['forsys']['input'] = forsys_input.forsys_input
         response['forsys']['output'] = forsys_output.scenario
-
-        # TODO: add logic for parsing forsys output.
 
         return JsonResponse(response)
     except Exception as e:
