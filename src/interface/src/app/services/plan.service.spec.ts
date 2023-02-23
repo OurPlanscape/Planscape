@@ -300,12 +300,10 @@ describe('PlanService', () => {
       const scenario: Scenario = {
         id: '1',
         planId: undefined,
-        maxBudget: undefined,
-        maxRoadDistance: undefined,
-        maxSlope: undefined,
-        maxTreatmentAreaRatio: undefined,
         priorities: undefined,
         createdTimestamp: undefined,
+        notes: undefined,
+        owner: undefined,
       };
 
       service.getScenario('1').subscribe((res) => {

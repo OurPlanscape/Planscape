@@ -220,15 +220,13 @@ export class PlanService {
   private convertToScenario(backendScenario: any): Scenario {
     return {
       id: backendScenario.id,
-      planId: backendScenario.plan_id,
-      maxBudget: backendScenario.max_budget,
-      maxRoadDistance: backendScenario.max_road_distance,
-      maxSlope: backendScenario.max_slope,
-      maxTreatmentAreaRatio: backendScenario.max_treatment_area_ratio,
-      priorities: backendScenario.priorities,
+      planId: backendScenario.plan,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         backendScenario.creation_time
       ),
+      priorities: backendScenario.priorities,
+      notes: backendScenario.notes,
+      owner: backendScenario.owner,
     };
   }
 
