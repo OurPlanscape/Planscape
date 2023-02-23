@@ -61,7 +61,7 @@ class ForsysRankingOutputForMultipleScenarios():
 
     # The "project output" dataframe is converted into a dictionary of lists so
     # that it's easier to parse.
-    _forsys_output_df: dict[str, list]
+    _forsys_project_output_df: dict[str, list]
     # The conditions to be prioritized.
     _priorities: list[str]
     # The headers used to parse the "project output" dataframe.
@@ -88,7 +88,7 @@ class ForsysRankingOutputForMultipleScenarios():
             priorities: list[str],
             max_area: float, max_cost: float, project_id_header: str,
             area_header: str, cost_header: str):
-        self._save_raw_forsys_output_as_dict(raw_forsys_output)
+        self._save_raw_forsys_project_output_as_dict(raw_forsys_output)
 
         self._set_header_names(priorities, area_header,
                                cost_header, project_id_header)
@@ -97,7 +97,7 @@ class ForsysRankingOutputForMultipleScenarios():
         self._max_cost = max_cost
 
         self.scenarios = {}
-        for i in range(len(self._forsys_output_df[project_id_header])):
+        for i in range(len(self._forsys_project_output_df[project_id_header])):
             scenario_weights, scenario_str = self._get_scenario(i)
 
             if scenario_str in self.scenarios.keys():
@@ -107,14 +107,14 @@ class ForsysRankingOutputForMultipleScenarios():
                 self._append_ranked_project_to_new_scenario(
                     scenario_str, scenario_weights, i)
 
-    def _save_raw_forsys_output_as_dict(
+    def _save_raw_forsys_project_output_as_dict(
             self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
         rdf = raw_forsys_output[self._PROJECT_OUTPUT_INDEX]
-        self._forsys_output_df = {
+        self._forsys_project_output_df = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
     def _check_header_name(self, header) -> None:
-        if header not in self._forsys_output_df.keys():
+        if header not in self._forsys_project_output_df.keys():
             raise Exception(
                 "header, %s, is not a forsys output header" % header)
 
@@ -144,7 +144,7 @@ class ForsysRankingOutputForMultipleScenarios():
 
     def _get_scenario(self, ind: int) -> tuple[dict, str]:
         weights = {
-            self._priorities[i]: int(self._forsys_output_df[
+            self._priorities[i]: int(self._forsys_project_output_df[
                 self._priority_weight_headers[i]][ind])
             for i in range(len(self._priorities))
         }
@@ -154,15 +154,15 @@ class ForsysRankingOutputForMultipleScenarios():
             self, scenario_weights: dict, ind: int) -> RankedProject:
         project: RankedProject = {
             'id': int(
-                self._forsys_output_df[self._project_id_header][ind]),
+                self._forsys_project_output_df[self._project_id_header][ind]),
             'weighted_priority_scores': {},
             'rank': int(
-                self._forsys_output_df[self._TREATMENT_RANK_HEADER][ind]),
+                self._forsys_project_output_df[self._TREATMENT_RANK_HEADER][ind]),
             'total_score': 0,
         }
         for i in range(len(self._priorities)):
             p = self._priorities[i]
-            contribution = self._forsys_output_df[
+            contribution = self._forsys_project_output_df[
                 self._priority_contribution_headers[i]
             ][ind] * scenario_weights[p]
             project['weighted_priority_scores'][p] = contribution
@@ -176,13 +176,13 @@ class ForsysRankingOutputForMultipleScenarios():
         scenario_ind = len(ranked_projects)
 
         cumulative_area = scenario['cumulative_ranked_project_area'][
-            scenario_ind - 1] + self._forsys_output_df[
+            scenario_ind - 1] + self._forsys_project_output_df[
             self._area_contribution_header][i]
         if self._max_area is not None and self._max_area < cumulative_area:
             return
 
         cumulative_cost = scenario['cumulative_ranked_project_cost'][
-            scenario_ind - 1] + self._forsys_output_df[
+            scenario_ind - 1] + self._forsys_project_output_df[
             self._cost_contribution_header][i]
         if self._max_cost is not None and self._max_cost < cumulative_cost:
             return
@@ -194,10 +194,12 @@ class ForsysRankingOutputForMultipleScenarios():
 
     def _append_ranked_project_to_new_scenario(
             self, scenario_str: str, scenario_weights: dict, i: int) -> None:
-        area = self._forsys_output_df[self._area_contribution_header][i]
+        area = self._forsys_project_output_df[self._area_contribution_header][
+            i]
         if self._max_area is not None and self._max_area < area:
             return
-        cost = self._forsys_output_df[self._cost_contribution_header][i]
+        cost = self._forsys_project_output_df[self._cost_contribution_header][
+            i]
         if self._max_cost is not None and self._max_cost < cost:
             return
 
@@ -240,7 +242,7 @@ class ForsysRankingOutputForASingleScenario():
     # The raw forsys output consists of 3 R dataframes.
     # The "project output" dataframe is converted into a dictionary of lists so
     # that it's easier to process in Python.
-    _forsys_output_df: dict[str, list]
+    _forsys_project_output_df: dict[str, list]
     # The conditions to be prioritized.
     # This represents the keys of constructor input parameter, priority_weights.
     _priorities: list[str]
@@ -265,7 +267,7 @@ class ForsysRankingOutputForASingleScenario():
     def __init__(self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
                  priority_weights: dict[str, float], max_area, max_cost,
                  project_id_header: str, area_header: str, cost_header: str):
-        self._save_raw_forsys_output_as_dict(raw_forsys_output)
+        self._save_raw_forsys_project_output_as_dict(raw_forsys_output)
 
         self._set_header_names(list(priority_weights.keys()), area_header,
                                cost_header, project_id_header)
@@ -277,17 +279,17 @@ class ForsysRankingOutputForASingleScenario():
             {'priority_weights': priority_weights, 'ranked_projects': [],
              'cumulative_ranked_project_area': [],
              'cumulative_ranked_project_cost': []})
-        for i in range(len(self._forsys_output_df[project_id_header])):
+        for i in range(len(self._forsys_project_output_df[project_id_header])):
             self._append_ranked_project_to_scenario(priority_weights, i)
 
-    def _save_raw_forsys_output_as_dict(
+    def _save_raw_forsys_project_output_as_dict(
             self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
         rdf = raw_forsys_output[self._PROJECT_OUTPUT_INDEX]
-        self._forsys_output_df = {
+        self._forsys_project_output_df = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
     def _check_header_name(self, header) -> None:
-        if header not in self._forsys_output_df.keys():
+        if header not in self._forsys_project_output_df.keys():
             raise Exception(
                 "header, %s, is not a forsys output header" % header)
 
@@ -312,15 +314,15 @@ class ForsysRankingOutputForASingleScenario():
             ind: int) -> RankedProject:
         project: RankedProject = {
             'id': int(
-                self._forsys_output_df[self._project_id_header][ind]),
+                self._forsys_project_output_df[self._project_id_header][ind]),
             'weighted_priority_scores': {},
             'rank': int(
-                self._forsys_output_df[self._TREATMENT_RANK_HEADER][ind]),
+                self._forsys_project_output_df[self._TREATMENT_RANK_HEADER][ind]),
             'total_score': 0,
         }
         for i in range(len(self._priorities)):
             p = self._priorities[i]
-            contribution = self._forsys_output_df[
+            contribution = self._forsys_project_output_df[
                 self._priority_contribution_headers[i]
             ][ind] * scenario_weights[p]
             project['weighted_priority_scores'][p] = contribution
@@ -336,7 +338,7 @@ class ForsysRankingOutputForASingleScenario():
         ranked_projects = self.scenario['ranked_projects']
         scenario_ind = len(ranked_projects)
 
-        cumulative_area = self._forsys_output_df[
+        cumulative_area = self._forsys_project_output_df[
             self._area_contribution_header][i]
         if scenario_ind > 0:
             cumulative_area = cumulative_area + \
@@ -344,7 +346,7 @@ class ForsysRankingOutputForASingleScenario():
         if self._max_area is not None and self._max_area < cumulative_area:
             return
 
-        cumulative_cost = self._forsys_output_df[
+        cumulative_cost = self._forsys_project_output_df[
             self._cost_contribution_header][i]
         if scenario_ind > 0:
             cumulative_cost = cumulative_cost + \
@@ -359,10 +361,9 @@ class ForsysRankingOutputForASingleScenario():
         self.scenario['cumulative_ranked_project_cost'].append(
             cumulative_cost)
 
+
 # Transforms the output of a Forsys scenario run into a more
 # easily-interpreted version.
-
-
 class ForsysGenerationOutputForASingleScenario(
         ForsysRankingOutputForASingleScenario):
     # Along with the constants and variables below, this inherits the class
@@ -375,6 +376,11 @@ class ForsysGenerationOutputForASingleScenario(
     # This is used when parsing the raw forsys output's stand output dataframe.
     _geo_wkt_header: str
 
+    # The raw forsys output consists of 3 R dataframes.
+    # The "stand output" dataframe is converted into a dictionary of lists so
+    # that it's easier to process in Python.
+    _forsys_stand_output_df: dict[str, list]
+
     def __init__(
             self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
             priority_weights: dict[str, float],
@@ -383,16 +389,22 @@ class ForsysGenerationOutputForASingleScenario(
         ForsysRankingOutputForASingleScenario.__init__(
             self, raw_forsys_output, priority_weights, None, None,
             project_id_header, area_header, cost_header)
-        ForsysRankingOutputForASingleScenario._check_header_name(
-            self, geo_wkt_header)
+
+        self._save_raw_forsys_stand_output_as_dict(raw_forsys_output)
+        if geo_wkt_header not in self._forsys_stand_output_df.keys():
+            raise Exception(
+                "header, %s, is not a forsys output header" % geo_wkt_header)
         self._geo_wkt_header = geo_wkt_header
 
         project_area_geometries = self._get_project_area_geometries(
             raw_forsys_output)
+        self._populate_geo_wkt_in_ranked_projects(project_area_geometries)
 
-        for ranked_project in self.scenario['ranked_projects']:
-            ranked_project['geo_wkt'] = project_area_geometries[
-                ranked_project['id']].wkt
+    def _save_raw_forsys_stand_output_as_dict(
+            self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
+        rdf = raw_forsys_output[self._STAND_OUTPUT_INDEX]
+        self._forsys_stand_output_df = {
+            key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
     def _get_project_area_geometries(self,
                                      raw_forsys_output: "rpy2.robjects.vectors.ListVector"
@@ -426,3 +438,10 @@ class ForsysGenerationOutputForASingleScenario(
             merged_polygons[id] = merge_polygons(
                 project_area_geometries[id], 0)
         return merged_polygons
+
+    def _populate_geo_wkt_in_ranked_projects(
+            self,
+            project_area_geometries: dict[int, Polygon | MultiPolygon]) -> None:
+        for ranked_project in self.scenario['ranked_projects']:
+            ranked_project['geo_wkt'] = project_area_geometries[
+                ranked_project['id']].wkt
