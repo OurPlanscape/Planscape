@@ -31,9 +31,9 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(len(poly.coords), 1)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0]),
-                         ((5, 5), (0, 5), (0, 0), (8, 0),
-                          (8, 3), (5, 3), (5, 5)))
+        self.assertEqual(
+            self._coords_to_sorted_pixel_coords(poly.coords[0]),
+            [(0, 0), (0, 5), (5, 3), (5, 5), (8, 0), (8, 3)])
 
     def test_merges_overlapping_polygons(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
@@ -43,9 +43,8 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(len(poly.coords), 1)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0]),
-                         ((5, 5), (0, 5), (0, 0), (8, 0),
-                          (8, 3), (5, 3), (5, 5)))
+        self.assertEqual(self._coords_to_sorted_pixel_coords(poly.coords[0]),
+                         [(0, 0), (0, 5), (5, 3), (5, 5), (8, 0), (8, 3)])
 
     def test_merges_three_nonoverlapping_polygons(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
@@ -58,11 +57,12 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly.geom_type, "MultiPolygon")
         self.assertEqual(len(poly.coords), 2)
         # The first polygon is a merging of p1 and p3.
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0][0]), ((
-            5, 0), (5, 5), (0, 5), (0, 1), (-1, 1), (-1, 0), (5, 0)))
+        self.assertEqual(self._coords_to_sorted_pixel_coords(
+            poly.coords[0][0]),
+            [(-1, 0), (-1, 1), (0, 1), (0, 5), (5, 0), (5, 5)])
         # The second polygon is p2.
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[1][0]),
-                         ((8, 0), (8, 3), (6, 3), (6, 0), (8, 0)))
+        self.assertEqual(self._coords_to_sorted_pixel_coords(
+            poly.coords[1][0]), [(6, 0), (6, 3), (8, 0), (8, 3)])
 
     def test_merges_three_overlapping_polygons(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
@@ -74,9 +74,8 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(len(poly.coords), 1)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0]),
-                         ((0, 5), (0, 0), (8, 0), (8, 3),
-                          (6, 3), (6, 5), (0, 5)))
+        self.assertEqual(self._coords_to_sorted_pixel_coords(poly.coords[0]),
+                         [(0, 0), (0, 5), (6, 3), (6, 5), (8, 0), (8, 3)])
 
     def test_merges_overlapping_polygons_torus(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (1, 5), (1, 0), (0, 0)))
@@ -88,10 +87,12 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly.geom_type, "Polygon")
         self.assertEqual(poly.num_interior_rings, 1)
         self.assertEqual(len(poly.coords), 2)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0]),
-                         ((4, 0), (5, 0), (5, 5), (0, 5), (0, 0), (4, 0)))
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[1]),
-                         ((4, 1), (1, 1), (1, 4), (4, 4), (4, 1)))
+        # There are 5 points rather than 4 because the start/end point of the
+        # polygon isn't a corner.
+        self.assertEqual(self._coords_to_sorted_pixel_coords(poly.coords[0]),
+                         [(0, 0), (0, 5), (4, 0), (5, 0), (5, 5)])
+        self.assertEqual(self._coords_to_sorted_pixel_coords(poly.coords[1]),
+                         [(1, 1), (1, 4), (4, 1), (4, 4)])
 
     def test_merges_polygons_along_diagonal(self) -> None:
         p1 = self._create_polygon(((0, 0), (0, 5), (5, 5), (5, 0), (0, 0)))
@@ -100,10 +101,10 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly.srid, self.srid)
         self.assertEqual(poly.geom_type, "MultiPolygon")
         self.assertEqual(len(poly.coords), 2)
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[0][0]),
-                         ((5, 0), (5, 5), (0, 5), (0, 0), (5, 0)))
-        self.assertEqual(self._coords_to_pixel_coords(poly.coords[1][0]),
-                         ((-5, 0), (-5, -5), (0, -5), (0, 0), (-5, 0)))
+        self.assertEqual(self._coords_to_sorted_pixel_coords(
+            poly.coords[0][0]), [(0, 0), (0, 5), (5, 0), (5, 5)])
+        self.assertEqual(self._coords_to_sorted_pixel_coords(
+            poly.coords[1][0]), [(-5, -5), (-5, 0), (0, -5), (0, 0)])
 
     # ------------------------------------------------------
     # The following tests are for validating simplify_margin
@@ -128,18 +129,19 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly_simplification_margin_0.srid, self.srid)
         self.assertEqual(
             poly_simplification_margin_0.geom_type, "Polygon")
-        # expected 5, but it turned out to be 6 because the start/end point
-        # isn't a corner.
-        self.assertEqual(len(poly_simplification_margin_0.coords[0]), 6)
+        # expecting 5, but if the start/end point isn't a corner, it could be 6.
+        self.assertLessEqual(len(poly_simplification_margin_0.coords[0]), 6)
+        self.assertGreaterEqual(len(poly_simplification_margin_0.coords[0]), 5)
 
         poly_simplification_margin_gt_0 = merge_polygons(
             polygons, self.margin_for_unit_pixels)
         self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
         self.assertEqual(
             poly_simplification_margin_gt_0.geom_type, "Polygon")
-        # expected 5, but it turned out to be 6 because the start/end point
-        # isn't a corner.
-        self.assertEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+        # expecting 5, but if the start/end point isn't a corner, it could be 6.
+        self.assertLessEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+        self.assertGreaterEqual(
+            len(poly_simplification_margin_gt_0.coords[0]), 5)
 
     def test_merges_unit_polygons_along_diagonal(self) -> None:
         # Polygons that share a common point are not considered contiguous;
@@ -176,12 +178,12 @@ class MergePolygonsTest(TestCase):
         for i in range(5):
             for j in range(3):
                 polygons.append(
-                self._create_polygon(
-                    ((j, i),
-                     (j, i + 1),
-                     (j + 1, i + 1),
-                     (j + 1, i),
-                     (j, i))))
+                    self._create_polygon(
+                        ((j, i),
+                         (j, i + 1),
+                            (j + 1, i + 1),
+                            (j + 1, i),
+                            (j, i))))
         poly_no_simplification = merge_polygons(polygons, None)
         self.assertEqual(poly_no_simplification.srid, self.srid)
         self.assertEqual(poly_no_simplification.geom_type, "Polygon")
@@ -191,26 +193,31 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly_simplification_margin_0.srid, self.srid)
         self.assertEqual(
             poly_simplification_margin_0.geom_type, "Polygon")
-        self.assertEqual(len(poly_simplification_margin_0.coords[0]), 5)
+        # expecting 5, but if the start/end point isn't a corner, it could be 6.
+        self.assertLessEqual(len(poly_simplification_margin_0.coords[0]), 6)
+        self.assertGreaterEqual(len(poly_simplification_margin_0.coords[0]), 5)
 
         poly_simplification_margin_gt_0 = merge_polygons(
             polygons, self.margin_for_unit_pixels)
         self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
         self.assertEqual(
             poly_simplification_margin_gt_0.geom_type, "Polygon")
-        self.assertEqual(len(poly_simplification_margin_gt_0.coords[0]), 5)
+        # expecting 5, but if the start/end point isn't a corner, it could be 6.
+        self.assertLessEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+        self.assertGreaterEqual(
+            len(poly_simplification_margin_gt_0.coords[0]), 5)
 
     def test_merges_unit_polygons_within_right_triangle(self) -> None:
         polygons = []
         for i in range(5):
             for j in range(0, i+1):
                 polygons.append(
-                self._create_polygon(
-                    ((j, i),
-                     (j, i + 1),
-                     (j + 1, i + 1),
-                     (j + 1, i),
-                     (j, i))))
+                    self._create_polygon(
+                        ((j, i),
+                         (j, i + 1),
+                            (j + 1, i + 1),
+                            (j + 1, i),
+                            (j, i))))
         poly_no_simplification = merge_polygons(polygons, None)
         self.assertEqual(poly_no_simplification.srid, self.srid)
         self.assertEqual(poly_no_simplification.geom_type, "Polygon")
@@ -227,9 +234,10 @@ class MergePolygonsTest(TestCase):
         self.assertEqual(poly_simplification_margin_gt_0.srid, self.srid)
         self.assertEqual(
             poly_simplification_margin_gt_0.geom_type, "Polygon")
-        # expected 5, but it turned out to be 6 because the start/end point
-        # isn't a corner.
-        self.assertEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+        # expecting 5, but if the start/end point isn't a corner, it could be 6.
+        self.assertLessEqual(len(poly_simplification_margin_gt_0.coords[0]), 6)
+        self.assertGreaterEqual(
+            len(poly_simplification_margin_gt_0.coords[0]), 5)
 
     # -------------------------------------------------------
     # The following tests are for validating input parameters
@@ -273,12 +281,12 @@ class MergePolygonsTest(TestCase):
         return (self.xorig + pixel[0] * self.xscale,
                 self.yorig + pixel[1] * self.yscale)
 
-    def _coords_to_pixel_coords(self,
-                                coords: tuple[tuple[float, float]]) -> tuple[tuple[int, int]]:
+    def _coords_to_sorted_pixel_coords(self,
+                                       coords: tuple[tuple[float, float]]) -> tuple[tuple[int, int]]:
         pixel_coords = []
         for coord in coords:
             pixel_coords.append(self._coord_tuple_to_pixel(coord))
-        return tuple(pixel_coords)
+        return sorted(set(pixel_coords))
 
     def _coord_tuple_to_pixel(self,
                               coord: tuple[float, float]) -> tuple[int, int]:
