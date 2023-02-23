@@ -44,7 +44,13 @@
 </form>
 
   <div class="flex-row gap-12">
-    <button mat-raised-button color="primary" [disabled]="formGroup?.invalid">GENERATE SCENARIO</button>
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="formGroup?.invalid || generatingScenario"
+      (click)="generateScenario()">
+      {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE SCENARIO' }}
+    </button>
     <button mat-flat-button (click)="formBackEvent.emit()">BACK</button>
   </div>
 </div>
