@@ -328,4 +328,32 @@ describe('PlanService', () => {
       httpTestingController.verify();
     });
   });
+
+  describe('getScenariosForPlan', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.getScenariosForPlan('1').subscribe((res) => {
+        expect(res).toEqual([
+          {
+            id: '1',
+            createdTimestamp: 5000,
+          },
+        ]);
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat(
+          '/plan/list_scenarios_for_plan/?plan_id=1'
+        )
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush([
+        {
+          id: '1',
+          creation_timestamp: 5,
+        },
+      ]);
+      httpTestingController.verify();
+    });
+  });
 });
