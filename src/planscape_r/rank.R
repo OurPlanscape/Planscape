@@ -18,7 +18,7 @@ times2 <- function(number) {
     scenario_output_fields = c("area_ha", "priority1", "priority2", "priority3", "priority4"),
     proj_fixed_target =  TRUE,
     proj_target_field = "area_ha",
-    proj_target_value = target_value
+    proj_target_value = number
   )
 
   return(run_outputs)
