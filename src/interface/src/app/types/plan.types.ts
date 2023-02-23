@@ -36,11 +36,13 @@ export interface Scenario {
 
 export interface ProjectConfig {
   id: number;
+  planId?: number;
   max_budget?: number;
   max_treatment_area_ratio?: number;
   max_road_distance?: number;
   max_slope?: number;
   priorities?: string[];
+  weights?: number[];
   createdTimestamp? : number;
 }
 

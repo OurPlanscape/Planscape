@@ -220,12 +220,14 @@ describe('PlanService', () => {
       const projectConfigs: ProjectConfig[] = [
         {
           id: 1,
+          planId: undefined,
           max_budget: 200,
           max_road_distance: undefined,
           max_slope: undefined,
           max_treatment_area_ratio: undefined,
           priorities: undefined,
           createdTimestamp: undefined,
+          weights: undefined,
         },
       ];
 
@@ -253,12 +255,14 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
         id: 1,
+        planId: undefined,
         max_budget: 200,
         max_road_distance: undefined,
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
         priorities: undefined,
         createdTimestamp: undefined,
+        weights: undefined,
       };
 
       service.getProject(1).subscribe((res) => {
@@ -290,6 +294,37 @@ describe('PlanService', () => {
         project_ids: projectIds,
       });
       req.flush(projectIds);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('createScenario', () => {
+    it('should make HTTP request to backend', (done) => {
+      const projectConfig: ProjectConfig = {
+        id: 1,
+        planId: 2,
+        max_budget: 200,
+      };
+
+      service.createScenario(projectConfig).subscribe((res) => {
+        expect(res).toEqual('1');
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_scenario/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({
+        plan_id: 2,
+        max_budget: 200,
+        max_road_distance: undefined,
+        max_slope: undefined,
+        max_treatment_area_ratio: undefined,
+        priorities: undefined,
+        weights: undefined,
+      });
+      req.flush('1');
       httpTestingController.verify();
     });
   });
