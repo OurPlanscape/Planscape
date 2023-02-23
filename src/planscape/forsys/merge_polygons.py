@@ -1,11 +1,6 @@
 from django.contrib.gis.geos import MultiPolygon, Polygon
 
 
-<<<<<<< HEAD
-def merge_polygons(
-        polygons: list[Polygon],
-        simplify_margin: float | None) -> Polygon | MultiPolygon | None:
-=======
 # Merges input polygons and outputs either ...
 #   - a single merged Polygon (if the polygons are contiguous)
 #   - a MultiPolygon containing merged polygons (if the polygons aren't 
@@ -30,7 +25,6 @@ def merge_polygons(
     if simplify_margin is not None and simplify_margin < 0:
         raise Exception("parameter, simpify_margin, must be gte 0")
 
->>>>>>> 83d5ca71bad5590473d5fdfedf9a56fc6613841f
     if len(polygons) == 0:
         return None
 
@@ -40,11 +34,7 @@ def merge_polygons(
         if p.srid != geo.srid:
             raise Exception(
                 "merge_polygon input polygons have different SRID's")
-<<<<<<< HEAD
-        geo = geo.union(polygons[i])
-=======
         geo = geo.union(p)
->>>>>>> 83d5ca71bad5590473d5fdfedf9a56fc6613841f
 
     if simplify_margin is None:
         return geo
