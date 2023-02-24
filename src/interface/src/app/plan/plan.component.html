@@ -18,8 +18,14 @@
           </div>
           <div class="plan-content-panel">
             <router-outlet #outlet="outlet"></router-outlet>
-            <app-create-scenarios *ngIf="!(viewScenario$ | async)" [plan$]="currentPlan$" [planningStep]="currentPlanStep" [scenarioConfigId]="openConfigId"
-              (changeConditionEvent)="changeCondition($event)" (drawShapesEvent)="drawShapes($event)">
+            <app-create-scenarios
+              *ngIf="!(viewScenario$ | async)"
+              [plan$]="currentPlan$"
+              [planningStep]="currentPlanStep"
+              [scenarioConfigId]="openConfigId"
+              (backToOverviewEvent)="backToOverview()"
+              (changeConditionEvent)="changeCondition($event)"
+              (drawShapesEvent)="drawShapes($event)">
             </app-create-scenarios>
           </div>
         </ng-container>

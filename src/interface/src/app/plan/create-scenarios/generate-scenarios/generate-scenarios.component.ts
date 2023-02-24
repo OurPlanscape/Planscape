@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, FormGroup } from '@angular/forms';
 import { MatSliderChange } from '@angular/material/slider';
 import { filter } from 'rxjs/operators';
-import { MapService } from 'src/app/services';
+import { MapService, PlanService } from 'src/app/services';
 
 @Component({
   selector: 'app-generate-scenarios',
@@ -12,6 +12,9 @@ import { MapService } from 'src/app/services';
 export class GenerateScenariosComponent implements OnInit {
   @Input() formGroup?: FormGroup;
   @Output() formBackEvent = new EventEmitter<void>();
+  @Output() createScenarioEvent = new EventEmitter<void>();
+
+  generatingScenario: boolean = false;
 
   private priorityNameMap?: Map<string, string>;
   priorityWeightControls: {
@@ -56,5 +59,10 @@ export class GenerateScenariosComponent implements OnInit {
   ): void {
     control?.setValue(sliderEvent.value);
     control?.markAsDirty();
+  }
+
+  generateScenario(): void {
+    this.generatingScenario = true;
+    this.createScenarioEvent.emit();
   }
 }
