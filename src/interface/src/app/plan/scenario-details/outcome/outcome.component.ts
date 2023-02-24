@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { Component, Input, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+
+import { Scenario, Plan } from 'src/app/types';
 
 @Component({
   selector: 'app-outcome',
@@ -7,6 +9,8 @@ import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
   styleUrls: ['./outcome.component.scss']
 })
 export class OutcomeComponent implements OnInit {
+  @Input() plan: Plan | null = null;
+  @Input() scenario: Scenario | null = null;
   scenarioNotes: FormGroup;
 
   constructor(private fb : FormBuilder) {

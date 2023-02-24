@@ -32,6 +32,15 @@ export interface PlanPreview {
 export interface Scenario {
   id: string;
   createdTimestamp?: number; //in milliseconds since epoch
+  owner?: string;
+  planId?: string;
+  maxBudget?: number;
+  maxTreatmentAreaRatio?: number;
+  maxRoadDistance?: number;
+  maxSlope?: number;
+  priorities?: string[];
+  weights?: string[];
+  notes?: string;
 }
 
 export interface ProjectConfig {
