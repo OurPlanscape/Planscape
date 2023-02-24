@@ -8,18 +8,32 @@ import { Scenario, Plan } from 'src/app/types';
   templateUrl: './outcome.component.html',
   styleUrls: ['./outcome.component.scss']
 })
-export class OutcomeComponent implements OnInit {
+export class OutcomeComponent {
   @Input() plan: Plan | null = null;
   @Input() scenario: Scenario | null = null;
   scenarioNotes: FormGroup;
 
+  // TODO: Use real priorities from the backend.
+  priorities: {
+    name: string;
+    value: number;
+  }[] = [
+    {
+      name: 'Fire Dynamics',
+      value: 3,
+    }
+  ];
+
   constructor(private fb : FormBuilder) {
+    // TODO: Call update scenario on submit.
     this.scenarioNotes = fb.group({
       notes: "",
     });
   }
 
-  ngOnInit(): void {
+  ngOnChanges(): void {
+    if (this.scenario) {
+      this.scenarioNotes.controls['notes'].setValue(this.scenario.notes);
+    }
   }
-
 }

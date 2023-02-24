@@ -222,7 +222,7 @@ export class PlanService {
       id: backendScenario.id,
       planId: backendScenario.plan,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        backendScenario.creation_time
+        backendScenario.creation_timestamp
       ),
       priorities: backendScenario.priorities,
       notes: backendScenario.notes,
