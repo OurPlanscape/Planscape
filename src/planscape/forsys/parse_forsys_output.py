@@ -419,7 +419,6 @@ class ForsysGenerationOutputForASingleScenario(
         rdf = raw_forsys_output[self._STAND_OUTPUT_INDEX]
         stand_output_df = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
-        print(stand_output_df.keys())
         project_area_geometries = {}
         for i in range(len(stand_output_df[self._project_id_header])):
             id = stand_output_df[self._project_id_header][i]
