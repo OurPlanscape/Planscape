@@ -63,6 +63,7 @@ describe('PlanComponent', () => {
       getPlan: of(fakePlan),
       getProjectsForPlan: of([]),
       updateStateWithScenario: of(fakePlan),
+      getScenariosForPlan: of([]),
     });
     fakeService.planState$ = of({});
 
