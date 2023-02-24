@@ -2,9 +2,10 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
-import { PlanService } from 'src/app/services';
-import { Plan, Region } from 'src/app/types';
+import { PlanService, PlanState } from 'src/app/services';
+import { Region } from 'src/app/types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
@@ -18,7 +19,6 @@ describe('CreateScenariosComponent', () => {
     fakePlanService = jasmine.createSpyObj<PlanService>(
       'PlanService',
       {
-        createProjectInPlan: of(1),
         getConditionScoresForPlanningArea: of(),
         getProject: of({
           id: 1,
@@ -26,8 +26,25 @@ describe('CreateScenariosComponent', () => {
         }),
         updateProject: of(1),
         createScenario: of('1'),
+        updateStateWithShapes: undefined,
       },
-      {}
+      {
+        planState$: new BehaviorSubject<PlanState>({
+          all: {
+            '1': {
+              id: '1',
+              ownerId: 'fakeowner',
+              name: 'testplan',
+              region: Region.SIERRA_NEVADA,
+            },
+          },
+          currentPlanId: '1',
+          currentConfigId: 1,
+          currentScenarioId: null,
+          mapConditionFilepath: null,
+          mapShapes: null,
+        }),
+      }
     );
 
     await TestBed.configureTestingModule({
@@ -38,13 +55,6 @@ describe('CreateScenariosComponent', () => {
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
-
-    component.plan$ = new BehaviorSubject<Plan | null>({
-      id: '1',
-      ownerId: 'fakeowner',
-      name: 'testplan',
-      region: Region.SIERRA_NEVADA,
-    });
 
     fixture.detectChanges();
   });
@@ -57,14 +67,7 @@ describe('CreateScenariosComponent', () => {
     expect(component.stepper?.selectedIndex).toEqual(0);
   });
 
-  it('should create a new project when initialized with no config ID', () => {
-    expect(fakePlanService.createProjectInPlan).toHaveBeenCalledOnceWith('1');
-  });
-
-  it('should load existing config into form when initialized with config ID', () => {
-    component.scenarioConfigId = 1;
-    component.ngOnInit();
-
+  it('should load existing config into form', () => {
     expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
 
     component.formGroups[1].valueChanges.subscribe((_) => {
@@ -99,21 +102,22 @@ describe('CreateScenariosComponent', () => {
     expect(fakePlanService.updateProject).toHaveBeenCalledTimes(1);
   });
 
-  it('emits drawShapes event when "identify project areas" form inputs change', () => {
+  it('update plan state when "identify project areas" form inputs change', () => {
     const generateAreas = component.formGroups[2].get('generateAreas');
     const uploadedArea = component.formGroups[2].get('uploadedArea');
-    spyOn(component.drawShapesEvent, 'emit');
 
     // Set "generate areas automatically" to true
     generateAreas?.setValue(true);
 
-    expect(component.drawShapesEvent.emit).toHaveBeenCalledWith(null);
+    expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(null);
 
     // Add an uploaded area and set "generate areas automatically" to false
     generateAreas?.setValue(false);
     uploadedArea?.setValue('testvalue');
 
-    expect(component.drawShapesEvent.emit).toHaveBeenCalledWith('testvalue');
+    expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(
+      'testvalue'
+    );
   });
 
   it('adds a priority weight form control for each priority', () => {
@@ -133,6 +137,8 @@ describe('CreateScenariosComponent', () => {
   it('creates scenario when event is emitted', () => {
     component.scenarioConfigId = 1;
     component.formGroups[0].get('priorities')?.setValue(['test']);
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate');
 
     component.createScenario();
 
@@ -145,5 +151,6 @@ describe('CreateScenariosComponent', () => {
       priorities: ['test'],
       weights: [1],
     });
+    expect(router.navigate).toHaveBeenCalledOnceWith(['plan', '1']);
   });
 });

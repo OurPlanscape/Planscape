@@ -115,6 +115,9 @@ describe('MapComponent', () => {
           all: {}, // All plans indexed by id
           currentPlanId: 'temp',
           currentScenarioId: null,
+          currentConfigId: null,
+          mapConditionFilepath: null,
+          mapShapes: null,
         }),
       }
     );
