@@ -25,6 +25,9 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
 
+  private filepath: string = '';
+  private shapes: any | null = null;
+
   constructor(private planService: PlanService, private router: Router) {}
 
   ngAfterViewInit(): void {
@@ -62,8 +65,14 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        this.setCondition(state.mapConditionFilepath ?? '');
-        this.drawShapes(state.mapShapes);
+        if (state.mapConditionFilepath ?? '' !== this.filepath) {
+          this.filepath = state.mapConditionFilepath ?? '';
+          this.setCondition(state.mapConditionFilepath ?? '');
+        }
+        if (state.mapShapes !== this.shapes) {
+          this.shapes = state.mapShapes;
+          this.drawShapes(state.mapShapes);
+        }
       });
   }
 
