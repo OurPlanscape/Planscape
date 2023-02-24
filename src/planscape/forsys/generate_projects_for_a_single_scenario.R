@@ -42,14 +42,18 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   enable_debug <- nchar(output_scenario_name) > 0 && 
     nchar(output_scenario_tag) > 0
 
+  
+  shp <- st_as_sf(forsys_input_data)
+
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
+  start_time <- Sys.time()
   suppressMessages (
     run_outputs <- forsys::run(
       return_outputs = TRUE,
       write_outputs = enable_debug,
       scenario_name = output_scenario_name,
       scenario_write_tags = output_scenario_tag,
-      stand_data = forsys_input_data,
+      stand_data = shp,
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
       stand_area_field = stand_area_field,
@@ -72,6 +76,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       proj_target_value = 0.5
     )
   )
+  end_time <- Sys.time()
 
   # Adds the input geo_wkt column to the stand output df.
   input_stand_ids_and_geometries = select(forsys_input_data,
@@ -84,7 +89,22 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   # output/<output_scenario_name>/<output_scenario_tag>/
   if (enable_debug) {
     output_dir = file.path('output', output_scenario_name, output_scenario_tag)
-    st_write(forsys_input_data, file.path(output_dir, 'forsys_input_data.shp'))
+
+    # Writes the input to a file.
+    st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
+    # Writes processing time to a file.
+    diff_time = end_time - start_time
+    write(paste("start time: ", start_time,
+                "\nend time: ", end_time,
+                "\nrun time: ", diff_time, units(diff_time)),
+      file.path(output_dir, 'run_time.txt'))
+    # Graphs priorities and weighted priorities.
+    pdf(file=file.path(output_dir, 'graphs.pdf'))
+    for (p in priorities) {
+      plot(shp[p], border=NA)
+    }
+    plot(shp["weighted_priorities"], border=NA)
+    dev.off()
   }
 
   return(run_outputs)
