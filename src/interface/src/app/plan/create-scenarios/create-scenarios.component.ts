@@ -2,7 +2,7 @@ import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import {
   Component,
   EventEmitter,
-  Input,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -14,8 +14,9 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, take } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, Subject, take } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
@@ -23,8 +24,6 @@ import {
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan, ProjectConfig } from 'src/app/types';
-
-import { PlanStep } from './../plan.component';
 
 interface StepState {
   complete?: boolean;
@@ -51,22 +50,23 @@ interface StepState {
     }),
   ],
 })
-export class CreateScenariosComponent implements OnInit {
+export class CreateScenariosComponent implements OnInit, OnDestroy {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
 
-  @Input() scenarioConfigId?: number;
-  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
-  @Input() planningStep: PlanStep = PlanStep.CreateScenarios;
-  @Output() backToOverviewEvent = new EventEmitter<void>();
-  @Output() changeConditionEvent = new EventEmitter<string>();
-  @Output() drawShapesEvent = new EventEmitter<any>();
+  scenarioConfigId?: number | null;
+  plan$ = new BehaviorSubject<Plan | null>(null);
 
   formGroups: FormGroup[];
-  readonly PlanStep = PlanStep;
   panelExpanded: boolean = true;
   stepStates: StepState[];
 
-  constructor(private fb: FormBuilder, private planService: PlanService) {
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(
+    private fb: FormBuilder,
+    private planService: PlanService,
+    private router: Router
+  ) {
     // Initialize empty form
     this.formGroups = [
       // Step 1: Select priorities
@@ -118,15 +118,24 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Get plan details and current config ID from plan state, then load the config.
+    this.planService.planState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((planState) => {
+        this.plan$.next(planState.all[planState.currentPlanId!]);
+        this.scenarioConfigId = planState.currentConfigId;
+        this.loadConfig();
+      });
+
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
     this.formGroups[2].valueChanges.subscribe((_) => {
       const generateAreas = this.formGroups[2].get('generateAreas');
       const uploadedArea = this.formGroups[2].get('uploadedArea');
       if (generateAreas?.value) {
-        this.drawShapesEvent.emit(null);
+        this.drawShapes(null);
       } else {
-        this.drawShapesEvent.emit(uploadedArea?.value);
+        this.drawShapes(uploadedArea?.value);
       }
     });
 
@@ -134,12 +143,11 @@ export class CreateScenariosComponent implements OnInit {
     this.formGroups[0].get('priorities')?.valueChanges.subscribe((_) => {
       this.updatePriorityWeightsFormControls();
     });
+  }
 
-    if (this.scenarioConfigId !== undefined) {
-      this.loadExistingConfig();
-    } else {
-      this.createNewConfig();
-    }
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private constraintsFormValidator(constraintsForm: AbstractControl): boolean {
@@ -150,7 +158,7 @@ export class CreateScenariosComponent implements OnInit {
     return !!maxBudget?.value || !!optimizeBudget?.value || !!maxArea?.value;
   }
 
-  private loadExistingConfig(): void {
+  private loadConfig(): void {
     this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
       const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
       const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
@@ -182,21 +190,6 @@ export class CreateScenariosComponent implements OnInit {
         });
       }
     });
-  }
-
-  private createNewConfig(): void {
-    this.plan$
-      .pipe(
-        filter((plan) => !!plan),
-        take(1)
-      )
-      .subscribe((plan) => {
-        this.planService
-          .createProjectInPlan(plan!.id)
-          .subscribe((projectId) => {
-            this.scenarioConfigId = projectId;
-          });
-      });
   }
 
   selectedStepChanged(event: StepperSelectionEvent): void {
@@ -263,7 +256,17 @@ export class CreateScenariosComponent implements OnInit {
       .createScenario(this.formValueToProjectConfig())
       .pipe(take(1))
       .subscribe((_) => {
-        this.backToOverviewEvent.emit();
+        // Navigate back to plan overview
+        const planId = this.plan$.getValue()?.id;
+        this.router.navigate(['plan', planId]);
       });
+  }
+
+  changeCondition(filepath: string): void {
+    this.planService.updateStateWithConditionFilepath(filepath);
+  }
+
+  private drawShapes(shapes: any | null): void {
+    this.planService.updateStateWithShapes(shapes);
   }
 }

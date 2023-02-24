@@ -16,7 +16,7 @@
         </ng-template>
         <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[0]"
           (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()"
-          (changeConditionEvent)="changeConditionEvent.emit($event)">
+          (changeConditionEvent)="changeCondition($event)">
         </app-set-priorities>
       </mat-step>
 
@@ -32,7 +32,7 @@
         </app-constraints-panel>
       </mat-step>
 
-      <!-- Step 4: Identify project areas -->
+      <!-- Step 3: Identify project areas -->
       <mat-step>
         <ng-template matStepLabel>
           <div class="step-label-header">Identify project areas</div>
@@ -45,7 +45,7 @@
         </app-identify-project-areas>
       </mat-step>
 
-      <!-- Step 5: Generate scenarios -->
+      <!-- Step 4: Generate scenarios -->
       <mat-step>
         <ng-template matStepLabel>
           <div class="step-label-header">Generate scenarios</div>
