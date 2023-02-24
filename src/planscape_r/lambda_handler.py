@@ -1,5 +1,5 @@
 import rpy2.robjects as robjects
-from robjects.packages import importr
+from rpy2.robjects.packages import importr
 
 def lambda_handler(event, context): 
     r=robjects.r
