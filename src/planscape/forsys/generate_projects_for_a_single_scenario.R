@@ -21,17 +21,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   # output/<output_scenario_name>/<output_scenario_tag>/
   enable_debug <- nchar(output_scenario_name) > 0 && 
     nchar(output_scenario_tag) > 0
-  output_dir = file.path('output', output_scenario_name, output_scenario_tag)
-  # The rprof path is different from the output path because when forsys
-  # parameter, write_outputs, is TRUE, forsys will clear everything in the
-  # output directory before writing. 
-  rprof_output_dir = file.path('output', 'rprof', output_scenario_name,
-                               output_scenario_tag)
-
-  if (enable_debug) {
-    dir.create(rprof_output_dir, recursive=TRUE)
-    Rprof(file.path(rprof_output_dir, "rprof.log"), memory.profiling=TRUE)
-  }
 
   priority_impact_fields <- paste(priorities, "_PCP", sep="")
 
@@ -40,11 +29,13 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                 forsys::calculate_spm(fields = priorities) %>%
                 forsys::calculate_pcp(fields = priorities)
   # Appends a preset_priority column, which contains total impact score values.
-  forsys_input_data <- forsys_input_data %>%
-                forsys::combine_priorities(
-                  fields = priority_impact_fields, 
-                  weights = priority_weights, 
-                  new_field = 'weighted_priorities')
+  suppressMessages(
+    forsys_input_data <- forsys_input_data %>%
+                  forsys::combine_priorities(
+                    fields = priority_impact_fields, 
+                    weights = priority_weights, 
+                    new_field = 'weighted_priorities')
+  )
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
   # Patchmax expects column name to be "geometry" - do not change the variable
   # name.
@@ -96,14 +87,11 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
   if (enable_debug) {
-    # Stops rprof sampling and writes summary to logs.
-    Rprof(NULL)
-    summary <- summaryRprof(file.path(rprof_output_dir, "rprof.log"),
-                            memory = "both")
-    write.csv(summary$by.total,
-              file.path(rprof_output_dir, "rprof.summary.log"))
+    output_dir = file.path('output', output_scenario_name, output_scenario_tag)
     # Writes the input to a shape file.
-    st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
+    suppressMessages(
+      st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
+    )
     # Graphs priorities and weighted priorities.
     pdf(file=file.path(output_dir, 'graphs.pdf'))
     for (p in priorities) {
