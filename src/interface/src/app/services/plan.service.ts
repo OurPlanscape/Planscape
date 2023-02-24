@@ -17,6 +17,7 @@ export interface PlanState {
   };
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
+  currentScenario?: Scenario;
 }
 
 export interface BackendPlan {
@@ -200,6 +201,65 @@ export class PlanService {
     );
   }
 
+  /** Fetches a scenario by its id from the backend. */
+  getScenario(scenarioId: string): Observable<Scenario> {
+    const url = BackendConstants.END_POINT.concat(
+      '/plan/get_scenario/?id=',
+      scenarioId
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response) => this.convertToScenario(response))
+      );
+  }
+
+  private convertToScenario(backendScenario: any): Scenario {
+    return {
+      id: backendScenario.id,
+      planId: backendScenario.plan,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        backendScenario.creation_time
+      ),
+      priorities: backendScenario.priorities,
+      notes: backendScenario.notes,
+      owner: backendScenario.owner,
+    };
+  }
+
+  /** Fetches the scenarios for a plan from the backend. */
+  getScenariosForPlan(planId: string): Observable<Scenario[]> {
+    return this.http
+      .get<any[]>(
+        BackendConstants.END_POINT.concat(
+          '/plan/list_scenarios_for_plan/?plan_id=',
+          planId
+        ),
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((scenarios) =>
+          scenarios.map(this.convertBackendScenarioToScenario.bind(this))
+        )
+      );
+  }
+
+  /** Creates a scenario in the backend. Returns scenario ID. */
+  createScenario(config: ProjectConfig): Observable<string> {
+    return this.http.post<string>(
+      BackendConstants.END_POINT.concat('/plan/create_scenario/'),
+      this.convertConfigToScenario(config),
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
@@ -239,14 +299,37 @@ export class PlanService {
   private convertToProjectConfig(config: any): ProjectConfig {
     return {
       id: config.id,
+      planId: config.plan_id,
       max_budget: config.max_budget,
       max_road_distance: config.max_road_distance,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       priorities: config.priorities,
+      weights: config.weights,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
       ),
+    };
+  }
+
+  private convertBackendScenarioToScenario(scenario: any): Scenario {
+    return {
+      id: scenario.id,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        scenario.creation_timestamp
+      ),
+    };
+  }
+
+  private convertConfigToScenario(config: ProjectConfig): any {
+    return {
+      plan_id: config.planId,
+      max_budget: config.max_budget,
+      max_road_distance: config.max_road_distance,
+      max_slope: config.max_slope,
+      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      priorities: config.priorities,
+      weights: config.weights,
     };
   }
 

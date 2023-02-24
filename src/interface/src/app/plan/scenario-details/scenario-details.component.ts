@@ -1,9 +1,24 @@
 import { Component, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import {
+  catchError,
+  filter,
+  map,
+  Observable,
+  of,
+  Subject,
+  switchMap,
+  take,
+  takeUntil,
+} from 'rxjs';
+
 import {
   colorTransitionTrigger,
   opacityTransitionTrigger,
   expandCollapsePanelTrigger,
 } from 'src/app/shared/animations';
+import { PlanService } from 'src/app/services';
+import { Scenario } from 'src/app/types';
 
 @Component({
   selector: 'app-scenario-details',
@@ -26,10 +41,40 @@ import {
   ],
 })
 export class ScenarioDetailsComponent implements OnInit {
+  scenarioId: string | null = null;
+  scenario$?: Observable<Scenario | null>;
   panelExpanded: boolean = true;
 
-  constructor() {}
+  private readonly destroy$ = new Subject<void>();
 
-  ngOnInit(): void {}
+  constructor(
+    private matSnackBar: MatSnackBar,
+    private planService: PlanService
+  ) {}
 
+  ngOnInit(): void {
+    this.scenario$ = this.getScenario();
+    this.scenario$.subscribe((scenario) => {
+      console.log(scenario);
+    });
+  }
+
+  private getScenario() {
+    return this.planService.planState$.pipe(
+      map((state) => state.currentScenarioId),
+      filter((scenarioId) => !!scenarioId),
+      switchMap((scenarioId) => {
+        return this.planService.getScenario(scenarioId as string).pipe(take(1));
+      }),
+      catchError(() => {
+        this.matSnackBar.open('[Error] Scenario not found!', 'Dismiss', {
+          duration: 10000,
+          panelClass: ['snackbar-error'],
+          verticalPosition: 'top',
+        });
+        return of(null);
+      }),
+      takeUntil(this.destroy$)
+    );
+  }
 }
