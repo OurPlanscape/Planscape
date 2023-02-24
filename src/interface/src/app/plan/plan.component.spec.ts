@@ -1,6 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
@@ -41,7 +41,7 @@ describe('PlanComponent', () => {
   };
 
   const fakePlan: Plan = {
-    id: 'temp',
+    id: '24',
     name: 'somePlan',
     ownerId: 'owner',
     region: Region.SIERRA_NEVADA,
@@ -62,7 +62,9 @@ describe('PlanComponent', () => {
     const fakeService = jasmine.createSpyObj('PlanService', {
       getPlan: of(fakePlan),
       getProjectsForPlan: of([]),
-      updateStateWithScenario: of(fakePlan),
+      updateStateWithPlan: of(),
+      updateStateWithScenario: of(),
+      updateStateWithConfig: of(),
       getScenariosForPlan: of([]),
     });
     fakeService.planState$ = of({});
@@ -90,19 +92,24 @@ describe('PlanComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('currentPlanStep should be 0', () => {
-    expect(component.currentPlanStep).toBe(0);
-  });
-
   it('fetches plan from service using ID', () => {
     expect(component.planNotFound).toBeFalse();
     expect(component.plan).toEqual(fakePlan);
   });
 
-  it('opening a config advances the plan step', () => {
-    component.openConfig(1);
+  it('calls service to update plan state based on route', () => {
+    const planService = fixture.debugElement.injector.get(PlanService);
 
-    expect(component.openConfigId).toEqual(1);
-    expect(component.currentPlanStep).toBe(1);
+    expect(planService.updateStateWithPlan).toHaveBeenCalledOnceWith('24');
+    expect(component.showOverview$.value).toBeTrue();
+  });
+
+  it('backToOverview navigates back to overview', () => {
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate');
+
+    component.backToOverview();
+
+    expect(router.navigate).toHaveBeenCalledOnceWith(['plan', '24']);
   });
 });
