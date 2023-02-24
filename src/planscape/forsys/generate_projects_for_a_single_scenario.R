@@ -15,6 +15,24 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     geo_wkt_field,
                                                     output_scenario_name,
                                                     output_scenario_tag) {
+  # Enables debug mode if output_scenario_name and output_scenario_tag are
+  # non-empty.
+  # If enabled, data and graphs are output to directory,
+  # output/<output_scenario_name>/<output_scenario_tag>/
+  enable_debug <- nchar(output_scenario_name) > 0 && 
+    nchar(output_scenario_tag) > 0
+  output_dir = file.path('output', output_scenario_name, output_scenario_tag)
+  # The rprof path is different from the output path because when forsys
+  # parameter, write_outputs, is TRUE, forsys will clear everything in the
+  # output directory before writing. 
+  rprof_output_dir = file.path('output', 'rprof', output_scenario_name,
+                               output_scenario_tag)
+
+  if (enable_debug) {
+    dir.create(rprof_output_dir, recursive=TRUE)
+    Rprof(file.path(rprof_output_dir, "rprof.log"), memory.profiling=TRUE)
+  }
+
   priority_impact_fields <- paste(priorities, "_PCP", sep="")
 
   # Appends spm and pcp data columns for each priority.
@@ -35,18 +53,9 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   geometry = lapply(forsys_input_data[geo_wkt_field], st_as_sfc)
   forsys_input_data <- cbind(forsys_input_data, geometry)
 
-  # Enables debug mode if output_scenario_name and output_scenario_tag are
-  # non-empty.
-  # If enabled, data is output to directory,
-  # output/<output_scenario_name>/<output_scenario_tag>/
-  enable_debug <- nchar(output_scenario_name) > 0 && 
-    nchar(output_scenario_tag) > 0
-
-  
   shp <- st_as_sf(forsys_input_data)
 
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
-  start_time <- Sys.time()
   suppressMessages (
     run_outputs <- forsys::run(
       return_outputs = TRUE,
@@ -76,7 +85,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       proj_target_value = 0.5
     )
   )
-  end_time <- Sys.time()
 
   # Adds the input geo_wkt column to the stand output df.
   input_stand_ids_and_geometries = select(forsys_input_data,
@@ -88,16 +96,14 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
   if (enable_debug) {
-    output_dir = file.path('output', output_scenario_name, output_scenario_tag)
-
-    # Writes the input to a file.
+    # Stops rprof sampling and writes summary to logs.
+    Rprof(NULL)
+    summary <- summaryRprof(file.path(rprof_output_dir, "rprof.log"),
+                            memory = "both")
+    write.csv(summary$by.total,
+              file.path(rprof_output_dir, "rprof.summary.log"))
+    # Writes the input to a shape file.
     st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
-    # Writes processing time to a file.
-    diff_time = end_time - start_time
-    write(paste("start time: ", start_time,
-                "\nend time: ", end_time,
-                "\nrun time: ", diff_time, units(diff_time)),
-      file.path(output_dir, 'run_time.txt'))
     # Graphs priorities and weighted priorities.
     pdf(file=file.path(output_dir, 'graphs.pdf'))
     for (p in priorities) {
