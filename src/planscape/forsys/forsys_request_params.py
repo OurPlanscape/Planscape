@@ -1,6 +1,4 @@
 import json
-from datetime import datetime
-from pytz import timezone
 from typing import TypedDict
 
 from conditions.models import BaseCondition
@@ -221,8 +219,6 @@ class ForsysGenerationRequestParams():
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PLANNING_AREA = 'planning_area'
-    _URL_OUTPUT_SCENARIO_NAME = 'output_scenario_name'
-    _URL_OUTPUT_SCENARIO_TAG = 'output_scenario_tag'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -242,11 +238,6 @@ class ForsysGenerationRequestParams():
     priority_weights: list[float]
     # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
-    # Names informing output debug directory.
-    # If not none (or empty), R writes forsys debug data to directory,
-    # output/<output_scenario_name>/<output_scenario_tag>/
-    output_scenario_name: str | None
-    output_scenario_tag: str | None
 
     def __init__(self, request: HttpRequest) -> None:
         params = request.GET
@@ -265,13 +256,6 @@ class ForsysGenerationRequestParams():
                 geo, self._URL_PLANNING_AREA)
         else:
             self.planning_area = self._get_default_planning_area()
-        self.output_scenario_name = params.get(
-            self._URL_OUTPUT_SCENARIO_NAME, "test_scenario")
-        self.output_scenario_tag = params.get(
-            self._URL_OUTPUT_SCENARIO_TAG,
-            datetime.now().astimezone(
-                timezone('US/Pacific')
-            ).strftime("%Y%m%d-%H-%M"))
 
     def _read_db_params(self, request: HttpRequest) -> None:
         params = request.GET
@@ -283,11 +267,6 @@ class ForsysGenerationRequestParams():
         plan = get_plan_by_id(user, params)
         self.region = plan.region_name
         self.planning_area = plan.geometry
-
-        self.output_scenario_name = params.get(
-            self._URL_OUTPUT_SCENARIO_NAME, None)
-        self.output_scenario_tag = params.get(
-            self._URL_OUTPUT_SCENARIO_TAG, None)
 
         # TODO: read priorities and weights from DB once models have been
         # updated.

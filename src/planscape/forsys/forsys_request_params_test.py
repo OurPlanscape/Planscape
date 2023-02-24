@@ -307,8 +307,6 @@ class TestForsysGenerationRequestParams(TestCase):
               (-120.14015536869722, 38.05413814388948)),))
         )
         self.assertEqual(params.planning_area.srid, 4269)
-        self.assertEqual(params.output_scenario_name, "test_scenario")
-        self.assertIsNotNone(params.output_scenario_tag)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -439,22 +437,6 @@ class TestForsysGenerationRequestParams(TestCase):
             str(context.exception),
             'url params, planning_area, missing field, "id"')
 
-    def test_sets_output_scenario_name(self):
-        request = HttpRequest()
-        request.GET = QueryDict(
-            'set_all_params_via_url_with_default_values=1' +
-            '&output_scenario_name=foo')
-        params = ForsysGenerationRequestParams(request)
-        self.assertEqual(params.output_scenario_name, "foo")
-
-    def test_sets_output_scenario_tag(self):
-        request = HttpRequest()
-        request.GET = QueryDict(
-            'set_all_params_via_url_with_default_values=1' +
-            '&output_scenario_tag=foo')
-        params = ForsysGenerationRequestParams(request)
-        self.assertEqual(params.output_scenario_tag, "foo")
-
 
 class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
     def setUp(self) -> None:
@@ -477,24 +459,6 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(params.planning_area.coords, ((
             ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
-        self.assertIsNone(params.output_scenario_name)
-        self.assertIsNone(params.output_scenario_tag)
-
-    def test_sets_output_scenario_name(self):
-        request = HttpRequest()
-        request.GET = QueryDict(
-            'id=' + str(self.plan_with_user.pk) + '&output_scenario_name=foo')
-        request.user = self.user
-        params = ForsysGenerationRequestParams(request)
-        self.assertEqual(params.output_scenario_name, "foo")
-
-    def test_sets_output_scenario_tag(self):
-        request = HttpRequest()
-        request.GET = QueryDict(
-            'id=' + str(self.plan_with_user.pk) + '&output_scenario_tag=foo')
-        request.user = self.user
-        params = ForsysGenerationRequestParams(request)
-        self.assertEqual(params.output_scenario_tag, "foo")
 
     def test_fails_on_no_user(self):
         request = HttpRequest()
