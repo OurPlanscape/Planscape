@@ -1,20 +1,14 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   ActivatedRoute,
   Event as NavigationEvent,
   NavigationEnd,
   Router,
 } from '@angular/router';
-import { BehaviorSubject, filter, map, Subject, take, takeUntil } from 'rxjs';
+import { BehaviorSubject, filter, Subject, take, takeUntil } from 'rxjs';
 
 import { Plan } from '../types';
 import { PlanService } from './../services/plan.service';
-import { PlanMapComponent } from './plan-map/plan-map.component';
-
-export enum PlanStep {
-  Overview,
-  CreateScenarios,
-}
 
 @Component({
   selector: 'app-plan',
@@ -22,14 +16,10 @@ export enum PlanStep {
   styleUrls: ['./plan.component.scss'],
 })
 export class PlanComponent implements OnInit, OnDestroy {
-  @ViewChild(PlanMapComponent) map!: PlanMapComponent;
-
-  readonly PlanStep = PlanStep;
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  currentPlanStep: PlanStep = PlanStep.Overview;
   planNotFound: boolean = false;
-  viewScenario$ = new BehaviorSubject<boolean>(false);
+  showOverview$ = new BehaviorSubject<boolean>(false);
 
   openConfigId?: number;
 
@@ -65,18 +55,18 @@ export class PlanComponent implements OnInit, OnDestroy {
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        if (state.currentScenarioId) {
-          this.viewScenario$.next(true);
+        if (state.currentScenarioId || state.currentConfigId) {
+          this.showOverview$.next(false);
         } else {
-          this.viewScenario$.next(false);
+          this.showOverview$.next(true);
         }
       });
-    this.getScenarioFromRoute();
+    this.updatePlanStateFromRoute();
 
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEvent) => {
-        this.getScenarioFromRoute();
+        this.updatePlanStateFromRoute();
       });
   }
 
@@ -85,31 +75,23 @@ export class PlanComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  changeCondition(filepath: string): void {
-    this.map.setCondition(filepath);
-  }
-
-  drawShapes(shapes: any): void {
-    this.map.drawShapes(shapes);
-  }
-
-  openConfig(configId: number): void {
-    this.openConfigId = configId;
-    this.currentPlanStep = PlanStep.CreateScenarios;
-  }
-
-  viewScenario(): void {
-    this.viewScenario$.next(true);
-  }
-
-  private getScenarioFromRoute() {
-    const scenarioId =
-      this.route.snapshot.firstChild?.paramMap.get('id') ?? null;
-    this.planService.updateStateWithScenario(scenarioId);
+  private updatePlanStateFromRoute() {
+    const planId = this.route.snapshot.paramMap.get('id');
+    this.planService.updateStateWithPlan(planId);
+    const routeChild = this.route.snapshot.firstChild;
+    const path = routeChild?.url[0].path;
+    const id = routeChild?.paramMap.get('id') ?? null;
+    if (path === 'scenario') {
+      this.planService.updateStateWithScenario(id);
+    } else if (path === 'config') {
+      this.planService.updateStateWithConfig(Number(id));
+    } else {
+      this.planService.updateStateWithConfig(null);
+      this.planService.updateStateWithScenario(null);
+    }
   }
 
   backToOverview() {
-    this.currentPlanStep = PlanStep.Overview;
     this.router.navigate(['plan', this.plan!.id]);
   }
 }

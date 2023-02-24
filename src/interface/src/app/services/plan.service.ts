@@ -17,6 +17,9 @@ export interface PlanState {
   };
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
+  currentConfigId: ProjectConfig['id'] | null;
+  mapConditionFilepath: string | null;
+  mapShapes: any | null;
 }
 
 export interface BackendPlan {
@@ -39,6 +42,9 @@ export class PlanService {
     all: {}, // All plans indexed by id
     currentPlanId: null,
     currentScenarioId: null,
+    currentConfigId: null,
+    mapConditionFilepath: null,
+    mapShapes: null,
   });
 
   constructor(private http: HttpClient) {}
@@ -88,7 +94,8 @@ export class PlanService {
       )
       .pipe(
         take(1),
-        map((dbPlan) => this.convertToPlan(dbPlan))
+        map((dbPlan) => this.convertToPlan(dbPlan)),
+        tap(plan => this.addPlanToState(plan))
       );
   }
 
@@ -325,6 +332,19 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
+  updateStateWithPlan(planId: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      currentPlanId: planId,
+    });
+
+    this.planState$.next(updatedState);
+  }
+
   updateStateWithScenario(scenarioId: string | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
@@ -335,6 +355,42 @@ export class PlanService {
       currentScenarioId: scenarioId,
     });
 
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithConfig(configId: number | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      currentConfigId: configId,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithConditionFilepath(filepath: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      mapConditionFilepath: filepath,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithShapes(shapes: any | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      mapShapes: shapes,
+    });
     this.planState$.next(updatedState);
   }
 
