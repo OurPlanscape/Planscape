@@ -12,7 +12,9 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     proj_id_field,
                                                     stand_area_field,
                                                     stand_cost_field,
-                                                    geo_wkt_field) {
+                                                    geo_wkt_field,
+                                                    output_scenario_name,
+                                                    output_scenario_tag) {
   priority_impact_fields <- paste(priorities, "_PCP", sep="")
 
   # Appends spm and pcp data columns for each priority.
@@ -33,11 +35,20 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   geometry = lapply(forsys_input_data[geo_wkt_field], st_as_sfc)
   forsys_input_data <- cbind(forsys_input_data, geometry)
 
+  # Enables debug mode if output_scenario_name and output_scenario_tag are
+  # non-empty.
+  # If enabled, data is output to directory,
+  # output/<output_scenario_name>/<output_scenario_tag>/
+  enable_debug <- nchar(output_scenario_name) > 0 && 
+    nchar(output_scenario_tag) > 0
+
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
   suppressMessages (
     run_outputs <- forsys::run(
       return_outputs = TRUE,
-      write_outputs = FALSE,
+      write_outputs = enable_debug,
+      scenario_name = output_scenario_name,
+      scenario_write_tags = output_scenario_tag,
       stand_data = forsys_input_data,
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
@@ -68,6 +79,13 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   run_outputs$stand_output <- merge(run_outputs$stand_output, 
                                     input_stand_ids_and_geometries,
                                     by=stand_id_field)
+
+  # Writes additional debug information to directory,
+  # output/<output_scenario_name>/<output_scenario_tag>/
+  if (enable_debug) {
+    output_dir = file.path('output', output_scenario_name, output_scenario_tag)
+    st_write(forsys_input_data, file.path(output_dir, 'forsys_input_data.shp'))
+  }
 
   return(run_outputs)
 }
