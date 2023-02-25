@@ -3,6 +3,8 @@ suppressMessages({
   library(sf)
   library(forsys)
   library(patchmax)
+  library(ggplot2)
+  library(ggnewscale)
 })
 
 generate_projects_for_a_single_scenario <- function(forsys_input_data,
@@ -15,6 +17,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     geo_wkt_field,
                                                     output_scenario_name,
                                                     output_scenario_tag) {
+  wp_str <- "weighted_priorities"
   # Enables debug mode if output_scenario_name and output_scenario_tag are
   # non-empty.
   # If enabled, data and graphs are output to directory,
@@ -34,7 +37,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                   forsys::combine_priorities(
                     fields = priority_impact_fields, 
                     weights = priority_weights, 
-                    new_field = 'weighted_priorities')
+                    new_field = wp_str)
   )
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
   # Patchmax expects column name to be "geometry" - do not change the variable
@@ -57,7 +60,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
       stand_area_field = stand_area_field,
-      scenario_priorities = c("weighted_priorities"),
+      scenario_priorities = c(wp_str),
       scenario_output_fields = c(priorities,
                                  stand_area_field,
                                  stand_cost_field),
@@ -89,16 +92,37 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   if (enable_debug) {
     output_dir = file.path('output', output_scenario_name, output_scenario_tag)
     # Writes the input to a shape file.
-    suppressMessages(
-      st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
-    )
+    st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
     # Graphs priorities and weighted priorities.
-    pdf(file=file.path(output_dir, 'graphs.pdf'))
     for (p in priorities) {
-      plot(shp[p], border=NA)
+      ggplot() + 
+        geom_sf(data=shp, mapping=aes(fill=get(p)), color=NA) +
+        scale_fill_viridis_c(begin=0, end=1, option="turbo") +
+        guides(fill=guide_colorbar(title=p))
+      ggsave(file.path(output_dir, paste(p, '.pdf')))
     }
-    plot(shp["weighted_priorities"], border=NA)
-    dev.off()
+    ggplot() + 
+      geom_sf(data=shp, mapping=aes(fill=weighted_priorities), color=NA) +
+      scale_fill_viridis_c(begin=0, end=1, option="turbo") +
+      guides(fill=guide_colorbar(title=wp_str))
+    ggsave(file.path(output_dir, paste(wp_str, '.pdf')))
+    # Gets projects.
+    x <- run_outputs$stand_output %>% select(stand_id_field, proj_id_field)
+    x[stand_id_field] <- lapply(x[stand_id_field], as.integer)
+    y <- shp %>% select(stand_id_field, 'geometry')
+    joined <- x %>% inner_join(y, by=stand_id_field)
+    joined <- st_sf(joined)
+    joined[proj_id_field] <- lapply(joined[proj_id_field], as.character)
+    # Graphs weighted priorities in grayscale and project areas in reds.
+    ggplot() + 
+      geom_sf(data=shp, mapping=aes(fill=weighted_priorities), color=NA) +
+      scale_fill_gradient(low="black", high="white") +
+      guides(fill=guide_legend(title=wp_str)) +
+      new_scale_fill() +
+      geom_sf(data=joined, mapping=aes(fill=get(proj_id_field)), color=NA) +
+      scale_fill_brewer(palette="OrRd") +
+      guides(fill=guide_legend(title=proj_id_field))
+    ggsave(file.path(output_dir, paste(wp_str, '_with_projects.pdf')))
   }
 
   return(run_outputs)
