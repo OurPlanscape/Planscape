@@ -1,26 +1,22 @@
 <div class="root-container">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
-    <div class="plan-summary-panel" *ngIf="!(viewScenario$ | async) && currentPlanStep === PlanStep.Overview">
+    <div class="plan-summary-panel" *ngIf="showOverview$ | async">
       <summary-panel [plan]="currentPlan$ | async"></summary-panel>
     </div>
-    <mat-divider [vertical]="true" *ngIf="!(viewScenario$ | async)"></mat-divider>
+    <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
     <div class="plan-content">
-      <app-plan-navigation-bar (backToOverviewEvent)="backToOverview()" *ngIf="currentPlanStep > PlanStep.Overview || (viewScenario$ | async)"></app-plan-navigation-bar>
+      <app-plan-navigation-bar (backToOverviewEvent)="backToOverview()" *ngIf="!(showOverview$ | async)"></app-plan-navigation-bar>
       <div class="plan-content-inner">
         <app-plan-overview
           [plan$]="currentPlan$"
-          (openConfigEvent)="openConfig($event)"
-          *ngIf="!(viewScenario$ | async) && currentPlanStep === PlanStep.Overview"></app-plan-overview>
-        <ng-container *ngIf="(viewScenario$ | async) || currentPlanStep > 0">
+          *ngIf="showOverview$ | async"></app-plan-overview>
+        <ng-container *ngIf="!(showOverview$ | async)">
           <div class="plan-map-container">
             <app-plan-map [plan]="currentPlan$" [mapId]="'planning-map'" [mapPadding]="[700, 0]"></app-plan-map>
           </div>
           <div class="plan-content-panel">
             <router-outlet #outlet="outlet"></router-outlet>
-            <app-create-scenarios *ngIf="!(viewScenario$ | async)" [plan$]="currentPlan$" [planningStep]="currentPlanStep" [scenarioConfigId]="openConfigId"
-              (changeConditionEvent)="changeCondition($event)" (drawShapesEvent)="drawShapes($event)">
-            </app-create-scenarios>
           </div>
         </ng-container>
       </div>

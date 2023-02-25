@@ -530,6 +530,12 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 
 def _serialize_scenario(scenario: Scenario, weights: QuerySet) -> dict:
     result = ScenarioSerializer(scenario).data
+
+    if 'creation_time' in result:
+        result['creation_timestamp'] = round(datetime.datetime.fromisoformat(
+            result['creation_time'].replace('Z', '+00:00')).timestamp())
+        del result['creation_time']
+
     result['priorities'] = {}
 
     for weight in weights:

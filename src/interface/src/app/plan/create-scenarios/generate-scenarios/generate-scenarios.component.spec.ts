@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatSliderHarness } from '@angular/material/slider/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
@@ -85,5 +86,18 @@ describe('GenerateScenariosComponent', () => {
 
     expect(component.formGroup?.get('areaPercent')?.value).toEqual(34);
     expect(component.formGroup?.get('areaPercent')?.dirty).toBeTrue();
+  });
+
+  it('should emit create scenario event', async () => {
+    spyOn(component.createScenarioEvent, 'emit');
+    const buttonHarness: MatButtonHarness = await loader.getHarness(
+      MatButtonHarness.with({ text: /GENERATE SCENARIO/ })
+    );
+
+    // Click on "GENERATE SCENARIO" button
+    await buttonHarness.click();
+
+    expect(component.createScenarioEvent.emit).toHaveBeenCalledOnceWith();
+    expect(component.generatingScenario).toBeTrue();
   });
 });
