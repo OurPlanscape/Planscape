@@ -10,11 +10,12 @@ import {
 import { createFeatureGuard } from './features/feature.guard';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
+import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
 import { PlanTableComponent } from './plan/plan-table/plan-table.component';
 import { PlanComponent } from './plan/plan.component';
+import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import { SignupComponent } from './signup/signup.component';
-import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
 
 const routes: Routes = [
   {
@@ -49,6 +50,11 @@ const routes: Routes = [
             path: `scenario/:id`,
             title: 'Saved Scenario Details',
             component: ScenarioDetailsComponent,
+          },
+          {
+            path: 'config/:id',
+            title: 'Scenario Configuration',
+            component: CreateScenariosComponent,
           },
         ],
       },

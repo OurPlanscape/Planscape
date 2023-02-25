@@ -10,6 +10,7 @@ import {
   PlanConditionScores,
   PlanPreview,
   ProjectConfig,
+  Scenario,
 } from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
 
@@ -220,12 +221,14 @@ describe('PlanService', () => {
       const projectConfigs: ProjectConfig[] = [
         {
           id: 1,
+          planId: undefined,
           max_budget: 200,
           max_road_distance: undefined,
           max_slope: undefined,
           max_treatment_area_ratio: undefined,
           priorities: undefined,
           createdTimestamp: undefined,
+          weights: undefined,
         },
       ];
 
@@ -253,12 +256,14 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
         id: 1,
+        planId: undefined,
         max_budget: 200,
         max_road_distance: undefined,
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
         priorities: undefined,
         createdTimestamp: undefined,
+        weights: undefined,
       };
 
       service.getProject(1).subscribe((res) => {
@@ -290,6 +295,87 @@ describe('PlanService', () => {
         project_ids: projectIds,
       });
       req.flush(projectIds);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getScenario', () => {
+    it('should make HTTP request to backend', () => {
+      const scenario: Scenario = {
+        id: '1',
+        planId: undefined,
+        priorities: undefined,
+        createdTimestamp: undefined,
+        notes: undefined,
+        owner: undefined,
+      };
+
+      service.getScenario('1').subscribe((res) => {
+        expect(res).toEqual(scenario);
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/get_scenario/?id=1')
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(scenario);
+    });
+  });
+
+  describe('createScenario', () => {
+    it('should make HTTP request to backend', (done) => {
+      const projectConfig: ProjectConfig = {
+        id: 1,
+        planId: 2,
+        max_budget: 200,
+      };
+
+      service.createScenario(projectConfig).subscribe((res) => {
+        expect(res).toEqual('1');
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_scenario/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({
+        plan_id: 2,
+        max_budget: 200,
+        max_road_distance: undefined,
+        max_slope: undefined,
+        max_treatment_area_ratio: undefined,
+        priorities: undefined,
+        weights: undefined,
+      });
+      req.flush('1');
+      httpTestingController.verify();
+    });
+  });
+
+  describe('getScenariosForPlan', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.getScenariosForPlan('1').subscribe((res) => {
+        expect(res).toEqual([
+          {
+            id: '1',
+            createdTimestamp: 5000,
+          },
+        ]);
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat(
+          '/plan/list_scenarios_for_plan/?plan_id=1'
+        )
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush([
+        {
+          id: '1',
+          creation_timestamp: 5,
+        },
+      ]);
       httpTestingController.verify();
     });
   });

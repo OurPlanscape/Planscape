@@ -17,6 +17,10 @@ export interface PlanState {
   };
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
+  currentConfigId: ProjectConfig['id'] | null;
+  mapConditionFilepath: string | null;
+  mapShapes: any | null;
+  currentScenario?: Scenario;
 }
 
 export interface BackendPlan {
@@ -39,6 +43,9 @@ export class PlanService {
     all: {}, // All plans indexed by id
     currentPlanId: null,
     currentScenarioId: null,
+    currentConfigId: null,
+    mapConditionFilepath: null,
+    mapShapes: null,
   });
 
   constructor(private http: HttpClient) {}
@@ -88,7 +95,8 @@ export class PlanService {
       )
       .pipe(
         take(1),
-        map((dbPlan) => this.convertToPlan(dbPlan))
+        map((dbPlan) => this.convertToPlan(dbPlan)),
+        tap(plan => this.addPlanToState(plan))
       );
   }
 
@@ -200,6 +208,65 @@ export class PlanService {
     );
   }
 
+  /** Fetches a scenario by its id from the backend. */
+  getScenario(scenarioId: string): Observable<Scenario> {
+    const url = BackendConstants.END_POINT.concat(
+      '/plan/get_scenario/?id=',
+      scenarioId
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response) => this.convertToScenario(response))
+      );
+  }
+
+  private convertToScenario(backendScenario: any): Scenario {
+    return {
+      id: backendScenario.id,
+      planId: backendScenario.plan,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        backendScenario.creation_time
+      ),
+      priorities: backendScenario.priorities,
+      notes: backendScenario.notes,
+      owner: backendScenario.owner,
+    };
+  }
+
+  /** Fetches the scenarios for a plan from the backend. */
+  getScenariosForPlan(planId: string): Observable<Scenario[]> {
+    return this.http
+      .get<any[]>(
+        BackendConstants.END_POINT.concat(
+          '/plan/list_scenarios_for_plan/?plan_id=',
+          planId
+        ),
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((scenarios) =>
+          scenarios.map(this.convertBackendScenarioToScenario.bind(this))
+        )
+      );
+  }
+
+  /** Creates a scenario in the backend. Returns scenario ID. */
+  createScenario(config: ProjectConfig): Observable<string> {
+    return this.http.post<string>(
+      BackendConstants.END_POINT.concat('/plan/create_scenario/'),
+      this.convertConfigToScenario(config),
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
@@ -239,14 +306,37 @@ export class PlanService {
   private convertToProjectConfig(config: any): ProjectConfig {
     return {
       id: config.id,
+      planId: config.plan_id,
       max_budget: config.max_budget,
       max_road_distance: config.max_road_distance,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       priorities: config.priorities,
+      weights: config.weights,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
       ),
+    };
+  }
+
+  private convertBackendScenarioToScenario(scenario: any): Scenario {
+    return {
+      id: scenario.id,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        scenario.creation_timestamp
+      ),
+    };
+  }
+
+  private convertConfigToScenario(config: ProjectConfig): any {
+    return {
+      plan_id: config.planId,
+      max_budget: config.max_budget,
+      max_road_distance: config.max_road_distance,
+      max_slope: config.max_slope,
+      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      priorities: config.priorities,
+      weights: config.weights,
     };
   }
 
@@ -272,6 +362,19 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
+  updateStateWithPlan(planId: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      currentPlanId: planId,
+    });
+
+    this.planState$.next(updatedState);
+  }
+
   updateStateWithScenario(scenarioId: string | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
@@ -282,6 +385,42 @@ export class PlanService {
       currentScenarioId: scenarioId,
     });
 
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithConfig(configId: number | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      currentConfigId: configId,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithConditionFilepath(filepath: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      mapConditionFilepath: filepath,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithShapes(shapes: any | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      mapShapes: shapes,
+    });
     this.planState$.next(updatedState);
   }
 

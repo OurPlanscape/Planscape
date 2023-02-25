@@ -10,12 +10,12 @@
         Saved scenarios are added to the Comparison table. Scenarios consist of Project Areas,
         Treatment plans, Potential Outcomes, and Estimated costs.
       </p>
-      <button mat-raised-button color="primary" (click)="openConfigEvent.emit()">
+      <button mat-raised-button color="primary" (click)="openConfig()">
         <mat-icon class="material-symbols-outlined">add_box</mat-icon>
         NEW CONFIGURATION
       </button>
     </div>
-    <app-scenario-configurations [plan]="plan$ | async" (openConfigEvent)="openConfigEvent.emit($event)"></app-scenario-configurations>
-    <app-saved-scenarios [plan]="plan$ | async" (createScenarioEvent)="openConfigEvent.emit()"></app-saved-scenarios>
+    <app-scenario-configurations [plan]="plan$ | async" (openConfigEvent)="openConfig($event)"></app-scenario-configurations>
+    <app-saved-scenarios [plan]="plan$ | async" (createScenarioEvent)="openConfig()"></app-saved-scenarios>
   </div>
 </div>
