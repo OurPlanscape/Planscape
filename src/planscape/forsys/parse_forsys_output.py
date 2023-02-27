@@ -397,7 +397,7 @@ class ForsysGenerationOutputForASingleScenario(
         self._geo_wkt_header = geo_wkt_header
 
         project_area_geometries = self._get_project_area_geometries(
-            raw_forsys_output)
+            self._forsys_stand_output_df)
         self._populate_geo_wkt_in_ranked_projects(project_area_geometries)
 
     def _save_raw_forsys_stand_output_as_dict(
@@ -406,19 +406,16 @@ class ForsysGenerationOutputForASingleScenario(
         self._forsys_stand_output_df = {
             key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
-    def _get_project_area_geometries(self,
-                                     raw_forsys_output: "rpy2.robjects.vectors.ListVector"
-                                     ) -> dict[int, Polygon | MultiPolygon]:
+    def _get_project_area_geometries(
+        self, stand_output_df: dict[str, list]
+    ) -> dict[int, Polygon | MultiPolygon]:
         return self._merge_geos(
-            self._extract_geo_list(raw_forsys_output)
+            self._extract_geo_list(stand_output_df)
         )
 
-    def _extract_geo_list(self,
-                          raw_forsys_output: "rpy2.robjects.vectors.ListVector"
-                          ) -> dict[int, list[Polygon]]:
-        rdf = raw_forsys_output[self._STAND_OUTPUT_INDEX]
-        stand_output_df = {
-            key: np.asarray(rdf.rx2(key)) for key in rdf.names}
+    def _extract_geo_list(
+            self, stand_output_df: dict[str, list]
+    ) -> dict[int, list[Polygon]]:
         project_area_geometries = {}
         for i in range(len(stand_output_df[self._project_id_header])):
             id = stand_output_df[self._project_id_header][i]
