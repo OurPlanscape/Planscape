@@ -1,6 +1,9 @@
 times2 <- function(number) {
   .libPaths()
-  library(forsys)
+  install.packages("forsysr")
+  library(forsysr)
+  build("/usr/lib64/R/library/forsysr")
+
   
   library(sf)
   library(dplyr)

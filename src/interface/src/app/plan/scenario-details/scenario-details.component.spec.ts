@@ -1,10 +1,9 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {
   ComponentFixture,
-  fakeAsync,
   TestBed,
-  tick,
 } from '@angular/core/testing';
+import { FormBuilder } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
@@ -13,6 +12,7 @@ import { of } from 'rxjs';
 import { PlanService } from './../../services/plan.service';
 import { Scenario } from './../../types';
 import { ScenarioDetailsComponent } from './scenario-details.component';
+import { OutcomeComponent } from './outcome/outcome.component';
 
 describe('ScenarioDetailsComponent', () => {
   let component: ScenarioDetailsComponent;
@@ -38,10 +38,11 @@ describe('ScenarioDetailsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, HttpClientTestingModule, MaterialModule],
-      declarations: [ScenarioDetailsComponent],
+      declarations: [ScenarioDetailsComponent, OutcomeComponent],
       providers: [
         { provide: MatSnackBar, useValue: snackbarSpy },
         { provide: PlanService, useValue: fakeService },
+        FormBuilder,
       ],
     }).compileComponents();
 

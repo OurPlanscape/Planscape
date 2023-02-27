@@ -1,8 +1,8 @@
 <!-- Plan Info -->
 <div class="plan-info">
-  <span>Creator: First Name, Last Name, Department</span>
+  <span>Creator: {{ scenario?.owner }}</span>
   <br>
-  <span>Created:</span>
+  <span>Created: {{ scenario?.createdTimestamp | date:'MM/dd/yyyy'}}</span>
 </div>
 
 <div class="outcome-content">
@@ -12,7 +12,55 @@
       <mat-expansion-panel-header class="scenario-panel-header">
         Configuration
       </mat-expansion-panel-header>
-      content
+      <div class="constraints">
+        <h3>Constraints</h3>
+        <ul>
+          <li>Calculating score: Current conditions</li>
+          <li>Show estimated cost range based on estimated treatment costs per acre
+            (Est. max: <b>${{ scenario?.maxBudget }}</b>)</li>
+          <li><b>{{ scenario?.maxTreatmentAreaRatio }}%</b> max treatment percentage of total planning area</li>
+          <li>Exclude areas off a road by <b>{{ scenario?.maxRoadDistance}} ft.</b></li>
+          <li>Include areas that are over {{ scenario?.maxSlope }} degrees</li>
+        </ul>
+      </div>
+
+      <div class="sliders-wrapper">
+        <!-- Priority weights -->
+        <div>
+          <div class="flex-row space-between">
+            <h3>Selected priorities</h3>
+            <h3>Relative importance (1-5)</h3>
+          </div>
+          <ng-container *ngFor="let priority of priorities">
+            <div class="flex-row space-between">
+              <h2>{{ priority.name }}</h2>
+              <div class="flex-row">
+                <mat-slider [disabled]=true [min]="1" [max]="5" [thumbLabel]="true" [value]="priority.value"
+                  color="primary" [step]="1">
+                  <input matSliderThumb>
+                </mat-slider>
+                <div class="slider-label">{{priority.value}}</div>
+              </div>
+            </div>
+            <mat-divider></mat-divider>
+          </ng-container>
+        </div>
+
+        <!-- Project area % -->
+        <div>
+          <h3>Project areas</h3>
+          <div class="flex-row space-between">
+            <h2>Show top % of project areas</h2>
+            <div class="flex-row">
+              <div class="slider-label">10%</div>
+              <mat-slider [disabled]=true [min]="10" [max]="40" [thumbLabel]="true" [value]="30">
+                <input matSliderThumb>
+              </mat-slider>
+              <div class="slider-label">40%</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </mat-expansion-panel>
 
     <!-- Outcome -->
@@ -25,7 +73,7 @@
   </mat-accordion>
 
   <!-- Notes -->
-  <div class="scenario-notes">
+  <div class="scenario-notes-wrapper">
     <div class="notes-header">Scenario creator's notes</div>
     <form [formGroup] = "scenarioNotes">
       <div>
