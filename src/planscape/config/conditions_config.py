@@ -67,11 +67,11 @@ class PillarConfig:
                                 pillar.get('filepath', None), -1, 1, None)
                 for element in pillar['elements']:
                     update_metadata(element['element_name'], element.get(
-                        'filepath', None), -1, 1, '')
+                        'filepath', None), -1, 1, None)
                     for metric in element['metrics']:
                         min = metric.get('min_value', -1)
                         max = metric.get('max_value', 1)
-                        data_units = metric.get('data_units', '')
+                        data_units = metric.get('data_units', None)
                         update_metadata(metric['metric_name'], metric.get(
                             'filepath', None), min, max, data_units)
         return metadata
