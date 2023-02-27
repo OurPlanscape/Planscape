@@ -57,13 +57,14 @@ class PillarConfig:
                 key = filepath.split('/')[-1]
                 metadata[key + '.tif'] = {'name': name,
                                           'min_value': min_value,
-                                          'max_value': max_value,
-                                          'data_units': data_units}
+                                          'max_value': max_value}
+                if data_units is not None:
+                    metadata[key + '.tif']['data_units'] = data_units
 
         for region in config:
             for pillar in region['pillars']:
                 update_metadata(pillar['pillar_name'],
-                                pillar.get('filepath', None), -1, 1, '')
+                                pillar.get('filepath', None), -1, 1, None)
                 for element in pillar['elements']:
                     update_metadata(element['element_name'], element.get(
                         'filepath', None), -1, 1, '')
@@ -216,8 +217,8 @@ class PillarConfig:
             return (-1, 1)
         return (metadata.get('min_value', -1), metadata.get('max_value', 1))
 
-    def get_data_units(self, name: str) -> str:
+    def get_data_units(self, name: str) -> Optional[str]:
         metadata = self._condition_metadata.get(name, None)
         if metadata is None:
-            return (-1, 1)
-        return metadata.get('data_units', '')
+            return None
+        return metadata.get('data_units', None)
