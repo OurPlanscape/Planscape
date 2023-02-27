@@ -1,3 +1,4 @@
+import { PlanService } from 'src/app/services';
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
@@ -24,7 +25,10 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
 
-  constructor(private router: Router) {}
+  private filepath: string = '';
+  private shapes: any | null = null;
+
+  constructor(private planService: PlanService, private router: Router) {}
 
   ngAfterViewInit(): void {
     if (this.map != undefined) this.map.remove();
@@ -57,6 +61,19 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       });
 
     setTimeout(() => this.map.invalidateSize(), 0);
+
+    this.planService.planState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        if (state.mapConditionFilepath ?? '' !== this.filepath) {
+          this.filepath = state.mapConditionFilepath ?? '';
+          this.setCondition(state.mapConditionFilepath ?? '');
+        }
+        if (state.mapShapes !== this.shapes) {
+          this.shapes = state.mapShapes;
+          this.drawShapes(state.mapShapes);
+        }
+      });
   }
 
   // Add planning area to map and frame it in view
@@ -101,7 +118,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
 
   /** Display rendered tiles for the provided condition filepath (or, if the filepath
    *  string is empty, remove rendered tiles). */
-  setCondition(filepath: string): void {
+  private setCondition(filepath: string): void {
     this.tileLayer?.remove();
 
     if (filepath?.length === 0 || !filepath) return;
@@ -119,7 +136,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
-  drawShapes(shapes: any): void {
+  private drawShapes(shapes: any): void {
     this.projectAreasLayer?.remove();
 
     if (!shapes) return;

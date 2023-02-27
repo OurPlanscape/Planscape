@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BehaviorSubject, concatMap, Observable, take } from 'rxjs';
+import { PlanService } from 'src/app/services';
 import { Plan } from 'src/app/types';
 
 @Component({
@@ -9,5 +11,31 @@ import { Plan } from 'src/app/types';
 })
 export class PlanOverviewComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
-  @Output() openConfigEvent = new EventEmitter<number>();
+
+  constructor(
+    private planService: PlanService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  openConfig(configId?: number): void {
+    if (!configId) {
+      this.newConfig().subscribe((newConfigId) => {
+        this.router.navigate(['config', newConfigId], {
+          relativeTo: this.route,
+        });
+      });
+    } else {
+      this.router.navigate(['config', configId], { relativeTo: this.route });
+    }
+  }
+
+  private newConfig(): Observable<number> {
+    return this.planService.planState$.pipe(
+      concatMap((planState) =>
+        this.planService.createProjectInPlan(planState.currentPlanId!)
+      ),
+      take(1)
+    );
+  }
 }
