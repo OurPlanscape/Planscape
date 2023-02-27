@@ -172,13 +172,13 @@ class ClusterStandsTest(TestCase):
             'bar': 500
         }
         clustered_stands_pw10 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights_100x, 1, 
+            pixel_dist_to_condition_values, 4, 2, 1, priority_weights_100x, 1,
             3)
         self.assertDictEqual(clustered_stands_pw10.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
                               2: [(2, 0), (3, 0)]})
-        
+
     def test_normalizes_condition_scores(self) -> None:
         pixel_dist_to_condition_values = {
             0: {0: {'foo': 0.5, 'bar': 0.3},  1: {'foo': 0.4, 'bar': 0.3}},
@@ -216,7 +216,7 @@ class ClusterStandsTest(TestCase):
             3: {0: {'foo': 50, 'bar': 30},  1: {'foo': 10, 'bar': 30}},
         }
         clustered_stands_100x = ClusteredStands(
-            pixel_dist_to_condition_values_100x, 4, 2, 100, priority_weights, 
+            pixel_dist_to_condition_values_100x, 4, 2, 100, priority_weights,
             1, 3)
         self.assertDictEqual(clustered_stands_100x.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
@@ -279,3 +279,174 @@ class ClusterStandsTest(TestCase):
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
                               2: [(2, 0), (3, 0)]})
+
+    # ----------------------------------------------------
+    # The following tests are for validating corner cases.
+    # ----------------------------------------------------
+
+    def test_handles_more_clusters_than_stands(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        clustered_stands = ClusteredStands(pixel_dist_to_condition_values,
+                                           3, 2, 1, priority_weights, 0, 10)
+        self.assertEqual(clustered_stands.cluster_status_message,
+                         "num desired clusters gte num stands")
+
+    def test_raises_connectivity_error(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, 0, 1)
+        self.assertEqual(
+            str(context.exception),
+            "the graph has 2 connected components - it's impossible to " +
+            "convert this into 1 clusters")
+
+    # --------------------------------------------------------
+    # The following tests are for validating input parameters.
+    # --------------------------------------------------------
+
+    def test_raises_error_bad_width(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            -1, 2, 1, priority_weights, 0, 5)
+        self.assertEqual(
+            str(context.exception),
+            "expected pixel_width to be a positive integer")
+
+    def test_raises_error_bad_height(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 0, 1, priority_weights, 0, 5)
+        self.assertEqual(
+            str(context.exception),
+            "expected pixel_height to be a positive integer")
+
+    def test_raises_error_bad_num_clusters(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, 0, -0.2)
+        self.assertEqual(
+            str(context.exception),
+            "num_clusters must be a positive integer")
+
+    def test_raises_error_bad_pixel_index_weight(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, -10, 5)
+        self.assertEqual(
+            str(context.exception), "pixel_index_weight must be gte 0")
+
+    def test_raises_error_zero_priorities(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(
+                pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1,
+                3)
+        self.assertEqual(
+            str(context.exception), "expected at least 1 priority weight")
+
+    def test_raises_error_priority_condition_mismatch(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5, 'bar': 0.5, 'baz': 0.5},
+                1: {'foo': 0.4, 'bar': 0.4, 'baz': 0.4}},
+            1: {0: {'foo': 0.5, 'bar': 0.5, 'baz': 0.5},
+                1: {'foo': 0.4, 'bar': 0.4, 'baz': 0.4}},
+            2: {0: {'foo': 0.5, 'bar': 0.5, 'baz': 0.5},
+                1: {'foo': 0.1, 'bar': 0.1, 'baz': 0.1}},
+            3: {0: {'foo': 0.5, 'bar': 0.5, 'baz': 0.5},
+                1: {'foo': 0.1, 'bar': 0.1, 'baz': 0.1}},
+        }
+        priority_weights = {
+            'foo': 10,
+            'baz': 7.5
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(
+                pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1,
+                3)
+        self.assertEqual(
+            str(context.exception),
+            "expected len(priorities) == len(conditions)")
+
+    def test_raises_error_negative_condition_score(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': -0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, 1, 5)
+        self.assertEqual(
+            str(context.exception),
+            "expected condition score to be within range, [0, 1.000000]")
+
+    def test_raises_error_high_condition_score(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 2.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, 1, 5)
+        self.assertEqual(
+            str(context.exception),
+            "expected condition score to be within range, [0, 1.000000]")
