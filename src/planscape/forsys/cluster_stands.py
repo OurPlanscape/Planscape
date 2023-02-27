@@ -27,12 +27,9 @@ def _get_mask_and_features(
     features = []
     for x in range(pixel_width):
         if x not in pixel_dist_to_condition_values.keys():
-            for y in range(pixel_height):
-                features.append([0, 0, 0])
             continue
         for y in range(pixel_height):
             if y not in pixel_dist_to_condition_values[x].keys():
-                features.append([0, 0, 0])
                 continue
             features.append(
                 [pixel_index_weight * x,
@@ -68,8 +65,8 @@ def _get_cluster_pixels(cluster_labels: list[int],
                         mask: list[list[bool]],
                         pixel_width: int, pixel_height: int
                         ) -> dict[int, list[tuple[int, int]]]:
-    if len(cluster_labels) != pixel_width * pixel_height:
-        raise Exception("expected pixel_width * pixel_height cluster labels; " +
+    if len(cluster_labels) != np.sum(mask):
+        raise Exception("expected %d cluster labels; " % (np.sum(mask)) +
                         "instead, %d were provided" % (len(cluster_labels)))
     i = 0
     cluster_to_pixels = {}
@@ -81,9 +78,8 @@ def _get_cluster_pixels(cluster_labels: list[int],
                     cluster_to_pixels[cluster].append((x, y))
                 else:
                     cluster_to_pixels[cluster] = [(x, y)]
-            i = i + 1
+                i = i + 1
     return cluster_to_pixels
-
 
 
 def cluster_stands(

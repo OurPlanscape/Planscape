@@ -51,3 +51,85 @@ class ClusterStandsTest(TestCase):
                               1: [(0, 1), (1, 1)],
                               2: [(2, 1)],
                               3: [(2, 0)]})
+        
+    def test_clusters_pixels_missing_values(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        cluster_pixels = cluster_stands(pixel_dist_to_condition_values,
+                                        3, 2, priority_weights, 0, 4)
+        # 5 stands are reduced to 4 clusters.
+        # (0, 0) and (1, 0) are clustered because they are adjacent and have
+        # the smallest diff.
+        self.assertDictEqual(cluster_pixels,
+                             {0: [(0, 0), (1, 0)],
+                              1: [(2, 0)],
+                              2: [(2, 1)],
+                              3: [(1, 1)]})
+        
+    # -------------------------------------------------------------------
+    # The following tests demonstrate the impact of pixel_index_weight on
+    # clustering.
+    # -------------------------------------------------------------------
+
+    def test_pixel_index_weight_prefers_blobs(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.45}},
+            1: {0: {'foo': 0.5}, 1: {'foo': 0.45}},
+            2: {0: {'foo': 0.5},  1: {'foo': 0.1}},
+            3: {0: {'foo': 0.5},  1: {'foo': 0.1}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+
+        # With pixel_index_weight=0, the largest cluster is a line.
+        cluster_pixels_piw_0 = cluster_stands(pixel_dist_to_condition_values,
+                                              4, 2, priority_weights, 0, 3)
+        self.assertDictEqual(cluster_pixels_piw_0,
+                             {0: [(0, 0), (1, 0), (2, 0), (3, 0)],
+                              1: [(2, 1), (3, 1)],
+                              2: [(0, 1), (1, 1)]})
+        
+        # With pixel_index_weight=10, the largest cluster is a 2x2 square.
+        cluster_pixels_piw_10 = cluster_stands(pixel_dist_to_condition_values,
+                                               4, 2, priority_weights, 10, 3)
+        self.assertDictEqual(cluster_pixels_piw_10,
+                             {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
+                              1: [(2, 1), (3, 1)],
+                              2: [(2, 0), (3, 0)]})
+        
+    def test_pixel_index_weight_prefers_smaller_clusters(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5},  1: {'foo': 0.5}},
+            1: {0: {'foo': 0.5}, 1: {'foo': 0.5}},
+            2: {0: {'foo': 0.5},  1: {'foo': 0.5}},
+            3: {0: {'foo': 0.5},  1: {'foo': 0.4}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+
+        # With pixel_index_weight=0, cluster sizes are unbalanced.
+        cluster_pixels_piw_0 = cluster_stands(pixel_dist_to_condition_values,
+                                              4, 2, priority_weights, 0, 2)
+        self.assertDictEqual(cluster_pixels_piw_0,
+                             {0: [(0, 0), (0, 1), (1, 0), (1, 1),
+                                  (2, 0), (2, 1), (3, 0)],
+                              1: [(3, 1)]})
+        
+        # With pixel_index_weight=10, cluster sizes are more balanced.
+        cluster_pixels_piw_10 = cluster_stands(pixel_dist_to_condition_values,
+                                               4, 2, priority_weights, 10, 2)
+        self.assertDictEqual(cluster_pixels_piw_10,
+                             {0: [(2, 0), (2, 1), (3, 0), (3, 1)],
+                              1: [(0, 0), (0, 1), (1, 0), (1, 1)]})
+        
+    # The following tests demonstrate how cluster features are normalized so
+    # that solutions stay consistent regardless of how condition scores and
+    # priority weights are scaled.
