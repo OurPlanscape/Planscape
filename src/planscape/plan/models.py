@@ -35,26 +35,29 @@ class Plan(models.Model):
         null=True, auto_now_add=True)
 
 
+# TODO: delete Project (and replace with Config throughout).
 class Project(models.Model):
     """
-    A Project is associated with one User, the owner, and one Plan. It has optional user-specified
-    project parameters, e.g. constraints.
+    A Project contains user-specified parameters (e.g. global constraints) used
+    to inform a forsys run.
+    A Project is associated with one User, the owner, and one Plan.
     """
-    # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
-    # we want alpha users to not be signed in.
+    # TODO: Change "null=True" so that owner is not nullable. Currently owner
+    # can be null because we want alpha users to not be signed in.
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     plan = models.ForeignKey(Plan, on_delete=models.CASCADE)  # type: ignore
 
-    # The creation time of the project, automatically set when the project is created.
+    # The creation time of the project, automatically set when the project is
+    # created.
     creation_time: models.DateTimeField = models.DateTimeField(
         null=True, auto_now_add=True)
 
     # Project Parameters:
 
     # TODO: Limit number of allowed priorities
-    priorities = models.ManyToManyField('conditions.Condition') # type: ignore
+    priorities = models.ManyToManyField('conditions.Condition')  # type: ignore
 
     # Max constraints. If null, no max value unless a system default is defined.
     # In USD
@@ -70,6 +73,50 @@ class Project(models.Model):
     max_slope: models.FloatField = models.FloatField(null=True)
 
 
+class Config(models.Model):
+    """
+    A Config contains user-specified parameters (e.g. global constraints) used
+    to inform a forsys run.
+    A Config is associated with one User, the owner, and one Plan.
+    """
+    # TODO: Change "null=True" so that owner is not nullable. Currently owner
+    # can be null because we want alpha users to not be signed in.
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, null=True)  # type: ignore
+
+    plan = models.ForeignKey(Plan, on_delete=models.CASCADE)  # type: ignore
+
+    # The creation time of the project, automatically set when the project is
+    # created.
+    creation_time: models.DateTimeField = models.DateTimeField(
+        null=True, auto_now_add=True)
+
+    # Project Parameters:
+
+    # TODO: Limit number of allowed priorities
+    priorities = models.ManyToManyField(
+        'conditions.Condition', through='ConfigPriority')  # type: ignore
+
+    # Max constraints. If null, no max value unless a system default is defined.
+    # In USD
+    max_budget: models.FloatField = models.FloatField(null=True)
+
+    # Ratio of treatment area to planning area
+    max_treatment_area_ratio: models.FloatField = models.FloatField(null=True)
+
+    # In miles
+    max_road_distance: models.FloatField = models.FloatField(null=True)
+
+    # Ratio of elevation to distance
+    max_slope: models.FloatField = models.FloatField(null=True)
+
+
+class ConfigPriority(models.Model):
+    project = models.ForeignKey(Config, on_delete=models.CASCADE, null=False)
+    priority = models.ForeignKey(
+        'conditions.Condition', on_delete=models.CASCADE, null=False)
+
+
 class Scenario(models.Model):
     """
     A Scenario is associated with one User, the owner, and one Project. It has optional user-specified
@@ -79,8 +126,9 @@ class Scenario(models.Model):
     # we want alpha users to not be signed in.
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True)  # type: ignore
-    
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True)  # type: ignore
+
+    plan = models.ForeignKey(
+        Plan, on_delete=models.CASCADE, null=True)  # type: ignore
 
     # The creation time of the project, automatically set when the project is created.
     creation_time: models.DateTimeField = models.DateTimeField(
@@ -88,25 +136,31 @@ class Scenario(models.Model):
 
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, null=True)  # type: ignore
-    
+
     notes: models.TextField = models.TextField(null=True)
+
 
 class ScenarioWeightedPriority(models.Model):
     """
     Assigns a weight for a Priority used an input to a Scenario. 
-    """  
+    """
     scenario = models.ForeignKey(
         Scenario, on_delete=models.CASCADE)  # type: ignore
-    
+
     # TODO: swap with config priority in schema migration
-    priority = models.ForeignKey('conditions.Condition', on_delete=models.CASCADE) # type: ignore
+    priority = models.ForeignKey('conditions.Condition',
+                                 on_delete=models.CASCADE)  # type: ignore
+    weighted_priority = models.ForeignKey(
+        ConfigPriority, on_delete=models.CASCADE, null=True)
 
     weight: models.IntegerField = models.IntegerField(null=True)
 
+
 class ProjectArea(models.Model):
     """
-    ProjectAreas are associated with one User, the owner, and one Project. Each ProjectArea has 
-    geometries representing the project area, and an estimate of the area treated.
+    ProjectAreas are associated with one User, the owner, and one Project. Each
+    ProjectArea has geometries representing the project area, and an estimate
+    of the area treated.
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # we want alpha users to not be signed in.
@@ -128,6 +182,18 @@ class ProjectArea(models.Model):
     estimated_area_treated: models.IntegerField = models.IntegerField(
         null=True)
 
+class RankedProjectArea(models.Model):
+    """
+    Given config constraints and scenario weights, project areas are scored and 
+    ranked.
+    This contains the score and rank of a specific project area for a specific 
+    scenario.
+    """
+    project_area = models.ForeignKey(ProjectArea, on_delete=models.CASCADE)
+    scenario = models.ForeignKey(Scenario, on_delete=models.CASCADE)
+
+    rank = models.IntegerField()
+    score = models.FloatField()
 
 class ConditionScores(models.Model):
     """
@@ -135,13 +201,14 @@ class ConditionScores(models.Model):
     relevant stands within a project area or planning area.
     """
     # Either plan or project should be present.
-    plan = models.ForeignKey(Plan, on_delete=models.CASCADE, null=True) # type: ignore
+    plan = models.ForeignKey(
+        Plan, on_delete=models.CASCADE, null=True)  # type: ignore
     project_area = models.ForeignKey(
-        ProjectArea, on_delete=models.CASCADE, null=True) # type: ignore
+        ProjectArea, on_delete=models.CASCADE, null=True)  # type: ignore
 
     # Condition
     condition = models.ForeignKey(
-        Condition, on_delete=models.CASCADE, null=False) # type: ignore
+        Condition, on_delete=models.CASCADE, null=False)  # type: ignore
 
     # The following are condition statistics computed across relevant raster
     # pixels within a project or planning area.
