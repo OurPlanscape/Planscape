@@ -15,7 +15,6 @@ RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.co
 COPY ./forsysr /usr/lib64/R/library/forsysr
 
 RUN ls
-RUN ls forsysr
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
