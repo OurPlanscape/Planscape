@@ -7,6 +7,7 @@ import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
+import { PlanService, PlanState } from 'src/app/services';
 import { Plan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
@@ -15,14 +16,43 @@ describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
   let fixture: ComponentFixture<PlanMapComponent>;
   let loader: HarnessLoader;
+  let fakePlanService: PlanService;
+  let fakePlanState$: BehaviorSubject<PlanState>;
+
+  const emptyPlanState = {
+    all: {},
+    currentPlanId: null,
+    currentConfigId: null,
+    currentScenarioId: null,
+    mapConditionFilepath: null,
+    mapShapes: null,
+  };
 
   beforeEach(async () => {
+    fakePlanState$ = new BehaviorSubject<PlanState>({
+      ...emptyPlanState,
+    });
+
+    fakePlanService = jasmine.createSpyObj<PlanService>(
+      'PlanService',
+      {},
+      {
+        planState$: fakePlanState$,
+      }
+    );
+
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
     await TestBed.configureTestingModule({
       imports: [MaterialModule],
       declarations: [PlanMapComponent],
-      providers: [{ provide: Router, useFactory: routerStub }],
+      providers: [
+        {
+          provide: PlanService,
+          useValue: fakePlanService,
+        },
+        { provide: Router, useFactory: routerStub },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PlanMapComponent);
@@ -68,7 +98,10 @@ describe('PlanMapComponent', () => {
   it('should add tile layer to map', () => {
     expect(component.tileLayer).toBeUndefined();
 
-    component.setCondition('filepath');
+    fakePlanState$.next({
+      ...emptyPlanState,
+      mapConditionFilepath: 'filepath',
+    });
 
     expect(component.tileLayer).toBeDefined();
   });
@@ -87,7 +120,10 @@ describe('PlanMapComponent', () => {
     it('should draw project areas when drawShapes is called with geojson', () => {
       const shapes = featureCollection([point([-75.343, 39.984])]);
 
-      component.drawShapes(shapes);
+      fakePlanState$.next({
+        ...emptyPlanState,
+        mapShapes: shapes,
+      });
 
       expect(component.projectAreasLayer).toBeDefined();
       expect(component.map.hasLayer(component.projectAreasLayer!)).toBeTrue();
@@ -96,8 +132,14 @@ describe('PlanMapComponent', () => {
     it('should remove project areas layer when drawShapes is called with null', () => {
       const shapes = featureCollection([point([-75.343, 39.984])]);
 
-      component.drawShapes(shapes);
-      component.drawShapes(null);
+      fakePlanState$.next({
+        ...emptyPlanState,
+        mapShapes: shapes,
+      });
+      fakePlanState$.next({
+        ...emptyPlanState,
+        mapShapes: null,
+      });
 
       expect(component.projectAreasLayer).toBeDefined();
       expect(component.map.hasLayer(component.projectAreasLayer!)).toBeFalse();
