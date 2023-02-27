@@ -30,6 +30,7 @@ COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
 COPY rank.R ${LAMBDA_TASK_ROOT}
 
 RUN ls
+RUN ls /usr/lib64/R/library
 RUN ls ${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
