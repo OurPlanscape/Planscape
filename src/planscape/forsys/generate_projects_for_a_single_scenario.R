@@ -44,7 +44,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   # name.
   # Internally, Patchmax calls st_sf on geometry column values. This results in
   # an error unless st_as_sfc is called on the wkt first.
-  geometry = lapply(forsys_input_data[geo_wkt_field], st_as_sfc)
+  geometry <- lapply(forsys_input_data[geo_wkt_field], st_as_sfc)
   forsys_input_data <- cbind(forsys_input_data, geometry)
 
   shp <- st_as_sf(forsys_input_data)
@@ -81,11 +81,13 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   )
 
   # Adds the input geo_wkt column to the stand output df.
-  input_stand_ids_and_geometries = select(forsys_input_data,
-                                          c(stand_id_field, geo_wkt_field)) 
-  run_outputs$stand_output <- merge(run_outputs$stand_output, 
-                                    input_stand_ids_and_geometries,
-                                    by=stand_id_field)
+  input_stand_ids_and_geometries <- select(forsys_input_data,
+                                           c(stand_id_field, geo_wkt_field)) 
+  run_outputs$stand_output[stand_id_field] <- lapply(
+    run_outputs$stand_output[stand_id_field], as.integer)
+  run_outputs$stand_output <- inner_join(run_outputs$stand_output, 
+                                         input_stand_ids_and_geometries,
+                                         by=stand_id_field)
 
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
