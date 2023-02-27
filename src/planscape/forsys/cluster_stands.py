@@ -10,9 +10,8 @@ from scipy.sparse.csgraph import connected_components
 # similarity metric.
 # Assumptions:
 #   - stands are arranged as pixels in an image
-#   - although it's ok for the image to be missing pixels, all stands must be
-#     part of a single connected component (this is a hard limitation of
-#     AgglomerativeClustering)
+#   - although it's ok for the image to be missing pixels, the number of
+#     connected components must be greater than the desired number of clusters
 #
 # Inputs include ...
 #   ... pixel_dist_to_condition_values: a dictionary mapping x-index to y-index
@@ -91,7 +90,7 @@ class ClusteredStands():
         self._mask = self._get_mask(
             pixel_dist_to_condition_values, pixel_width, pixel_height)
         if np.sum(self._mask) <= num_clusters:
-            self.cluster_status_message = "num desired clusters gte num stands"
+            self.cluster_status_message = "num desired clusters >= num stands"
             return
 
         self._connectivity = grid_to_graph(
@@ -152,9 +151,11 @@ class ClusteredStands():
                         raise Exception(
                             "expected conditions to include priority, %s" %
                             (p))
-                    if pixel_dist_to_condition_values[x][y][p] < 0 or pixel_dist_to_condition_values[x][y][p] > priority_condition_max_value:
-                        raise Exception("expected condition score to be within range, [0, %f]" % (
-                            priority_condition_max_value))
+                    v = pixel_dist_to_condition_values[x][y][p]
+                    if v < 0 or v > priority_condition_max_value:
+                        raise Exception("expected condition score to be " +
+                                        "within range, [0, %f]" % (
+                                            priority_condition_max_value))
 
     def _normalize_condition_values(
             self,
