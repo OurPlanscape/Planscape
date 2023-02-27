@@ -1,6 +1,6 @@
 times2 <- function(number) {
   .libPaths()
-  library(forsys)
+  library(forsysr)
   
   library(sf)
   library(dplyr)
