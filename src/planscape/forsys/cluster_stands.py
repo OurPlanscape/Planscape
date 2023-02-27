@@ -1,4 +1,3 @@
-
 import numpy as np
 
 from sklearn.cluster import AgglomerativeClustering
@@ -74,7 +73,8 @@ class ClusteredStands():
 
     def __init__(
             self,
-            pixel_dist_to_condition_values: dict[int, dict[int, dict[str, float]]],
+            pixel_dist_to_condition_values: dict[int,
+                                                 dict[int, dict[str, float]]],
             pixel_width: int, pixel_height: int,
             priority_condition_max_value: float,
             priority_weights: dict[str, float],
@@ -173,11 +173,13 @@ class ClusteredStands():
                 conditions = pixel_dist_to_condition_values[x][y]
                 # Division by priority_condition_max_value forces individual
                 # condition values to be within range, [0, 1].
-                # A subsequent division by sqrt(len(conditions)) forces the l2 norm of the condition vector to be within range, [0, 1].
+                # A subsequent division by sqrt(len(conditions)) forces the l2
+                # norm of the condition vector to be within range, [0, 1].
                 denom = priority_condition_max_value * \
                     np.sqrt(len(conditions.keys()))
                 for c in conditions.keys():
-                    normalized_pixel_dist_to_condition_values[x][y][c] = conditions[c] / denom
+                    normalized_pixel_dist_to_condition_values[x][y][c] = \
+                        conditions[c] / denom
         return normalized_pixel_dist_to_condition_values
 
     def _normalize_priority_weights(self,
