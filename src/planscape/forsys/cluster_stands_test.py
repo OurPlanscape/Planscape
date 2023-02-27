@@ -296,7 +296,7 @@ class ClusterStandsTest(TestCase):
         clustered_stands = ClusteredStands(pixel_dist_to_condition_values,
                                            3, 2, 1, priority_weights, 0, 10)
         self.assertEqual(clustered_stands.cluster_status_message,
-                         "num desired clusters gte num stands")
+                         "num desired clusters >= num stands")
 
     def test_raises_connectivity_error(self) -> None:
         pixel_dist_to_condition_values = {
