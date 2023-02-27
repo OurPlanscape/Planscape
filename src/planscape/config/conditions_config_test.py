@@ -57,6 +57,16 @@ class PillarConfigTest(unittest.TestCase):
             'TPA_30in_up_2021_300m.tif'), (0, 26))
         self.assertEqual(self._config.get_min_max_values(
             'TPA_30in_up_2021_300m_normalized.tif'), (-1, 1))
+    
+    def test_get_data_units(self):
+        self.assertEqual(self._config.get_min_max_values(
+            'fire_dynamics.tif'), None)
+        self.assertEqual(self._config.get_min_max_values(
+            'functional_fire.tif'), None)
+        self.assertEqual(self._config.get_min_max_values(
+            'TPA_30in_up_2021_300m.tif'), "Live trees/acre")
+        self.assertEqual(self._config.get_min_max_values(
+            'TPA_30in_up_2021_300m_normalized.tif'), None)
 
 
 if __name__ == '__main__':
