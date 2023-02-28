@@ -18,7 +18,7 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Scenario } from 'src/app/types';
+import { Plan, Scenario } from 'src/app/types';
 
 @Component({
   selector: 'app-scenario-details',
@@ -42,6 +42,7 @@ import { Scenario } from 'src/app/types';
 })
 export class ScenarioDetailsComponent implements OnInit {
   scenarioId: string | null = null;
+  plan$: Observable<Plan | null> = of(null);
   scenario$?: Observable<Scenario | null>;
   panelExpanded: boolean = true;
 
@@ -54,9 +55,7 @@ export class ScenarioDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.scenario$ = this.getScenario();
-    this.scenario$.subscribe((scenario) => {
-      console.log(scenario);
-    });
+    this.plan$ = this.getPlan();
   }
 
   private getScenario() {
@@ -79,5 +78,21 @@ export class ScenarioDetailsComponent implements OnInit {
       }),
       takeUntil(this.destroy$)
     );
+  }
+
+  private getPlan() {
+    return this.planService.planState$.pipe(
+      map((state) => {
+        if (state.currentPlanId) {
+          return state.all[state.currentPlanId];
+        } else {
+          return null;
+        }
+      })
+    );
+  }
+
+  changeCondition(filepath: string): void {
+    this.planService.updateStateWithConditionFilepath(filepath);
   }
 }

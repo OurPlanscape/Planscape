@@ -1,12 +1,11 @@
 import json
-
 from typing import TypedDict
 
 from conditions.models import BaseCondition
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.http import (HttpRequest, QueryDict)
+from django.http import HttpRequest, QueryDict
 from plan.models import Project, ProjectArea
-from plan.views import (get_plan_by_id, get_user)
+from plan.views import get_plan_by_id, get_user
 
 
 # A list of coordinates representing a polygon.

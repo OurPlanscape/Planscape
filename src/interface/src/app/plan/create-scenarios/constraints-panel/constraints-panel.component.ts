@@ -28,10 +28,19 @@ export class ConstraintsPanelComponent {
 
   toggleRequiredExcludeDistance() {
     this.constraintsForm!.controls['excludeDistance'].setValidators(
-      this.constraintsForm!.controls['excludeDistance'].value
+      this.constraintsForm!.controls['excludeAreasByDistance'].value
         ? [Validators.required]
         : null
     );
     this.constraintsForm!.controls['excludeDistance'].updateValueAndValidity();
+  }
+
+  toggleRequiredExcludeSlope() {
+    this.constraintsForm!.controls['excludeSlope'].setValidators(
+      this.constraintsForm!.controls['excludeAreasByDegrees'].value
+        ? [Validators.required]
+        : null
+    );
+    this.constraintsForm!.controls['excludeSlope'].updateValueAndValidity();
   }
 }

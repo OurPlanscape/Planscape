@@ -13,11 +13,12 @@
                 <!-- Max -->
                 <mat-form-field class="input-field" appearance="outline" floatLabel="always">
                   <mat-label>Max</mat-label>
-                  <span matTextPrefix>$ &nbsp;</span>
                   <input
                     [required]="maxBudgetRequired()"
+                    class="right-align"
                     formControlName="maxBudget"
                     matInput type="number">
+                    <span matPrefix>$&nbsp;</span>
                 </mat-form-field>
               </mat-radio-button>
 
@@ -63,7 +64,11 @@
             </mat-form-field>
           </div>
           <div>
-            <mat-checkbox formControlName="excludeAreasByDegrees">Exclude areas that are over</mat-checkbox>
+            <mat-checkbox
+              formControlName="excludeAreasByDegrees"
+              (change)="toggleRequiredExcludeSlope()">
+              Exclude areas that are over
+            </mat-checkbox>
             <mat-form-field class="input-field margin-left" appearance="outline" floatLabel="always">
               <mat-label>Slope</mat-label>
               <input formControlName="excludeSlope" matInput type="number">
