@@ -64,6 +64,7 @@ export class SetPrioritiesComponent implements OnInit {
       .subscribe((colormapConfig) => {
         this.legend = colormapConfigToLegend(colormapConfig);
         this.legend!.labels = ['Poor', 'OK', 'Excellent'];
+        this.legend!.secondaryLabels = ['-1', '0', '1'];
       });
   }
 
