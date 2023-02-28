@@ -1,5 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
@@ -38,7 +39,7 @@ describe('SavedScenariosComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule],
+      imports: [FormsModule, HttpClientTestingModule, MaterialModule],
       declarations: [SavedScenariosComponent],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
