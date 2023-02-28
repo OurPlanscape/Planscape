@@ -54,3 +54,15 @@ $primary-palette: map.get($color-config, 'primary');
   margin-right: 18px;
   width: 4px;
 }
+
+.mat-column-id {
+  border-right: 2px solid #00000040;
+}
+
+.scenario-checkbox {
+  margin-left: 20px;
+}
+
+.mat-column-starred {
+  padding-left: 20px;
+}
