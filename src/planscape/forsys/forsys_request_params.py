@@ -7,6 +7,9 @@ from django.http import HttpRequest, QueryDict
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
 
+#from rpy2.robjects import SexpClosure
+
+
 
 # A list of coordinates representing a polygon.
 class PolygonCoordinatesFromUrlParams(TypedDict):
@@ -250,6 +253,7 @@ class ForsysGenerationRequestParams():
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         if self._URL_PLANNING_AREA in params:
+            print('### Using custom project area')
             geo_str = params.get(self._URL_PLANNING_AREA, "")
             geo = GeoFromUrlParams(json.loads(geo_str))
             self.planning_area = _transform_geo_from_url_params_into_multipolygon(

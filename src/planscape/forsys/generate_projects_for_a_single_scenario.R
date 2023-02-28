@@ -17,6 +17,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     geo_wkt_field,
                                                     output_scenario_name,
                                                     output_scenario_tag) {
+  print('### R call is running')
   wp_str <- "weighted_priorities"
   # Enables debug mode if output_scenario_name and output_scenario_tag are
   # non-empty.
@@ -49,7 +50,35 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
 
   shp <- st_as_sf(forsys_input_data)
 
+  print(colnames(shp))
+  # k-means clustering execution
+  print('### starting spatial clustering')
+  source('forsys/spatial_clustering.R')
+  shp <- shp %>%
+    #rename('geometry' = 'geo') %>%
+    #st_as_sf() %>%
+    cluster_cells_to_stands(priorities = priorities)
+  print('### spatial clustering done')
+  print(colnames(shp))
+
+    # Appends spm and pcp data columns for each priority.
+  shp <- shp %>%
+    forsys::calculate_spm(fields = priorities) %>%
+    forsys::calculate_pcp(fields = priorities)
+  # Appends a preset_priority column, which contains total impact score values.
+  suppressMessages(
+    shp <- shp %>%
+      forsys::combine_priorities(
+        fields = priority_impact_fields, 
+        weights = priority_weights, 
+        new_field = wp_str))
+  print('### adding columns done')
+  print(colnames(shp))
+
+
+
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
+  print('### R ForSys call is running')
   suppressMessages (
     run_outputs <- forsys::run(
       return_outputs = TRUE,
@@ -58,7 +87,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       scenario_write_tags = output_scenario_tag,
       stand_data = shp,
       stand_id_field = stand_id_field,
-      proj_id_field = proj_id_field,
+      #proj_id_field = proj_id_field,
       stand_area_field = stand_area_field,
       scenario_priorities = c(wp_str),
       scenario_output_fields = c(priorities,
@@ -79,6 +108,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       proj_target_value = 0.5
     )
   )
+  print('### R ForSys call is done')
 
   # Adds the input geo_wkt column to the stand output df.
   input_stand_ids_and_geometries <- select(forsys_input_data,
@@ -126,6 +156,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       guides(fill=guide_legend(title=proj_id_field))
     ggsave(file.path(output_dir, paste(wp_str, '_with_projects.pdf')))
   }
-
+  print('### R call is done')
   return(run_outputs)
 }
