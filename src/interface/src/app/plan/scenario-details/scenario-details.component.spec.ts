@@ -1,19 +1,17 @@
-import { MapLayersComponent } from './map-layers/map-layers.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import {
-  ComponentFixture,
-  TestBed,
-} from '@angular/core/testing';
-import { FormBuilder } from '@angular/forms';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from 'src/app/material/material.module';
 import { of } from 'rxjs';
+import { MaterialModule } from 'src/app/material/material.module';
+import { SharedModule } from 'src/app/shared/shared.module';
 
 import { PlanService } from './../../services/plan.service';
 import { Scenario } from './../../types';
-import { ScenarioDetailsComponent } from './scenario-details.component';
+import { MapLayersComponent } from './map-layers/map-layers.component';
 import { OutcomeComponent } from './outcome/outcome.component';
+import { ScenarioDetailsComponent } from './scenario-details.component';
 
 describe('ScenarioDetailsComponent', () => {
   let component: ScenarioDetailsComponent;
@@ -35,11 +33,21 @@ describe('ScenarioDetailsComponent', () => {
     fakeService = jasmine.createSpyObj('PlanService', {
       getScenario: of(fakeScenario),
     });
-    fakeService.planState$ = of({ currentScenarioId: 1 });
+    fakeService.planState$ = of({ currentScenarioId: 1, panelExpanded: true });
 
     await TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, HttpClientTestingModule, MaterialModule],
-      declarations: [ScenarioDetailsComponent, MapLayersComponent, OutcomeComponent],
+      imports: [
+        BrowserAnimationsModule,
+        HttpClientTestingModule,
+        MaterialModule,
+        ReactiveFormsModule,
+        SharedModule,
+      ],
+      declarations: [
+        ScenarioDetailsComponent,
+        MapLayersComponent,
+        OutcomeComponent,
+      ],
       providers: [
         { provide: MatSnackBar, useValue: snackbarSpy },
         { provide: PlanService, useValue: fakeService },
