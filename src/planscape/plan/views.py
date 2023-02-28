@@ -599,6 +599,37 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
+def delete_scenarios(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = get_user(request)
+
+        body = json.loads(request.body)
+        scenario_ids = body.get('scenario_ids', None)
+        if scenario_ids is None or not (isinstance(scenario_ids, list)):
+            raise ValueError("Must specify scenario_ids as a list")
+
+        scenarios = [Scenario.objects.get(pk=scenario_id)
+                for scenario_id in scenario_ids]
+
+        # Check that the user owns the scenarios
+        for scenario in scenarios:
+            if scenario.owner != owner:
+                raise ValueError(
+                    "You do not have permission to delete one or more of these scenarios.")
+
+        for scenario in scenarios:
+            scenario.delete()
+        
+        response_data = scenario_ids
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
