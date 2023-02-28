@@ -15,17 +15,31 @@ h1 {
 }
 
 .labels {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  justify-content: space-between;
+  display: table;
+  table-layout: fixed;
   width: 100%;
 }
 
 .label {
+  display: table-cell;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 20px;
   margin-top: 5px;
   min-width: 24px;
   text-align: center;
+}
+
+.label:first-child {
+  text-align: left;
+}
+
+.label:last-child {
+  text-align: right;
+}
+
+.secondary-label {
+  font-weight: 400;
 }
 
 .gradient {
