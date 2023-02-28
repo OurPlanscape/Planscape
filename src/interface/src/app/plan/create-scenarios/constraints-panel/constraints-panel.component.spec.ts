@@ -14,7 +14,7 @@ import { MaterialModule } from 'src/app/material/material.module';
 
 import { ConstraintsPanelComponent } from './constraints-panel.component';
 
-fdescribe('ConstraintsPanelComponent', () => {
+describe('ConstraintsPanelComponent', () => {
   let component: ConstraintsPanelComponent;
   let fixture: ComponentFixture<ConstraintsPanelComponent>;
   let loader: HarnessLoader;
