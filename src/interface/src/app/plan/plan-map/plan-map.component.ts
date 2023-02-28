@@ -1,9 +1,9 @@
-import { PlanService } from 'src/app/services';
 import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { filter } from 'rxjs/operators';
+import { PlanService } from 'src/app/services';
 import { FrontendConstants, Plan } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
@@ -24,6 +24,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   drawingLayer: L.GeoJSON | undefined;
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
+  panelExpanded: boolean = true;
 
   private filepath: string = '';
   private shapes: any | null = null;
@@ -147,12 +148,13 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
         fillColor: '#ff4081',
         fillOpacity: 0.1,
         weight: 5,
-      })
+      }),
     });
     this.projectAreasLayer.addTo(this.map);
   }
 
-  expandMap() {
-    this.router.navigate(['map']);
+  togglePanel(): void {
+    this.panelExpanded = !this.panelExpanded;
+    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }

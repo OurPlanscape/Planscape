@@ -35,7 +35,7 @@ describe('PlanMapComponent', () => {
 
     fakePlanService = jasmine.createSpyObj<PlanService>(
       'PlanService',
-      {},
+      ['updateStateWithPanelState'],
       {
         planState$: fakePlanState$,
       }
@@ -106,13 +106,17 @@ describe('PlanMapComponent', () => {
     expect(component.tileLayer).toBeDefined();
   });
 
-  describe('expand map button', () => {
-    it('button is disabled', async () => {
+  describe('expand panel button', () => {
+    it('button updates plan state', async () => {
       const button = await loader.getHarness(
-        MatButtonHarness.with({ text: 'EXPAND MAP' })
+        MatButtonHarness.with({ text: /COLLAPSE/ })
       );
 
-      expect(await button.isDisabled()).toBeTrue();
+      await button.click();
+
+      expect(
+        fakePlanService.updateStateWithPanelState
+      ).toHaveBeenCalledOnceWith(false);
     });
   });
 

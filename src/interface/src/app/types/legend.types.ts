@@ -16,6 +16,7 @@ export interface Legend {
   colors?: string[];
   labels?: string[];
   minMaxValues?: number[];
+  secondaryLabels?: string[];
 }
 
 /** Convert a colormap to a legend object. */

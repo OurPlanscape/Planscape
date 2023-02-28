@@ -12,13 +12,12 @@ import {
   takeUntil,
   tap,
 } from 'rxjs';
-
+import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
-  opacityTransitionTrigger,
   expandCollapsePanelTrigger,
+  opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { PlanService } from 'src/app/services';
 import { Plan, Scenario } from 'src/app/types';
 
 @Component({
@@ -61,6 +60,9 @@ export class ScenarioDetailsComponent implements OnInit {
 
   private getScenario() {
     return this.planService.planState$.pipe(
+      tap((state) => {
+        this.panelExpanded = state.panelExpanded ?? false;
+      }),
       map((state) => state.currentScenarioId),
       filter((scenarioId) => !!scenarioId),
       switchMap((scenarioId) => {
