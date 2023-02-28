@@ -1,3 +1,4 @@
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
@@ -41,7 +42,7 @@ describe('SavedScenariosComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpClientTestingModule, MaterialModule],
+      imports: [FormsModule, HttpClientTestingModule, MaterialModule, NoopAnimationsModule],
       declarations: [SavedScenariosComponent],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },

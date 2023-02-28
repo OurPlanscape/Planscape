@@ -1606,19 +1606,6 @@ class FavoriteScenarioTest(TransactionTestCase):
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.base_condition = BaseCondition.objects.create(
-            condition_name="cond1", condition_level=ConditionLevel.ELEMENT)
-        self.condition1 = Condition.objects.create(
-            condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
-        self.base_condition2 = BaseCondition.objects.create(
-            condition_name="cond2", condition_level=ConditionLevel.ELEMENT)
-        self.condition2 = Condition.objects.create(
-            condition_dataset=self.base_condition2, raster_name="name2", is_raw=False)
-
-        self.user = User.objects.create(username='testuser')
-        self.user.set_password('12345')
-        self.user.save()
-
         self.plan = create_plan(
             self.user, 'plan', stored_geometry, [])
         self.project = Project.objects.create(
@@ -1688,3 +1675,92 @@ class FavoriteScenarioTest(TransactionTestCase):
         self.assertEqual(response.json()['favorited'], False)
         scenario = Scenario.objects.get(pk=favorited_scenario.pk)
         self.assertEqual(scenario.favorited, False)
+        self.plan_with_user = Plan.objects.create(
+            owner=self.user, name='with_owner', region_name='sierra_cascade_inyo')
+        self.plan_with_no_user = Plan.objects.create(
+            owner=None, name='without owner', region_name='sierra_cascade_inyo')
+
+        self.project_with_user = Project.objects.create(
+            owner=self.user, plan=self.plan_with_user, max_budget=100.0)
+        self.project_with_no_user = Project.objects.create(
+            owner=None, plan=self.plan_with_no_user, max_budget=100.0)
+
+        self.scenario_with_user = Scenario.objects.create(
+            owner=self.user, plan=self.plan_with_user, project=self.project_with_user, notes='my note')
+        self.scenario_with_user2 = Scenario.objects.create(
+            owner=self.user, plan=self.plan_with_user, project=self.project_with_user, notes='my note')
+        self.scenario_with_no_user = Scenario.objects.create(
+            owner=None, plan=self.plan_with_no_user, project=self.project_with_no_user, notes='my note2')
+
+    def test_delete_user_not_logged_in(self):
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {
+                'scenario_ids': [self.scenario_with_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Scenario.objects.all().count(), 3)
+
+    def test_user_logged_in_tries_to_delete_ownerless_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {
+                'scenario_ids': [self.scenario_with_no_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Scenario.objects.count(), 3)
+
+    def test_delete_wrong_user(self):
+        new_user = User.objects.create(username='newuser')
+        new_user.set_password('12345')
+        new_user.save()
+        self.client.force_login(new_user)
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {
+                'scenario_ids': [self.scenario_with_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Scenario.objects.count(), 3)
+
+    def test_delete_ownerless_scenario(self):
+        self.assertEqual(Scenario.objects.count(), 3)
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {
+                'scenario_ids': [self.scenario_with_no_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, json.dumps(
+            [self.scenario_with_no_user.pk]).encode())
+        self.assertEqual(Scenario.objects.count(), 2)
+
+    def test_delete_owned_scenario(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Scenario.objects.count(), 3)
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {
+                'scenario_ids': [self.scenario_with_user.pk]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, json.dumps(
+            [self.scenario_with_user.pk]).encode())
+        self.assertEqual(Scenario.objects.count(), 2)
+
+    def test_delete_multiple_scenarios_fails_if_any_not_owner(self):
+        self.client.force_login(self.user)
+        scenario_ids = [self.scenario_with_no_user.pk, self.scenario_with_user.pk]
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {'scenario_ids': scenario_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Scenario.objects.count(), 3)
+
+    def test_delete_multiple_scenarios(self):
+        self.client.force_login(self.user)
+        self.assertEqual(Scenario.objects.count(), 3)
+        scenario_ids = [self.scenario_with_user.pk, self.scenario_with_user2.pk]
+        response = self.client.post(
+            reverse('plan:delete_scenarios'), {'scenario_ids': scenario_ids},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, json.dumps(
+            scenario_ids).encode())
+        self.assertEqual(Scenario.objects.count(), 1)
