@@ -21,6 +21,7 @@ export interface PlanState {
   mapConditionFilepath: string | null;
   mapShapes: any | null;
   currentScenario?: Scenario;
+  panelExpanded?: boolean;
 }
 
 export interface BackendPlan {
@@ -46,6 +47,7 @@ export class PlanService {
     currentConfigId: null,
     mapConditionFilepath: null,
     mapShapes: null,
+    panelExpanded: true,
   });
 
   constructor(private http: HttpClient) {}
@@ -96,7 +98,7 @@ export class PlanService {
       .pipe(
         take(1),
         map((dbPlan) => this.convertToPlan(dbPlan)),
-        tap(plan => this.addPlanToState(plan))
+        tap((plan) => this.addPlanToState(plan))
       );
   }
 
@@ -420,6 +422,18 @@ export class PlanService {
         ...currentState.all,
       },
       mapShapes: shapes,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithPanelState(panelExpanded: boolean) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      panelExpanded: panelExpanded,
     });
     this.planState$.next(updatedState);
   }
