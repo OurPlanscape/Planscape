@@ -65,7 +65,7 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        if (state.mapConditionFilepath ?? '' !== this.filepath) {
+        if (state.mapConditionFilepath !== this.filepath) {
           this.filepath = state.mapConditionFilepath ?? '';
           this.setCondition(state.mapConditionFilepath ?? '');
         }
