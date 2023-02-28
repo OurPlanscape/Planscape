@@ -44,7 +44,7 @@ class ClusterStandsTest(TestCase):
                                            3, 2, 1, priority_weights, 0, 4)
         # 6 stands are reduced to 4 clusters.
         # Even though (0, 0) and (2, 1) have the same value, they aren't
-        # clustered because they aren't adjacent to each other. Instead, (0, 0
+        # clustered because they aren't adjacent to each other. Instead, (0, 0)
         # and (1, 0) are clustered.
         self.assertDictEqual(clustered_stands.clusters_to_stands,
                              {0: [(0, 0), (1, 0)],
@@ -208,7 +208,8 @@ class ClusterStandsTest(TestCase):
                               1: [(2, 1), (3, 1)],
                               2: [(0, 1), (1, 1)]})
 
-        # Scaling condition scores from [0, 1] to [0, 100]: preference for a blob over a line (no change from baseline)
+        # Scaling condition scores from [0, 1] to [0, 100]: preference for a 
+        # blob over a line (no change from baseline).
         pixel_dist_to_condition_values_100x = {
             0: {0: {'foo': 50, 'bar': 30},  1: {'foo': 40, 'bar': 30}},
             1: {0: {'foo': 50, 'bar': 30},  1: {'foo': 40, 'bar': 30}},
