@@ -43,6 +43,7 @@ describe('CreateScenariosComponent', () => {
           currentScenarioId: null,
           mapConditionFilepath: null,
           mapShapes: null,
+          panelExpanded: true,
         }),
       }
     );
