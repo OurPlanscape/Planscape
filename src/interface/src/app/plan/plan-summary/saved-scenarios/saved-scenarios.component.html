@@ -1,10 +1,12 @@
 <div class="saved-scenarios-wrapper">
   <mat-card [style.margin-top]="'24px'">
     <mat-card-header>
-      <mat-card-title>Saved Scenarios ({{ scenarios.length }})</mat-card-title>
+      <mat-card-title>My Scenarios ({{ scenarios.length }})</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
+      <p>{{ text1 }}</p>
+
       <mat-table [dataSource]="scenarios" >
         <!-- ID Column -->
         <ng-container matColumnDef="id">
@@ -74,11 +76,11 @@
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-raised-button *ngIf="showDeleteButton()" (click)="deleteSelectedScenarios()">
+      <button mat-button [disabled]="!showDeleteButton()" (click)="deleteSelectedScenarios()">
         <mat-icon>delete</mat-icon>
         DELETE
       </button>
-      <button mat-raised-button *ngIf="showViewButton()" color="primary" (click)="viewScenario()">
+      <button mat-raised-button [disabled]="!showViewButton()" color="primary" (click)="viewScenario()">
         VIEW
       </button>
     </mat-card-actions>

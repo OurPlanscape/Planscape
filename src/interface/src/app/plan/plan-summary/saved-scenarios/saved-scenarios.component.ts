@@ -18,6 +18,13 @@ export class SavedScenariosComponent implements OnInit {
   @Input() plan: Plan | null = null;
   @Output() createScenarioEvent = new EventEmitter<void>();
 
+  readonly text1: string = `
+    Scenarios consist of prioritized project areas for treatment within this planning area,
+    estimated cost ranges, and notes. Copy links to share, download shape files, and more.
+    View conditions of each priority within the Map Layers tab. Anyone with visibility access to
+    this planning area can also view all the scenarios within it.
+  `;
+
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
     'id',

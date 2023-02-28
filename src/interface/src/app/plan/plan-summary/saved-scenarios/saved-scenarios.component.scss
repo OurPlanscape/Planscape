@@ -14,6 +14,14 @@ $primary-palette: map.get($color-config, 'primary');
   border-radius: 16px;
 }
 
+.mat-card-content {
+  padding: 8px;
+}
+
+.mat-card-actions {
+  gap: 12px;
+}
+
 .no-scenarios-overlay {
   align-items: center;
   backdrop-filter: blur(2px);
