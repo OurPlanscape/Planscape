@@ -269,6 +269,19 @@ export class PlanService {
     );
   }
 
+  /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
+  deleteScenarios(scenarioIds: string[]): Observable<string[]> {
+    return this.http.post<string[]>(
+      BackendConstants.END_POINT.concat('/plan/delete_scenarios/'),
+      {
+        scenario_ids: scenarioIds,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
