@@ -1,5 +1,10 @@
+import cProfile
+import io
 import logging
 import os
+import pstats
+from datetime import datetime
+from pstats import SortKey
 
 import numpy as np
 import pandas as pd
@@ -14,12 +19,31 @@ from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
+from memory_profiler import profile
 from planscape import settings
+from pytz import timezone
 
 import rpy2
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
+
+# Sets up cProfile profiler.
+# This is for measuring runtime.
+def _set_up_cprofiler(pr: cProfile.Profile) -> None:
+    pr.enable()
+
+# Tears down Cprofile profiler and writes data to a log.
+# This is for measuring runtime.
+def _tear_down_cprofiler(pr: cProfile.Profile, filename: str) -> None:
+    pr.disable()
+    s = io.StringIO()
+    sortby = SortKey.CUMULATIVE
+    ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+    ps.print_stats()
+    s.getvalue()
+    cfp = open(filename, 'w+')
+    cfp.write(s.getvalue())
 
 
 # Converts R dataframe to Pandas dataframe.
@@ -162,7 +186,9 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_geo_wkt_header: str, forsys_priority_headers: list[str],
-        forsys_priority_weights: list[float]) -> ForsysGenerationOutputForASingleScenario:
+        forsys_priority_weights: list[float],
+        output_scenario_name: str | None,
+        output_scenario_tag: str | None) -> ForsysGenerationOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/generate_projects_for_a_single_scenario.R'))
@@ -175,7 +201,9 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_input, robjects.StrVector(forsys_priority_headers),
         robjects.FloatVector(forsys_priority_weights),
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
-        forsys_cost_header, forsys_geo_wkt_header)
+        forsys_cost_header, forsys_geo_wkt_header,
+        "" if output_scenario_name is None else output_scenario_name,
+        "" if output_scenario_tag is None else output_scenario_tag)
 
     priority_weights_dict = {
         forsys_priority_headers[i]: forsys_priority_weights[i]
@@ -189,6 +217,10 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
 def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
+        pr = cProfile.Profile()
+        if settings.DEBUG:
+            _set_up_cprofiler(pr)
+
         params = ForsysGenerationRequestParams(request)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysGenerationInput(params, headers)
@@ -196,14 +228,36 @@ def generate_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
-            headers.priority_headers, params.priority_weights)
+            headers.priority_headers, params.priority_weights,
+            "test_scenario" if settings.DEBUG else None,
+            datetime.now().astimezone(
+                timezone('US/Pacific')
+            ).strftime("%Y%m%d-%H-%M") if settings.DEBUG else None)
 
         response = {}
         response['forsys'] = {}
         response['forsys']['input'] = forsys_input.forsys_input
         response['forsys']['output'] = forsys_output.scenario
 
+        if settings.DEBUG:
+            _tear_down_cprofiler(pr, 'output/cprofiler.log')
+
         return JsonResponse(response)
     except Exception as e:
         logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+# This enables memory profiling of generate_project_areas_for_a_single_scenario
+# if settings.DEBUG is true.
+# memory profile data is written to output/memprofiler.log.
+# To bring up the Planscape backend with memory profiler, call:
+# mprof run --multiprocess --python python manage.py runserver --noreload
+# To view memory usage over time, call:
+# mprof plot
+if settings.DEBUG:
+    if not os.path.exists('output'):
+        os.makedirs('output')
+    memfp = open('output/memprofiler.log','w+')
+    generate_project_areas_for_a_single_scenario = profile(stream=memfp)(
+        generate_project_areas_for_a_single_scenario)
