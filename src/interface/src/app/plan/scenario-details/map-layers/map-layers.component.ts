@@ -71,7 +71,6 @@ export class MapLayersComponent implements OnInit {
 
   ngOnChanges() {
     if (this.plan) {
-      console.log('map-layers ngOnChanges', { plan: this.plan });
       this.planService
         .getConditionScoresForPlanningArea(this.plan!.id)
         .subscribe((response) => {

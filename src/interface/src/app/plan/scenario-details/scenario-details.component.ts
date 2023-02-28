@@ -74,7 +74,6 @@ export class ScenarioDetailsComponent implements OnInit {
         });
         return of(null);
       }),
-      tap((scenario) => console.log(scenario)),
       takeUntil(this.destroy$)
     );
   }
@@ -83,7 +82,6 @@ export class ScenarioDetailsComponent implements OnInit {
     return this.planService.planState$.pipe(
       map((state) => {
         if (state.currentPlanId) {
-          console.log(state.all[state.currentPlanId]);
           return state.all[state.currentPlanId];
         } else {
           return null;
