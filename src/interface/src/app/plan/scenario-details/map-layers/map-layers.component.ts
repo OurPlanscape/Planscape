@@ -1,15 +1,17 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormGroup } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { BehaviorSubject, take } from 'rxjs';
-import { filter } from 'rxjs/operators';
-import { colormapConfigToLegend, Legend, Plan } from 'src/app/types';
+import { filter, take } from 'rxjs';
 
-import { MapService } from './../../../services/map.service';
-import { PlanService } from './../../../services/plan.service';
-import { ConditionsConfig } from './../../../types/data.types';
-import { PlanConditionScores } from './../../../types/plan.types';
+import { MapService, PlanService } from 'src/app/services';
+import {
+  Legend,
+  colormapConfigToLegend,
+  ConditionsConfig,
+  PlanConditionScores,
+  Plan,
+} from 'src/app/types';
 
+// TODO: Share common types and methods (set-priorities component)
 export interface ScoreColumn {
   label: string;
   score: number;
@@ -28,29 +30,16 @@ interface PriorityRow {
 }
 
 @Component({
-  selector: 'app-set-priorities',
-  templateUrl: './set-priorities.component.html',
-  styleUrls: ['./set-priorities.component.scss'],
+  selector: 'app-map-layers',
+  templateUrl: './map-layers.component.html',
+  styleUrls: ['./map-layers.component.scss'],
 })
-export class SetPrioritiesComponent implements OnInit {
-  @Input() formGroup: FormGroup | undefined;
-  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
+export class MapLayersComponent implements OnInit {
+  @Input() plan: Plan | null = null;
   @Output() changeConditionEvent = new EventEmitter<string>();
-  @Output() formNextEvent = new EventEmitter<void>();
-  @Output() formBackEvent = new EventEmitter<void>();
-
-  readonly text1: string = `
-    Priorities are based on the Pillars of Resilience Framework. Only selected priorities are
-    used to identify project areas and prioritize treatment. Note: For the most accurate estimated
-    outcome, choose no more than 5.
-  `;
-
-  readonly text2: string = `
-    Next, select at least one priority. You will have the opportunity to weigh your selections later:
-  `;
 
   conditionScores = new Map<string, ScoreColumn>();
-  displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
+  displayedColumns: string[] = ['displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
   legend: Legend | undefined;
 
@@ -64,7 +53,6 @@ export class SetPrioritiesComponent implements OnInit {
       .subscribe((colormapConfig) => {
         this.legend = colormapConfigToLegend(colormapConfig);
         this.legend!.labels = ['Poor', 'OK', 'Excellent'];
-        this.legend!.secondaryLabels = ['-1', '0', '1'];
       });
   }
 
@@ -78,20 +66,18 @@ export class SetPrioritiesComponent implements OnInit {
         this.datasource.data = this.conditionsConfigToPriorityData(
           conditionsConfig!
         );
-        // Prefill checkboxes for priorities that are already in the form.
-        this.formGroup
-          ?.get('priorities')
-          ?.valueChanges.pipe(take(1))
-          .subscribe((_) => this.updateSelectedPriorities());
       });
-    this.plan$.pipe(filter((plan) => !!plan)).subscribe((plan) => {
+  }
+
+  ngOnChanges() {
+    if (this.plan) {
       this.planService
-        .getConditionScoresForPlanningArea(plan!.id)
+        .getConditionScoresForPlanningArea(this.plan!.id)
         .subscribe((response) => {
           this.conditionScores =
             this.convertConditionScoresToDictionary(response);
         });
-    });
+    }
   }
 
   private conditionsConfigToPriorityData(
@@ -184,7 +170,8 @@ export class SetPrioritiesComponent implements OnInit {
     });
   }
 
-  /** Toggle visibility for a priority condition. If visibility is ON, turn visibility
+  /**
+   * Toggle visibility for a priority condition. If visibility is ON, turn visibility
    *  for all other conditions to OFF.
    */
   toggleVisibility(priority: PriorityRow): void {
@@ -199,25 +186,5 @@ export class SetPrioritiesComponent implements OnInit {
     } else {
       this.changeConditionEvent.emit('');
     }
-  }
-
-  /** Update the priority list with the user's current selections. */
-  updatePrioritiesFormControl(): void {
-    const selectedPriorities: string[] = this.datasource.data
-      .filter((row) => row.selected)
-      .map((row) => row.conditionName);
-    this.formGroup?.get('priorities')?.setValue(selectedPriorities);
-    this.formGroup?.get('priorities')?.markAsDirty();
-  }
-
-  /** Update the checkboxes with the current form value. */
-  updateSelectedPriorities(): void {
-    const priorities: string[] = this.formGroup?.get('priorities')?.value;
-    this.datasource.data = this.datasource.data.map((row) => {
-      if (priorities.includes(row.conditionName)) {
-        row.selected = true;
-      }
-      return row;
-    });
   }
 }

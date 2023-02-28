@@ -23,6 +23,8 @@ import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.co
 import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
 import { OutcomeComponent } from './scenario-details/outcome/outcome.component';
+import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
+import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -44,6 +46,8 @@ import { OutcomeComponent } from './scenario-details/outcome/outcome.component';
     GenerateScenariosComponent,
     ScenarioDetailsComponent,
     OutcomeComponent,
+    ScenarioConfirmationComponent,
+    MapLayersComponent,
   ],
   imports: [
     BrowserAnimationsModule,
