@@ -256,9 +256,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .createScenario(this.formValueToProjectConfig())
       .pipe(take(1))
       .subscribe((_) => {
-        // Navigate back to plan overview
+        // Navigate to scenario confirmation page
         const planId = this.plan$.getValue()?.id;
-        this.router.navigate(['plan', planId]);
+        this.router.navigate(['scenario-confirmation', planId]);
       });
   }
 

@@ -13,6 +13,7 @@ import { MapComponent } from './map/map.component';
 import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
 import { PlanTableComponent } from './plan/plan-table/plan-table.component';
 import { PlanComponent } from './plan/plan.component';
+import { ScenarioConfirmationComponent } from './plan/scenario-confirmation/scenario-confirmation.component';
 import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
 import { RegionSelectionComponent } from './region-selection/region-selection.component';
 import { SignupComponent } from './signup/signup.component';
@@ -57,6 +58,11 @@ const routes: Routes = [
             component: CreateScenariosComponent,
           },
         ],
+      },
+      {
+        path: 'scenario-confirmation/:id',
+        title: 'Generating Scenario',
+        component: ScenarioConfirmationComponent,
       },
       { path: 'plan', title: 'My Plans', component: PlanTableComponent },
     ],
