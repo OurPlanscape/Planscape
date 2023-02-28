@@ -16,3 +16,4 @@ rasterio
 rpy2
 typing_extensions
 uwsgi
+memory-profiler
