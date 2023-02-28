@@ -6,9 +6,7 @@ RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 RUN yum -y install R
 RUN yum -y install libcurl libcurl-devel
 RUN yum -y install openssl-devel
-RUN yum -y install gcc gcc-c++ make openssl-devel libxml2-devel
-RUN yum -y install libgit2
-
+RUN yum -y install gcc gcc-c++ make libxml2-devel
 
 #   library(dplyr)
 #   library(forsys)
