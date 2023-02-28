@@ -1,3 +1,4 @@
+import { MapLayersComponent } from './map-layers/map-layers.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {
   ComponentFixture,
@@ -38,7 +39,7 @@ describe('ScenarioDetailsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, HttpClientTestingModule, MaterialModule],
-      declarations: [ScenarioDetailsComponent, OutcomeComponent],
+      declarations: [ScenarioDetailsComponent, MapLayersComponent, OutcomeComponent],
       providers: [
         { provide: MatSnackBar, useValue: snackbarSpy },
         { provide: PlanService, useValue: fakeService },
