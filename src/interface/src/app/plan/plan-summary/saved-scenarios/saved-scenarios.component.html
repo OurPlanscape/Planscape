@@ -25,8 +25,8 @@
         <ng-container matColumnDef="starred">
           <mat-header-cell *matHeaderCellDef> Starred by you </mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <button mat-icon-button (click)="$event.stopPropagation(); element.starred = !element.starred">
-              <mat-icon [class.material-symbols-outlined]="!element.starred">star</mat-icon>
+            <button mat-icon-button (click)="$event.stopPropagation(); toggleFavorited(element)">
+              <mat-icon [class.material-symbols-outlined]="!element.favorited">star</mat-icon>
             </button>
           </mat-cell>
         </ng-container>
