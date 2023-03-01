@@ -61,7 +61,8 @@ cluster_cells_to_stands <- function(
     # Defining aggregation logic
     summarise(
       area = sum(area),
-      across({{scenario_priorities}}, .f = ~mean(.x, na.rm = TRUE))) %>%
+      # TODO: we may need different aggregation functions for some variables?
+      across(-geometry, .f = ~sum(.x, na.rm = TRUE))) %>%
     # Generating a new stand_id
     mutate(stand_id = row_number())
 
