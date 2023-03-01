@@ -264,7 +264,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   createUploadedProjectArea() {
     const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
-    console.log(uploadedArea);
     if (this.scenarioConfigId && uploadedArea) {
       return this.planService.createProjectArea(
         this.scenarioConfigId,
