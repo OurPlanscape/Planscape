@@ -1320,11 +1320,13 @@ class GetScenarioTest(TransactionTestCase):
                          'cond1': 2, 'cond2': 3})
         self.assertEqual(scenario['project_areas'][str(
             self.project_area.pk)]['geometry'], self.geometry)
+        self.assertEqual(scenario['project_areas'][str(
+            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
 
 
 class ListScenariosTest(TransactionTestCase):
     def setUp(self):
-        self.geometry={'type': 'MultiPolygon',
+        self.geometry = {'type': 'MultiPolygon',
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
@@ -1392,10 +1394,14 @@ class ListScenariosTest(TransactionTestCase):
                          'cond1': 2, 'cond2': 3})
         self.assertEqual(scenario1['project_areas'][str(
             self.project_area.pk)]['geometry'], self.geometry)
-        
+        self.assertEqual(scenario1['project_areas'][str(
+            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
+
         scenario2 = response.json()[1]
         self.assertEqual(scenario2['id'], self.scenario2.pk)
         self.assertEqual(scenario2['priorities'], {
                          'cond1': 4, 'cond2': 5})
         self.assertEqual(scenario2['project_areas'][str(
             self.project_area.pk)]['geometry'], self.geometry)
+        self.assertEqual(scenario2['project_areas'][str(
+            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
