@@ -205,6 +205,51 @@ class ClusterStandsTest(TestCase):
                               1: [(2, 1), (3, 1)],
                               2: [(2, 0), (3, 0)]})
 
+    def test_normalizes_condition_scores(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 0.5, 'bar': 0.3},  1: {'foo': 0.4, 'bar': 0.3}},
+            1: {0: {'foo': 0.5, 'bar': 0.3},  1: {'foo': 0.4, 'bar': 0.3}},
+            2: {0: {'foo': 0.5, 'bar': 0.3},  1: {'foo': 0.1, 'bar': 0.3}},
+            3: {0: {'foo': 0.5, 'bar': 0.3},  1: {'foo': 0.1, 'bar': 0.3}},
+        }
+        priority_weights = {
+            'foo': 10,
+            'bar': 5
+        }
+
+        # Baseline: preference for a blob over a line.
+        clustered_stands = ClusteredStands(
+            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1, 3)
+        self.assertDictEqual(clustered_stands.clusters_to_stands,
+                             {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
+                              1: [(2, 1), (3, 1)],
+                              2: [(2, 0), (3, 0)]})
+
+        # Scaling pixel_index_weight by a factor of 1/100: preference for a line
+        # over a blob.
+        clustered_stands_piw0p01 = ClusteredStands(
+            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1e-2, 3)
+        self.assertDictEqual(clustered_stands_piw0p01.clusters_to_stands,
+                             {0: [(0, 0), (1, 0), (2, 0), (3, 0)],
+                              1: [(2, 1), (3, 1)],
+                              2: [(0, 1), (1, 1)]})
+
+        # Scaling condition scores from [0, 1] to [0, 100]: preference for a 
+        # blob over a line (no change from baseline).
+        pixel_dist_to_condition_values_100x = {
+            0: {0: {'foo': 50, 'bar': 30},  1: {'foo': 40, 'bar': 30}},
+            1: {0: {'foo': 50, 'bar': 30},  1: {'foo': 40, 'bar': 30}},
+            2: {0: {'foo': 50, 'bar': 30},  1: {'foo': 10, 'bar': 30}},
+            3: {0: {'foo': 50, 'bar': 30},  1: {'foo': 10, 'bar': 30}},
+        }
+        clustered_stands_100x = ClusteredStands(
+            pixel_dist_to_condition_values_100x, 4, 2, 100, priority_weights,
+            1, 3)
+        self.assertDictEqual(clustered_stands_100x.clusters_to_stands,
+                             {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
+                              1: [(2, 1), (3, 1)],
+                              2: [(2, 0), (3, 0)]})
+
     def test_normalizes_num_condition_scores(self) -> None:
         pixel_dist_to_condition_values = {
             0: {0: {'foo': 0.5, 'bar': 0.5},  1: {'foo': 0.4, 'bar': 0.4}},
@@ -416,3 +461,35 @@ class ClusterStandsTest(TestCase):
         self.assertEqual(
             str(context.exception),
             "expected len(priorities) == len(conditions)")
+
+    def test_raises_error_negative_condition_score(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': -0.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, 1, 5)
+        self.assertEqual(
+            str(context.exception),
+            "expected condition score to be within range, [0, 1.000000]")
+
+    def test_raises_error_high_condition_score(self) -> None:
+        pixel_dist_to_condition_values = {
+            0: {0: {'foo': 2.5},  1: {'foo': 0.2}},
+            1: {0: {'foo': 0.45}, 1: {'foo': 0.2}},
+            2: {0: {'foo': 0.3},  1: {'foo': 0.6}},
+        }
+        priority_weights = {
+            'foo': 10
+        }
+        with self.assertRaises(Exception) as context:
+            ClusteredStands(pixel_dist_to_condition_values,
+                            3, 2, 1, priority_weights, 1, 5)
+        self.assertEqual(
+            str(context.exception),
+            "expected condition score to be within range, [0, 1.000000]")
