@@ -47,6 +47,10 @@ export class LayerInfoCardComponent {
   }
 
   dataUnits(): string | undefined {
-    return (this.dataLayerConfig as MetricConfig)?.data_units;
+    if (this.dataLayerConfig?.normalized) {
+      return 'Normalized';
+    } else {
+      return (this.dataLayerConfig as MetricConfig)?.data_units;
+    }
   }
 }
