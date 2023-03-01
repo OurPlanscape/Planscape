@@ -4,6 +4,11 @@ import { take } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import { Plan, Scenario } from 'src/app/types';
 
+interface ScenarioRow extends Scenario {
+  selected?: boolean;
+  starred?: boolean;
+}
+
 @Component({
   selector: 'app-saved-scenarios',
   templateUrl: './saved-scenarios.component.html',
@@ -13,8 +18,24 @@ export class SavedScenariosComponent implements OnInit {
   @Input() plan: Plan | null = null;
   @Output() createScenarioEvent = new EventEmitter<void>();
 
-  scenarios: Scenario[] = [];
-  displayedColumns: string[] = ['id', 'createdTimestamp'];
+  readonly text1: string = `
+    Scenarios consist of prioritized project areas for treatment within this planning area,
+    estimated cost ranges, and notes. Copy links to share, download shape files, and more.
+    View conditions of each priority within the Map Layers tab. Anyone with visibility access to
+    this planning area can also view all the scenarios within it.
+  `;
+
+  scenarios: ScenarioRow[] = [];
+  displayedColumns: string[] = [
+    'id',
+    'starred',
+    'projectAreas',
+    'acresTreated',
+    'estimatedCost',
+    'status',
+    'owner',
+    'createdTimestamp',
+  ];
 
   constructor(
     private planService: PlanService,
@@ -35,7 +56,27 @@ export class SavedScenariosComponent implements OnInit {
     this.createScenarioEvent.emit();
   }
 
-  viewScenario(id: string): void {
+  viewScenario(id?: string): void {
+    if (!id) {
+      id = this.scenarios.find((scenario) => scenario.selected)?.id;
+    }
     this.router.navigate(['scenario', id], { relativeTo: this.route });
+  }
+
+  showDeleteButton(): boolean {
+    return this.scenarios.filter((scenario) => scenario.selected).length > 0;
+  }
+
+  showViewButton(): boolean {
+    return this.scenarios.filter((scenario) => scenario.selected).length === 1;
+  }
+
+  deleteSelectedScenarios(): void {
+    console.log(
+      'Deleting scenarios',
+      this.scenarios
+        .filter((scenario) => scenario.selected)
+        .map((scenario) => scenario.id)
+    );
   }
 }
