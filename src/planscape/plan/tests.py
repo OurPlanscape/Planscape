@@ -1311,17 +1311,20 @@ class GetScenarioTest(TransactionTestCase):
             {'id': self.scenario.pk},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()['owner'], self.user.pk)
-        self.assertEqual(response.json()['project'], self.project.pk)
-        self.assertEqual(response.json()['plan'], self.plan.pk)
-        self.assertEqual(response.json()['notes'], 'my note')
-        self.assertEqual(response.json()['priorities'], {
+        scenario = response.json()
+        self.assertEqual(scenario['owner'], self.user.pk)
+        self.assertEqual(scenario['project'], self.project.pk)
+        self.assertEqual(scenario['plan'], self.plan.pk)
+        self.assertEqual(scenario['notes'], 'my note')
+        self.assertEqual(scenario['priorities'], {
                          'cond1': 2, 'cond2': 3})
+        self.assertEqual(scenario['project_areas'][str(
+            self.project_area.pk)]['geometry'], self.geometry)
 
 
 class ListScenariosTest(TransactionTestCase):
     def setUp(self):
-        self.geometry = {'type': 'MultiPolygon',
+        self.geometry={'type': 'MultiPolygon',
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
@@ -1382,9 +1385,17 @@ class ListScenariosTest(TransactionTestCase):
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 2)
-        self.assertEqual(response.json()[0]['id'], self.scenario1.pk)
-        self.assertEqual(response.json()[0]['priorities'], {
+
+        scenario1 = response.json()[0]
+        self.assertEqual(scenario1['id'], self.scenario1.pk)
+        self.assertEqual(scenario1['priorities'], {
                          'cond1': 2, 'cond2': 3})
-        self.assertEqual(response.json()[1]['id'], self.scenario2.pk)
-        self.assertEqual(response.json()[1]['priorities'], {
+        self.assertEqual(scenario1['project_areas'][str(
+            self.project_area.pk)]['geometry'], self.geometry)
+        
+        scenario2 = response.json()[1]
+        self.assertEqual(scenario2['id'], self.scenario2.pk)
+        self.assertEqual(scenario2['priorities'], {
                          'cond1': 4, 'cond2': 5})
+        self.assertEqual(scenario2['project_areas'][str(
+            self.project_area.pk)]['geometry'], self.geometry)
