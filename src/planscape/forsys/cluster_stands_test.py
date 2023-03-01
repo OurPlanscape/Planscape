@@ -487,7 +487,8 @@ class ClusterStandsTest(TestCase):
                 num_clusters=5)
         self.assertEqual(
             str(context.exception),
-            "expected condition score to be within range, [0, 1.000000]")
+            "expected condition score to be within range, [0, 1.000000]; " +
+            "instead, got foo score = -0.500000")
 
     def test_raises_error_high_condition_score(self) -> None:
         pixel_dist_to_condition_values = {
@@ -506,4 +507,5 @@ class ClusterStandsTest(TestCase):
                 num_clusters=5)
         self.assertEqual(
             str(context.exception),
-            "expected condition score to be within range, [0, 1.000000]")
+            "expected condition score to be within range, [0, 1.000000]; " +
+            "instead, got foo score = 2.500000")

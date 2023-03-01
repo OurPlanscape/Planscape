@@ -51,7 +51,7 @@ class ClusteredStands():
     # outputs
     # -------
     # map of cluster ID's to stand index tuples.
-    clusters_to_stands: dict[int, tuple[int, int]]
+    clusters_to_stands: dict[int, list[tuple[int, int]]]
     # string message - set to None if clustering was successful.
     cluster_status_message: str | None
 
@@ -164,8 +164,9 @@ class ClusteredStands():
                     v = pixel_dist_to_condition_values[x][y][p]
                     if v < 0 or v > priority_condition_max_value:
                         raise Exception("expected condition score to be " +
-                                        "within range, [0, %f]" % (
-                                            priority_condition_max_value))
+                                        "within range, [0, %f];" % (
+                                            priority_condition_max_value) +
+                                        " instead, got %s score = %f" % (p, v))
 
     # Normalizes condition values so that the l2 norm of the condition vector
     # is within range, [0, 1].
