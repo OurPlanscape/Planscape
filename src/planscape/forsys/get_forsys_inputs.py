@@ -301,6 +301,7 @@ class ForsysGenerationInput():
             topleft_coords: tuple[float, float]
     ) -> dict[int, dict[int, dict[str, float]]]:
         pixel_dist_x_to_y_to_condition_to_values = {}
+
         for condition_name in conditions_to_raster_values.keys():
             values = conditions_to_raster_values[condition_name]
             xdiff = self._get_pixel_dist_diff(
@@ -315,10 +316,11 @@ class ForsysGenerationInput():
                 x = values["pixel_dist_x"][i] + xdiff
                 y = values["pixel_dist_y"][i] + ydiff
                 # TODO: adjust the 1 - score logic as we move to AP score.
-                value = 1 - values["values"][i]
+                value = 1.0 - values["values"][i]
                 self._insert_value_in_position_and_condition_dict(
                     x, y, condition_name, value,
                     pixel_dist_x_to_y_to_condition_to_values)
+
         return self._get_stands_containing_all_condition_scores(
             pixel_dist_x_to_y_to_condition_to_values,
             list(conditions_to_raster_values.keys()))

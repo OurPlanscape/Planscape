@@ -9,6 +9,7 @@ suppressMessages({
 
 generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     priorities,
+                                                    conditions,
                                                     priority_weights,
                                                     stand_id_field,
                                                     proj_id_field,
@@ -96,7 +97,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
     # Writes the input to a shape file.
     st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
     # Graphs priorities and weighted priorities.
-    for (p in priorities) {
+    for (p in conditions) {
       ggplot() + 
         geom_sf(data=shp, mapping=aes(fill=get(p)), color=NA) +
         scale_fill_viridis_c(begin=0, end=1, option="turbo") +
