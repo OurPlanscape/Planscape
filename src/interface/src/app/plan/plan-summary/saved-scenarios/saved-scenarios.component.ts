@@ -6,7 +6,6 @@ import { Plan, Scenario } from 'src/app/types';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
-  starred?: boolean;
 }
 
 @Component({
@@ -78,5 +77,14 @@ export class SavedScenariosComponent implements OnInit {
         .filter((scenario) => scenario.selected)
         .map((scenario) => scenario.id)
     );
+  }
+
+  toggleFavorited(scenario: ScenarioRow): void {
+    scenario.favorited = !scenario.favorited;
+    if (scenario.favorited) {
+      this.planService.favoriteScenario(scenario.id).pipe(take(1)).subscribe();
+    } else {
+      this.planService.unfavoriteScenario(scenario.id).pipe(take(1)).subscribe();
+    }
   }
 }
