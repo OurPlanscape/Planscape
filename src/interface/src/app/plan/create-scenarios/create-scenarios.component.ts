@@ -8,7 +8,7 @@ import {
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Subject, take } from 'rxjs';
+import { BehaviorSubject, Subject, take, concatMap, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
@@ -245,15 +245,33 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  createScenario(): void {
+  /** Creates the scenario and the uploaded project area, if provided. */
+  createScenarioAndProjectArea(): void {
     this.planService
       .createScenario(this.formValueToProjectConfig())
-      .pipe(take(1))
+      .pipe(
+        take(1),
+        concatMap((_) => {
+          return this.createUploadedProjectArea();
+        })
+      )
       .subscribe((_) => {
         // Navigate to scenario confirmation page
         const planId = this.plan$.getValue()?.id;
         this.router.navigate(['scenario-confirmation', planId]);
       });
+  }
+
+  createUploadedProjectArea() {
+    const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
+    console.log(uploadedArea);
+    if (this.scenarioConfigId && uploadedArea) {
+      return this.planService.createProjectArea(
+        this.scenarioConfigId,
+        uploadedArea
+      );
+    }
+    return of(null);
   }
 
   changeCondition(filepath: string): void {
