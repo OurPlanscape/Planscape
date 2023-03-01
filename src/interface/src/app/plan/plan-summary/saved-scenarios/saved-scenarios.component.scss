@@ -14,6 +14,14 @@ $primary-palette: map.get($color-config, 'primary');
   border-radius: 16px;
 }
 
+.mat-card-content {
+  padding: 8px;
+}
+
+.mat-card-actions {
+  gap: 12px;
+}
+
 .no-scenarios-overlay {
   align-items: center;
   backdrop-filter: blur(2px);
@@ -53,4 +61,16 @@ $primary-palette: map.get($color-config, 'primary');
   margin-left: -24px;
   margin-right: 18px;
   width: 4px;
+}
+
+.mat-column-id {
+  border-right: 2px solid #00000040;
+}
+
+.scenario-checkbox {
+  margin-left: 20px;
+}
+
+.mat-column-starred {
+  padding-left: 20px;
 }
