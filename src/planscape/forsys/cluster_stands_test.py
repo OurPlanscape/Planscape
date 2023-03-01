@@ -19,8 +19,11 @@ class ClusterStandsTest(TestCase):
         priority_weights = {
             'foo': 10
         }
-        clustered_stands = ClusteredStands(pixel_dist_to_condition_values,
-                                           3, 2, 1, priority_weights, 0, 5)
+
+        clustered_stands = ClusteredStands(
+            pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=0, num_clusters=5)
         # 6 stands are reduced to 5 clusters.
         # (0, 1) and (1, 1) are clustered because they are adjacent and have
         # the same value.
@@ -40,8 +43,11 @@ class ClusterStandsTest(TestCase):
         priority_weights = {
             'foo': 10
         }
-        clustered_stands = ClusteredStands(pixel_dist_to_condition_values,
-                                           3, 2, 1, priority_weights, 0, 4)
+        clustered_stands = ClusteredStands(
+            pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=0, num_clusters=4)
+
         # 6 stands are reduced to 4 clusters.
         # Even though (0, 0) and (2, 1) have the same value, they aren't
         # clustered because they aren't adjacent to each other. Instead, (0, 0)
@@ -61,8 +67,10 @@ class ClusterStandsTest(TestCase):
         priority_weights = {
             'foo': 10
         }
-        clustered_stands = ClusteredStands(pixel_dist_to_condition_values,
-                                           3, 2, 1, priority_weights, 0, 4)
+        clustered_stands = ClusteredStands(
+            pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=0, num_clusters=4)
         # 5 stands are reduced to 4 clusters.
         # (0, 0) and (1, 0) are clustered because they are adjacent and have
         # the smallest diff. The missing stand at (0, 1) doesn't impact the
@@ -91,7 +99,9 @@ class ClusterStandsTest(TestCase):
 
         # With pixel_index_weight=0, the largest cluster is a line.
         clustered_stands_piw0 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 0, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=0, num_clusters=3)
         self.assertDictEqual(clustered_stands_piw0.clusters_to_stands,
                              {0: [(0, 0), (1, 0), (2, 0), (3, 0)],
                               1: [(2, 1), (3, 1)],
@@ -99,7 +109,9 @@ class ClusterStandsTest(TestCase):
 
         # With pixel_index_weight=10, the largest cluster is a 2x2 square.
         clustered_stands_piw10 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 10, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=10, num_clusters=3)
         self.assertDictEqual(clustered_stands_piw10.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -118,7 +130,9 @@ class ClusterStandsTest(TestCase):
 
         # With pixel_index_weight=0, cluster sizes are unbalanced.
         clustered_stands_piw0 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 0, 2)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=0, num_clusters=2)
         self.assertDictEqual(clustered_stands_piw0.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1),
                                   (2, 0), (2, 1), (3, 0)],
@@ -126,7 +140,9 @@ class ClusterStandsTest(TestCase):
 
         # With pixel_index_weight=10, cluster sizes are more balanced.
         clustered_stands_piw10 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 10, 2)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=10, num_clusters=2)
         self.assertDictEqual(clustered_stands_piw10.clusters_to_stands,
                              {0: [(2, 0), (2, 1), (3, 0), (3, 1)],
                               1: [(0, 0), (0, 1), (1, 0), (1, 1)]})
@@ -150,7 +166,9 @@ class ClusterStandsTest(TestCase):
 
         # Baseline: preference for a blob over a line.
         clustered_stands = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=1, num_clusters=3)
         self.assertDictEqual(clustered_stands.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -159,7 +177,9 @@ class ClusterStandsTest(TestCase):
         # Scaling pixel_index_weight by a factor of 1/100: preference for a line
         # over a blob.
         clustered_stands_piw0p01 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1e-2, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=1e-2, num_clusters=3)
         self.assertDictEqual(clustered_stands_piw0p01.clusters_to_stands,
                              {0: [(0, 0), (1, 0), (2, 0), (3, 0)],
                               1: [(2, 1), (3, 1)],
@@ -172,8 +192,9 @@ class ClusterStandsTest(TestCase):
             'bar': 500
         }
         clustered_stands_pw10 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights_100x, 1,
-            3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights_100x,
+            pixel_index_weight=1, num_clusters=3)
         self.assertDictEqual(clustered_stands_pw10.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -193,7 +214,9 @@ class ClusterStandsTest(TestCase):
 
         # Baseline: preference for a blob over a line.
         clustered_stands = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=1, num_clusters=3)
         self.assertDictEqual(clustered_stands.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -202,13 +225,15 @@ class ClusterStandsTest(TestCase):
         # Scaling pixel_index_weight by a factor of 1/100: preference for a line
         # over a blob.
         clustered_stands_piw0p01 = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1e-2, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=1e-2, num_clusters=3)
         self.assertDictEqual(clustered_stands_piw0p01.clusters_to_stands,
                              {0: [(0, 0), (1, 0), (2, 0), (3, 0)],
                               1: [(2, 1), (3, 1)],
                               2: [(0, 1), (1, 1)]})
 
-        # Scaling condition scores from [0, 1] to [0, 100]: preference for a 
+        # Scaling condition scores from [0, 1] to [0, 100]: preference for a
         # blob over a line (no change from baseline).
         pixel_dist_to_condition_values_100x = {
             0: {0: {'foo': 50, 'bar': 30},  1: {'foo': 40, 'bar': 30}},
@@ -217,8 +242,9 @@ class ClusterStandsTest(TestCase):
             3: {0: {'foo': 50, 'bar': 30},  1: {'foo': 10, 'bar': 30}},
         }
         clustered_stands_100x = ClusteredStands(
-            pixel_dist_to_condition_values_100x, 4, 2, 100, priority_weights,
-            1, 3)
+            pixel_dist_to_condition_values_100x, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=100, priority_weights=priority_weights,
+            pixel_index_weight=1, num_clusters=3)
         self.assertDictEqual(clustered_stands_100x.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -238,8 +264,9 @@ class ClusterStandsTest(TestCase):
 
         # Baseline: preference for a blob over a line.
         clustered_stands = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights,
-            7.5 * 1e-2, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=7.5 * 1e-2, num_clusters=3)
         self.assertDictEqual(clustered_stands.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -248,8 +275,9 @@ class ClusterStandsTest(TestCase):
         # Scaling pixel_index_weight by a factor of 1/1.5: preference for a line
         # over a blob.
         clustered_stands_piw = ClusteredStands(
-            pixel_dist_to_condition_values, 4, 2, 1, priority_weights,
-            7.5 * 1e-2 / 1.5, 3)
+            pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=7.5 * 1e-2 / 1.5, num_clusters=3)
         self.assertDictEqual(clustered_stands_piw.clusters_to_stands,
                              {0: [(0, 0), (1, 0), (2, 0), (3, 0)],
                               1: [(2, 1), (3, 1)],
@@ -274,8 +302,10 @@ class ClusterStandsTest(TestCase):
             'baz': 7.5
         }
         clustered_stands_c3 = ClusteredStands(
-            pixel_dist_to_condition_values_c3, 4, 2, 1, priority_weights_c3, 1,
-            3)
+            pixel_dist_to_condition_values_c3, pixel_width=4, pixel_height=2,
+            priority_condition_max_value=1,
+            priority_weights=priority_weights_c3,
+            pixel_index_weight=1, num_clusters=3)
         self.assertDictEqual(clustered_stands_c3.clusters_to_stands,
                              {0: [(0, 0), (0, 1), (1, 0), (1, 1)],
                               1: [(2, 1), (3, 1)],
@@ -294,8 +324,10 @@ class ClusterStandsTest(TestCase):
         priority_weights = {
             'foo': 10
         }
-        clustered_stands = ClusteredStands(pixel_dist_to_condition_values,
-                                           3, 2, 1, priority_weights, 0, 10)
+        clustered_stands = ClusteredStands(
+            pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+            priority_condition_max_value=1, priority_weights=priority_weights,
+            pixel_index_weight=0, num_clusters=10)
         self.assertEqual(clustered_stands.cluster_status_message,
                          "num desired clusters >= num stands")
 
@@ -308,12 +340,14 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            3, 2, 1, priority_weights, 0, 1)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=0,
+                num_clusters=1)
         self.assertEqual(
             str(context.exception),
-            "the graph has 2 connected components - it's impossible to " +
-            "convert this into 1 clusters")
+            "It's impossible to cluster pixels into 1 clusters - due to missing condition values, the smallest possible number of clusters is 2")
 
     # --------------------------------------------------------
     # The following tests are for validating input parameters.
@@ -329,8 +363,11 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            -1, 2, 1, priority_weights, 0, 5)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=-1, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=0,
+                num_clusters=5)
         self.assertEqual(
             str(context.exception),
             "expected pixel_width to be a positive integer")
@@ -345,8 +382,11 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            3, 0, 1, priority_weights, 0, 5)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=3, pixel_height=0,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=0,
+                num_clusters=5)
         self.assertEqual(
             str(context.exception),
             "expected pixel_height to be a positive integer")
@@ -361,8 +401,11 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            3, 2, 1, priority_weights, 0, -0.2)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=0,
+                num_clusters=-0.2)
         self.assertEqual(
             str(context.exception),
             "num_clusters must be a positive integer")
@@ -377,8 +420,11 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            3, 2, 1, priority_weights, -10, 5)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=-10,
+                num_clusters=5)
         self.assertEqual(
             str(context.exception), "pixel_index_weight must be gte 0")
 
@@ -392,8 +438,10 @@ class ClusterStandsTest(TestCase):
         }
         with self.assertRaises(Exception) as context:
             ClusteredStands(
-                pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1,
-                3)
+                pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=1,
+                num_clusters=3)
         self.assertEqual(
             str(context.exception), "expected at least 1 priority weight")
 
@@ -414,8 +462,10 @@ class ClusterStandsTest(TestCase):
         }
         with self.assertRaises(Exception) as context:
             ClusteredStands(
-                pixel_dist_to_condition_values, 4, 2, 1, priority_weights, 1,
-                3)
+                pixel_dist_to_condition_values, pixel_width=4, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=1,
+                num_clusters=3)
         self.assertEqual(
             str(context.exception),
             "expected len(priorities) == len(conditions)")
@@ -430,11 +480,15 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            3, 2, 1, priority_weights, 1, 5)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=1,
+                num_clusters=5)
         self.assertEqual(
             str(context.exception),
-            "expected condition score to be within range, [0, 1.000000]")
+            "expected condition score to be within range, [0, 1.000000]; " +
+            "instead, got foo score = -0.500000")
 
     def test_raises_error_high_condition_score(self) -> None:
         pixel_dist_to_condition_values = {
@@ -446,8 +500,12 @@ class ClusterStandsTest(TestCase):
             'foo': 10
         }
         with self.assertRaises(Exception) as context:
-            ClusteredStands(pixel_dist_to_condition_values,
-                            3, 2, 1, priority_weights, 1, 5)
+            ClusteredStands(
+                pixel_dist_to_condition_values, pixel_width=3, pixel_height=2,
+                priority_condition_max_value=1,
+                priority_weights=priority_weights, pixel_index_weight=1,
+                num_clusters=5)
         self.assertEqual(
             str(context.exception),
-            "expected condition score to be within range, [0, 1.000000]")
+            "expected condition score to be within range, [0, 1.000000]; " +
+            "instead, got foo score = 2.500000")
