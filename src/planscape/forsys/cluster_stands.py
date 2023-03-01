@@ -11,6 +11,7 @@ from scipy.sparse.csgraph import connected_components
 #   - stands are arranged as pixels in an image
 #   - although it's ok for the image to be missing pixels, the number of
 #     connected components must be greater than the desired number of clusters
+#   - condition scores are all scaled to [0, priority_condition_max_value]
 #
 # Inputs include ...
 #   ... pixel_dist_to_condition_values: a dictionary mapping x-index to y-index
@@ -37,9 +38,9 @@ from scipy.sparse.csgraph import connected_components
 # ]
 #
 # Normalization is applied to force ...
-#   ... the l2 norm of normalized priority_conditions to 1
-#   ... the l2 norm of normalized priority_weights to a value within the range,
-#       [0, 1]
+#   ... the l2 norm of normalized priority_weights to 1
+#   ... the l2 norm of normalized priority_conditions to a value within the
+#       range, [0, 1]
 # Normalization enables clustering behavior to remain somewhat consistent for a
 #   given pixel_index_weight regardless of priority weight values,
 #   priority condition values, and the number of priority conditions.
@@ -58,17 +59,25 @@ class ClusteredStands():
     # intermediate variables
     # ----------------------
     # normalized priority condition scores.
+    # keys are 1) x-index, 2) y-index, 3) condition name.
     _normalized_pixel_dist_to_condition_values: dict[int,
                                                      dict[int,
                                                           dict[str, float]]]
     # priority weights l2-normalized to a unit vector.
+    # keyed by condition name.
     _normalized_priority_weights: dict[str, float]
 
-    # NxM matrix denoting whether a pixel is included as a stand.
+    # WIDTHxHEIGHT matrix denoting whether a pixel is included as a stand.
+    # indexed by x-index, y-index
     _mask: list[list[bool]]
-    # feature vector used to compute the similarity of adjacent stands.
+    # feature vectors used to compute the similarity of adjacent stands.
+    # feature vectors are listed in the order,
+    # (x1, y1), (x1, y2), ... (x1, yM), (x2, y1), (x2, y2), ..., (xN, yM)
+    # x,y tuples missing features (aka mask[x][y] = False) are not included.
     _features: list[list[float]]
     # list of edges in a pixel connectivity graph.
+    # each row contains an x,y tuple and 1 (for denoting edge weight)
+    # edges with 0 weight are not included
     _connectivity: list[list[tuple[int, int], int]]
 
     def __init__(
@@ -87,7 +96,7 @@ class ClusteredStands():
         self.clusters_to_stands = None
         self.cluster_status_message = None
 
-        self._mask = self._get_mask(
+        self._mask = self._create_mask(
             pixel_dist_to_condition_values, pixel_width, pixel_height)
         if np.sum(self._mask) <= num_clusters:
             self.cluster_status_message = "num desired clusters >= num stands"
@@ -98,10 +107,10 @@ class ClusteredStands():
         num_connected_components = connected_components(self._connectivity)[0]
         if num_connected_components > num_clusters:
             raise Exception(
-                "the graph has %d connected components -" %
-                (num_connected_components) +
-                " it's impossible to convert this into %d clusters" %
-                (num_clusters))
+                "It's impossible to cluster pixels into %d clusters - " %
+                (num_clusters) +
+                "due to missing condition values, the smallest possible " +
+                "number of clusters is %d" % (num_connected_components))
 
         self._normalized_pixel_dist_to_condition_values = \
             self._normalize_condition_values(
@@ -110,8 +119,8 @@ class ClusteredStands():
             priority_weights)
 
         self._features = self._get_features(
-            self._normalized_pixel_dist_to_condition_values, pixel_width,
-            pixel_height, self._normalized_priority_weights, pixel_index_weight)
+            self._normalized_pixel_dist_to_condition_values, self._mask,
+            self._normalized_priority_weights, pixel_index_weight)
 
         ward = AgglomerativeClustering(
             n_clusters=num_clusters, linkage='ward',
@@ -121,6 +130,7 @@ class ClusteredStands():
         self.clusters_to_stands = self._get_cluster_pixels(
             ward.labels_, self._mask, pixel_width, pixel_height)
 
+    # Validates that input parameter values make sense.
     def _validate_input_params(
             self,
             pixel_dist_to_condition_values: dict[int,
@@ -154,10 +164,15 @@ class ClusteredStands():
                     v = pixel_dist_to_condition_values[x][y][p]
                     if v < 0 or v > priority_condition_max_value:
                         raise Exception("expected condition score to be " +
-                                        "within range, [0, %f]" % (
+                                        "within range, [0, %f];" % (
                                             priority_condition_max_value) +
                                         " instead, got %s score = %f" % (p, v))
 
+    # Normalizes condition values so that the l2 norm of the condition vector
+    # is within range, [0, 1].
+    # This normalization step requires input, priority_condition_max_value. A
+    # major assumption is that all condition values prior to normalization fall
+    # within range, [0, priority_condition_max_value].
     def _normalize_condition_values(
             self,
             pixel_dist_to_condition_values: dict[int,
@@ -183,6 +198,7 @@ class ClusteredStands():
                         conditions[c] / denom
         return normalized_pixel_dist_to_condition_values
 
+    # Normalizes priority weights so that the l2 norm of the vector is 1.
     def _normalize_priority_weights(self,
                                     priority_weights: dict[str, float]
                                     ) -> dict[str, float]:
@@ -195,11 +211,14 @@ class ClusteredStands():
         normalized_priority_weights = {}
         for p in priority_weights.keys():
             # Division by the l2 norm forces the l2 norm of the priority
-            # weights veector to be 1.
+            # weights vector to be 1.
             normalized_priority_weights[p] = priority_weights[p] / denom
         return normalized_priority_weights
 
-    def _get_mask(
+    # Generates a list[list[bool]] matrix with dimensions, pixel_width,
+    # pixel_height. Matrix elements are True if priority condition values are
+    # available for the element, and False otherwise.
+    def _create_mask(
         self, pixel_dist_to_condition_values: dict[int,
                                                    dict[int,
                                                         dict[str, float]]],
@@ -214,18 +233,27 @@ class ClusteredStands():
                 mask[x][y] = True
         return mask
 
+    # Retrieves a list of features for each element in the pixel_width x
+    # pixel_height matrix.
+    # Features are [
+    #   pixel_index_weight * x-index,
+    #   pixel_index_weight * y-index
+    #   normalized_priority_weights ⋅ normalized_priority_conditions
+    # ]
+    # Elements are listed in the order,
+    # (x1, y1), (x1, y2), ... (x1, yM), (x2, y1), (x2, y2), ..., (xN, yM)
+    # Elements missing priority condition values (aka elements where
+    # mask[x][y] = False) are omitted.
     def _get_features(self,
                       pixel_dist_to_condition_values:
                       dict[int, dict[int, dict[str, float]]],
-                      pixel_width: int, pixel_height: int,
+                      mask: list[list[bool]],
                       priority_weights: dict[str, float],
                       pixel_index_weight: float) -> list[list[float]]:
         features = []
-        for x in range(pixel_width):
-            if x not in pixel_dist_to_condition_values.keys():
-                continue
-            for y in range(pixel_height):
-                if y not in pixel_dist_to_condition_values[x].keys():
+        for x in range(len(mask)):
+            for y in range(len(mask[x])):
+                if not mask[x][y]:
                     continue
                 features.append(
                     [pixel_index_weight * x,
@@ -235,6 +263,8 @@ class ClusteredStands():
                          priority_weights)])
         return features
 
+    # Computes weighted priority as a dot-product between priority_weights and
+    # condition_values.
     def _compute_weighted_priority(
             self, condition_values: dict[str, float],
             priority_weights: dict[str, float]) -> float:
@@ -244,6 +274,8 @@ class ClusteredStands():
                 priority_weights[p] * condition_values[p]
         return weighted_priority
 
+    # Converts a list of cluster labels into a dictionary mapping cluster ID to
+    # lists of merged image matrix index tuples.
     def _get_cluster_pixels(self, cluster_labels: list[int],
                             mask: list[list[bool]],
                             pixel_width: int, pixel_height: int
