@@ -230,6 +230,7 @@ class ForsysGenerationRequestParams():
     _URL_PLANNING_AREA = 'planning_area'
     _URL_CLUSTER_TYPE = 'cluster_type'
     _URL_NUM_CLUSTERS = 'num_clusters'
+    _URL_CLUSTER_PIXEL_INDEX_WEIGHT = 'cluster_pixel_index_weight'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -237,6 +238,7 @@ class ForsysGenerationRequestParams():
                            'forest_resilience', 'species_diversity']
     _DEFAULT_CLUSTER_TYPE = PreForsysClusterType.NONE
     _DEFAULT_NUM_CLUSTERS = 500
+    _DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT = 0.01
 
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and global, project-level, and
@@ -255,6 +257,9 @@ class ForsysGenerationRequestParams():
     cluster_type: PreForsysClusterType
     # Number of clusters.
     num_clusters: int
+    # Cluster pixel index weight - this controls the roundness and size of
+    # clusters, if enabled.
+    cluster_pixel_index_weight: float
 
     # Returns a dictionary mapping priorities to priority weights.
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -290,6 +295,10 @@ class ForsysGenerationRequestParams():
             self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS))
         if self.num_clusters <= 0:
             raise Exception("expected num_clusters to be > 0")
+        self.cluster_pixel_index_weight = float(params.get(
+            self._URL_CLUSTER_PIXEL_INDEX_WEIGHT, self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT))
+        if self.cluster_pixel_index_weight < 0:
+            raise Exception("expected cluster_pixel_index_weight to be > 0")
 
     def _read_db_params(self, request: HttpRequest) -> None:
         params = request.GET

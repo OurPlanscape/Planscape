@@ -219,9 +219,9 @@ class ForsysGenerationInput():
                     self._pixel_dist_x_to_y_to_condition_to_values)
         elif params.cluster_type == PreForsysClusterType.HIERARCHICAL:
             clustered_stands = ClusteredStands(
-                self._pixel_dist_x_to_y_to_condition_to_values,
-                width, height, self.MAX_PRIORITY_SCORE,
-                params.get_priority_weights_dict(), 1.0, 10000)
+                self._pixel_dist_x_to_y_to_condition_to_values, width, height,
+                self.MAX_PRIORITY_SCORE, params.get_priority_weights_dict(),
+                params.pixel_index_weight, params.num_clusters)
             if clustered_stands.cluster_status_message is None:
                 self.forsys_input = \
                     self._convert_clustered_merged_condition_rasters_to_input_df(
@@ -445,9 +445,9 @@ class ForsysGenerationInput():
 
         DUMMY_PROJECT_ID = 0
         for cluster_id in clusters_to_stands.keys():
-            # python libraries may cause cluster_id to be np.int64 type, which 
+            # python libraries may cause cluster_id to be np.int64 type, which
             # isn't compatible with downstream json operations.
-            cluster_id = int(cluster_id) 
+            cluster_id = int(cluster_id)
 
             stands = clusters_to_stands[cluster_id]
             num_stands = len(stands)

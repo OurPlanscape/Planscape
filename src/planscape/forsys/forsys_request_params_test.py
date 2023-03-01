@@ -310,6 +310,7 @@ class TestForsysGenerationRequestParams(TestCase):
         self.assertEqual(params.planning_area.srid, 4269)
         self.assertEqual(params.cluster_type, PreForsysClusterType.NONE)
         self.assertEqual(params.num_clusters, 500)
+        self.assertEqual(params.cluster_pixel_index_weight, 0.01)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -439,7 +440,7 @@ class TestForsysGenerationRequestParams(TestCase):
         self.assertEquals(
             str(context.exception),
             'url params, planning_area, missing field, "id"')
-        
+
     def test_reads_cluster_type_from_url_params(self):
         request = HttpRequest()
         request.GET = QueryDict(
@@ -474,6 +475,26 @@ class TestForsysGenerationRequestParams(TestCase):
         self.assertEqual(
             str(context.exception),
             'expected num_clusters to be > 0')
+        
+    def test_reads_cluster_pixel_index_weight_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&' +
+            'cluster_pixel_index_weight=0.099')
+        params = ForsysGenerationRequestParams(request)
+        self.assertEqual(params.cluster_pixel_index_weight, 0.099)
+
+    def test_raises_error_for_bad_cluster_pixel_index_weight_from_url_params(
+            self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&' +
+            'cluster_pixel_index_weight=-999')
+        with self.assertRaises(Exception) as context:
+            ForsysGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected cluster_pixel_index_weight to be > 0')
 
 
 class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
@@ -499,6 +520,7 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
             ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
         self.assertEqual(params.cluster_type, PreForsysClusterType.NONE)
         self.assertEqual(params.num_clusters, 500)
+        self.assertEqual(params.cluster_pixel_index_weight, 0.01)
 
     def test_fails_on_no_user(self):
         request = HttpRequest()
@@ -540,19 +562,21 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
         self.assertEquals(
             str(context.exception),
             "Plan matching query does not exist.")
-        
+
     def test_reads_cluster_type_from_url_params(self):
         request = HttpRequest()
-        request.GET = QueryDict(
-            'set_all_params_via_url_with_default_values=1&cluster_type=1')
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk) + 
+                                '&cluster_type=1')
+        request.user = self.user
         params = ForsysGenerationRequestParams(request)
         self.assertEqual(params.cluster_type,
                          PreForsysClusterType.HIERARCHICAL_IN_PYTHON)
 
     def test_raises_error_for_bad_cluster_type_from_url_params(self):
         request = HttpRequest()
-        request.GET = QueryDict(
-            'set_all_params_via_url_with_default_values=1&cluster_type=999')
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk) + 
+                                '&cluster_type=999')
+        request.user = self.user
         with self.assertRaises(Exception) as context:
             ForsysGenerationRequestParams(request)
         self.assertEqual(
@@ -561,17 +585,39 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
 
     def test_reads_num_clusters_from_url_params(self):
         request = HttpRequest()
-        request.GET = QueryDict(
-            'set_all_params_via_url_with_default_values=1&num_clusters=1125')
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk) + 
+                                '&num_clusters=1125')
+        request.user = self.user
         params = ForsysGenerationRequestParams(request)
         self.assertEqual(params.num_clusters, 1125)
 
     def test_raises_error_for_bad_num_clusters_from_url_params(self):
         request = HttpRequest()
-        request.GET = QueryDict(
-            'set_all_params_via_url_with_default_values=1&num_clusters=-999')
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk) +
+                                '&num_clusters=-999')
+        request.user = self.user
         with self.assertRaises(Exception) as context:
             ForsysGenerationRequestParams(request)
         self.assertEqual(
             str(context.exception),
             'expected num_clusters to be > 0')
+
+    def test_reads_cluster_pixel_index_weight_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk) +
+                                '&cluster_pixel_index_weight=0.099')
+        request.user = self.user
+        params = ForsysGenerationRequestParams(request)
+        self.assertEqual(params.cluster_pixel_index_weight, 0.099)
+
+    def test_raises_error_for_bad_cluster_pixel_index_weight_from_url_params(
+            self):
+        request = HttpRequest()
+        request.GET = QueryDict('id=' + str(self.plan_with_user.pk) +
+                                '&cluster_pixel_index_weight=-999')
+        request.user = self.user
+        with self.assertRaises(Exception) as context:
+            ForsysGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected cluster_pixel_index_weight to be > 0')
