@@ -9,17 +9,19 @@ suppressMessages({
   library(tidyverse)
 })
 
-generate_projects_for_a_single_scenario <- function(forsys_input_data,
-                                                    priorities,
-                                                    priority_weights,
-                                                    stand_id_field,
-                                                    proj_id_field,
-                                                    stand_area_field,
-                                                    stand_cost_field,
-                                                    geo_wkt_field,
-                                                    output_scenario_name,
-                                                    output_scenario_tag,
-                                                    PreForsysClusterType = 'KMEANS') {
+generate_projects_for_a_single_scenario <- function(
+  forsys_input_data,
+  priorities,
+  priority_weights,
+  stand_id_field,
+  proj_id_field,
+  stand_area_field,
+  stand_cost_field,
+  geo_wkt_field,
+  output_scenario_name,
+  output_scenario_tag,
+  PreForsysClusterType = 'KMEANS') {
+
   # Enables debug mode if providing output_scenario_name and output_scenario_tag
   # If enabled, data and graphs are output to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
@@ -31,7 +33,7 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   forsys_input_data <- forsys_input_data %>% 
     forsys::calculate_spm(fields = priorities) %>%
     forsys::calculate_pcp(fields = priorities)
-  print(colnames(forsys_input_data))
+
   # Appends a preset_priority column, which contains total impact score values.
   priority_impact_fields <- paste0(priorities, "_PCP")
   wp_colname <- "weighted_priorities"
@@ -41,10 +43,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
         fields = priority_impact_fields,
         weights = priority_weights,
         new_field = wp_colname))
-  print(colnames(forsys_input_data))
-
-  # TODO: remove
-  write_rds(forsys_input_data, "forsys_input_data.rds")
 
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
   forsys_input_data_formatted <- forsys_input_data %>%
@@ -54,7 +52,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   # k-means clustering
   if (PreForsysClusterType == 'KMEANS') {
     # k-means clustering execution
-    print('### running kmeans spatial clustering')
     source("forsys/spatial_clustering.R")
     forsys_input_data_formatted <- cluster_cells_to_stands(
       stand_data = forsys_input_data_formatted,
@@ -62,7 +59,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   }
 
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
-  print('### R ForSys call is running')
   suppressMessages(
     run_outputs <- forsys::run(
       return_outputs = TRUE,
@@ -97,7 +93,6 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       #proj_target_value = 0.5
       )
     )
-  print('### R ForSys call is done')
 
   # Adds the input geo_wkt column to the stand output df.
   input_stand_ids_and_geometries <- forsys_input_data %>%
@@ -130,7 +125,8 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       guides(fill=guide_colorbar(title=wp_colname))
     ggsave(file.path(output_dir, paste(wp_colname, '.pdf')))
     # Gets projects.
-    x <- run_outputs$stand_output %>% select({{stand_id_field}}, {{proj_id_field}})
+    x <- run_outputs$stand_output %>%
+      select({{stand_id_field}}, {{proj_id_field}})
     x[stand_id_field] <- lapply(x[stand_id_field], as.integer)
     y <- forsys_input_data_formatted %>% select({{stand_id_field}}, 'geometry')
     joined <- x %>% inner_join(y, by=stand_id_field)
@@ -147,6 +143,5 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
       guides(fill=guide_legend(title=proj_id_field))
     ggsave(file.path(output_dir, paste(wp_colname, '_with_projects.pdf')))
   }
-  print('### R call is done')
   return(run_outputs)
 }
