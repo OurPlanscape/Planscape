@@ -1,6 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, Observable, take, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  map,
+  Observable,
+  of,
+  take,
+  tap,
+} from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
@@ -126,7 +134,7 @@ export class PlanService {
   getConditionScoresForPlanningArea(
     planId: string
   ): Observable<PlanConditionScores> {
-    let url = BackendConstants.END_POINT.concat('/plan/scores/?id=', planId);
+    const url = BackendConstants.END_POINT.concat('/plan/scores/?id=', planId);
     return this.http
       .get<PlanConditionScores>(url, {
         withCredentials: true,
@@ -134,10 +142,12 @@ export class PlanService {
       .pipe(take(1));
   }
 
-  /** Creates a project in a plan, and returns an ID which can be used to get or update the
-   *  project. */
+  /**
+   * Creates a project in a plan, and returns an ID which can be used to get or update the
+   *  project. "Project" is synonymous with "Config" in the frontend.
+   * */
   createProjectInPlan(planId: string): Observable<number> {
-    let url = BackendConstants.END_POINT.concat('/plan/create_project/');
+    const url = BackendConstants.END_POINT.concat('/plan/create_project/');
     return this.http
       .post<number>(
         url,
@@ -151,9 +161,32 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  /** Creates project area and returns the ID of the created project area. */
+  createProjectArea(projectId: number, projectArea: GeoJSON.GeoJSON) {
+    const url = BackendConstants.END_POINT.concat('/plan/create_project_area/');
+    return this.http
+      .post<number>(
+        url,
+        {
+          project_id: Number(projectId),
+          geometry: projectArea,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        take(1),
+        catchError((error) => {
+          // TODO: Show error message! Move all error logic to the service.
+          return of(null);
+        })
+      );
+  }
+
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
-    let url = BackendConstants.END_POINT.concat('/plan/update_project/');
+    const url = BackendConstants.END_POINT.concat('/plan/update_project/');
     return this.http
       .put<number>(url, projectConfig, {
         withCredentials: true,
@@ -163,7 +196,7 @@ export class PlanService {
 
   /** Fetches the projects for a plan from the backend. */
   getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
-    let url = BackendConstants.END_POINT.concat(
+    const url = BackendConstants.END_POINT.concat(
       '/plan/list_projects_for_plan/?plan_id=',
       planId
     );
@@ -183,7 +216,7 @@ export class PlanService {
 
   /** Fetches a project by its ID from the backend. */
   getProject(projectId: number): Observable<ProjectConfig> {
-    let url = BackendConstants.END_POINT.concat(
+    const url = BackendConstants.END_POINT.concat(
       '/plan/get_project/?id=',
       projectId.toString()
     );
