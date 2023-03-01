@@ -135,6 +135,7 @@ describe('SetPrioritiesComponent', () => {
   it('should fetch colormap from service to create legend', () => {
     let legend = colormapConfigToLegend(fakeColormapConfig);
     legend!.labels = ['Poor', 'OK', 'Excellent'];
+    legend!.secondaryLabels = ['-1', '0', '1'];
 
     expect(fakeMapService.getColormap).toHaveBeenCalledOnceWith('turbo');
     expect(component.legend).toEqual(legend);
