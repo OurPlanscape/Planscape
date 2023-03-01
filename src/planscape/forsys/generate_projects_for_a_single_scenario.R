@@ -58,8 +58,6 @@ generate_projects_for_a_single_scenario <- function(
       scenario_priorities = c(wp_colname, priorities))
   }
 
-  print(head(forsys_input_data_formatted, n = 5))
-
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
   suppressMessages(
     run_outputs <- forsys::run(
@@ -76,9 +74,9 @@ generate_projects_for_a_single_scenario <- function(
       scenario_priorities = wp_colname,
       scenario_output_fields = c(
         priorities,
-        stand_area_field),
+        stand_area_field,
         # TODO: seems we're missing the cost field?
-        #stand_cost_field),
+        stand_cost_field),
       run_with_patchmax = TRUE,
       # target area per project? TODO: clarify what this does, and clarify
       # whether there's also a target cost per project.
@@ -95,8 +93,6 @@ generate_projects_for_a_single_scenario <- function(
       #proj_target_value = 0.5
       )
     )
-
-  print(head(run_outputs$stand_output, n = 5))
 
   # Adds the input geo_wkt column to the stand output df.
   input_stand_ids_and_geometries <- forsys_input_data %>%
