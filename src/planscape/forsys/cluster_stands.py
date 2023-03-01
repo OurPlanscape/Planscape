@@ -151,7 +151,7 @@ class ClusteredStands():
                         raise Exception(
                             "expected conditions to include priority, %s" %
                             (p))
-                    v = 1 - pixel_dist_to_condition_values[x][y][p]
+                    v = pixel_dist_to_condition_values[x][y][p]
                     if v < 0 or v > priority_condition_max_value:
                         raise Exception("expected condition score to be " +
                                         "within range, [0, %f]" % (
