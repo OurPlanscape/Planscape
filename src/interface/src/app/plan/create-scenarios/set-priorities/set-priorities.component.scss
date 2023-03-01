@@ -27,8 +27,39 @@ h4 {
   white-space: normal !important;
 }
 
-app-legend {
+.legend-wrapper {
   flex: 2 0 224px;
+}
+
+.legend-title-wrapper {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+h5 {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 15px;
+  margin: 0px;
+  text-align: center;
+}
+
+.legend-info {
+  padding: 24px 48px 24px 16px;
+}
+
+.legend-info-labels {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 24px;
+}
+
+.legend-info-scores {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 24px;
 }
 
 .secondary-text {

@@ -24,6 +24,7 @@ import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
 import { OutcomeComponent } from './scenario-details/outcome/outcome.component';
 import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
+import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -46,6 +47,7 @@ import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-
     ScenarioDetailsComponent,
     OutcomeComponent,
     ScenarioConfirmationComponent,
+    MapLayersComponent,
   ],
   imports: [
     BrowserAnimationsModule,
