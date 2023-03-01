@@ -7,15 +7,18 @@ from django.contrib.gis.geos import Polygon
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (
-    ForsysGenerationRequestParams, ForsysRankingRequestParams)
+    ForsysGenerationRequestParams, ForsysRankingRequestParams,
+    PreForsysClusterType)
 from forsys.get_forsys_inputs import (
     ForsysGenerationInput, ForsysInputHeaders, ForsysRankingInput)
 from planscape import settings
+from forsys.merge_polygons import merge_polygons
 
 
 def _assert_dict_almost_equal(self,
                               d1: dict[str, list],
                               d2: dict[str, list]) -> None:
+    self.assertEqual(len(d1.keys()), len(d2.keys()))
     for k in d1.keys():
         l1 = d1[k]
         if len(l1) > 0 and type(l1[0]) is float:
@@ -29,6 +32,11 @@ class ForsysInputHeadersTest(TestCase):
         headers = ForsysInputHeaders(["p1", "p2", "p3"])
         self.assertListEqual(headers.priority_headers,
                              ["p_p1", "p_p2", "p_p3"])
+
+    def test_sets_condition_headers(self):
+        headers = ForsysInputHeaders(["p1", "p2", "p3"])
+        self.assertListEqual(headers.condition_headers,
+                             ["c_p1", "c_p2", "c_p3"])
 
     def test_priority(self):
         headers = ForsysInputHeaders([])
@@ -181,6 +189,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                      450000000, 450000000, 450000000, 450000000],
             'p_foo': [.99, .95, .98, .94, .97, .93, .96, .92],
             'p_bar': [.9, .8, .9, .8, .9, .8, .9, .8],
+            'c_foo': [.99, .95, .98, .94, .97, .93, .96, .92],
+            'c_bar': [.9, .8, .9, .8, .9, .8, .9, .8],
             'geo': [self._create_polygon_for_pixel(0, 0).wkt,
                     self._create_polygon_for_pixel(0, 1).wkt,
                     self._create_polygon_for_pixel(1, 0).wkt,
@@ -218,6 +228,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
             'cost': [450000000, 450000000, 450000000, 450000000],
             'p_foo': [.95, .94, .93, .92],
             'p_baz': [.8, .8, .8, .8],
+            'c_foo': [.95, .94, .93, .92],
+            'c_baz': [.8, .8, .8, .8],
             'geo': [self._create_polygon_for_pixel(0, 1).wkt,
                     self._create_polygon_for_pixel(1, 1).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
@@ -296,3 +308,82 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         self.assertEqual(
             str(context.exception),
             "plan has no intersection with condition raster, foo")
+
+    def test_gets_forsys_input_with_clustering(self):
+        request = HttpRequest()
+        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParams(request)
+        params.region = self.region
+        params.priorities = ["bar"]
+        params.planning_area = RasterConditionRetrievalTestCase._create_geo(
+            self, 0, 2, 0, 1)
+        params.cluster_type = PreForsysClusterType.HIERARCHICAL_IN_PYTHON
+        params.num_clusters = 4
+        params.cluster_pixel_index_weight = 0
+
+        headers = ForsysInputHeaders(params.priorities)
+
+        input = ForsysGenerationInput(params, headers)
+
+        _assert_dict_almost_equal(self, input.forsys_input, {
+            'proj_id': [0, 0, 0, 0],
+            'stand_id': [1, 0, 3, 2],
+            'area': [0.18, 0.18, 0.09, 0.09],
+            'cost': [900000000, 900000000, 450000000, 450000000],
+            'p_bar': [1.8, 1.6, 0.9, 0.8],
+            'c_bar': [0.9, 0.8, 0.9, 0.8],
+            # The origin is [-2116971 2100954]. The scale is [300, -300].
+            'geo': [
+                # x spans -2116971, -2116371: 2 pixels
+                # y spans 2100654, 2100954: 1 pixel
+                'POLYGON ((-2116971 2100654, -2116971 2100954, -2116371 ' +
+                '2100954, -2116371 2100654, -2116971 2100654))',
+                # x spans -2116971, -2116371: 2 pixels
+                # y spans 2100354, 2100654: 1 pixel
+                'POLYGON ((-2116971 2100354, -2116971 2100654, -2116371 ' + '2100654, -2116371 2100354, -2116971 2100354))',
+                # x spans -2116371, -2116071: 1 pixel
+                # y spans 2100954, 2100654: 1 pixel
+                'POLYGON ((-2116371 2100954, -2116371 2100654, -2116071 ' + '2100654, -2116071 2100954, -2116371 2100954))',
+                # x spans -2116371, -2116071: 1 pixel
+                # y spans 2100654, 2100354: 1 pixel
+                'POLYGON ((-2116371 2100654, -2116371 2100354, -2116071 ' + '2100354, -2116071 2100654, -2116371 2100654))'
+            ]
+        })
+
+    def test_gets_forsys_input_with_clustering_aborted(self):
+        request = HttpRequest()
+        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParams(request)
+        params.region = self.region
+        params.priorities = ["foo", "bar"]
+        params.planning_area = RasterConditionRetrievalTestCase._create_geo(
+            self, 0, 3, 0, 1)
+        # Clustering is enabled, but aborted because the target number of 
+        # clusters is greater than the number of stands.
+        params.cluster_type = PreForsysClusterType.HIERARCHICAL_IN_PYTHON
+        params.num_clusters = 10
+        params.cluster_pixel_index_weight = 0
+
+        headers = ForsysInputHeaders(params.priorities)
+
+        input = ForsysGenerationInput(params, headers)
+        _assert_dict_almost_equal(self, input.forsys_input, {
+            'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
+            'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
+            'area': [.09, .09, .09, .09, .09, .09, .09, .09],
+            'cost': [450000000, 450000000, 450000000, 450000000,
+                     450000000, 450000000, 450000000, 450000000],
+            'p_foo': [.99, .95, .98, .94, .97, .93, .96, .92],
+            'p_bar': [.9, .8, .9, .8, .9, .8, .9, .8],
+            'c_foo': [.99, .95, .98, .94, .97, .93, .96, .92],
+            'c_bar': [.9, .8, .9, .8, .9, .8, .9, .8],
+            'geo': [self._create_polygon_for_pixel(0, 0).wkt,
+                    self._create_polygon_for_pixel(0, 1).wkt,
+                    self._create_polygon_for_pixel(1, 0).wkt,
+                    self._create_polygon_for_pixel(1, 1).wkt,
+                    self._create_polygon_for_pixel(2, 0).wkt,
+                    self._create_polygon_for_pixel(2, 1).wkt,
+                    self._create_polygon_for_pixel(3, 0).wkt,
+                    self._create_polygon_for_pixel(3, 1).wkt]
+        })
+
