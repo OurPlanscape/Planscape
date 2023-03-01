@@ -7,7 +7,8 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (
-    ForsysGenerationRequestParams, ForsysRankingRequestParams)
+    ForsysGenerationRequestParams, ForsysRankingRequestParams,
+    PreForsysClusterType)
 from plan.models import Plan, Project, ProjectArea
 
 
@@ -307,6 +308,8 @@ class TestForsysGenerationRequestParams(TestCase):
               (-120.14015536869722, 38.05413814388948)),))
         )
         self.assertEqual(params.planning_area.srid, 4269)
+        self.assertEqual(params.cluster_type, PreForsysClusterType.NONE)
+        self.assertEqual(params.num_clusters, 500)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -436,6 +439,41 @@ class TestForsysGenerationRequestParams(TestCase):
         self.assertEquals(
             str(context.exception),
             'url params, planning_area, missing field, "id"')
+        
+    def test_reads_cluster_type_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&cluster_type=1')
+        params = ForsysGenerationRequestParams(request)
+        self.assertEqual(params.cluster_type,
+                         PreForsysClusterType.HIERARCHICAL_IN_PYTHON)
+
+    def test_raises_error_for_bad_cluster_type_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&cluster_type=999')
+        with self.assertRaises(Exception) as context:
+            ForsysGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            '999 is not a valid PreForsysClusterType')
+
+    def test_reads_num_clusters_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&num_clusters=1125')
+        params = ForsysGenerationRequestParams(request)
+        self.assertEqual(params.num_clusters, 1125)
+
+    def test_raises_error_for_bad_num_clusters_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&num_clusters=-999')
+        with self.assertRaises(Exception) as context:
+            ForsysGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected num_clusters to be > 0')
 
 
 class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
@@ -459,6 +497,8 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(params.planning_area.coords, ((
             ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
+        self.assertEqual(params.cluster_type, PreForsysClusterType.NONE)
+        self.assertEqual(params.num_clusters, 500)
 
     def test_fails_on_no_user(self):
         request = HttpRequest()
@@ -500,3 +540,38 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
         self.assertEquals(
             str(context.exception),
             "Plan matching query does not exist.")
+        
+    def test_reads_cluster_type_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&cluster_type=1')
+        params = ForsysGenerationRequestParams(request)
+        self.assertEqual(params.cluster_type,
+                         PreForsysClusterType.HIERARCHICAL_IN_PYTHON)
+
+    def test_raises_error_for_bad_cluster_type_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&cluster_type=999')
+        with self.assertRaises(Exception) as context:
+            ForsysGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            '999 is not a valid PreForsysClusterType')
+
+    def test_reads_num_clusters_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&num_clusters=1125')
+        params = ForsysGenerationRequestParams(request)
+        self.assertEqual(params.num_clusters, 1125)
+
+    def test_raises_error_for_bad_num_clusters_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'set_all_params_via_url_with_default_values=1&num_clusters=-999')
+        with self.assertRaises(Exception) as context:
+            ForsysGenerationRequestParams(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected num_clusters to be > 0')

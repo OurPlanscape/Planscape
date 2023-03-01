@@ -4,6 +4,7 @@ from typing import TypedDict
 from conditions.models import BaseCondition
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import HttpRequest, QueryDict
+from enum import IntEnum
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
 
@@ -22,6 +23,14 @@ class GeoFromUrlParams(TypedDict):
     srid: int
     # Disjoint polygons that are part of the project area.
     polygons: list[PolygonCoordinatesFromUrlParams]
+
+
+# Whether to cluster (and how) before running Patchmax for project area
+# generation.
+class PreForsysClusterType(IntEnum):
+    NONE = 0
+    HIERARCHICAL_IN_PYTHON = 1
+    KMEANS_IN_R = 2
 
 
 def _read_common_url_params(self, params: QueryDict) -> None:
@@ -56,8 +65,8 @@ def _check_geo_from_url_params_fields_exist(
 def _transform_geo_from_url_params_into_multipolygon(
         geo: GeoFromUrlParams, field_name: str) -> MultiPolygon:
     _check_geo_from_url_params_fields_exist(geo, field_name)
-    srid = 4269 if 'srid' not in geo.keys(
-    ) else geo['srid']  # TODO: make 4269 a constant.
+    # TODO: make 4269 a constant.
+    srid = 4269 if 'srid' not in geo.keys() else geo['srid']
     polygons: list[Polygon] = []
     for p in geo['polygons']:
         polygon = Polygon(tuple(p['coordinates']))
@@ -70,7 +79,7 @@ def _transform_geo_from_url_params_into_multipolygon(
     if len(polygons) == 0:
         raise Exception(
             "multipolygon described by %s missing polygons" % json.dumps(
-                project_area))
+                geo))
     m = MultiPolygon(polygons)
     m.srid = srid
     return m
@@ -219,11 +228,15 @@ class ForsysGenerationRequestParams():
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PLANNING_AREA = 'planning_area'
+    _URL_CLUSTER_TYPE = 'cluster_type'
+    _URL_NUM_CLUSTERS = 'num_clusters'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
     _DEFAULT_PRIORITIES = ['fire_dynamics',
                            'forest_resilience', 'species_diversity']
+    _DEFAULT_CLUSTER_TYPE = PreForsysClusterType.NONE
+    _DEFAULT_NUM_CLUSTERS = 500
 
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and global, project-level, and
@@ -238,9 +251,21 @@ class ForsysGenerationRequestParams():
     priority_weights: list[float]
     # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
+    # Cluster type.
+    cluster_type: PreForsysClusterType
+    # Number of clusters.
+    num_clusters: int
+
+    # Returns a dictionary mapping priorities to priority weights.
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        priority_weights = {}
+        for i in range(len(self.priorities)):
+            priority_weights[self.priorities[i]] = self.priority_weights[i]
+        return priority_weights
 
     def __init__(self, request: HttpRequest) -> None:
         params = request.GET
+        self.cluster_type = PreForsysClusterType.NONE
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
@@ -249,6 +274,7 @@ class ForsysGenerationRequestParams():
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
+        self._read_url_params_for_clustering(params)
         if self._URL_PLANNING_AREA in params:
             geo_str = params.get(self._URL_PLANNING_AREA, "")
             geo = GeoFromUrlParams(json.loads(geo_str))
@@ -257,11 +283,20 @@ class ForsysGenerationRequestParams():
         else:
             self.planning_area = self._get_default_planning_area()
 
+    def _read_url_params_for_clustering(self, params: QueryDict) -> None:
+        self.cluster_type = PreForsysClusterType(int(params.get(
+            self._URL_CLUSTER_TYPE, self._DEFAULT_CLUSTER_TYPE)))
+        self.num_clusters = int(params.get(
+            self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS))
+        if self.num_clusters <= 0:
+            raise Exception("expected num_clusters to be > 0")
+
     def _read_db_params(self, request: HttpRequest) -> None:
         params = request.GET
 
         # TODO: remove once DB configuratino has been updated.
         _read_common_url_params(self, params)
+        self._read_url_params_for_clustering(params)
 
         user = get_user(request)
         plan = get_plan_by_id(user, params)
