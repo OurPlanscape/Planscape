@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { DataLayerConfig } from 'src/app/types';
+import { DataLayerConfig, MetricConfig } from 'src/app/types';
 
 @Component({
   selector: 'app-layer-info-card',
@@ -44,5 +44,9 @@ export class LayerInfoCardComponent {
         this.dataLayerConfig?.max_value!,
       ];
     }
+  }
+
+  dataUnits(): string | undefined {
+    return (this.dataLayerConfig as MetricConfig)?.data_units;
   }
 }
