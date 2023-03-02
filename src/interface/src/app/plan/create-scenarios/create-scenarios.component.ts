@@ -247,15 +247,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   /** Creates the scenario and the uploaded project area, if provided. */
   createScenarioAndProjectArea(): void {
-    this.planService
-      .createScenario(this.formValueToProjectConfig())
+    this.createUploadedProjectArea()
       .pipe(
         take(1),
-        concatMap((_) => {
-          return this.createUploadedProjectArea();
+        concatMap(() => {
+          return this.planService.createScenario(this.formValueToProjectConfig())
         })
       )
-      .subscribe((_) => {
+      .subscribe(() => {
         // Navigate to scenario confirmation page
         const planId = this.plan$.getValue()?.id;
         this.router.navigate(['scenario-confirmation', planId]);
