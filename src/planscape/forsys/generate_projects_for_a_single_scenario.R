@@ -113,11 +113,8 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
   if (enable_debug) {
     output_dir <- file.path('output', output_scenario_name, output_scenario_tag)
     # Writes the input to a shape file.
-    st_write(
-      obj = forsys_input_data,
-      file.path(output_dir, 'forsys_input_data.shp'))
-
-    # Graphs priorities and weighted priorities.
+    st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
+    # Graphs conditions and weighted priorities.
     for (p in conditions) {
       ggplot() + 
         geom_sf(data=shp, mapping=aes(fill=get(p)), color=NA) +
