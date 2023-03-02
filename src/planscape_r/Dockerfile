@@ -4,6 +4,9 @@ FROM public.ecr.aws/lambda/python:latest as builder
 RUN yum -y update 
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
+RUN yum -y install libcurl libcurl-devel
+RUN yum -y install openssl-devel
+RUN yum -y install libxml2-devel
 
 #   library(dplyr)
 #   library(forsys)
@@ -11,11 +14,15 @@ RUN yum -y install R
 
 RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('devtools',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "library(devtools)"
+RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
 
-COPY ./forsysr ./forsysr
+
+COPY ./forsysr /usr/lib64/R/library/forsysr
 
 RUN ls
-RUN ls forsysr
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
@@ -30,6 +37,7 @@ COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
 COPY rank.R ${LAMBDA_TASK_ROOT}
 
 RUN ls
+RUN ls /usr/lib64/R/library
 RUN ls ${LAMBDA_TASK_ROOT}
 
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)

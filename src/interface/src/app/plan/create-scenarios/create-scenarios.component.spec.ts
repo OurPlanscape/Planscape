@@ -43,6 +43,7 @@ describe('CreateScenariosComponent', () => {
           currentScenarioId: null,
           mapConditionFilepath: null,
           mapShapes: null,
+          panelExpanded: true,
         }),
       }
     );
@@ -151,6 +152,6 @@ describe('CreateScenariosComponent', () => {
       priorities: ['test'],
       weights: [1],
     });
-    expect(router.navigate).toHaveBeenCalledOnceWith(['plan', '1']);
+    expect(router.navigate).toHaveBeenCalledOnceWith(['scenario-confirmation', '1']);
   });
 });

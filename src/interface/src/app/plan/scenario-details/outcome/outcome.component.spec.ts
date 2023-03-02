@@ -1,5 +1,7 @@
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MaterialModule } from 'src/app/material/material.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 
 import { OutcomeComponent } from './outcome.component';
 
@@ -9,6 +11,7 @@ describe('OutcomeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [ BrowserAnimationsModule, MaterialModule, ReactiveFormsModule],
       declarations: [ OutcomeComponent ],
       providers: [ FormBuilder ],
     })

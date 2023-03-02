@@ -101,6 +101,8 @@ class Scenario(models.Model):
 
     notes: models.TextField = models.TextField(null=True)
 
+    favorited: models.BooleanField = models.BooleanField(null=True, default=False)
+
     class ScenarioStatus(models.IntegerChoices):
         PENDING = 0
         PROCESSING = 1
@@ -109,7 +111,7 @@ class Scenario(models.Model):
 
     status = models.IntegerField(
         choices=ScenarioStatus.choices, default=ScenarioStatus.PENDING)
-
+    
 
 class ScenarioWeightedPriority(models.Model):
     """
