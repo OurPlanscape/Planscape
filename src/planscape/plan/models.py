@@ -75,8 +75,8 @@ class ConfigPriority(models.Model):
     # TODO: migrate to Config
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=False)
 
-    priority = models.ForeignKey(
-        'conditions.Condition', on_delete=models.CASCADE, null=False)
+    condition = models.ForeignKey(
+        'conditions.Condition', on_delete=models.CASCADE)
 
 
 class Scenario(models.Model):
@@ -112,7 +112,7 @@ class ScenarioWeightedPriority(models.Model):
         Scenario, on_delete=models.CASCADE)  # type: ignore
 
     priority = models.ForeignKey(
-        ConfigPriority, on_delete=models.CASCADE, null=True)
+        'conditions.Condition', on_delete=models.CASCADE, null=True)
 
     weight: models.IntegerField = models.IntegerField(null=True)
 
