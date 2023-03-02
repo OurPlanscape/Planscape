@@ -1,12 +1,10 @@
 suppressMessages({
-  library(dplyr)
+  library(tidyverse)
   library(sf)
   library(forsys)
   library(patchmax)
   library(ggplot2)
   library(ggnewscale)
-  # TODO: remove below
-  library(tidyverse)
 })
 
 generate_projects_for_a_single_scenario <- function(
@@ -26,7 +24,7 @@ generate_projects_for_a_single_scenario <- function(
   # If enabled, data and graphs are output to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
   enable_debug <- (
-    nchar(output_scenario_name) > 0 &
+    nchar(output_scenario_name) > 0 &&
     nchar(output_scenario_tag) > 0)
 
   # Appends spm and pcp data columns for each priority.
@@ -46,16 +44,22 @@ generate_projects_for_a_single_scenario <- function(
 
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
   forsys_input_data_formatted <- forsys_input_data %>%
-    rename("geometry" = geo_wkt_field) %>%
+    mutate('geometry' = .data[[geo_wkt_field]]) %>%
     st_as_sf(wkt = "geometry")
 
-  # k-means clustering
+  # Grouping raster cells into stands using k-means clustering
   if (PreForsysClusterType == 'KMEANS') {
-    # k-means clustering execution
-    source("forsys/spatial_clustering.R")
-    forsys_input_data_formatted <- cluster_cells_to_stands(
+    source("forsys/kmeans_cluster_cells_to_stands.R")
+    # Clustering function uses latitude and longitude of raster cell centroids
+    # as well as project priority values in order to group similar cells
+    # together into stand polygons.
+    forsys_input_data_formatted <- kmeans_cluster_cells_to_stands(
       stand_data = forsys_input_data_formatted,
-      scenario_priorities = c(wp_colname, priorities))
+      stand_id_field = stand_id_field,
+      stand_area_field = stand_area_field,
+      stand_cost_field = stand_cost_field,
+      scenario_priorities = c(wp_colname, priorities),
+      geo_wkt_field = geo_wkt_field)
   }
 
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
@@ -65,7 +69,6 @@ generate_projects_for_a_single_scenario <- function(
       write_outputs = enable_debug,
       stand_data = forsys_input_data_formatted,
       stand_area_field = stand_area_field,
-      # TODO: do we want ownership or operability here?
       stand_threshold = paste(stand_area_field, " > 0"),
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
@@ -75,7 +78,6 @@ generate_projects_for_a_single_scenario <- function(
       scenario_output_fields = c(
         priorities,
         stand_area_field,
-        # TODO: seems we're missing the cost field?
         stand_cost_field),
       run_with_patchmax = TRUE,
       # target area per project? TODO: clarify what this does, and clarify
