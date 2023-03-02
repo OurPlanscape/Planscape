@@ -195,7 +195,8 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
 
 
 # TODO: add validation for requiring either max budget or max area to be set for a generation run
-def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
+def _validate_constraint_values(
+        max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
     if max_budget is not None and not (isinstance(max_budget, (int, float))):
         raise ValueError("Max budget must be a number value")
 
@@ -204,7 +205,8 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
         raise ValueError(
             "Max treatment must be a number value >= 0.0")
 
-    if max_road_distance is not None and not (isinstance(max_road_distance, (int, float))):
+    if max_road_distance is not None and not (
+            isinstance(max_road_distance, (int, float))):
         raise ValueError("Max distance from road must be a number value")
 
     if (max_slope is not None and
@@ -213,8 +215,9 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
             "Max slope must be a number value >= 0.0")
 
 
-def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_distance,
-                            max_slope, project: Project):
+def _set_project_parameters(
+        max_budget, max_treatment_area_ratio, max_road_distance, max_slope,
+        project: Project):
     project.max_budget = float(max_budget) if max_budget else None
     project.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
@@ -230,7 +233,8 @@ def _set_priorities(priorities, project: Project):
                 condition_name=priorities[i])
             # is_raw=False required because for metrics, we store both current raw and current normalized data.
             condition = Condition.objects.get(
-                condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+                condition_dataset=base_condition,
+                condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
             project.priorities.add(condition)
 
 
@@ -337,7 +341,9 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
 
         projects = Project.objects.filter(owner=user, plan=int(plan_id))
 
-        return JsonResponse([_serialize_project(project) for project in projects], safe=False)
+        return JsonResponse([_serialize_project(project)
+                             for project in projects],
+                            safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -485,7 +491,8 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
             condition_name=priorities[i])
         # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+            condition_dataset=base_condition,
+            condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
         weight = weights[i] if weights is not None else None
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
@@ -533,7 +540,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet) -> dict:
+def _serialize_scenario(
+        scenario: Scenario, weights: QuerySet, areas: QuerySet) -> dict:
     result = ScenarioSerializer(scenario).data
 
     if 'creation_time' in result:
@@ -545,8 +553,9 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet) 
     for weight in weights:
         serialized_weight = ScenarioWeightedPrioritySerializer(weight).data
         if 'priority' in serialized_weight and 'weight' in serialized_weight:
-            result['priorities'][Condition.objects.get(
-                pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
+            result['priorities'][
+                Condition.objects.get(pk=serialized_weight['priority']).
+                condition_dataset.condition_name] = serialized_weight['weight']
 
     result['project_areas'] = _serialize_project_areas(areas)
 
@@ -567,7 +576,10 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
                 "You do not have permission to view this scenario.")
         weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
         project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
-        return JsonResponse(_serialize_scenario(scenario, weights, project_areas), safe=False)
+        return JsonResponse(
+            _serialize_scenario(
+                scenario, weights, project_areas),
+            safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -589,12 +601,18 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 
         # TODO: return config details when behavior is agreed upon
 
-        return JsonResponse(
-            [_serialize_scenario(scenario,
-                                 weights=ScenarioWeightedPriority.objects.filter(
-                                     scenario=scenario),
-                                 areas=ProjectArea.objects.filter(project=scenario.project.pk))
-             for scenario in scenarios], safe=False)
+        serialized_scenarios = []
+        for scenario in scenarios:
+            if scenario.project is None:
+                continue
+            serialized_scenarios.append(
+                _serialize_scenario(
+                    scenario, weights=ScenarioWeightedPriority.objects.filter(
+                        scenario=scenario),
+                    areas=ProjectArea.objects.filter(
+                        project=scenario.project.pk)))
+
+        return JsonResponse(serialized_scenarios, safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
