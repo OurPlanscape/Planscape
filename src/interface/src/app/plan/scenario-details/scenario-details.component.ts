@@ -10,15 +10,15 @@ import {
   switchMap,
   take,
   takeUntil,
+  tap,
 } from 'rxjs';
-
+import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
-  opacityTransitionTrigger,
   expandCollapsePanelTrigger,
+  opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { PlanService } from 'src/app/services';
-import { Scenario } from 'src/app/types';
+import { Plan, Scenario } from 'src/app/types';
 
 @Component({
   selector: 'app-scenario-details',
@@ -42,6 +42,7 @@ import { Scenario } from 'src/app/types';
 })
 export class ScenarioDetailsComponent implements OnInit {
   scenarioId: string | null = null;
+  plan$: Observable<Plan | null> = of(null);
   scenario$?: Observable<Scenario | null>;
   panelExpanded: boolean = true;
 
@@ -54,13 +55,14 @@ export class ScenarioDetailsComponent implements OnInit {
 
   ngOnInit(): void {
     this.scenario$ = this.getScenario();
-    this.scenario$.subscribe((scenario) => {
-      console.log(scenario);
-    });
+    this.plan$ = this.getPlan();
   }
 
   private getScenario() {
     return this.planService.planState$.pipe(
+      tap((state) => {
+        this.panelExpanded = state.panelExpanded ?? false;
+      }),
       map((state) => state.currentScenarioId),
       filter((scenarioId) => !!scenarioId),
       switchMap((scenarioId) => {
@@ -76,5 +78,27 @@ export class ScenarioDetailsComponent implements OnInit {
       }),
       takeUntil(this.destroy$)
     );
+  }
+
+  private getPlan() {
+    return this.planService.planState$.pipe(
+      map((state) => {
+        if (state.currentPlanId) {
+          return state.all[state.currentPlanId];
+        } else {
+          return null;
+        }
+      }),
+      takeUntil(this.destroy$)
+    );
+  }
+
+  changeCondition(filepath: string): void {
+    this.planService.updateStateWithConditionFilepath(filepath);
+  }
+
+  togglePanelExpand(): void {
+    this.panelExpanded = !this.panelExpanded;
+    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }

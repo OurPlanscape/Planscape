@@ -21,6 +21,7 @@ export interface PlanState {
   mapConditionFilepath: string | null;
   mapShapes: any | null;
   currentScenario?: Scenario;
+  panelExpanded?: boolean;
 }
 
 export interface BackendPlan {
@@ -46,6 +47,7 @@ export class PlanService {
     currentConfigId: null,
     mapConditionFilepath: null,
     mapShapes: null,
+    panelExpanded: true,
   });
 
   constructor(private http: HttpClient) {}
@@ -96,7 +98,7 @@ export class PlanService {
       .pipe(
         take(1),
         map((dbPlan) => this.convertToPlan(dbPlan)),
-        tap(plan => this.addPlanToState(plan))
+        tap((plan) => this.addPlanToState(plan))
       );
   }
 
@@ -220,21 +222,8 @@ export class PlanService {
       })
       .pipe(
         take(1),
-        map((response) => this.convertToScenario(response))
+        map((response) => this.convertBackendScenarioToScenario(response))
       );
-  }
-
-  private convertToScenario(backendScenario: any): Scenario {
-    return {
-      id: backendScenario.id,
-      planId: backendScenario.plan,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        backendScenario.creation_time
-      ),
-      priorities: backendScenario.priorities,
-      notes: backendScenario.notes,
-      owner: backendScenario.owner,
-    };
   }
 
   /** Fetches the scenarios for a plan from the backend. */
@@ -261,6 +250,32 @@ export class PlanService {
     return this.http.post<string>(
       BackendConstants.END_POINT.concat('/plan/create_scenario/'),
       this.convertConfigToScenario(config),
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Favorite a scenario in the backend. */
+  favoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
+    return this.http.post<{ favorited: boolean }>(
+      BackendConstants.END_POINT.concat('/plan/favorite_scenario/'),
+      {
+        scenario_id: Number(scenarioId),
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Unfavorite a scenario in the backend. */
+  unfavoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
+    return this.http.post<{ favorited: boolean }>(
+      BackendConstants.END_POINT.concat('/plan/unfavorite_scenario/'),
+      {
+        scenario_id: Number(scenarioId),
+      },
       {
         withCredentials: true,
       }
@@ -322,9 +337,14 @@ export class PlanService {
   private convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
+      planId: scenario.plan,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         scenario.creation_timestamp
       ),
+      priorities: scenario.priorities,
+      notes: scenario.notes,
+      owner: scenario.owner,
+      favorited: scenario.favorited,
     };
   }
 
@@ -420,6 +440,18 @@ export class PlanService {
         ...currentState.all,
       },
       mapShapes: shapes,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithPanelState(panelExpanded: boolean) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      panelExpanded: panelExpanded,
     });
     this.planState$.next(updatedState);
   }

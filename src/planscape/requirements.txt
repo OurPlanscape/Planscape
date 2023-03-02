@@ -13,6 +13,7 @@ psycopg2>=2.9.3
 pymemcache
 python-decouple==3.6
 rasterio
-rpy2
+rpy2==3.5.6
 typing_extensions
 uwsgi
+memory-profiler

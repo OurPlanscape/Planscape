@@ -28,7 +28,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=36",
                   "min_value": 0,
                   "max_value": 1,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "short tons of PM2.5"
                 },
                 {
                   "metric_name": "moderate_severity_potential_smoke_emissions",
@@ -42,7 +43,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=36",
                   "min_value": 0,
                   "max_value": 1,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "short tons of PM2.5"
                 }
               ]
             }
@@ -72,7 +74,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=27",
                   "min_value": 1,
-                  "max_value": 5
+                  "max_value": 5,
+                  "data_units": "Categorical"
                 }
               ]
             },
@@ -93,7 +96,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=23",
                   "min_value": 0,
-                  "max_value": 1
+                  "max_value": 1,
+                  "data_units": "Continuous, 0 (Low Suitability) to 1 (High Suitability)"
                 },
                 {
                   "metric_name": "pacific_fisher",
@@ -106,7 +110,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 0,
-                  "max_value": 1
+                  "max_value": 1,
+                  "data_units": "Continuous, 0 (Low Suitability) to 1 (High Suitability)"
                 },
                 {
                   "metric_name": "endangered_vertebrate",
@@ -119,7 +124,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=26",
                   "min_value": 1,
-                  "max_value": 7
+                  "max_value": 7,
+                  "data_units": "Number of species"
                 },
                 {
                   "metric_name": "black_oak_stands",
@@ -133,7 +139,8 @@
                   "data_year": "2020",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=22",
                   "min_value": 0,
-                  "max_value": 684
+                  "max_value": 684,
+                  "data_units": "Value"
                 }
               ]
             },
@@ -154,7 +161,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 1,
-                  "max_value": 7
+                  "max_value": 7,
+                  "data_units": "Number of species"
                 }
               ]
             }
@@ -184,7 +192,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=33",
                   "min_value": 0,
-                  "max_value": 250
+                  "max_value": 250,
+                  "data_units": "Mg C/ha"
                 }
               ]
             },
@@ -205,7 +214,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=32",
                   "min_value": 0,
-                  "max_value": 500
+                  "max_value": 500,
+                  "data_units": "Mg C/ha"
                 }
               ]
             }
@@ -232,7 +242,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
-                  "max_value": 4200
+                  "max_value": 4200,
+                  "data_units": "dollars"
                 },
                 {
                   "metric_name": "skidder_saw_cost",
@@ -245,7 +256,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
-                  "max_value": 4200
+                  "max_value": 4200,
+                  "data_units": "dollars"
                 },
                 {
                   "metric_name": "available_biomass",
@@ -258,7 +270,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=29",
                   "min_value": 0,
-                  "max_value": 120
+                  "max_value": 120,
+                  "data_units": "dry weight tons/acre"
                 }
               ]
             }
@@ -289,7 +302,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=10",
                   "min_value": 1,
                   "max_value": 18,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "Relative index"
                 },
                 {
                   "metric_name": "damage_potential_wui",
@@ -303,7 +317,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=12",
                   "min_value": 1,
                   "max_value": 9,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "Relative index, low to high"
                 }
               ]
             }
@@ -333,7 +348,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=14",
                   "min_value": -100,
-                  "max_value": 100
+                  "max_value": 100,
+                  "data_units": "Percent"
                 },
                 {
                   "metric_name": "probability_high_fire_severity",
@@ -347,7 +363,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=15",
                   "min_value": 0,
                   "max_value": 1,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "Probability"
                 },
                 {
                   "metric_name": "annual_burn_probability",
@@ -360,7 +377,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=16",
                   "min_value": 0,
-                  "max_value": 10
+                  "max_value": 10,
+                  "data_units": "Probability"
                 }
               ]
             }
@@ -391,7 +409,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=18",
                   "min_value": 0,
                   "max_value": 8500,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "Live trees/acre"
                 },
                 {
                   "metric_name": "large_tree_density_gt30",
@@ -404,7 +423,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=18",
                   "min_value": 0,
-                  "max_value": 26
+                  "max_value": 26,
+                  "data_units": "Live trees/acre"
                 },
                 {
                   "metric_name": "basal_area",
@@ -417,7 +437,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=17",
                   "min_value": 0,
-                  "max_value": 400
+                  "max_value": 400,
+                  "data_units": "sq ft/acre"
                 },
                 {
                   "metric_name": "max_sdi",
@@ -431,7 +452,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=19",
                   "min_value": 0,
                   "max_value": 1,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "Percent"
                 }
               ]
             },
@@ -452,7 +474,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=21",
                   "min_value": 0,
-                  "max_value": 1
+                  "max_value": 1,
+                  "data_units": "Integer, 1 - 3"
                 },
                 {
                   "metric_name": "tree_to_shrub_cover_ratio",
@@ -465,7 +488,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=20",
                   "min_value": 0,
-                  "max_value": 100
+                  "max_value": 100,
+                  "data_units": "Percent"
                 }
               ]
             },
@@ -487,7 +511,8 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=21",
                   "min_value": 0,
                   "max_value": 100,
-                  "invert_raw": true
+                  "invert_raw": true,
+                  "data_units": "Percent of 30m pixel (absolute value)"
                 }
               ]
             }
@@ -514,7 +539,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=39",
                   "min_value": 0,
-                  "max_value": 100
+                  "max_value": 100,
+                  "data_units": "Percent"
                 },
                 {
                   "metric_name": "unemployment",
@@ -526,7 +552,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=40",
                   "min_value": 0,
-                  "max_value": 100
+                  "max_value": 100,
+                  "data_units": "Percent"
                 },
                 {
                   "metric_name": "low_income",
@@ -538,7 +565,8 @@
                   "data_year": "2022",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=38",
                   "min_value": 0,
-                  "max_value": 2
+                  "max_value": 2,
+                  "data_units": "Binary; 1 = Yes, 2 = No"
                 }
               ]
             }
@@ -565,7 +593,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=34",
                   "min_value": 0,
-                  "max_value": 1000
+                  "max_value": 1000,
+                  "data_units": "Percent"
                 },
                 {
                   "metric_name": "runoff",
@@ -577,7 +606,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=34",
                   "min_value": 0,
-                  "max_value": 2500
+                  "max_value": 2500,
+                  "data_units": "mm/y"
                 }
               ]
             }
@@ -604,7 +634,8 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=37",
                   "min_value": 0,
-                  "max_value": 100
+                  "max_value": 100,
+                  "data_units": "Relative index"
                 }
               ]
             }
