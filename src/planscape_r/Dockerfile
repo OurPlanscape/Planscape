@@ -7,6 +7,7 @@ RUN yum -y install R
 RUN yum -y install libcurl libcurl-devel
 RUN yum -y install openssl-devel
 RUN yum -y install libxml2-devel
+RUN yum -y install harfbuzz-devel fribidi-devel
 
 # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
