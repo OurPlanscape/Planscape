@@ -33,7 +33,7 @@ class ClusterAlgorithmType(IntEnum):
     HIERARCHICAL_IN_PYTHON = 1
     KMEANS_IN_R = 2
 
-class ClusterAlgorithRequestParams():
+class ClusterAlgorithmRequestParams():
     # Constants for parsing url parameters.
     # cluster algorithm types are listed in enum, ClusterAlgorithmType.
     _URL_CLUSTER_TYPE = 'cluster_algorithm_type'
@@ -69,9 +69,9 @@ class ClusterAlgorithRequestParams():
             self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS))
         if self.num_clusters <= 0:
             raise Exception("expected num_clusters to be > 0")
-        self.cluster_pixel_index_weight = float(params.get(
+        self.pixel_index_weight = float(params.get(
             self._URL_CLUSTER_PIXEL_INDEX_WEIGHT, self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT))
-        if self.cluster_pixel_index_weight < 0:
+        if self.pixel_index_weight < 0:
             raise Exception("expected cluster_pixel_index_weight to be > 0")
 
 
@@ -290,7 +290,7 @@ class ForsysGenerationRequestParams():
     planning_area: MultiPolygon
     # Parameters informing clustering prior to running Patchmax project area 
     # generation.
-    cluster_params: ClusterAlgorithRequestParams
+    cluster_params: ClusterAlgorithmRequestParams
 
     # Returns a dictionary mapping priorities to priority weights.
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -307,7 +307,7 @@ class ForsysGenerationRequestParams():
             self._read_url_params_with_defaults(params)
         else:
             self._read_db_params(request)
-        self.cluster_params = ClusterAlgorithRequestParams(params)
+        self.cluster_params = ClusterAlgorithmRequestParams(params)
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)

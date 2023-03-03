@@ -21,7 +21,7 @@ class TestClusterAlgorithRequestParams(TestCase):
         self.assertEqual(params.cluster_algorithm_type,
                          ClusterAlgorithmType.NONE)
         self.assertEqual(params.num_clusters, 500)
-        self.assertEqual(params.cluster_pixel_index_weight, 0.01)
+        self.assertEqual(params.pixel_index_weight, 0.01)
 
     def test_reads_cluster_algorithm_type_from_url_params(self):
         query_dict = QueryDict('cluster_algorithm_type=1')
@@ -50,19 +50,19 @@ class TestClusterAlgorithRequestParams(TestCase):
             str(context.exception),
             'expected num_clusters to be > 0')
 
-    def test_reads_cluster_pixel_index_weight_from_url_params(self):
+    def test_reads_pixel_index_weight_from_url_params(self):
         query_dict = QueryDict('cluster_pixel_index_weight=0.099')
         params = ClusterAlgorithRequestParams(query_dict)
-        self.assertEqual(params.cluster_pixel_index_weight, 0.099)
+        self.assertEqual(params.pixel_index_weight, 0.099)
 
-    def test_raises_error_for_bad_cluster_pixel_index_weight_from_url_params(
+    def test_raises_error_for_bad_pixel_index_weight_from_url_params(
             self):
         query_dict = QueryDict('cluster_pixel_index_weight=-999')
         with self.assertRaises(Exception) as context:
             ClusterAlgorithRequestParams(query_dict)
         self.assertEqual(
             str(context.exception),
-            'expected cluster_pixel_index_weight to be > 0')
+            'expected pixel_index_weight to be > 0')
 
 
 class TestForsysRankingRequestParams(TestCase):
@@ -365,7 +365,7 @@ class TestForsysGenerationRequestParams(TestCase):
                          ClusterAlgorithmType.NONE)
         self.assertEqual(params.cluster_params.num_clusters, 500)
         self.assertEqual(
-            params.cluster_params.cluster_pixel_index_weight, 0.01)
+            params.cluster_params.pixel_index_weight, 0.01)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -522,7 +522,7 @@ class TestForsysGenerationRequestParams_ReadFromDb(TestCase):
                          ClusterAlgorithmType.NONE)
         self.assertEqual(params.cluster_params.num_clusters, 500)
         self.assertEqual(
-            params.cluster_params.cluster_pixel_index_weight, 0.01)
+            params.cluster_params.pixel_index_weight, 0.01)
 
     def test_fails_on_no_user(self):
         request = HttpRequest()
