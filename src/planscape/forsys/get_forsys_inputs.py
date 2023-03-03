@@ -178,14 +178,6 @@ class ForsysGenerationInput():
     # raster.
     TREATMENT_COST_PER_KM_SQUARED = 5000 * 1000 * 1000
 
-    # This constant represents the value of parameter,
-    # priority_condition_max_value, in the ClusteredStands constructor.
-    # For condition scores normalized to the range, [-1, 1], impact score is
-    # estimated as 1.0 - normalized_condition_score. Thus, impact score will be
-    # within the range, [0, 2.0]
-    # TODO: adjust this as we move to AP score.
-    PRIORITY_CONDITION_MAX_VALUE = 2.0
-
     # A dictionary representing a forsys input dataframe.
     # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
     # row represents a unique stand.
@@ -228,7 +220,6 @@ class ForsysGenerationInput():
                 ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON:
             clustered_stands = ClusteredStands(
                 self._pixel_dist_x_to_y_to_condition_to_values, width, height,
-                self.PRIORITY_CONDITION_MAX_VALUE,
                 params.get_priority_weights_dict(),
                 params.cluster_params.pixel_index_weight,
                 params.cluster_params.num_clusters)
