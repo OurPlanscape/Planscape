@@ -11,8 +11,8 @@ import pandas as pd
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
-from forsys.forsys_request_params import (ForsysGenerationRequestParams,
-                                          ForsysRankingRequestParams)
+from forsys.forsys_request_params import (
+    get_generation_request_params, get_ranking_request_params)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
 from forsys.parse_forsys_output import (
@@ -25,16 +25,24 @@ from pytz import timezone
 
 import rpy2
 
+
+def URL_REQUEST_PARAM_TYPE = "request_type"
+
+
 # Configures global logging.
 logger = logging.getLogger(__name__)
 
 # Sets up cProfile profiler.
 # This is for measuring runtime.
+
+
 def _set_up_cprofiler(pr: cProfile.Profile) -> None:
     pr.enable()
 
 # Tears down Cprofile profiler and writes data to a log.
 # This is for measuring runtime.
+
+
 def _tear_down_cprofiler(pr: cProfile.Profile, filename: str) -> None:
     pr.disable()
     s = io.StringIO()
@@ -105,7 +113,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
 def rank_project_areas_for_multiple_scenarios(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysRankingRequestParams(request.GET)
+        params = get_ranking_request_params(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
@@ -159,7 +167,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
 def rank_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysRankingRequestParams(request.GET)
+        params = get_ranking_request_params(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
@@ -221,7 +229,7 @@ def generate_project_areas_for_a_single_scenario(
         if settings.DEBUG:
             _set_up_cprofiler(pr)
 
-        params = ForsysGenerationRequestParams(request)
+        params = get_generation_request_params(request)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysGenerationInput(params, headers)
         forsys_output = run_forsys_generate_project_areas_for_a_single_scenario(
@@ -258,6 +266,6 @@ def generate_project_areas_for_a_single_scenario(
 if settings.DEBUG:
     if not os.path.exists('output'):
         os.makedirs('output')
-    memfp = open('output/memprofiler.log','w+')
+    memfp = open('output/memprofiler.log', 'w+')
     generate_project_areas_for_a_single_scenario = profile(stream=memfp)(
         generate_project_areas_for_a_single_scenario)
