@@ -533,7 +533,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet) -> dict:
+def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, project: Project) -> dict:
     result = ScenarioSerializer(scenario).data
 
     if 'creation_time' in result:
@@ -549,6 +549,7 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet) 
                 pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
 
     result['project_areas'] = _serialize_project_areas(areas)
+    result['config'] = _serialize_project(project)
 
     return result
 
@@ -558,7 +559,8 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['id'], str)
         scenario_id = request.GET.get('id', "0")
-        scenario = Scenario.objects.get(id=scenario_id)
+        scenario = Scenario.objects.select_related(
+            'project').get(id=scenario_id)
 
         user = get_user(request)
 
@@ -567,7 +569,7 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
                 "You do not have permission to view this scenario.")
         weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
         project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
-        return JsonResponse(_serialize_scenario(scenario, weights, project_areas), safe=False)
+        return JsonResponse(_serialize_scenario(scenario, weights, project_areas, scenario.project), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -585,7 +587,8 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "You do not have permission to view scenarios for this plan.")
 
-        scenarios = Scenario.objects.filter(owner=user, plan=plan_id)
+        scenarios = Scenario.objects.select_related(
+            'project').filter(owner=user, plan=plan_id)
 
         # TODO: return config details when behavior is agreed upon
 
@@ -593,7 +596,7 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
             [_serialize_scenario(scenario,
                                  weights=ScenarioWeightedPriority.objects.filter(
                                      scenario=scenario),
-                                 areas=ProjectArea.objects.filter(project=scenario.project.pk))
+                                 areas=ProjectArea.objects.filter(project=scenario.project.pk), project=scenario.project)
              for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
