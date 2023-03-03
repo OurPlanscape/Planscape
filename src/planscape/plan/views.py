@@ -599,6 +599,52 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
+def favorite_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        body = json.loads(request.body)
+        scenario_id = body.get('scenario_id', None)
+        if scenario_id is None or not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+
+        scenario = Scenario.objects.get(pk=int(scenario_id))
+
+        user = get_user(request)
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to favorite this scenario.")
+
+        scenario.favorited = True
+        scenario.save()
+
+        return JsonResponse({'favorited': True})
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def unfavorite_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        body = json.loads(request.body)
+        scenario_id = body.get('scenario_id', None)
+        if scenario_id is None or not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+
+        scenario = Scenario.objects.get(pk=int(scenario_id))
+
+        user = get_user(request)
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to unfavorite this scenario.")
+
+        scenario.favorited = False
+        scenario.save()
+
+        return JsonResponse({'favorited': False})
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)

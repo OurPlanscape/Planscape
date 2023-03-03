@@ -26,6 +26,7 @@ describe('PlanMapComponent', () => {
     currentScenarioId: null,
     mapConditionFilepath: null,
     mapShapes: null,
+    panelExpanded: true,
   };
 
   beforeEach(async () => {
