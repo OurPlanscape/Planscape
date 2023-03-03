@@ -10,6 +10,7 @@ RUN yum -y install libxml2-devel
 
 # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('libgit2-devel',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('gert',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('devtools',dependencies=TRUE, repos='http://cran.rstudio.com/')"
