@@ -1320,6 +1320,8 @@ class GetScenarioTest(TransactionTestCase):
                          'cond1': 2, 'cond2': 3})
         self.assertEqual(scenario['project_areas'][str(
             self.project_area.pk)]['geometry'], self.geometry)
+        self.assertEqual(scenario['project_areas'][str(
+            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
         self.assertEqual(scenario['config']['max_budget'], 100)
 
 
@@ -1393,6 +1395,8 @@ class ListScenariosTest(TransactionTestCase):
                          'cond1': 2, 'cond2': 3})
         self.assertEqual(scenario1['project_areas'][str(
             self.project_area.pk)]['geometry'], self.geometry)
+        self.assertEqual(scenario1['project_areas'][str(
+            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
         self.assertEqual(scenario1['config']['max_budget'], 100)
 
         scenario2 = response.json()[1]
@@ -1401,6 +1405,8 @@ class ListScenariosTest(TransactionTestCase):
                          'cond1': 4, 'cond2': 5})
         self.assertEqual(scenario2['project_areas'][str(
             self.project_area.pk)]['geometry'], self.geometry)
+        self.assertEqual(scenario2['project_areas'][str(
+            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
         self.assertEqual(scenario2['config']['max_budget'], 100)
 
 
