@@ -1,10 +1,12 @@
 <div class="configurations-wrapper">
   <mat-card [style.margin-top]="'24px'">
     <mat-card-header>
-      <mat-card-title>Configurations ({{ configurations.length }})</mat-card-title>
+      <mat-card-title>My Configurations ({{ configurations.length }})</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
+      <p>{{ text1 }}</p>
+
       <mat-table [dataSource]="configurations" >
         <!-- Select Column -->
         <ng-container matColumnDef="select">
@@ -70,15 +72,15 @@
       </mat-table>
 
       <!-- Padding for visual effect if the table is empty -->
-      <div class="no-configs-padding"></div>
+      <div class="no-configs-padding" *ngIf="configurations.length === 0"></div>
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-raised-button *ngIf="showDeleteButton()" (click)="deleteSelectedConfigs()">
+      <button mat-button [disabled]="!showDeleteButton()" (click)="deleteSelectedConfigs()">
         <mat-icon>delete</mat-icon>
         DELETE
       </button>
-      <button mat-raised-button *ngIf="showContinueButton()" color="primary" (click)="openConfig()">
+      <button mat-raised-button [disabled]="!showContinueButton()" color="primary" (click)="openConfig()">
         CONTINUE PLANNING
       </button>
     </mat-card-actions>

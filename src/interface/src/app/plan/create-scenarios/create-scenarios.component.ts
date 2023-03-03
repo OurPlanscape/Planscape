@@ -263,4 +263,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   private drawShapes(shapes: any | null): void {
     this.planService.updateStateWithShapes(shapes);
   }
+
+  togglePanelExpand(): void {
+    this.panelExpanded = !this.panelExpanded;
+    this.planService.updateStateWithPanelState(this.panelExpanded);
+  }
 }
