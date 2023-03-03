@@ -88,11 +88,17 @@ export class ScenarioDetailsComponent implements OnInit {
         } else {
           return null;
         }
-      })
+      }),
+      takeUntil(this.destroy$)
     );
   }
 
   changeCondition(filepath: string): void {
     this.planService.updateStateWithConditionFilepath(filepath);
+  }
+
+  togglePanelExpand(): void {
+    this.panelExpanded = !this.panelExpanded;
+    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }
