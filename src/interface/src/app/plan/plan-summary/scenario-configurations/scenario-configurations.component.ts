@@ -27,6 +27,12 @@ export class ScenarioConfigurationsComponent implements OnInit {
     'constraints',
   ];
 
+  readonly text1: string = `
+    Configurations are used to generate scenarios. Your progress is auto-saved and can be continued
+    any time. Once a scenario has been successfully generated from a configuration, the
+    configuration is no longer editable.
+  `;
+
   constructor(
     private mapService: MapService,
     private planService: PlanService,

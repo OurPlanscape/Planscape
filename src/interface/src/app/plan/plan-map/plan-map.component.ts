@@ -1,4 +1,10 @@
-import { AfterViewInit, Component, Input, OnDestroy } from '@angular/core';
+import {
+  AfterContentInit,
+  AfterViewInit,
+  Component,
+  Input,
+  OnDestroy,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
@@ -13,7 +19,9 @@ import { BackendConstants } from './../../backend-constants';
   templateUrl: './plan-map.component.html',
   styleUrls: ['./plan-map.component.scss'],
 })
-export class PlanMapComponent implements AfterViewInit, OnDestroy {
+export class PlanMapComponent
+  implements AfterContentInit, AfterViewInit, OnDestroy
+{
   @Input() plan = new BehaviorSubject<Plan | null>(null);
   @Input() mapId?: string;
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
@@ -30,6 +38,24 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
   private shapes: any | null = null;
 
   constructor(private planService: PlanService, private router: Router) {}
+
+  ngAfterContentInit(): void {
+    this.planService.planState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((state) => {
+        if (state.mapConditionFilepath !== this.filepath) {
+          this.filepath = state.mapConditionFilepath ?? '';
+          this.setCondition(state.mapConditionFilepath ?? '');
+        }
+        if (state.mapShapes !== this.shapes) {
+          this.shapes = state.mapShapes;
+          this.drawShapes(state.mapShapes);
+        }
+        if (state.panelExpanded !== this.panelExpanded) {
+          this.panelExpanded = state.panelExpanded ?? false;
+        }
+      });
+  }
 
   ngAfterViewInit(): void {
     if (this.map != undefined) this.map.remove();
@@ -62,19 +88,6 @@ export class PlanMapComponent implements AfterViewInit, OnDestroy {
       });
 
     setTimeout(() => this.map.invalidateSize(), 0);
-
-    this.planService.planState$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((state) => {
-        if (state.mapConditionFilepath !== this.filepath) {
-          this.filepath = state.mapConditionFilepath ?? '';
-          this.setCondition(state.mapConditionFilepath ?? '');
-        }
-        if (state.mapShapes !== this.shapes) {
-          this.shapes = state.mapShapes;
-          this.drawShapes(state.mapShapes);
-        }
-      });
   }
 
   // Add planning area to map and frame it in view
