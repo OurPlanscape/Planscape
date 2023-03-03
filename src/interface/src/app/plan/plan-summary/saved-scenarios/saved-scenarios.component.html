@@ -1,10 +1,12 @@
 <div class="saved-scenarios-wrapper">
   <mat-card [style.margin-top]="'24px'">
     <mat-card-header>
-      <mat-card-title>Saved Scenarios ({{ scenarios.length }})</mat-card-title>
+      <mat-card-title>My Scenarios ({{ scenarios.length }})</mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
+      <p>{{ text1 }}</p>
+
       <mat-table [dataSource]="scenarios" >
         <!-- ID Column -->
         <ng-container matColumnDef="id">
@@ -12,7 +14,51 @@
           <mat-cell *matCellDef="let element">
             <div class="hover-indicator"></div>
             {{element.id}}
+            <mat-checkbox
+              class="scenario-checkbox"
+              [(ngModel)]="element.selected"
+              (click)="$event.stopPropagation()"></mat-checkbox>
           </mat-cell>
+        </ng-container>
+
+        <!-- Starred Column -->
+        <ng-container matColumnDef="starred">
+          <mat-header-cell *matHeaderCellDef> Starred by you </mat-header-cell>
+          <mat-cell *matCellDef="let element">
+            <button mat-icon-button (click)="$event.stopPropagation(); toggleFavorited(element)">
+              <mat-icon [class.material-symbols-outlined]="!element.favorited">star</mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <!-- Project Areas Column -->
+        <ng-container matColumnDef="projectAreas">
+          <mat-header-cell *matHeaderCellDef> Number of Project Areas </mat-header-cell>
+          <mat-cell *matCellDef="let element"></mat-cell>
+        </ng-container>
+
+        <!-- Acres Treated Column -->
+        <ng-container matColumnDef="acresTreated">
+          <mat-header-cell *matHeaderCellDef> Acres treated </mat-header-cell>
+          <mat-cell *matCellDef="let element"></mat-cell>
+        </ng-container>
+
+        <!-- Estimated Cost Column -->
+        <ng-container matColumnDef="estimatedCost">
+          <mat-header-cell *matHeaderCellDef> Estimated cost range </mat-header-cell>
+          <mat-cell *matCellDef="let element"></mat-cell>
+        </ng-container>
+
+        <!-- Status Column -->
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
+          <mat-cell *matCellDef="let element"> In Progress </mat-cell>
+        </ng-container>
+
+        <!-- Owner Column -->
+        <ng-container matColumnDef="owner">
+          <mat-header-cell *matHeaderCellDef> Owner </mat-header-cell>
+          <mat-cell *matCellDef="let element"> {{element.owner}} </mat-cell>
         </ng-container>
 
         <!-- Timestamp Column -->
@@ -30,9 +76,12 @@
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-raised-button>
-        <mat-icon>open_in_new</mat-icon>
-        SEE ALL
+      <button mat-button [disabled]="!showDeleteButton()" (click)="deleteSelectedScenarios()">
+        <mat-icon>delete</mat-icon>
+        DELETE
+      </button>
+      <button mat-raised-button [disabled]="!showViewButton()" color="primary" (click)="viewScenario()">
+        VIEW
       </button>
     </mat-card-actions>
   </mat-card>

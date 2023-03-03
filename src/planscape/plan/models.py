@@ -91,6 +91,9 @@ class Scenario(models.Model):
     
     notes: models.TextField = models.TextField(null=True)
 
+    favorited: models.BooleanField = models.BooleanField(null=True, default=False)
+    
+
 class ScenarioWeightedPriority(models.Model):
     """
     Assigns a weight for a Priority used an input to a Scenario. 

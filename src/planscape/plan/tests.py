@@ -1322,6 +1322,7 @@ class GetScenarioTest(TransactionTestCase):
             self.project_area.pk)]['geometry'], self.geometry)
         self.assertEqual(scenario['project_areas'][str(
             self.project_area.pk)]['properties']['estimated_area_treated'], 200)
+        self.assertEqual(scenario['config']['max_budget'], 100)
 
 
 class ListScenariosTest(TransactionTestCase):
@@ -1396,6 +1397,7 @@ class ListScenariosTest(TransactionTestCase):
             self.project_area.pk)]['geometry'], self.geometry)
         self.assertEqual(scenario1['project_areas'][str(
             self.project_area.pk)]['properties']['estimated_area_treated'], 200)
+        self.assertEqual(scenario1['config']['max_budget'], 100)
 
         scenario2 = response.json()[1]
         self.assertEqual(scenario2['id'], self.scenario2.pk)
@@ -1405,3 +1407,94 @@ class ListScenariosTest(TransactionTestCase):
             self.project_area.pk)]['geometry'], self.geometry)
         self.assertEqual(scenario2['project_areas'][str(
             self.project_area.pk)]['properties']['estimated_area_treated'], 200)
+        self.assertEqual(scenario2['config']['max_budget'], 100)
+
+
+class FavoriteScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="cond1", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
+        self.base_condition2 = BaseCondition.objects.create(
+            condition_name="cond2", condition_level=ConditionLevel.ELEMENT)
+        self.condition2 = Condition.objects.create(
+            condition_dataset=self.base_condition2, raster_name="name2", is_raw=False)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan = create_plan(
+            self.user, 'plan', stored_geometry, [])
+        self.project = Project.objects.create(
+            owner=self.user, plan=self.plan, max_budget=100)
+        self.project_area = ProjectArea.objects.create(
+            owner=self.user, project=self.project,
+            project_area=stored_geometry, estimated_area_treated=200)
+        self.scenario = Scenario.objects.create(
+            owner=self.user, plan=self.plan, project=self.project, notes='my note')
+        self.weight = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario, priority=self.condition1, weight=2)
+        self.weight2 = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario, priority=self.condition2, weight=3)
+
+    def test_favorite_nonexistent_scenario(self):
+        response = self.client.post(
+            reverse('plan:favorite_scenario'),
+            {'scenario_id': 10},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_unfavorite_nonexistent_scenario(self):
+        response = self.client.post(
+            reverse('plan:unfavorite_scenario'),
+            {'scenario_id': 10},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_favorite_scenario_does_not_belong_to_user(self):
+        not_owned_scenario = Scenario.objects.create(owner=None)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:favorite_scenario'),
+            {'scenario_id': not_owned_scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_unfavorite_scenario_does_not_belong_to_user(self):
+        not_owned_scenario = Scenario.objects.create(owner=None)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:unfavorite_scenario'),
+            {'scenario_id': not_owned_scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_favorite_scenario_ok(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:favorite_scenario'),
+            {'scenario_id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['favorited'], True)
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.favorited, True)
+
+    def test_unfavorite_scenario_ok(self):
+        self.client.force_login(self.user)
+        favorited_scenario = Scenario.objects.create(
+            owner=self.user, favorited=True)
+        response = self.client.post(
+            reverse('plan:unfavorite_scenario'),
+            {'scenario_id': favorited_scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['favorited'], False)
+        scenario = Scenario.objects.get(pk=favorited_scenario.pk)
+        self.assertEqual(scenario.favorited, False)

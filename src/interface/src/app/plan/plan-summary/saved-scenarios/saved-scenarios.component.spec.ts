@@ -1,5 +1,6 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
@@ -33,12 +34,14 @@ describe('SavedScenariosComponent', () => {
             createdTimestamp: 100,
           },
         ]),
+        favoriteScenario: of({ favorited: true }),
+        unfavoriteScenario: of({ favorited: false }),
       },
       {}
     );
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule],
+      imports: [FormsModule, HttpClientTestingModule, MaterialModule],
       declarations: [SavedScenariosComponent],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
@@ -75,5 +78,20 @@ describe('SavedScenariosComponent', () => {
     expect(fakePlanService.getScenariosForPlan).toHaveBeenCalledOnceWith('1');
 
     expect(component.scenarios.length).toEqual(1);
+  });
+
+  it('should call service to favorite a scenario', () => {
+    component.toggleFavorited(component.scenarios[0]);
+
+    expect(fakePlanService.favoriteScenario).toHaveBeenCalledOnceWith('1');
+    expect(component.scenarios[0].favorited).toBeTrue();
+  });
+
+  it('should call service to unfavorite a scenario', () => {
+    component.scenarios[0].favorited = true;
+    component.toggleFavorited(component.scenarios[0]);
+
+    expect(fakePlanService.unfavoriteScenario).toHaveBeenCalledOnceWith('1');
+    expect(component.scenarios[0].favorited).toBeFalse();
   });
 });
