@@ -18,7 +18,7 @@ generate_projects_for_a_single_scenario <- function(
   geo_wkt_field,
   output_scenario_name,
   output_scenario_tag,
-  PreForsysClusterType = 'KMEANS') {
+  enable_kmeans_clustering = TRUE) {
 
   # Enables debug mode if providing output_scenario_name and output_scenario_tag
   # If enabled, data and graphs are output to directory,
@@ -43,23 +43,28 @@ generate_projects_for_a_single_scenario <- function(
         new_field = wp_colname))
 
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
-  forsys_input_data_formatted <- forsys_input_data %>%
+  forsys_input_data <- forsys_input_data %>%
     mutate('geometry' = .data[[geo_wkt_field]]) %>%
     st_as_sf(wkt = "geometry")
 
   # Grouping raster cells into stands using k-means clustering
-  if (PreForsysClusterType == 'KMEANS') {
+  if (enable_kmeans_clustering) {
     source("forsys/kmeans_cluster_cells_to_stands.R")
     # Clustering function uses latitude and longitude of raster cell centroids
     # as well as project priority values in order to group similar cells
     # together into stand polygons.
-    forsys_input_data_formatted <- kmeans_cluster_cells_to_stands(
-      stand_data = forsys_input_data_formatted,
+    forsys_input_data <- kmeans_cluster_cells_to_stands(
+      stand_data = forsys_input_data,
       stand_id_field = stand_id_field,
       stand_area_field = stand_area_field,
       stand_cost_field = stand_cost_field,
       scenario_priorities = c(wp_colname, priorities),
       geo_wkt_field = geo_wkt_field)
+
+    # geo_wkt_field column gets lost during clustering because the polygon
+    # aggregation happens on the "geometry" sf field. This adds wkt back in.
+    forsys_input_data <- forsys_input_data %>%
+      mutate({{geo_wkt_field}} := st_as_text(geometry))
   }
 
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
@@ -67,7 +72,7 @@ generate_projects_for_a_single_scenario <- function(
     run_outputs <- forsys::run(
       return_outputs = TRUE,
       write_outputs = enable_debug,
-      stand_data = forsys_input_data_formatted,
+      stand_data = forsys_input_data,
       stand_area_field = stand_area_field,
       stand_threshold = paste(stand_area_field, " > 0"),
       stand_id_field = stand_id_field,
@@ -97,13 +102,9 @@ generate_projects_for_a_single_scenario <- function(
     )
 
   # Adds the input geo_wkt column to the stand output df.
-  input_stand_ids_and_geometries <- forsys_input_data %>%
-    select(stand_id_field, {{geo_wkt_field}})
-  run_outputs$stand_output[stand_id_field] <- lapply(
-    run_outputs$stand_output[stand_id_field], as.integer)
-  run_outputs$stand_output <- inner_join(run_outputs$stand_output, 
-                                         input_stand_ids_and_geometries,
-                                         by=stand_id_field)
+  run_outputs$stand_output <- run_outputs$stand_output %>%
+    mutate({{stand_id_field}} := as.integer({{stand_id_field}})) %>%
+    inner_join(forsys_input_data, by = stand_id_field)
 
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
@@ -111,17 +112,17 @@ generate_projects_for_a_single_scenario <- function(
     output_dir <- file.path('output', output_scenario_name, output_scenario_tag)
     # Writes the input to a shape file.
     st_write(
-      obj = forsys_input_data_formatted,
+      obj = forsys_input_data,
       file.path(output_dir, 'forsys_input_data.shp'))
     # Graphs priorities and weighted priorities.
     for (p in priorities) {
-      ggplot(data=forsys_input_data_formatted) + 
+      ggplot(data=forsys_input_data) + 
         geom_sf(mapping=aes(fill=get(p)), color=NA) +
         scale_fill_viridis_c(begin=0, end=1, option="turbo") +
         guides(fill=guide_colorbar(title=p))
       ggsave(file.path(output_dir, paste(p, '.pdf')))
     }
-    ggplot(data=forsys_input_data_formatted) + 
+    ggplot(data=forsys_input_data) + 
       geom_sf(mapping=aes(fill=weighted_priorities), color=NA) +
       scale_fill_viridis_c(begin=0, end=1, option="turbo") +
       guides(fill=guide_colorbar(title=wp_colname))
@@ -130,12 +131,12 @@ generate_projects_for_a_single_scenario <- function(
     x <- run_outputs$stand_output %>%
       select({{stand_id_field}}, {{proj_id_field}})
     x[stand_id_field] <- lapply(x[stand_id_field], as.integer)
-    y <- forsys_input_data_formatted %>% select({{stand_id_field}}, 'geometry')
+    y <- forsys_input_data %>% select({{stand_id_field}}, 'geometry')
     joined <- x %>% inner_join(y, by=stand_id_field)
     joined <- st_sf(joined)
     joined[proj_id_field] <- lapply(joined[proj_id_field], as.character)
     # Graphs weighted priorities in grayscale and project areas in reds.
-    ggplot(data=forsys_input_data_formatted) + 
+    ggplot(data=forsys_input_data) + 
       geom_sf(mapping=aes(fill=weighted_priorities), color=NA) +
       scale_fill_gradient(low="black", high="white") +
       guides(fill=guide_legend(title=wp_colname)) +
@@ -145,5 +146,6 @@ generate_projects_for_a_single_scenario <- function(
       guides(fill=guide_legend(title=proj_id_field))
     ggsave(file.path(output_dir, paste(wp_colname, '_with_projects.pdf')))
   }
+
   return(run_outputs)
 }
