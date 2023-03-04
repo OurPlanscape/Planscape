@@ -10,8 +10,10 @@ RUN yum -y install libxml2-devel
 RUN yum -y install harfbuzz-devel fribidi-devel
 RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
 RUN yum -y install binutils
-RUN yum -y install pygit2
 RUN yum -y install libssh2-devel
+RUN yum -y install epel-release 
+RUN yum -y install python-pip
+# RUN pip install pygit2
 
 # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
