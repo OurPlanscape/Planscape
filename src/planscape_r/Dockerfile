@@ -10,13 +10,13 @@ RUN yum -y install libxml2-devel
 RUN yum -y install harfbuzz-devel fribidi-devel
 RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
 RUN yum -y install binutils
-RUN yum -y install libgit2-devel
+RUN yum -y install pygit2
 
 # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('libgit2-devel',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('gert',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('devtools',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "library(devtools)"
 # RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
