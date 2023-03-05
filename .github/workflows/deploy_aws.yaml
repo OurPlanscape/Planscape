@@ -56,14 +56,14 @@ jobs:
           echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG" >> $GITHUB_ENV
           echo "r_image=$ECR_REGISTRY/$ECR_REPOSITORY:r-$IMAGE_TAG" >> $GITHUB_ENV
 
-      - name: Build, tag, and push frontend
-        id: build-frontend
-        run: |
-          cd src/interface
-          sed -i "s/localhost/${{ env.EC2_LOAD_BALANCER }}/" src/environments/environment.prod.ts
-          docker build -t planscape-frontend . 
-          docker tag planscape-frontend:latest ${{ env.frontend_image }}
-          docker push ${{ env.frontend_image }}
+#       - name: Build, tag, and push frontend
+#         id: build-frontend
+#         run: |
+#           cd src/interface
+#           sed -i "s/localhost/${{ env.EC2_LOAD_BALANCER }}/" src/environments/environment.prod.ts
+#           docker build -t planscape-frontend . 
+#           docker tag planscape-frontend:latest ${{ env.frontend_image }}
+#           docker push ${{ env.frontend_image }}
 
       - name: Build, tag, and push backend
         id: build-backend
