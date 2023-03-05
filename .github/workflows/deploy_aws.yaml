@@ -65,13 +65,13 @@ jobs:
 #           docker tag planscape-frontend:latest ${{ env.frontend_image }}
 #           docker push ${{ env.frontend_image }}
 
-      - name: Build, tag, and push backend
-        id: build-backend
-        run: |
-          cd src/planscape
-          docker build -t planscape-backend .
-          docker tag planscape-backend:latest ${{ env.backend_image }}
-          docker push ${{ env.backend_image }}
+#       - name: Build, tag, and push backend
+#         id: build-backend
+#         run: |
+#           cd src/planscape
+#           docker build -t planscape-backend .
+#           docker tag planscape-backend:latest ${{ env.backend_image }}
+#           docker push ${{ env.backend_image }}
         
       - name: Build, tag, and push r
         id: build-r
