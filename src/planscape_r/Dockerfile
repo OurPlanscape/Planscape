@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:latest as builder
 RUN yum -y update 
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
+RUN ls /usr/bin/tar
+RUN ls /usr/bin/gtar
 RUN ln -s /usr/bin/tar /usr/bin/gtar
 # RUN which amazon-linux-extras
 # RUN yum install -y amazon-linux-extras
@@ -33,8 +35,8 @@ RUN ln -s /usr/bin/tar /usr/bin/gtar
 RUN export TAR="/usr/bin/tar"
 RUN echo $TAR
 RUN R -e "Sys.getenv('TAR')"
-RUN R -e "Sys.setenv('TAR' = 'internal'); install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+RUN R -e "Sys.setenv('TAR' = 'internal'); Sys.getenv('TAR'); install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr');"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
 COPY ./forsysr /usr/lib64/R/library/forsysr
 
