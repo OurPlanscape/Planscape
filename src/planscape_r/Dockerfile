@@ -29,10 +29,16 @@ RUN PYTHON=python2 amazon-linux-extras install R4
 # RUN R -e "library(devtools)"
 # RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
 
+RUN R -e "install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
-# COPY ./forsysr /usr/lib64/R/library/forsysr
+COPY ./forsysr /usr/lib64/R/library/forsysr
 
+# RUN git clone https://github.com/forsys-sp/forsysr.git
+# RUN cd forsysr
 # RUN ls
+
+
 
 # # Install the function's dependencies using file requirements.txt
 # # from your project folder.
@@ -41,6 +47,8 @@ RUN PYTHON=python2 amazon-linux-extras install R4
 COPY requirements.txt  .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+
 
 # # Copy function code
 # COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
