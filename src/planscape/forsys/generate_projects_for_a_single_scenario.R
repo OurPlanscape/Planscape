@@ -74,7 +74,6 @@ generate_projects_for_a_single_scenario <- function(
       write_outputs = enable_debug,
       stand_data = forsys_input_data,
       stand_area_field = stand_area_field,
-      stand_threshold = paste(stand_area_field, " > 0"),
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
       scenario_name = output_scenario_name,
@@ -95,16 +94,16 @@ generate_projects_for_a_single_scenario <- function(
       patchmax_sample_frac = 0.1,
       patchmax_exclusion_limit = 100,
       # TODO: clarify how to set global constraints.
-      proj_fixed_target = FALSE,
-      #proj_target_field = stand_area_field,
-      #proj_target_value = 0.5
+      proj_fixed_target = FALSE
       )
     )
 
   # Adds the input geo_wkt column to the stand output df.
   run_outputs$stand_output <- run_outputs$stand_output %>%
-    mutate({{stand_id_field}} := as.integer({{stand_id_field}})) %>%
-    inner_join(forsys_input_data, by = stand_id_field)
+    mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]])) %>%
+    inner_join(forsys_input_data %>%
+      select({{stand_id_field}}, {{geo_wkt_field}}),
+      by = stand_id_field)
 
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
@@ -114,38 +113,48 @@ generate_projects_for_a_single_scenario <- function(
     st_write(
       obj = forsys_input_data,
       file.path(output_dir, 'forsys_input_data.shp'))
+
     # Graphs priorities and weighted priorities.
     for (p in priorities) {
-      ggplot(data=forsys_input_data) + 
-        geom_sf(mapping=aes(fill=get(p)), color=NA) +
-        scale_fill_viridis_c(begin=0, end=1, option="turbo") +
-        guides(fill=guide_colorbar(title=p))
-      ggsave(file.path(output_dir, paste(p, '.pdf')))
+      ggplot(data = forsys_input_data) + 
+        geom_sf(mapping = aes(fill = get(p)), color = NA) +
+        scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
+        guides(fill = guide_colorbar(title = p))
+      ggsave(file.path(output_dir, paste(p, ".pdf")))
     }
-    ggplot(data=forsys_input_data) + 
-      geom_sf(mapping=aes(fill=weighted_priorities), color=NA) +
-      scale_fill_viridis_c(begin=0, end=1, option="turbo") +
-      guides(fill=guide_colorbar(title=wp_colname))
+    ggplot(data = forsys_input_data) + 
+      geom_sf(mapping = aes(fill = weighted_priorities), color = NA) +
+      scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
+      guides(fill = guide_colorbar(title = wp_colname))
     ggsave(file.path(output_dir, paste(wp_colname, '.pdf')))
+
     # Gets projects.
-    x <- run_outputs$stand_output %>%
-      select({{stand_id_field}}, {{proj_id_field}})
-    x[stand_id_field] <- lapply(x[stand_id_field], as.integer)
-    y <- forsys_input_data %>% select({{stand_id_field}}, 'geometry')
-    joined <- x %>% inner_join(y, by=stand_id_field)
-    joined <- st_sf(joined)
-    joined[proj_id_field] <- lapply(joined[proj_id_field], as.character)
+    stand_outputs_reformatted <- run_outputs$stand_output %>%
+      select({{stand_id_field}}, {{proj_id_field}}) %>%
+      mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]]))
+
+    stand_outputs_joined <- forsys_input_data %>%
+      # If a proj_id_field was provided in the forsys_input_data it needs to
+      # be removed here because forsys has generated different projects.
+      select(-{{proj_id_field}}) %>%
+      left_join(., stand_outputs_reformatted, by = stand_id_field) %>%
+      st_sf() %>%
+      mutate({{proj_id_field}} := as.character(.data[[proj_id_field]]))
+
     # Graphs weighted priorities in grayscale and project areas in reds.
-    ggplot(data=forsys_input_data) + 
-      geom_sf(mapping=aes(fill=weighted_priorities), color=NA) +
-      scale_fill_gradient(low="black", high="white") +
-      guides(fill=guide_legend(title=wp_colname)) +
+    ggplot(data = stand_outputs_joined) +
+      geom_sf(
+        mapping = aes_string(fill = wp_colname),
+        color = NA) +
+      scale_fill_gradient(low = "black", high = "white") +
+      guides(fill = guide_legend(title = wp_colname)) +
       new_scale_fill() +
-      geom_sf(data=joined, mapping=aes(fill=get(proj_id_field)), color=NA) +
-      scale_fill_brewer(palette="OrRd") +
-      guides(fill=guide_legend(title=proj_id_field))
+      geom_sf(
+        mapping = aes_string(fill = proj_id_field),
+        color = NA) +
+      scale_fill_brewer(palette = "OrRd") +
+      guides(fill = guide_legend(title = proj_id_field))
     ggsave(file.path(output_dir, paste(wp_colname, '_with_projects.pdf')))
   }
-
   return(run_outputs)
 }
