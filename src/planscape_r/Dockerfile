@@ -5,14 +5,14 @@ RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
 RUN yum -y install tar
-RUN ls /usr/bin/tar .
-RUN ls /usr/bin/gtar .
+# RUN ls /usr/bin/tar .
+# RUN ls /usr/bin/gtar .
 # RUN ln -s /usr/bin/tar /usr/bin/gtar
 # RUN which amazon-linux-extras
 # RUN yum install -y amazon-linux-extras
 # RUN PYTHON=python2 amazon-linux-extras install R4
-# RUN yum -y install libcurl libcurl-devel
-# RUN yum -y install openssl-devel
+RUN yum -y install libcurl-devel
+RUN yum -y install openssl-devel
 # RUN yum -y install libxml2-devel
 # RUN yum -y install harfbuzz-devel fribidi-devel
 # RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
@@ -40,7 +40,7 @@ RUN ls /usr/bin/gtar .
 RUN R -e "install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
-COPY ./forsysr /usr/lib64/R/library/forsysr
+# COPY ./forsysr /usr/lib64/R/library/forsysr
 
 # RUN git clone https://github.com/forsys-sp/forsysr.git
 # RUN cd forsysr
@@ -55,8 +55,6 @@ COPY ./forsysr /usr/lib64/R/library/forsysr
 COPY requirements.txt  .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
-
-
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
