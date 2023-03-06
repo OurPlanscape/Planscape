@@ -8,6 +8,7 @@ from pstats import SortKey
 
 import numpy as np
 import pandas as pd
+from boundary.models import BoundaryDetails
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
@@ -26,9 +27,6 @@ from pytz import timezone
 import rpy2
 
 
-def URL_REQUEST_PARAM_TYPE = "request_type"
-
-
 # Configures global logging.
 logger = logging.getLogger(__name__)
 
@@ -39,10 +37,9 @@ logger = logging.getLogger(__name__)
 def _set_up_cprofiler(pr: cProfile.Profile) -> None:
     pr.enable()
 
+
 # Tears down Cprofile profiler and writes data to a log.
 # This is for measuring runtime.
-
-
 def _tear_down_cprofiler(pr: cProfile.Profile, filename: str) -> None:
     pr.disable()
     s = io.StringIO()

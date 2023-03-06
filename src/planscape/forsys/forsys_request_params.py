@@ -23,6 +23,9 @@ class ForsysGenerationRequestParamsType(IntEnum):
     DATABASE = 0  # ForsysGenerationRequestParamsFromDb
     URL_WITH_DEFAULTS = 1  # ForsysGenerationRequestParamsFromUrlWithDefaults
     HUC12_WITH_DEFAULTS = 2  # ForsysGenerationRequestParamsFromHuc12
+    SILVER_CREEK_WITH_DEFAULTS = 3  # SilverCreekForsysGenerationParams
+    COW_CREEK_WITH_DEFAULTS = 4  # CowCreekForsysGenerationParams
+    MIDDLE_FORK_WITH_DEFAULTS = 5  # MiddleForkForsysGenerationParams
 
 
 # Reads url parameters common to both
@@ -280,6 +283,7 @@ class ForsysGenerationRequestParamsFromHuc12(
         'california_spotted_owl', 'storage', 'functional_fire',
         'forest_structure', 'max_sdi']
 
+    # huc-12 area nams.
     huc12_names: list[str]
 
     def __init__(self, params: QueryDict):
@@ -295,7 +299,41 @@ class ForsysGenerationRequestParamsFromHuc12(
         return merge_polygons(polygons, 0)
 
 
-# Returns ForsysRankingRequestParams based on url parameter value for the 
+class SilverCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
+    _DEFAULT_HUC12_NAMES = [
+        'Little Silver Creek-Silver Creek',
+        'South Fork Rubicon River',
+        'Jones Fork Silver Creek',
+        'Brush Creek-South Fork American River',
+        'South Fork Silver Creek'
+    ]
+
+
+class CowCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
+    _DEFAULT_HUC12_NAMES = [
+        'Upper Old Cow Creek',
+        'Lower Old Cow Creek',
+        'Upper South Cow Creek',
+        'Lower South Cow Creek',
+        'Glendenning Creek',
+        'Clover Creek',
+        'Oak Run Creek'
+    ]
+
+
+class MiddleForkForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
+    _DEFAULT_HUC12_NAMES = [
+        'Middle Fork Bishop Creek',
+        'South Fork Bishop Creek',
+        'Evolution Creek',
+        'Headwaters Middle Fork Kings River',
+        'Goddard Creek',
+        'Goddard Canyon-South Fork San Joaquin River',
+        'Upper Middle Fork Kings River'
+    ]
+
+
+# Returns ForsysRankingRequestParams based on url parameter value for the
 # parameter name in _URL_REQUEST_PARAMS_TYPE.
 def get_ranking_request_params(
         params: QueryDict) -> ForsysRankingRequestParams:
@@ -309,7 +347,7 @@ def get_ranking_request_params(
         raise Exception("ranking request type was not recognized")
 
 
-# Returns ForsysGenerationRequestParams based on url parameter value for the 
+# Returns ForsysGenerationRequestParams based on url parameter value for the
 # parameter name in _URL_REQUEST_PARAMS_TYPE.
 def get_generation_request_params(
         request: HttpRequest) -> ForsysGenerationRequestParams:
@@ -322,5 +360,11 @@ def get_generation_request_params(
         return ForsysGenerationRequestParamsFromUrlWithDefaults(params)
     elif type == ForsysGenerationRequestParamsType.HUC12_WITH_DEFAULTS:
         return ForsysGenerationRequestParamsFromHuc12(params)
+    elif type == ForsysGenerationRequestParamsType.SILVER_CREEK_WITH_DEFAULTS:
+        return SilverCreekForsysGenerationParams(params)
+    elif type == ForsysGenerationRequestParamsType.COW_CREEK_WITH_DEFAULTS:
+        return CowCreekForsysGenerationParams(params)
+    elif type == ForsysGenerationRequestParamsType.MIDDLE_FORK_WITH_DEFAULTS:
+        return MiddleForkForsysGenerationParams(params)
     else:
         raise Exception("generation request type was not recognized")
