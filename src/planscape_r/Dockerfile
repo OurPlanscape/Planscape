@@ -5,28 +5,29 @@ RUN yum -y update
 # RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 # RUN yum -y install R
 # RUN which amazon-linux-extras
-RUN yum install -y amazon-linux-extras
-RUN PYTHON=python2 amazon-linux-extras install R4
-RUN yum -y install libcurl libcurl-devel
-RUN yum -y install openssl-devel
-RUN yum -y install libxml2-devel
-RUN yum -y install harfbuzz-devel fribidi-devel
-RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
-RUN yum -y install binutils
-RUN yum -y install libssh2-devel
-RUN yum -y install libssh2-devel
-RUN yum -y install libgit2 
-# RUN yum -y install epel-release 
+# RUN yum install -y amazon-linux-extras
+RUN yum -y install epel-release 
+# RUN PYTHON=python2 amazon-linux-extras install R4
+# RUN yum -y install libcurl libcurl-devel
+# RUN yum -y install openssl-devel
+# RUN yum -y install libxml2-devel
+# RUN yum -y install harfbuzz-devel fribidi-devel
+# RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
+# RUN yum -y install binutils
+# RUN yum -y install libssh2-devel
+# RUN yum -y install libssh2-devel
+# RUN yum -y install libgit2 
+
 # RUN yum -y install python-pip
 # RUN pip install pygit2
 
 # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('libgit2-devel',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('gert',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "install.packages('devtools',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-RUN R -e "library(devtools)"
+# RUN R -e "install.packages('libgit2-devel',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('gert',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('devtools',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+# RUN R -e "library(devtools)"
 # RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
 
 
@@ -38,9 +39,9 @@ RUN R -e "library(devtools)"
 # # from your project folder.
 # # Install any dependencies under the ${LAMBDA_TASK_ROOT} directory 
 # # alongside the function handler to ensure that the Lambda runtime can locate them when the function is invoked.
-# COPY requirements.txt  .
-# RUN pip install --upgrade pip
-# RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+COPY requirements.txt  .
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # # Copy function code
 # COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
