@@ -1,13 +1,16 @@
 from enum import IntEnum
-import json
-from typing import TypedDict
 
+from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition
-from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.http import HttpRequest, QueryDict
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
+from forsys.merge_polygons import merge_polygons
 
+# URL parameter name for ForsysRankingRequestParamsType or
+# ForsysGenerationRequestParamsType.
+# Parameter value is expected to be an integer.
 _URL_REQUEST_PARAMS_TYPE = "request_type"
 
 
@@ -19,8 +22,12 @@ class ForsysRankingRequestParamsType(IntEnum):
 class ForsysGenerationRequestParamsType(IntEnum):
     DATABASE = 0  # ForsysGenerationRequestParamsFromDb
     URL_WITH_DEFAULTS = 1  # ForsysGenerationRequestParamsFromUrlWithDefaults
+    HUC12_WITH_DEFAULTS = 2  # ForsysGenerationRequestParamsFromHuc12
 
 
+# Reads url parameters common to both
+# ForsysRankingRequestParamsFromUrlWithDefaults and
+# ForsysGenerationRequestParamsFromUrlWithDefaults.
 def _read_common_url_params(self, params: QueryDict) -> None:
     self.region = params.get(
         self._URL_REGION, self._DEFAULT_REGION)
@@ -37,11 +44,7 @@ def _read_common_url_params(self, params: QueryDict) -> None:
                 len(self.priority_weights)))
 
 
-# Gathers forsys input parameters from url params, database lookups, or a
-# combination of the two.
-# Of note, the option to set all forsys input paramters via url parameters is
-# intended for backend debugging purposes while the option to set most forsys
-# input parameters via database lookups is intended for production.
+# A class containing forsys ranking input parameters.
 class ForsysRankingRequestParams():
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and stand-level constraints.
@@ -69,6 +72,8 @@ class ForsysRankingRequestParams():
         self.max_cost_in_usd = None
 
 
+# Looks up forsys ranking parameters from DB.
+# This is intended for production.
 class ForsysRankingRequestParamsFromDb(ForsysRankingRequestParams):
     def __init__(self, params: QueryDict):
         ForsysRankingRequestParams.__init__(self)
@@ -96,9 +101,11 @@ class ForsysRankingRequestParamsFromDb(ForsysRankingRequestParams):
             raise Exception("Ill-formed request: " + str(e))
 
 
+# Looks up forsys ranking parameters from URL parameters.
+# Also provides default values if any url parameters are missing.
+# This is intended for debugging purposes.
 class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
     # Constants for parsing url parameters.
-    _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
     _URL_REGION = 'region'
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
@@ -164,11 +171,7 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
         return v
 
 
-# Gathers forsys input parameters from url params, database lookups, or a
-# combination of the two.
-# Of note, the option to set all forsys input paramters via url parameters is
-# intended for backend debugging purposes while the option to set most forsys
-# input parameters via database lookups is intended for production.
+# A class containing forsys generation input parameters.
 class ForsysGenerationRequestParams():
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and global, project-level, and
@@ -191,10 +194,12 @@ class ForsysGenerationRequestParams():
         self.planning_area = None
 
 
+# Looks up forsys generation parameters from URL parameters.
+# Also provides default values if any url parameters are missing.
+# This is intended for debugging purposes.
 class ForsysGenerationRequestParamsFromUrlWithDefaults(
         ForsysGenerationRequestParams):
     # Constants for parsing url parameters.
-    _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
     _URL_REGION = 'region'
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
@@ -232,6 +237,10 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
         return mp
 
 
+# Looks up forsys generation parameters from DB.
+# This is intended for production.
+# TODO: Update logic so that all parameters are set from DB (presently, some
+# are set via url parameters)
 class ForsysGenerationRequestParamsFromDb(
         ForsysGenerationRequestParamsFromUrlWithDefaults):
     def __init__(self, request: HttpRequest) -> None:
@@ -253,6 +262,49 @@ class ForsysGenerationRequestParamsFromDb(
         # updated.
 
 
+# Sets planning area from HUC-12 boundary names.
+# Sets default priorities to th ones used for experimenting with realistic data.
+class ForsysGenerationRequestParamsFromHuc12(
+        ForsysGenerationRequestParamsFromUrlWithDefaults):
+    _HUC12_ID = 43
+
+    # Constants for parsing url parameters.
+    _URL_HUC12_NAMES = 'huc12_names'
+
+    # Constants that act as default values when parsing url parameters.
+    _DEFAULT_HUC12_NAMES = [
+        'Little Silver Creek-Silver Creek',
+        'Little Grizzly Canyon-Rubicon River',
+        'Slab Creek',
+        'Plum Creek-South Fork American River',
+        'South Fork Rubicon River',
+        'Jones Fork Silver Creek',
+        'Pilot Creek',
+        'Brush Creek-South Fork American River',
+        'Union Valley Reservoir-Silver Creek',
+        'South Fork Silver Creek']
+
+    _DEFAULT_PRIORITIES = [
+        'california_spotted_owl', 'storage', 'functional_fire',
+        'forest_structure', 'max_sdi']
+
+    huc12_names: list[str]
+
+    def __init__(self, params: QueryDict):
+        ForsysGenerationRequestParamsFromUrlWithDefaults.__init__(self, params)
+        self.huc12_names = params.getlist(
+            self._URL_PRIORITIES, self._DEFAULT_HUC12_NAMES)
+        self.planning_area = self._get_planning_area(self.huc12_names)
+
+    def _get_planning_area(self, huc12_names: list[str]) -> GEOSGeometry:
+        huc12s = BoundaryDetails.objects.filter(
+            boundary_id=self._HUC12_ID).filter(shape_name__in=huc12_names)
+        polygons = [huc12.geometry for huc12 in huc12s]
+        return merge_polygons(polygons, 0)
+
+
+# Returns ForsysRankingRequestParams based on url parameter value for the 
+# parameter name in _URL_REQUEST_PARAMS_TYPE.
 def get_ranking_request_params(
         params: QueryDict) -> ForsysRankingRequestParams:
     type = ForsysRankingRequestParamsType(
@@ -265,6 +317,8 @@ def get_ranking_request_params(
         raise Exception("ranking request type was not recognized")
 
 
+# Returns ForsysGenerationRequestParams based on url parameter value for the 
+# parameter name in _URL_REQUEST_PARAMS_TYPE.
 def get_generation_request_params(
         request: HttpRequest) -> ForsysGenerationRequestParams:
     params = request.GET
@@ -274,5 +328,7 @@ def get_generation_request_params(
         return ForsysGenerationRequestParamsFromDb(request)
     elif type == ForsysGenerationRequestParamsType.URL_WITH_DEFAULTS:
         return ForsysGenerationRequestParamsFromUrlWithDefaults(params)
+    elif type == ForsysGenerationRequestParamsType.HUC12_WITH_DEFAULTS:
+        return ForsysGenerationRequestParamsFromHuc12(params)
     else:
         raise Exception("generation request type was not recognized")
