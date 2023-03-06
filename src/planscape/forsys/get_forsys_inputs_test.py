@@ -7,7 +7,8 @@ from django.contrib.gis.geos import Polygon
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (
-    ForsysGenerationRequestParams, ForsysRankingRequestParams)
+    ForsysGenerationRequestParamsFromUrlWithDefaults,
+    ForsysRankingRequestParamsFromUrlWithDefaults)
 from forsys.get_forsys_inputs import (
     ForsysGenerationInput, ForsysInputHeaders, ForsysRankingInput)
 from planscape import settings
@@ -62,7 +63,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
 
     def test_gets_forsys_input(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParams(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
         params.region = self.region
         params.priorities = ["foo", "bar"]
         params.project_areas.clear()
@@ -85,7 +86,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
 
     def test_missing_base_condition(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParams(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
         params.region = self.region
         # No base conditions exist for baz.
         params.priorities = ["foo", "bar", "baz"]
@@ -108,7 +109,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             condition_level=ConditionLevel.METRIC)
 
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParams(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
         params.region = self.region
         params.priorities = ["foo", "bar", "baz"]
         params.project_areas.clear()
@@ -125,7 +126,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
 
     def test_missing_condition_score(self):
         qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParams(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
         params.region = self.region
         params.priorities = ["foo"]
         params.project_areas.clear()
@@ -162,9 +163,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
             self, "bar", "bar_normalized", bar_raster)
 
     def test_gets_forsys_input(self):
-        request = HttpRequest()
-        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysGenerationRequestParams(request)
+        dict = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParamsFromUrlWithDefaults(dict)
         params.region = self.region
         params.priorities = ["foo", "bar"]
         params.planning_area = RasterConditionRetrievalTestCase._create_geo(
@@ -200,9 +200,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         RasterConditionRetrievalTestCase._save_condition_to_db(
             self, "baz", "baz_normalized", baz_raster)
 
-        request = HttpRequest()
-        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysGenerationRequestParams(request)
+        dict = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParamsFromUrlWithDefaults(dict)
         params.region = self.region
         params.priorities = ["foo", "baz"]
         params.planning_area = RasterConditionRetrievalTestCase._create_geo(
@@ -240,9 +239,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         return geo
 
     def test_missing_base_condition(self):
-        request = HttpRequest()
-        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysGenerationRequestParams(request)
+        dict = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParamsFromUrlWithDefaults(dict)
         params.region = self.region
         # No base conditions exist for baz.
         params.priorities = ["foo", "bar", "baz"]
@@ -263,9 +261,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
             condition_name="baz", region_name=self.region,
             condition_level=ConditionLevel.METRIC)
 
-        request = HttpRequest()
-        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysGenerationRequestParams(request)
+        dict = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParamsFromUrlWithDefaults(dict)
         params.region = self.region
         params.priorities = ["foo", "bar", "baz"]
         params.planning_area = RasterConditionRetrievalTestCase._create_geo(
@@ -280,9 +277,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
             "of 3 priorities, only 2 had conditions")
 
     def test_no_intersection_between_plan_and_raster(self):
-        request = HttpRequest()
-        request.GET = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysGenerationRequestParams(request)
+        dict = QueryDict('set_all_params_via_url_with_default_values=1')
+        params = ForsysGenerationRequestParamsFromUrlWithDefaults(dict)
         params.region = self.region
         params.priorities = ["foo"]
         # project area doesn't intersect with the raster for "foo".
