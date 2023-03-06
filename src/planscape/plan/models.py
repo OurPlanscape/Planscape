@@ -90,10 +90,10 @@ class Scenario(models.Model):
         User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     plan = models.ForeignKey(
-        Plan, on_delete=models.CASCADE, null=True)  # type: ignore
+        Plan, on_delete=models.CASCADE, null=False)  # type: ignore
 
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, null=True)  # type: ignore
+        Project, on_delete=models.CASCADE, null=False)  # type: ignore
 
     # The creation time of the project, automatically set when the project is created.
     creation_time: models.DateTimeField = models.DateTimeField(
@@ -101,7 +101,8 @@ class Scenario(models.Model):
 
     notes: models.TextField = models.TextField(null=True)
 
-    favorited: models.BooleanField = models.BooleanField(null=True, default=False)
+    favorited: models.BooleanField = models.BooleanField(
+        null=True, default=False)
 
     class ScenarioStatus(models.IntegerChoices):
         PENDING = 0
@@ -111,7 +112,7 @@ class Scenario(models.Model):
 
     status = models.IntegerField(
         choices=ScenarioStatus.choices, default=ScenarioStatus.PENDING)
-    
+
 
 class ScenarioWeightedPriority(models.Model):
     """
@@ -147,6 +148,7 @@ class ProjectArea(models.Model):
     estimated_area_treated: models.IntegerField = models.IntegerField(
         null=True)
 
+
 class RankedProjectArea(models.Model):
     """
     RankedProjectArea associates a ProjectArea with a Scenario.
@@ -159,6 +161,7 @@ class RankedProjectArea(models.Model):
     rank = models.IntegerField()
 
     weighted_score = models.FloatField()
+
 
 class ConditionScores(models.Model):
     """
