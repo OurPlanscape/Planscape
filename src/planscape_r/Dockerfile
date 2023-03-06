@@ -5,9 +5,9 @@ RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
 RUN yum -y install tar
-RUN ls /usr/bin/tar
-RUN ls /usr/bin/gtar
-RUN ln -s /usr/bin/tar /usr/bin/gtar
+RUN ls /usr/bin/tar .
+RUN ls /usr/bin/gtar .
+# RUN ln -s /usr/bin/tar /usr/bin/gtar
 # RUN which amazon-linux-extras
 # RUN yum install -y amazon-linux-extras
 # RUN PYTHON=python2 amazon-linux-extras install R4
