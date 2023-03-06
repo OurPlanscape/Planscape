@@ -1,2 +1,1 @@
 rpy2
-git+https://github.com/forsys-sp/forsysr.git@main#egg=forsysr
