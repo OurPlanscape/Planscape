@@ -90,10 +90,10 @@ class Scenario(models.Model):
         User, on_delete=models.CASCADE, null=True)  # type: ignore
 
     plan = models.ForeignKey(
-        Plan, on_delete=models.CASCADE, null=True)  # type: ignore
+        Plan, on_delete=models.CASCADE, null=False)  # type: ignore
 
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, null=True)  # type: ignore
+        Project, on_delete=models.CASCADE, null=False)  # type: ignore
 
     # The creation time of the project, automatically set when the project is created.
     creation_time: models.DateTimeField = models.DateTimeField(
@@ -138,6 +138,7 @@ class ProjectArea(models.Model):
     estimated_area_treated: models.IntegerField = models.IntegerField(
         null=True)
 
+
 class RankedProjectArea(models.Model):
     """
     RankedProjectArea associates a ProjectArea with a Scenario.
@@ -150,6 +151,7 @@ class RankedProjectArea(models.Model):
     rank = models.IntegerField()
 
     weighted_score = models.FloatField()
+
 
 class ConditionScores(models.Model):
     """
