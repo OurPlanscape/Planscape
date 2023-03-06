@@ -3,7 +3,8 @@ FROM public.ecr.aws/lambda/python:latest as builder
 # install binary dependencies
 RUN yum -y update 
 # RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum -y install R
+# RUN yum -y install R
+RUN amazon-linux-extras install R4
 RUN yum -y install libcurl libcurl-devel
 RUN yum -y install openssl-devel
 RUN yum -y install libxml2-devel
