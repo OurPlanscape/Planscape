@@ -6,7 +6,7 @@ RUN yum -y update
 # RUN yum -y install R
 # RUN which amazon-linux-extras
 RUN yum install -y amazon-linux-extras
-RUN amazon-linux-extras install R
+RUN PYTHON=python2 amazon-linux-extras install R
 # RUN yum -y install libcurl libcurl-devel
 # RUN yum -y install openssl-devel
 # RUN yum -y install libxml2-devel
