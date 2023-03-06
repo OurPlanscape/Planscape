@@ -4,6 +4,8 @@ FROM public.ecr.aws/lambda/python:latest as builder
 RUN yum -y update 
 # RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 # RUN yum -y install R
+RUN which amazon-linux-extras
+RUN yum install -y amazon-linux-extras
 RUN amazon-linux-extras install R4
 RUN yum -y install libcurl libcurl-devel
 RUN yum -y install openssl-devel
