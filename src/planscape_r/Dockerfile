@@ -31,6 +31,7 @@ RUN ln -s /bin/tar /bin/gtar
 # RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
 # RUN R -e ""
 RUN export TAR="/bin/tar"
+RUN R -e "Sys.getenv['TAR']"
 RUN R -e "install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
