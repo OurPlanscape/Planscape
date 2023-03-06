@@ -33,11 +33,12 @@ RUN ls /usr/bin/gtar .
 # RUN R -e "library(devtools)"
 # RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
 # RUN R -e ""
-RUN export TAR="/usr/bin/tar"
-RUN echo $TAR
-RUN R -e "Sys.getenv('TAR')"
-RUN R -e "Sys.setenv('TAR' = 'internal'); Sys.getenv('TAR'); install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr');"
-# RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+# RUN export TAR="/usr/bin/tar"
+# RUN echo $TAR
+# RUN R -e "Sys.getenv('TAR')"
+# RUN R -e "Sys.setenv('TAR' = 'internal'); Sys.getenv('TAR'); install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr');"
+RUN R -e "install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr')"
+RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
 COPY ./forsysr /usr/lib64/R/library/forsysr
 
