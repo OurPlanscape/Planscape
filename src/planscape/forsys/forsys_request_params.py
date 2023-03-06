@@ -266,24 +266,16 @@ class ForsysGenerationRequestParamsFromDb(
 # Sets default priorities to th ones used for experimenting with realistic data.
 class ForsysGenerationRequestParamsFromHuc12(
         ForsysGenerationRequestParamsFromUrlWithDefaults):
+    # The ID representing HUC-12 boundaries in the DB.
     _HUC12_ID = 43
 
     # Constants for parsing url parameters.
     _URL_HUC12_NAMES = 'huc12_names'
 
     # Constants that act as default values when parsing url parameters.
-    _DEFAULT_HUC12_NAMES = [
-        'Little Silver Creek-Silver Creek',
-        'Little Grizzly Canyon-Rubicon River',
-        'Slab Creek',
-        'Plum Creek-South Fork American River',
-        'South Fork Rubicon River',
-        'Jones Fork Silver Creek',
-        'Pilot Creek',
-        'Brush Creek-South Fork American River',
-        'Union Valley Reservoir-Silver Creek',
-        'South Fork Silver Creek']
+    _DEFAULT_HUC12_NAMES = ['Little Silver Creek-Silver Creek']
 
+    # Default priorities that are retrieved.
     _DEFAULT_PRIORITIES = [
         'california_spotted_owl', 'storage', 'functional_fire',
         'forest_structure', 'max_sdi']
@@ -293,7 +285,7 @@ class ForsysGenerationRequestParamsFromHuc12(
     def __init__(self, params: QueryDict):
         ForsysGenerationRequestParamsFromUrlWithDefaults.__init__(self, params)
         self.huc12_names = params.getlist(
-            self._URL_PRIORITIES, self._DEFAULT_HUC12_NAMES)
+            self._URL_HUC12_NAMES, self._DEFAULT_HUC12_NAMES)
         self.planning_area = self._get_planning_area(self.huc12_names)
 
     def _get_planning_area(self, huc12_names: list[str]) -> GEOSGeometry:

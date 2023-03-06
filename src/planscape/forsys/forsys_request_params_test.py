@@ -1,9 +1,10 @@
 import json
 
 from base.condition_types import ConditionLevel
+from boundary.models import Boundary, BoundaryDetails
 from conditions.models import BaseCondition, Condition
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (
@@ -304,3 +305,102 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertEquals(
             str(context.exception),
             "Plan matching query does not exist.")
+
+
+class ForsysGenerationRequestParamsFromHuc12(TestCase):
+    def setUp(self) -> None:
+        huc12_id = Boundary.objects.create(boundary_name="huc12", id=43).pk
+        BoundaryDetails.objects.create(
+            boundary_id=huc12_id,
+            shape_name="Little Silver Creek-Silver Creek",
+            geometry=self._create_polygon(-120, 40, -121, 41))
+        BoundaryDetails.objects.create(
+            boundary_id=huc12_id,
+            shape_name="Slab Creek",
+            geometry=self._create_polygon(-121, 40, -122, 41))
+
+    def test_returns_default(self):
+        request = HttpRequest()
+        request.GET = QueryDict('request_type=2')
+        params = get_generation_request_params(request)
+
+        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(
+            params.priorities,
+            ['california_spotted_owl', 'storage', 'functional_fire',
+             'forest_structure', 'max_sdi'])
+        self.assertEqual(params.priority_weights, [1, 1, 1, 1, 1])
+
+        self.assertEqual(
+            params.planning_area.coords,
+            (((-120.0, 40.0),
+             (-120.0, 41.0),
+             (-121.0, 41.0),
+             (-121.0, 40.0),
+             (-120.0, 40.0)),))
+        self.assertEqual(params.planning_area.srid, 4269)
+
+    def test_reads_region_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=2' +
+            '&region=foo')
+        params = get_generation_request_params(request)
+        self.assertEqual(params.region, 'foo')
+
+    def test_reads_priorities_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=2' +
+            '&priorities=foo&priorities=bar&priorities=baz')
+        params = get_generation_request_params(request)
+        self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+
+    def test_reads_priorities_and_weights_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=2' +
+            '&priorities=foo&priorities=bar&priorities=baz' +
+            '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0')
+        params = get_generation_request_params(request)
+        self.assertEqual(params.priorities, ['foo', 'bar', 'baz'])
+        self.assertListEqual(params.priority_weights, [5, 2, 1])
+
+    def test_raises_error_for_wrong_num_priority_weights_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=2' +
+            '&priorities=foo&priorities=bar&priorities=baz' +
+            '&priority_weights=5.0&priority_weights=2.0')
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected 3 priority weights, instead, 2 were given')
+
+    def test_merges_conditions(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=2' +
+            '&huc12_names=Little Silver Creek-Silver Creek' +
+            '&huc12_names=Slab Creek')
+        params = get_generation_request_params(request)
+        self.assertEqual(
+            params.planning_area.coords,
+            (((-120.0, 41.0),
+             (-120.0, 40.0),
+             (-122.0, 40.0),
+             (-122.0, 41.0),
+             (-120.0, 41.0)),))
+        self.assertEqual(params.planning_area.srid, 4269)
+
+    def _create_polygon(self, xmin, ymin, xmax, ymax) -> MultiPolygon:
+        polygon = Polygon(
+            ((xmin, ymin),
+             (xmin, ymax),
+             (xmax, ymax),
+             (xmax, ymin),
+             (xmin, ymin)))
+        geo = MultiPolygon(polygon)
+        geo.srid = 4269
+        return geo
