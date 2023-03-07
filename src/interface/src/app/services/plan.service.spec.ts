@@ -308,6 +308,7 @@ describe('PlanService', () => {
         createdTimestamp: undefined,
         notes: undefined,
         owner: undefined,
+        favorited: undefined,
       };
 
       service.getScenario('1').subscribe((res) => {
@@ -359,6 +360,11 @@ describe('PlanService', () => {
           {
             id: '1',
             createdTimestamp: 5000,
+            planId: undefined,
+            priorities: undefined,
+            notes: undefined,
+            owner: undefined,
+            favorited: undefined,
           },
         ]);
         done();
@@ -392,6 +398,40 @@ describe('PlanService', () => {
       );
       expect(req.request.method).toEqual('POST');
       req.flush(['1']);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('favoriteScenario', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.favoriteScenario('1').subscribe((res) => {
+        expect(res).toEqual({ favorited: true });
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/favorite_scenario/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({ scenario_id: 1 });
+      req.flush({ favorited: true });
+      httpTestingController.verify();
+    });
+  });
+
+  describe('unfavoriteScenario', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.unfavoriteScenario('1').subscribe((res) => {
+        expect(res).toEqual({ favorited: false });
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/unfavorite_scenario/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({ scenario_id: 1 });
+      req.flush({ favorited: false });
       httpTestingController.verify();
     });
   });
