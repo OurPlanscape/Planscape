@@ -1,7 +1,7 @@
 FROM public.ecr.aws/lambda/python:latest
 
 RUN yum -y update 
-# RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 # RUN yum -y install R
 RUN yum -y install amazon-linux-extras
 RUN PYTHON=python2 amazon-linux-extras install R4
