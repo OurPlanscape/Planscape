@@ -266,14 +266,6 @@ describe('SetPrioritiesComponent', () => {
     expect(component.formGroup?.get('priorities')?.value).toEqual([
       'test_pillar_1',
     ]);
-
-    // Check the second priority (should be 'test_element_1')
-    await checkboxHarnesses[1].check();
-
-    expect(component.formGroup?.get('priorities')?.value).toEqual([
-      'test_pillar_1',
-      'test_element_1',
-    ]);
   });
 
   it('updateSelectedPriorities should update checkboxes', async () => {
@@ -289,5 +281,20 @@ describe('SetPrioritiesComponent', () => {
 
     expect(component.datasource.data[0].selected).toBeTrue();
     expect(await conditionCheckbox1.isChecked()).toBeTrue();
+  });
+
+  it('selecting a priority should disable its descendants', async () => {
+    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
+
+    // Check the first priority (should be 'test_pillar_1')
+    await checkboxHarnesses[0].check();
+
+    expect(await checkboxHarnesses[1].isDisabled()).toBeTrue();
+    expect(await checkboxHarnesses[2].isDisabled()).toBeTrue();
+
+    await checkboxHarnesses[0].uncheck();
+
+    expect(await checkboxHarnesses[1].isDisabled()).toBeFalse();
+    expect(await checkboxHarnesses[2].isDisabled()).toBeFalse();
   });
 });
