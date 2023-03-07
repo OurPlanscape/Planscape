@@ -1,17 +1,20 @@
-import { Component, Input, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input, SimpleChanges, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { Scenario, Plan } from 'src/app/types';
+import { Scenario, Plan, ProjectArea } from 'src/app/types';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-outcome',
   templateUrl: './outcome.component.html',
   styleUrls: ['./outcome.component.scss'],
 })
-export class OutcomeComponent {
+export class OutcomeComponent implements OnChanges {
   @Input() plan: Plan | null = null;
   @Input() scenario: Scenario | null = null;
   scenarioNotes: FormGroup;
+  totalAcresTreated: number = 0;
+  totalCostRange: string = '';
 
   // TODO: Use real priorities from the backend.
   priorities: {
@@ -39,6 +42,15 @@ export class OutcomeComponent {
       ) {
         this.scenarioNotes.controls['notes'].setValue(this.scenario.notes);
       }
+      this.totalAcresTreated = this.calculateTotalAcresTreated(
+        this.scenario.projectAreas || []
+      );
     }
+  }
+
+  private calculateTotalAcresTreated(projectAreas: ProjectArea[]): number {
+    return projectAreas.reduce((totalAcres, projectArea) => {
+      return totalAcres + (projectArea.estimatedAreaTreated ?? 0);
+    }, 0);
   }
 }
