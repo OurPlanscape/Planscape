@@ -7,17 +7,17 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (ClusterAlgorithmType,
-                                          ClusterAlgorithRequestParams,
+                                          ClusterAlgorithmRequestParams,
                                           ForsysGenerationRequestParams,
                                           ForsysRankingRequestParams)
 from plan.models import Plan, Project, ProjectArea
 from planscape import settings
 
 
-class TestClusterAlgorithRequestParams(TestCase):
+class TestClusterAlgorithmRequestParams(TestCase):
     def test_reads_default_params(self):
         query_dict = QueryDict('')
-        params = ClusterAlgorithRequestParams(query_dict)
+        params = ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(params.cluster_algorithm_type,
                          ClusterAlgorithmType.NONE)
         self.assertEqual(params.num_clusters, 500)
@@ -25,44 +25,44 @@ class TestClusterAlgorithRequestParams(TestCase):
 
     def test_reads_cluster_algorithm_type_from_url_params(self):
         query_dict = QueryDict('cluster_algorithm_type=1')
-        params = ClusterAlgorithRequestParams(query_dict)
+        params = ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(params.cluster_algorithm_type,
                          ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON)
 
     def test_raises_error_for_bad_cluster_algorithm_type_from_url_params(self):
         query_dict = QueryDict('cluster_algorithm_type=999')
         with self.assertRaises(Exception) as context:
-            ClusterAlgorithRequestParams(query_dict)
+            ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(
             str(context.exception),
             '999 is not a valid ClusterAlgorithmType')
 
     def test_reads_num_clusters_from_url_params(self):
         query_dict = QueryDict('num_clusters=1125')
-        params = ClusterAlgorithRequestParams(query_dict)
+        params = ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(params.num_clusters, 1125)
 
     def test_raises_error_for_bad_num_clusters_from_url_params(self):
         query_dict = QueryDict('num_clusters=-999')
         with self.assertRaises(Exception) as context:
-            ClusterAlgorithRequestParams(query_dict)
+            ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(
             str(context.exception),
             'expected num_clusters to be > 0')
 
     def test_reads_pixel_index_weight_from_url_params(self):
         query_dict = QueryDict('cluster_pixel_index_weight=0.099')
-        params = ClusterAlgorithRequestParams(query_dict)
+        params = ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(params.pixel_index_weight, 0.099)
 
     def test_raises_error_for_bad_pixel_index_weight_from_url_params(
             self):
         query_dict = QueryDict('cluster_pixel_index_weight=-999')
         with self.assertRaises(Exception) as context:
-            ClusterAlgorithRequestParams(query_dict)
+            ClusterAlgorithmRequestParams(query_dict)
         self.assertEqual(
             str(context.exception),
-            'expected pixel_index_weight to be > 0')
+            'expected cluster_pixel_index_weight to be > 0')
 
 
 class TestForsysRankingRequestParams(TestCase):
