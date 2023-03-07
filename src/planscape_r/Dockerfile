@@ -6,17 +6,17 @@ RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 RUN yum -y install R
 RUN yum -y install tar
 
-# RUN yum -y install yum-utils
-# RUN yum-builddep gdal
-# RUN wget http://download.osgeo.org/gdal/2.4.0/gdal-2.4.0.tar.gz
-# RUN tar xf gdal-2.4.0.tar.gz
-# RUN cd gdal-2.4.0/
-# RUN ./configure
-# RUN make -j4
-# RUN make install
-# # make sure the library can be found
-# RUN echo /usr/local/lib | sudo tee -a /etc/ld.so.conf.d/local.conf
-# RUN ldconfig
+RUN yum -y install yum-utils
+RUN yum-builddep gdal
+RUN wget http://download.osgeo.org/gdal/2.4.0/gdal-2.4.0.tar.gz
+RUN tar xf gdal-2.4.0.tar.gz
+RUN cd gdal-2.4.0/
+RUN ./configure
+RUN make -j4
+RUN make install
+# make sure the library can be found
+RUN echo /usr/local/lib | sudo tee -a /etc/ld.so.conf.d/local.conf
+RUN ldconfig
 
 # RUN ls /usr/bin/tar .
 # RUN ls /usr/bin/gtar .
