@@ -1,52 +1,106 @@
-FROM public.ecr.aws/lambda/python:latest as builder
+FROM public.ecr.aws/lambda/python:latest
 
-# install binary dependencies
-RUN yum -y update 
+RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum -y install R
-RUN yum -y install tar
-# RUN ls /usr/bin/tar .
-# RUN ls /usr/bin/gtar .
-# RUN ln -s /usr/bin/tar /usr/bin/gtar
-# RUN which amazon-linux-extras
-# RUN yum install -y amazon-linux-extras
+RUN yum -y install openblas-devel
+
+# https://github.com/rstudio/r-builds/
+RUN yum -y install compat-gcc-48-libgfortran
+RUN curl -O https://cdn.posit.co/r/centos-7/pkgs/R-4.2.2-1-1.x86_64.rpm && \
+    yum -y install R-*.rpm && \
+    rm R-*.rpm
+
+RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
+    ln -s /opt/R/4.2.2/bin/Rscript /usr/local/bin/Rscript
+
+# https://pak.r-lib.org/reference/install.html#nightly-builds
+RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
+
+RUN yum -y install openssl-devel udunits2-devel tar
+
+# https://gist.github.com/alanorth/9681766ed4c737adfb48a4ef549a8503
+RUN set -x && \
+    cd /tmp && \
+    curl -LO https://download.osgeo.org/proj/proj-6.1.1.tar.gz && \
+    tar xf proj-6.1.1.tar.gz && \
+    cd proj-6.1.1 && \
+    yum -y install sqlite-devel file && \
+    ./configure && \
+    make -j4 && \
+    make install
+
+RUN set -x && \
+    cd /tmp && \
+    curl -LO https://download.osgeo.org/gdal/2.4.2/gdal-2.4.2.tar.gz && \
+    tar xf gdal-2.4.2.tar.gz && \
+    cd gdal-2.4.2 && \
+    yum -y install libzstd-devel sqlite-devel libwebp-devel hdf5-devel && \
+    ./configure && \
+    make -j4 && \
+    make install
+    
+RUN set -x && \
+    cd /tmp && \
+    curl -LO https://download.osgeo.org/geos/geos-3.7.5.tar.bz2 && \
+    yum -y install bzip2 && \
+    tar xf geos-3.7.5.tar.bz2 && \
+    cd geos-3.7.5 && \
+    ./configure && \
+    make -j4 && \
+    make install
+    
+RUN echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >> \
+         /opt/R/4.2.2/lib/R/library/base/R/Rprofile && \
+    echo 'options(repos = c(RSPM="https://packagemanager.rstudio.com/all/__linux__/centos7/latest", getOption("repos")))' >> \
+         /opt/R/4.2.2/lib/R/library/base/R/Rprofile
+
+RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
+
+
+
+
+
+# RUN yum -y update 
+# RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+# # RUN yum -y install R
+# RUN yum -y install amazon-linux-extras
 # RUN PYTHON=python2 amazon-linux-extras install R4
-RUN yum -y install libcurl-devel
-RUN yum -y install openssl-devel
-RUN yum -y install udunits2-devel
-RUN yum -y install gdal-devel
-# RUN yum -y install libxml2-devel
-# RUN yum -y install harfbuzz-devel fribidi-devel
-# RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
-# RUN yum -y install binutils
-# RUN yum -y install libssh2-devel
-# RUN yum -y install libssh2-devel
-# RUN yum -y install libgit2 
+# RUN yum -y install tar
 
-# RUN yum -y install python-pip
-# RUN pip install pygit2
 
-# RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-# RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-# RUN R -e "install.packages('libgit2-devel',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-# RUN R -e "install.packages('gert',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-# RUN R -e "install.packages('pkgdown',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-# RUN R -e "install.packages('devtools',dependencies=TRUE, repos='http://cran.rstudio.com/')"
-# RUN R -e "library(devtools)"
-# RUN R -e "devtools::install('/usr/lib64/R/library/forsysr')"
-# RUN R -e ""
-# RUN export TAR="/usr/bin/tar"
-# RUN echo $TAR
-# RUN R -e "Sys.getenv('TAR')"
-# RUN R -e "Sys.setenv('TAR' = 'internal'); Sys.getenv('TAR'); install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr');"
-RUN R -e "install.packages('remotes',dependencies=TRUE, repos='http://cran.rstudio.com/'); remotes::install_github('forsys-sp/forsysr')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+# # RUN ls /usr/bin/tar .
+# # RUN ls /usr/bin/gtar .
+# # RUN ln -s /usr/bin/tar /usr/bin/gtar
 
-# COPY ./forsysr /usr/lib64/R/library/forsysr
+# RUN yum -y install libcurl-devel
+# RUN yum -y install openssl-devel
+# RUN yum -y install udunits2-devel
+# RUN yum -y install gdal-devel
 
-# RUN git clone https://github.com/forsys-sp/forsysr.git
-# RUN cd forsysr
-# RUN ls
+# RUN yum -y install wget
+# RUN wget https://github.com/libgit2/libgit2/archive/refs/tags/v1.5.0.tar.gz -O libgit2-1.5.0.tar.gz
+# RUN tar xzf libgit2-1.5.0.tar.gz
+# RUN cd libgit2-1.5.0/
+# RUN cmake .
+# RUN make
+# RUN make install
+
+# # RUN yum -y install libxml2-devel
+# # RUN yum -y install harfbuzz-devel fribidi-devel
+# # RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
+# # RUN yum -y install libssh2-devel
+# # RUN yum -y install libssh2-devel
+
+# # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+
+# # COPY ./forsysr /usr/lib64/R/library/forsysr
+
+# # RUN git clone https://github.com/forsys-sp/forsysr.git
+# # RUN cd forsysr
+# # RUN ls
 
 
 

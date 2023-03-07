@@ -256,6 +256,19 @@ export class PlanService {
     );
   }
 
+  /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
+  deleteScenarios(scenarioIds: string[]): Observable<string[]> {
+    return this.http.post<string[]>(
+      BackendConstants.END_POINT.concat('/plan/delete_scenarios/'),
+      {
+        scenario_ids: scenarioIds,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   /** Favorite a scenario in the backend. */
   favoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
     return this.http.post<{ favorited: boolean }>(

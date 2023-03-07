@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { take } from 'rxjs';
 import { PlanService } from 'src/app/services';
@@ -39,10 +40,15 @@ export class SavedScenariosComponent implements OnInit {
   constructor(
     private planService: PlanService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private snackbar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
+    this.fetchScenarios();
+  }
+
+  fetchScenarios(): void {
     this.planService
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
@@ -71,12 +77,25 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   deleteSelectedScenarios(): void {
-    console.log(
-      'Deleting scenarios',
-      this.scenarios
-        .filter((scenario) => scenario.selected)
-        .map((scenario) => scenario.id)
-    );
+    this.planService
+      .deleteScenarios(
+        this.scenarios
+          .filter((scenario) => scenario.selected)
+          .map((scenario) => scenario.id)
+      )
+      .subscribe({
+        next: (deletedIds) => {
+          this.snackbar.open(
+            `Deleted ${deletedIds.length} scenario${
+              deletedIds.length > 1 ? 's' : ''
+            }`
+          );
+          this.fetchScenarios();
+        },
+        error: (err) => {
+          this.snackbar.open(`Error: ${err}`);
+        },
+      });
   }
 
   toggleFavorited(scenario: ScenarioRow): void {
