@@ -4,8 +4,10 @@ from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.http import HttpRequest, QueryDict
+from enum import IntEnum
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
+from planscape import settings
 from forsys.merge_polygons import merge_polygons
 
 # URL parameter name for ForsysRankingRequestParamsType or
@@ -26,6 +28,55 @@ class ForsysGenerationRequestParamsType(IntEnum):
     SILVER_CREEK_WITH_DEFAULTS = 3  # SilverCreekForsysGenerationParams
     COW_CREEK_WITH_DEFAULTS = 4  # CowCreekForsysGenerationParams
     MIDDLE_FORK_WITH_DEFAULTS = 5  # MiddleForkForsysGenerationParams
+
+
+# Whether and how to cluster before running Patchmax for project area
+# generation.
+class ClusterAlgorithmType(IntEnum):
+    NONE = 0
+    HIERARCHICAL_IN_PYTHON = 1
+    KMEANS_IN_R = 2
+
+class ClusterAlgorithmRequestParams():
+    # Constants for parsing url parameters.
+    # cluster algorithm types are listed in enum, ClusterAlgorithmType.
+    _URL_CLUSTER_TYPE = 'cluster_algorithm_type'
+    # For pre-patchmax clustering: this is the desired number of clusters.
+    _URL_NUM_CLUSTERS = 'num_clusters'
+    # For pre-patchax clustering: pixel_index_weight is one of the input 
+    # parameters for ClusteredStands. It controls the extent to which we favor 
+    # rounder, smaller clusters.
+    _URL_CLUSTER_PIXEL_INDEX_WEIGHT = 'cluster_pixel_index_weight'
+
+    # Constants that act as default values when parsing url parameters.
+    # By default, no clustering occurs.
+    _DEFAULT_CLUSTER_TYPE = ClusterAlgorithmType.NONE
+    # TODO: select default parameter values.
+    _DEFAULT_NUM_CLUSTERS = 500
+    _DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT = 0.01
+
+    # Cluster algorithm type.
+    cluster_algorithm_type: ClusterAlgorithmType
+    # Number of clusters.
+    num_clusters: int
+    # Cluster pixel index weight - this controls the roundness and size of
+    # clusters, if enabled.
+    pixel_index_weight: float
+
+    def __init__(self, params: QueryDict) -> None:
+        self._read_url_params_with_defaults(params)
+
+    def _read_url_params_with_defaults(self, params: QueryDict) -> None:
+        self.cluster_algorithm_type = ClusterAlgorithmType(int(params.get(
+            self._URL_CLUSTER_TYPE, self._DEFAULT_CLUSTER_TYPE)))
+        self.num_clusters = int(params.get(
+            self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS))
+        if self.num_clusters <= 0:
+            raise Exception("expected num_clusters to be > 0")
+        self.pixel_index_weight = float(params.get(
+            self._URL_CLUSTER_PIXEL_INDEX_WEIGHT, self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT))
+        if self.pixel_index_weight < 0:
+            raise Exception("expected cluster_pixel_index_weight to be > 0")
 
 
 # Reads url parameters common to both
@@ -133,7 +184,7 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
                                                          self._URL_MAX_COST)
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
-        srid = 4269
+        srid = settings.DEFAULT_CRS
         p1 = Polygon(((-120.14015536869722, 39.05413814388948),
                      (-120.18409937110482, 39.48622140686506),
                      (-119.93422142411087, 39.48622140686506),
@@ -189,12 +240,34 @@ class ForsysGenerationRequestParams():
     priority_weights: list[float]
     # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
+    # Parameters informing clustering prior to running Patchmax project area 
+    # generation.
+    cluster_params: ClusterAlgorithmRequestParams
+   
+    # The maximum total area across all project areas.
+    max_total_area_in_km2: float 
+    # The maximum total cost across all project areas.
+    max_total_cost_in_dollars: float 
+    # The minimum area occupied by a project area.
+    min_project_area_in_km2: float
+    # The target area occupied by a project area.
+    target_project_area_in_km2: float
+    # The minimum cost of a valid project area.
 
     def __init__(self):
         self.region = None
         self.priorities = None
         self.priority_weights = None
         self.planning_area = None
+        self.cluster_algorithm_type = None
+        self.cluster_params = None
+
+    # Returns a dictionary mapping priorities to priority weights.
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        priority_weights = {}
+        for i in range(len(self.priorities)):
+            priority_weights[self.priorities[i]] = self.priority_weights[i]
+        return priority_weights
 
 
 # Looks up forsys generation parameters from URL parameters.
@@ -217,12 +290,16 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
         ForsysGenerationRequestParams.__init__(self)
         self._read_url_params_with_defaults(params)
 
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         self.planning_area = self._get_default_planning_area()
+        self.cluster_params = ClusterAlgorithmRequestParams(params)
 
     def _get_default_planning_area(self) -> MultiPolygon:
-        srid = 4269
+        srid = settings.DEFAULT_CRS
         p1 = Polygon(((-120.14015536869722, 39.05413814388948),
                      (-120.18409937110482, 39.48622140686506),
                      (-119.93422142411087, 39.48622140686506),
@@ -253,6 +330,9 @@ class ForsysGenerationRequestParamsFromDb(
             self, request.GET)
         self._read_db_params(request)
 
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
     def _read_db_params(self, request: HttpRequest) -> None:
         params = request.GET
 
@@ -280,8 +360,12 @@ class ForsysGenerationRequestParamsFromHuc12(
 
     # Default priorities that are retrieved.
     _DEFAULT_PRIORITIES = [
-        'california_spotted_owl', 'storage', 'functional_fire',
-        'forest_structure', 'max_sdi']
+        'california_spotted_owl',
+        'storage',
+        'functional_fire',
+        'forest_structure',
+        'max_sdi'
+    ]
 
     # huc-12 area nams.
     huc12_names: list[str]
@@ -291,6 +375,9 @@ class ForsysGenerationRequestParamsFromHuc12(
         self.huc12_names = params.getlist(
             self._URL_HUC12_NAMES, self._DEFAULT_HUC12_NAMES)
         self.planning_area = self._get_planning_area(self.huc12_names)
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
 
     def _get_planning_area(self, huc12_names: list[str]) -> GEOSGeometry:
         huc12s = BoundaryDetails.objects.filter(
@@ -308,6 +395,9 @@ class SilverCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
         'South Fork Silver Creek'
     ]
 
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
 
 class CowCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
     _DEFAULT_HUC12_NAMES = [
@@ -320,6 +410,9 @@ class CowCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
         'Oak Run Creek'
     ]
 
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
 
 class MiddleForkForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
     _DEFAULT_HUC12_NAMES = [
@@ -331,6 +424,9 @@ class MiddleForkForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
         'Goddard Canyon-South Fork San Joaquin River',
         'Upper Middle Fork Kings River'
     ]
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
 
 
 # Returns ForsysRankingRequestParams based on url parameter value for the

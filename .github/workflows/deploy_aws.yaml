@@ -84,37 +84,37 @@ jobs:
           docker tag planscape-r:latest ${{ env.r_image }}
           docker push ${{ env.r_image }}
 
-      - name: Render backend
-        id: render-backend-container
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ env.ECS_TASK_DEFINITION }}
-          container-name: backend
-          image: ${{ env.backend_image }}
-          environment-variables: |
-            LOG_LEVEL=info
-            ENVIRONMENT=prod
+#       - name: Render backend
+#         id: render-backend-container
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ env.ECS_TASK_DEFINITION }}
+#           container-name: backend
+#           image: ${{ env.backend_image }}
+#           environment-variables: |
+#             LOG_LEVEL=info
+#             ENVIRONMENT=prod
 
-      - name: Modify Amazon ECS task definition with frontend container
-        id: render-frontend-container
-        uses: aws-actions/amazon-ecs-render-task-definition@v1
-        with:
-          task-definition: ${{ steps.render-backend-container.outputs.task-definition }}
-          container-name: frontend
-          image: ${{ env.frontend_image }}
+#       - name: Modify Amazon ECS task definition with frontend container
+#         id: render-frontend-container
+#         uses: aws-actions/amazon-ecs-render-task-definition@v1
+#         with:
+#           task-definition: ${{ steps.render-backend-container.outputs.task-definition }}
+#           container-name: frontend
+#           image: ${{ env.frontend_image }}
 
-      # - name: Modify Amazon ECS task definition with r container
-      #   id: render-r-container
-      #   uses: aws-actions/amazon-ecs-render-task-definition@v1
-      #   with:
-      #     task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
-      #     container-name: r
-      #     image: ${{ env.r_image }}
+#       # - name: Modify Amazon ECS task definition with r container
+#       #   id: render-r-container
+#       #   uses: aws-actions/amazon-ecs-render-task-definition@v1
+#       #   with:
+#       #     task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
+#       #     container-name: r
+#       #     image: ${{ env.r_image }}
 
-      - name: Deploy Amazon ECS task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-        with:
-          task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
-          cluster: ${{ env.ECS_CLUSTER }}
-          wait-for-service-stability: true
+#       - name: Deploy Amazon ECS task definition
+#         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+#         with:
+#           task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
+#           service: ${{ env.ECS_SERVICE }}
+#           cluster: ${{ env.ECS_CLUSTER }}
+#           wait-for-service-stability: true

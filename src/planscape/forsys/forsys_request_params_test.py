@@ -7,9 +7,64 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
-from forsys.forsys_request_params import (
-    get_generation_request_params, get_ranking_request_params)
+from forsys.forsys_request_params import (ClusterAlgorithmType,
+                                          ClusterAlgorithmRequestParams,
+                                          ClusterAlgorithmRequestParams,
+                                          get_generation_request_params,
+                                          get_ranking_request_params)
 from plan.models import Plan, Project, ProjectArea
+from planscape import settings
+
+
+class TestClusterAlgorithmRequestParams(TestCase):
+    def test_reads_default_params(self):
+        query_dict = QueryDict('')
+        params = ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(params.cluster_algorithm_type,
+                         ClusterAlgorithmType.NONE)
+        self.assertEqual(params.num_clusters, 500)
+        self.assertEqual(params.pixel_index_weight, 0.01)
+
+    def test_reads_cluster_algorithm_type_from_url_params(self):
+        query_dict = QueryDict('cluster_algorithm_type=1')
+        params = ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(params.cluster_algorithm_type,
+                         ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON)
+
+    def test_raises_error_for_bad_cluster_algorithm_type_from_url_params(self):
+        query_dict = QueryDict('cluster_algorithm_type=999')
+        with self.assertRaises(Exception) as context:
+            ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(
+            str(context.exception),
+            '999 is not a valid ClusterAlgorithmType')
+
+    def test_reads_num_clusters_from_url_params(self):
+        query_dict = QueryDict('num_clusters=1125')
+        params = ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(params.num_clusters, 1125)
+
+    def test_raises_error_for_bad_num_clusters_from_url_params(self):
+        query_dict = QueryDict('num_clusters=-999')
+        with self.assertRaises(Exception) as context:
+            ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(
+            str(context.exception),
+            'expected num_clusters to be > 0')
+
+    def test_reads_pixel_index_weight_from_url_params(self):
+        query_dict = QueryDict('cluster_pixel_index_weight=0.099')
+        params = ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(params.pixel_index_weight, 0.099)
+
+    def test_raises_error_for_bad_pixel_index_weight_from_url_params(
+            self):
+        query_dict = QueryDict('cluster_pixel_index_weight=-999')
+        with self.assertRaises(Exception) as context:
+            ClusterAlgorithmRequestParams(query_dict)
+        self.assertEqual(
+            str(context.exception),
+            'expected cluster_pixel_index_weight to be > 0')
 
 
 class TestForsysRankingRequestParamsFromUrlWithDefaults(TestCase):
@@ -42,7 +97,7 @@ class TestForsysRankingRequestParamsFromUrlWithDefaults(TestCase):
               (-119.93422142411087, 38.05413814388948),
               (-120.14015536869722, 38.05413814388948)),))
         )
-        self.assertEqual(params.project_areas[1].srid, 4269)
+        self.assertEqual(params.project_areas[1].srid, settings.DEFAULT_CRS)
         self.assertEqual(params.project_areas[2].coords, (
             (((-121.14015536869722, 39.05413814388948),
               (-121.18409937110482, 39.48622140686506),
@@ -50,7 +105,7 @@ class TestForsysRankingRequestParamsFromUrlWithDefaults(TestCase):
               (-120.53422142411087, 39.05413814388948),
               (-121.14015536869722, 39.05413814388948)),),)
         )
-        self.assertEqual(params.project_areas[2].srid, 4269)
+        self.assertEqual(params.project_areas[2].srid, settings.DEFAULT_CRS)
 
     def test_reads_region_from_url_params(self):
         qd = QueryDict(
@@ -202,7 +257,12 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
               (-119.93422142411087, 38.05413814388948),
               (-120.14015536869722, 38.05413814388948)),))
         )
-        self.assertEqual(params.planning_area.srid, 4269)
+        self.assertEqual(params.planning_area.srid, settings.DEFAULT_CRS)
+        self.assertEqual(params.cluster_params.cluster_algorithm_type,
+                         ClusterAlgorithmType.NONE)
+        self.assertEqual(params.cluster_params.num_clusters, 500)
+        self.assertEqual(
+            params.cluster_params.pixel_index_weight, 0.01)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -264,6 +324,11 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(params.planning_area.coords, ((
             ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
+        self.assertEqual(params.cluster_params.cluster_algorithm_type,
+                         ClusterAlgorithmType.NONE)
+        self.assertEqual(params.cluster_params.num_clusters, 500)
+        self.assertEqual(
+            params.cluster_params.pixel_index_weight, 0.01)
 
     def test_fails_on_no_user(self):
         request = HttpRequest()
@@ -338,7 +403,7 @@ class ForsysGenerationRequestParamsFromHuc12(TestCase):
              (-121.0, 41.0),
              (-121.0, 40.0),
              (-120.0, 40.0)),))
-        self.assertEqual(params.planning_area.srid, 4269)
+        self.assertEqual(params.planning_area.srid, settings.DEFAULT_CRS)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -392,7 +457,7 @@ class ForsysGenerationRequestParamsFromHuc12(TestCase):
              (-122.0, 40.0),
              (-122.0, 41.0),
              (-120.0, 41.0)),))
-        self.assertEqual(params.planning_area.srid, 4269)
+        self.assertEqual(params.planning_area.srid, settings.DEFAULT_CRS)
 
     def _create_polygon(self, xmin, ymin, xmax, ymax) -> MultiPolygon:
         polygon = Polygon(
@@ -402,5 +467,5 @@ class ForsysGenerationRequestParamsFromHuc12(TestCase):
              (xmax, ymin),
              (xmin, ymin)))
         geo = MultiPolygon(polygon)
-        geo.srid = 4269
+        geo.srid = settings.DEFAULT_CRS
         return geo
