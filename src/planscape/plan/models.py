@@ -8,7 +8,7 @@ from django.contrib.gis.db import models
 class Plan(models.Model):
     """
     A Plan is associated with one owner and one Region.
-    It contains ageometry representing the planning area.
+    It contains a geometry representing the planning area.
     """
     # TODO: Change "null=True" so that owner is not nullable. Currently owner can be null because
     # we want alpha users to not be signed in.
@@ -107,7 +107,7 @@ class Scenario(models.Model):
     class ScenarioStatus(models.IntegerChoices):
         PENDING = 0
         PROCESSING = 1
-        PROCESSED = 2
+        SUCCESS = 2
         FAILED = 3
 
     status = models.IntegerField(
