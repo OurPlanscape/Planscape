@@ -36,6 +36,8 @@ describe('SavedScenariosComponent', () => {
           },
         ]),
         deleteScenarios: of(['1']),
+        favoriteScenario: of({ favorited: true }),
+        unfavoriteScenario: of({ favorited: false }),
       },
       {}
     );
@@ -86,5 +88,20 @@ describe('SavedScenariosComponent', () => {
     component.deleteSelectedScenarios();
 
     expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
+  });
+
+  it('should call service to favorite a scenario', () => {
+    component.toggleFavorited(component.scenarios[0]);
+
+    expect(fakePlanService.favoriteScenario).toHaveBeenCalledOnceWith('1');
+    expect(component.scenarios[0].favorited).toBeTrue();
+  });
+
+  it('should call service to unfavorite a scenario', () => {
+    component.scenarios[0].favorited = true;
+    component.toggleFavorited(component.scenarios[0]);
+
+    expect(fakePlanService.unfavoriteScenario).toHaveBeenCalledOnceWith('1');
+    expect(component.scenarios[0].favorited).toBeFalse();
   });
 });
