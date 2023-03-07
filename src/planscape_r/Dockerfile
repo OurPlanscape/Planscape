@@ -1,5 +1,6 @@
 FROM public.ecr.aws/lambda/python:latest
 
+RUN yum -y install openblas-devel
 
 # https://github.com/rstudio/r-builds/
 RUN yum -y install compat-gcc-48-libgfortran
