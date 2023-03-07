@@ -7,7 +7,7 @@ RUN yum -y install R
 RUN yum -y install tar
 
 RUN yum -y install yum-utils
-RUN yum-builddep gdal
+RUN yum-builddep -y gdal
 RUN wget http://download.osgeo.org/gdal/2.4.0/gdal-2.4.0.tar.gz
 RUN tar xf gdal-2.4.0.tar.gz
 RUN cd gdal-2.4.0/
