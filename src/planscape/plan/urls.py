@@ -24,6 +24,7 @@ urlpatterns = [
     path('update_project/', update_project, name='update_project'),
     path('delete_projects/', delete_projects, name='delete_projects'),
     path('create_project_area/', create_project_area, name='create_project_area'),
+    path('create_project_areas_for_project/', create_project_areas_for_project, name='create_project_areas_for_project'),
     path('get_project_areas/', get_project_areas, name='get_project_areas'),
     # Scenarios
     path('create_scenario/', create_scenario, name='create_scenario'),
