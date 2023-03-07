@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -20,6 +21,7 @@ interface PriorityRow {
   visible?: boolean; // Visible as raster data on map
   expanded?: boolean; // Children in table are not hidden
   hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
+  disabled?: boolean; // Cannot be selected (because ancestor is selected)
   conditionName: string;
   displayName?: string;
   filepath: string;
@@ -201,13 +203,22 @@ export class SetPrioritiesComponent implements OnInit {
     }
   }
 
-  /** Update the priority list with the user's current selections. */
-  updatePrioritiesFormControl(): void {
+  /** Update the priority list with the user's current selections and disable descendants. */
+  updatePrioritiesFormControl(
+    priority: PriorityRow,
+    event: MatCheckboxChange
+  ): void {
     const selectedPriorities: string[] = this.datasource.data
       .filter((row) => row.selected)
       .map((row) => row.conditionName);
     this.formGroup?.get('priorities')?.setValue(selectedPriorities);
     this.formGroup?.get('priorities')?.markAsDirty();
+
+    if (event.checked) {
+      this.disableDescendants(priority);
+    } else {
+      this.enableDescendants(priority);
+    }
   }
 
   /** Update the checkboxes with the current form value. */
@@ -216,8 +227,23 @@ export class SetPrioritiesComponent implements OnInit {
     this.datasource.data = this.datasource.data.map((row) => {
       if (priorities.includes(row.conditionName)) {
         row.selected = true;
+        this.disableDescendants(row);
       }
       return row;
+    });
+  }
+
+  private disableDescendants(priority: PriorityRow): void {
+    priority.children.forEach((descendant) => {
+      descendant.disabled = true;
+      this.disableDescendants(descendant);
+    });
+  }
+
+  private enableDescendants(priority: PriorityRow): void {
+    priority.children.forEach((descendant) => {
+      descendant.disabled = false;
+      this.enableDescendants(descendant);
     });
   }
 }
