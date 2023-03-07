@@ -243,23 +243,12 @@ class ForsysGenerationRequestParams():
     # Parameters informing clustering prior to running Patchmax project area 
     # generation.
     cluster_params: ClusterAlgorithmRequestParams
-   
-    # The maximum total area across all project areas.
-    max_total_area_in_km2: float 
-    # The maximum total cost across all project areas.
-    max_total_cost_in_dollars: float 
-    # The minimum area occupied by a project area.
-    min_project_area_in_km2: float
-    # The target area occupied by a project area.
-    target_project_area_in_km2: float
-    # The minimum cost of a valid project area.
 
     def __init__(self):
         self.region = None
         self.priorities = None
         self.priority_weights = None
         self.planning_area = None
-        self.cluster_algorithm_type = None
         self.cluster_params = None
 
     # Returns a dictionary mapping priorities to priority weights.
