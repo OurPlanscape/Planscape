@@ -5,6 +5,18 @@ RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
 RUN yum -y install tar
+
+RUN yum-builddep gdal
+RUN wget http://download.osgeo.org/gdal/2.4.0/gdal-2.4.0.tar.gz
+RUN tar xf gdal-2.4.0.tar.gz
+RUN cd gdal-2.4.0/
+RUN ./configure
+RUN make -j4
+RUN make install
+# make sure the library can be found
+RUN echo /usr/local/lib | sudo tee -a /etc/ld.so.conf.d/local.conf
+RUN ldconfig
+
 # RUN ls /usr/bin/tar .
 # RUN ls /usr/bin/gtar .
 # RUN ln -s /usr/bin/tar /usr/bin/gtar
@@ -14,7 +26,7 @@ RUN yum -y install tar
 RUN yum -y install libcurl-devel
 RUN yum -y install openssl-devel
 RUN yum -y install udunits2-devel
-RUN yum -y install gdal-devel
+# RUN yum -y install gdal-devel
 # RUN yum -y install libxml2-devel
 # RUN yum -y install harfbuzz-devel fribidi-devel
 # RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
