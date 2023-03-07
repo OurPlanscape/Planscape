@@ -30,6 +30,7 @@ import rpy2
 # Configures global logging.
 logger = logging.getLogger(__name__)
 
+
 # Sets up cProfile profiler.
 # This is for measuring runtime.
 
@@ -190,10 +191,11 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_input_dict: dict[str, list],
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_geo_wkt_header: str, forsys_priority_headers: list[str],
+        forsys_geo_wkt_header: str, forsys_priority_headers: list[str], forsys_condition_headers: list[str],
         forsys_priority_weights: list[float],
         output_scenario_name: str | None,
-        output_scenario_tag: str | None) -> ForsysGenerationOutputForASingleScenario:
+        output_scenario_tag: str | None
+) -> ForsysGenerationOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/generate_projects_for_a_single_scenario.R'))
@@ -204,6 +206,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
 
     forsys_output = generate_projects_for_a_single_scenario_function_r(
         forsys_input, robjects.StrVector(forsys_priority_headers),
+        robjects.StrVector(forsys_condition_headers),
         robjects.FloatVector(forsys_priority_weights),
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header, forsys_geo_wkt_header,
@@ -233,7 +236,7 @@ def generate_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
-            headers.priority_headers, params.priority_weights,
+            headers.priority_headers, headers.condition_headers, params.priority_weights,
             "test_scenario" if settings.DEBUG else None,
             datetime.now().astimezone(
                 timezone('US/Pacific')

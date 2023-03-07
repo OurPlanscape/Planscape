@@ -4,9 +4,14 @@ from conditions.raster_utils import (ConditionPixelValues,
                                      get_condition_values_from_raster,
                                      get_raster_geo)
 from django.contrib.gis.geos import GEOSGeometry, Polygon
-from forsys.forsys_request_params import (
-    ForsysGenerationRequestParams, ForsysRankingRequestParams)
+from forsys.cluster_stands import ClusteredStands
+from forsys.forsys_request_params import (ClusterAlgorithmType,
+                                          ForsysGenerationRequestParams,
+                                          ForsysRankingRequestParams)
+from forsys.merge_polygons import merge_polygons
 from planscape import settings
+
+# TODO: break this into several smaller files.
 
 
 # Forsys input dataframe headers.
@@ -20,26 +25,40 @@ class ForsysInputHeaders():
     # Only used for generation, not prioritization.
     FORSYS_GEO_WKT_HEADER = "geo"
 
-    # Header prefixes for conditions and priorities.
-    _CONDITION_PREFIX = "c_"
-    _PRIORITY_PREFIX = "p_"
+    # Note: when a stand contains a single pixel, conditions and priorities
+    # will have the same values; however, when a stand can contain multiple
+    # pixels, conditions and priorities will have diffent values.
+    # Conditions represent the mean score across all pixels within a stand.
+    # The mean is necessary for coloring maps with a color scale
+    # independent of stand size. In particular, when settings.DEBUG is true,
+    # the colors specified by conditions enable us to quickly visually sanity
+    # check the impact of different clustering schemes.
+    # Priorities represent the sum of scores across all pixels within a stand.
+    # This is necessary for scoring stands and project areas in Forsys.
 
-    # List of headers for priorities.
+    # Header prefixes for conditions and priorities.
+    _CONDITION_PREFIX = "c_"  # Only used for generation, not prioritization.
+    _PRIORITY_PREFIX = "p_"
+    # List of headers for conditions and priorities.
     # Downstream, this must be listed in the same order as constructor input
     # priorities.
+    # Only used for generation, not prioritization.
+    condition_headers: list[str]
     priority_headers: list[str]
 
     def __init__(self, priorities: list[str]) -> None:
         self.priority_headers = []
+        self.condition_headers = []
 
         for p in priorities:
             self.priority_headers.append(self.get_priority_header(p))
+            self.condition_headers.append(self.get_condition_header(p))
 
     # Returns a priority header givn a priority string.
     def get_priority_header(self, priority: str) -> str:
         return self._PRIORITY_PREFIX + priority
 
-    # Reteurns a condition hader given a condition string.
+    # Returns a condition hader given a condition string.
     def get_condition_header(self, condition: str) -> str:
         return self._CONDITION_PREFIX + condition
 
@@ -134,6 +153,7 @@ class ForsysRankingInput():
                 if stats['count'] == 0:
                     raise Exception(
                         "no score was retrieved for condition, %s" % name)
+                # TODO: adjust the 1 - score logic as we move to AP score.
                 self.forsys_input[headers.get_priority_header(
                     name)].append(stats['count'] - stats['sum'])
 
@@ -150,6 +170,7 @@ class ForsysRankingInput():
                 area * self.TREATMENT_COST_PER_KM_SQUARED)
 
 
+# This is limited to a single scenario.
 class ForsysGenerationInput():
     # Treatment cost per kilometer-squared (in USD)
     # TODO: make this variable based on a user input and/or a treatment cost
@@ -161,6 +182,7 @@ class ForsysGenerationInput():
     # row represents a unique stand.
     # Dictionary keys are dataframe headers. Dictionary values are lists
     # corresponding to columns below each dataframe header.
+    # TODO: only populate condition scores when settings.DEBUG is true.
     forsys_input: dict[str, list]
 
     # ----- Intermediate data -----
@@ -183,14 +205,35 @@ class ForsysGenerationInput():
 
         geo = get_raster_geo(planning_area)
 
-        output = self._fetch_condition_raster_values(geo, priorities, region)
-        self._conditions_to_raster_values = output[0]
-        self._topleft_coords = output[1]
+        self._conditions_to_raster_values,  self._topleft_coords = \
+            self._fetch_condition_raster_values(geo, priorities, region)
         # This populates self._pixel_dist_x_to_y_to_condition_to_values.
-        self._pixel_dist_x_to_y_to_condition_to_values = self._merge_condition_raster_values(
-            self._conditions_to_raster_values, self._topleft_coords)
-        self.forsys_input = self._convert_merged_condition_rasters_to_input_df(
-            headers, priorities)
+        self._pixel_dist_x_to_y_to_condition_to_values = \
+            self._merge_condition_raster_values(
+                self._conditions_to_raster_values, self._topleft_coords)
+        width, height = self._get_width_and_height(
+            self._pixel_dist_x_to_y_to_condition_to_values)
+
+        self.forsys_input = None
+        if params.cluster_params.cluster_algorithm_type == \
+                ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON:
+            clustered_stands = ClusteredStands(
+                self._pixel_dist_x_to_y_to_condition_to_values, width, height,
+                params.get_priority_weights_dict(),
+                params.cluster_params.pixel_index_weight,
+                params.cluster_params.num_clusters)
+            if clustered_stands.cluster_status_message is None:
+                self.forsys_input = \
+                    self._convert_clustered_merged_condition_rasters_to_input_df(
+                        headers, priorities,
+                        clustered_stands.clusters_to_stands,
+                        self._pixel_dist_x_to_y_to_condition_to_values)
+
+        if self.forsys_input is None:
+            self.forsys_input = \
+                self._convert_merged_condition_rasters_to_input_df(
+                    headers, priorities,
+                    self._pixel_dist_x_to_y_to_condition_to_values)
 
     # Fetches ConditionPixelValues instances and places them in
     # self._conditions_to_raster_values, a dictionary mapping condition names
@@ -260,6 +303,7 @@ class ForsysGenerationInput():
             topleft_coords: tuple[float, float]
     ) -> dict[int, dict[int, dict[str, float]]]:
         pixel_dist_x_to_y_to_condition_to_values = {}
+
         for condition_name in conditions_to_raster_values.keys():
             values = conditions_to_raster_values[condition_name]
             xdiff = self._get_pixel_dist_diff(
@@ -273,18 +317,41 @@ class ForsysGenerationInput():
             for i in range(len(values["pixel_dist_x"])):
                 x = values["pixel_dist_x"][i] + xdiff
                 y = values["pixel_dist_y"][i] + ydiff
-                value = values["values"][i]
+                # TODO: adjust the 1 - score logic as we move to AP score.
+                value = 1.0 - values["values"][i]
                 self._insert_value_in_position_and_condition_dict(
                     x, y, condition_name, value,
                     pixel_dist_x_to_y_to_condition_to_values)
-        return pixel_dist_x_to_y_to_condition_to_values
+
+        return self._get_stands_containing_all_condition_scores(
+            pixel_dist_x_to_y_to_condition_to_values,
+            list(conditions_to_raster_values.keys()))
 
     # Computes the distance, in pixels, between two coordinates.
     def _get_pixel_dist_diff(
             self, coord: float, origin_coord: float, scale: float) -> int:
         return int((coord - origin_coord) / scale)
 
-    # Inserts a value into self._pixel_dist_x_to_y_to_condition_to_values.
+    # Copies stands with the complete set of condition scores to an output
+    # dictionary. Ignores stands missing the complete set of condition scores.
+    def _get_stands_containing_all_condition_scores(
+        self,
+        x_to_y_to_condition_to_values: dict[int, dict[int, dict[str, float]]],
+        conditions: list[str]
+    ) -> dict[int, dict[int, dict[str, float]]]:
+        output = {}
+        for x in x_to_y_to_condition_to_values.keys():
+            y_to_condition_to_values = x_to_y_to_condition_to_values[x]
+            for y in y_to_condition_to_values.keys():
+                conditions_to_values = y_to_condition_to_values[y]
+                if len(conditions_to_values.keys()) != len(conditions):
+                    continue
+                for c in conditions_to_values.keys():
+                    self._insert_value_in_position_and_condition_dict(
+                        x, y, c, conditions_to_values[c], output)
+        return output
+
+    # Inserts a value into the x-to-y-to-condition-to-value dictionary.
     def _insert_value_in_position_and_condition_dict(
             self, x: int, y: int, condition: str, value: float,
             d: dict[int, dict[int, dict[str, float]]]) -> None:
@@ -298,41 +365,55 @@ class ForsysGenerationInput():
         d = d[y]
         d[condition] = value
 
+    # Returns the width and height of an image represented by parameter,
+    # x_to_y_to_condition_to_values.
+    def _get_width_and_height(
+        self,
+        x_to_y_to_condition_to_values: dict[int, dict[int, dict[str, float]]]
+    ) -> list[int, int]:
+        max_x = 0
+        max_y = 0
+        for x in x_to_y_to_condition_to_values.keys():
+            y_to_condition_to_values = x_to_y_to_condition_to_values[x]
+            max_x = max(max_x, x)
+            for y in y_to_condition_to_values.keys():
+                max_y = max(max_y, y)
+        return [max_x + 1, max_y + 1]
+
     # Converts self._pixel_dist_x_to_y_to_condition_to_values into forsys input
     # dataframe data.
     def _convert_merged_condition_rasters_to_input_df(
-            self, headers: ForsysInputHeaders,
-            priorities: list[str]) -> dict[str, list]:
+        self, headers: ForsysInputHeaders,
+        priorities: list[str],
+        x_to_y_to_conditions_to_values: dict[int,
+                                             dict[int, dict[str, float]]]
+    ) -> dict[str, list]:
         forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
         # Stand geometries are not necessary for a ranking input dataframe, but
         # they are necessary for a generation input dataframe.
         forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
+        for p in priorities:
+            forsys_input[headers.get_condition_header(p)] = []
 
-        num_priorities = len(priorities)
         DUMMY_PROJECT_ID = 0
         stand_id = 0
-        dict_x = self._pixel_dist_x_to_y_to_condition_to_values
-        for x in dict_x.keys():
-            dict_y = dict_x[x]
-            for y in dict_y.keys():
-                dict_condition = dict_y[y]
-                if num_priorities != len(dict_condition.keys()):
-                    continue
-                forsys_input[headers.FORSYS_STAND_ID_HEADER].append(stand_id)
-                forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(
-                    DUMMY_PROJECT_ID)
-                forsys_input[headers.FORSYS_AREA_HEADER].append(
-                    settings.RASTER_PIXEL_AREA)
-                forsys_input[headers.FORSYS_COST_HEADER].append(
-                    settings.RASTER_PIXEL_AREA * self.TREATMENT_COST_PER_KM_SQUARED)
-                forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(
+        for x in x_to_y_to_conditions_to_values.keys():
+            y_to_conditions_to_values = x_to_y_to_conditions_to_values[x]
+            for y in y_to_conditions_to_values.keys():
+                conditions_to_values = y_to_conditions_to_values[y]
+                priority_scores = {}
+                for p in conditions_to_values.keys():
+                    priority_scores[headers.get_priority_header(
+                        p)] = conditions_to_values[p]
+                    priority_scores[headers.get_condition_header(
+                        p)] = conditions_to_values[p]
+                self._append_to_forsys_input_df(
+                    headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
+                    stand_id, settings.RASTER_PIXEL_AREA,
+                    settings.RASTER_PIXEL_AREA *
+                    self.TREATMENT_COST_PER_KM_SQUARED,
                     self._get_raster_pixel_geo(x, y).wkt)
-                for p in dict_condition.keys():
-                    # TODO: save AP score rather than 1 - normalized condition
-                    # score.
-                    forsys_input[headers.get_priority_header(
-                        p)].append(1 - dict_condition[p])
                 stand_id = stand_id + 1
         return forsys_input
 
@@ -350,3 +431,70 @@ class ForsysGenerationInput():
                        (xmin, ymin)))
         geo.srid = settings.CRS_FOR_RASTERS
         return geo
+
+    def _convert_clustered_merged_condition_rasters_to_input_df(
+        self, headers: ForsysInputHeaders,
+        priorities: list[str],
+        clusters_to_stands: dict[int, tuple[int, int]],
+        x_to_y_to_conditions_to_values: dict[int,
+                                             dict[int, dict[str, float]]]
+    ) -> dict[str, list]:
+        forsys_input = _get_initialized_forsys_input_with_common_headers(
+            headers, priorities)
+        # Stand geometries are not necessary for a ranking input dataframe, but
+        # they are necessary for a generation input dataframe.
+        forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
+        # Because of clustering, condition scores (aka mean) and priority
+        # scores (aka sum) are not the same. Thus, they need to be included
+        # separately for visualization purposes.
+        for p in priorities:
+            forsys_input[headers.get_condition_header(p)] = []
+
+        DUMMY_PROJECT_ID = 0
+        for cluster_id in clusters_to_stands.keys():
+            # python libraries may cause cluster_id to be np.int64 type, which
+            # isn't compatible with downstream json operations.
+            cluster_id = int(cluster_id)
+
+            stands = clusters_to_stands[cluster_id]
+            num_stands = len(stands)
+
+            geos = []
+            priority_scores = {}
+            for stand_pixel_pos in stands:
+                x = stand_pixel_pos[0]
+                y = stand_pixel_pos[1]
+                geos.append(self._get_raster_pixel_geo(x, y))
+                conditions_to_values = x_to_y_to_conditions_to_values[x][y]
+                for p in conditions_to_values.keys():
+                    priority_header = headers.get_priority_header(p)
+                    priority_score = conditions_to_values[p]
+                    if priority_header in priority_scores:
+                        priority_scores[priority_header] = \
+                            priority_scores[priority_header] + priority_score
+                    else:
+                        priority_scores[priority_header] = priority_score
+
+            for p in priorities:
+                condition_header = headers.get_condition_header(p)
+                priority_scores[condition_header] = \
+                    priority_scores[priority_header] / num_stands
+            self._append_to_forsys_input_df(
+                headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
+                cluster_id, settings.RASTER_PIXEL_AREA * num_stands, settings.
+                RASTER_PIXEL_AREA * self.TREATMENT_COST_PER_KM_SQUARED *
+                num_stands, merge_polygons(geos, 0).wkt)
+        return forsys_input
+
+    def _append_to_forsys_input_df(self, headers: ForsysInputHeaders,
+                                   forsys_input: dict[str, list],
+                                   conditions_and_priorities: dict[str, float],
+                                   project_id: int, stand_id: int, area: float,
+                                   cost: float, geo_wkt: str) -> None:
+        forsys_input[headers.FORSYS_STAND_ID_HEADER].append(stand_id)
+        forsys_input[headers.FORSYS_PROJECT_ID_HEADER].append(project_id)
+        forsys_input[headers.FORSYS_AREA_HEADER].append(area)
+        forsys_input[headers.FORSYS_COST_HEADER].append(cost)
+        forsys_input[headers.FORSYS_GEO_WKT_HEADER].append(geo_wkt)
+        for k in conditions_and_priorities.keys():
+            forsys_input[k].append(conditions_and_priorities[k])
