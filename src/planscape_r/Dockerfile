@@ -38,6 +38,8 @@ RUN yum -y install udunits2-devel
 # RUN yum -y install python-pip
 # RUN pip install pygit2
 
+RUN gdalinfo --version
+
 # RUN R -e "install.packages('dplyr',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('sf',dependencies=TRUE, repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('libgit2-devel',dependencies=TRUE, repos='http://cran.rstudio.com/')"
