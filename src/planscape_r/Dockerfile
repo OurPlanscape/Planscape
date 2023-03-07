@@ -14,6 +14,7 @@ RUN yum -y install tar
 RUN yum -y install libcurl-devel
 RUN yum -y install openssl-devel
 RUN yum -y install udunits2-devel
+RUN yum -y install gdal-devel
 # RUN yum -y install libxml2-devel
 # RUN yum -y install harfbuzz-devel fribidi-devel
 # RUN yum -y install freetype-devel libpng-devel libtiff-devel libjpeg-turbo-devel
