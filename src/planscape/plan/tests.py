@@ -804,6 +804,138 @@ class CreateProjectAreaTest(TransactionTestCase):
         self.assertEqual(ProjectArea.objects.count(), 1)
 
 
+class BulkCreateProjectAreaTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan = Plan.objects.create(
+            owner=self.user, name='plan', region_name='sierra_cascade_inyo')
+        self.project = Project.objects.create(owner=self.user, plan=self.plan)
+
+        self.geometry1 = {'type': 'MultiPolygon',
+                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.stored_geometry1 = GEOSGeometry(json.dumps(self.geometry1))
+
+        self.geometry2 = {'type': 'MultiPolygon',
+                          'coordinates': [[[[1, 2], [2, 3], [5, 6], [1, 2]]]]}
+        self.stored_geometry2 = GEOSGeometry(json.dumps(self.geometry2))
+
+    def test_missing_project(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'), {},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_missing_geometry(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_missing_features(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'), {
+                'project_id': self.project.pk, 'geometries': []},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_empty_features(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk, 'geometries': [{'features': []}]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_bad_geometry(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk, 'geometries': [{'features': [
+                {'type': 'Point', 'coordinates': [1, 2]}]}]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_bad_polygon(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk, 'geometries': [{'features': [
+                {'geometry': {'type': 'Polygon'}}]}]},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_good_polygon_bulk_create(self):
+        self.client.force_login(self.user)
+        geometries = [
+            {'features':
+             [{'geometry': {
+                 'type': 'Polygon',
+                 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]
+             }}]
+             },
+            {'features':
+                [{'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [[[1, 2], [2, 3], [5, 6], [1, 2]]]
+                }}]
+             }
+        ]
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk, 'geometries': geometries},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ProjectArea.objects.count(), 2)
+
+        area = ProjectArea.objects.get(id=(response.json()[0]))
+        self.assertEqual(area.owner, self.user)
+        self.assertEqual(area.project, self.project)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry1.coords)
+
+        area = ProjectArea.objects.get(id=(response.json()[1]))
+        self.assertEqual(area.owner, self.user)
+        self.assertEqual(area.project, self.project)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry2.coords)
+
+    def test_good_multipolygon_bulk_create(self):
+        self.client.force_login(self.user)
+        geometries = [
+            {'features':
+             [{'geometry': {
+                 'type': 'MultiPolygon',
+                 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]
+             }}]
+             },
+            {'features':
+                [{'geometry': {
+                    'type': 'MultiPolygon',
+                    'coordinates': [[[[1, 2], [2, 3], [5, 6], [1, 2]]]]
+                }}]
+             }
+        ]
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk, 'geometries': geometries},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ProjectArea.objects.count(), 2)
+
+        area = ProjectArea.objects.get(id=(response.json()[0]))
+        self.assertEqual(area.owner, self.user)
+        self.assertEqual(area.project, self.project)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry1.coords)
+
+        area = ProjectArea.objects.get(id=(response.json()[1]))
+        self.assertEqual(area.owner, self.user)
+        self.assertEqual(area.project, self.project)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry2.coords)
+
+
 class GetProjectTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')

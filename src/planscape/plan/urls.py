@@ -5,7 +5,7 @@ from plan.views import (create_plan, create_project, create_project_area,
                         get_scores, list_plans_by_owner,
                         list_projects_for_plan, list_scenarios_for_plan,
                         update_project, favorite_scenario,
-                        unfavorite_scenario)
+                        unfavorite_scenario,create_project_areas_for_project)
 
 app_name = 'plan'
 
@@ -24,6 +24,7 @@ urlpatterns = [
     path('update_project/', update_project, name='update_project'),
     path('delete_projects/', delete_projects, name='delete_projects'),
     path('create_project_area/', create_project_area, name='create_project_area'),
+    path('create_project_areas_for_project/', create_project_areas_for_project, name='create_project_areas_for_project'),
     path('get_project_areas/', get_project_areas, name='get_project_areas'),
     path('create_scenario/', create_scenario, name='create_scenario'),
     path('get_scenario/', get_scenario, name='get_scenario'),
