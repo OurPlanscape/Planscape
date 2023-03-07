@@ -38,7 +38,17 @@ RUN set -x && \
     ./configure && \
     make -j4 && \
     make install
-
+    
+RUN set -x && \
+    cd /tmp && \
+    curl -LO https://download.osgeo.org/geos/geos-3.7.5.tar.bz2 && \
+    yum -y install bzip2 && \
+    tar xf geos-3.7.5.tar.bz2 && \
+    cd geos-3.7.5 && \
+    ./configure && \
+    make -j4 && \
+    make install
+    
 RUN echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >> \
          /opt/R/4.2.2/lib/R/library/base/R/Rprofile && \
     echo 'options(repos = c(RSPM="https://packagemanager.rstudio.com/all/__linux__/centos7/latest", getOption("repos")))' >> \
