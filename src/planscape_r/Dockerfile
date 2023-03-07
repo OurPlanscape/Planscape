@@ -5,6 +5,7 @@ RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install R
 RUN yum -y install tar
+RUN yum -y install wget
 
 RUN yum -y install yum-utils
 RUN yum-builddep -y gdal
