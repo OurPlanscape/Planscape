@@ -28,6 +28,7 @@ kmeans_cluster_cells_to_stands <- function(
     stand_area_field,
     stand_cost_field,
     scenario_priorities,
+    wp_colname,
     geo_wkt_field,
     geo_weight = 2,
     avg_cells_per_cluster = 10,
@@ -51,7 +52,7 @@ kmeans_cluster_cells_to_stands <- function(
   clusters <- stand_data %>%
     tibble() %>%
     select(-geometry) %>%
-    select(one_of({{scenario_priorities}}), lat, lon) %>%
+    select({{wp_colname}}, lat, lon) %>%
     # Normalizing values for equal consideration
     mutate_all(normalize_values) %>%
     # Re-weighting geographic component
