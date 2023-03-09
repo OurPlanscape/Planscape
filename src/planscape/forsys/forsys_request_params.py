@@ -4,8 +4,10 @@ from typing import TypedDict
 from conditions.models import BaseCondition
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from django.http import HttpRequest, QueryDict
+from enum import IntEnum
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
+from planscape import settings
 
 
 # A list of coordinates representing a polygon.
@@ -22,6 +24,55 @@ class GeoFromUrlParams(TypedDict):
     srid: int
     # Disjoint polygons that are part of the project area.
     polygons: list[PolygonCoordinatesFromUrlParams]
+
+
+# Whether and how to cluster before running Patchmax for project area
+# generation.
+class ClusterAlgorithmType(IntEnum):
+    NONE = 0
+    HIERARCHICAL_IN_PYTHON = 1
+    KMEANS_IN_R = 2
+
+class ClusterAlgorithmRequestParams():
+    # Constants for parsing url parameters.
+    # cluster algorithm types are listed in enum, ClusterAlgorithmType.
+    _URL_CLUSTER_TYPE = 'cluster_algorithm_type'
+    # For pre-patchmax clustering: this is the desired number of clusters.
+    _URL_NUM_CLUSTERS = 'num_clusters'
+    # For pre-patchax clustering: pixel_index_weight is one of the input 
+    # parameters for ClusteredStands. It controls the extent to which we favor 
+    # rounder, smaller clusters.
+    _URL_CLUSTER_PIXEL_INDEX_WEIGHT = 'cluster_pixel_index_weight'
+
+    # Constants that act as default values when parsing url parameters.
+    # By default, no clustering occurs.
+    _DEFAULT_CLUSTER_TYPE = ClusterAlgorithmType.NONE
+    # TODO: select default parameter values.
+    _DEFAULT_NUM_CLUSTERS = 500
+    _DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT = 0.01
+
+    # Cluster algorithm type.
+    cluster_algorithm_type: ClusterAlgorithmType
+    # Number of clusters.
+    num_clusters: int
+    # Cluster pixel index weight - this controls the roundness and size of
+    # clusters, if enabled.
+    pixel_index_weight: float
+
+    def __init__(self, params: QueryDict) -> None:
+        self._read_url_params_with_defaults(params)
+
+    def _read_url_params_with_defaults(self, params: QueryDict) -> None:
+        self.cluster_algorithm_type = ClusterAlgorithmType(int(params.get(
+            self._URL_CLUSTER_TYPE, self._DEFAULT_CLUSTER_TYPE)))
+        self.num_clusters = int(params.get(
+            self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS))
+        if self.num_clusters <= 0:
+            raise Exception("expected num_clusters to be > 0")
+        self.pixel_index_weight = float(params.get(
+            self._URL_CLUSTER_PIXEL_INDEX_WEIGHT, self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT))
+        if self.pixel_index_weight < 0:
+            raise Exception("expected cluster_pixel_index_weight to be > 0")
 
 
 def _read_common_url_params(self, params: QueryDict) -> None:
@@ -56,8 +107,7 @@ def _check_geo_from_url_params_fields_exist(
 def _transform_geo_from_url_params_into_multipolygon(
         geo: GeoFromUrlParams, field_name: str) -> MultiPolygon:
     _check_geo_from_url_params_fields_exist(geo, field_name)
-    srid = 4269 if 'srid' not in geo.keys(
-    ) else geo['srid']  # TODO: make 4269 a constant.
+    srid = settings.DEFAULT_CRS if 'srid' not in geo.keys() else geo['srid']
     polygons: list[Polygon] = []
     for p in geo['polygons']:
         polygon = Polygon(tuple(p['coordinates']))
@@ -70,7 +120,7 @@ def _transform_geo_from_url_params_into_multipolygon(
     if len(polygons) == 0:
         raise Exception(
             "multipolygon described by %s missing polygons" % json.dumps(
-                project_area))
+                geo))
     m = MultiPolygon(polygons)
     m.srid = srid
     return m
@@ -153,10 +203,10 @@ class ForsysRankingRequestParams():
         except Exception as e:
             raise Exception("Ill-formed request: " + str(e))
 
+
     # If field is present, returns field value but raises an exception if the
     # field value isn't positive.
     # IF field isn't present, returns None.
-
     def _read_positive_float(
             self, params: QueryDict, query_param: str) -> float | None:
         v = params.get(query_param, None)
@@ -169,7 +219,7 @@ class ForsysRankingRequestParams():
         return v
 
     def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
-        srid = 4269
+        srid = settings.DEFAULT_CRS
         p1 = Polygon(((-120.14015536869722, 39.05413814388948),
                      (-120.18409937110482, 39.48622140686506),
                      (-119.93422142411087, 39.48622140686506),
@@ -238,14 +288,26 @@ class ForsysGenerationRequestParams():
     priority_weights: list[float]
     # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
+    # Parameters informing clustering prior to running Patchmax project area 
+    # generation.
+    cluster_params: ClusterAlgorithmRequestParams
+
+    # Returns a dictionary mapping priorities to priority weights.
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        priority_weights = {}
+        for i in range(len(self.priorities)):
+            priority_weights[self.priorities[i]] = self.priority_weights[i]
+        return priority_weights
 
     def __init__(self, request: HttpRequest) -> None:
         params = request.GET
+        self.cluster_algorithm_type = ClusterAlgorithmType.NONE
         if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
             # This is used for debugging purposes.
             self._read_url_params_with_defaults(params)
         else:
             self._read_db_params(request)
+        self.cluster_params = ClusterAlgorithmRequestParams(params)
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)

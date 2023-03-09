@@ -1,7 +1,4 @@
 times2 <- function(number) {
-  install.packages("devtools")
-  library(devtools)
-  devtools::install("/usr/lib64/R/library/forsysr")
   library(forsys)
 
   

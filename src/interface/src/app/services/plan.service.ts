@@ -1,6 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, Observable, take, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  map,
+  Observable,
+  of,
+  take,
+  tap,
+} from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
@@ -21,6 +29,7 @@ export interface PlanState {
   mapConditionFilepath: string | null;
   mapShapes: any | null;
   currentScenario?: Scenario;
+  panelExpanded?: boolean;
 }
 
 export interface BackendPlan {
@@ -46,6 +55,7 @@ export class PlanService {
     currentConfigId: null,
     mapConditionFilepath: null,
     mapShapes: null,
+    panelExpanded: true,
   });
 
   constructor(private http: HttpClient) {}
@@ -96,7 +106,7 @@ export class PlanService {
       .pipe(
         take(1),
         map((dbPlan) => this.convertToPlan(dbPlan)),
-        tap(plan => this.addPlanToState(plan))
+        tap((plan) => this.addPlanToState(plan))
       );
   }
 
@@ -124,7 +134,7 @@ export class PlanService {
   getConditionScoresForPlanningArea(
     planId: string
   ): Observable<PlanConditionScores> {
-    let url = BackendConstants.END_POINT.concat('/plan/scores/?id=', planId);
+    const url = BackendConstants.END_POINT.concat('/plan/scores/?id=', planId);
     return this.http
       .get<PlanConditionScores>(url, {
         withCredentials: true,
@@ -132,10 +142,12 @@ export class PlanService {
       .pipe(take(1));
   }
 
-  /** Creates a project in a plan, and returns an ID which can be used to get or update the
-   *  project. */
+  /**
+   * Creates a project in a plan, and returns an ID which can be used to get or update the
+   *  project. "Project" is synonymous with "Config" in the frontend.
+   * */
   createProjectInPlan(planId: string): Observable<number> {
-    let url = BackendConstants.END_POINT.concat('/plan/create_project/');
+    const url = BackendConstants.END_POINT.concat('/plan/create_project/');
     return this.http
       .post<number>(
         url,
@@ -149,9 +161,32 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  /** Creates project area and returns the ID of the created project area. */
+  createProjectArea(projectId: number, projectArea: GeoJSON.GeoJSON) {
+    const url = BackendConstants.END_POINT.concat('/plan/create_project_area/');
+    return this.http
+      .post<number>(
+        url,
+        {
+          project_id: Number(projectId),
+          geometry: projectArea,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        take(1),
+        catchError((error) => {
+          // TODO: Show error message! Move all error logic to the service.
+          return of(null);
+        })
+      );
+  }
+
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
-    let url = BackendConstants.END_POINT.concat('/plan/update_project/');
+    const url = BackendConstants.END_POINT.concat('/plan/update_project/');
     return this.http
       .put<number>(url, projectConfig, {
         withCredentials: true,
@@ -161,7 +196,7 @@ export class PlanService {
 
   /** Fetches the projects for a plan from the backend. */
   getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
-    let url = BackendConstants.END_POINT.concat(
+    const url = BackendConstants.END_POINT.concat(
       '/plan/list_projects_for_plan/?plan_id=',
       planId
     );
@@ -181,7 +216,7 @@ export class PlanService {
 
   /** Fetches a project by its ID from the backend. */
   getProject(projectId: number): Observable<ProjectConfig> {
-    let url = BackendConstants.END_POINT.concat(
+    const url = BackendConstants.END_POINT.concat(
       '/plan/get_project/?id=',
       projectId.toString()
     );
@@ -220,21 +255,8 @@ export class PlanService {
       })
       .pipe(
         take(1),
-        map((response) => this.convertToScenario(response))
+        map((response) => this.convertBackendScenarioToScenario(response))
       );
-  }
-
-  private convertToScenario(backendScenario: any): Scenario {
-    return {
-      id: backendScenario.id,
-      planId: backendScenario.plan,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        backendScenario.creation_timestamp
-      ),
-      priorities: backendScenario.priorities,
-      notes: backendScenario.notes,
-      owner: backendScenario.owner,
-    };
   }
 
   /** Fetches the scenarios for a plan from the backend. */
@@ -261,6 +283,45 @@ export class PlanService {
     return this.http.post<string>(
       BackendConstants.END_POINT.concat('/plan/create_scenario/'),
       this.convertConfigToScenario(config),
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
+  deleteScenarios(scenarioIds: string[]): Observable<string[]> {
+    return this.http.post<string[]>(
+      BackendConstants.END_POINT.concat('/plan/delete_scenarios/'),
+      {
+        scenario_ids: scenarioIds,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Favorite a scenario in the backend. */
+  favoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
+    return this.http.post<{ favorited: boolean }>(
+      BackendConstants.END_POINT.concat('/plan/favorite_scenario/'),
+      {
+        scenario_id: Number(scenarioId),
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  /** Unfavorite a scenario in the backend. */
+  unfavoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
+    return this.http.post<{ favorited: boolean }>(
+      BackendConstants.END_POINT.concat('/plan/unfavorite_scenario/'),
+      {
+        scenario_id: Number(scenarioId),
+      },
       {
         withCredentials: true,
       }
@@ -322,9 +383,14 @@ export class PlanService {
   private convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
+      planId: scenario.plan,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         scenario.creation_timestamp
       ),
+      priorities: scenario.priorities,
+      notes: scenario.notes,
+      owner: scenario.owner,
+      favorited: scenario.favorited,
     };
   }
 
@@ -420,6 +486,18 @@ export class PlanService {
         ...currentState.all,
       },
       mapShapes: shapes,
+    });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithPanelState(panelExpanded: boolean) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      panelExpanded: panelExpanded,
     });
     this.planState$.next(updatedState);
   }

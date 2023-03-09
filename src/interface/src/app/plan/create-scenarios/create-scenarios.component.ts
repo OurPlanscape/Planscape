@@ -1,12 +1,5 @@
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import {
-  Component,
-  EventEmitter,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -14,8 +7,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Subject, take } from 'rxjs';
+import { Router } from '@angular/router';
+import { BehaviorSubject, Subject, take, concatMap, of } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
@@ -125,6 +118,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioConfigId = planState.currentConfigId;
         this.loadConfig();
+        this.panelExpanded = planState.panelExpanded ?? false;
       });
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -251,15 +245,31 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  createScenario(): void {
-    this.planService
-      .createScenario(this.formValueToProjectConfig())
-      .pipe(take(1))
-      .subscribe((_) => {
+  /** Creates the scenario and the uploaded project area, if provided. */
+  createScenarioAndProjectArea(): void {
+    this.createUploadedProjectArea()
+      .pipe(
+        take(1),
+        concatMap(() => {
+          return this.planService.createScenario(this.formValueToProjectConfig())
+        })
+      )
+      .subscribe(() => {
         // Navigate to scenario confirmation page
         const planId = this.plan$.getValue()?.id;
         this.router.navigate(['scenario-confirmation', planId]);
       });
+  }
+
+  createUploadedProjectArea() {
+    const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
+    if (this.scenarioConfigId && uploadedArea) {
+      return this.planService.createProjectArea(
+        this.scenarioConfigId,
+        uploadedArea
+      );
+    }
+    return of(null);
   }
 
   changeCondition(filepath: string): void {
@@ -268,5 +278,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   private drawShapes(shapes: any | null): void {
     this.planService.updateStateWithShapes(shapes);
+  }
+
+  togglePanelExpand(): void {
+    this.panelExpanded = !this.panelExpanded;
+    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }

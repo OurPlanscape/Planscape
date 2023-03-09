@@ -41,6 +41,7 @@ export interface Scenario {
   priorities?: string[];
   weights?: string[];
   notes?: string;
+  favorited?: boolean;
 }
 
 export interface ProjectConfig {

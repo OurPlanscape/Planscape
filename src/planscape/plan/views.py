@@ -450,6 +450,14 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+def _serialize_project_areas(areas: QuerySet):
+    response = {}
+    for area in areas:
+        data = ProjectAreaSerializer(area).data
+        response[data['id']] = data
+    return response
+
+
 def get_project_areas(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['project_id'], str)
@@ -463,10 +471,7 @@ def get_project_areas(request: HttpRequest) -> HttpResponse:
                 "You do not have permission to view this project.")
 
         project_areas = ProjectArea.objects.filter(project=project_id)
-        response = {}
-        for area in project_areas:
-            data = ProjectAreaSerializer(area).data
-            response[data['id']] = data
+        response = _serialize_project_areas(project_areas)
         return JsonResponse(response)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -528,7 +533,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _serialize_scenario(scenario: Scenario, weights: QuerySet) -> dict:
+def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, project: Project) -> dict:
     result = ScenarioSerializer(scenario).data
 
     if 'creation_time' in result:
@@ -537,12 +542,15 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet) -> dict:
         del result['creation_time']
 
     result['priorities'] = {}
-
     for weight in weights:
         serialized_weight = ScenarioWeightedPrioritySerializer(weight).data
         if 'priority' in serialized_weight and 'weight' in serialized_weight:
             result['priorities'][Condition.objects.get(
                 pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
+
+    result['project_areas'] = _serialize_project_areas(areas)
+    result['config'] = _serialize_project(project)
+
     return result
 
 
@@ -551,15 +559,17 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET['id'], str)
         scenario_id = request.GET.get('id', "0")
-        scenario = Scenario.objects.get(id=scenario_id)
+        scenario = Scenario.objects.select_related(
+            'project').get(id=scenario_id)
 
         user = get_user(request)
 
         if scenario.owner != user:
             raise ValueError(
                 "You do not have permission to view this scenario.")
-        weights = ScenarioWeightedPriority.objects.select_related().filter(scenario=scenario)
-        return JsonResponse(_serialize_scenario(scenario, weights), safe=False)
+        weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
+        project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
+        return JsonResponse(_serialize_scenario(scenario, weights, project_areas, scenario.project), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -577,14 +587,94 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "You do not have permission to view scenarios for this plan.")
 
-        scenarios = Scenario.objects.filter(owner=user, plan=plan_id)
+        scenarios = Scenario.objects.select_related(
+            'project').filter(owner=user, plan=plan_id)
 
         # TODO: return config details when behavior is agreed upon
 
         return JsonResponse(
             [_serialize_scenario(scenario,
-                                 weights=ScenarioWeightedPriority.objects.select_related().filter(
-                                     scenario=scenario)) for scenario in scenarios], safe=False)
+                                 weights=ScenarioWeightedPriority.objects.filter(
+                                     scenario=scenario),
+                                 areas=ProjectArea.objects.filter(project=scenario.project.pk), project=scenario.project)
+             for scenario in scenarios], safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def delete_scenarios(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = get_user(request)
+
+        body = json.loads(request.body)
+        scenario_ids = body.get('scenario_ids', None)
+        if scenario_ids is None or not (isinstance(scenario_ids, list)):
+            raise ValueError("Must specify scenario_ids as a list")
+
+        scenarios = [Scenario.objects.get(pk=scenario_id)
+                for scenario_id in scenario_ids]
+
+        # Check that the user owns the scenarios
+        for scenario in scenarios:
+            if scenario.owner != owner:
+                raise ValueError(
+                    "You do not have permission to delete one or more of these scenarios.")
+
+        for scenario in scenarios:
+            scenario.delete()
+        
+        response_data = scenario_ids
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def favorite_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        body = json.loads(request.body)
+        scenario_id = body.get('scenario_id', None)
+        if scenario_id is None or not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+
+        scenario = Scenario.objects.get(pk=int(scenario_id))
+
+        user = get_user(request)
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to favorite this scenario.")
+
+        scenario.favorited = True
+        scenario.save()
+
+        return JsonResponse({'favorited': True})
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def unfavorite_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        body = json.loads(request.body)
+        scenario_id = body.get('scenario_id', None)
+        if scenario_id is None or not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+
+        scenario = Scenario.objects.get(pk=int(scenario_id))
+
+        user = get_user(request)
+        if scenario.owner != user:
+            raise ValueError(
+                "You do not have permission to unfavorite this scenario.")
+
+        scenario.favorited = False
+        scenario.save()
+
+        return JsonResponse({'favorited': False})
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 

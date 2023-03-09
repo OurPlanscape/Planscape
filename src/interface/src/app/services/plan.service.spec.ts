@@ -18,9 +18,10 @@ describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
   let service: PlanService;
   let mockPlan: BasePlan;
+  let fakeGeoJson: GeoJSON.GeoJSON;
 
   beforeEach(() => {
-    const fakeGeoJson: GeoJSON.GeoJSON = {
+    fakeGeoJson = {
       type: 'FeatureCollection',
       features: [],
     };
@@ -195,6 +196,25 @@ describe('PlanService', () => {
     });
   });
 
+  describe('createProjectArea', () => {
+    it('should make HTTP request to backend', () => {
+      service.createProjectArea(1, fakeGeoJson).subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_project_area/')
+      );
+      expect(req.request.body).toEqual({
+        project_id: 1,
+        geometry: fakeGeoJson,
+      });
+      expect(req.request.method).toEqual('POST');
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
   describe('updateProject', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
@@ -308,6 +328,7 @@ describe('PlanService', () => {
         createdTimestamp: undefined,
         notes: undefined,
         owner: undefined,
+        favorited: undefined,
       };
 
       service.getScenario('1').subscribe((res) => {
@@ -359,6 +380,11 @@ describe('PlanService', () => {
           {
             id: '1',
             createdTimestamp: 5000,
+            planId: undefined,
+            priorities: undefined,
+            notes: undefined,
+            owner: undefined,
+            favorited: undefined,
           },
         ]);
         done();
@@ -376,6 +402,56 @@ describe('PlanService', () => {
           creation_timestamp: 5,
         },
       ]);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('deleteScenarios', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.deleteScenarios(['1']).subscribe((res) => {
+        expect(res).toEqual(['1']);
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/delete_scenarios/')
+      );
+      expect(req.request.method).toEqual('POST');
+      req.flush(['1']);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('favoriteScenario', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.favoriteScenario('1').subscribe((res) => {
+        expect(res).toEqual({ favorited: true });
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/favorite_scenario/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({ scenario_id: 1 });
+      req.flush({ favorited: true });
+      httpTestingController.verify();
+    });
+  });
+
+  describe('unfavoriteScenario', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.unfavoriteScenario('1').subscribe((res) => {
+        expect(res).toEqual({ favorited: false });
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/unfavorite_scenario/')
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({ scenario_id: 1 });
+      req.flush({ favorited: false });
       httpTestingController.verify();
     });
   });

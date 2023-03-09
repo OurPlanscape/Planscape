@@ -14,8 +14,13 @@ describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanService: PlanService;
+  let fakeGeoJson: GeoJSON.GeoJSON;
 
   beforeEach(async () => {
+    fakeGeoJson = {
+      type: 'FeatureCollection',
+      features: [],
+    };
     fakePlanService = jasmine.createSpyObj<PlanService>(
       'PlanService',
       {
@@ -25,6 +30,7 @@ describe('CreateScenariosComponent', () => {
           maxBudget: 100,
         }),
         updateProject: of(1),
+        createProjectArea: of(1),
         createScenario: of('1'),
         updateStateWithShapes: undefined,
       },
@@ -43,6 +49,7 @@ describe('CreateScenariosComponent', () => {
           currentScenarioId: null,
           mapConditionFilepath: null,
           mapShapes: null,
+          panelExpanded: true,
         }),
       }
     );
@@ -140,7 +147,7 @@ describe('CreateScenariosComponent', () => {
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
 
-    component.createScenario();
+    component.createScenarioAndProjectArea();
 
     expect(fakePlanService.createScenario).toHaveBeenCalledOnceWith({
       id: 1,
@@ -151,6 +158,24 @@ describe('CreateScenariosComponent', () => {
       priorities: ['test'],
       weights: [1],
     });
-    expect(router.navigate).toHaveBeenCalledOnceWith(['scenario-confirmation', '1']);
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      'scenario-confirmation',
+      '1',
+    ]);
+  });
+
+  it('creates uploaded project area when event is emitted', () => {
+    component.scenarioConfigId = 1;
+    component.formGroups[0].get('priorities')?.setValue(['test']);
+    component.formGroups[2].get('uploadedArea')?.setValue(fakeGeoJson);
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate');
+
+    component.createScenarioAndProjectArea();
+
+    expect(fakePlanService.createProjectArea).toHaveBeenCalledOnceWith(
+      component.scenarioConfigId,
+      fakeGeoJson
+    );
   });
 });

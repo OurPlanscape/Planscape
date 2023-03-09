@@ -8,6 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
@@ -96,5 +97,39 @@ describe('ConstraintsPanelComponent', () => {
     await backButton.click();
 
     expect(component.formBackEvent.emit).toHaveBeenCalledOnceWith();
+  });
+
+  it('should toggle whether max distance is required', async () => {
+    const maxDistanceInput = component.constraintsForm?.get('excludeDistance');
+    const maxDistanceCheckbox = (
+      await loader.getAllHarnesses(MatCheckboxHarness)
+    )[0];
+
+    // Check the "Exclude areas off a road by" checkbox
+    await maxDistanceCheckbox.check();
+
+    expect(maxDistanceInput?.validator).toBeTruthy();
+
+    // Uncheck the box
+    await maxDistanceCheckbox.uncheck();
+
+    expect(maxDistanceInput?.validator).toBeNull();
+  });
+
+  it('should toggle whether max slope is required', async () => {
+    const maxSlopeInput = component.constraintsForm?.get('excludeSlope');
+    const maxSlopeCheckbox = (
+      await loader.getAllHarnesses(MatCheckboxHarness)
+    )[1];
+
+    // Check the "Exclude areas off a road by" checkbox
+    await maxSlopeCheckbox.check();
+
+    expect(maxSlopeInput?.validator).toBeTruthy();
+
+    // Uncheck the box
+    await maxSlopeCheckbox.uncheck();
+
+    expect(maxSlopeInput?.validator).toBeNull();
   });
 });
