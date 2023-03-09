@@ -43,9 +43,11 @@ class ForsysInputHeaders():
 
     def __init__(self, priorities: list[str]) -> None:
         self.priority_headers = []
+        self.condition_headers = []
 
         for p in priorities:
             self.priority_headers.append(self.get_priority_header(p))
+            self.condition_headers.append(self.get_condition_header(p))
 
     # Returns a priority header givn a priority string.
     def get_priority_header(self, priority: str) -> str:
@@ -212,25 +214,24 @@ class ForsysGenerationInput():
         width, height = self._get_width_and_height(
             self._pixel_dist_x_to_y_to_condition_to_values)
 
-        if params.cluster_type == PreForsysClusterType.NONE:
-            self.forsys_input = \
-                self._convert_merged_condition_rasters_to_input_df(
-                    headers, priorities,
-                    self._pixel_dist_x_to_y_to_condition_to_values)
-        elif params.cluster_type == PreForsysClusterType.HIERARCHICAL:
+        self.forsys_input = None
+        if params.cluster_type == PreForsysClusterType.HIERARCHICAL_IN_PYTHON:
             clustered_stands = ClusteredStands(
                 self._pixel_dist_x_to_y_to_condition_to_values, width, height,
                 self.MAX_PRIORITY_SCORE, params.get_priority_weights_dict(),
-                params.pixel_index_weight, params.num_clusters)
+                params.cluster_pixel_index_weight, params.num_clusters)
             if clustered_stands.cluster_status_message is None:
                 self.forsys_input = \
                     self._convert_clustered_merged_condition_rasters_to_input_df(
                         headers, priorities,
-                        clustered_stands.clusters_to_stands)
-            else:
-                self.forsys_input = \
-                    self._convert_merged_condition_rasters_to_input_df(
-                        headers, priorities)
+                        clustered_stands.clusters_to_stands,
+                        self._pixel_dist_x_to_y_to_condition_to_values)
+
+        if self.forsys_input is None:
+            self.forsys_input = \
+                self._convert_merged_condition_rasters_to_input_df(
+                    headers, priorities,
+                    self._pixel_dist_x_to_y_to_condition_to_values)
 
     # Fetches ConditionPixelValues instances and places them in
     # self._conditions_to_raster_values, a dictionary mapping condition names
@@ -373,7 +374,7 @@ class ForsysGenerationInput():
             max_x = max(max_x, x)
             for y in y_to_condition_to_values.keys():
                 max_y = max(max_y, y)
-        return [max_x, max_y]
+        return [max_x + 1, max_y + 1]
 
     # Converts self._pixel_dist_x_to_y_to_condition_to_values into forsys input
     # dataframe data.
@@ -388,6 +389,8 @@ class ForsysGenerationInput():
         # Stand geometries are not necessary for a ranking input dataframe, but
         # they are necessary for a generation input dataframe.
         forsys_input[headers.FORSYS_GEO_WKT_HEADER] = []
+        for p in priorities:
+            forsys_input[headers.get_condition_header(p)] = []
 
         DUMMY_PROJECT_ID = 0
         stand_id = 0
@@ -406,6 +409,8 @@ class ForsysGenerationInput():
                     self._get_raster_pixel_geo(x, y).wkt)
                 for p in conditions_to_values.keys():
                     forsys_input[headers.get_priority_header(
+                        p)].append(conditions_to_values[p])
+                    forsys_input[headers.get_condition_header(
                         p)].append(conditions_to_values[p])
                 stand_id = stand_id + 1
         return forsys_input
@@ -467,7 +472,7 @@ class ForsysGenerationInput():
                             priority_scores[priority_header] + priority_score
                     else:
                         priority_scores[priority_header] = priority_score
-            for p in conditions_to_values.keys():
+            for p in priorities:
                 condition_header = headers.get_condition_header(p)
                 priority_scores[condition_header] = \
                     priority_scores[priority_header] / num_stands
