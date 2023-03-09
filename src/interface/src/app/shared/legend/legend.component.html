@@ -15,4 +15,11 @@
       <div class="label" *ngFor="let label of legend?.labels">{{ label }}</div>
     </div>
   </ng-template>
+
+  <!-- Secondary string labels (e.g. "-1 => 1") -->
+  <ng-container *ngIf="legend.secondaryLabels">
+    <div class="labels">
+      <div class="label secondary-label" *ngFor="let label of legend?.secondaryLabels">{{ label }}</div>
+    </div>
+  </ng-container>
 </div>

@@ -1,2 +1,7 @@
 <div id="{{mapId ? mapId : 'map'}}" class="plan-map"></div>
-<button mat-raised-button class="expand-map-button" disabled (click)="expandMap()">EXPAND MAP</button>
+<button
+  mat-raised-button
+  class="expand-panel-button"
+  (click)="togglePanel()">
+  {{panelExpanded ? 'COLLAPSE PANEL' : 'EXPAND PANEL'}}
+</button>

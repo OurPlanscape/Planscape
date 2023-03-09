@@ -7,20 +7,21 @@ suppressMessages({
   library(ggnewscale)
 })
 
-generate_projects_for_a_single_scenario <- function(
-  forsys_input_data,
-  priorities,
-  priority_weights,
-  stand_id_field,
-  proj_id_field,
-  stand_area_field,
-  stand_cost_field,
-  geo_wkt_field,
-  output_scenario_name,
-  output_scenario_tag,
-  enable_kmeans_clustering = TRUE) {
-
-  # Enables debug mode if providing output_scenario_name and output_scenario_tag
+generate_projects_for_a_single_scenario <- function(forsys_input_data,
+                                                    priorities,
+                                                    conditions,
+                                                    priority_weights,
+                                                    stand_id_field,
+                                                    proj_id_field,
+                                                    stand_area_field,
+                                                    stand_cost_field,
+                                                    geo_wkt_field,
+                                                    output_scenario_name,
+                                                    output_scenario_tag,
+                                                    enable_kmeans_clustering = FALSE) {
+  wp_str <- "weighted_priorities"
+  # Enables debug mode if output_scenario_name and output_scenario_tag are
+  # non-empty.
   # If enabled, data and graphs are output to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
   enable_debug <- (
@@ -44,7 +45,7 @@ generate_projects_for_a_single_scenario <- function(
 
   # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
   forsys_input_data <- forsys_input_data %>%
-    mutate('geometry' = .data[[geo_wkt_field]]) %>%
+    mutate("geometry" = .data[[geo_wkt_field]]) %>%
     st_as_sf(wkt = "geometry")
 
   # Grouping raster cells into stands using k-means clustering
@@ -112,10 +113,11 @@ generate_projects_for_a_single_scenario <- function(
   # output/<output_scenario_name>/<output_scenario_tag>/
   if (enable_debug) {
     output_dir <- file.path('output', output_scenario_name, output_scenario_tag)
+
     # Writes the input to a shape file.
     st_write(
       obj = forsys_input_data,
-      file.path(output_dir, 'forsys_input_data.shp'))
+      file.path(output_dir, "forsys_input_data.shp"))
 
     # Graphs priorities and weighted priorities.
     for (p in priorities) {
