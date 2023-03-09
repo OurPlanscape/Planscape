@@ -14,6 +14,7 @@ import {
   defaultMapViewOptions,
 } from 'src/app/types';
 
+import { NONE_BOUNDARY_CONFIG } from './../../types/data.types';
 import { LayerInfoCardComponent } from './../layer-info-card/layer-info-card.component';
 import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
 import { MapControlPanelComponent } from './map-control-panel.component';
@@ -156,6 +157,51 @@ describe('MapControlPanelComponent', () => {
           expect(map.config.showExistingProjectsLayer).toBeFalse();
         });
       });
+    });
+  });
+
+  describe('clear all button', () => {
+    it('button should be disabled if map has no layers turned on', async () => {
+      const button = await loader.getHarness(
+        MatButtonHarness.with({ text: /CLEAR ALL/ })
+      );
+
+      expect(await button.isDisabled()).toBeTrue();
+    });
+
+    it('button should be enabled if map has layers turned on', async () => {
+      component.maps[0].config.showExistingProjectsLayer = true;
+      const button = await loader.getHarness(
+        MatButtonHarness.with({ text: /CLEAR ALL/ })
+      );
+
+      expect(await button.isDisabled()).toBeFalse();
+    });
+
+    it('all map layers should be cleared when button is pressed', async () => {
+      component.maps[0].config.showExistingProjectsLayer = true;
+      component.maps[0].config.boundaryLayerConfig = {
+        boundary_name: 'huc12',
+        display_name: 'HUC-12',
+      };
+      spyOn(component.changeBoundaryLayer, 'emit');
+      spyOn(component.toggleExistingProjectsLayer, 'emit');
+      const button = await loader.getHarness(
+        MatButtonHarness.with({ text: /CLEAR ALL/ })
+      );
+
+      await button.click();
+
+      expect(component.changeBoundaryLayer.emit).toHaveBeenCalledOnceWith(
+        component.maps[0]
+      );
+      expect(
+        component.toggleExistingProjectsLayer.emit
+      ).toHaveBeenCalledOnceWith(component.maps[0]);
+      expect(component.maps[0].config.showExistingProjectsLayer).toBeFalse();
+      expect(component.maps[0].config.boundaryLayerConfig).toEqual(
+        NONE_BOUNDARY_CONFIG
+      );
     });
   });
 });

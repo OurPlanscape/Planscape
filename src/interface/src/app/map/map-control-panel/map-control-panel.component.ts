@@ -81,6 +81,23 @@ export class MapControlPanelComponent implements OnInit {
     }
   }
 
+  enableClearAllButton(map: Map): boolean {
+    return (
+      map.config.boundaryLayerConfig !== NONE_BOUNDARY_CONFIG ||
+      map.config.showExistingProjectsLayer ||
+      map.config.dataLayerConfig !== NONE_DATA_LAYER_CONFIG
+    );
+  }
+
+  clearAll(map: Map): void {
+    map.config.boundaryLayerConfig = NONE_BOUNDARY_CONFIG;
+    this.changeBoundaryLayer.emit(map);
+    map.config.showExistingProjectsLayer = false;
+    this.toggleExistingProjectsLayer.emit(map);
+    map.config.dataLayerConfig = NONE_DATA_LAYER_CONFIG;
+    this.changeConditionLayer.emit(map);
+  }
+
   private conditionsConfigToDataRaw(
     config: ConditionsConfig
   ): ConditionsNode[] {
