@@ -1,5 +1,5 @@
 suppressMessages({
-  library(dplyr)
+  library(tidyverse)
   library(sf)
   library(forsys)
   library(patchmax)
@@ -17,116 +17,150 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
                                                     stand_cost_field,
                                                     geo_wkt_field,
                                                     output_scenario_name,
-                                                    output_scenario_tag) {
+                                                    output_scenario_tag,
+                                                    enable_kmeans_clustering = FALSE) {
   wp_str <- "weighted_priorities"
   # Enables debug mode if output_scenario_name and output_scenario_tag are
   # non-empty.
   # If enabled, data and graphs are output to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
-  enable_debug <- nchar(output_scenario_name) > 0 && 
-    nchar(output_scenario_tag) > 0
-
-  priority_impact_fields <- paste(priorities, "_PCP", sep="")
+  enable_debug <- (
+    nchar(output_scenario_name) > 0 &&
+    nchar(output_scenario_tag) > 0)
 
   # Appends spm and pcp data columns for each priority.
   forsys_input_data <- forsys_input_data %>% 
-                forsys::calculate_spm(fields = priorities) %>%
-                forsys::calculate_pcp(fields = priorities)
+    forsys::calculate_spm(fields = priorities) %>%
+    forsys::calculate_pcp(fields = priorities)
+
   # Appends a preset_priority column, which contains total impact score values.
+  priority_impact_fields <- paste0(priorities, "_PCP")
+  wp_colname <- "weighted_priorities"
   suppressMessages(
     forsys_input_data <- forsys_input_data %>%
-                  forsys::combine_priorities(
-                    fields = priority_impact_fields, 
-                    weights = priority_weights, 
-                    new_field = wp_str)
-  )
-  # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
-  # Patchmax expects column name to be "geometry" - do not change the variable
-  # name.
-  # Internally, Patchmax calls st_sf on geometry column values. This results in
-  # an error unless st_as_sfc is called on the wkt first.
-  geometry <- lapply(forsys_input_data[geo_wkt_field], st_as_sfc)
-  forsys_input_data <- cbind(forsys_input_data, geometry)
+      forsys::combine_priorities(
+        fields = priority_impact_fields,
+        weights = priority_weights,
+        new_field = wp_colname))
 
-  shp <- st_as_sf(forsys_input_data)
+  # Parses wkt in the geo_wkt column and adds it to a "geometry" column.
+  forsys_input_data <- forsys_input_data %>%
+    mutate("geometry" = .data[[geo_wkt_field]]) %>%
+    st_as_sf(wkt = "geometry")
+
+  # Grouping raster cells into stands using k-means clustering
+  if (enable_kmeans_clustering) {
+    source("forsys/kmeans_cluster_cells_to_stands.R")
+    # Clustering function uses latitude and longitude of raster cell centroids
+    # as well as project priority values in order to group similar cells
+    # together into stand polygons.
+    forsys_input_data <- kmeans_cluster_cells_to_stands(
+      stand_data = forsys_input_data,
+      stand_id_field = stand_id_field,
+      stand_area_field = stand_area_field,
+      stand_cost_field = stand_cost_field,
+      scenario_priorities = c(wp_colname, priorities),
+      wp_colname = wp_colname,
+      geo_wkt_field = geo_wkt_field)
+
+    # geo_wkt_field column gets lost during clustering because the polygon
+    # aggregation happens on the "geometry" sf field. This adds wkt back in.
+    forsys_input_data <- forsys_input_data %>%
+      mutate({{geo_wkt_field}} := st_as_text(geometry))
+  }
 
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
-  suppressMessages (
+  suppressMessages(
     run_outputs <- forsys::run(
       return_outputs = TRUE,
       write_outputs = enable_debug,
-      scenario_name = output_scenario_name,
-      scenario_write_tags = output_scenario_tag,
-      stand_data = shp,
+      stand_data = forsys_input_data,
+      stand_area_field = stand_area_field,
       stand_id_field = stand_id_field,
       proj_id_field = proj_id_field,
-      stand_area_field = stand_area_field,
-      scenario_priorities = c(wp_str),
-      scenario_output_fields = c(priorities,
-                                 stand_area_field,
-                                 stand_cost_field),
+      scenario_name = output_scenario_name,
+      scenario_write_tags = output_scenario_tag,
+      scenario_priorities = wp_colname,
+      scenario_output_fields = c(
+        priorities,
+        stand_area_field,
+        stand_cost_field),
       run_with_patchmax = TRUE,
       # target area per project? TODO: clarify what this does, and clarify
       # whether there's also a target cost per project.
-      patchmax_proj_size = 30000, 
-       # number of projects - TODO: clarify whether this should be a user input.
+      patchmax_proj_size = 20,
+      # number of projects - TODO: clarify whether this should be a user input.
       patchmax_proj_number = 3,
-      patchmax_SDW = 0.5,
-      patchmax_EPW = 0.5, 
-      patchmax_sample_frac = 0.01,
+      patchmax_SDW = 1,
+      patchmax_EPW = 0.5,
+      patchmax_sample_frac = 0.1,
+      patchmax_exclusion_limit = 100,
       # TODO: clarify how to set global constraints.
-      proj_fixed_target = FALSE,
-      proj_target_field = stand_area_field,
-      proj_target_value = 0.5
+      proj_fixed_target = FALSE
+      )
     )
-  )
 
   # Adds the input geo_wkt column to the stand output df.
-  input_stand_ids_and_geometries <- select(forsys_input_data,
-                                           c(stand_id_field, geo_wkt_field)) 
-  run_outputs$stand_output[stand_id_field] <- lapply(
-    run_outputs$stand_output[stand_id_field], as.integer)
-  run_outputs$stand_output <- inner_join(run_outputs$stand_output, 
-                                         input_stand_ids_and_geometries,
-                                         by=stand_id_field)
+  if (enable_kmeans_clustering) {
+    run_outputs$stand_output <- run_outputs$stand_output %>%
+      mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]])) %>%
+      inner_join(forsys_input_data %>%
+        select({{stand_id_field}}, {{geo_wkt_field}}),
+        by = stand_id_field) %>%
+      select(-geometry)
+  }
 
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
   if (enable_debug) {
-    output_dir = file.path('output', output_scenario_name, output_scenario_tag)
-    # Writes the input to a shape file.
-    st_write(shp, file.path(output_dir, 'forsys_input_data.shp'))
-    # Graphs conditions and weighted priorities.
-    for (p in conditions) {
-      ggplot() + 
-        geom_sf(data=shp, mapping=aes(fill=get(p)), color=NA) +
-        scale_fill_viridis_c(begin=0, end=1, option="turbo") +
-        guides(fill=guide_colorbar(title=p))
-      ggsave(file.path(output_dir, paste(p, '.pdf')))
-    }
-    ggplot() + 
-      geom_sf(data=shp, mapping=aes(fill=weighted_priorities), color=NA) +
-      scale_fill_viridis_c(begin=0, end=1, option="turbo") +
-      guides(fill=guide_colorbar(title=wp_str))
-    ggsave(file.path(output_dir, paste(wp_str, '.pdf')))
-    # Gets projects.
-    x <- run_outputs$stand_output %>% select(stand_id_field, proj_id_field)
-    x[stand_id_field] <- lapply(x[stand_id_field], as.integer)
-    y <- shp %>% select(stand_id_field, 'geometry')
-    joined <- x %>% inner_join(y, by=stand_id_field)
-    joined <- st_sf(joined)
-    joined[proj_id_field] <- lapply(joined[proj_id_field], as.character)
-    # Graphs weighted priorities in grayscale and project areas in reds.
-    ggplot() + 
-      geom_sf(data=shp, mapping=aes(fill=weighted_priorities), color=NA) +
-      scale_fill_gradient(low="black", high="white") +
-      guides(fill=guide_legend(title=wp_str)) +
-      new_scale_fill() +
-      geom_sf(data=joined, mapping=aes(fill=get(proj_id_field)), color=NA) +
-      scale_fill_brewer(palette="OrRd") +
-      guides(fill=guide_legend(title=proj_id_field))
-    ggsave(file.path(output_dir, paste(wp_str, '_with_projects.pdf')))
-  }
+    output_dir <- file.path('output', output_scenario_name, output_scenario_tag)
 
+    # Writes the input to a shape file.
+    st_write(
+      obj = forsys_input_data,
+      file.path(output_dir, "forsys_input_data.shp"))
+
+    # Graphs priorities and weighted priorities.
+    for (p in priorities) {
+      ggplot(data = forsys_input_data) + 
+        geom_sf(mapping = aes(fill = get(p)), color = NA) +
+        scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
+        guides(fill = guide_colorbar(title = p))
+      ggsave(file.path(output_dir, paste(p, ".pdf")))
+    }
+    ggplot(data = forsys_input_data) + 
+      geom_sf(mapping = aes(fill = weighted_priorities), color = NA) +
+      scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
+      guides(fill = guide_colorbar(title = wp_colname))
+    ggsave(file.path(output_dir, paste(wp_colname, '.pdf')))
+
+    # Gets projects.
+    stand_outputs_reformatted <- run_outputs$stand_output %>%
+      select({{stand_id_field}}, {{proj_id_field}}) %>%
+      mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]]))
+
+    stand_outputs_joined <- forsys_input_data %>%
+      # If a proj_id_field was provided in the forsys_input_data it needs to
+      # be removed here because forsys has generated different projects.
+      select(-{{proj_id_field}}) %>%
+      left_join(., stand_outputs_reformatted, by = stand_id_field) %>%
+      st_sf() %>%
+      mutate({{proj_id_field}} := as.character(.data[[proj_id_field]]))
+
+    # Graphs weighted priorities in grayscale and project areas in reds.
+    ggplot(data = stand_outputs_joined) +
+      geom_sf(
+        mapping = aes_string(fill = wp_colname),
+        color = NA) +
+      scale_fill_gradient(low = "black", high = "white") +
+      guides(fill = guide_legend(title = wp_colname)) +
+      new_scale_fill() +
+      geom_sf(
+        mapping = aes_string(fill = proj_id_field),
+        color = NA) +
+      scale_fill_brewer(palette = "OrRd") +
+      guides(fill = guide_legend(title = proj_id_field))
+    ggsave(file.path(output_dir, paste(wp_colname, '_with_projects.pdf')))
+  }
   return(run_outputs)
 }
