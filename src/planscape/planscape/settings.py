@@ -207,7 +207,7 @@ SITE_ID = 1
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
 
-# PostGIS constants.  All raster data should be ingested with a common
+# PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the
 # Regional Resource Kits: the CRS code used for the rasters, and the proj4
 # representation of that coordinate system.
@@ -219,6 +219,9 @@ CRS_9822_SCALE = (300, -300) # a raster transform has origin, scale, and skew.
 
 # The area of a raster pixel (in km-squared).
 RASTER_PIXEL_AREA = 0.300 * 0.300
+
+# This is the default CRS used when a geometry is missing one.
+DEFAULT_CRS = 4269
 
 # Caching; this improves loading times especially for the boundary app.
 CACHES = {

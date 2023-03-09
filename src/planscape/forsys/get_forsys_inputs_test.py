@@ -6,13 +6,13 @@ from conditions.raster_condition_retrieval_testcase import \
 from django.contrib.gis.geos import Polygon
 from django.http import HttpRequest, QueryDict
 from django.test import TestCase
-from forsys.forsys_request_params import (
-    ForsysGenerationRequestParams, ForsysRankingRequestParams,
-    PreForsysClusterType)
-from forsys.get_forsys_inputs import (
-    ForsysGenerationInput, ForsysInputHeaders, ForsysRankingInput)
-from planscape import settings
+from forsys.forsys_request_params import (ClusterAlgorithmType,
+                                          ForsysGenerationRequestParams,
+                                          ForsysRankingRequestParams)
+from forsys.get_forsys_inputs import (ForsysGenerationInput,
+                                      ForsysInputHeaders, ForsysRankingInput)
 from forsys.merge_polygons import merge_polygons
+from planscape import settings
 
 
 def _assert_dict_almost_equal(self,
@@ -47,7 +47,7 @@ class ForsysInputHeadersTest(TestCase):
         self.assertEqual(
             headers.get_condition_header("condition"),
             "c_condition")
-
+        
 
 class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
@@ -317,9 +317,10 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         params.priorities = ["bar"]
         params.planning_area = RasterConditionRetrievalTestCase._create_geo(
             self, 0, 2, 0, 1)
-        params.cluster_type = PreForsysClusterType.HIERARCHICAL_IN_PYTHON
-        params.num_clusters = 4
-        params.cluster_pixel_index_weight = 0
+        params.cluster_params.cluster_algorithm_type = \
+            ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON
+        params.cluster_params.num_clusters = 4
+        params.cluster_params.pixel_index_weight = 0
 
         headers = ForsysInputHeaders(params.priorities)
 
@@ -340,13 +341,16 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                 '2100954, -2116371 2100654, -2116971 2100654))',
                 # x spans -2116971, -2116371: 2 pixels
                 # y spans 2100354, 2100654: 1 pixel
-                'POLYGON ((-2116971 2100354, -2116971 2100654, -2116371 ' + '2100654, -2116371 2100354, -2116971 2100354))',
+                'POLYGON ((-2116971 2100354, -2116971 2100654, -2116371 ' + \
+                '2100654, -2116371 2100354, -2116971 2100354))',
                 # x spans -2116371, -2116071: 1 pixel
                 # y spans 2100954, 2100654: 1 pixel
-                'POLYGON ((-2116371 2100954, -2116371 2100654, -2116071 ' + '2100654, -2116071 2100954, -2116371 2100954))',
+                'POLYGON ((-2116371 2100954, -2116371 2100654, -2116071 ' + \
+                '2100654, -2116071 2100954, -2116371 2100954))',
                 # x spans -2116371, -2116071: 1 pixel
                 # y spans 2100654, 2100354: 1 pixel
-                'POLYGON ((-2116371 2100654, -2116371 2100354, -2116071 ' + '2100354, -2116071 2100654, -2116371 2100654))'
+                'POLYGON ((-2116371 2100654, -2116371 2100354, -2116071 ' + \
+                '2100354, -2116071 2100654, -2116371 2100654))'
             ]
         })
 
@@ -358,11 +362,12 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         params.priorities = ["foo", "bar"]
         params.planning_area = RasterConditionRetrievalTestCase._create_geo(
             self, 0, 3, 0, 1)
-        # Clustering is enabled, but aborted because the target number of 
+        # Clustering is enabled, but aborted because the target number of
         # clusters is greater than the number of stands.
-        params.cluster_type = PreForsysClusterType.HIERARCHICAL_IN_PYTHON
-        params.num_clusters = 10
-        params.cluster_pixel_index_weight = 0
+        params.cluster_params.cluster_algorithm_type = \
+            ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON
+        params.cluster_params.num_clusters = 10
+        params.cluster_params.pixel_index_weight = 0
 
         headers = ForsysInputHeaders(params.priorities)
 
@@ -386,4 +391,3 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                     self._create_polygon_for_pixel(3, 0).wkt,
                     self._create_polygon_for_pixel(3, 1).wkt]
         })
-
