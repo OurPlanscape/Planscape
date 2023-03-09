@@ -18,9 +18,10 @@ describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
   let service: PlanService;
   let mockPlan: BasePlan;
+  let fakeGeoJson: GeoJSON.GeoJSON;
 
   beforeEach(() => {
-    const fakeGeoJson: GeoJSON.GeoJSON = {
+    fakeGeoJson = {
       type: 'FeatureCollection',
       features: [],
     };
@@ -189,6 +190,25 @@ describe('PlanService', () => {
         BackendConstants.END_POINT.concat('/plan/create_project/')
       );
       expect(req.request.body).toEqual({ plan_id: 1 });
+      expect(req.request.method).toEqual('POST');
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('createProjectArea', () => {
+    it('should make HTTP request to backend', () => {
+      service.createProjectArea(1, fakeGeoJson).subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_project_area/')
+      );
+      expect(req.request.body).toEqual({
+        project_id: 1,
+        geometry: fakeGeoJson,
+      });
       expect(req.request.method).toEqual('POST');
       req.flush(1);
       httpTestingController.verify();
@@ -382,6 +402,22 @@ describe('PlanService', () => {
           creation_timestamp: 5,
         },
       ]);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('deleteScenarios', () => {
+    it('should make HTTP request to backend', (done) => {
+      service.deleteScenarios(['1']).subscribe((res) => {
+        expect(res).toEqual(['1']);
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/delete_scenarios/')
+      );
+      expect(req.request.method).toEqual('POST');
+      req.flush(['1']);
       httpTestingController.verify();
     });
   });
