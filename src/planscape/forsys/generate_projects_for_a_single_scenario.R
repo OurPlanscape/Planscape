@@ -59,6 +59,7 @@ generate_projects_for_a_single_scenario <- function(
       stand_area_field = stand_area_field,
       stand_cost_field = stand_cost_field,
       scenario_priorities = c(wp_colname, priorities),
+      wp_colname = wp_colname,
       geo_wkt_field = geo_wkt_field)
 
     # geo_wkt_field column gets lost during clustering because the polygon
