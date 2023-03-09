@@ -119,7 +119,9 @@ generate_projects_for_a_single_scenario <- function(
       forsys_input_data = forsys_input_data,
       run_outputs = run_outputs,
       conditions = conditions,
-      wp_colname = wp_colname
+      wp_colname = wp_colname,
+      stand_id_field = stand_id_field,
+      proj_id_field = proj_id_field
     )
   }
   return(run_outputs)
