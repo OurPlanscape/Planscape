@@ -7,20 +7,20 @@ suppressMessages({
   library(ggnewscale)
 })
 
-generate_projects_for_a_single_scenario <- function(
-  forsys_input_data,
-  priorities,
-  priority_weights,
-  stand_id_field,
-  proj_id_field,
-  stand_area_field,
-  stand_cost_field,
-  geo_wkt_field,
-  output_scenario_name,
-  output_scenario_tag,
-  enable_kmeans_clustering = TRUE) {
-
-  # Enables debug mode if providing output_scenario_name and output_scenario_tag
+generate_projects_for_a_single_scenario <- function(forsys_input_data,
+                                                    priorities,
+                                                    conditions,
+                                                    priority_weights,
+                                                    stand_id_field,
+                                                    proj_id_field,
+                                                    stand_area_field,
+                                                    stand_cost_field,
+                                                    geo_wkt_field,
+                                                    output_scenario_name,
+                                                    output_scenario_tag) {
+  wp_str <- "weighted_priorities"
+  # Enables debug mode if output_scenario_name and output_scenario_tag are
+  # non-empty.
   # If enabled, data and graphs are output to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
   enable_debug <- (
@@ -118,12 +118,12 @@ generate_projects_for_a_single_scenario <- function(
       file.path(output_dir, 'forsys_input_data.shp'))
 
     # Graphs priorities and weighted priorities.
-    for (p in priorities) {
-      ggplot(data = forsys_input_data) + 
-        geom_sf(mapping = aes(fill = get(p)), color = NA) +
-        scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
-        guides(fill = guide_colorbar(title = p))
-      ggsave(file.path(output_dir, paste(p, ".pdf")))
+    for (p in conditions) {
+      ggplot() + 
+        geom_sf(data=shp, mapping=aes(fill=get(p)), color=NA) +
+        scale_fill_viridis_c(begin=0, end=1, option="turbo") +
+        guides(fill=guide_colorbar(title=p))
+      ggsave(file.path(output_dir, paste(p, '.pdf')))
     }
     ggplot(data = forsys_input_data) + 
       geom_sf(mapping = aes(fill = weighted_priorities), color = NA) +

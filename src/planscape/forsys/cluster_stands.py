@@ -151,6 +151,37 @@ class ClusteredStands():
                         raise Exception(
                             "expected conditions to include priority, %s" %
                             (p))
+                    v = pixel_dist_to_condition_values[x][y][p]
+                    if v < 0 or v > priority_condition_max_value:
+                        raise Exception("expected condition score to be " +
+                                        "within range, [0, %f]" % (
+                                            priority_condition_max_value) +
+                                        " instead, got %s score = %f" % (p, v))
+
+    def _normalize_condition_values(
+            self,
+            pixel_dist_to_condition_values: dict[int,
+                                                 dict[int, dict[str, float]]],
+        priority_condition_max_value: float
+    ) -> dict[int, dict[int, dict[str, float]]]:
+        normalized_pixel_dist_to_condition_values = {}
+        for x in pixel_dist_to_condition_values.keys():
+            if x not in normalized_pixel_dist_to_condition_values.keys():
+                normalized_pixel_dist_to_condition_values[x] = {}
+            for y in pixel_dist_to_condition_values[x].keys():
+                if y not in normalized_pixel_dist_to_condition_values[x].keys():
+                    normalized_pixel_dist_to_condition_values[x][y] = {}
+                conditions = pixel_dist_to_condition_values[x][y]
+                # Division by priority_condition_max_value forces individual
+                # condition values to be within range, [0, 1].
+                # A subsequent division by sqrt(len(conditions)) forces the l2
+                # norm of the condition vector to be within range, [0, 1].
+                denom = priority_condition_max_value * \
+                    np.sqrt(len(conditions.keys()))
+                for c in conditions.keys():
+                    normalized_pixel_dist_to_condition_values[x][y][c] = \
+                        conditions[c] / denom
+        return normalized_pixel_dist_to_condition_values
 
     # Normalizes priority weights so that the l1 norm of the vector is 1.
     def _normalize_priority_weights(self,
