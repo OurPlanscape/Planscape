@@ -256,25 +256,12 @@ export class PlanService {
     );
   }
 
-  /** Favorite a scenario in the backend. */
-  favoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
-    return this.http.post<{ favorited: boolean }>(
-      BackendConstants.END_POINT.concat('/plan/favorite_scenario/'),
+  /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
+  deleteScenarios(scenarioIds: string[]): Observable<string[]> {
+    return this.http.post<string[]>(
+      BackendConstants.END_POINT.concat('/plan/delete_scenarios/'),
       {
-        scenario_id: Number(scenarioId),
-      },
-      {
-        withCredentials: true,
-      }
-    );
-  }
-
-  /** Unfavorite a scenario in the backend. */
-  unfavoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
-    return this.http.post<{ favorited: boolean }>(
-      BackendConstants.END_POINT.concat('/plan/unfavorite_scenario/'),
-      {
-        scenario_id: Number(scenarioId),
+        scenario_ids: scenarioIds,
       },
       {
         withCredentials: true,

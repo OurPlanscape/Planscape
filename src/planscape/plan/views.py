@@ -649,47 +649,32 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 
 
 @csrf_exempt
-def favorite_scenario(request: HttpRequest) -> HttpResponse:
+def delete_scenarios(request: HttpRequest) -> HttpResponse:
     try:
+        # Check that the user is logged in.
+        owner = get_user(request)
+
         body = json.loads(request.body)
-        scenario_id = body.get('scenario_id', None)
-        if scenario_id is None or not (isinstance(scenario_id, int)):
-            raise ValueError("Must specify scenario_id as an integer")
+        scenario_ids = body.get('scenario_ids', None)
+        if scenario_ids is None or not (isinstance(scenario_ids, list)):
+            raise ValueError("Must specify scenario_ids as a list")
 
-        scenario = Scenario.objects.get(pk=int(scenario_id))
+        scenarios = [Scenario.objects.get(pk=scenario_id)
+                for scenario_id in scenario_ids]
 
-        user = get_user(request)
-        if scenario.owner != user:
-            raise ValueError(
-                "You do not have permission to favorite this scenario.")
+        # Check that the user owns the scenarios
+        for scenario in scenarios:
+            if scenario.owner != owner:
+                raise ValueError(
+                    "You do not have permission to delete one or more of these scenarios.")
 
-        scenario.favorited = True
-        scenario.save()
-
-        return JsonResponse({'favorited': True})
-    except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
-
-@csrf_exempt
-def unfavorite_scenario(request: HttpRequest) -> HttpResponse:
-    try:
-        body = json.loads(request.body)
-        scenario_id = body.get('scenario_id', None)
-        if scenario_id is None or not (isinstance(scenario_id, int)):
-            raise ValueError("Must specify scenario_id as an integer")
-
-        scenario = Scenario.objects.get(pk=int(scenario_id))
-
-        user = get_user(request)
-        if scenario.owner != user:
-            raise ValueError(
-                "You do not have permission to unfavorite this scenario.")
-
-        scenario.favorited = False
-        scenario.save()
-
-        return JsonResponse({'favorited': False})
+        for scenario in scenarios:
+            scenario.delete()
+        
+        response_data = scenario_ids
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 

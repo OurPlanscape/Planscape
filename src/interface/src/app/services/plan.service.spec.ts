@@ -386,36 +386,18 @@ describe('PlanService', () => {
     });
   });
 
-  describe('favoriteScenario', () => {
+  describe('deleteScenarios', () => {
     it('should make HTTP request to backend', (done) => {
-      service.favoriteScenario('1').subscribe((res) => {
-        expect(res).toEqual({ favorited: true });
+      service.deleteScenarios(['1']).subscribe((res) => {
+        expect(res).toEqual(['1']);
         done();
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/plan/favorite_scenario/')
+        BackendConstants.END_POINT.concat('/plan/delete_scenarios/')
       );
       expect(req.request.method).toEqual('POST');
-      expect(req.request.body).toEqual({ scenario_id: 1 });
-      req.flush({ favorited: true });
-      httpTestingController.verify();
-    });
-  });
-
-  describe('unfavoriteScenario', () => {
-    it('should make HTTP request to backend', (done) => {
-      service.unfavoriteScenario('1').subscribe((res) => {
-        expect(res).toEqual({ favorited: false });
-        done();
-      });
-
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/plan/unfavorite_scenario/')
-      );
-      expect(req.request.method).toEqual('POST');
-      expect(req.request.body).toEqual({ scenario_id: 1 });
-      req.flush({ favorited: false });
+      req.flush(['1']);
       httpTestingController.verify();
     });
   });
