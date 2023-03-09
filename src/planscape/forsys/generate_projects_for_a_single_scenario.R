@@ -101,13 +101,14 @@ generate_projects_for_a_single_scenario <- function(forsys_input_data,
     )
 
   # Adds the input geo_wkt column to the stand output df.
-  run_outputs$stand_output <- run_outputs$stand_output %>%
-    mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]])) %>%
-    inner_join(forsys_input_data %>%
-      select({{stand_id_field}}, {{geo_wkt_field}}),
-      by = stand_id_field) %>%
-    # TDOD: dropping column ...14 is a workaround for a forsys bug
-    select(-`...14`, -geometry)
+  if (enable_kmeans_clustering) {
+    run_outputs$stand_output <- run_outputs$stand_output %>%
+      mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]])) %>%
+      inner_join(forsys_input_data %>%
+        select({{stand_id_field}}, {{geo_wkt_field}}),
+        by = stand_id_field) %>%
+      select(-geometry)
+  }
 
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
