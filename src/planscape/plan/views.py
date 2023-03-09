@@ -407,7 +407,7 @@ def delete_projects(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-
+# TODO: consolidate create_project_areas API to one call
 @csrf_exempt
 def create_project_areas_for_project(request: HttpRequest) -> HttpResponse:
     try:

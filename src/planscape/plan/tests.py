@@ -814,6 +814,11 @@ class BulkCreateProjectAreaTest(TransactionTestCase):
             owner=self.user, name='plan', region_name='sierra_cascade_inyo')
         self.project = Project.objects.create(owner=self.user, plan=self.plan)
 
+        self.plan_no_user = Plan.objects.create(
+            owner=None, name='plan', region_name='sierra_cascade_inyo')
+        self.project_no_user = Project.objects.create(
+            owner=None, plan=self.plan_no_user)
+
         self.geometry1 = {'type': 'MultiPolygon',
                           'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         self.stored_geometry1 = GEOSGeometry(json.dumps(self.geometry1))
@@ -821,6 +826,36 @@ class BulkCreateProjectAreaTest(TransactionTestCase):
         self.geometry2 = {'type': 'MultiPolygon',
                           'coordinates': [[[[1, 2], [2, 3], [5, 6], [1, 2]]]]}
         self.stored_geometry2 = GEOSGeometry(json.dumps(self.geometry2))
+
+        self.geometries = [
+            {'features':
+             [{'geometry': {
+                 'type': 'Polygon',
+                 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]
+             }}]
+             },
+            {'features':
+                [{'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [[[1, 2], [2, 3], [5, 6], [1, 2]]]
+                }}]
+             }
+        ]
+
+        self.multipolygon_geometries = [
+            {'features':
+             [{'geometry': {
+                 'type': 'MultiPolygon',
+                 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]
+             }}]
+             },
+            {'features':
+                [{'geometry': {
+                    'type': 'MultiPolygon',
+                    'coordinates': [[[[1, 2], [2, 3], [5, 6], [1, 2]]]]
+                }}]
+             }
+        ]
 
     def test_missing_project(self):
         response = self.client.post(
@@ -865,25 +900,18 @@ class BulkCreateProjectAreaTest(TransactionTestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
 
-    def test_good_polygon_bulk_create(self):
-        self.client.force_login(self.user)
-        geometries = [
-            {'features':
-             [{'geometry': {
-                 'type': 'Polygon',
-                 'coordinates': [[[1, 2], [2, 3], [3, 4], [1, 2]]]
-             }}]
-             },
-            {'features':
-                [{'geometry': {
-                    'type': 'Polygon',
-                    'coordinates': [[[1, 2], [2, 3], [5, 6], [1, 2]]]
-                }}]
-             }
-        ]
+    def test_good_polygon_wrong_user(self):
         response = self.client.post(
             reverse('plan:create_project_areas_for_project'),
-            {'project_id': self.project.pk, 'geometries': geometries},
+            {'project_id': self.project.pk, 'geometries': self.geometries},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+
+    def test_good_polygon(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk, 'geometries': self.geometries},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ProjectArea.objects.count(), 2)
@@ -900,25 +928,34 @@ class BulkCreateProjectAreaTest(TransactionTestCase):
         self.assertEqual(area.project_area.coords,
                          self.stored_geometry2.coords)
 
-    def test_good_multipolygon_bulk_create(self):
-        self.client.force_login(self.user)
-        geometries = [
-            {'features':
-             [{'geometry': {
-                 'type': 'MultiPolygon',
-                 'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]
-             }}]
-             },
-            {'features':
-                [{'geometry': {
-                    'type': 'MultiPolygon',
-                    'coordinates': [[[[1, 2], [2, 3], [5, 6], [1, 2]]]]
-                }}]
-             }
-        ]
+    def test_good_polygon_no_user(self):
         response = self.client.post(
             reverse('plan:create_project_areas_for_project'),
-            {'project_id': self.project.pk, 'geometries': geometries},
+            {'project_id': self.project_no_user.pk, 'geometries': self.geometries},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        print(response.content)
+        self.assertEqual(ProjectArea.objects.count(), 2)
+
+        area = ProjectArea.objects.get(id=(response.json()[0]))
+        self.assertEqual(area.owner, None)
+        self.assertEqual(area.project, self.project_no_user)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry1.coords)
+
+        area = ProjectArea.objects.get(id=(response.json()[1]))
+        self.assertEqual(area.owner, None)
+        self.assertEqual(area.project, self.project_no_user)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry2.coords)
+
+    def test_good_multipolygon(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project.pk,
+                'geometries': self.multipolygon_geometries},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(ProjectArea.objects.count(), 2)
@@ -932,6 +969,27 @@ class BulkCreateProjectAreaTest(TransactionTestCase):
         area = ProjectArea.objects.get(id=(response.json()[1]))
         self.assertEqual(area.owner, self.user)
         self.assertEqual(area.project, self.project)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry2.coords)
+
+    def test_good_multipolygon_no_user(self):
+        response = self.client.post(
+            reverse('plan:create_project_areas_for_project'),
+            {'project_id': self.project_no_user.pk,
+                'geometries': self.multipolygon_geometries},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(ProjectArea.objects.count(), 2)
+
+        area = ProjectArea.objects.get(id=(response.json()[0]))
+        self.assertEqual(area.owner, None)
+        self.assertEqual(area.project, self.project_no_user)
+        self.assertEqual(area.project_area.coords,
+                         self.stored_geometry1.coords)
+
+        area = ProjectArea.objects.get(id=(response.json()[1]))
+        self.assertEqual(area.owner, None)
+        self.assertEqual(area.project, self.project_no_user)
         self.assertEqual(area.project_area.coords,
                          self.stored_geometry2.coords)
 
