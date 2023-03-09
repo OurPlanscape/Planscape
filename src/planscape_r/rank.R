@@ -1,7 +1,5 @@
 times2 <- function(number) {
   library(forsys)
-
-  
   library(sf)
   library(dplyr)
 
