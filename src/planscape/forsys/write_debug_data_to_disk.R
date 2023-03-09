@@ -1,8 +1,8 @@
 suppressMessages({
-library(dplyr)
-library(ggplot2)
-library(ggnewscale)
-library(sf)
+    library(dplyr)
+    library(ggplot2)
+    library(ggnewscale)
+    library(sf)
 })
 
 write_debug_data_to_disk <- function(output_dir,
