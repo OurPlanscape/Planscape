@@ -15,6 +15,7 @@ import { BasePlan, Plan, Region } from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
+  ProjectArea,
   ProjectConfig,
   Scenario,
 } from './../types/plan.types';
@@ -384,14 +385,29 @@ export class PlanService {
     return {
       id: scenario.id,
       planId: scenario.plan,
+      projectId: scenario.project,
+      owner: scenario.owner,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         scenario.creation_timestamp
       ),
       priorities: scenario.priorities,
+      projectAreas: this.convertToProjectAreas(scenario.project_areas || []),
       notes: scenario.notes,
-      owner: scenario.owner,
       favorited: scenario.favorited,
     };
+  }
+
+  private convertToProjectAreas(scenarioProjectAreas: any[]): ProjectArea[] {
+    if (!scenarioProjectAreas) {
+      return [];
+    }
+    return scenarioProjectAreas.map((projectArea) => ({
+      id: projectArea.id,
+      projectId: projectArea.properties?.project,
+      projectArea: projectArea.geometry,
+      owner: projectArea.properties?.owner,
+      estimatedAreaTreated: projectArea.properties?.estimated_area_treated,
+    }));
   }
 
   private convertConfigToScenario(config: ProjectConfig): any {
