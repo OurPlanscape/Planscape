@@ -36,6 +36,7 @@ export interface ElementConfig extends DataLayerConfig {
 
 export interface MetricConfig extends DataLayerConfig {
   metric_name: string;
+  data_units?: string;
 }
 
 export interface PillarConfig extends DataLayerConfig {
