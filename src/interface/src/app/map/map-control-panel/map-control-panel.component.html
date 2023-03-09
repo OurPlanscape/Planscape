@@ -63,6 +63,17 @@
     [selectedIndex]="mapViewOptions?.selectedMapIndex"
     class="layer-controls-tab-group" (selectedIndexChange)="selectMap.emit($event)">
     <mat-tab *ngFor="let map of maps; index as i" label="MAP {{ map.name }}">
+      <!-- Clear All button -->
+      <div class="clear-all-button-wrapper">
+        <button
+          mat-raised-button
+          color="primary"
+          [disabled]="!enableClearAllButton(map)"
+          (click)="clearAll(map)">
+          CLEAR ALL
+        </button>
+      </div>
+
       <mat-accordion multi displayMode="flat">
 
         <!-- Basemap layer controls -->
