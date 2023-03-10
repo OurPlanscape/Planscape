@@ -62,6 +62,7 @@ RUN ls /opt/R/4.2.2/lib/R/lib
 RUN ldd /opt/R/4.2.2/lib/R/lib/libR.so
 RUN whereis R
 # returns R: /usr/local/bin/R
+RUN ls /usr/local/bin/R/lib/
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
