@@ -12,6 +12,9 @@ RUN curl -O https://cdn.posit.co/r/centos-7/pkgs/R-4.2.2-1-1.x86_64.rpm && \
 
 RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
     ln -s /opt/R/4.2.2/bin/Rscript /usr/local/bin/Rscript
+    
+RUN ls /opt/R/4.2.2/lib   
+RUN ls /opt/R/4.2.2/lib64/R/lib/libR.so
 
 # https://pak.r-lib.org/reference/install.html#nightly-builds
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
@@ -57,7 +60,8 @@ RUN echo 'options(repos = c(CRAN = "https://cloud.r-project.org"))' >> \
 RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
 
 
-
+RUN ls /opt/R/4.2.2/lib   
+RUN ls /opt/R/4.2.2/lib64/R/lib/libR.so
 
 
 # # RUN yum -y update 
@@ -97,12 +101,6 @@ RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
 # # RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
 # # # COPY ./forsysr /usr/lib64/R/library/forsysr
-
-# # # RUN git clone https://github.com/forsys-sp/forsysr.git
-# # # RUN cd forsysr
-# # # RUN ls
-
-
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
