@@ -7,6 +7,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
 
 RUN conda env create -f environment.yml && conda activate elsie
 
+RUN conda install -y r 
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
