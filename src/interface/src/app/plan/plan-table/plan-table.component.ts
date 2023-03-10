@@ -60,12 +60,15 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
       .listPlansByUser(null)
       .pipe(take(1))
       .subscribe((plans) => {
-        this.datasource.data = plans.map((plan) => {
-          return {
-            ...plan,
-            selected: false,
-          };
-        });
+        this.datasource.data = plans
+          .map((plan) => {
+            return {
+              ...plan,
+              selected: false,
+            };
+          })
+          .sort((plan) => plan.createdTimestamp ?? 0)
+          .reverse();
       });
   }
 
