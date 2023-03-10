@@ -12,8 +12,10 @@ RUN curl -O https://cdn.posit.co/r/centos-7/pkgs/R-4.2.2-1-1.x86_64.rpm && \
 
 RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
     ln -s /opt/R/4.2.2/bin/Rscript /usr/local/bin/Rscript
-    
-RUN ls /opt/R/4.2.2   
+
+RUN ls /opt
+RUN ls /opt/R   
+RUN ls /opt/R/4.2.2/lib   
 RUN ls /opt/R/4.2.2/lib64/R/lib/libR.so
 
 # # https://pak.r-lib.org/reference/install.html#nightly-builds
