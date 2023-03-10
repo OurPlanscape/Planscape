@@ -13,12 +13,6 @@ RUN curl -O https://cdn.posit.co/r/centos-7/pkgs/R-4.2.2-1-1.x86_64.rpm && \
 RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
     ln -s /opt/R/4.2.2/bin/Rscript /usr/local/bin/Rscript
 
-RUN ls /opt
-RUN ls /opt/R   
-RUN ls /opt/R/4.2.2/lib   
-RUN ls /opt/R/4.2.2/lib/R
-RUN ls /opt/R/4.2.2/lib/R/lib   
-
 # https://pak.r-lib.org/reference/install.html#nightly-builds
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 
