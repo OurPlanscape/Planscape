@@ -12,9 +12,6 @@ RUN curl -O https://cdn.posit.co/r/centos-7/pkgs/R-4.2.2-1-1.x86_64.rpm && \
 
 RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
     ln -s /opt/R/4.2.2/bin/Rscript /usr/local/bin/Rscript
-    
-RUN ls /opt/R/4.2.2/lib/R/lib   
-RUN ldd /opt/R/4.2.2/lib/R/lib/libR.so
 
 # https://pak.r-lib.org/reference/install.html#nightly-builds
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
@@ -64,6 +61,24 @@ RUN ls /opt/R/4.2.2/lib/R/lib
 RUN ldd /opt/R/4.2.2/lib/R/lib/libR.so
 RUN whereis R
 
+# Install the function's dependencies using file requirements.txt
+# from your project folder.
+# Install any dependencies under the ${LAMBDA_TASK_ROOT} directory 
+# alongside the function handler to ensure that the Lambda runtime can locate them when the function is invoked.
+COPY requirements.txt  .
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+# # Copy function code
+# COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
+# COPY rank.R ${LAMBDA_TASK_ROOT}
+
+# RUN ls
+# RUN ls ${LAMBDA_TASK_ROOT}
+
+# # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
+# CMD ["lambda_handler.lambda_handler"]
+
 
 # # RUN yum -y update 
 # # RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
@@ -102,21 +117,3 @@ RUN whereis R
 # # RUN R -e "remotes::install_github('forsys-sp/forsysr')"
 
 # # # COPY ./forsysr /usr/lib64/R/library/forsysr
-
-# # Install the function's dependencies using file requirements.txt
-# # from your project folder.
-# # Install any dependencies under the ${LAMBDA_TASK_ROOT} directory 
-# # alongside the function handler to ensure that the Lambda runtime can locate them when the function is invoked.
-# COPY requirements.txt  .
-# RUN pip install --upgrade pip
-# RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
-
-# # Copy function code
-# COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
-# COPY rank.R ${LAMBDA_TASK_ROOT}
-
-# RUN ls
-# RUN ls ${LAMBDA_TASK_ROOT}
-
-# # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-# CMD ["lambda_handler.lambda_handler"]
