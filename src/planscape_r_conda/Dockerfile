@@ -4,7 +4,7 @@ RUN yum update -y && yum install -y wget && yum clean all
 
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh && sh Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
 
-RUN /opt/miniconda/bin/conda env create -n elsie r-base
+RUN /opt/miniconda/bin/conda create -n elsie r-base
 # openblas-devel openssl-devel
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
