@@ -401,13 +401,18 @@ export class PlanService {
     if (!scenarioProjectAreas) {
       return [];
     }
-    return scenarioProjectAreas.map((projectArea) => ({
-      id: projectArea.id,
-      projectId: projectArea.properties?.project,
-      projectArea: projectArea.geometry,
-      owner: projectArea.properties?.owner,
-      estimatedAreaTreated: projectArea.properties?.estimated_area_treated,
-    }));
+    let projectAreas: ProjectArea[] = [];
+    Object.values(scenarioProjectAreas)
+    .forEach((projectArea) => {
+      projectAreas.push({
+        id: projectArea.id,
+        projectId: projectArea.properties?.project,
+        projectArea: projectArea.geometry,
+        owner: projectArea.properties?.owner,
+        estimatedAreaTreated: projectArea.properties?.estimated_area_treated,
+      })
+    });
+    return projectAreas;
   }
 
   private convertConfigToScenario(config: ProjectConfig): any {
