@@ -62,6 +62,7 @@ RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
 
 RUN ls /opt/R/4.2.2/lib/R/lib   
 RUN ldd /opt/R/4.2.2/lib/R/lib/libR.so
+RUN whereis R
 
 
 # # RUN yum -y update 
