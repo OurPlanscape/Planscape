@@ -68,13 +68,53 @@
       <mat-expansion-panel-header class="scenario-panel-header">
         Outcome
       </mat-expansion-panel-header>
-      content
+      <!-- Project areas section -->
+      <div class="project-areas-wrapper">
+        <div class="project-areas-overview">
+          <div class="flex-row space-between reduced-height-row">
+            <h3>Top % highest priority</h3>
+            <h3>Total treated</h3>
+            <h3>Est. cost range</h3>
+          </div>
+          <div class="flex-row space-between reduced-height-row">
+            <span>{{ scenario?.projectAreas?.length || '0' }} project areas</span>
+            <span>{{ totalAcresTreated }} ac</span>
+            <span>{{ totalCostRange }}</span>
+          </div>
+        </div>
+        <!-- Project area cards -->
+        <div class="section-header">Prioritized Project Areas</div>
+        <div>
+          <div *ngFor="let projectArea of scenario?.projectAreas; index as i">
+            <div class="project-area-card">
+              <div class="flex-row"><h1>Area {{ i+1 }}</h1></div>
+              <div class="area-info-wrapper">
+                <div class="flex-row space-between darker-h1">
+                  <span>{{ projectArea.estimatedAreaTreated }}</span>
+                  <span>tbd</span>
+                  <span>tbd</span>
+                </div>
+                <div class="flex-row space-between area-info-text">
+                  <span>acres</span>
+                  <span>average</span>
+                  <span>average</span>
+                </div>
+                <div class="flex-row space-between area-info-text">
+                  <span>treated</span>
+                  <span>current condition</span>
+                  <span>future condition</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
     </mat-expansion-panel>
   </mat-accordion>
 
   <!-- Notes -->
   <div class="scenario-notes-wrapper">
-    <div class="notes-header">Scenario creator's notes</div>
+    <div class="section-header">Scenario creator's notes</div>
     <form [formGroup] = "scenarioNotes">
       <div>
         <textarea

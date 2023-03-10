@@ -93,7 +93,7 @@ generate_projects_for_a_single_scenario <- function(
       patchmax_proj_number = 3,
       patchmax_SDW = 1,
       patchmax_EPW = 0.5,
-      patchmax_sample_frac = 0.1,
+      patchmax_sample_frac = 0.01,
       patchmax_exclusion_limit = 0.1,
       # TODO: clarify how to set global constraints.
       proj_fixed_target = FALSE

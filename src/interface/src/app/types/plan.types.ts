@@ -34,12 +34,14 @@ export interface Scenario {
   createdTimestamp?: number; //in milliseconds since epoch
   owner?: string;
   planId?: string;
+  projectId?: string;
   maxBudget?: number;
   maxTreatmentAreaRatio?: number;
   maxRoadDistance?: number;
   maxSlope?: number;
   priorities?: string[];
   weights?: string[];
+  projectAreas?: ProjectArea[];
   notes?: string;
   favorited?: boolean;
 }
@@ -54,6 +56,14 @@ export interface ProjectConfig {
   priorities?: string[];
   weights?: number[];
   createdTimestamp? : number;
+}
+
+export interface ProjectArea {
+  id: string,
+  projectId?: string,
+  projectArea: GeoJSON.GeoJSON,
+  owner?: string,
+  estimatedAreaTreated?: number
 }
 
 export interface PlanConditionScores {
