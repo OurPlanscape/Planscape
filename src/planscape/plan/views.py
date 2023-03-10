@@ -449,6 +449,51 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+# TODO: consolidate create_project_areas API to one call
+@csrf_exempt
+def create_project_areas_for_project(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = get_user(request)
+
+        body = json.loads(request.body)
+
+        # Get the project_id. This may come from an existing project or a
+        # placeholder project created for 1 forsys with patchmax run)
+        project_id = body.get('project_id', None)
+        if project_id is None or not (isinstance(project_id, int)):
+            raise ValueError("Must specify project_id as an integer")
+
+        # Get the Project, and if the user is logged in, make sure either
+        # 1. the Project owner and the owner are both None, or
+        # 2. the Project owner and the owner are both not None, and are equal.
+        project = Project.objects.get(pk=int(project_id))
+        if not ((owner is None and project.owner is None) or
+                (owner is not None and project.owner is not None and owner.pk == project.owner.pk)):
+            raise ValueError(
+                "Cannot create project area; project is not owned by user")
+
+        # Get the geometry of the Project.
+        geometries = body.get('geometries', None)
+        if geometries is None:
+            raise ValueError("Must specify geometries")
+        # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
+        # MultiPolygon.
+        # If this fails, the rest of the clause is skipped.
+        polygons = []
+        for geometry in geometries:
+            polygon = _convert_polygon_to_multipolygon(geometry)
+            polygons.append(polygon)
+
+        project_areas = ProjectArea.objects.bulk_create([ProjectArea(**{
+            'owner': owner,
+            'project': project,
+            'project_area': p})
+            for p in polygons])
+
+        return JsonResponse([area.pk for area in project_areas], safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 def _serialize_project_areas(areas: QuerySet):
     response = {}
