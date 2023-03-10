@@ -4,19 +4,14 @@ RUN yum update -y && yum install -y wget && yum clean all
 
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh && sh Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
 
-
-RUN echo "Running $(conda --version)" && \
-    conda init bash && \
-    . /root/.bashrc && \
-    conda update conda
-
-
-RUN conda install -y r r-core 
-RUN conda install -y openblas-devel openssl-devel
+RUN /opt/miniconda/bin/conda env create -n elsie r-base --prefix /opt/conda-env
+# openblas-devel openssl-devel
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
 
+RUN /opt/conda-env/bin/pip install awslambdaric
+# RUN mv /var/lang/bin/python3.8 /var/lang/bin/python3.8-clean && ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
 COPY requirements.txt  .
 RUN pip install --upgrade pip
