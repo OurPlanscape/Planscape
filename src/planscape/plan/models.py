@@ -94,7 +94,7 @@ class Scenario(models.Model):
 
     # TODO: convert to null=False id used for API is determined
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, null=True)  # type: ignore
+        Project, on_delete=models.CASCADE, null=False)  # type: ignore
 
     # The creation time of the project, automatically set when the project is created.
     creation_time: models.DateTimeField = models.DateTimeField(
