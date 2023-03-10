@@ -3,6 +3,7 @@ FROM public.ecr.aws/lambda/python:latest
 RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openblas-devel
+RUN yum -y install openblas-Rblas
 
 # https://github.com/rstudio/r-builds/
 RUN yum -y install compat-gcc-48-libgfortran
