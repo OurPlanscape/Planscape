@@ -44,6 +44,16 @@ export interface BackendPlan {
   creation_timestamp?: number; // in seconds since epoch
 }
 
+export interface BackendProjectArea {
+  id: number;
+  geometry: GeoJSON.GeoJSON;
+  properties?: {
+    estimated_area_treated?: number;
+    owner?: number;
+    project?: number;
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -391,23 +401,31 @@ export class PlanService {
         scenario.creation_timestamp
       ),
       priorities: scenario.priorities,
-      projectAreas: this.convertToProjectAreas(scenario.project_areas || []),
+      projectAreas: this.convertToProjectAreas(scenario.project_areas),
       notes: scenario.notes,
       favorited: scenario.favorited,
     };
   }
 
-  private convertToProjectAreas(scenarioProjectAreas: any[]): ProjectArea[] {
+  private convertToProjectAreas(scenarioProjectAreas: {
+    [id: number]: BackendProjectArea;
+  }): ProjectArea[] {
     if (!scenarioProjectAreas) {
       return [];
     }
-    return scenarioProjectAreas.map((projectArea) => ({
-      id: projectArea.id,
-      projectId: projectArea.properties?.project,
-      projectArea: projectArea.geometry,
-      owner: projectArea.properties?.owner,
-      estimatedAreaTreated: projectArea.properties?.estimated_area_treated,
-    }));
+
+    let projectAreas: ProjectArea[] = [];
+    Object.values(scenarioProjectAreas).forEach((projectArea) => {
+      projectAreas.push({
+        id: projectArea.id.toString(),
+        projectId: projectArea.properties?.project?.toString(),
+        projectArea: projectArea.geometry,
+        owner: projectArea.properties?.owner?.toString(),
+        estimatedAreaTreated: projectArea.properties?.estimated_area_treated,
+      });
+    });
+
+    return projectAreas;
   }
 
   private convertConfigToScenario(config: ProjectConfig): any {
