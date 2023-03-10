@@ -16,6 +16,8 @@ RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
 RUN ls /opt
 RUN ls /opt/R   
 RUN ls /opt/R/4.2.2/lib   
+RUN ls /opt/R/4.2.2/lib/R
+RUN ls /opt/R/4.2.2/lib/R/lib   
 RUN ls /opt/R/4.2.2/lib64/R/lib/libR.so
 
 # # https://pak.r-lib.org/reference/install.html#nightly-builds
