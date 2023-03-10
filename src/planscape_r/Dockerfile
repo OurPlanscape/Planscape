@@ -65,6 +65,7 @@ RUN whereis R
 RUN ls /usr/local/bin/R/lib/
 RUN echo $PATH
 RUN R RHOME
+RUN echo $LD_LIBRARY_PATH
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
