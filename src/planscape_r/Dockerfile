@@ -20,6 +20,8 @@ RUN whereis R
 RUN echo $PATH
 RUN R RHOME
 RUN echo $LD_LIBRARY_PATH
+RUN export LD_LIBRARY_PATH=/opt/R/4.2.2/lib/
+RUN echo $LD_LIBRARY_PATH
 
 # # https://pak.r-lib.org/reference/install.html#nightly-builds
 # RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
