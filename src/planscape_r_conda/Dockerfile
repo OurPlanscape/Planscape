@@ -7,8 +7,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -
 
 # RUN conda env create -f environment.yml && conda activate elsie
 
-RUN /opt/conda/bin/conda install -y r r-core 
-RUN /opt/conda/bin/conda install -y openblas-devel openssl-devel
+RUN /opt/miniconda/bin/miniconda install -y r r-core 
+RUN /opt/miniconda/bin/miniconda install -y openblas-devel openssl-devel
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
