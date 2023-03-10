@@ -13,9 +13,8 @@ from planscape import settings
 
 # TODO: break this into several smaller files.
 
+
 # Forsys input dataframe headers.
-
-
 class ForsysInputHeaders():
     # Constant headers for project and stand ID's, area, and cost.
     FORSYS_PROJECT_ID_HEADER = "proj_id"

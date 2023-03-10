@@ -1,29 +1,33 @@
-import json
-from typing import TypedDict
-
-from conditions.models import BaseCondition
-from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.http import HttpRequest, QueryDict
 from enum import IntEnum
+
+from boundary.models import BoundaryDetails
+from conditions.models import BaseCondition
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.http import HttpRequest, QueryDict
+from forsys.default_forsys_request_params_polygons import (
+    get_default_planning_area, get_default_project_areas)
+from forsys.merge_polygons import merge_polygons
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
-from planscape import settings
+
+# URL parameter name for ForsysRankingRequestParamsType or
+# ForsysGenerationRequestParamsType.
+# Parameter value is expected to be an integer.
+_URL_REQUEST_PARAMS_TYPE = "request_type"
 
 
-# A list of coordinates representing a polygon.
-class PolygonCoordinatesFromUrlParams(TypedDict):
-    coordinates: list[tuple[float, float]]
+class ForsysRankingRequestParamsType(IntEnum):
+    DATABASE = 0  # ForsysRankingRequestParamsFromDb
+    ALL_DEFAULTS = 1  # ForsysRankingRequestParamsFromUrlWithDefaults
 
 
-# A shape composed of multiple disjoint polygons.
-# Accompanied by SRID and an ID denoting project or plan ID.
-class GeoFromUrlParams(TypedDict):
-    # Project or Plan ID.
-    id: int | None
-    # SRID
-    srid: int
-    # Disjoint polygons that are part of the project area.
-    polygons: list[PolygonCoordinatesFromUrlParams]
+class ForsysGenerationRequestParamsType(IntEnum):
+    DATABASE = 0  # ForsysGenerationRequestParamsFromDb
+    ALL_DEFAULTS = 1  # ForsysGenerationRequestParamsFromUrlWithDefaults
+    HUC12S_WITH_DEFAULTS = 2  # ForsysGenerationRequestParamsFromHuc12
+    SILVER_CREEK_HUC12S_WITH_DEFAULTS = 3  # SilverCreekForsysGenerationParams
+    COW_CREEK_HUC12S_WITH_DEFAULTS = 4  # CowCreekForsysGenerationParams
+    MIDDLE_FORK_HUC12S_WITH_DEFAULTS = 5  # MiddleForkForsysGenerationParams
 
 
 # Whether and how to cluster before running Patchmax for project area
@@ -33,14 +37,15 @@ class ClusterAlgorithmType(IntEnum):
     HIERARCHICAL_IN_PYTHON = 1
     KMEANS_IN_R = 2
 
+
 class ClusterAlgorithmRequestParams():
     # Constants for parsing url parameters.
     # cluster algorithm types are listed in enum, ClusterAlgorithmType.
     _URL_CLUSTER_TYPE = 'cluster_algorithm_type'
     # For pre-patchmax clustering: this is the desired number of clusters.
     _URL_NUM_CLUSTERS = 'num_clusters'
-    # For pre-patchax clustering: pixel_index_weight is one of the input 
-    # parameters for ClusteredStands. It controls the extent to which we favor 
+    # For pre-patchax clustering: pixel_index_weight is one of the input
+    # parameters for ClusteredStands. It controls the extent to which we favor
     # rounder, smaller clusters.
     _URL_CLUSTER_PIXEL_INDEX_WEIGHT = 'cluster_pixel_index_weight'
 
@@ -75,6 +80,9 @@ class ClusterAlgorithmRequestParams():
             raise Exception("expected cluster_pixel_index_weight to be > 0")
 
 
+# Reads url parameters common to both
+# ForsysRankingRequestParamsFromUrlWithDefaults and
+# ForsysGenerationRequestParamsFromUrlWithDefaults.
 def _read_common_url_params(self, params: QueryDict) -> None:
     self.region = params.get(
         self._URL_REGION, self._DEFAULT_REGION)
@@ -91,61 +99,8 @@ def _read_common_url_params(self, params: QueryDict) -> None:
                 len(self.priority_weights)))
 
 
-def _check_geo_from_url_params_fields_exist(
-        geo: GeoFromUrlParams, field_name: str) -> None:
-    if "polygons" not in geo.keys():
-        raise Exception(
-            'url parameter, %s, missing field, "polygons"' % field_name)
-    if len(geo["polygons"]) == 0:
-        raise Exception(
-            'url parameter, %s, field, "polygons" is an empty list' %
-            (field_name))
-    if 'id' not in geo.keys():
-        raise Exception('url params, %s, missing field, "id"' % field_name)
-
-
-def _transform_geo_from_url_params_into_multipolygon(
-        geo: GeoFromUrlParams, field_name: str) -> MultiPolygon:
-    _check_geo_from_url_params_fields_exist(geo, field_name)
-    srid = settings.DEFAULT_CRS if 'srid' not in geo.keys() else geo['srid']
-    polygons: list[Polygon] = []
-    for p in geo['polygons']:
-        polygon = Polygon(tuple(p['coordinates']))
-        polygon.srid = srid
-        if not polygon.valid:
-            raise Exception(
-                "polygon described by %s is invalid - %s" %
-                (json.dumps(geo), polygon.valid_reason))
-        polygons.append(polygon)
-    if len(polygons) == 0:
-        raise Exception(
-            "multipolygon described by %s missing polygons" % json.dumps(
-                geo))
-    m = MultiPolygon(polygons)
-    m.srid = srid
-    return m
-
-
-# Gathers forsys input parameters from url params, database lookups, or a
-# combination of the two.
-# Of note, the option to set all forsys input paramters via url parameters is
-# intended for backend debugging purposes while the option to set most forsys
-# input parameters via database lookups is intended for production.
+# A class containing forsys ranking input parameters.
 class ForsysRankingRequestParams():
-    # Constants for parsing url parameters.
-    _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
-    _URL_REGION = 'region'
-    _URL_PRIORITIES = 'priorities'
-    _URL_PRIORITY_WEIGHTS = 'priority_weights'
-    _URL_PROJECT_AREAS = 'project_areas'
-    _URL_MAX_AREA = 'max_area'
-    _URL_MAX_COST = 'max_cost'
-
-    # Constants that act as default values when parsing url parameters.
-    _DEFAULT_REGION = 'sierra_cascade_inyo'
-    _DEFAULT_PRIORITIES = ['fire_dynamics',
-                           'forest_resilience', 'species_diversity']
-
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and stand-level constraints.
     # The planning region.
@@ -163,24 +118,21 @@ class ForsysRankingRequestParams():
     max_area_in_km2: float | None  # unit: km squared
     max_cost_in_usd: float | None  # unit: USD
 
-    def __init__(self, params: QueryDict) -> None:
-        if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
-            # This is used for debugging purposes.
-            self._read_url_params_with_defaults(params)
-        else:
-            self._read_db_params(params)
+    def __init__(self):
+        self.region = None
+        self.priorities = None
+        self.priority_weights = None
+        self.project_areas = None
+        self.max_area_in_km2 = None
+        self.max_cost_in_usd = None
 
-    def _read_url_params_with_defaults(self, params: QueryDict) -> None:
-        _read_common_url_params(self, params)
-        if self._URL_PROJECT_AREAS in params:
-            self.project_areas = self._read_project_areas_from_url_params(
-                params)
-        else:
-            self.project_areas = self._get_default_project_areas()
-        self.max_area_in_km2 = self._read_positive_float(params,
-                                                         self._URL_MAX_AREA)
-        self.max_cost_in_usd = self._read_positive_float(params,
-                                                         self._URL_MAX_COST)
+
+# Looks up forsys ranking parameters from DB.
+# This is intended for production.
+class ForsysRankingRequestParamsFromDb(ForsysRankingRequestParams):
+    def __init__(self, params: QueryDict):
+        ForsysRankingRequestParams.__init__(self)
+        self._read_db_params(params)
 
     def _read_db_params(self, params: QueryDict) -> None:
         try:
@@ -204,6 +156,34 @@ class ForsysRankingRequestParams():
             raise Exception("Ill-formed request: " + str(e))
 
 
+# Looks up forsys ranking parameters from URL parameters.
+# Also provides default values if any url parameters are missing.
+# This is intended for debugging purposes.
+class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
+    # Constants for parsing url parameters.
+    _URL_REGION = 'region'
+    _URL_PRIORITIES = 'priorities'
+    _URL_PRIORITY_WEIGHTS = 'priority_weights'
+    _URL_MAX_AREA = 'max_area'
+    _URL_MAX_COST = 'max_cost'
+
+    # Constants that act as default values when parsing url parameters.
+    _DEFAULT_REGION = 'sierra_cascade_inyo'
+    _DEFAULT_PRIORITIES = ['fire_dynamics',
+                           'forest_resilience', 'species_diversity']
+
+    def __init__(self, params: QueryDict) -> None:
+        ForsysRankingRequestParams.__init__(self)
+        self._read_url_params_with_defaults(params)
+
+    def _read_url_params_with_defaults(self, params: QueryDict) -> None:
+        _read_common_url_params(self, params)
+        self.project_areas = get_default_project_areas()
+        self.max_area_in_km2 = self._read_positive_float(params,
+                                                         self._URL_MAX_AREA)
+        self.max_cost_in_usd = self._read_positive_float(params,
+                                                         self._URL_MAX_COST)
+
     # If field is present, returns field value but raises an exception if the
     # field value isn't positive.
     # IF field isn't present, returns None.
@@ -218,63 +198,9 @@ class ForsysRankingRequestParams():
                 "expected param, %s, to have a positive value" % query_param)
         return v
 
-    def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
-        srid = settings.DEFAULT_CRS
-        p1 = Polygon(((-120.14015536869722, 39.05413814388948),
-                     (-120.18409937110482, 39.48622140686506),
-                     (-119.93422142411087, 39.48622140686506),
-                     (-119.93422142411087, 39.05413814388948),
-                     (-120.14015536869722, 39.05413814388948)))
-        p1.srid = srid
-        p2 = Polygon(((-120.14015536869722, 38.05413814388948),
-                     (-120.18409937110482, 38.48622140686506),
-                     (-119.93422142411087, 38.48622140686506),
-                     (-119.93422142411087, 38.05413814388948),
-                     (-120.14015536869722, 38.05413814388948)))
-        p2.srid = srid
-        p3 = Polygon(((-121.14015536869722, 39.05413814388948),
-                     (-121.18409937110482, 39.48622140686506),
-                     (-120.53422142411087, 39.48622140686506),
-                     (-120.53422142411087, 39.05413814388948),
-                     (-121.14015536869722, 39.05413814388948)))
-        p3.srid = srid
-        m1 = MultiPolygon(p1, p2)
-        m1.srid = srid
-        m2 = MultiPolygon(p3)
-        m2.srid = srid
-        return {1: m1,
-                2: m2}
 
-    def _read_project_areas_from_url_params(
-            self, params: QueryDict) -> dict[int, MultiPolygon]:
-        project_areas = {}
-        for project_area_str in params.getlist(self._URL_PROJECT_AREAS):
-            geo = GeoFromUrlParams(
-                json.loads(project_area_str))
-            multipolygon = _transform_geo_from_url_params_into_multipolygon(
-                geo, self._URL_PROJECT_AREAS)
-            project_areas[geo['id']] = multipolygon
-        return project_areas
-
-
-# Gathers forsys input parameters from url params, database lookups, or a
-# combination of the two.
-# Of note, the option to set all forsys input paramters via url parameters is
-# intended for backend debugging purposes while the option to set most forsys
-# input parameters via database lookups is intended for production.
+# A class containing forsys generation input parameters.
 class ForsysGenerationRequestParams():
-    # Constants for parsing url parameters.
-    _URL_USE_ONLY_URL_PARAMS = 'set_all_params_via_url_with_default_values'
-    _URL_REGION = 'region'
-    _URL_PRIORITIES = 'priorities'
-    _URL_PRIORITY_WEIGHTS = 'priority_weights'
-    _URL_PLANNING_AREA = 'planning_area'
-
-    # Constants that act as default values when parsing url parameters.
-    _DEFAULT_REGION = 'sierra_cascade_inyo'
-    _DEFAULT_PRIORITIES = ['fire_dynamics',
-                           'forest_resilience', 'species_diversity']
-
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and global, project-level, and
     # stand-level constraints.
@@ -288,9 +214,16 @@ class ForsysGenerationRequestParams():
     priority_weights: list[float]
     # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
-    # Parameters informing clustering prior to running Patchmax project area 
+    # Parameters informing clustering prior to running Patchmax project area
     # generation.
     cluster_params: ClusterAlgorithmRequestParams
+
+    def __init__(self):
+        self.region = None
+        self.priorities = None
+        self.priority_weights = None
+        self.planning_area = None
+        self.cluster_params = None
 
     # Returns a dictionary mapping priorities to priority weights.
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -299,31 +232,54 @@ class ForsysGenerationRequestParams():
             priority_weights[self.priorities[i]] = self.priority_weights[i]
         return priority_weights
 
-    def __init__(self, request: HttpRequest) -> None:
-        params = request.GET
-        self.cluster_algorithm_type = ClusterAlgorithmType.NONE
-        if bool(params.get(self._URL_USE_ONLY_URL_PARAMS, False)):
-            # This is used for debugging purposes.
-            self._read_url_params_with_defaults(params)
-        else:
-            self._read_db_params(request)
-        self.cluster_params = ClusterAlgorithmRequestParams(params)
+
+# Looks up forsys generation parameters from URL parameters.
+# Also provides default values if any url parameters are missing.
+# This is intended for debugging purposes.
+class ForsysGenerationRequestParamsFromUrlWithDefaults(
+        ForsysGenerationRequestParams):
+    # Constants for parsing url parameters.
+    _URL_REGION = 'region'
+    _URL_PRIORITIES = 'priorities'
+    _URL_PRIORITY_WEIGHTS = 'priority_weights'
+    _URL_PLANNING_AREA = 'planning_area'
+
+    # Constants that act as default values when parsing url parameters.
+    _DEFAULT_REGION = 'sierra_cascade_inyo'
+    _DEFAULT_PRIORITIES = ['fire_dynamics',
+                           'forest_resilience', 'species_diversity']
+
+    def __init__(self, params: QueryDict) -> None:
+        ForsysGenerationRequestParams.__init__(self)
+        self._read_url_params_with_defaults(params)
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
-        if self._URL_PLANNING_AREA in params:
-            geo_str = params.get(self._URL_PLANNING_AREA, "")
-            geo = GeoFromUrlParams(json.loads(geo_str))
-            self.planning_area = _transform_geo_from_url_params_into_multipolygon(
-                geo, self._URL_PLANNING_AREA)
-        else:
-            self.planning_area = self._get_default_planning_area()
+        self.planning_area = get_default_planning_area()
+        self.cluster_params = ClusterAlgorithmRequestParams(params)
+
+
+# Looks up forsys generation parameters from DB.
+# This is intended for production.
+# TODO: Update logic so that all parameters are set from DB (presently, some
+# are set via url parameters)
+class ForsysGenerationRequestParamsFromDb(
+        ForsysGenerationRequestParamsFromUrlWithDefaults):
+    def __init__(self, request: HttpRequest) -> None:
+        # TODO: init with ForsysGenerationRequestParams instead once DB
+        # configuratino has been updated.
+        ForsysGenerationRequestParamsFromUrlWithDefaults.__init__(
+            self, request.GET)
+        self._read_db_params(request)
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
 
     def _read_db_params(self, request: HttpRequest) -> None:
         params = request.GET
-
-        # TODO: remove once DB configuratino has been updated.
-        _read_common_url_params(self, params)
 
         user = get_user(request)
         plan = get_plan_by_id(user, params)
@@ -333,20 +289,126 @@ class ForsysGenerationRequestParams():
         # TODO: read priorities and weights from DB once models have been
         # updated.
 
-    def _get_default_planning_area(self) -> MultiPolygon:
-        srid = 4269
-        p1 = Polygon(((-120.14015536869722, 39.05413814388948),
-                     (-120.18409937110482, 39.48622140686506),
-                     (-119.93422142411087, 39.48622140686506),
-                     (-119.93422142411087, 39.05413814388948),
-                     (-120.14015536869722, 39.05413814388948)))
-        p1.srid = srid
-        p2 = Polygon(((-120.14015536869722, 38.05413814388948),
-                     (-120.18409937110482, 38.48622140686506),
-                     (-119.93422142411087, 38.48622140686506),
-                     (-119.93422142411087, 38.05413814388948),
-                     (-120.14015536869722, 38.05413814388948)))
-        p2.srid = srid
-        mp = MultiPolygon(p1, p2)
-        mp.srid = srid
-        return mp
+
+# Sets planning area from HUC-12 boundary names.
+# Sets default priorities to th ones used for experimenting with realistic data.
+class ForsysGenerationRequestParamsFromHuc12(
+        ForsysGenerationRequestParamsFromUrlWithDefaults):
+    # The ID representing HUC-12 boundaries in the DB.
+    _HUC12_ID = 43
+
+    # Constants for parsing url parameters.
+    _URL_HUC12_NAMES = 'huc12_names'
+
+    # Constants that act as default values when parsing url parameters.
+    _DEFAULT_HUC12_NAMES = ['Little Silver Creek-Silver Creek']
+
+    # Default priorities that are retrieved.
+    _DEFAULT_PRIORITIES = [
+        'california_spotted_owl',
+        'storage',
+        'functional_fire',
+        'forest_structure',
+        'max_sdi'
+    ]
+
+    # huc-12 area nams.
+    huc12_names: list[str]
+
+    def __init__(self, params: QueryDict):
+        ForsysGenerationRequestParamsFromUrlWithDefaults.__init__(self, params)
+        self.huc12_names = params.getlist(
+            self._URL_HUC12_NAMES, self._DEFAULT_HUC12_NAMES)
+        self.planning_area = self._get_planning_area(self.huc12_names)
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
+    def _get_planning_area(self, huc12_names: list[str]) -> GEOSGeometry:
+        huc12s = BoundaryDetails.objects.filter(
+            boundary_id=self._HUC12_ID).filter(shape_name__in=huc12_names)
+        polygons = [huc12.geometry for huc12 in huc12s]
+        return merge_polygons(polygons, 0)
+
+
+class SilverCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
+    _DEFAULT_HUC12_NAMES = [
+        'Little Silver Creek-Silver Creek',
+        'South Fork Rubicon River',
+        'Jones Fork Silver Creek',
+        'Brush Creek-South Fork American River',
+        'South Fork Silver Creek'
+    ]
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
+
+class CowCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
+    _DEFAULT_HUC12_NAMES = [
+        'Upper Old Cow Creek',
+        'Lower Old Cow Creek',
+        'Upper South Cow Creek',
+        'Lower South Cow Creek',
+        'Glendenning Creek',
+        'Clover Creek',
+        'Oak Run Creek'
+    ]
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
+
+class MiddleForkForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
+    _DEFAULT_HUC12_NAMES = [
+        'Middle Fork Bishop Creek',
+        'South Fork Bishop Creek',
+        'Evolution Creek',
+        'Headwaters Middle Fork Kings River',
+        'Goddard Creek',
+        'Goddard Canyon-South Fork San Joaquin River',
+        'Upper Middle Fork Kings River'
+    ]
+
+    def get_priority_weights_dict(self) -> dict[str, float]:
+        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
+
+
+# Returns ForsysRankingRequestParams based on url parameter value for the
+# parameter name in _URL_REQUEST_PARAMS_TYPE.
+def get_ranking_request_params(
+        params: QueryDict) -> ForsysRankingRequestParams:
+    type = ForsysRankingRequestParamsType(
+        int(params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
+    if type == ForsysRankingRequestParamsType.DATABASE:
+        return ForsysRankingRequestParamsFromDb(params)
+    elif type == ForsysRankingRequestParamsType.ALL_DEFAULTS:
+        return ForsysRankingRequestParamsFromUrlWithDefaults(params)
+    else:
+        raise Exception("ranking request type was not recognized")
+
+
+# Returns ForsysGenerationRequestParams based on url parameter value for the
+# parameter name in _URL_REQUEST_PARAMS_TYPE.
+def get_generation_request_params(
+        request: HttpRequest) -> ForsysGenerationRequestParams:
+    params = request.GET
+    type = ForsysGenerationRequestParamsType(int(
+        params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
+    if type == ForsysGenerationRequestParamsType.DATABASE:
+        return ForsysGenerationRequestParamsFromDb(request)
+    elif type == ForsysGenerationRequestParamsType.ALL_DEFAULTS:
+        return ForsysGenerationRequestParamsFromUrlWithDefaults(params)
+    elif type == ForsysGenerationRequestParamsType.HUC12S_WITH_DEFAULTS:
+        return ForsysGenerationRequestParamsFromHuc12(params)
+    elif type == \
+            ForsysGenerationRequestParamsType.SILVER_CREEK_HUC12S_WITH_DEFAULTS:
+        return SilverCreekForsysGenerationParams(params)
+    elif type ==  \
+            ForsysGenerationRequestParamsType.COW_CREEK_HUC12S_WITH_DEFAULTS:
+        return CowCreekForsysGenerationParams(params)
+    elif type == \
+            ForsysGenerationRequestParamsType.MIDDLE_FORK_HUC12S_WITH_DEFAULTS:
+        return MiddleForkForsysGenerationParams(params)
+    else:
+        raise Exception("generation request type was not recognized")
