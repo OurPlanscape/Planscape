@@ -4,6 +4,8 @@ RUN yum update -y && yum install -y wget && yum clean all
 
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o miniconda.sh && sh Miniconda3-latest-Linux-x86_64.sh -b -p /opt/miniconda
 
+RUN source /opt/miniconda/bin/activate && conda init bash
+
 RUN /opt/miniconda/bin/conda create -n elsie r-base && /opt/miniconda/bin/conda activate elsie
 # openblas-devel openssl-devel
 
