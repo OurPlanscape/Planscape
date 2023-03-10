@@ -535,7 +535,7 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
 
-
+# TODO: create scenario for project instead of plan
 @csrf_exempt
 def create_scenario(request: HttpRequest) -> HttpResponse:
     try:
@@ -594,7 +594,9 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, 
                 pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
 
     result['project_areas'] = _serialize_project_areas(areas)
-    result['config'] = _serialize_project(project)
+    # TODO: project should be a required field 
+    if project is not None:
+        result['config'] = _serialize_project(project)
 
     return result
 
