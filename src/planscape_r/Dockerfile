@@ -15,6 +15,7 @@ RUN ln -s /opt/R/4.2.2/bin/R /usr/local/bin/R && \
     
 RUN ls /opt/R/4.2.2/lib   
 RUN ls /opt/R/4.2.2/lib/R/lib/libR.so
+RUN ldd /opt/R/4.2.2/lib/R/lib/libR.so
 
 # https://pak.r-lib.org/reference/install.html#nightly-builds
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
