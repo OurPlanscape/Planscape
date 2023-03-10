@@ -2,13 +2,13 @@ from enum import IntEnum
 
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.http import HttpRequest, QueryDict
-from enum import IntEnum
+from forsys.default_forsys_request_params_polygons import (
+    get_default_planning_area, get_default_project_areas)
+from forsys.merge_polygons import merge_polygons
 from plan.models import Project, ProjectArea
 from plan.views import get_plan_by_id, get_user
-from planscape import settings
-from forsys.merge_polygons import merge_polygons
 
 # URL parameter name for ForsysRankingRequestParamsType or
 # ForsysGenerationRequestParamsType.
@@ -18,16 +18,16 @@ _URL_REQUEST_PARAMS_TYPE = "request_type"
 
 class ForsysRankingRequestParamsType(IntEnum):
     DATABASE = 0  # ForsysRankingRequestParamsFromDb
-    URL_WITH_DEFAULTS = 1  # ForsysRankingRequestParamsFromUrlWithDefaults
+    ALL_DEFAULTS = 1  # ForsysRankingRequestParamsFromUrlWithDefaults
 
 
 class ForsysGenerationRequestParamsType(IntEnum):
     DATABASE = 0  # ForsysGenerationRequestParamsFromDb
-    URL_WITH_DEFAULTS = 1  # ForsysGenerationRequestParamsFromUrlWithDefaults
-    HUC12_WITH_DEFAULTS = 2  # ForsysGenerationRequestParamsFromHuc12
-    SILVER_CREEK_WITH_DEFAULTS = 3  # SilverCreekForsysGenerationParams
-    COW_CREEK_WITH_DEFAULTS = 4  # CowCreekForsysGenerationParams
-    MIDDLE_FORK_WITH_DEFAULTS = 5  # MiddleForkForsysGenerationParams
+    ALL_DEFAULTS = 1  # ForsysGenerationRequestParamsFromUrlWithDefaults
+    HUC12S_WITH_DEFAULTS = 2  # ForsysGenerationRequestParamsFromHuc12
+    SILVER_CREEK_HUC12S_WITH_DEFAULTS = 3  # SilverCreekForsysGenerationParams
+    COW_CREEK_HUC12S_WITH_DEFAULTS = 4  # CowCreekForsysGenerationParams
+    MIDDLE_FORK_HUC12S_WITH_DEFAULTS = 5  # MiddleForkForsysGenerationParams
 
 
 # Whether and how to cluster before running Patchmax for project area
@@ -37,14 +37,15 @@ class ClusterAlgorithmType(IntEnum):
     HIERARCHICAL_IN_PYTHON = 1
     KMEANS_IN_R = 2
 
+
 class ClusterAlgorithmRequestParams():
     # Constants for parsing url parameters.
     # cluster algorithm types are listed in enum, ClusterAlgorithmType.
     _URL_CLUSTER_TYPE = 'cluster_algorithm_type'
     # For pre-patchmax clustering: this is the desired number of clusters.
     _URL_NUM_CLUSTERS = 'num_clusters'
-    # For pre-patchax clustering: pixel_index_weight is one of the input 
-    # parameters for ClusteredStands. It controls the extent to which we favor 
+    # For pre-patchax clustering: pixel_index_weight is one of the input
+    # parameters for ClusteredStands. It controls the extent to which we favor
     # rounder, smaller clusters.
     _URL_CLUSTER_PIXEL_INDEX_WEIGHT = 'cluster_pixel_index_weight'
 
@@ -177,38 +178,11 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
-        self.project_areas = self._get_default_project_areas()
+        self.project_areas = get_default_project_areas()
         self.max_area_in_km2 = self._read_positive_float(params,
                                                          self._URL_MAX_AREA)
         self.max_cost_in_usd = self._read_positive_float(params,
                                                          self._URL_MAX_COST)
-
-    def _get_default_project_areas(self) -> dict[int, MultiPolygon]:
-        srid = settings.DEFAULT_CRS
-        p1 = Polygon(((-120.14015536869722, 39.05413814388948),
-                     (-120.18409937110482, 39.48622140686506),
-                     (-119.93422142411087, 39.48622140686506),
-                     (-119.93422142411087, 39.05413814388948),
-                     (-120.14015536869722, 39.05413814388948)))
-        p1.srid = srid
-        p2 = Polygon(((-120.14015536869722, 38.05413814388948),
-                     (-120.18409937110482, 38.48622140686506),
-                     (-119.93422142411087, 38.48622140686506),
-                     (-119.93422142411087, 38.05413814388948),
-                     (-120.14015536869722, 38.05413814388948)))
-        p2.srid = srid
-        p3 = Polygon(((-121.14015536869722, 39.05413814388948),
-                     (-121.18409937110482, 39.48622140686506),
-                     (-120.53422142411087, 39.48622140686506),
-                     (-120.53422142411087, 39.05413814388948),
-                     (-121.14015536869722, 39.05413814388948)))
-        p3.srid = srid
-        m1 = MultiPolygon(p1, p2)
-        m1.srid = srid
-        m2 = MultiPolygon(p3)
-        m2.srid = srid
-        return {1: m1,
-                2: m2}
 
     # If field is present, returns field value but raises an exception if the
     # field value isn't positive.
@@ -240,7 +214,7 @@ class ForsysGenerationRequestParams():
     priority_weights: list[float]
     # Planning area geometry. Projects are generated within the planning area.
     planning_area: MultiPolygon
-    # Parameters informing clustering prior to running Patchmax project area 
+    # Parameters informing clustering prior to running Patchmax project area
     # generation.
     cluster_params: ClusterAlgorithmRequestParams
 
@@ -284,26 +258,8 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
-        self.planning_area = self._get_default_planning_area()
+        self.planning_area = get_default_planning_area()
         self.cluster_params = ClusterAlgorithmRequestParams(params)
-
-    def _get_default_planning_area(self) -> MultiPolygon:
-        srid = settings.DEFAULT_CRS
-        p1 = Polygon(((-120.14015536869722, 39.05413814388948),
-                     (-120.18409937110482, 39.48622140686506),
-                     (-119.93422142411087, 39.48622140686506),
-                     (-119.93422142411087, 39.05413814388948),
-                     (-120.14015536869722, 39.05413814388948)))
-        p1.srid = srid
-        p2 = Polygon(((-120.14015536869722, 38.05413814388948),
-                     (-120.18409937110482, 38.48622140686506),
-                     (-119.93422142411087, 38.48622140686506),
-                     (-119.93422142411087, 38.05413814388948),
-                     (-120.14015536869722, 38.05413814388948)))
-        p2.srid = srid
-        mp = MultiPolygon(p1, p2)
-        mp.srid = srid
-        return mp
 
 
 # Looks up forsys generation parameters from DB.
@@ -426,7 +382,7 @@ def get_ranking_request_params(
         int(params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
     if type == ForsysRankingRequestParamsType.DATABASE:
         return ForsysRankingRequestParamsFromDb(params)
-    elif type == ForsysRankingRequestParamsType.URL_WITH_DEFAULTS:
+    elif type == ForsysRankingRequestParamsType.ALL_DEFAULTS:
         return ForsysRankingRequestParamsFromUrlWithDefaults(params)
     else:
         raise Exception("ranking request type was not recognized")
@@ -441,15 +397,18 @@ def get_generation_request_params(
         params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
     if type == ForsysGenerationRequestParamsType.DATABASE:
         return ForsysGenerationRequestParamsFromDb(request)
-    elif type == ForsysGenerationRequestParamsType.URL_WITH_DEFAULTS:
+    elif type == ForsysGenerationRequestParamsType.ALL_DEFAULTS:
         return ForsysGenerationRequestParamsFromUrlWithDefaults(params)
-    elif type == ForsysGenerationRequestParamsType.HUC12_WITH_DEFAULTS:
+    elif type == ForsysGenerationRequestParamsType.HUC12S_WITH_DEFAULTS:
         return ForsysGenerationRequestParamsFromHuc12(params)
-    elif type == ForsysGenerationRequestParamsType.SILVER_CREEK_WITH_DEFAULTS:
+    elif type == \
+            ForsysGenerationRequestParamsType.SILVER_CREEK_HUC12S_WITH_DEFAULTS:
         return SilverCreekForsysGenerationParams(params)
-    elif type == ForsysGenerationRequestParamsType.COW_CREEK_WITH_DEFAULTS:
+    elif type ==  \
+            ForsysGenerationRequestParamsType.COW_CREEK_HUC12S_WITH_DEFAULTS:
         return CowCreekForsysGenerationParams(params)
-    elif type == ForsysGenerationRequestParamsType.MIDDLE_FORK_WITH_DEFAULTS:
+    elif type == \
+            ForsysGenerationRequestParamsType.MIDDLE_FORK_HUC12S_WITH_DEFAULTS:
         return MiddleForkForsysGenerationParams(params)
     else:
         raise Exception("generation request type was not recognized")
