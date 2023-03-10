@@ -105,13 +105,14 @@ class Scenario(models.Model):
         null=True, default=False)
 
     class ScenarioStatus(models.IntegerChoices):
-        PENDING = 0
-        PROCESSING = 1
-        SUCCESS = 2
-        FAILED = 3
+        INITIALIZED = 0
+        PENDING = 1
+        PROCESSING = 2
+        SUCCESS = 3
+        FAILED = 4
 
     status = models.IntegerField(
-        choices=ScenarioStatus.choices, default=ScenarioStatus.PENDING)
+        choices=ScenarioStatus.choices, default=ScenarioStatus.INITIALIZED)
 
 
 class ScenarioWeightedPriority(models.Model):
