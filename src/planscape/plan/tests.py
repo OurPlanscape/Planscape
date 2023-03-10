@@ -132,7 +132,8 @@ def create_plan(
         project = Project.objects.create(owner=owner, plan=plan)
         project.save()
         for _ in range(num_scenarios):
-            scenario = Scenario.objects.create(project=project)
+            scenario = Scenario.objects.create(
+                owner=owner, plan=plan, project=project)
             scenario.save()
     return plan
 
@@ -1296,7 +1297,10 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_get_scenario_does_not_belong_to_user(self):
-        not_owned_scenario = Scenario.objects.create(owner=None)
+        plan_no_user = create_plan(
+            None, 'plan', None, [])
+        not_owned_scenario = Scenario.objects.create(
+            owner=None, plan=plan_no_user)
         self.client.force_login(self.user)
         response = self.client.get(
             reverse('plan:get_scenario'),
@@ -1487,7 +1491,8 @@ class DeleteScenariosTest(TransactionTestCase):
 
     def test_delete_multiple_scenarios_fails_if_any_not_owner(self):
         self.client.force_login(self.user)
-        scenario_ids = [self.scenario_with_no_user.pk, self.scenario_with_user.pk]
+        scenario_ids = [self.scenario_with_no_user.pk,
+                        self.scenario_with_user.pk]
         response = self.client.post(
             reverse('plan:delete_scenarios'), {'scenario_ids': scenario_ids},
             content_type='application/json')
@@ -1497,7 +1502,8 @@ class DeleteScenariosTest(TransactionTestCase):
     def test_delete_multiple_scenarios(self):
         self.client.force_login(self.user)
         self.assertEqual(Scenario.objects.count(), 3)
-        scenario_ids = [self.scenario_with_user.pk, self.scenario_with_user2.pk]
+        scenario_ids = [self.scenario_with_user.pk,
+                        self.scenario_with_user2.pk]
         response = self.client.post(
             reverse('plan:delete_scenarios'), {'scenario_ids': scenario_ids},
             content_type='application/json')
@@ -1555,7 +1561,10 @@ class FavoriteScenarioTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_favorite_scenario_does_not_belong_to_user(self):
-        not_owned_scenario = Scenario.objects.create(owner=None)
+        plan_no_user = create_plan(
+            None, 'plan', None, [])
+        not_owned_scenario = Scenario.objects.create(
+            owner=None, plan=plan_no_user)
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:favorite_scenario'),
@@ -1564,7 +1573,10 @@ class FavoriteScenarioTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_unfavorite_scenario_does_not_belong_to_user(self):
-        not_owned_scenario = Scenario.objects.create(owner=None)
+        plan_no_user = create_plan(
+            None, 'plan', None, [])
+        not_owned_scenario = Scenario.objects.create(
+            owner=None, plan=plan_no_user)
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('plan:unfavorite_scenario'),
@@ -1586,7 +1598,7 @@ class FavoriteScenarioTest(TransactionTestCase):
     def test_unfavorite_scenario_ok(self):
         self.client.force_login(self.user)
         favorited_scenario = Scenario.objects.create(
-            owner=self.user, favorited=True)
+            owner=self.user, plan=self.plan, favorited=True)
         response = self.client.post(
             reverse('plan:unfavorite_scenario'),
             {'scenario_id': favorited_scenario.pk},
