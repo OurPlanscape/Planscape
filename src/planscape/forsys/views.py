@@ -11,9 +11,9 @@ import pandas as pd
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
-from forsys.forsys_request_params import (ClusterAlgorithmType,
-                                          ForsysGenerationRequestParams,
-                                          ForsysRankingRequestParams)
+from forsys.forsys_request_params import (
+    ClusterAlgorithmType, get_generation_request_params,
+    get_ranking_request_params)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
 from forsys.parse_forsys_output import (
@@ -26,12 +26,15 @@ from pytz import timezone
 
 import rpy2
 
+
 # Configures global logging.
 logger = logging.getLogger(__name__)
 
 
 # Sets up cProfile profiler.
 # This is for measuring runtime.
+
+
 def _set_up_cprofiler(pr: cProfile.Profile) -> None:
     pr.enable()
 
@@ -108,7 +111,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
 def rank_project_areas_for_multiple_scenarios(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysRankingRequestParams(request.GET)
+        params = get_ranking_request_params(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_multiple_scenarios(
@@ -162,7 +165,7 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
 def rank_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
-        params = ForsysRankingRequestParams(request.GET)
+        params = get_ranking_request_params(request.GET)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysRankingInput(params, headers)
         forsys_output = run_forsys_rank_project_areas_for_a_single_scenario(
@@ -228,15 +231,16 @@ def generate_project_areas_for_a_single_scenario(
         if settings.DEBUG:
             _set_up_cprofiler(pr)
 
-        params = ForsysGenerationRequestParams(request)
+        params = get_generation_request_params(request)
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysGenerationInput(params, headers)
         forsys_output = run_forsys_generate_project_areas_for_a_single_scenario(
             forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
-            headers.priority_headers, headers.condition_headers, params.priority_weights, 
-            params.cluster_algorithm_type == ClusterAlgorithmType.KMEANS_IN_R,
+            headers.priority_headers, headers.condition_headers, params.priority_weights,
+            params.cluster_params.cluster_algorithm_type ==
+            ClusterAlgorithmType.KMEANS_IN_R,
             "test_scenario" if settings.DEBUG else None,
             datetime.now().astimezone(
                 timezone('US/Pacific')
