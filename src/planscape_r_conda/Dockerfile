@@ -31,6 +31,7 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge r r-base blas-devel
 
 RUN yum -y install util-linux
+# R: /miniconda3/bin/R
 RUN whereis R
 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
