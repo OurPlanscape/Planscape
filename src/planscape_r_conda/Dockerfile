@@ -20,6 +20,7 @@ RUN /miniconda3/bin/conda init zsh
 RUN /miniconda3/bin/conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
 RUN /miniconda3/bin/conda install -y -c conda-forge r-base-dev
+RUN whereis R
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
