@@ -8,6 +8,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
+RUN yum install -y which
+
 ENV PATH=/miniconda3/bin:${PATH}
 RUN echo $PATH
 RUN ls /miniconda3/bin
