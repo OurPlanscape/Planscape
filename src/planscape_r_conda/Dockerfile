@@ -12,7 +12,8 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 RUN yum install -y which
 RUN yum -y install tar
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum -y install openblas-devel
+RUN yum -y install lapack-devel blas-devel
+
 
 RUN ldconfig -p | grep llapack
 RUN ldconfig -p | grep lblas
