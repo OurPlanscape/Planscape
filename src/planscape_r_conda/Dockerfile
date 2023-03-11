@@ -16,9 +16,9 @@ RUN yum -y install tar
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install lapack-devel blas-devel
 
-RUN yum -y install glibc
-RUN ldconfig -p | grep llapack
-RUN ldconfig -p | grep lblas
+# RUN yum -y install glibc
+# RUN ldconfig -p | grep llapack
+# RUN ldconfig -p | grep lblas
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN echo $PATH
