@@ -18,7 +18,7 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, Scenario } from 'src/app/types';
+import { Plan, Scenario, ProjectArea } from 'src/app/types';
 
 @Component({
   selector: 'app-scenario-details',
@@ -56,6 +56,17 @@ export class ScenarioDetailsComponent implements OnInit {
   ngOnInit(): void {
     this.scenario$ = this.getScenario();
     this.plan$ = this.getPlan();
+
+    this.scenario$.pipe(
+      map((scenario) => {
+        return scenario?.projectAreas;
+      }),
+      take(1)
+    ).subscribe((projectAreas) => {
+      if (projectAreas) {
+        this.drawProjectAreas(projectAreas);
+      }
+    });
   }
 
   private getScenario() {
@@ -100,5 +111,11 @@ export class ScenarioDetailsComponent implements OnInit {
   togglePanelExpand(): void {
     this.panelExpanded = !this.panelExpanded;
     this.planService.updateStateWithPanelState(this.panelExpanded);
+  }
+
+  private drawProjectAreas(projectAreas: ProjectArea[]): void {
+    projectAreas.forEach((projectArea) => {
+      this.planService.updateStateWithShapes(projectArea.projectArea);
+    });
   }
 }
