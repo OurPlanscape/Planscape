@@ -11,6 +11,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 # Required for R https://github.com/ContinuumIO/anaconda-issues/issues/11133
 RUN yum install -y which
 RUN yum -y install tar
+RUN yum -y install openblas-devel
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN echo $PATH
@@ -19,7 +20,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge r
+RUN conda install -y -c conda-forge r r-base
 
 RUN yum -y install util-linux
 RUN whereis R
