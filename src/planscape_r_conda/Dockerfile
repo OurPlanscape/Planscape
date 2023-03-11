@@ -24,7 +24,10 @@ RUN yum -y install util-linux
 RUN whereis R
 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+RUN R -e "install.packages('devtools', repos='http://cran.rstudio.com/')"
+RUN R -e "devtools::install_github('forsys-sp/forsysr')"
+RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+
 # RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 # RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
 
