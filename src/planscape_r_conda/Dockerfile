@@ -6,7 +6,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into
 # -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
-ENV PATH=/miniconda3/bin:${PATH}
+ENV PATH=/miniconda3/bin:$PATH
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 # RUN /miniconda3/bin/conda create -n elsie r r-essentials  
