@@ -21,13 +21,14 @@ RUN yum -y install lapack-devel blas-devel
 # RUN ldconfig -p | grep lblas
 
 ENV PATH=/miniconda3/bin:${PATH}
+# /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
 RUN echo $PATH
 RUN ls /miniconda3/bin
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge r r-base
+RUN conda install -y -c conda-forge r r-base blas-devel
 
 RUN yum -y install util-linux
 RUN whereis R
