@@ -37,6 +37,7 @@ RUN yum -y install util-linux
 # R: /miniconda3/bin/R
 RUN whereis R
 
+RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
