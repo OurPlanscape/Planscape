@@ -98,7 +98,6 @@ generate_projects_for_a_single_scenario <- function(
       patchmax_exclusion_limit = 0.1,
       # TODO: clarify how to set global constraints.
       proj_fixed_target = FALSE
-      )
     )
   )
 
