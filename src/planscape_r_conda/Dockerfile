@@ -3,6 +3,8 @@ FROM public.ecr.aws/lambda/python:latest
 RUN yum update -y && yum install -y wget && yum clean all
 
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+# -p is the directory to install into
+# -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 
 ENV PATH=/root/miniconda3/bin:${PATH} 
