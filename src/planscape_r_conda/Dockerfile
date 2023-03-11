@@ -8,6 +8,7 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
+# Required for R https://github.com/ContinuumIO/anaconda-issues/issues/11133
 RUN yum install -y which
 
 ENV PATH=/miniconda3/bin:${PATH}
@@ -18,6 +19,7 @@ RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge r
+
 RUN yum -y install util-linux
 RUN whereis R
 
