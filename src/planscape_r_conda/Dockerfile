@@ -35,10 +35,7 @@ RUN whereis R
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
-# RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
-# RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
-
-RUN /opt/conda-env/bin/pip install awslambdaric
+RUN conda/pip install awslambdaric
 # RUN mv /var/lang/bin/python3.8 /var/lang/bin/python3.8-clean && ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
 COPY requirements.txt  .
