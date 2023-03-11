@@ -8,12 +8,12 @@ from pstats import SortKey
 
 import numpy as np
 import pandas as pd
-from boundary.models import BoundaryDetails
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
 from forsys.forsys_request_params import (
-    get_generation_request_params, get_ranking_request_params)
+    ClusterAlgorithmType, get_generation_request_params,
+    get_ranking_request_params)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
 from forsys.parse_forsys_output import (
@@ -193,6 +193,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_area_header: str, forsys_cost_header: str,
         forsys_geo_wkt_header: str, forsys_priority_headers: list[str], forsys_condition_headers: list[str],
         forsys_priority_weights: list[float],
+        enable_kmeans_clustering: bool,
         output_scenario_name: str | None,
         output_scenario_tag: str | None
 ) -> ForsysGenerationOutputForASingleScenario:
@@ -209,9 +210,10 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         robjects.StrVector(forsys_condition_headers),
         robjects.FloatVector(forsys_priority_weights),
         forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
-        forsys_cost_header, forsys_geo_wkt_header,
-        "" if output_scenario_name is None else output_scenario_name,
-        "" if output_scenario_tag is None else output_scenario_tag)
+        forsys_cost_header, forsys_geo_wkt_header, ""
+        if output_scenario_name is None else output_scenario_name, ""
+        if output_scenario_tag is None else output_scenario_tag,
+        enable_kmeans_clustering)
 
     priority_weights_dict = {
         forsys_priority_headers[i]: forsys_priority_weights[i]
@@ -237,6 +239,8 @@ def generate_project_areas_for_a_single_scenario(
             headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
             headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
             headers.priority_headers, headers.condition_headers, params.priority_weights,
+            params.cluster_params.cluster_algorithm_type ==
+            ClusterAlgorithmType.KMEANS_IN_R,
             "test_scenario" if settings.DEBUG else None,
             datetime.now().astimezone(
                 timezone('US/Pacific')

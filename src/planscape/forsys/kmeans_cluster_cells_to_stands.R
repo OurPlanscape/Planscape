@@ -1,6 +1,8 @@
 suppressMessages({
+    library(cluster)
+    library(purrr)
     library(sf)
-    library(tidyverse)
+    library(tibble)
 })
 
 normalize_values <- function(x) {
