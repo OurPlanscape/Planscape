@@ -14,7 +14,7 @@ RUN yum -y install tar
 
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
-RUN yum -y install lapack-devel blas-devel
+# RUN yum -y install lapack-devel blas-devel
 
 # RUN yum -y install glibc
 # RUN ldconfig -p | grep llapack
