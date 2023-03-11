@@ -6,14 +6,19 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into
 # -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
+ENV PATH=/miniconda3/bin:${PATH}
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
-ENV PATH=/miniconda3/bin:${PATH}
-
-RUN /miniconda3/bin/conda create -n elsie r r-essentials  
-RUN echo "source activate elsie" > ~/.bashrc
-RUN /miniconda3/bin/conda list
+# RUN /miniconda3/bin/conda create -n elsie r r-essentials  
+# RUN echo "source activate elsie" > ~/.bashrc
+# RUN /miniconda3/bin/conda list
 # openblas-devel openssl-devel
+RUN ls /miniconda3/bin
+RUN /miniconda3/bin/conda init bash
+RUN /miniconda3/bin/conda init zsh
+RUN /miniconda3/bin/conda config --add channels conda-forge
+RUN /miniconda3/bin/activate
+RUN /miniconda3/bin/conda install -y -c conda-forge r-base
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
 RUN R -e 'pak::pkg_install(c("sf", "forsys-sp/forsysr"))'
