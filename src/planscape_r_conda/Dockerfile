@@ -6,20 +6,16 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into
 # -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
-ENV PATH=/miniconda3/bin:${PATH}
-RUN echo $PATH
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
-# RUN /miniconda3/bin/conda create -n elsie r r-essentials  
-# RUN echo "source activate elsie" > ~/.bashrc
-# RUN /miniconda3/bin/conda list
-# openblas-devel openssl-devel
+ENV PATH=/miniconda3/bin:${PATH}
+RUN echo $PATH
 RUN ls /miniconda3/bin
-RUN /miniconda3/bin/conda init bash
-RUN /miniconda3/bin/conda init zsh
-RUN /miniconda3/bin/conda config --add channels conda-forge
+RUN conda init bash
+RUN conda init zsh
+RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN /miniconda3/bin/conda install -y -c conda-forge r
+RUN conda install -y -c conda-forge r
 RUN yum -y install util-linux
 RUN whereis R
 
