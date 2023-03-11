@@ -29,7 +29,6 @@ export interface PlanState {
   currentConfigId: ProjectConfig['id'] | null;
   mapConditionFilepath: string | null;
   mapShapes: any | null;
-  currentScenario?: Scenario;
   panelExpanded?: boolean;
 }
 
