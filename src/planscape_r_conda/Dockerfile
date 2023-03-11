@@ -11,6 +11,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 # Required for R https://github.com/ContinuumIO/anaconda-issues/issues/11133
 RUN yum install -y which
 RUN yum -y install tar
+RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openblas-devel
 
 ENV PATH=/miniconda3/bin:${PATH}
