@@ -19,7 +19,7 @@ RUN /miniconda3/bin/conda init bash
 RUN /miniconda3/bin/conda init zsh
 RUN /miniconda3/bin/conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN /miniconda3/bin/conda install -y -c conda-forge r-base-dev
+RUN /miniconda3/bin/conda install -y -c conda-forge r
 RUN whereis R
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
