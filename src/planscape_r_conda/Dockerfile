@@ -6,12 +6,12 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into
 # -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
+RUN rm Miniconda3-latest-Linux-x86_64.sh
 
-ENV PATH=/root/miniconda3/bin:${PATH} 
+ENV PATH=/miniconda3/bin:${PATH}
 
-RUN /miniconda3/bin/conda init bash && \ 
-/miniconda3/bin/conda create -n elsie && \ 
-/miniconda3/bin/conda activate elsie 
+RUN /miniconda3/bin/conda create -n elsie 
+RUN echo "source activate elsie" > ~/.bashrc
 # openblas-devel openssl-devel
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
