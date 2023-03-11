@@ -10,6 +10,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 # Required for R https://github.com/ContinuumIO/anaconda-issues/issues/11133
 RUN yum install -y which
+RUN yum -y install tar
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN echo $PATH
