@@ -81,13 +81,16 @@ export class PlanComponent implements OnInit, OnDestroy {
     const routeChild = this.route.snapshot.firstChild;
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;
+
     if (path === 'scenario') {
       this.planService.updateStateWithScenario(id);
     } else if (path === 'config') {
       this.planService.updateStateWithConfig(Number(id));
+      this.planService.updateStateWithShapes(null);
     } else {
       this.planService.updateStateWithConfig(null);
       this.planService.updateStateWithScenario(null);
+      this.planService.updateStateWithShapes(null);
     }
   }
 
