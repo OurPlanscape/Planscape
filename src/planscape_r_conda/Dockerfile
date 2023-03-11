@@ -10,8 +10,9 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 ENV PATH=/miniconda3/bin:${PATH}
 
-RUN /miniconda3/bin/conda create -n elsie 
+RUN /miniconda3/bin/conda create -n elsie r r-essentials  
 RUN echo "source activate elsie" > ~/.bashrc
+RUN /miniconda3/bin/conda list
 # openblas-devel openssl-devel
 
 RUN R -e 'install.packages("pak", repos = sprintf("https://r-lib.github.io/p/pak/devel/%s/%s/%s", .Platform$pkgType, R.Version()$os, R.Version()$arch))'
