@@ -20,6 +20,7 @@ generate_projects_for_a_single_scenario <- function(
   enable_kmeans_clustering = FALSE
 ) {
   wp_str <- "weighted_priorities"
+
   # Enables debug mode if output_scenario_name and output_scenario_tag are
   # non-empty.
   # If enabled, data and graphs are output to directory,
@@ -97,6 +98,7 @@ generate_projects_for_a_single_scenario <- function(
       patchmax_exclusion_limit = 0.1,
       # TODO: clarify how to set global constraints.
       proj_fixed_target = FALSE
+      )
     )
   )
 
@@ -105,8 +107,7 @@ generate_projects_for_a_single_scenario <- function(
     mutate({{stand_id_field}} := as.integer(.data[[stand_id_field]])) %>%
     inner_join(forsys_input_data %>%
       select({{stand_id_field}}, {{geo_wkt_field}}),
-      by = stand_id_field) %>%
-    select(-geometry)
+      by = stand_id_field)
 
   # Writes additional debug information to directory,
   # output/<output_scenario_name>/<output_scenario_tag>/
