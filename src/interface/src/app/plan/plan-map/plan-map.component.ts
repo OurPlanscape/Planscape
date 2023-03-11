@@ -1,5 +1,4 @@
 import {
-  AfterContentInit,
   AfterViewInit,
   Component,
   Input,
@@ -9,7 +8,7 @@ import {
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { BehaviorSubject, combineLatest, Subject, takeUntil } from 'rxjs';
-import { distinctUntilChanged, filter, map, tap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import { FrontendConstants, Plan } from 'src/app/types';
 
@@ -87,7 +86,6 @@ export class PlanMapComponent
     combineLatest([this.plan, this.currentScenarioId$])
       .pipe(
         takeUntil(this.destroy$),
-        tap(console.log),
         filter(([plan]) => !!plan)
       )
       .subscribe(([plan, currentScenarioId]) => {
