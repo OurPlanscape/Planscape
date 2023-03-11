@@ -3,6 +3,7 @@ suppressMessages({
     library(ggplot2)
     library(ggnewscale)
     library(sf)
+
 })
 
 write_debug_data_to_disk <- function(output_dir,
@@ -21,23 +22,20 @@ write_debug_data_to_disk <- function(output_dir,
     for (p in conditions) {
       ggplot(data = forsys_input_data) + 
         geom_sf(mapping = aes_string(fill = p), color = NA) +
-        scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
+        scale_fill_viridis_c(option = "turbo") +
         guides(fill = guide_colorbar(title = p))
       ggsave(file.path(output_dir, paste(p, ".pdf")))
     }
     ggplot(data = forsys_input_data) + 
       geom_sf(mapping = aes_string(fill = wp_colname), color = NA) +
-      scale_fill_viridis_c(begin = 0, end = 1, option = "turbo") +
+      scale_fill_viridis_c(option = "turbo") +
       guides(fill = guide_colorbar(title = wp_colname))
     ggsave(file.path(output_dir, paste(wp_colname, '.pdf')))
 
     # Gets projects.
     stand_output_ids <- run_outputs$stand_output %>%
-      select({{stand_id_field}}, {{proj_id_field}})
-    stand_output_ids[stand_id_field] <- 
-      lapply(stand_output_ids[stand_id_field], as.integer)
-    stand_output_ids[proj_id_field] <- 
-      lapply(stand_output_ids[proj_id_field], as.character)
+      select({{stand_id_field}}, {{proj_id_field}}) %>%
+      mutate_at(c(proj_id_field), as.character)
 
     forsys_input_data_w_updated_project_ids <- forsys_input_data %>%
       # If a proj_id_field was provided in the forsys_input_data it needs to
