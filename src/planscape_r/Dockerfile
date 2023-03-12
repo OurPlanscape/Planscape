@@ -3,6 +3,8 @@ FROM public.ecr.aws/lambda/python:latest
 RUN yum -y update
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 
+# https://stackoverflow.com/questions/69247571/install-libudunits2-dev-on-amazon-linux-2
+
 # https://github.com/rstudio/r-builds/
 RUN yum -y install compat-gcc-48-libgfortran
 RUN curl -O https://cdn.posit.co/r/centos-7/pkgs/R-4.2.2-1-1.x86_64.rpm && \
