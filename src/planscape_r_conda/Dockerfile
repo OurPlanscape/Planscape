@@ -35,10 +35,6 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel \
 udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
 
-RUN yum -y install util-linux
-# R: /miniconda3/bin/R
-RUN whereis R
-
 RUN ls /miniconda3/lib/R/
 RUN ls /miniconda3/lib/R/library
 RUN ls /miniconda3/lib/R/library/sf/libs
@@ -55,6 +51,12 @@ RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 COPY requirements.txt  .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+
+RUN yum -y install util-linux
+# R: /miniconda3/bin/R
+RUN whereis R
+RUN whereis python
+RUN whereis pip
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
