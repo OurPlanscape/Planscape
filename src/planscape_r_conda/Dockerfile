@@ -12,10 +12,11 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 RUN yum install -y which
 RUN yum -y install tar
 
-# RUN yum -y install udunits2-devel
+
 
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+RUN yum -y install openssl-devel udunits2-devel
 # RUN yum -y install lapack-devel blas-devel
 # RUN whereis blas
 # RUN whereis lapack
@@ -33,7 +34,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge r r-base r-sf blas-devel r-stringi
+RUN conda install -y -c conda-forge r r-base r-sf blas-devel r-stringi libudunits2-dev
 
 RUN yum -y install util-linux
 # R: /miniconda3/bin/R
