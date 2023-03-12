@@ -23,7 +23,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils rpy2
+RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
 
 RUN conda list
 
@@ -35,6 +35,7 @@ RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 # RUN conda pip install awslambdaric
 # RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
+RUN /miniconda3/bin/deactivate
 COPY requirements.txt  .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
