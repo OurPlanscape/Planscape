@@ -15,6 +15,7 @@ RUN yum -y install tar
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openssl-devel udunits2-devel
 
+RUN yum -y install util-linux
 ENV PATH=/miniconda3/bin:${PATH}
 # /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
 RUN echo $PATH
@@ -38,7 +39,7 @@ COPY requirements.txt  .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-RUN yum -y install util-linux
+
 # R: /miniconda3/bin/R
 RUN whereis R
 RUN whereis python
