@@ -48,6 +48,10 @@ RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
+RUN ls /miniconda3/lib/R/
+RUN ls /miniconda3/lib/R/library
+RUN ls /miniconda3/lib/R/library/sf/libs
+
 RUN conda/pip install awslambdaric
 # RUN mv /var/lang/bin/python3.8 /var/lang/bin/python3.8-clean && ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
