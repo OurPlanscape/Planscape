@@ -35,6 +35,7 @@ RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 # RUN conda pip install awslambdaric
 # RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
+ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib/:${LD_LIBRARY_PATH}
 RUN /miniconda3/bin/deactivate
 COPY requirements.txt  .
 RUN pip install --upgrade pip
