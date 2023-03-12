@@ -48,8 +48,8 @@ RUN conda list
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
-RUN conda pip install awslambdaric
-# RUN mv /var/lang/bin/python3.8 /var/lang/bin/python3.8-clean && ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
+# RUN conda pip install awslambdaric
+# RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
 COPY requirements.txt  .
 RUN pip install --upgrade pip
