@@ -32,7 +32,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel  udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal
+RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel  udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel
 
 RUN yum -y install util-linux
 # R: /miniconda3/bin/R
