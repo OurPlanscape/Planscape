@@ -31,7 +31,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge r r-base blas-devel r-stringi
+RUN conda install -y -c conda-forge r r-base blas-devel r-stringi udunits2
 
 RUN yum -y install util-linux
 # R: /miniconda3/bin/R
