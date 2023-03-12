@@ -45,7 +45,7 @@ RUN whereis R
 RUN whereis python
 RUN whereis pip
 RUN echo $PATH
-RUN R R_HOME
+RUN R RHOME
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
