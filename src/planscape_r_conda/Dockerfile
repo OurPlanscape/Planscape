@@ -40,6 +40,8 @@ RUN yum -y install util-linux
 # R: /miniconda3/bin/R
 RUN whereis R
 
+RUN ls /miniconda3/lib/R/
+RUN ls /miniconda3/lib/R/library
 RUN ls /miniconda3/lib/R/library/sf/libs
 
 RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
