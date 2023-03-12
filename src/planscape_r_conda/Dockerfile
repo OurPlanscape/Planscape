@@ -3,8 +3,7 @@ FROM public.ecr.aws/lambda/python:latest
 RUN yum update -y && yum install -y wget && yum clean all
 
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-# -p is the directory to install into
-# -b to be able to run unattended
+# -p is the directory to install into, -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
@@ -15,29 +14,17 @@ RUN yum -y install tar
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openssl-devel udunits2-devel
-# RUN yum -y install lapack-devel blas-devel
-# RUN whereis blas
-# RUN whereis lapack
-# TODO: sym link them
-
-# RUN yum -y install glibc
-# RUN ldconfig -p | grep llapack
-# RUN ldconfig -p | grep lblas
 
 ENV PATH=/miniconda3/bin:${PATH}
 # /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
 RUN echo $PATH
-RUN ls /miniconda3/bin
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel \
-udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
+udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils rpy2
 
-RUN ls /miniconda3/lib/R/
-RUN ls /miniconda3/lib/R/library
-RUN ls /miniconda3/lib/R/library/sf/libs
 RUN conda list
 
 # RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
@@ -57,6 +44,8 @@ RUN yum -y install util-linux
 RUN whereis R
 RUN whereis python
 RUN whereis pip
+RUN echo $PATH
+RUN R R_HOME
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
