@@ -12,8 +12,6 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 RUN yum install -y which
 RUN yum -y install tar
 
-
-
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openssl-devel udunits2-devel
