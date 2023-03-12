@@ -43,10 +43,12 @@ RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
 # R: /miniconda3/bin/R
 RUN whereis R
+RUN R RHOME
 RUN whereis python
 RUN whereis pip
 RUN echo $PATH
-RUN R RHOME
+RUN echo $LD_LIBRARY_PATH
+
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
