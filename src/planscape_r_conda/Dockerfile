@@ -32,7 +32,6 @@ RUN /miniconda3/bin/deactivate
 RUN ln -s /miniconda/bin/R /usr/bin/R
 RUN ln -s /miniconda/lib/R /usr/lib/R
 RUN ldd /miniconda3/lib/R/lib/libR.so
-RUN ldd /usr/lib/R/lib/libR.so
 
 # ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib:${LD_LIBRARY_PATH}
 COPY requirements.txt  .
@@ -49,10 +48,10 @@ RUN whereis pip
 RUN which pip
 
 RUN python -m pip --version
-RUN python -m pip show rpy2
+# RUN python -m pip show rpy2
 RUN python -m pip list -v
 RUN pip --version
-RUN pip show rpy2
+# RUN pip show rpy2
 RUN pip list -v
 
 # R: /miniconda3/bin/R
