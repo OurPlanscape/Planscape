@@ -32,11 +32,12 @@ RUN R -e ".libPaths()"
 
 RUN ln -s /miniconda/bin/R /usr/bin/R
 RUN ln -s /miniconda/lib/R /usr/lib/R
-RUN ldd /miniconda3/lib/R/lib/libR.so
+RUN python -m rpy2.situation
+
 RUN find "/miniconda3/lib/R/library" | grep stats
 RUN find "/miniconda3/lib/R/library" | grep utils
 
-ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/usr/local/lib:${LD_LIBRARY_PATH}
+ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib/R/library:/usr/local/lib:${LD_LIBRARY_PATH}
 # python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
 RUN whereis python
 RUN which python
@@ -50,7 +51,7 @@ RUN which python
 # COPY requirements.txt  .
 # RUN pip install --upgrade pip
 # RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
-RUN python -m rpy2.situation
+
 
 # R: /miniconda3/bin/R
 RUN whereis R
