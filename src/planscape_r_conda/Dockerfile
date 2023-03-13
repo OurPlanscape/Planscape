@@ -16,9 +16,9 @@ RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.n
 RUN yum -y install openssl-devel udunits2-devel
 
 RUN yum -y install util-linux
-ENV PATH=/miniconda3/bin:${PATH}
 # /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
-RUN echo $PATH
+ENV PATH=/miniconda3/bin:${PATH}
+
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
@@ -28,36 +28,20 @@ RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "sessionInfo()"
 RUN R -e ".libPaths()"
-# RUN /miniconda3/bin/deactivate
 
-RUN ln -s /miniconda/bin/R /usr/bin/R
-RUN ln -s /miniconda/lib/R /usr/lib/R
 RUN python -m rpy2.situation
+# ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib/R/library:/usr/local/lib:${LD_LIBRARY_PATH}
 
-RUN find "/miniconda3/lib/R/library" | grep stats
-RUN find "/miniconda3/lib/R/library" | grep utils
-
-ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib/R/library:/usr/local/lib:${LD_LIBRARY_PATH}
-# python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
-RUN whereis python
+# /miniconda3/bin/python
 RUN which python
-# pip: /miniconda3/bin/pip /miniconda3/bin/pip3.10 /var/lang/bin/pip /var/lang/bin/pip3.10
-# RUN whereis pip
-# RUN which pip
-# RUN pip --version
-# RUN pip show rpy2
-# RUN pip list -v
+
+# /miniconda3/bin/R
+RUN which R
 
 # COPY requirements.txt  .
 # RUN pip install --upgrade pip
 # RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-
-# R: /miniconda3/bin/R
-RUN whereis R
-RUN which R
-
-# RUN conda pip install awslambdaric
 # RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
 # Copy function code
