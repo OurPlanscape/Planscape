@@ -48,6 +48,7 @@ RUN whereis R
 RUN R RHOME
 RUN whereis python
 RUN whereis pip
+RUN whereis rpy2
 RUN echo $PATH
 RUN echo $LD_LIBRARY_PATH
 
