@@ -29,6 +29,7 @@ RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN /miniconda3/bin/deactivate
 
 RUN ln -s /miniconda/bin/R /usr/bin/R
+RUN ln -s /miniconda/lib/R /usr/lib/R
 RUN ldd /miniconda3/lib/R/lib/libR.so
 RUN ldd /usr/lib/R/lib/libR.so
 
