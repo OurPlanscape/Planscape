@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { RegionOption, regionOptions } from '../types';
-import { SessionService } from '../services';
+import { RegionOption, regionOptions } from '../../types';
+import { SessionService } from '../../services';
 
 /**
  * The main region selection view component.

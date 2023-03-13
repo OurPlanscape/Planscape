@@ -21,7 +21,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
   sidenavLinks: SidenavLink[] = [
     {
       text: "Home",
-      href: "/region",
+      href: "/home",
       icon: "home",
     },
     {

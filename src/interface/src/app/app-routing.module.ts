@@ -1,3 +1,4 @@
+import { HomeComponent } from './home/home.component';
 import { Injectable, NgModule } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
@@ -15,7 +16,7 @@ import { PlanTableComponent } from './plan/plan-table/plan-table.component';
 import { PlanComponent } from './plan/plan.component';
 import { ScenarioConfirmationComponent } from './plan/scenario-confirmation/scenario-confirmation.component';
 import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
-import { RegionSelectionComponent } from './region-selection/region-selection.component';
+import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import { SignupComponent } from './signup/signup.component';
 
 const routes: Routes = [
@@ -23,7 +24,7 @@ const routes: Routes = [
     path: '',
     title: 'Planscape',
     children: [
-      { path: '', redirectTo: 'region', pathMatch: 'full' },
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
       {
         path: 'login',
         title: 'Login',
@@ -31,15 +32,15 @@ const routes: Routes = [
         canActivate: [createFeatureGuard('login')],
       },
       {
+        path: 'home',
+        title: 'Home',
+        component: HomeComponent,
+      },
+      {
         path: 'signup',
         title: 'Signup',
         component: SignupComponent,
         canActivate: [createFeatureGuard('login')],
-      },
-      {
-        path: 'region',
-        title: 'Region Selection',
-        component: RegionSelectionComponent,
       },
       { path: 'map', title: 'Explore', component: MapComponent },
       {
