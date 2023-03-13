@@ -36,6 +36,7 @@ RUN python -m rpy2.situation
 ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
 
 # /miniconda3/bin/python
+# Lambda will always execute from /var/lang/bin/python!
 RUN which python
 
 # /miniconda3/bin/R
