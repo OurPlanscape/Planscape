@@ -33,6 +33,8 @@ RUN /miniconda3/bin/deactivate
 RUN ln -s /miniconda/bin/R /usr/bin/R
 RUN ln -s /miniconda/lib/R /usr/lib/R
 RUN ldd /miniconda3/lib/R/lib/libR.so
+RUN find "/miniconda3/lib/R/library" | grep stats
+RUN find "/miniconda3/lib/R/library" | grep utils
 
 # ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib:${LD_LIBRARY_PATH}
 COPY requirements.txt  .
