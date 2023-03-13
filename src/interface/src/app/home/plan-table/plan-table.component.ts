@@ -69,10 +69,6 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
       });
   }
 
-  create(): void {
-    this.router.navigate(['map']);
-  }
-
   // If planId is provided, delete that plan only. Otherwise, delete all selected plans.
   delete(planId?: string): void {
     const planIdsToDelete: string[] = planId
