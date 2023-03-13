@@ -36,6 +36,7 @@ RUN ldd /usr/lib/R/lib/libR.so
 COPY requirements.txt  .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+RUN python -m rpy2.situation
 
 # pip: /miniconda3/bin/pip /miniconda3/bin/pip3.10 /var/lang/bin/pip /var/lang/bin/pip3.10
 RUN whereis pip
