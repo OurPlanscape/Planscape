@@ -37,9 +37,9 @@ RUN ln -s /miniconda3/bin/R /usr/bin/R
 RUN ln -s /miniconda3/lib/R /usr/lib/R
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
-RUN python rpy2.situation
+RUN /var/lang/bin/python rpy2.situation
 RUN echo $LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
+# ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
 
 # /miniconda3/bin/R
 RUN which R
