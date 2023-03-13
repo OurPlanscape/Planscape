@@ -49,6 +49,10 @@ RUN ls /miniconda3/lib
 RUN ls /lib64
 RUN ldd /miniconda3/lib/libstdc++.so.6
 RUN ldd /lib64/libstdc++.so.6
+RUN ldd --version
+
+RUN yum -y install binutils
+RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
 
 # RUN ln -s /miniconda3/lib/libstdc++.so.6.0.29 /lib64/libstdc++.so.6.0.29
 
