@@ -55,17 +55,23 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
     });
   }
 
+  /** Retrieve plans from backend and sort them by date created, descending.
+   *  TODO: Sort by last updated instead when that field is available.
+   */
   getPlansFromService(): void {
     this.planService
       .listPlansByUser(null)
       .pipe(take(1))
       .subscribe((plans) => {
-        this.datasource.data = plans.map((plan) => {
-          return {
-            ...plan,
-            selected: false,
-          };
-        });
+        this.datasource.data = plans
+          .map((plan) => {
+            return {
+              ...plan,
+              selected: false,
+            };
+          })
+          .sort((plan) => plan.createdTimestamp ?? 0)
+          .reverse();
       });
   }
 
