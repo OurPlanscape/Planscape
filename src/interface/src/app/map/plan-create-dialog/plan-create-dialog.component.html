@@ -1,26 +1,26 @@
-<h1 mat-dialog-title>Start a new plan in this planning area?</h1>
+<h1 mat-dialog-title>Name your plan</h1>
 <mat-dialog-content>
+  <div class="info">
+    <mat-icon>info</mat-icon>
+    <span>Boundaries cannot be modified after the plan is saved.</span>
+  </div>
     <mat-form-field>
-      <mat-label>Plan name</mat-label>
+      <mat-label>Name</mat-label>
       <input matInput [formControl]="planNameControl">
     </mat-form-field>
-  <p>
-    Once a plan is created, you can choose focuses & constraints, create scenarios,
-    and develop your proposal as well as share with collaborators.
-  </p>
 </mat-dialog-content>
-<mat-dialog-actions>
+<mat-dialog-actions align="end">
   <button
-    mat-raised-button
-    class="cancel-button"
+    mat-button
+    color="primary"
     (click)="cancel()">
-    Cancel
+    CANCEL
   </button>
   <button
-    mat-raised-button
-    class="submit-button"
+    mat-button
     type="submit"
+    color="primary"
     (click)="submit()">
-    Confirm
+    SAVE
   </button>
 </mat-dialog-actions>
