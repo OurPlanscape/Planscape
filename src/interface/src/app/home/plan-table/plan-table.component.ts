@@ -1,9 +1,8 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
 import { take } from 'rxjs';
 import { AuthService } from 'src/app/services';
 
@@ -20,7 +19,7 @@ interface PlanRow extends PlanPreview {
   templateUrl: './plan-table.component.html',
   styleUrls: ['./plan-table.component.scss'],
 })
-export class PlanTableComponent implements AfterViewInit, OnInit {
+export class PlanTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -39,14 +38,8 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private router: Router,
     private authService: AuthService
   ) {}
-
-  ngAfterViewInit(): void {
-    this.datasource.paginator = this.paginator;
-    this.datasource.sort = this.sort;
-  }
 
   ngOnInit(): void {
     this.getPlansFromService();
@@ -66,6 +59,8 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
             selected: false,
           };
         });
+        this.datasource.paginator = this.paginator;
+        this.datasource.sort = this.sort;
       });
   }
 
