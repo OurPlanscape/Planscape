@@ -30,10 +30,10 @@ RUN R -e "sessionInfo()"
 RUN R -e ".libPaths()"
 RUN R -e "search()"
 
-RUN ln -s /miniconda/bin/R /usr/bin/R
-RUN ln -s /miniconda/lib/R /usr/lib/R
-RUN ln -s /miniconda/bin/R /var/lang/bin/R
-RUN ln -s /miniconda/lib/R /var/lang/lib/R
+RUN ln -s /miniconda3/bin/R /usr/bin/R
+RUN ln -s /miniconda3/lib/R /usr/lib/R
+RUN ln -s /miniconda3/bin/R /var/lang/bin/R
+RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN python rpy2.situation
 ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
 
