@@ -18,6 +18,9 @@ RUN yum -y install openssl-devel udunits2-devel
 RUN yum -y install util-linux
 # /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
 ENV PATH=${PATH}:/miniconda3/bin
+# /miniconda3/bin/python
+# Lambda will always execute from /var/lang/bin/python!
+RUN which python
 
 RUN conda init bash
 RUN conda init zsh
@@ -35,11 +38,8 @@ RUN ln -s /miniconda3/lib/R /usr/lib/R
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN python rpy2.situation
+RUN echo $LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
-
-# /miniconda3/bin/python
-# Lambda will always execute from /var/lang/bin/python!
-RUN which python
 
 # /miniconda3/bin/R
 RUN which R
