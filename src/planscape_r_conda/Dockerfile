@@ -40,6 +40,10 @@ RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 RUN python -m rpy2.situation
 
+# python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
+RUN whereis python
+RUN which python
+
 # pip: /miniconda3/bin/pip /miniconda3/bin/pip3.10 /var/lang/bin/pip /var/lang/bin/pip3.10
 RUN whereis pip
 RUN which pip
@@ -50,10 +54,6 @@ RUN python -m pip list -v
 RUN pip --version
 RUN pip show rpy2
 RUN pip list -v
-
-# python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
-RUN whereis python
-RUN which python
 
 # R: /miniconda3/bin/R
 RUN whereis R
