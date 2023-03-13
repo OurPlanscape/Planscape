@@ -1,14 +1,14 @@
 import {
-  AfterContentInit,
   AfterViewInit,
   Component,
   Input,
   OnDestroy,
+  OnInit,
 } from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Subject, takeUntil } from 'rxjs';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import { FrontendConstants, Plan } from 'src/app/types';
 
@@ -20,7 +20,7 @@ import { BackendConstants } from './../../backend-constants';
   styleUrls: ['./plan-map.component.scss'],
 })
 export class PlanMapComponent
-  implements AfterContentInit, AfterViewInit, OnDestroy
+  implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() plan = new BehaviorSubject<Plan | null>(null);
   @Input() mapId?: string;
@@ -33,13 +33,18 @@ export class PlanMapComponent
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
   panelExpanded: boolean = true;
+  currentScenarioId$ = this.planService.planState$.pipe(
+    map(({ currentScenarioId }) => currentScenarioId),
+    distinctUntilChanged(),
+    takeUntil(this.destroy$)
+  );
 
   private filepath: string = '';
   private shapes: any | null = null;
 
   constructor(private planService: PlanService, private router: Router) {}
 
-  ngAfterContentInit(): void {
+  ngOnInit(): void {
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
@@ -78,20 +83,24 @@ export class PlanMapComponent
     });
     zoomControl.addTo(this.map);
 
-    this.plan
+    combineLatest([this.plan, this.currentScenarioId$])
       .pipe(
         takeUntil(this.destroy$),
-        filter((plan) => !!plan)
+        filter(([plan]) => !!plan)
       )
-      .subscribe((plan) => {
-        this.drawPlanningArea(plan!);
+      .subscribe(([plan, currentScenarioId]) => {
+        if (currentScenarioId) {
+          this.drawPlanningArea(plan!, '#ffffff');
+        } else {
+          this.drawPlanningArea(plan!);
+        }
       });
 
     setTimeout(() => this.map.invalidateSize(), 0);
   }
 
   // Add planning area to map and frame it in view
-  private drawPlanningArea(plan: Plan) {
+  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
     if (!plan.planningArea) return;
 
     if (!!this.drawingLayer) {
@@ -101,9 +110,9 @@ export class PlanMapComponent
     this.drawingLayer = L.geoJSON(plan.planningArea, {
       pane: 'overlayPane',
       style: {
-        color: '#3367D6',
-        fillColor: '#3367D6',
-        fillOpacity: 0.1,
+        color: color ?? '#3367D6',
+        fillColor: color ?? '#3367D6',
+        fillOpacity: opacity ?? 0.1,
         weight: 5,
       },
     }).addTo(this.map);
@@ -157,8 +166,8 @@ export class PlanMapComponent
 
     this.projectAreasLayer = L.geoJSON(shapes, {
       style: (_) => ({
-        color: '#ff4081',
-        fillColor: '#ff4081',
+        color: '#3367D6',
+        fillColor: '#3367D6',
         fillOpacity: 0.1,
         weight: 5,
       }),
