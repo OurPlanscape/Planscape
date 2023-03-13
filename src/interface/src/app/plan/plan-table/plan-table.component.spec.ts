@@ -85,14 +85,14 @@ describe('PlanTableComponent', () => {
   });
 
   describe('create', () => {
-    it('create button should navigate to region selection', async () => {
+    it('create button should navigate to explore', async () => {
       const routerStub: Router = fixture.debugElement.injector.get(Router);
       spyOn(routerStub, 'navigate').and.callThrough();
       const button = await loader.getHarness(MatButtonHarness);
 
       await button.click();
 
-      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['region']);
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['map']);
     });
   });
 

@@ -25,7 +25,7 @@ import { ProjectCardComponent } from './map/project-card/project-card.component'
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
-import { RegionSelectionComponent } from './region-selection/region-selection.component';
+import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import {
   AuthGuard,
   AuthService,
@@ -39,6 +39,7 @@ import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/condition-tree.component';
+import { HomeComponent } from './home/home.component';
 
 @NgModule({
   declarations: [
@@ -57,6 +58,7 @@ import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/c
     LayerInfoCardComponent,
     MapControlPanelComponent,
     ConditionTreeComponent,
+    HomeComponent,
   ],
   imports: [
     AppRoutingModule,
