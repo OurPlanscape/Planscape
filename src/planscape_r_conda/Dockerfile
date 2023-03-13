@@ -28,6 +28,8 @@ RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "sessionInfo()"
 RUN R -e ".libPaths()"
+RUN R -e "search()"
+
 
 RUN python -m rpy2.situation
 # ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib/R/library:/usr/local/lib:${LD_LIBRARY_PATH}
