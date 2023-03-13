@@ -55,6 +55,9 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
     });
   }
 
+  /** Retrieve plans from backend and sort them by date created, descending.
+   *  TODO: Sort by last updated instead when that field is available.
+   */
   getPlansFromService(): void {
     this.planService
       .listPlansByUser(null)
