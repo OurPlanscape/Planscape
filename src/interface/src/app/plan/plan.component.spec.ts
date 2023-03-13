@@ -66,6 +66,7 @@ describe('PlanComponent', () => {
       updateStateWithScenario: of(),
       updateStateWithConfig: of(),
       getScenariosForPlan: of([]),
+      updateStateWithShapes: of([]),
     });
     fakeService.planState$ = of({});
 
