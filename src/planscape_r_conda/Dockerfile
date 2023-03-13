@@ -54,6 +54,8 @@ RUN ldd --version
 
 RUN yum -y install binutils
 RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
+RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
+RUN ln -s /miniconda3/lib/libstdc++.so.6 /lib64/libstdc++.so.6
 
 # RUN ln -s /miniconda3/lib/libstdc++.so.6.0.29 /lib64/libstdc++.so.6.0.29
 
