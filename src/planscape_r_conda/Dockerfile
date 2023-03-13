@@ -21,23 +21,23 @@ ENV PATH=${PATH}:/miniconda3/bin
 # /miniconda3/bin/python
 # Lambda will always execute from /var/lang/bin/python!
 RUN which python
+RUN which pip
 
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils rpy2
+RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "sessionInfo()"
 RUN R -e ".libPaths()"
 RUN R -e "search()"
 
-RUN ln -s /miniconda3/bin/R /usr/bin/R
-RUN ln -s /miniconda3/lib/R /usr/lib/R
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
-RUN /var/lang/bin/python rpy2.situation
+RUN pip install rpy2
+RUN python rpy2.situation
 RUN echo $LD_LIBRARY_PATH
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
 
