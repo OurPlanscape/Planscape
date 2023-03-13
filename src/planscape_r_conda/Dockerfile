@@ -22,13 +22,9 @@ RUN echo $PATH
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
-RUN /miniconda3/bin/activate
+RUN conda activate
 RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
 
-RUN conda list
-
-# RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
-# RUN R -e "install.packages('tidyverse', repos='http://cran.rstudio.com/')"
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
@@ -36,10 +32,11 @@ RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 # RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
 ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib:${LD_LIBRARY_PATH}
-RUN /miniconda3/bin/deactivate
+RUN conda deactivate
 COPY requirements.txt  .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+RUN /var/lang/bin/pip install --upgrade pip
+RUN /var/lang/bin/pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
+RUN pip --version
 
 RUN ln -s /miniconda/bin/R /usr/bin/R
 
@@ -47,10 +44,10 @@ RUN ln -s /miniconda/bin/R /usr/bin/R
 RUN whereis R
 # /miniconda3/lib/R
 RUN R RHOME
+# python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
 RUN whereis python
+# pip: /miniconda3/bin/pip /miniconda3/bin/pip3.10 /var/lang/bin/pip /var/lang/bin/pip3.10
 RUN whereis pip
-RUN whereis rpy2
-RUN whereis lblas
 RUN echo $PATH
 RUN echo $LD_LIBRARY_PATH
 
