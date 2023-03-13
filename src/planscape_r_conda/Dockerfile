@@ -30,11 +30,9 @@ RUN /miniconda3/bin/deactivate
 
 RUN ln -s /miniconda/bin/R /usr/bin/R
 RUN ldd /miniconda3/lib/R/lib/libR.so
+RUN ldd /usr/lib/R/lib/libR.so
 
-# RUN conda pip install awslambdaric
-# RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
-
-ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib:${LD_LIBRARY_PATH}
+# ENV LD_LIBRARY_PATH=/miniconda3/lib/R/lib:/miniconda3/lib:${LD_LIBRARY_PATH}
 COPY requirements.txt  .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
@@ -59,7 +57,8 @@ RUN whereis R
 RUN which R
 
 
-
+# RUN conda pip install awslambdaric
+# RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
