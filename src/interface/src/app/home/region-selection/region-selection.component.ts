@@ -14,7 +14,6 @@ import { SessionService } from '../../services';
   styleUrls: ['./region-selection.component.scss']
 })
 export class RegionSelectionComponent implements OnInit {
-  selectedRegion$ = this.sessionService.region$;
   readonly regionOptions: RegionOption[] = regionOptions;
 
   constructor(

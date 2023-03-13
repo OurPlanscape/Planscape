@@ -1,9 +1,13 @@
-import { BehaviorSubject } from 'rxjs';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { BehaviorSubject } from 'rxjs';
+import { MaterialModule } from 'src/app/material/material.module';
 
+import { SessionService } from '../../services';
 import { Region } from '../../types';
 import { RegionSelectionComponent } from './region-selection.component';
-import { SessionService } from '../../services';
 
 // selector names for getting DOM elements
 enum CssSelector {
@@ -13,23 +17,23 @@ enum CssSelector {
 describe('RegionSelectionComponent', () => {
   let component: RegionSelectionComponent;
   let fixture: ComponentFixture<RegionSelectionComponent>;
+  let loader: HarnessLoader;
   let mockSessionService: Partial<SessionService>;
 
   beforeEach(async () => {
     mockSessionService = {
-      region$: new BehaviorSubject<Region|null>(null),
+      region$: new BehaviorSubject<Region | null>(null),
       setRegion: () => {},
     };
 
     await TestBed.configureTestingModule({
-      declarations: [ RegionSelectionComponent ],
-      providers: [
-        {provide: SessionService, useValue: mockSessionService},
-      ],
-    })
-    .compileComponents();
+      imports: [MaterialModule],
+      declarations: [RegionSelectionComponent],
+      providers: [{ provide: SessionService, useValue: mockSessionService }],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RegionSelectionComponent);
+    loader = TestbedHarnessEnvironment.loader(fixture);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
@@ -38,23 +42,28 @@ describe('RegionSelectionComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should set available region', () => {
-    const element: HTMLElement = fixture.nativeElement;
-    const sierraNevadaElement: any = element.querySelectorAll(CssSelector.RegionButton)[0];
+  it('should set available region', async () => {
     const setRegionSpy = spyOn<any>(mockSessionService, 'setRegion');
+    const sierraNevadaButton: MatButtonHarness = await loader.getHarness(
+      MatButtonHarness.with({ text: /SIERRA NEVADA/ })
+    );
 
-    sierraNevadaElement.click();
+    await sierraNevadaButton.click();
 
     expect(setRegionSpy).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
   });
 
-  it('should disable unavailable regions', () => {
-    const setRegionSpy = spyOn<any>(mockSessionService, 'setRegion');
-    const element: HTMLElement = fixture.nativeElement;
-    const regionElement: any = element.querySelectorAll(CssSelector.RegionButton)[2];
+  it('should disable unavailable regions', async () => {
+    const regionButtons: MatButtonHarness[] = await loader.getAllHarnesses(
+      MatButtonHarness
+    );
 
-    regionElement.click();
-
-    expect(setRegionSpy).not.toHaveBeenCalled();
+    for (let regionButton of regionButtons) {
+      if ((await regionButton.getText()).match(/SIERRA NEVADA/)) {
+        expect(await regionButton.isDisabled()).toBeFalse();
+      } else {
+        expect(await regionButton.isDisabled()).toBeTrue();
+      }
+    }
   });
 });
