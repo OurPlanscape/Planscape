@@ -44,8 +44,6 @@ RUN which R
 # RUN pip install --upgrade pip
 # RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-# RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
-
 # Copy function code
 COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
 COPY rank.R ${LAMBDA_TASK_ROOT}
