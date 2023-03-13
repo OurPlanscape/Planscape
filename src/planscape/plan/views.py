@@ -495,6 +495,7 @@ def create_project_areas_for_project(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+
 def _serialize_project_areas(areas: QuerySet):
     response = {}
     for area in areas:
@@ -578,6 +579,44 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@csrf_exempt
+def update_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        owner = get_user(request)
+
+        body = json.loads(request.body)
+        scenario_id = body.get('id', None)
+        if scenario_id is None or not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+
+        scenario = Scenario.objects.get(id=scenario_id)
+        if scenario.owner != owner:
+            raise ValueError(
+                "You do not have permission to view this project.")
+
+        notes = body.get("notes", None)
+        status = body.get("status", None)
+
+        if notes is not None and not (isinstance(notes, str)):
+            raise ValueError("Notes must be a string value")
+
+        if status is not None and not (isinstance(status, int)):
+            raise ValueError("Status must be a valid ScenarioStatus option")
+
+        if request.method == "PATCH":
+            s = ScenarioSerializer(scenario, data=body, partial=True)
+            s.is_valid(raise_exception=True)
+            s.save()
+        else:
+            raise KeyError(
+                "HTTP methods other than PUT are not yet implemented")
+        scenario.save()
+        return JsonResponse({'updated': scenario.pk})
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
 def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, project: Project) -> dict:
     result = ScenarioSerializer(scenario).data
 
@@ -594,7 +633,7 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, 
                 pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
 
     result['project_areas'] = _serialize_project_areas(areas)
-    # TODO: project should be a required field 
+    # TODO: project should be a required field
     if project is not None:
         result['config'] = _serialize_project(project)
 
@@ -661,7 +700,7 @@ def delete_scenarios(request: HttpRequest) -> HttpResponse:
             raise ValueError("Must specify scenario_ids as a list")
 
         scenarios = [Scenario.objects.get(pk=scenario_id)
-                for scenario_id in scenario_ids]
+                     for scenario_id in scenario_ids]
 
         # Check that the user owns the scenarios
         for scenario in scenarios:
@@ -671,7 +710,7 @@ def delete_scenarios(request: HttpRequest) -> HttpResponse:
 
         for scenario in scenarios:
             scenario.delete()
-        
+
         response_data = scenario_ids
         return HttpResponse(
             json.dumps(response_data),
