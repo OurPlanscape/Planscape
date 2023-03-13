@@ -12,11 +12,9 @@ import { createFeatureGuard } from './features/feature.guard';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
-import { PlanTableComponent } from './plan/plan-table/plan-table.component';
 import { PlanComponent } from './plan/plan.component';
 import { ScenarioConfirmationComponent } from './plan/scenario-confirmation/scenario-confirmation.component';
 import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
-import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import { SignupComponent } from './signup/signup.component';
 
 const routes: Routes = [
@@ -65,7 +63,6 @@ const routes: Routes = [
         title: 'Generating Scenario',
         component: ScenarioConfirmationComponent,
       },
-      { path: 'plan', title: 'My Plans', component: PlanTableComponent },
     ],
   },
 ];

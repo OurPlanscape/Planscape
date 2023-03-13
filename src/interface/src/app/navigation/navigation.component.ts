@@ -29,11 +29,6 @@ export class NavigationComponent implements OnInit, OnDestroy {
       href: "/map",
       icon: "explore",
     },
-    {
-      text: "My Plans",
-      href: "/plan",
-      icon: "edit_document",
-    },
   ]
   isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
 

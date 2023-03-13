@@ -10,8 +10,8 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanPreview, Region } from 'src/app/types';
 
-import { AuthService } from './../../services/auth.service';
-import { PlanService } from './../../services/plan.service';
+import { AuthService } from '../../services/auth.service';
+import { PlanService } from '../../services/plan.service';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 import { PlanTableComponent } from './plan-table.component';
 

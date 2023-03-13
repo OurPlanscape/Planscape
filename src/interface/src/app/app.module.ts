@@ -15,8 +15,12 @@ import { AccountDialogComponent } from './account-dialog/account-dialog.componen
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
+import { HomeComponent } from './home/home.component';
+import { PlanTableComponent } from './home/plan-table/plan-table.component';
+import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import { LoginComponent } from './login/login.component';
 import { LayerInfoCardComponent } from './map/layer-info-card/layer-info-card.component';
+import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/condition-tree.component';
 import { MapControlPanelComponent } from './map/map-control-panel/map-control-panel.component';
 import { MapNameplateComponent } from './map/map-nameplate/map-nameplate.component';
 import { MapComponent } from './map/map.component';
@@ -25,7 +29,6 @@ import { ProjectCardComponent } from './map/project-card/project-card.component'
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
-import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import {
   AuthGuard,
   AuthService,
@@ -38,8 +41,6 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
-import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/condition-tree.component';
-import { HomeComponent } from './home/home.component';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import { HomeComponent } from './home/home.component';
     MapControlPanelComponent,
     ConditionTreeComponent,
     HomeComponent,
+    PlanTableComponent,
   ],
   imports: [
     AppRoutingModule,
