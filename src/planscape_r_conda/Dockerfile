@@ -41,6 +41,7 @@ COPY requirements.txt  .
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
+RUN ln -s /miniconda/bin/R /usr/bin/R
 
 # R: /miniconda3/bin/R
 RUN whereis R
