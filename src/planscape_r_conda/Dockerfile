@@ -47,7 +47,8 @@ ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/miniconda3/lib
 
 RUN ls /miniconda3/lib
 RUN ls /lib64
-RUN ldd /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
+RUN ldd /miniconda3/lib/libstdc++.so.6
+RUN ldd /lib64/libstdc++.so.6
 
 # RUN ln -s /miniconda3/lib/libstdc++.so.6.0.29 /lib64/libstdc++.so.6.0.29
 
