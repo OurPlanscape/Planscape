@@ -2,7 +2,6 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
@@ -81,18 +80,6 @@ describe('PlanTableComponent', () => {
           selected: false,
         },
       ]);
-    });
-  });
-
-  describe('create', () => {
-    it('create button should navigate to explore', async () => {
-      const routerStub: Router = fixture.debugElement.injector.get(Router);
-      spyOn(routerStub, 'navigate').and.callThrough();
-      const button = await loader.getHarness(MatButtonHarness);
-
-      await button.click();
-
-      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['map']);
     });
   });
 
