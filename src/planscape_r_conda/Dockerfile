@@ -43,7 +43,7 @@ RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN pip install rpy2
 # RUN python -m rpy2.situation
 RUN echo $LD_LIBRARY_PATH
-ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/miniconda3/lib
+ENV LD_LIBRARY_PATH=/miniconda3/lib:${LD_LIBRARY_PATH}
 
 RUN which gcc
 RUN ls /miniconda3/lib
@@ -55,7 +55,7 @@ RUN ldd --version
 RUN yum -y install binutils
 RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
 RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
-RUN ln -s /miniconda3/lib/libstdc++.so.6 /lib64/libstdc++.so.6
+# RUN ln -s /miniconda3/lib/libstdc++.so.6 /lib64/libstdc++.so.6
 
 # RUN ln -s /miniconda3/lib/libstdc++.so.6.0.29 /lib64/libstdc++.so.6.0.29
 
