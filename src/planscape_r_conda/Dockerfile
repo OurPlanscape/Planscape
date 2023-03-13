@@ -17,7 +17,7 @@ RUN yum -y install openssl-devel udunits2-devel
 
 RUN yum -y install util-linux
 # /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
-ENV PATH=/miniconda3/bin:${PATH}
+ENV PATH=${PATH}:/miniconda3/bin
 
 RUN conda init bash
 RUN conda init zsh
@@ -30,7 +30,8 @@ RUN R -e "sessionInfo()"
 RUN R -e ".libPaths()"
 RUN R -e "search()"
 
-
+RUN ln -s /miniconda/bin/R /usr/bin/R
+RUN ln -s /miniconda/lib/R /usr/lib/R
 RUN python -m rpy2.situation
 ENV LD_LIBRARY_PATH=/var/lang/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib:/miniconda3/lib/R/lib:/miniconda3/lib/R/library:${LD_LIBRARY_PATH}:
 
