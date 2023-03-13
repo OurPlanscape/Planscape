@@ -45,6 +45,7 @@ RUN pip install rpy2
 RUN echo $LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/miniconda3/lib
 
+RUN which gcc
 RUN ls /miniconda3/lib
 RUN ls /lib64
 RUN ldd /miniconda3/lib/libstdc++.so.6
