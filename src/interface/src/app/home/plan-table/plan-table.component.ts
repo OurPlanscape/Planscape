@@ -7,8 +7,8 @@ import { Router } from '@angular/router';
 import { take } from 'rxjs';
 import { AuthService } from 'src/app/services';
 
-import { PlanService } from './../../services/plan.service';
-import { PlanPreview } from './../../types/plan.types';
+import { PlanService } from '../../services/plan.service';
+import { PlanPreview } from '../../types/plan.types';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 
 interface PlanRow extends PlanPreview {
