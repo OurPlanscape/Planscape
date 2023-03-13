@@ -1,24 +1,19 @@
 <div class="center-block">
-  <!-- Main Planscape image -->
-  <section class="image-section">
-    <img src="assets/svg/planscape-image.svg">
-  </section>
-
   <!-- Content text -->
   <section class="content-section">
-    Different regions are associated with different datasets from the Regional Resource Kits.
-    <br>Which region are you working on?
+    Welcome to Planscape!
+    <br>Choose a region to explore
   </section>
 
   <!-- The region buttons -->
   <section class="content-section">
-    <div
+    <button
+      mat-raised-button
       *ngFor="let region of regionOptions"
-      class="region-button"
-      (click)="setRegion(region)"
-      [class.disabled]="!region.available">
-      <div class="blank-region-icon" [class.selected]="region.type === (selectedRegion$ | async)"></div>
-      <div class="region-label">{{ region.name }}</div>
-    </div>
+      color="primary"
+      [disabled]="!region.available"
+      (click)="setRegion(region)">
+      {{ region.name | uppercase }}
+    </button>
   </section>
 </div>
