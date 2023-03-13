@@ -27,6 +27,7 @@ RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "sessionInfo()"
+RUN R -e ".libPaths()"
 RUN /miniconda3/bin/deactivate
 
 RUN ln -s /miniconda/bin/R /usr/bin/R
