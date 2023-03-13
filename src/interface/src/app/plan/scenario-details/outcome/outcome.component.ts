@@ -1,7 +1,7 @@
 import { Component, Input, SimpleChanges, OnChanges, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { Scenario, Plan, ProjectArea } from 'src/app/types';
+import { Scenario, Plan, Priority, ProjectArea } from 'src/app/types';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -13,19 +13,9 @@ export class OutcomeComponent implements OnChanges {
   @Input() plan: Plan | null = null;
   @Input() scenario: Scenario | null = null;
   scenarioNotes: FormGroup;
+  priorities: Priority[] = [];
   totalAcresTreated: number = 0;
   totalCostRange: string = '';
-
-  // TODO: Use real priorities from the backend.
-  priorities: {
-    name: string;
-    value: number;
-  }[] = [
-    {
-      name: 'Fire Dynamics',
-      value: 3,
-    },
-  ];
 
   constructor(private fb: FormBuilder) {
     // TODO: Call update scenario on submit.
@@ -42,6 +32,7 @@ export class OutcomeComponent implements OnChanges {
       ) {
         this.scenarioNotes.controls['notes'].setValue(this.scenario.notes);
       }
+      this.priorities = this.scenario.priorities || [];
       this.totalAcresTreated = this.calculateTotalAcresTreated(
         this.scenario.projectAreas || []
       );
