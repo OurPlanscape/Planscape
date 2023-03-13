@@ -31,9 +31,9 @@
             <h3>Selected priorities</h3>
             <h3>Relative importance (1-5)</h3>
           </div>
-          <ng-container *ngFor="let priority of priorities">
+          <ng-container *ngFor="let priority of scenario?.priorities || []">
             <div class="flex-row space-between">
-              <h2>{{ priority.name | titlecase }}</h2>
+              <h2>{{ priority.name | titlecase  }}</h2>
               <div class="flex-row">
                 <mat-slider [disabled]=true [min]="1" [max]="5" [thumbLabel]="true" [value]="priority.weight"
                   color="primary" [step]="1">
