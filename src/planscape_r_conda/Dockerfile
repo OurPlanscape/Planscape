@@ -27,21 +27,20 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base 
-# r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
-# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
-RUN R -e "sessionInfo()"
-RUN R -e ".libPaths()"
-RUN R -e "search()"
+RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils
+RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+# RUN R -e "sessionInfo()"
+# RUN R -e ".libPaths()"
+# RUN R -e "search()"
 
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
-RUN R -e "sessionInfo()"
-RUN R -e ".libPaths()"
-RUN R -e "search()"
-RUN pip install rpy2
-RUN python -m rpy2.situation
+# RUN R -e "sessionInfo()"
+# RUN R -e ".libPaths()"
+# RUN R -e "search()"
+# RUN pip install rpy2
+# RUN python -m rpy2.situation
 RUN echo $LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/miniconda3/lib
 
