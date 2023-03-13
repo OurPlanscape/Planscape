@@ -28,6 +28,8 @@ RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN /miniconda3/bin/deactivate
 
+RUN ln -s /miniconda/bin/R /usr/bin/R
+
 # RUN conda pip install awslambdaric
 # RUN ln -sf /opt/conda-env/bin/python /var/lang/bin/python3.8
 
@@ -36,6 +38,10 @@ COPY requirements.txt  .
 RUN python -m pip install --upgrade pip
 RUN python -m pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
+# pip: /miniconda3/bin/pip /miniconda3/bin/pip3.10 /var/lang/bin/pip /var/lang/bin/pip3.10
+RUN whereis pip
+RUN which pip
+
 RUN python -m pip --version
 RUN python -m pip show rpy2
 RUN python -m pip list -v
@@ -43,20 +49,15 @@ RUN pip --version
 RUN pip show rpy2
 RUN pip list -v
 
-RUN ln -s /miniconda/bin/R /usr/bin/R
+# python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
+RUN whereis python
+RUN which python
 
 # R: /miniconda3/bin/R
 RUN whereis R
 RUN which R
-# /miniconda3/lib/R
-RUN R RHOME
-# python: /usr/bin/python /usr/bin/python2.7 /usr/lib/python2.7 /usr/lib64/python2.7 /etc/python /usr/include/python2.7 /miniconda3/bin/python3.10-config /miniconda3/bin/python /miniconda3/bin/python3.10 /miniconda3/bin/python3.1 /var/lang/bin/python3.10-config /var/lang/bin/python /var/lang/bin/python3.10 /usr/share/man/man1/python.1.gz
-RUN whereis python
-RUN which python
-# pip: /miniconda3/bin/pip /miniconda3/bin/pip3.10 /var/lang/bin/pip /var/lang/bin/pip3.10
-RUN whereis pip
-RUN echo $PATH
-RUN echo $LD_LIBRARY_PATH
+
+
 
 
 # Copy function code
