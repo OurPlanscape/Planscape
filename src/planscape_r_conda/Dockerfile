@@ -12,6 +12,8 @@ RUN yum install -y which
 RUN yum -y install tar
 RUN yum -y install binutils
 
+RUN yum -y remove sqlite3
+
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openssl-devel udunits2-devel
