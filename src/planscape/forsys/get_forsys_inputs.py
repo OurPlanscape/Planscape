@@ -1,17 +1,17 @@
-from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import (ConditionPixelValues,
-                                     compute_condition_stats_from_raster,
-                                     get_condition_values_from_raster,
+from conditions.raster_utils import (compute_condition_stats_from_raster,
                                      get_raster_geo)
-from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.contrib.gis.geos import Polygon
 from forsys.cluster_stands import ClusteredStands
 from forsys.forsys_request_params import (ClusterAlgorithmType,
                                           ForsysGenerationRequestParams,
                                           ForsysRankingRequestParams)
 from forsys.merge_polygons import merge_polygons
+from forsys.raster_condition_fetcher import (RasterConditionFetcher,
+                                             get_base_condition_ids_to_names,
+                                             get_conditions)
+from forsys.raster_condition_treatment_eligibility_selector import (
+    RasterConditionTreatmentEligibilitySelector)
 from planscape import settings
-
-# TODO: break this into several smaller files.
 
 
 # Forsys input dataframe headers.
@@ -78,38 +78,6 @@ def _get_initialized_forsys_input_with_common_headers(
     return forsys_input
 
 
-# Given a list of priorities (i.e. condition names), returns a dictionary
-# mapping condition ID's to condition names.
-# Raises an error if any of the priorities don't have a corresponding condition.
-# TODO: this may not be necessary if we use Django's "select_related" function.
-def _get_base_condition_ids_to_names(region: str,
-                                     priorities: list) -> dict[int, str]:
-    base_condition_ids_to_names = {
-        c.pk: c.condition_name
-        for c in BaseCondition.objects.filter(region_name=region).filter(
-            condition_name__in=priorities).all()}
-    if len(priorities) != len(base_condition_ids_to_names.keys()):
-        raise Exception("of %d priorities, only %d had base conditions" % (
-            len(priorities), len(base_condition_ids_to_names.keys())))
-    return base_condition_ids_to_names
-
-
-# Given a list of condition ID's, returns a list of conditions.
-# Output conditions may not be listed in the same order as condition_ids.
-# Raises an error if any of the input condition ID's don't have a corresponding
-# condition.
-def _get_conditions(condition_ids: list[int]) -> list[Condition]:
-    conditions = list(Condition.objects.filter(
-        condition_dataset_id__in=condition_ids).filter(
-        is_raw=False).all())
-    if len(condition_ids) != len(conditions):
-        raise Exception(
-            "of %d priorities, only %d had conditions" %
-            (len(condition_ids),
-                len(conditions)))
-    return conditions
-
-
 class ForsysRankingInput():
     # Treatment cost per kilometer-squared (in USD)
     # TODO: make this variable based on a user input and/or a treatment cost
@@ -130,9 +98,9 @@ class ForsysRankingInput():
         priorities = params.priorities
         project_areas = params.project_areas
 
-        base_condition_ids_to_names = _get_base_condition_ids_to_names(
+        base_condition_ids_to_names = get_base_condition_ids_to_names(
             region, priorities)
-        conditions = _get_conditions(base_condition_ids_to_names.keys())
+        conditions = get_conditions(base_condition_ids_to_names.keys())
 
         self.forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
@@ -186,15 +154,10 @@ class ForsysGenerationInput():
     forsys_input: dict[str, list]
 
     # ----- Intermediate data -----
-    # Maps condition names to retrieved ConditionPixelValues instances.
-    _conditions_to_raster_values: dict[str, ConditionPixelValues]
-    # The origin coordinate used when merging ConditionPixelValues instances, which may have different top-left coordinates, across all conditions.
-    _topleft_coords: tuple[float, float]
-    # Raw condition values merged via embedded dictionaries keyed by x pixel
-    # index, y pixel index, and condition name.
-    _pixel_dist_x_to_y_to_condition_to_values = dict[int,
-                                                     dict[int,
-                                                          dict[str, float]]]
+    # This fetches raw raster data.
+    # It contains raw raster data and the topleft coordinate.
+    _condition_fetcher: RasterConditionFetcher
+    _treatment_eligibility_selector: RasterConditionTreatmentEligibilitySelector
 
     def __init__(
             self, params: ForsysGenerationRequestParams,
@@ -205,20 +168,19 @@ class ForsysGenerationInput():
 
         geo = get_raster_geo(planning_area)
 
-        self._conditions_to_raster_values,  self._topleft_coords = \
-            self._fetch_condition_raster_values(geo, priorities, region)
-        # This populates self._pixel_dist_x_to_y_to_condition_to_values.
-        self._pixel_dist_x_to_y_to_condition_to_values = \
-            self._merge_condition_raster_values(
-                self._conditions_to_raster_values, self._topleft_coords)
-        width, height = self._get_width_and_height(
-            self._pixel_dist_x_to_y_to_condition_to_values)
+        self._condition_fetcher = RasterConditionFetcher(
+            region, priorities, geo)
+
+        self._treatment_eligibility_selector = RasterConditionTreatmentEligibilitySelector(
+            self._condition_fetcher.conditions_to_raster_values, self._condition_fetcher.topleft_coords, priorities, geo)
 
         self.forsys_input = None
         if params.cluster_params.cluster_algorithm_type == \
                 ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON:
             clustered_stands = ClusteredStands(
-                self._pixel_dist_x_to_y_to_condition_to_values, width, height,
+                self._treatment_eligibility_selector.get_values_eligible_for_treatment(),
+                self._treatment_eligibility_selector.width,
+                self._treatment_eligibility_selector.height,
                 params.get_priority_weights_dict(),
                 params.cluster_params.pixel_index_weight,
                 params.cluster_params.num_clusters)
@@ -227,166 +189,20 @@ class ForsysGenerationInput():
                     self._convert_clustered_merged_condition_rasters_to_input_df(
                         headers, priorities,
                         clustered_stands.clusters_to_stands,
-                        self._pixel_dist_x_to_y_to_condition_to_values)
+                        self._condition_fetcher.topleft_coords,
+                        self._treatment_eligibility_selector)
 
         if self.forsys_input is None:
-            self.forsys_input = \
-                self._convert_merged_condition_rasters_to_input_df(
-                    headers, priorities,
-                    self._pixel_dist_x_to_y_to_condition_to_values)
-
-    # Fetches ConditionPixelValues instances and places them in
-    # self._conditions_to_raster_values, a dictionary mapping condition names
-    # to the ConditionPixelValues instances.
-    def _fetch_condition_raster_values(
-            self, geo: GEOSGeometry, priorities: list[str],
-            region: str) -> tuple[dict[str, ConditionPixelValues],
-                                  tuple[float, float]]:
-        base_condition_ids_to_names = _get_base_condition_ids_to_names(
-            region, priorities)
-        conditions = _get_conditions(base_condition_ids_to_names.keys())
-
-        conditions_to_raster_values = {}
-        topleft_coords = None
-        for c in conditions:
-            # TODO: replace this with select_related.
-            name = base_condition_ids_to_names[c.condition_dataset_id]
-            values = get_condition_values_from_raster(geo, c.raster_name)
-            if values is None:
-                raise Exception(
-                    "plan has no intersection with condition raster, %s" %
-                    name)
-            conditions_to_raster_values[name] = values
-            topleft_coords = self._get_updated_topleft_coords(
-                values, topleft_coords)
-        return conditions_to_raster_values, topleft_coords
-
-    # Updates self._topleft_coords if the one represented by
-    # condition_pixel_values is further to the top-left corner according to the
-    # raster scale.
-    def _get_updated_topleft_coords(
-            self, condition_pixel_values: ConditionPixelValues,
-            topleft_coords: tuple[float, float] | None) -> tuple[float, float]:
-        if condition_pixel_values["upper_left_coord_x"] is None:
-            raise Exception(
-                "fetched poorly-formatted raster pixel data" +
-                " - missing upper_left_coord_x")
-        if condition_pixel_values["upper_left_coord_y"] is None:
-            raise Exception(
-                "fetched poorly-formatted raster pixel data" +
-                " - missing upper_left_coord_y")
-        if topleft_coords is None:
-            return (condition_pixel_values["upper_left_coord_x"],
-                    condition_pixel_values["upper_left_coord_y"])
-        return (self._select_topleft_coord(
-            topleft_coords[0],
-            condition_pixel_values["upper_left_coord_x"],
-            settings.CRS_9822_SCALE[0]),
-            self._select_topleft_coord(
-            topleft_coords[1],
-            condition_pixel_values["upper_left_coord_y"],
-            settings.CRS_9822_SCALE[1]))
-
-    # Given two coordinates, selects the one that represents a lower pixel
-    # distance index according to the scale.
-    def _select_topleft_coord(
-            self, coord1: float, coord2: float, scale: float) -> float:
-        return min(coord1, coord2) if scale > 0 else max(coord1, coord2)
-
-    # Merges the conditionPixelValues instances in self
-    # _conditions_to_raster_values into a dictionary mapping x pixel positions
-    # to y pixel positions to condition names to values. x and y pixels are
-    # computed using self._topleft_coords.
-    def _merge_condition_raster_values(
-            self,
-            conditions_to_raster_values: dict[str, ConditionPixelValues],
-            topleft_coords: tuple[float, float]
-    ) -> dict[int, dict[int, dict[str, float]]]:
-        pixel_dist_x_to_y_to_condition_to_values = {}
-
-        for condition_name in conditions_to_raster_values.keys():
-            values = conditions_to_raster_values[condition_name]
-            xdiff = self._get_pixel_dist_diff(
-                values["upper_left_coord_x"],
-                topleft_coords[0],
-                settings.CRS_9822_SCALE[0])
-            ydiff = self._get_pixel_dist_diff(
-                values["upper_left_coord_y"],
-                topleft_coords[1],
-                settings.CRS_9822_SCALE[1])
-            for i in range(len(values["pixel_dist_x"])):
-                x = values["pixel_dist_x"][i] + xdiff
-                y = values["pixel_dist_y"][i] + ydiff
-                # TODO: adjust the 1 - score logic as we move to AP score.
-                value = 1.0 - values["values"][i]
-                self._insert_value_in_position_and_condition_dict(
-                    x, y, condition_name, value,
-                    pixel_dist_x_to_y_to_condition_to_values)
-
-        return self._get_stands_containing_all_condition_scores(
-            pixel_dist_x_to_y_to_condition_to_values,
-            list(conditions_to_raster_values.keys()))
-
-    # Computes the distance, in pixels, between two coordinates.
-    def _get_pixel_dist_diff(
-            self, coord: float, origin_coord: float, scale: float) -> int:
-        return int((coord - origin_coord) / scale)
-
-    # Copies stands with the complete set of condition scores to an output
-    # dictionary. Ignores stands missing the complete set of condition scores.
-    def _get_stands_containing_all_condition_scores(
-        self,
-        x_to_y_to_condition_to_values: dict[int, dict[int, dict[str, float]]],
-        conditions: list[str]
-    ) -> dict[int, dict[int, dict[str, float]]]:
-        output = {}
-        for x in x_to_y_to_condition_to_values.keys():
-            y_to_condition_to_values = x_to_y_to_condition_to_values[x]
-            for y in y_to_condition_to_values.keys():
-                conditions_to_values = y_to_condition_to_values[y]
-                if len(conditions_to_values.keys()) != len(conditions):
-                    continue
-                for c in conditions_to_values.keys():
-                    self._insert_value_in_position_and_condition_dict(
-                        x, y, c, conditions_to_values[c], output)
-        return output
-
-    # Inserts a value into the x-to-y-to-condition-to-value dictionary.
-    def _insert_value_in_position_and_condition_dict(
-            self, x: int, y: int, condition: str, value: float,
-            d: dict[int, dict[int, dict[str, float]]]) -> None:
-        if x not in d.keys():
-            d[x] = {}
-
-        d = d[x]
-        if y not in d.keys():
-            d[y] = {}
-
-        d = d[y]
-        d[condition] = value
-
-    # Returns the width and height of an image represented by parameter,
-    # x_to_y_to_condition_to_values.
-    def _get_width_and_height(
-        self,
-        x_to_y_to_condition_to_values: dict[int, dict[int, dict[str, float]]]
-    ) -> list[int, int]:
-        max_x = 0
-        max_y = 0
-        for x in x_to_y_to_condition_to_values.keys():
-            y_to_condition_to_values = x_to_y_to_condition_to_values[x]
-            max_x = max(max_x, x)
-            for y in y_to_condition_to_values.keys():
-                max_y = max(max_y, y)
-        return [max_x + 1, max_y + 1]
+            self.forsys_input = self._convert_merged_condition_rasters_to_input_df(
+                headers, priorities, self._condition_fetcher.topleft_coords, self._treatment_eligibility_selector)
 
     # Converts self._pixel_dist_x_to_y_to_condition_to_values into forsys input
     # dataframe data.
     def _convert_merged_condition_rasters_to_input_df(
         self, headers: ForsysInputHeaders,
         priorities: list[str],
-        x_to_y_to_conditions_to_values: dict[int,
-                                             dict[int, dict[str, float]]]
+        topleft_coords: tuple[float, float],
+        treatment_eligibility_selector: RasterConditionTreatmentEligibilitySelector
     ) -> dict[str, list]:
         forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
@@ -398,10 +214,13 @@ class ForsysGenerationInput():
 
         DUMMY_PROJECT_ID = 0
         stand_id = 0
-        for x in x_to_y_to_conditions_to_values.keys():
-            y_to_conditions_to_values = x_to_y_to_conditions_to_values[x]
-            for y in y_to_conditions_to_values.keys():
-                conditions_to_values = y_to_conditions_to_values[y]
+        print("pixels to treat", treatment_eligibility_selector.pixels_to_treat)
+        print("pixels to pass through",
+              treatment_eligibility_selector.pixels_to_pass_through)
+        for x in treatment_eligibility_selector.pixels_to_treat.keys():
+            for y in treatment_eligibility_selector.pixels_to_treat[x]:
+                conditions_to_values = treatment_eligibility_selector.x_to_y_to_condition_to_values[
+                    x][y]
                 priority_scores = {}
                 for p in conditions_to_values.keys():
                     priority_scores[headers.get_priority_header(
@@ -413,16 +232,17 @@ class ForsysGenerationInput():
                     stand_id, settings.RASTER_PIXEL_AREA,
                     settings.RASTER_PIXEL_AREA *
                     self.TREATMENT_COST_PER_KM_SQUARED,
-                    self._get_raster_pixel_geo(x, y).wkt)
+                    self._get_raster_pixel_geo(x, y, topleft_coords).wkt)
                 stand_id = stand_id + 1
         return forsys_input
 
     # Returns a Polygon representing the raster pixel at pixel position,
     # (x, y).
-    def _get_raster_pixel_geo(self, x: int, y: int) -> Polygon:
-        xmin = self._topleft_coords[0] + settings.CRS_9822_SCALE[0] * x
+    def _get_raster_pixel_geo(self, x: int, y: int,
+                              topleft_coords: tuple[float, float]) -> Polygon:
+        xmin = topleft_coords[0] + settings.CRS_9822_SCALE[0] * x
         xmax = xmin + settings.CRS_9822_SCALE[0]
-        ymin = self._topleft_coords[1] + settings.CRS_9822_SCALE[1] * y
+        ymin = topleft_coords[1] + settings.CRS_9822_SCALE[1] * y
         ymax = ymin + settings.CRS_9822_SCALE[1]
         geo = Polygon(((xmin, ymin),
                        (xmin, ymax),
@@ -436,8 +256,8 @@ class ForsysGenerationInput():
         self, headers: ForsysInputHeaders,
         priorities: list[str],
         clusters_to_stands: dict[int, tuple[int, int]],
-        x_to_y_to_conditions_to_values: dict[int,
-                                             dict[int, dict[str, float]]]
+        topleft_coords: tuple[float, float],
+        treatment_eligibility_selector: RasterConditionTreatmentEligibilitySelector
     ) -> dict[str, list]:
         forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
@@ -464,8 +284,9 @@ class ForsysGenerationInput():
             for stand_pixel_pos in stands:
                 x = stand_pixel_pos[0]
                 y = stand_pixel_pos[1]
-                geos.append(self._get_raster_pixel_geo(x, y))
-                conditions_to_values = x_to_y_to_conditions_to_values[x][y]
+                geos.append(self._get_raster_pixel_geo(x, y, topleft_coords))
+                conditions_to_values = \
+                    treatment_eligibility_selector.x_to_y_to_condition_to_values[x][y]
                 for p in conditions_to_values.keys():
                     priority_header = headers.get_priority_header(p)
                     priority_score = conditions_to_values[p]
