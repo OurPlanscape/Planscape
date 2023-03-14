@@ -1,5 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { BehaviorSubject } from 'rxjs';
@@ -8,11 +9,6 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { SessionService } from '../../services';
 import { Region } from '../../types';
 import { RegionSelectionComponent } from './region-selection.component';
-
-// selector names for getting DOM elements
-enum CssSelector {
-  RegionButton = '.region-button',
-}
 
 describe('RegionSelectionComponent', () => {
   let component: RegionSelectionComponent;
@@ -27,7 +23,7 @@ describe('RegionSelectionComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [HttpClientTestingModule, MaterialModule],
       declarations: [RegionSelectionComponent],
       providers: [{ provide: SessionService, useValue: mockSessionService }],
     }).compileComponents();
