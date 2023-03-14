@@ -1321,6 +1321,14 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, None)
         self.assertEqual(scenario.status, Scenario.ScenarioStatus.INITIALIZED)
 
+    def test_update_invalid_status(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': self.scenario.pk, 'status': 99},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
     def test_update_status(self):
         self.client.force_login(self.user)
         response = self.client.patch(
