@@ -41,7 +41,7 @@ RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN pip install rpy2
 # RUN python -m rpy2.situation
 # RUN echo $LD_LIBRARY_PATH
-ENV PATH=/miniconda3/bin:${PATH}
+ENV PATH=/var/lang/bin:/miniconda3/bin/sqlite3:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 RUN whereis sqlite3
 RUN which sqlite3
 # RUN ln -s /miniconda3/bin/sqlite3 /usr/bin/sqlite3
