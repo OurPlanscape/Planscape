@@ -51,6 +51,9 @@ RUN which sqlite3
 RUN ls /miniconda3/bin
 RUN ls /miniconda3/lib
 
+RUN find . -lname 'libspatialite.so*'
+RUN find . -lname 'libsqlite3.so*'
+
 
 # switched the order for gcc libraries. we want to use the miniconda ones, not the /lib64 ones installed with the base image. 
 ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
@@ -60,12 +63,13 @@ RUN ldd /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
 RUN ldd /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
 RUN ldd /miniconda3/lib/libspatialite.so
 
+
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0
-RUN cp /miniconda3/lib/libspatialite.so.7 /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
-RUN cp /miniconda3/lib/libsqlite3.so.0 /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
+RUN cp /miniconda3/lib/libspatialite.so /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
+RUN cp /miniconda3/lib/libsqlite3.so /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
 
 
 # RUN which gcc
