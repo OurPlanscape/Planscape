@@ -50,6 +50,7 @@ RUN which sqlite3
 # RUN ln -s /miniconda3/lib/sqlite3 /usr/lib/sqlite3
 RUN ls /miniconda3/bin
 
+RUN ldd /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
 # switched the order for gcc libraries. we want to use the miniconda ones, not the /lib64 ones installed with the base image. 
 ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 RUN ln -s /miniconda3/lib /lib64
