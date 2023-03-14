@@ -38,8 +38,6 @@ RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas
 
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
-RUN ln -s /miniconda3/bin/R /var/lang/bin/R
-RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN pip install rpy2
 # RUN python -m rpy2.situation
 # RUN echo $LD_LIBRARY_PATH
