@@ -17,8 +17,7 @@ import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overvie
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { ScenarioConfigurationsComponent } from './plan-summary/scenario-configurations/scenario-configurations.component';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
-import { DeletePlanDialogComponent } from './plan-table/delete-plan-dialog/delete-plan-dialog.component';
-import { PlanTableComponent } from './plan-table/plan-table.component';
+import { DeletePlanDialogComponent } from '../home/plan-table/delete-plan-dialog/delete-plan-dialog.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
@@ -35,7 +34,6 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     SummaryPanelComponent,
     ScenarioConfigurationsComponent,
     PlanUnavailableComponent,
-    PlanTableComponent,
     DeletePlanDialogComponent,
     PlanOverviewComponent,
     CreateScenariosComponent,

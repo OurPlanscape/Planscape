@@ -21,18 +21,13 @@ export class NavigationComponent implements OnInit, OnDestroy {
   sidenavLinks: SidenavLink[] = [
     {
       text: "Home",
-      href: "/region",
+      href: "/home",
       icon: "home",
     },
     {
       text: "Explore",
       href: "/map",
       icon: "explore",
-    },
-    {
-      text: "My Plans",
-      href: "/plan",
-      icon: "edit_document",
     },
   ]
   isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
