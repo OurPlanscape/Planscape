@@ -18,6 +18,7 @@ describe('PlanMapComponent', () => {
   let loader: HarnessLoader;
   let fakePlanService: PlanService;
   let fakePlanState$: BehaviorSubject<PlanState>;
+  let fakePlan: Plan;
 
   const emptyPlanState = {
     all: {},
@@ -30,6 +31,17 @@ describe('PlanMapComponent', () => {
   };
 
   beforeEach(async () => {
+    fakePlan = {
+      id: 'fake',
+      name: 'fake',
+      ownerId: 'fake',
+      region: Region.SIERRA_NEVADA,
+      planningArea: new L.Polygon([
+        new L.LatLng(38.715517043571914, -120.42857302225725),
+        new L.LatLng(38.47079787227401, -120.5164425608172),
+        new L.LatLng(38.52668443555346, -120.11828371421737),
+      ]).toGeoJSON(),
+    }
     fakePlanState$ = new BehaviorSubject<PlanState>({
       ...emptyPlanState,
     });
@@ -67,17 +79,7 @@ describe('PlanMapComponent', () => {
   });
 
   it('should add planning area to map', () => {
-    component.plan = new BehaviorSubject<Plan | null>({
-      id: 'fake',
-      name: 'fake',
-      ownerId: 'fake',
-      region: Region.SIERRA_NEVADA,
-      planningArea: new L.Polygon([
-        new L.LatLng(38.715517043571914, -120.42857302225725),
-        new L.LatLng(38.47079787227401, -120.5164425608172),
-        new L.LatLng(38.52668443555346, -120.11828371421737),
-      ]).toGeoJSON(),
-    });
+    component.plan = new BehaviorSubject<Plan | null>(fakePlan);
     component.ngAfterViewInit();
 
     let foundPlanningAreaLayer = false;
@@ -132,6 +134,20 @@ describe('PlanMapComponent', () => {
 
       expect(component.projectAreasLayer).toBeDefined();
       expect(component.map.hasLayer(component.projectAreasLayer!)).toBeTrue();
+    });
+
+    it('should draw planning area in different color when scenarioId exists', () => {
+      const spy = spyOn(component as any, 'drawPlanningArea').and.callThrough();
+      component.plan = new BehaviorSubject<Plan | null>(fakePlan);
+      component.ngAfterViewInit();
+
+      fakePlanState$.next({
+        ...emptyPlanState,
+        currentScenarioId: '5',
+      });
+
+      expect(spy).toHaveBeenCalledWith(fakePlan, '#ffffff');
+      expect(component.map.hasLayer(component.drawingLayer!)).toBeTrue();
     });
 
     it('should remove project areas layer when drawShapes is called with null', () => {

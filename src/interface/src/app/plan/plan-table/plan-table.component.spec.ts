@@ -16,10 +16,17 @@ import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dial
 import { PlanTableComponent } from './plan-table.component';
 
 describe('PlanTableComponent', () => {
-  const fakePlan: PlanPreview = {
-    id: 'temp',
+  const fakePlan1: PlanPreview = {
+    id: 'temp1',
     name: 'somePlan',
     region: Region.SIERRA_NEVADA,
+    createdTimestamp: 1,
+  };
+  const fakePlan2: PlanPreview = {
+    id: 'temp2',
+    name: 'somePlan',
+    region: Region.SIERRA_NEVADA,
+    createdTimestamp: 2,
   };
 
   let component: PlanTableComponent;
@@ -41,7 +48,7 @@ describe('PlanTableComponent', () => {
     );
     fakePlanService = jasmine.createSpyObj('PlanService', {
       deletePlan: of('1'),
-      listPlansByUser: of([fakePlan]),
+      listPlansByUser: of([fakePlan1, fakePlan2]),
     });
 
     await TestBed.configureTestingModule({
@@ -73,11 +80,15 @@ describe('PlanTableComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('should fetch plans from the DB', () => {
+    it('should fetch plans from the DB and sort descending by timestamp', () => {
       expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
       expect(component.datasource.data).toEqual([
         {
-          ...fakePlan,
+          ...fakePlan2,
+          selected: false,
+        },
+        {
+          ...fakePlan1,
           selected: false,
         },
       ]);
@@ -102,7 +113,11 @@ describe('PlanTableComponent', () => {
       expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
       expect(component.datasource.data).toEqual([
         {
-          ...fakePlan,
+          ...fakePlan2,
+          selected: false,
+        },
+        {
+          ...fakePlan1,
           selected: false,
         },
       ]);
@@ -130,17 +145,17 @@ describe('PlanTableComponent', () => {
 
       component.datasource.data = [
         {
-          ...fakePlan,
+          ...fakePlan1,
           id: '1',
           selected: true,
         },
         {
-          ...fakePlan,
+          ...fakePlan1,
           id: '2',
           selected: true,
         },
         {
-          ...fakePlan,
+          ...fakePlan1,
           id: '3',
           selected: false,
         },

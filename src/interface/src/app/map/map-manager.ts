@@ -92,7 +92,6 @@ export class MapManager {
       layers: [map.baseLayerRef],
       zoomControl: false,
       pmIgnore: false,
-      scrollWheelZoom: false,
     });
 
     // Add zoom controls to bottom right corner
@@ -146,6 +145,7 @@ export class MapManager {
       {
         maxZoom: 13,
         attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+        zIndex: 0,
       }
     );
   }
@@ -169,6 +169,7 @@ export class MapManager {
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {
         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        zIndex: 0,
       }
     );
   }
