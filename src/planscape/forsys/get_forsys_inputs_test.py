@@ -4,27 +4,15 @@ from conditions.models import BaseCondition
 from conditions.raster_condition_retrieval_testcase import \
     RasterConditionRetrievalTestCase
 from django.contrib.gis.geos import Polygon
-from django.http import HttpRequest, QueryDict
+from django.http import QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (
     ClusterAlgorithmType, ForsysGenerationRequestParamsFromUrlWithDefaults,
     ForsysRankingRequestParamsFromUrlWithDefaults)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
-from forsys.merge_polygons import merge_polygons
 from planscape import settings
-
-
-def _assert_dict_almost_equal(self,
-                              d1: dict[str, list],
-                              d2: dict[str, list]) -> None:
-    self.assertEqual(len(d1.keys()), len(d2.keys()))
-    for k in d1.keys():
-        l1 = d1[k]
-        if len(l1) > 0 and type(l1[0]) is float:
-            np.testing.assert_array_almost_equal(l1, d2[k])
-        else:
-            self.assertListEqual(l1, d2[k])
+from forsys.assert_dict_almost_equal import assert_dict_almost_equal
 
 
 class ForsysInputHeadersTest(TestCase):
@@ -81,7 +69,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysRankingInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [1, 2],
             'stand_id': [1, 2],
             'area': [0.72, 0.36],
@@ -176,7 +164,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
             'area': [.09, .09, .09, .09, .09, .09, .09, .09],
@@ -216,7 +204,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
             'area': [.09, .09, .09, .09, .09, .09, .09, .09],
@@ -323,7 +311,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
 
         input = ForsysGenerationInput(params, headers)
 
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3],
             'area': [0.18, 0.18, 0.09, 0.09],
@@ -369,7 +357,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
             'area': [.09, .09, .09, .09, .09, .09, .09, .09],
