@@ -46,7 +46,6 @@ RUN ln -s /miniconda3/lib /lib64
 
 
 RUN which gcc
-RUN which sqlite
 RUN ldd --version
 RUN ldd /miniconda3/lib/libstdc++.so.6
 RUN ldd /lib64/libstdc++.so.6
