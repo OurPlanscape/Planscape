@@ -65,7 +65,7 @@ RUN ldd /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0
 RUN ldd /miniconda3/lib/libspatialite.so
 
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
-RUN cp /miniconda3/lib/libspatialite.so /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
+RUN cp /miniconda3/lib/libspatialite.so.7 /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
 
 # RUN which gcc
 # RUN ldd --version
