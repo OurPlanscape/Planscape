@@ -31,7 +31,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 sqlite libspatialite r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils gcc
+RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 sqlite=3.40.0 libspatialite r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils gcc
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 # RUN R -e "sessionInfo()"
@@ -90,8 +90,8 @@ RUN rm /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0.8.6
 # RUN cp /miniconda3/lib/libspatialite.so /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
 # RUN cp /miniconda3/lib/libsqlite3.so /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
 # RUN cp -a /miniconda3/lib/libspatialite.so* /miniconda3/lib/R/library/sf/libs/../../../.././
-RUN cp /miniconda3/lib/libspatialite.so.7.1.2 /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7.1.2
-RUN cp /miniconda3/lib/libsqlite3.so.0.8.6 /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0.8.6
+RUN mv /miniconda3/lib/libspatialite.so.7.1.2 /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7.1.2
+RUN mv /miniconda3/lib/libsqlite3.so.0.8.6 /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0.8.6
 
 
 # switched the order for gcc libraries. we want to use the miniconda ones, not the /lib64 ones installed with the base image. 
