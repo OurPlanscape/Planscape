@@ -39,11 +39,17 @@ export interface Scenario {
   maxTreatmentAreaRatio?: number;
   maxRoadDistance?: number;
   maxSlope?: number;
-  priorities?: string[];
+  priorities?: Priority[];
   weights?: string[];
   projectAreas?: ProjectArea[];
   notes?: string;
   favorited?: boolean;
+}
+
+export interface Priority {
+  id: string,
+  name: string,
+  weight: number,
 }
 
 export interface ProjectConfig {
