@@ -71,6 +71,13 @@ RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
 RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0
 RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0.8.6
 
+RUN ls -l /miniconda3/lib/libspatialite.so
+RUN ls -l /miniconda3/lib/libspatialite.so.7
+RUN ls -l /miniconda3/lib/libspatialite.so.7.1.2
+RUN ls -l /miniconda3/lib/libsqlite3.so
+RUN ls -l /miniconda3/lib/libsqlite3.so.0
+RUN ls -l /miniconda3/lib/libsqlite3.so.0.8.6
+
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
 RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7.1.2
