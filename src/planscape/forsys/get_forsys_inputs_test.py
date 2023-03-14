@@ -69,8 +69,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             self, "bar", "bar_normalized", bar_raster)
 
     def test_gets_forsys_input(self):
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         params.priorities = ["foo", "bar"]
         params.project_areas.clear()
@@ -92,8 +91,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
         })
 
     def test_missing_base_condition(self):
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         # No base conditions exist for baz.
         params.priorities = ["foo", "bar", "baz"]
@@ -115,8 +113,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             condition_name="baz", region_name=self.region,
             condition_level=ConditionLevel.METRIC)
 
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         params.priorities = ["foo", "bar", "baz"]
         params.project_areas.clear()
@@ -132,8 +129,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             "of 3 priorities, only 2 had conditions")
 
     def test_missing_condition_score(self):
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         params.priorities = ["foo"]
         params.project_areas.clear()
