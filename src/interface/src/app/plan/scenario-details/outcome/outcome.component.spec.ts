@@ -1,17 +1,30 @@
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { SimpleChange, SimpleChanges } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
 
 import { OutcomeComponent } from './outcome.component';
-import { SimpleChange, SimpleChanges } from '@angular/core';
+import { AuthService, User } from 'src/app/services';
 
 describe('OutcomeComponent', () => {
   let component: OutcomeComponent;
   let fixture: ComponentFixture<OutcomeComponent>;
   let fakeScenario: any;
+  let fakeAuthService: AuthService;
+  let loggedInStatus$: BehaviorSubject<boolean>;
 
   beforeEach(async () => {
+    loggedInStatus$ = new BehaviorSubject(false);
+    fakeAuthService = jasmine.createSpyObj(
+      'AuthService',
+      {},
+      {
+        loggedInUser$: new BehaviorSubject<User | null>(null),
+      }
+    );
+
     fakeScenario = {
       id: '1',
       notes: 'bee happy',
@@ -32,7 +45,12 @@ describe('OutcomeComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ BrowserAnimationsModule, MaterialModule, ReactiveFormsModule],
       declarations: [ OutcomeComponent ],
-      providers: [ FormBuilder ],
+      providers: [ FormBuilder,
+        {
+        provide: AuthService,
+        useValue: fakeAuthService,
+        },
+      ],
     })
     .compileComponents();
 

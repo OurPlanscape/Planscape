@@ -33,7 +33,7 @@ describe('SavedScenariosComponent', () => {
           {
             id: '1',
             createdTimestamp: 100,
-            projectConfig: {
+            config: {
               id: 1,
               max_budget: 200,
             },
