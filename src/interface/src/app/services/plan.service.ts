@@ -15,6 +15,7 @@ import { BasePlan, Plan, Region } from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
+  Priority,
   ProjectArea,
   ProjectConfig,
   Scenario,
@@ -399,7 +400,7 @@ export class PlanService {
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         scenario.creation_timestamp
       ),
-      priorities: scenario.priorities,
+      priorities: this.convertToPriorities(scenario.priorities),
       projectAreas: this.convertToProjectAreas(scenario.project_areas),
       notes: scenario.notes,
       favorited: scenario.favorited,
@@ -425,6 +426,25 @@ export class PlanService {
     });
 
     return projectAreas;
+  }
+
+  private convertToPriorities(scenarioPriorities: {
+    [name: string]: number;
+  }): Priority[] {
+    if (!scenarioPriorities) {
+      return [];
+    }
+
+    let priorities: Priority[] = [];
+    Object.keys(scenarioPriorities).forEach((priority, weight) => {
+      priorities.push({
+        id: priority,
+        name: priority.replace(/_/g, " "),
+        weight: weight,
+      });
+    });
+
+    return priorities;
   }
 
   private convertConfigToScenario(config: ProjectConfig): any {

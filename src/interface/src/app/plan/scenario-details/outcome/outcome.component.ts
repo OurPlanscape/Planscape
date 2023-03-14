@@ -16,17 +16,6 @@ export class OutcomeComponent implements OnChanges {
   totalAcresTreated: number = 0;
   totalCostRange: string = '';
 
-  // TODO: Use real priorities from the backend.
-  priorities: {
-    name: string;
-    value: number;
-  }[] = [
-    {
-      name: 'Fire Dynamics',
-      value: 3,
-    },
-  ];
-
   constructor(private fb: FormBuilder) {
     // TODO: Call update scenario on submit.
     this.scenarioNotes = fb.group({
