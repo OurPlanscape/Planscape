@@ -107,7 +107,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             ForsysRankingInput(params, headers)
         self.assertEqual(
             str(context.exception),
-            "of 3 priorities, only 2 had base conditions")
+            "of 3 priorities, only 2 had conditions")
 
     def test_missing_condition(self):
         # A base condition exists for baz, but a condition dosen't.
@@ -271,7 +271,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
             ForsysGenerationInput(params, headers)
         self.assertEqual(
             str(context.exception),
-            "of 3 priorities, only 2 had base conditions")
+            "of 3 priorities, only 2 had conditions")
 
     def test_missing_condition(self):
         # A base condition exists for baz, but a condition dosen't.

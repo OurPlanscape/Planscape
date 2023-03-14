@@ -7,7 +7,6 @@ from forsys.forsys_request_params import (ClusterAlgorithmType,
                                           ForsysRankingRequestParams)
 from forsys.merge_polygons import merge_polygons
 from forsys.raster_condition_fetcher import (RasterConditionFetcher,
-                                             get_base_condition_ids_to_names,
                                              get_conditions)
 from forsys.raster_condition_treatment_eligibility_selector import (
     RasterConditionTreatmentEligibilitySelector)
@@ -104,9 +103,7 @@ class ForsysRankingInput():
         priorities = params.priorities
         project_areas = params.project_areas
 
-        base_condition_ids_to_names = get_base_condition_ids_to_names(
-            region, priorities)
-        conditions = get_conditions(base_condition_ids_to_names.keys())
+        conditions = get_conditions(region, priorities)
 
         self.forsys_input = _get_initialized_forsys_input_with_common_headers(
             headers, priorities)
@@ -120,8 +117,7 @@ class ForsysRankingInput():
 
             num_pixels = 0  # number of non-NaN raster pixels captured by geo.
             for c in conditions:
-                # TODO: replace this with select_related.
-                name = base_condition_ids_to_names[c.condition_dataset_id]
+                name = c.base_condition.condition_name
                 stats = compute_condition_stats_from_raster(
                     geo, c.raster_name)
                 if stats['count'] == 0:
@@ -156,7 +152,6 @@ class ForsysGenerationInput():
     # row represents a unique stand.
     # Dictionary keys are dataframe headers. Dictionary values are lists
     # corresponding to columns below each dataframe header.
-    # TODO: only populate condition scores when settings.DEBUG is true.
     forsys_input: dict[str, list]
 
     # ----- Intermediate data -----
