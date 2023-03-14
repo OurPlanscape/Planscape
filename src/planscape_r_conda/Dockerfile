@@ -51,8 +51,8 @@ RUN which sqlite3
 RUN ls /miniconda3/bin
 RUN ls /miniconda3/lib
 
-RUN find . -lname 'libspatialite.so.*'
-RUN find . -lname 'libsqlite3.so.*'
+RUN find /miniconda/bin -lname 'libspatialite.so.*'
+RUN find /miniconda/bin -lname 'libsqlite3.so.*'
 
 
 # switched the order for gcc libraries. we want to use the miniconda ones, not the /lib64 ones installed with the base image. 
