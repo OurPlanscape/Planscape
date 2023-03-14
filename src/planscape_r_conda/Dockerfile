@@ -30,21 +30,26 @@ RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 libspatialite sqlite r-sf r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils gcc
-RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 # RUN R -e "sessionInfo()"
 # RUN R -e ".libPaths()"
 # RUN R -e "search()"
 
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
+RUN ln -s /miniconda3/bin/R /var/lang/bin/R
+RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN pip install rpy2
 # RUN python -m rpy2.situation
 # RUN echo $LD_LIBRARY_PATH
 RUN whereis sqlite3
+RUN which sqlite3
+RUN ln -s /miniconda3/bin/sqlite3 /usr/bin/sqlite3
+RUN ln -s /miniconda3/lib/sqlite3 /usr/lib/sqlite3
 RUN ls /miniconda3/lib/
 RUN ls /miniconda3/lib/R/library
-ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
+ENV LD_LIBRARY_PATH=/var/lang/lib:/usr/lib/sqlite3:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 RUN ln -s /miniconda3/lib /lib64
 
 
@@ -52,14 +57,14 @@ RUN ln -s /miniconda3/lib /lib64
 # RUN ldd --version
 # RUN ldd /miniconda3/lib/libstdc++.so.6
 # RUN ldd /lib64/libstdc++.so.6
-RUN conda list
+# RUN conda list
 
 
 # RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
 # RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
 
 # /miniconda3/bin/R
-RUN which R
+# RUN which R
 
 # COPY requirements.txt  .
 # RUN pip install --upgrade pip
