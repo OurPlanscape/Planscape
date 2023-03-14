@@ -35,7 +35,7 @@ export interface Scenario {
   owner?: string;
   planId?: string;
   projectId?: string;
-  projectConfig: ProjectConfig;
+  config: ProjectConfig;
   priorities?: Priority[];
   projectAreas?: ProjectArea[];
   notes?: string;

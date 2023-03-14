@@ -325,7 +325,7 @@ describe('PlanService', () => {
         {
           id: 1,
           planId: undefined,
-          max_budget: 200,
+          max_budget: undefined,
           max_road_distance: undefined,
           max_slope: undefined,
           max_treatment_area_ratio: undefined,
@@ -337,7 +337,7 @@ describe('PlanService', () => {
         id: '1',
         planId: undefined,
         projectId: undefined,
-        projectConfig: projectConfig,
+        config: projectConfig,
         priorities: [],
         projectAreas: [],
         createdTimestamp: undefined,
@@ -409,7 +409,7 @@ describe('PlanService', () => {
             createdTimestamp: 5000,
             planId: undefined,
             projectId: undefined,
-            projectConfig: projectConfig,
+            config: projectConfig,
             priorities: [],
             projectAreas: [],
             notes: undefined,
@@ -430,6 +430,7 @@ describe('PlanService', () => {
         {
           id: '1',
           creation_timestamp: 5,
+          config: projectConfig,
         },
       ]);
       httpTestingController.verify();
