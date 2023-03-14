@@ -18,12 +18,13 @@ RUN yum -y install openssl-devel udunits2-devel
 RUN yum -y install gcc
 
 RUN yum -y install util-linux
-# /miniconda3/bin:/var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin
+# /var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 ENV PATH=${PATH}:/miniconda3/bin
 # /miniconda3/bin/python
-# Lambda will always execute from /var/lang/bin/python!
+# Lambda will always execute from /var/lang/bin/python
 RUN which python
 RUN which pip
+
 
 RUN conda init bash
 RUN conda init zsh
@@ -38,9 +39,6 @@ RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
-# RUN R -e "sessionInfo()"
-# RUN R -e ".libPaths()"
-# RUN R -e "search()"
 RUN pip install rpy2
 # RUN python -m rpy2.situation
 RUN echo $LD_LIBRARY_PATH
@@ -49,19 +47,13 @@ RUN ln -s /miniconda3/lib /lib64
 
 
 RUN which gcc
-RUN ls /miniconda3/lib
-RUN ls /lib64
+RUN ldd --version
 RUN ldd /miniconda3/lib/libstdc++.so.6
 RUN ldd /lib64/libstdc++.so.6
-RUN ldd --version
 
 
 RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
 RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
-# RUN ln -s /miniconda3/lib/libstdc++.so.6 /lib64/libstdc++.so.6
-
-# RUN ln -s /miniconda3/lib/libstdc++.so.6.0.29 /lib64/libstdc++.so.6.0.29
-
 
 # /miniconda3/bin/R
 RUN which R
