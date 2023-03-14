@@ -53,6 +53,7 @@ RUN ls /miniconda3/lib
 
 
 # switched the order for gcc libraries. we want to use the miniconda ones, not the /lib64 ones installed with the base image. 
+RUN ldd /miniconda3/lib/R/library/sf/libs/sf.so
 RUN ldd /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
 RUN ldd /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0
 RUN ldd /miniconda3/lib/libspatialite.so
