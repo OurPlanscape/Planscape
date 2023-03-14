@@ -392,6 +392,7 @@ export class PlanService {
   }
 
   private convertBackendScenarioToScenario(scenario: any): Scenario {
+    console.log(scenario);
     return {
       id: scenario.id,
       planId: scenario.plan,
@@ -400,6 +401,7 @@ export class PlanService {
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         scenario.creation_timestamp
       ),
+      projectConfig: this.convertToProjectConfig(scenario.config),
       priorities: this.convertToPriorities(scenario.priorities),
       projectAreas: this.convertToProjectAreas(scenario.project_areas),
       notes: scenario.notes,
