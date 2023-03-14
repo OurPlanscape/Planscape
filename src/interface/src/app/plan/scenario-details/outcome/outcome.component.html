@@ -1,6 +1,6 @@
 <!-- Plan Info -->
 <div class="plan-info">
-  <span>Creator: {{ scenario?.owner }}</span>
+  <span>Creator: {{ (currentUser$ | async)?.username || 'Guest' }}</span>
   <br>
   <span>Created: {{ scenario?.createdTimestamp | date:'MM/dd/yyyy'}}</span>
 </div>
@@ -17,10 +17,10 @@
         <ul>
           <li>Calculating score: Current conditions</li>
           <li>Show estimated cost range based on estimated treatment costs per acre
-            (Est. max: <b>${{ scenario?.maxBudget }}</b>)</li>
-          <li><b>{{ scenario?.maxTreatmentAreaRatio }}%</b> max treatment percentage of total planning area</li>
-          <li>Exclude areas off a road by <b>{{ scenario?.maxRoadDistance}} ft.</b></li>
-          <li>Include areas that are over {{ scenario?.maxSlope }} degrees</li>
+            (Est. max: <b>${{ scenario?.projectConfig?.max_budget }}</b>)</li>
+          <li><b>{{ scenario?.projectConfig?.max_treatment_area_ratio }}%</b> max treatment percentage of total planning area</li>
+          <li>Exclude areas off a road by <b>{{ scenario?.projectConfig?.max_road_distance}} ft.</b></li>
+          <li>Include areas that are over {{ scenario?.projectConfig?.max_slope }} degrees</li>
         </ul>
       </div>
 

@@ -32,6 +32,10 @@ describe('ScenarioDetailsComponent', () => {
 
     fakeScenario = {
       id: '1',
+      projectConfig: {
+        id: 1,
+        max_budget: 200,
+      },
       projectAreas: [{
         id: '1',
         projectId: '1',
