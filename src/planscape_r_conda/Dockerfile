@@ -10,6 +10,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 # Required for R https://github.com/ContinuumIO/anaconda-issues/issues/11133
 RUN yum install -y which
 RUN yum -y install tar
+RUN yum -y install binutils
 
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
@@ -54,7 +55,7 @@ RUN ldd /miniconda3/lib/libstdc++.so.6
 RUN ldd /lib64/libstdc++.so.6
 RUN ldd --version
 
-RUN yum -y install binutils
+
 RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
 RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
 # RUN ln -s /miniconda3/lib/libstdc++.so.6 /lib64/libstdc++.so.6
