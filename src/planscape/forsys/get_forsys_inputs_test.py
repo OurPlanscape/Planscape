@@ -197,10 +197,11 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                     self._create_polygon_for_pixel(2, 0).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
                     self._create_polygon_for_pixel(3, 0).wkt,
-                    self._create_polygon_for_pixel(3, 1).wkt]
+                    self._create_polygon_for_pixel(3, 1).wkt],
+            'eligible': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         })
 
-    def test_gets_forsys_input_ignoring_nan(self):
+    def test_gets_forsys_input_making_nan_ineligible(self):
         baz_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (np.nan, np.nan, np.nan, np.nan,
                          .2, .2, .2, .2,
@@ -220,18 +221,24 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
 
         input = ForsysGenerationInput(params, headers)
         _assert_dict_almost_equal(self, input.forsys_input, {
-            'proj_id': [0, 0, 0, 0],
-            'stand_id': [0, 1, 2, 3],
-            'area': [.09, .09, .09, .09],
-            'cost': [450000000, 450000000, 450000000, 450000000],
-            'p_foo': [.95, .94, .93, .92],
-            'p_baz': [.8, .8, .8, .8],
-            'c_foo': [.95, .94, .93, .92],
-            'c_baz': [.8, .8, .8, .8],
+            'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
+            'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
+            'area': [.09, .09, .09, .09, .09, .09, .09, .09],
+            'cost': [450000000, 450000000, 450000000, 450000000,
+                     450000000, 450000000, 450000000, 450000000],
+            'p_foo': [.95, .94, .93, .92, 0, 0, 0, 0],
+            'p_baz': [.8, .8, .8, .8, 0, 0, 0, 0],
+            'c_foo': [.95, .94, .93, .92, 0, 0, 0, 0],
+            'c_baz': [.8, .8, .8, .8, 0, 0, 0, 0],
             'geo': [self._create_polygon_for_pixel(0, 1).wkt,
                     self._create_polygon_for_pixel(1, 1).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
-                    self._create_polygon_for_pixel(3, 1).wkt]
+                    self._create_polygon_for_pixel(3, 1).wkt,
+                    self._create_polygon_for_pixel(0, 0).wkt,
+                    self._create_polygon_for_pixel(1, 0).wkt,
+                    self._create_polygon_for_pixel(2, 0).wkt,
+                    self._create_polygon_for_pixel(3, 0).wkt],
+            'eligible': [1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]
         })
 
     def _create_polygon_for_pixel(self, x, y) -> Polygon:
@@ -322,7 +329,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
 
         _assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0],
-            'stand_id': [1, 0, 3, 2],
+            'stand_id': [0, 1, 2, 3],
             'area': [0.18, 0.18, 0.09, 0.09],
             'cost': [900000000, 900000000, 450000000, 450000000],
             'p_bar': [1.8, 1.6, 0.9, 0.8],
@@ -345,7 +352,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                 # y spans 2100654, 2100354: 1 pixel
                 'POLYGON ((-2116371 2100654, -2116371 2100354, -2116071 ' + \
                 '2100354, -2116071 2100654, -2116371 2100654))'
-            ]
+            ],
+            'eligible': [1.0, 1.0, 1.0, 1.0]
         })
 
     def test_gets_forsys_input_with_clustering_aborted(self):
@@ -382,5 +390,6 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                     self._create_polygon_for_pixel(2, 0).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
                     self._create_polygon_for_pixel(3, 0).wkt,
-                    self._create_polygon_for_pixel(3, 1).wkt]
+                    self._create_polygon_for_pixel(3, 1).wkt],
+            'eligible': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         })
