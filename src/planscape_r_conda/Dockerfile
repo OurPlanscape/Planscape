@@ -40,21 +40,20 @@ RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN pip install rpy2
 # RUN python -m rpy2.situation
-RUN echo $LD_LIBRARY_PATH
+# RUN echo $LD_LIBRARY_PATH
 ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 RUN ln -s /miniconda3/lib /lib64
 
 
-RUN which gcc
-RUN ldd --version
-RUN ldd /miniconda3/lib/libstdc++.so.6
-RUN ldd /lib64/libstdc++.so.6
-RUN ldd /miniconda3/lib/R/library/libspatialite.so
+# RUN which gcc
+# RUN ldd --version
+# RUN ldd /miniconda3/lib/libstdc++.so.6
+# RUN ldd /lib64/libstdc++.so.6
 RUN conda list
 
 
-RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
-RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
+# RUN strings /lib64/libstdc++.so.6 | grep GLIBCXX
+# RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
 
 # /miniconda3/bin/R
 RUN which R
