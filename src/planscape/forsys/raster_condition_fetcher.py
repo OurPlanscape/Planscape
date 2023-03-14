@@ -6,35 +6,20 @@ from django.contrib.gis.geos import GEOSGeometry
 from planscape import settings
 
 
-# Given a list of priorities (i.e. condition names), returns a dictionary
-# mapping condition ID's to condition names.
-# Raises an error if any of the priorities don't have a corresponding condition.
-# TODO: this may not be necessary if we use Django's "select_related" function.
-def get_base_condition_ids_to_names(region: str,
-                                    priorities: list) -> dict[int, str]:
-    base_condition_ids_to_names = {
-        c.pk: c.condition_name
-        for c in BaseCondition.objects.filter(region_name=region).filter(
-            condition_name__in=priorities).all()}
-    if len(priorities) != len(base_condition_ids_to_names.keys()):
-        raise Exception("of %d priorities, only %d had base conditions" % (
-            len(priorities), len(base_condition_ids_to_names.keys())))
-    return base_condition_ids_to_names
-
-
-# Given a list of condition ID's, returns a list of conditions.
+# Given a region and a list of priorities, fetches the relevant conditions.
 # Output conditions may not be listed in the same order as condition_ids.
-# Raises an error if any of the input condition ID's don't have a corresponding
+# Raises an error if any of the priorities don't have a corresponding
 # condition.
-def get_conditions(condition_ids: list[int]) -> list[Condition]:
-    conditions = list(Condition.objects.filter(
-        condition_dataset_id__in=condition_ids).filter(
-        is_raw=False).all())
-    if len(condition_ids) != len(conditions):
+def get_conditions(region: str, priorities: list[str]) -> list[Condition]:
+    conditions = list(
+        Condition.objects.filter(is_raw=False).select_related(
+            'condition_dataset').filter(
+            condition_dataset__condition_name__in=priorities,
+            condition_dataset__region_name=region))
+    if len(priorities) != len(conditions):
         raise Exception(
             "of %d priorities, only %d had conditions" %
-            (len(condition_ids),
-                len(conditions)))
+            (len(priorities), len(conditions)))
     return conditions
 
 
@@ -47,23 +32,19 @@ class RasterConditionFetcher:
     def __init__(self, region: str, priorities: list[str], geo: GEOSGeometry):
         raster_geo = get_raster_geo(geo)
 
-        base_condition_ids_to_names = get_base_condition_ids_to_names(
-            region, priorities)
-        conditions = get_conditions(base_condition_ids_to_names.keys())
+        conditions = get_conditions(region, priorities)
 
         self.conditions_to_raster_values, self.topleft_coords = \
             self._fetch_conditions_to_raster_values(
-                conditions, base_condition_ids_to_names, raster_geo)
+                conditions, raster_geo)
 
     def _fetch_conditions_to_raster_values(
             self, conditions: list[str],
-            base_condition_ids_to_names: dict[int, str],
             geo: GEOSGeometry):
         conditions_to_raster_values = {}
         topleft_coords = None
         for c in conditions:
-            # TODO: replace this with select_related.
-            name = base_condition_ids_to_names[c.condition_dataset_id]
+            name = c.condition_dataset.condition_name
             values = get_condition_values_from_raster(geo, c.raster_name)
             if values is None:
                 raise Exception(
