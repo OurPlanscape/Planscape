@@ -15,7 +15,6 @@ RUN yum -y install binutils
 # Required for forsys
 RUN yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
 RUN yum -y install openssl-devel udunits2-devel
-RUN yum -y install gcc
 
 RUN yum -y install util-linux
 # /var/lang/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
