@@ -46,8 +46,7 @@ RUN which sqlite3
 # RUN ln -s /miniconda3/bin/sqlite3 /usr/bin/sqlite3
 # RUN ln -s /miniconda3/lib/sqlite3 /usr/lib/sqlite3
 RUN ls /miniconda3/lib/
-RUN ls /miniconda3/lib/R/library
-ENV LD_LIBRARY_PATH=/var/lang/lib:/usr/lib/sqlite3:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
+ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib/sqlite3:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 RUN ln -s /miniconda3/lib /lib64
 
 
