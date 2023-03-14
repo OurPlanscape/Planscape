@@ -43,8 +43,8 @@ RUN pip install rpy2
 # RUN echo $LD_LIBRARY_PATH
 RUN whereis sqlite3
 RUN which sqlite3
-RUN ln -s /miniconda3/bin/sqlite3 /usr/bin/sqlite3
-RUN ln -s /miniconda3/lib/sqlite3 /usr/lib/sqlite3
+# RUN ln -s /miniconda3/bin/sqlite3 /usr/bin/sqlite3
+# RUN ln -s /miniconda3/lib/sqlite3 /usr/lib/sqlite3
 RUN ls /miniconda3/lib/
 RUN ls /miniconda3/lib/R/library
 ENV LD_LIBRARY_PATH=/var/lang/lib:/usr/lib/sqlite3:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
