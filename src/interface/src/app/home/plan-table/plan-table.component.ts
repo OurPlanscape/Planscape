@@ -1,14 +1,13 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
 import { take } from 'rxjs';
 import { AuthService } from 'src/app/services';
 
-import { PlanService } from './../../services/plan.service';
-import { PlanPreview } from './../../types/plan.types';
+import { PlanService } from '../../services/plan.service';
+import { PlanPreview } from '../../types/plan.types';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 
 interface PlanRow extends PlanPreview {
@@ -20,7 +19,7 @@ interface PlanRow extends PlanPreview {
   templateUrl: './plan-table.component.html',
   styleUrls: ['./plan-table.component.scss'],
 })
-export class PlanTableComponent implements AfterViewInit, OnInit {
+export class PlanTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -39,14 +38,8 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private router: Router,
     private authService: AuthService
   ) {}
-
-  ngAfterViewInit(): void {
-    this.datasource.paginator = this.paginator;
-    this.datasource.sort = this.sort;
-  }
 
   ngOnInit(): void {
     this.getPlansFromService();
@@ -72,11 +65,9 @@ export class PlanTableComponent implements AfterViewInit, OnInit {
           })
           .sort((plan) => plan.createdTimestamp ?? 0)
           .reverse();
+          this.datasource.paginator = this.paginator;
+          this.datasource.sort = this.sort;
       });
-  }
-
-  create(): void {
-    this.router.navigate(['region']);
   }
 
   // If planId is provided, delete that plan only. Otherwise, delete all selected plans.

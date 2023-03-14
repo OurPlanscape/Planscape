@@ -2,7 +2,6 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
@@ -10,8 +9,8 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanPreview, Region } from 'src/app/types';
 
-import { AuthService } from './../../services/auth.service';
-import { PlanService } from './../../services/plan.service';
+import { AuthService } from '../../services/auth.service';
+import { PlanService } from '../../services/plan.service';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 import { PlanTableComponent } from './plan-table.component';
 
@@ -92,18 +91,6 @@ describe('PlanTableComponent', () => {
           selected: false,
         },
       ]);
-    });
-  });
-
-  describe('create', () => {
-    it('create button should navigate to region selection', async () => {
-      const routerStub: Router = fixture.debugElement.injector.get(Router);
-      spyOn(routerStub, 'navigate').and.callThrough();
-      const button = await loader.getHarness(MatButtonHarness);
-
-      await button.click();
-
-      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['region']);
     });
   });
 
