@@ -117,7 +117,7 @@ class ForsysRankingInput():
 
             num_pixels = 0  # number of non-NaN raster pixels captured by geo.
             for c in conditions:
-                name = c.base_condition.condition_name
+                name = c.condition_dataset.condition_name
                 stats = compute_condition_stats_from_raster(
                     geo, c.raster_name)
                 if stats['count'] == 0:
