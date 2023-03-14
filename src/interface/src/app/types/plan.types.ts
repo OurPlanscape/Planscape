@@ -35,12 +35,8 @@ export interface Scenario {
   owner?: string;
   planId?: string;
   projectId?: string;
-  maxBudget?: number;
-  maxTreatmentAreaRatio?: number;
-  maxRoadDistance?: number;
-  maxSlope?: number;
+  projectConfig: ProjectConfig;
   priorities?: Priority[];
-  weights?: string[];
   projectAreas?: ProjectArea[];
   notes?: string;
   favorited?: boolean;
