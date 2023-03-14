@@ -16,7 +16,7 @@ describe('LoginComponent', () => {
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       { login: of({}) },
-      {},
+      {}
     );
     TestBed.configureTestingModule({
       imports: [FormsModule],
@@ -24,8 +24,8 @@ describe('LoginComponent', () => {
       declarations: [LoginComponent],
       providers: [
         { provide: Router, useFactory: routerStub },
-        { provide: AuthService, useValue: fakeAuthService }
-      ]
+        { provide: AuthService, useValue: fakeAuthService },
+      ],
     });
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
@@ -52,7 +52,18 @@ describe('LoginComponent', () => {
 
       component.signup();
 
-      expect(routerStub.navigate).toHaveBeenCalled();
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['signup']);
+    });
+  });
+
+  describe('continue as guest', () => {
+    it('navigates to home page', () => {
+      const routerStub: Router = fixture.debugElement.injector.get(Router);
+      spyOn(routerStub, 'navigate').and.callThrough();
+
+      component.continueAsGuest();
+
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['home']);
     });
   });
 });
