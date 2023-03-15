@@ -204,6 +204,10 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
+        # Of note: stands in row 0 are ineligible for treatment because one of 
+        # the conditions is missing values. Because they're ineligible for 
+        # treatment, all condition and and prioritiy scores are set to 0 
+        # regardless of whether they originally had non-zero values. 
         assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],

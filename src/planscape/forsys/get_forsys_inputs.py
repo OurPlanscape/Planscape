@@ -253,6 +253,8 @@ class ForsysGenerationInput():
                 stand_id = stand_id + 1
         return stand_id
 
+    # Of note: if a stand is to be passed, its priority and condition scores 
+    # are set to 0.
     def _append_stands_to_pass_to_input_df(
             self, headers: ForsysInputHeaders, priorities: list[str],
             raster_conditions: RasterConditionFetcher,
