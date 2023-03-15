@@ -31,9 +31,12 @@ class RasterConditionFetcher:
     # Maps condition names to retrieved ConditionPixelValues instances.
     conditions_to_raster_values: dict[str, ConditionPixelValues]
 
-    # The origin coordinate used when merging ConditionPixelValues instances,
-    # which may have different top-left coordinates, across all conditions.
+    # The origin coordinate used to merging ConditionPixelValues instances into
+    # a single dataframe.
     topleft_coords: tuple[float, float]
+    # The width of the image represented by the single dataframe.
+    width: int
+    height: int
     # A reformatted version of retrieved ConditionPixelValues instances where
     # each row represents a pixel.
     # Column headers include:
@@ -58,6 +61,8 @@ class RasterConditionFetcher:
             self.conditions_to_raster_values)
         self.data, self.x_to_y_to_index = self._reformat_to_dataframe(
             self.conditions_to_raster_values, priorities)
+        self.width, self.height = self._get_width_and_height(
+            self.x_to_y_to_index)
 
     # Fetches condition raster values for a given GEOSGeometry and emits it in
     # a {condition name: ConditionPixelValues} dictionary.
@@ -159,7 +164,12 @@ class RasterConditionFetcher:
                             data[p].append(np.nan)
         return data, x_to_y_to_index
 
-    # Gets the difference, in pixels, between a given coordinate and its origin.
-    def _get_pixel_dist_diff(
-            self, coord: float, origin_coord: float, scale: float) -> int:
-        return int((coord - origin_coord) / scale)
+    def _get_width_and_height(
+            self,
+            x_to_y_to_index: dict[int, dict[int, int]]) -> tuple[int, int]:
+        width = max(x_to_y_to_index.keys()) + 1
+        max_y = 0
+        for x in x_to_y_to_index.keys():
+            max_y = max(max_y, max(x_to_y_to_index[x].keys()))
+        height = max_y + 1
+        return width, height
