@@ -4,7 +4,8 @@ RUN apt-get update \
   && apt-get install -y wget \
   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
-  && apt-get install libssl-dev 
+  && apt-get install -y libssl-dev \
+  && apt-get install -y gcc
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
@@ -30,10 +31,14 @@ RUN pip install rpy2
 RUN pip install awslambdaric
 RUN whereis rpy2
 RUN whereis awslambdaric
+
+RUN which gcc
+RUN gcc --version
+
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 # ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
-RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
 # Copy function code
