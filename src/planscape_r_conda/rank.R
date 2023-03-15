@@ -8,7 +8,8 @@ times2 <- function(number) {
   stand_dat <- test_forest %>% st_drop_geometry()
   
   run_outputs <- forsys::run(
-    return_outputs = TRUE,
+    return_outputs = FALSE,
+    write_outputs = FALSE,
     scenario_name = "test_scenario",
     stand_data = stand_dat,
     stand_id_field = "stand_id",
