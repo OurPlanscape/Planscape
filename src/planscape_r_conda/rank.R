@@ -4,6 +4,7 @@ times2 <- function(number) {
   library(forsys)
 
   data(test_forest)
+  print("elsie 0")
   print(head(test_forest))
   print("elsie 1")
 
