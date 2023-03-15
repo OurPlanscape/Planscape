@@ -26,7 +26,7 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunits2 r r-base r-essentials r-stringi r-units r-tidyverse r-roxygen2 r-rgeos r-rgdal r-extremes r-doparallel r-r.utils r-sf 
 
 RUN echo $LD_LIBRARY_PATH
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6 
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so 
 
 RUN echo $PATH 
 RUN whereis R
