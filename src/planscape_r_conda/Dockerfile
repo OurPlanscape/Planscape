@@ -39,7 +39,7 @@ RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # Copy function code
 COPY lambda_handler.py /elsie
 COPY rank.R /elsie
-
+WORKDIR /elsie
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
