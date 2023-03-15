@@ -155,14 +155,10 @@ class ForsysGenerationInput():
     forsys_input: dict[str, list]
 
     # ----- Intermediate data -----
-    # This fetches raw raster data.
-    # It contains raw raster data and the topleft coordinate.
+    # This fetches raw raster data and merges/reformats it.
     _condition_fetcher: RasterConditionFetcher
-    # This reformats raw raster data into a dictionary mapping x pixel position
-    # to y pixel position to condition names to condition values and identifies
-    # the pixels eligible for treatment.
-    # It contains width, height, x_to_y_to_condition_to_values,
-    # pixels_to_treat, and pixels_to_pass_through.
+    # Given the merged pixel data in _condition_fetcher, this identifies a list
+    # of pixels to treat and a list of pixels to pass through.
     _treatment_eligibility_selector: RasterConditionTreatmentEligibilitySelector
 
     def __init__(
@@ -179,18 +175,20 @@ class ForsysGenerationInput():
 
         self._treatment_eligibility_selector = \
             RasterConditionTreatmentEligibilitySelector(
-                self._condition_fetcher.conditions_to_raster_values,
-                self._condition_fetcher.topleft_coords, priorities, geo)
+                self._condition_fetcher.data, priorities)
 
         self.forsys_input = self._initialize_headers(headers, priorities)
         next_stand_id = 0
         included_clustered_stands = False
         if params.cluster_params.cluster_algorithm_type == \
                 ClusterAlgorithmType.HIERARCHICAL_IN_PYTHON:
+            # TODO: instead of calling get_values_eligible_for_treatment,
+            # change ClusteredStands to process RasterConditionFetcher data.
             clustered_stands = ClusteredStands(
-                self._treatment_eligibility_selector.get_values_eligible_for_treatment(),
-                self._treatment_eligibility_selector.width,
-                self._treatment_eligibility_selector.height,
+                self._treatment_eligibility_selector.get_values_eligible_for_treatment(
+                    priorities, self._condition_fetcher.data, self._condition_fetcher.x_to_y_to_index),
+                self._condition_fetcher.width,
+                self._condition_fetcher.height,
                 params.get_priority_weights_dict(),
                 params.cluster_params.pixel_index_weight,
                 params.cluster_params.num_clusters)
@@ -199,19 +197,19 @@ class ForsysGenerationInput():
                     self._append_clustered_stands_to_treat_to_input_df(
                         headers, priorities,
                         clustered_stands.clusters_to_stands,
-                        self._condition_fetcher.topleft_coords,
-                        self._treatment_eligibility_selector,
+                        self._condition_fetcher,
                         self.forsys_input, next_stand_id)
                 included_clustered_stands = True
 
         if not included_clustered_stands:
             next_stand_id = self._append_stands_to_treat_to_input_df(
-                headers, priorities, self._condition_fetcher.topleft_coords,
-                self._treatment_eligibility_selector, self.forsys_input, next_stand_id)
+                headers, priorities, self._condition_fetcher,
+                self._treatment_eligibility_selector.pixels_to_treat, self.forsys_input, next_stand_id)
 
-        self._append_pixels_to_pass(
-            headers, priorities, self._condition_fetcher.topleft_coords,
-            self._treatment_eligibility_selector, self.forsys_input, next_stand_id)
+        self._append_stands_to_pass_to_input_df(
+            headers, priorities, self._condition_fetcher,
+            self._treatment_eligibility_selector.pixels_to_pass_through,
+            self.forsys_input, next_stand_id)
 
     def _initialize_headers(self, headers: ForsysInputHeaders,
                             priorities: list[str]) -> dict[str, list]:
@@ -229,45 +227,79 @@ class ForsysGenerationInput():
         forsys_input[headers.FORSYS_TREATMENT_ELIGIBILITY_HEADER] = []
         return forsys_input
 
-    # Adds pixels that are eligible for treatment to the Forsys input 
-    # dataframe dictionary.
     def _append_stands_to_treat_to_input_df(
-        self, headers: ForsysInputHeaders,
-        priorities: list[str],
-        topleft_coords: tuple[float, float],
-        treatment_eligibility_selector: RasterConditionTreatmentEligibilitySelector,
-        forsys_input: dict[str, list],
-        starting_stand_id: int
-    ) -> int:
+            self, headers: ForsysInputHeaders, priorities: list[str],
+            raster_conditions: RasterConditionFetcher,
+            pixels: dict[int, set[int]],
+            forsys_input: dict[str, list],
+            starting_stand_id: int) -> int:
         DUMMY_PROJECT_ID = 0
         stand_id = starting_stand_id
-        for x in treatment_eligibility_selector.pixels_to_treat.keys():
-            for y in treatment_eligibility_selector.pixels_to_treat[x]:
-                conditions_to_values = treatment_eligibility_selector.x_to_y_to_condition_to_values[
-                    x][y]
+        for x in pixels.keys():
+            if x not in raster_conditions.x_to_y_to_index.keys():
+                raise Exception(
+                    "raster condition data missing x-pixel, %d" % x)
+            for y in pixels[x]:
+                if y not in raster_conditions.x_to_y_to_index[x].keys():
+                    raise Exception(
+                        "raster condition data missing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
+                i = raster_conditions.x_to_y_to_index[x][y]
                 priority_scores = {}
                 for p in priorities:
                     priority_scores[headers.get_priority_header(
-                        p)] = conditions_to_values[p]
+                        p)] = raster_conditions.data[p][i]
                     priority_scores[headers.get_condition_header(
-                        p)] = conditions_to_values[p]
-                self._append_to_forsys_input_df(
+                        p)] = raster_conditions.data[p][i]
+                self._append_single_stand_to_forsys_input_df(
                     headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
                     stand_id, settings.RASTER_PIXEL_AREA,
                     settings.RASTER_PIXEL_AREA *
                     self.TREATMENT_COST_PER_KM_SQUARED,
-                    self._get_raster_pixel_geo(x, y, topleft_coords).wkt, True)
+                    self._get_raster_pixel_geo(x, y,
+                                               raster_conditions.topleft_coords).wkt, True)
                 stand_id = stand_id + 1
         return stand_id
 
-    # Adds clusters representing groups of pixels that are eligible for 
+    def _append_stands_to_pass_to_input_df(
+            self, headers: ForsysInputHeaders, priorities: list[str],
+            raster_conditions: RasterConditionFetcher,
+            pixels: dict[int, set[int]],
+            forsys_input: dict[str, list],
+            starting_stand_id: int) -> int:
+        DUMMY_PROJECT_ID = 0
+        stand_id = starting_stand_id
+        for x in pixels.keys():
+            if x not in raster_conditions.x_to_y_to_index.keys():
+                raise Exception(
+                    "raster condition data missing x-pixel, %d" % x)
+            for y in pixels[x]:
+                if y not in raster_conditions.x_to_y_to_index[x].keys():
+                    raise Exception(
+                        "raster condition data missing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
+                i = raster_conditions.x_to_y_to_index[x][y]
+                priority_scores = {}
+                for p in priorities:
+                    priority_scores[headers.get_priority_header(
+                        p)] = 0
+                    priority_scores[headers.get_condition_header(
+                        p)] = 0
+                self._append_single_stand_to_forsys_input_df(
+                    headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
+                    stand_id, settings.RASTER_PIXEL_AREA,
+                    settings.RASTER_PIXEL_AREA *
+                    self.TREATMENT_COST_PER_KM_SQUARED,
+                    self._get_raster_pixel_geo(x, y,
+                                               raster_conditions.topleft_coords).wkt, False)
+                stand_id = stand_id + 1
+        return stand_id
+
+    # Adds clusters representing groups of pixels that are eligible for
     # treatment to the Forsys input dataframe.
     def _append_clustered_stands_to_treat_to_input_df(
         self, headers: ForsysInputHeaders,
         priorities: list[str],
         clusters_to_stands: dict[int, tuple[int, int]],
-        topleft_coords: tuple[float, float],
-        treatment_eligibility_selector: RasterConditionTreatmentEligibilitySelector,
+        raster_conditions: RasterConditionFetcher,
         forsys_input: dict[str, list], starting_stand_id: int
     ) -> int:
         stand_id = starting_stand_id
@@ -275,19 +307,26 @@ class ForsysGenerationInput():
         for cluster_id in clusters_to_stands.keys():
             stands = clusters_to_stands[cluster_id]
             num_stands = len(stands)
-
             geos = []
             priority_scores = {}
             for stand_pixel_pos in stands:
                 x = stand_pixel_pos[0]
                 y = stand_pixel_pos[1]
-                geos.append(self._get_raster_pixel_geo(x, y, topleft_coords))
-                conditions_to_values = \
-                    treatment_eligibility_selector.x_to_y_to_condition_to_values[x][y]
+                if x not in raster_conditions.x_to_y_to_index.keys():
+                    raise Exception(
+                        "raster condition data missing x-pixel, %d" % x)
+                if y not in raster_conditions.x_to_y_to_index[x].keys():
+                    raise Exception(
+                        "raster condition data missing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
+                i = raster_conditions.x_to_y_to_index[x][y]
+
+                geos.append(self._get_raster_pixel_geo(
+                    x, y, raster_conditions.topleft_coords))
+
                 for p in priorities:
                     priority_header = headers.get_priority_header(p)
-                    priority_score = conditions_to_values[p]
-                    if priority_header in priority_scores:
+                    priority_score = raster_conditions.data[p][i]
+                    if priority_header in priority_scores.keys():
                         priority_scores[priority_header] = \
                             priority_scores[priority_header] + priority_score
                     else:
@@ -297,39 +336,14 @@ class ForsysGenerationInput():
                 condition_header = headers.get_condition_header(p)
                 priority_scores[condition_header] = \
                     priority_scores[priority_header] / num_stands
-            self._append_to_forsys_input_df(
+            self._append_single_stand_to_forsys_input_df(
                 headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
-                stand_id, settings.RASTER_PIXEL_AREA * num_stands, settings.
-                RASTER_PIXEL_AREA * self.TREATMENT_COST_PER_KM_SQUARED *
+                stand_id, settings.RASTER_PIXEL_AREA * num_stands,
+                settings.RASTER_PIXEL_AREA *
+                self.TREATMENT_COST_PER_KM_SQUARED *
                 num_stands, merge_polygons(geos, 0).wkt, True)
             stand_id = stand_id + 1
         return stand_id
-
-    # Adds pixels that are ineligible for treatment (i.e. the ones that will be 
-    # penalized by EPW) to the Forsys input dataframe.
-    def _append_pixels_to_pass(
-            self, headers: ForsysInputHeaders, priorities: list[str],
-            topleft_coords: tuple[float, float],
-            treatment_eligibility_selector:
-            RasterConditionTreatmentEligibilitySelector,
-            forsys_input: dict[str, list],
-            starting_stand_id: int):
-        DUMMY_PROJECT_ID = 0
-        stand_id = starting_stand_id
-        default_priority_scores = {}
-        for p in priorities:
-            default_priority_scores[headers.get_priority_header(p)] = 0
-            default_priority_scores[headers.get_condition_header(p)] = 0
-
-        for x in treatment_eligibility_selector.pixels_to_pass_through.keys():
-            for y in treatment_eligibility_selector.pixels_to_pass_through[x]:
-                self._append_to_forsys_input_df(
-                    headers, forsys_input, default_priority_scores, DUMMY_PROJECT_ID,
-                    stand_id, settings.RASTER_PIXEL_AREA,
-                    settings.RASTER_PIXEL_AREA *
-                    self.TREATMENT_COST_PER_KM_SQUARED,
-                    self._get_raster_pixel_geo(x, y, topleft_coords).wkt, False)
-                stand_id = stand_id + 1
 
     # Returns a Polygon representing the raster pixel at pixel position,
     # (x, y).
@@ -348,7 +362,7 @@ class ForsysGenerationInput():
         return geo
 
     # Adds a new entry to the Forsys input dataframe dictionary.
-    def _append_to_forsys_input_df(
+    def _append_single_stand_to_forsys_input_df(
             self, headers: ForsysInputHeaders, forsys_input: dict[str, list],
             conditions_and_priorities: dict[str, float],
             project_id: int, stand_id: int, area: float, cost: float,

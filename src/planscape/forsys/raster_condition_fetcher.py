@@ -44,7 +44,8 @@ class RasterConditionFetcher:
     #   - y: the y pixel (starting from 0)
     #   - <priority name>: each priority has its own column. If a priority
     #       value exists for a given pixel, the element corresponding to the
-    #       pixel is a float; otherwise, it's None.
+    #       pixel is a float; otherwise, it's np.nan.
+    #       note: the value, for now, is 1.0 - normalized condition value.
     data: dict[str, list]
     # Maps x and y pixel positions to a row index in the data.
     x_to_y_to_index: dict[int, dict[int, int]]
@@ -145,7 +146,9 @@ class RasterConditionFetcher:
             for i in range(len(raster_values["pixel_dist_x"])):
                 x = raster_values["pixel_dist_x"][i]
                 y = raster_values["pixel_dist_y"][i]
-                value = raster_values["values"][i]
+                # TODO: using normalized conditions, impact is 1.0 - condition
+                # score. This needs to be updated once we move to AP scores.
+                value = 1.0 - raster_values["values"][i]
 
                 if x not in x_to_y_to_index.keys():
                     x_to_y_to_index[x] = {}
