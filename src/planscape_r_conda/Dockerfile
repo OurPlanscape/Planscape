@@ -37,9 +37,11 @@ RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
 # Copy function code
-COPY lambda_handler.py /elsie
-COPY rank.R /elsie
-WORKDIR /elsie
+ARG FUNCTION_DIR="/elsie"
+RUN mkdir -p ${FUNCTION_DIR}
+COPY lambda_handler.py ${FUNCTION_DIR}
+COPY rank.R ${FUNCTION_DIR}
+WORKDIR ${FUNCTION_DIR}
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
