@@ -29,6 +29,7 @@ RUN echo $LD_LIBRARY_PATH
 RUN echo $PATH 
 RUN whereis R
 RUN which R
+RUN pip install --upgrade pip
 RUN pip install rpy2
 RUN pip install awslambdaric
 RUN whereis rpy2
