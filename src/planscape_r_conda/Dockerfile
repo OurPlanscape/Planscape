@@ -14,6 +14,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 ENV PATH=${PATH}:/miniconda3/bin
 
 # RUN strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so
 
 RUN conda init bash
 RUN conda init zsh
@@ -26,7 +27,6 @@ RUN echo $PATH
 RUN ls /usr/lib/
 RUN ls /usr/lib/
 RUN ls /miniconda3/lib/
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so
 
 RUN pip install --upgrade pip
 RUN pip install rpy2
