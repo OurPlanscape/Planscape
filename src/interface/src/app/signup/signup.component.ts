@@ -36,7 +36,7 @@ export class SignupComponent {
         ]),
         password1: this.formBuilder.control('', [
           Validators.required,
-          Validators.minLength(6),
+          Validators.minLength(8),
         ]),
         password2: this.formBuilder.control('', Validators.required),
       },
