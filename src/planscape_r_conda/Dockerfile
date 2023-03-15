@@ -36,7 +36,7 @@ RUN which gcc
 RUN gcc --version
 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE, auth_token='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')"
 
 # Copy function code
 ARG FUNCTION_DIR="/elsie"
