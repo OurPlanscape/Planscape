@@ -2,7 +2,7 @@ FROM python:3.10-bullseye
 
 RUN apt-get update \
   && apt-get install -y wget \
-  && apt-get install -y gdal-bin \
+#   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
   && apt-get install -y libssl-dev \
   && apt-get install -y gcc
@@ -23,7 +23,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal geos=3.11.0 poppler gcc glib blas-devel udunits2 r r-base r-essentials \
+RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgeos r-rgdal r-extremes r-doparallel r-r.utils r-sf 
 
 RUN echo $LD_LIBRARY_PATH
