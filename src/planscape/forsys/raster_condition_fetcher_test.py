@@ -100,10 +100,10 @@ class RasterConditionFetcherTest(RasterConditionRetrievalTestCase):
             self, condition_fetcher.data,
             {'x': [0, 1, 2, 3, 0, 1, 2, 3],
                 'y': [0, 0, 0, 0, 1, 1, 1, 1],
-                'foo': [0.01, 0.02, 0.03, 0.04,
-                        0.05, 0.06, 0.07, 0.08],
+                'foo': [0.99, 0.98, 0.97, 0.96,
+                        0.95, 0.94, 0.93, 0.92],
                 'bar': [np.nan, np.nan, np.nan, np.nan,
-                        0.2, 0.2, 0.2, 0.2]})
+                        0.8, 0.8, 0.8, 0.8]})
 
         assert_dict_almost_equal(
             self, condition_fetcher.x_to_y_to_index,
