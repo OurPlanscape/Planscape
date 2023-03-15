@@ -14,7 +14,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 RUN which python
 RUN which pip
-
+ENV PATH=${PATH}:/miniconda3/bin
 
 RUN conda init bash
 RUN conda init zsh
