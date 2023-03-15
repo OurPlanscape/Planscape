@@ -4,8 +4,10 @@ times2 <- function(number) {
   library(forsys)
 
   data(test_forest)
+  print("elsie 1")
 
   stand_dat <- test_forest %>% st_drop_geometry()
+  print("elsie 2")
   
   run_outputs <- forsys::run(
     return_outputs = FALSE,
@@ -21,6 +23,6 @@ times2 <- function(number) {
     proj_target_field = "area_ha",
     proj_target_value = number
   )
-
+  print("elsie 3")
   return(run_outputs)
 }
