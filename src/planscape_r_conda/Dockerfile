@@ -22,9 +22,11 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgeos r-rgdal r-extremes r-doparallel r-r.utils r-sf 
 
+RUN echo $PATH
+RUN ls /usr/lib/
 RUN ls /usr/lib/
 RUN ls /miniconda3/lib/
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so
 
 RUN pip install --upgrade pip
 RUN pip install rpy2
