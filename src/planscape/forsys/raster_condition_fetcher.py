@@ -29,6 +29,8 @@ def get_conditions(region: str, priorities: list[str]) -> list[Condition]:
 # a dataframe.
 class RasterConditionFetcher:
     # Maps condition names to retrieved ConditionPixelValues instances.
+    # This contains results that were directly returned by 
+    # conditions.raster_utils.get_condition_values_from_raster.
     conditions_to_raster_values: dict[str, ConditionPixelValues]
 
     # The origin coordinate used to merging ConditionPixelValues instances into
@@ -38,7 +40,8 @@ class RasterConditionFetcher:
     width: int
     height: int
     # A reformatted version of retrieved ConditionPixelValues instances where
-    # each row represents a pixel.
+    # each row represents a pixel, and each column represents a specific 
+    # feature.
     # Column headers include:
     #   - x: the x pixel (starting from 0)
     #   - y: the y pixel (starting from 0)
@@ -64,6 +67,11 @@ class RasterConditionFetcher:
             self.conditions_to_raster_values, priorities)
         self.width, self.height = self._get_width_and_height(
             self.x_to_y_to_index)
+        
+        # TODO: Only stands with at least one condition value are saved; 
+        # however, some stands may have 0 condition values, but still be useful 
+        # to include in the forsys input (think stand threshold, EPW). These 
+        # should be added to self.data.
 
     # Fetches condition raster values for a given GEOSGeometry and emits it in
     # a {condition name: ConditionPixelValues} dictionary.

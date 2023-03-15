@@ -19,10 +19,55 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {1: 2}, 1: {1: 3}})
 
-    def test_fails_for_extraneous_priorities(self):
+    def test_fails_for_missing_priorities(self):
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
                 self.data,  ['foo', 'bar', 'baz'])
         self.assertEqual(
             str(context.exception),
             "data missing input priority, baz")
+
+    def test_fails_for_missing_x(self):
+        data = self.data
+        data.pop('x')
+        with self.assertRaises(Exception) as context:
+            RasterConditionTreatmentEligibilitySelector(
+                self.data,  ['foo', 'bar'])
+        self.assertEqual(
+            str(context.exception),
+            "data missing key, x")
+        
+    def test_fails_for_missing_y(self):
+        data = self.data
+        data.pop('y')
+        with self.assertRaises(Exception) as context:
+            RasterConditionTreatmentEligibilitySelector(
+                self.data,  ['foo', 'bar'])
+        self.assertEqual(
+            str(context.exception),
+            "data missing key, y")
+        
+    def test_fails_for_different_x_and_y_column_lengths(self):
+        data = self.data
+        data['x'].append(10)
+        with self.assertRaises(Exception) as context:
+            RasterConditionTreatmentEligibilitySelector(
+                self.data,  ['foo', 'bar'])
+        self.assertEqual(
+            str(context.exception),
+            "data column lengths are unequal for keys, x and y")
+        
+    def test_fails_for_different_x_and_priority_column_lengths(self):
+        data = self.data
+        data['x'].append(0)
+        data['x'].append(1)
+        data['y'].append(2)
+        data['y'].append(2)
+        data['bar'].append(0.1)
+        data['bar'].append(0.1)
+        with self.assertRaises(Exception) as context:
+            RasterConditionTreatmentEligibilitySelector(
+                self.data,  ['foo', 'bar'])
+        self.assertEqual(
+            str(context.exception),
+            "data column lengths are unequal for keys, x and foo")
