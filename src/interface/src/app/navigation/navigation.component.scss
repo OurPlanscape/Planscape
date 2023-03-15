@@ -18,6 +18,13 @@
   width: 27px;
 }
 
+.nav-list {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .nav-link {
   align-items: center;
   cursor: pointer;
@@ -25,9 +32,12 @@
   flex-direction: column;
   height: auto;
   justify-content: center;
-  max-height: 72px;
   padding: 20px 0 5px;
   text-decoration: none;
+
+  &:last-child {
+    margin-top: auto;
+  }
 }
 
 .selected {

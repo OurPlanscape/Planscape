@@ -3,7 +3,7 @@
     [attr.role]="'navigation'"
     [mode]="'side'"
     [opened]="sidebarOpen">
-    <mat-nav-list>
+    <mat-nav-list class="nav-list">
       <ng-container *ngFor="let link of sidenavLinks">
         <a routerLink="{{link.href}}"
           class="nav-link"
@@ -30,9 +30,9 @@
           <a routerLink="/login"
             class="nav-link"
             [ngClass]="{'selected': isSelected('/login')}">
-            <mat-icon>login</mat-icon>
+            <mat-icon class="material-symbols-outlined">account_circle</mat-icon>
             <div class="nav-text">
-              Login / Signup
+              Sign In / Create Account
             </div>
           </a>
         </ng-template>
