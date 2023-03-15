@@ -31,11 +31,12 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils gcc glib
+RUN conda install -y -c conda-forge gdal poppler gcc glib r r-base r-essentials r-stringi r-units blas-devel udunits2 r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils r-sf 
 
 ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
+ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
-RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
+# RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 # RUN R -e "sessionInfo()"
@@ -45,42 +46,41 @@ RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
 RUN ln -s /miniconda3/bin/R /var/lang/bin/R
 RUN ln -s /miniconda3/lib/R /var/lang/lib/R
 RUN pip install rpy2
+
 # RUN python -m rpy2.situation
 # to use the miniconda version of sqlite rather than the /usr/bin/sqlite3 one
-ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
-RUN whereis sqlite3
-RUN which sqlite3
+# RUN whereis sqlite3
+# RUN which sqlite3
 # RUN ln -s /miniconda3/bin/sqlite3 /usr/bin/sqlite3
 # RUN ln -s /miniconda3/lib/sqlite3 /usr/lib/sqlite3
 
-RUN ls /miniconda3/bin
-RUN ls /miniconda3/lib
-RUN ls /miniconda3/lib/R/library/sf/libs/../../../.././
+# RUN ls /miniconda3/bin
+# RUN ls /miniconda3/lib
+# RUN ls /miniconda3/lib/R/library/sf/libs/../../../.././
+
+# RUN find /miniconda3/lib -lname 'libspatialite.so.*'
+# RUN find /miniconda3/lib -lname 'libsqlite3.so.*'
+# RUN find /miniconda3/bin -lname 'libspatialite.so.*'
+# RUN find /miniconda3/bin -lname 'libsqlite3.so.*'
 
 
-RUN find /miniconda3/lib -lname 'libspatialite.so.*'
-RUN find /miniconda3/lib -lname 'libsqlite3.so.*'
-RUN find /miniconda3/bin -lname 'libspatialite.so.*'
-RUN find /miniconda3/bin -lname 'libsqlite3.so.*'
+# RUN ldd /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
+# # RUN ldd /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
+# RUN ldd /miniconda3/lib/libspatialite.so
 
+# RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
+# RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
+# RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7.1.2
+# RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
+# RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0
+# RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0.8.6
 
-RUN ldd /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
-# RUN ldd /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
-RUN ldd /miniconda3/lib/libspatialite.so
-
-RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
-RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
-RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7.1.2
-RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so
-RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0
-RUN ls -l /miniconda3/lib/R/library/sf/libs/../../../../././libsqlite3.so.0.8.6
-
-RUN ls -l /miniconda3/lib/libspatialite.so
-RUN ls -l /miniconda3/lib/libspatialite.so.7
-RUN ls -l /miniconda3/lib/libspatialite.so.7.1.2
-RUN ls -l /miniconda3/lib/libsqlite3.so
-RUN ls -l /miniconda3/lib/libsqlite3.so.0
-RUN ls -l /miniconda3/lib/libsqlite3.so.0.8.6
+# RUN ls -l /miniconda3/lib/libspatialite.so
+# RUN ls -l /miniconda3/lib/libspatialite.so.7
+# RUN ls -l /miniconda3/lib/libspatialite.so.7.1.2
+# RUN ls -l /miniconda3/lib/libsqlite3.so
+# RUN ls -l /miniconda3/lib/libsqlite3.so.0
+# RUN ls -l /miniconda3/lib/libsqlite3.so.0.8.6
 
 # RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so
 # RUN rm /miniconda3/lib/R/library/sf/libs/../../../.././libspatialite.so.7
@@ -99,8 +99,8 @@ RUN ls -l /miniconda3/lib/libsqlite3.so.0.8.6
 
 
 # switched the order for gcc libraries. we want to use the miniconda ones, not the /lib64 ones installed with the base image. 
-ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
-RUN ln -s /miniconda3/lib /lib64
+# ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
+# RUN ln -s /miniconda3/lib /lib64
 
 
 # RUN which gcc
