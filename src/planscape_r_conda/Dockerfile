@@ -15,7 +15,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 RUN which python
 RUN which pip
 
-RUN pip install rpy2
+
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
@@ -25,6 +25,7 @@ RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r 
 RUN echo $LD_LIBRARY_PATH
 RUN echo $PATH 
 RUN which R
+RUN pip install rpy2
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 # ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
