@@ -31,7 +31,7 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils gcc
+RUN conda install -y -c conda-forge gdal poppler r r-base r-stringi r-units blas-devel udunits2 r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils gcc glibc
 
 ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 
