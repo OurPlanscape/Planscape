@@ -26,6 +26,8 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r r-base r-essentials r-stringi r-units r-tidyverse r-rgeos r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils r-sf 
 
 RUN echo $LD_LIBRARY_PATH
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6 
+
 RUN echo $PATH 
 RUN whereis R
 RUN which R
@@ -38,7 +40,7 @@ RUN whereis awslambdaric
 RUN which gcc
 RUN gcc --version
 
-# ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
+ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 # ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
