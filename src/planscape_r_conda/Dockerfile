@@ -11,13 +11,9 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
-
-RUN strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
-
-
-RUN which python
-RUN which pip
 ENV PATH=${PATH}:/miniconda3/bin
+
+# RUN strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
 
 RUN conda init bash
 RUN conda init zsh
@@ -26,23 +22,16 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgeos r-rgdal r-extremes r-doparallel r-r.utils r-sf 
 
-RUN echo $LD_LIBRARY_PATH
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so 
+RUN ls /usr/lib/
+RUN ls /miniconda3/lib/
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 
-RUN echo $PATH 
-RUN whereis R
-RUN which R
 RUN pip install --upgrade pip
 RUN pip install rpy2
 RUN pip install awslambdaric
-RUN whereis rpy2
-RUN whereis awslambdaric
 
 RUN which gcc
 RUN gcc --version
-
-# ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
-# ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
