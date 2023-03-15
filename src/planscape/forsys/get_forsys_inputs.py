@@ -185,8 +185,7 @@ class ForsysGenerationInput():
             # TODO: instead of calling get_values_eligible_for_treatment,
             # change ClusteredStands to process RasterConditionFetcher data.
             clustered_stands = ClusteredStands(
-                self._treatment_eligibility_selector.get_values_eligible_for_treatment(
-                    priorities, self._condition_fetcher.data, self._condition_fetcher.x_to_y_to_index),
+                self.get_values_eligible_for_treatment(priorities),
                 self._condition_fetcher.width,
                 self._condition_fetcher.height,
                 params.get_priority_weights_dict(),
@@ -230,20 +229,14 @@ class ForsysGenerationInput():
     def _append_stands_to_treat_to_input_df(
             self, headers: ForsysInputHeaders, priorities: list[str],
             raster_conditions: RasterConditionFetcher,
-            pixels: dict[int, set[int]],
+            pixels: dict[int, dict[int, int]],
             forsys_input: dict[str, list],
             starting_stand_id: int) -> int:
         DUMMY_PROJECT_ID = 0
         stand_id = starting_stand_id
         for x in pixels.keys():
-            if x not in raster_conditions.x_to_y_to_index.keys():
-                raise Exception(
-                    "raster condition data missing x-pixel, %d" % x)
-            for y in pixels[x]:
-                if y not in raster_conditions.x_to_y_to_index[x].keys():
-                    raise Exception(
-                        "raster condition data missing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
-                i = raster_conditions.x_to_y_to_index[x][y]
+            for y in pixels[x].keys():
+                i = pixels[x][y]
                 priority_scores = {}
                 for p in priorities:
                     priority_scores[headers.get_priority_header(
@@ -263,20 +256,14 @@ class ForsysGenerationInput():
     def _append_stands_to_pass_to_input_df(
             self, headers: ForsysInputHeaders, priorities: list[str],
             raster_conditions: RasterConditionFetcher,
-            pixels: dict[int, set[int]],
+            pixels: dict[int, dict[int, int]],
             forsys_input: dict[str, list],
             starting_stand_id: int) -> int:
         DUMMY_PROJECT_ID = 0
         stand_id = starting_stand_id
         for x in pixels.keys():
-            if x not in raster_conditions.x_to_y_to_index.keys():
-                raise Exception(
-                    "raster condition data missing x-pixel, %d" % x)
-            for y in pixels[x]:
-                if y not in raster_conditions.x_to_y_to_index[x].keys():
-                    raise Exception(
-                        "raster condition data missing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
-                i = raster_conditions.x_to_y_to_index[x][y]
+            for y in pixels[x].keys():
+                i = pixels[x][y]
                 priority_scores = {}
                 for p in priorities:
                     priority_scores[headers.get_priority_header(
@@ -376,3 +363,25 @@ class ForsysGenerationInput():
             1.0 if is_eligible_for_treatment else 0.0)
         for k in conditions_and_priorities.keys():
             forsys_input[k].append(conditions_and_priorities[k])
+
+    # A temporary method until ClusteredStands is modified to accept different
+    # input types. This returns a dictionary mapping x-pixel to y-pixel to
+    # condition name to condition impact score.
+    def get_values_eligible_for_treatment(self, priorities: list[str]):
+        output = {}
+        for x in self._treatment_eligibility_selector.pixels_to_treat.keys():
+            if x not in self._condition_fetcher.x_to_y_to_index.keys():
+                raise Exception(
+                    "x_to_y_to_index missing x-pixel, %d" % x)
+            if x not in output.keys():
+                output[x] = {}
+            for y in self._treatment_eligibility_selector.pixels_to_treat[x]:
+                if y not in self._condition_fetcher.x_to_y_to_index[x].keys():
+                    raise Exception(
+                        "x_to_y_to_indexmissing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
+                i = self._condition_fetcher.x_to_y_to_index[x][y]
+                if y not in output[x].keys():
+                    output[x][y] = {}
+                for p in priorities:
+                    output[x][y][p] = self._condition_fetcher.data[p][i]
+        return output
