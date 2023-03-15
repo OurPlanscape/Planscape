@@ -27,18 +27,19 @@ RUN echo $PATH
 RUN whereis R
 RUN which R
 RUN pip install rpy2
+RUN pip install awslambdaric
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 # ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
-
-ENTRYPOINT \[ "/usr/local/bin/python", "-m", "awslambdaric" ]
-
 # Copy function code
-COPY lambda_handler.py ${LAMBDA_TASK_ROOT}
-COPY rank.R ${LAMBDA_TASK_ROOT}
+COPY lambda_handler.py /elsie
+COPY rank.R /elsie
+
+
+ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
 # Set the CMD to your handler 
 CMD ["lambda_handler.lambda_handler"]
