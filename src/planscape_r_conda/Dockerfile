@@ -43,8 +43,8 @@ RUN gcc --version
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 # ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
-# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
 # Copy function code
 ARG FUNCTION_DIR="/elsie"
