@@ -33,6 +33,10 @@ describe('SavedScenariosComponent', () => {
           {
             id: '1',
             createdTimestamp: 100,
+            config: {
+              id: 1,
+              max_budget: 200,
+            },
           },
         ]),
         deleteScenarios: of(['1']),
