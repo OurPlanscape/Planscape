@@ -24,6 +24,7 @@ RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r 
 
 RUN echo $LD_LIBRARY_PATH
 RUN echo $PATH 
+RUN whereis R
 RUN which R
 RUN pip install rpy2
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
