@@ -5,7 +5,7 @@ RUN apt-get update \
   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
   && apt-get install -y libssl-dev \
-  && apt-get install -y gcc
+  && apt-get install -y gcc-10
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
