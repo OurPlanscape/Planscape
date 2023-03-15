@@ -28,6 +28,8 @@ RUN whereis R
 RUN which R
 RUN pip install rpy2
 RUN pip install awslambdaric
+RUN whereis rpy2
+RUN whereis awslambdaric
 # ENV LD_LIBRARY_PATH=/var/lang/lib:/miniconda3/lib:/lib64:/usr/lib64:/var/runtime:/var/runtime/lib:/var/task:/var/task/lib:/opt/lib
 # ENV PATH=/var/lang/bin:/miniconda3/bin:/usr/local/bin:/usr/bin/:/bin:/opt/bin:/miniconda3/bin
 
