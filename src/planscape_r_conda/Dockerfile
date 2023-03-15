@@ -12,6 +12,8 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
+RUN strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+
 
 RUN which python
 RUN which pip
