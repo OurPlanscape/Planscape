@@ -321,10 +321,23 @@ describe('PlanService', () => {
 
   describe('getScenario', () => {
     it('should make HTTP request to backend', () => {
+      const projectConfig: ProjectConfig =
+        {
+          id: 1,
+          planId: undefined,
+          max_budget: undefined,
+          max_road_distance: undefined,
+          max_slope: undefined,
+          max_treatment_area_ratio: undefined,
+          priorities: undefined,
+          createdTimestamp: undefined,
+          weights: undefined,
+        };
       const scenario: Scenario = {
         id: '1',
         planId: undefined,
         projectId: undefined,
+        config: projectConfig,
         priorities: [],
         projectAreas: [],
         createdTimestamp: undefined,
@@ -377,6 +390,18 @@ describe('PlanService', () => {
 
   describe('getScenariosForPlan', () => {
     it('should make HTTP request to backend', (done) => {
+      const projectConfig: ProjectConfig =
+        {
+          id: 1,
+          planId: undefined,
+          max_budget: 200,
+          max_road_distance: undefined,
+          max_slope: undefined,
+          max_treatment_area_ratio: undefined,
+          priorities: undefined,
+          createdTimestamp: undefined,
+          weights: undefined,
+        };
       service.getScenariosForPlan('1').subscribe((res) => {
         expect(res).toEqual([
           {
@@ -384,6 +409,7 @@ describe('PlanService', () => {
             createdTimestamp: 5000,
             planId: undefined,
             projectId: undefined,
+            config: projectConfig,
             priorities: [],
             projectAreas: [],
             notes: undefined,
@@ -404,6 +430,7 @@ describe('PlanService', () => {
         {
           id: '1',
           creation_timestamp: 5,
+          config: projectConfig,
         },
       ]);
       httpTestingController.verify();

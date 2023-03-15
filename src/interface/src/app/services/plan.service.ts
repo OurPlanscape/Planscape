@@ -400,6 +400,7 @@ export class PlanService {
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         scenario.creation_timestamp
       ),
+      config: this.convertToProjectConfig(scenario.config),
       priorities: this.convertToPriorities(scenario.priorities),
       projectAreas: this.convertToProjectAreas(scenario.project_areas),
       notes: scenario.notes,
