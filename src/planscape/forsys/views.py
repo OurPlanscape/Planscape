@@ -33,8 +33,6 @@ logger = logging.getLogger(__name__)
 
 # Sets up cProfile profiler.
 # This is for measuring runtime.
-
-
 def _set_up_cprofiler(pr: cProfile.Profile) -> None:
     pr.enable()
 
@@ -86,7 +84,8 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         max_area_in_km2: float | None, max_cost_in_usd: float | None,
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
-        forsys_priority_headers: list[str]) -> ForsysRankingOutputForMultipleScenarios:
+        forsys_priority_headers: list[str]
+) -> ForsysRankingOutputForMultipleScenarios:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_multiple_scenarios.R'))
@@ -101,8 +100,9 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_cost_header)
 
     parsed_output = ForsysRankingOutputForMultipleScenarios(
-        forsys_output, forsys_priority_headers, max_area_in_km2, max_cost_in_usd,
-        forsys_proj_id_header, forsys_area_header, forsys_cost_header)
+        forsys_output, forsys_priority_headers, max_area_in_km2,
+        max_cost_in_usd, forsys_proj_id_header, forsys_area_header,
+        forsys_cost_header)
 
     return parsed_output
 
@@ -137,7 +137,8 @@ def run_forsys_rank_project_areas_for_a_single_scenario(
         forsys_proj_id_header: str, forsys_stand_id_header: str,
         forsys_area_header: str, forsys_cost_header: str,
         forsys_priority_headers: list[str],
-        forsys_priority_weights: list[float]) -> ForsysRankingOutputForASingleScenario:
+        forsys_priority_weights: list[float]
+) -> ForsysRankingOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
         settings.BASE_DIR, 'forsys/rank_projects_for_a_single_scenario.R'))
@@ -189,9 +190,7 @@ def rank_project_areas_for_a_single_scenario(
 
 def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_input_dict: dict[str, list],
-        forsys_proj_id_header: str, forsys_stand_id_header: str,
-        forsys_area_header: str, forsys_cost_header: str,
-        forsys_geo_wkt_header: str, forsys_priority_headers: list[str], forsys_condition_headers: list[str],
+        headers: ForsysInputHeaders,
         forsys_priority_weights: list[float],
         enable_kmeans_clustering: bool,
         output_scenario_name: str | None,
@@ -206,21 +205,24 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
     forsys_input = convert_dictionary_of_lists_to_rdf(forsys_input_dict)
 
     forsys_output = generate_projects_for_a_single_scenario_function_r(
-        forsys_input, robjects.StrVector(forsys_priority_headers),
-        robjects.StrVector(forsys_condition_headers),
+        forsys_input, robjects.StrVector(headers.priority_headers),
+        robjects.StrVector(headers.condition_headers),
         robjects.FloatVector(forsys_priority_weights),
-        forsys_stand_id_header, forsys_proj_id_header, forsys_area_header,
-        forsys_cost_header, forsys_geo_wkt_header, ""
-        if output_scenario_name is None else output_scenario_name, ""
-        if output_scenario_tag is None else output_scenario_tag,
+        headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_PROJECT_ID_HEADER,
+        headers.FORSYS_AREA_HEADER,
+        headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
+        headers.FORSYS_TREATMENT_ELIGIBILITY_HEADER,
+        "" if output_scenario_name is None else output_scenario_name,
+        "" if output_scenario_tag is None else output_scenario_tag,
         enable_kmeans_clustering)
 
     priority_weights_dict = {
-        forsys_priority_headers[i]: forsys_priority_weights[i]
-        for i in range(len(forsys_priority_headers))}
+        headers.priority_headers[i]: forsys_priority_weights[i]
+        for i in range(len(headers.priority_headers))}
     parsed_output = ForsysGenerationOutputForASingleScenario(
-        forsys_output, priority_weights_dict, forsys_proj_id_header,
-        forsys_area_header, forsys_cost_header, forsys_geo_wkt_header)
+        forsys_output, priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
+        headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
+        headers.FORSYS_GEO_WKT_HEADER)
     return parsed_output
 
 
@@ -235,10 +237,8 @@ def generate_project_areas_for_a_single_scenario(
         headers = ForsysInputHeaders(params.priorities)
         forsys_input = ForsysGenerationInput(params, headers)
         forsys_output = run_forsys_generate_project_areas_for_a_single_scenario(
-            forsys_input.forsys_input, headers.FORSYS_PROJECT_ID_HEADER,
-            headers.FORSYS_STAND_ID_HEADER, headers.FORSYS_AREA_HEADER,
-            headers.FORSYS_COST_HEADER, headers.FORSYS_GEO_WKT_HEADER,
-            headers.priority_headers, headers.condition_headers, params.priority_weights,
+            forsys_input.forsys_input, headers,
+            params.priority_weights,
             params.cluster_params.cluster_algorithm_type ==
             ClusterAlgorithmType.KMEANS_IN_R,
             "test_scenario" if settings.DEBUG else None,
