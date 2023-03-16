@@ -48,7 +48,7 @@ RUN which gcc
 RUN conda install -y -c conda-forge r-sf
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
-RUN R -e "library(forsys);library(sf);library(dplyr); test_forest <- test_forest %>% forsys::combine_priorities(\
+RUN R -e "library(forsys);library(sf);library(dplyr); test_forest <- (test_forest %>% st_drop_geometry()) %>% forsys::combine_priorities(\
 fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority')"
 
 
