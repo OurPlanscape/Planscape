@@ -24,6 +24,7 @@ RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunit
     
 ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so.3.11.1
 
+# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
 RUN echo $PATH
 RUN echo $LD_LIBRARY_PATH
 RUN ls /usr/local/lib
