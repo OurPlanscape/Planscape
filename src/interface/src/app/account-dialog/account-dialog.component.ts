@@ -17,4 +17,9 @@ export class AccountDialogComponent implements OnInit {
   ngOnInit(): void {
     this.user$ = this.authService.loggedInUser$;
   }
+
+  displayName(user: User): string {
+    if (user.firstName) return user.firstName.concat(' ', user.lastName ?? '');
+    else return user.username ?? user.email!;
+  }
 }

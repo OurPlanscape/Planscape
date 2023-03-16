@@ -126,6 +126,8 @@ export class AuthService {
           const user: User = {
             email: response.email,
             username: response.username,
+            firstName: response.first_name,
+            lastName: response.last_name,
           };
           this.loggedInUser$.next(user);
           return user;
