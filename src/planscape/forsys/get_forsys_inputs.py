@@ -229,7 +229,7 @@ class ForsysGenerationInput():
         return forsys_input
 
     # Appends stands to treat to the forsys input dataframe.
-    # The first stand to be appended will have stand ID, starting_stand_id, and 
+    # The first stand to be appended will have stand ID, starting_stand_id, and
     # the one following will have starting_stand_id + 1.
     # Returns the next available integer that can be used as a stand ID.
     def _append_stands_to_treat_to_input_df(
@@ -249,19 +249,19 @@ class ForsysGenerationInput():
                         p)] = raster_conditions.data[p][i]
                     priority_scores[headers.get_condition_header(
                         p)] = raster_conditions.data[p][i]
-                pixel_geo = self._get_raster_pixel_geo(x, y,
-                                               raster_conditions.topleft_coords).wkt, True)
+                pixel_geo = self._get_raster_pixel_geo(
+                    x, y, raster_conditions.topleft_coords)
                 self._append_single_stand_to_forsys_input_df(
                     headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
                     stand_id, settings.RASTER_PIXEL_AREA,
                     settings.RASTER_PIXEL_AREA *
-                    self.TREATMENT_COST_PER_KM_SQUARED, pixel_geo)
-                stand_id=stand_id + 1
+                    self.TREATMENT_COST_PER_KM_SQUARED, pixel_geo.wkt, True)
+                stand_id = stand_id + 1
         return stand_id
 
-    # Appends stands to pass (i.e. stands ineligible for treatment that can 
-    # still be included in project areas) to the forsys input dataframe.
-    # The first stand to be appended will have stand ID, starting_stand_id, and 
+    # Appends stands to pass (i.e. stands ineligible for treatment that can
+    # still be included sin project areas) to the forsys input dataframe.
+    # The first stand to be appended will have stand ID, starting_stand_id, and
     # the one following will have starting_stand_id + 1.
     # Returns the next available integer that can be used as a stand ID.
     # Of note: if a stand is to be passed, its priority and condition scores
@@ -272,34 +272,34 @@ class ForsysGenerationInput():
             pixels: dict[int, dict[int, int]],
             forsys_input: dict[str, list],
             starting_stand_id: int) -> int:
-        DUMMY_PROJECT_ID=0
-        stand_id=starting_stand_id
+        DUMMY_PROJECT_ID = 0
+        stand_id = starting_stand_id
         for x in pixels.keys():
             for y in pixels[x].keys():
-                i=pixels[x][y]
-                priority_scores={}
+                priority_scores = {}
                 for p in priorities:
                     priority_scores[headers.get_priority_header(
-                        p)]=0
+                        p)] = 0
                     priority_scores[headers.get_condition_header(
-                        p)]=0
+                        p)] = 0
+                pixel_geo = self._get_raster_pixel_geo(
+                    x, y, raster_conditions.topleft_coords)
                 self._append_single_stand_to_forsys_input_df(
                     headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
                     stand_id, settings.RASTER_PIXEL_AREA,
                     settings.RASTER_PIXEL_AREA *
                     self.TREATMENT_COST_PER_KM_SQUARED,
-                    self._get_raster_pixel_geo(x, y,
-                                               raster_conditions.topleft_coords).wkt, False)
-                stand_id=stand_id + 1
+                    pixel_geo.wkt, False)
+                stand_id = stand_id + 1
         return stand_id
 
     # Appends stands to treat to the forsys input dataframe.
-    # In this version, a stand is actually a cluster of pixels, and stands may 
+    # In this version, a stand is actually a cluster of pixels, and stands may
     # have different acreages.
-    # The first stand to be appended will have stand ID, starting_stand_id, and 
+    # The first stand to be appended will have stand ID, starting_stand_id, and
     # the one following will have starting_stand_id + 1.
     # Returns the next available integer that can be used as a stand ID.
-    # Of note: a stand's condition score is the mean of each pixel's impact 
+    # Of note: a stand's condition score is the mean of each pixel's impact
     # score. A stand's priority score is the sum of each pixel's imppact score.
     def _append_clustered_stands_to_treat_to_input_df(
         self, headers: ForsysInputHeaders,
@@ -308,39 +308,40 @@ class ForsysGenerationInput():
         raster_conditions: RasterConditionFetcher,
         forsys_input: dict[str, list], starting_stand_id: int
     ) -> int:
-        stand_id=starting_stand_id
-        DUMMY_PROJECT_ID=0
+        stand_id = starting_stand_id
+        DUMMY_PROJECT_ID = 0
         for cluster_id in clusters_to_stands.keys():
-            stands=clusters_to_stands[cluster_id]
-            num_stands=len(stands)
-            geos=[]
-            priority_scores={}
+            stands = clusters_to_stands[cluster_id]
+            num_stands = len(stands)
+            geos = []
+            priority_scores = {}
             for stand_pixel_pos in stands:
-                x=stand_pixel_pos[0]
-                y=stand_pixel_pos[1]
+                x = stand_pixel_pos[0]
+                y = stand_pixel_pos[1]
                 if x not in raster_conditions.x_to_y_to_index.keys():
                     raise Exception(
                         "raster condition data missing x-pixel, %d" % x)
                 if y not in raster_conditions.x_to_y_to_index[x].keys():
                     raise Exception(
-                        "raster condition data missing x-pixel/y-pixel pair, (%d, %d)" % (x, y))
-                i=raster_conditions.x_to_y_to_index[x][y]
+                        "raster condition data missing x-pixel/y-pixel " +
+                        "pair, (%d, %d)" % (x, y))
+                i = raster_conditions.x_to_y_to_index[x][y]
 
                 geos.append(self._get_raster_pixel_geo(
                     x, y, raster_conditions.topleft_coords))
 
                 for p in priorities:
-                    priority_header=headers.get_priority_header(p)
-                    priority_score=raster_conditions.data[p][i]
+                    priority_header = headers.get_priority_header(p)
+                    priority_score = raster_conditions.data[p][i]
                     if priority_header in priority_scores.keys():
-                        priority_scores[priority_header]=
+                        priority_scores[priority_header] = \
                             priority_scores[priority_header] + priority_score
                     else:
-                        priority_scores[priority_header]=priority_score
+                        priority_scores[priority_header] = priority_score
 
             for p in priorities:
-                condition_header=headers.get_condition_header(p)
-                priority_scores[condition_header]=
+                condition_header = headers.get_condition_header(p)
+                priority_scores[condition_header] = \
                     priority_scores[priority_header] / num_stands
             self._append_single_stand_to_forsys_input_df(
                 headers, forsys_input, priority_scores, DUMMY_PROJECT_ID,
