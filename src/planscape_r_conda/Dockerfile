@@ -46,6 +46,9 @@ RUN gcc --version
 RUN which gcc
 
 RUN conda install -y -c conda-forge r-sf
+RUN conda remove geos 
+RUN conda install -y geos=3.11.0
+
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "library(forsys);library(sf);library(dplyr); \
