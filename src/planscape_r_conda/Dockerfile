@@ -6,14 +6,18 @@ RUN apt-get update \
   && apt-get install -y libudunits2-dev \
   && apt-get install -y libssl-dev 
 #  && apt-get install -y gcc
+
+RUN gcc --version
+RUN which gcc
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
-# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
-ENV PATH=/miniconda3/bin:${PATH}
+RUN gcc --version
+RUN which gcc
+
 
 RUN conda init bash
 RUN conda init zsh
@@ -21,17 +25,23 @@ RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils 
+
+# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
+# ENV PATH=/miniconda3/bin:${PATH}
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
+RUN gcc --version
+RUN which gcc
+
+# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
     
 RUN conda install -y -c conda-forge r-sf
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "library(sf)"
+RUN gcc --version
+RUN which gcc
 
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-RUN R -e "library(sf)"
 
-ENV PATH=/miniconda3/bin:${PATH}
-RUN R -e "library(sf)"
 # RUN echo $PATH
 # RUN echo $LD_LIBRARY_PATH
 # RUN ls /usr/local/lib
