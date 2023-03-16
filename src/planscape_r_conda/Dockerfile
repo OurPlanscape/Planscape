@@ -14,7 +14,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 ENV PATH=${PATH}:/miniconda3/bin
 
 # RUN strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so.3.11.1
 
 RUN conda init bash
 RUN conda init zsh
