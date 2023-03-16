@@ -12,8 +12,6 @@ RUN gcc --version
 RUN which gcc
 RUN ls /usr/bin
 RUN ls /usr/local/bin
-# RUN geos-config --version
-
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
@@ -37,18 +35,15 @@ RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r 
 
 # because we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-RUN gcc --version
-RUN which gcc
-# RUN geos-config --version
 
-# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 RUN gcc --version
 RUN which gcc
 
-RUN conda install -y -c conda-forge r-sf
 RUN conda remove geos 
 RUN conda install -y geos=3.11.0
+RUN conda install -y -c conda-forge r-sf
+
 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
