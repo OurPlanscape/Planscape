@@ -18,11 +18,6 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
-RUN gcc --version
-RUN which gcc
-# RUN geos-config --version
-
-
 # /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
 ENV PATH=${PATH}:/miniconda3/bin
 RUN conda init bash
@@ -36,7 +31,6 @@ RUN conda install -y -c conda-forge gcc geos=3.11.0 gdal poppler  glib blas-deve
 
 # because we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-
 ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 RUN gcc --version
 RUN which gcc
