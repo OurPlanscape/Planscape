@@ -83,6 +83,15 @@
         <ng-template #finalStep>
 
           <mat-form-field appearance="fill">
+            <mat-label>Username</mat-label>
+            <input
+              type="text"
+              required
+              formControlName="username"
+              matInput>
+          </mat-form-field>
+
+          <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
             <input
               type="text"
@@ -122,8 +131,8 @@
             type="submit"
             color="primary"
             (click)="signup()"
-            [disabled]="!form.valid">
-            Create account
+            [disabled]="!form.valid || submitted">
+            {{submitted ? 'Please wait...' : 'Create account'}}
           </button>
 
           <button mat-button color="primary" type="button" (click)="step = 0">Back</button>

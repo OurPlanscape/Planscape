@@ -19,6 +19,7 @@ export class SignupComponent {
 
   form: FormGroup;
   step: number = 0;
+  submitted: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -30,6 +31,7 @@ export class SignupComponent {
         firstName: this.formBuilder.control('', Validators.required),
         lastName: this.formBuilder.control('', Validators.required),
         department: this.formBuilder.control(''),
+        username: this.formBuilder.control('', [Validators.required]),
         email: this.formBuilder.control('', [
           Validators.required,
           Validators.email,
@@ -47,10 +49,14 @@ export class SignupComponent {
   }
 
   signup() {
+    if (this.submitted) return;
+
+    this.submitted = true;
+    const username: string = this.form.get('username')?.value;
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
-    this.authService.signup(email, email, password1, password2).subscribe(
+    this.authService.signup(username, email, password1, password2).subscribe(
       (_) => this.router.navigate(['map']),
       (error) => (this.error = error)
     );
