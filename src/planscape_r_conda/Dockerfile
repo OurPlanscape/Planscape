@@ -35,10 +35,10 @@ RUN conda install -y -c conda-forge gcc geos=3.11.0 poppler glib blas-devel udun
 
 # RUN conda install -y -c conda-forge r-sf
 
-RUN gcc --version
-RUN which gcc
-RUN which R
-RUN R -e "library(sf);"
+# RUN gcc --version
+# RUN which gcc
+# RUN which R
+# RUN R -e "library(sf);"
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN gcc --version
