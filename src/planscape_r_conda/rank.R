@@ -5,14 +5,15 @@ times2 <- function(number) {
   
   print("elsie 0")
   
-  test_forest <- test_forest %>% forsys::combine_priorities(
+  stand_dat <- test_forest %>% st_drop_geometry()
+  is.data.frame(test_forest)
+  
+  print("elsie 1")
+
+  output <- stand_dat %>% forsys::combine_priorities(
   fields = c('priority1','priority2'), 
   weights = c(1,1), 
   new_field = 'combo_priority')
-
-  print("elsie 1")
-  
-  stand_dat <- test_forest %>% st_drop_geometry()
   
   print("elsie 2")
 
