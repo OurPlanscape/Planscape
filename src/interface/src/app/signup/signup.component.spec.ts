@@ -57,7 +57,6 @@ describe('SignupComponent', () => {
     it('enables submit when all fields are valid', () => {
       component.form.get('firstName')?.setValue('Foo');
       component.form.get('lastName')?.setValue('Bar');
-      component.form.get('username')?.setValue('testuser');
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password1')?.setValue('password');
       component.form.get('password2')?.setValue('password');
@@ -68,7 +67,8 @@ describe('SignupComponent', () => {
 
   describe('signup', () => {
     it('calls authentication service', () => {
-      component.form.get('username')?.setValue('testuser');
+      component.form.get('firstName')?.setValue('Foo');
+      component.form.get('lastName')?.setValue('Bar');
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password1')?.setValue('password');
       component.form.get('password2')?.setValue('password');
@@ -76,10 +76,12 @@ describe('SignupComponent', () => {
       component.signup();
 
       expect(fakeAuthService.signup).toHaveBeenCalledOnceWith(
-        'testuser',
         'test@test.com',
         'password',
-        'password'
+        'password',
+        'Foo',
+        'Bar',
+        ''
       );
     });
   });
