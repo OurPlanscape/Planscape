@@ -37,13 +37,13 @@ RUN conda install -y -c conda-forge r-sf
 
 RUN gcc --version
 RUN which gcc
-RUN which gcc
+RUN which R
 RUN R -e "library(sf);"
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN gcc --version
 RUN which gcc
-RUN which gcc
+RUN which R
 RUN R -e "library(sf);"
 
 
