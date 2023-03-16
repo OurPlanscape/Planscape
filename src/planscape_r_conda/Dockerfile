@@ -56,7 +56,7 @@ print('elsie0')\
 test_forest <- (test_forest %>% st_drop_geometry()) %>% forsys::combine_priorities(\
 fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
 print('elsie1')\
-test_forest <- (stand_dat %>% st_drop_geometry()) %>% forsys::combine_priorities(\
+test_forest <- (stand_dat) %>% forsys::combine_priorities(\
 fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
 print('elsie2')\
   run_outputs <- forsys::run( \
