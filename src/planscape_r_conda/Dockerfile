@@ -41,7 +41,7 @@ RUN which gcc
 # RUN geos-config --version
 
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 RUN gcc --version
 RUN which gcc
 
