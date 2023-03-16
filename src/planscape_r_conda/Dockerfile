@@ -25,15 +25,15 @@ RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN conda search geos
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gcc geos=3.11.0 poppler  glib blas-devel udunits2 r r-base r-essentials \
-    r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils \
+RUN conda install -y -c conda-forge gcc geos=3.11.0 poppler glib blas-devel udunits2 r r-base r-essentials \
+    r-stringi r-units r-tidyverse r-roxygen2 r-extremes r-doparallel r-r.utils \
     r-wk r-s2 r-classint r-quadprog r-pacman r-gtools  r-directlabels
 
 # we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 
-RUN conda install -y -c conda-forge r-sf
+# RUN conda install -y -c conda-forge r-sf
 
 RUN gcc --version
 RUN which gcc
@@ -46,6 +46,7 @@ RUN gcc --version
 RUN which gcc
 RUN which R
 RUN gdalinfo --version
+RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
 RUN R -e "library(sf);"
 
 
