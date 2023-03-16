@@ -45,7 +45,7 @@ RUN gcc --version
 RUN which gcc
 RUN which R
 RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
-RUN R -e "library(sf);"
+RUN R -e "sessionInfo(); library(sf);"
 
 
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
