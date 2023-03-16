@@ -6,7 +6,8 @@ times2 <- function(number) {
   data(test_forest)
   print("elsie 1")
 
-  stand_dat <- test_forest %>% st_drop_geometry()
+# stand_dat <- test_forest %>% st_drop_geometry()
+  stand_dat <- test_forest 
   print("elsie 2")
   
   run_outputs <- forsys::run(
@@ -14,7 +15,7 @@ times2 <- function(number) {
     run_with_patchmax = FALSE,
     write_outputs = FALSE,
     scenario_name = "test_scenario",
-    stand_data = stand_dat,
+    stand_data =  stand_dat,
     stand_id_field = "stand_id",
     proj_id_field = "proj_id",
     stand_area_field = "area_ha",
