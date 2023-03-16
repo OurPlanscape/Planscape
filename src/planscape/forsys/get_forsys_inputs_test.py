@@ -4,27 +4,15 @@ from conditions.models import BaseCondition
 from conditions.raster_condition_retrieval_testcase import \
     RasterConditionRetrievalTestCase
 from django.contrib.gis.geos import Polygon
-from django.http import HttpRequest, QueryDict
+from django.http import QueryDict
 from django.test import TestCase
 from forsys.forsys_request_params import (
     ClusterAlgorithmType, ForsysGenerationRequestParamsFromUrlWithDefaults,
     ForsysRankingRequestParamsFromUrlWithDefaults)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
-from forsys.merge_polygons import merge_polygons
 from planscape import settings
-
-
-def _assert_dict_almost_equal(self,
-                              d1: dict[str, list],
-                              d2: dict[str, list]) -> None:
-    self.assertEqual(len(d1.keys()), len(d2.keys()))
-    for k in d1.keys():
-        l1 = d1[k]
-        if len(l1) > 0 and type(l1[0]) is float:
-            np.testing.assert_array_almost_equal(l1, d2[k])
-        else:
-            self.assertListEqual(l1, d2[k])
+from forsys.assert_dict_almost_equal import assert_dict_almost_equal
 
 
 class ForsysInputHeadersTest(TestCase):
@@ -69,8 +57,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             self, "bar", "bar_normalized", bar_raster)
 
     def test_gets_forsys_input(self):
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         params.priorities = ["foo", "bar"]
         params.project_areas.clear()
@@ -82,7 +69,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysRankingInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [1, 2],
             'stand_id': [1, 2],
             'area': [0.72, 0.36],
@@ -92,8 +79,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
         })
 
     def test_missing_base_condition(self):
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         # No base conditions exist for baz.
         params.priorities = ["foo", "bar", "baz"]
@@ -107,7 +93,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             ForsysRankingInput(params, headers)
         self.assertEqual(
             str(context.exception),
-            "of 3 priorities, only 2 had base conditions")
+            "of 3 priorities, only 2 had conditions")
 
     def test_missing_condition(self):
         # A base condition exists for baz, but a condition dosen't.
@@ -115,8 +101,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             condition_name="baz", region_name=self.region,
             condition_level=ConditionLevel.METRIC)
 
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         params.priorities = ["foo", "bar", "baz"]
         params.project_areas.clear()
@@ -132,8 +117,7 @@ class ForsysRankingInputTest(RasterConditionRetrievalTestCase):
             "of 3 priorities, only 2 had conditions")
 
     def test_missing_condition_score(self):
-        qd = QueryDict('set_all_params_via_url_with_default_values=1')
-        params = ForsysRankingRequestParamsFromUrlWithDefaults(qd)
+        params = ForsysRankingRequestParamsFromUrlWithDefaults(QueryDict(''))
         params.region = self.region
         params.priorities = ["foo"]
         params.project_areas.clear()
@@ -180,7 +164,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
             'area': [.09, .09, .09, .09, .09, .09, .09, .09],
@@ -197,10 +181,11 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                     self._create_polygon_for_pixel(2, 0).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
                     self._create_polygon_for_pixel(3, 0).wkt,
-                    self._create_polygon_for_pixel(3, 1).wkt]
+                    self._create_polygon_for_pixel(3, 1).wkt],
+            'eligible': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         })
 
-    def test_gets_forsys_input_ignoring_nan(self):
+    def test_gets_forsys_input_making_nan_ineligible(self):
         baz_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (np.nan, np.nan, np.nan, np.nan,
                          .2, .2, .2, .2,
@@ -219,19 +204,29 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
-            'proj_id': [0, 0, 0, 0],
-            'stand_id': [0, 1, 2, 3],
-            'area': [.09, .09, .09, .09],
-            'cost': [450000000, 450000000, 450000000, 450000000],
-            'p_foo': [.95, .94, .93, .92],
-            'p_baz': [.8, .8, .8, .8],
-            'c_foo': [.95, .94, .93, .92],
-            'c_baz': [.8, .8, .8, .8],
+        # Of note: stands in row 0 are ineligible for treatment because one of 
+        # the conditions is missing values. Because they're ineligible for 
+        # treatment, all condition and and prioritiy scores are set to 0 
+        # regardless of whether they originally had non-zero values. 
+        assert_dict_almost_equal(self, input.forsys_input, {
+            'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
+            'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
+            'area': [.09, .09, .09, .09, .09, .09, .09, .09],
+            'cost': [450000000, 450000000, 450000000, 450000000,
+                     450000000, 450000000, 450000000, 450000000],
+            'p_foo': [.95, .94, .93, .92, 0, 0, 0, 0],
+            'p_baz': [.8, .8, .8, .8, 0, 0, 0, 0],
+            'c_foo': [.95, .94, .93, .92, 0, 0, 0, 0],
+            'c_baz': [.8, .8, .8, .8, 0, 0, 0, 0],
             'geo': [self._create_polygon_for_pixel(0, 1).wkt,
                     self._create_polygon_for_pixel(1, 1).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
-                    self._create_polygon_for_pixel(3, 1).wkt]
+                    self._create_polygon_for_pixel(3, 1).wkt,
+                    self._create_polygon_for_pixel(0, 0).wkt,
+                    self._create_polygon_for_pixel(1, 0).wkt,
+                    self._create_polygon_for_pixel(2, 0).wkt,
+                    self._create_polygon_for_pixel(3, 0).wkt],
+            'eligible': [1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0]
         })
 
     def _create_polygon_for_pixel(self, x, y) -> Polygon:
@@ -264,7 +259,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
             ForsysGenerationInput(params, headers)
         self.assertEqual(
             str(context.exception),
-            "of 3 priorities, only 2 had base conditions")
+            "of 3 priorities, only 2 had conditions")
 
     def test_missing_condition(self):
         # A base condition exists for baz, but a condition dosen't.
@@ -320,9 +315,9 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
 
         input = ForsysGenerationInput(params, headers)
 
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0],
-            'stand_id': [1, 0, 3, 2],
+            'stand_id': [0, 1, 2, 3],
             'area': [0.18, 0.18, 0.09, 0.09],
             'cost': [900000000, 900000000, 450000000, 450000000],
             'p_bar': [1.8, 1.6, 0.9, 0.8],
@@ -345,7 +340,8 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                 # y spans 2100654, 2100354: 1 pixel
                 'POLYGON ((-2116371 2100654, -2116371 2100354, -2116071 ' + \
                 '2100354, -2116071 2100654, -2116371 2100654))'
-            ]
+            ],
+            'eligible': [1.0, 1.0, 1.0, 1.0]
         })
 
     def test_gets_forsys_input_with_clustering_aborted(self):
@@ -365,7 +361,7 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
         headers = ForsysInputHeaders(params.priorities)
 
         input = ForsysGenerationInput(params, headers)
-        _assert_dict_almost_equal(self, input.forsys_input, {
+        assert_dict_almost_equal(self, input.forsys_input, {
             'proj_id': [0, 0, 0, 0, 0, 0, 0, 0],
             'stand_id': [0, 1, 2, 3, 4, 5, 6, 7],
             'area': [.09, .09, .09, .09, .09, .09, .09, .09],
@@ -382,5 +378,6 @@ class ForsysGenerationInputTest(RasterConditionRetrievalTestCase):
                     self._create_polygon_for_pixel(2, 0).wkt,
                     self._create_polygon_for_pixel(2, 1).wkt,
                     self._create_polygon_for_pixel(3, 0).wkt,
-                    self._create_polygon_for_pixel(3, 1).wkt]
+                    self._create_polygon_for_pixel(3, 1).wkt],
+            'eligible': [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
         })
