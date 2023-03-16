@@ -87,6 +87,7 @@ RUN R -e "library(sf);"
 # # RUN ls /miniconda3/lib/
 # # RUN ls /lib64
 
+# RUN which pip
 # RUN pip install --upgrade pip
 # RUN pip install rpy2
 # RUN pip install awslambdaric
@@ -99,7 +100,7 @@ RUN R -e "library(sf);"
 # WORKDIR ${FUNCTION_DIR}
 
 # ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
-
+# ENTRYPOINT [ "/miniconda3/bin/python", "-m", "awslambdaric" ]
 # # Set the CMD to your handler 
 # CMD ["lambda_handler.lambda_handler"]
 
