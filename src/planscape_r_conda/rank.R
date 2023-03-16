@@ -4,12 +4,9 @@ times2 <- function(number) {
   library(forsys)
 
   data(test_forest)
-  print("elsie 0")
-  print(head(test_forest))
   print("elsie 1")
 
   stand_dat <- test_forest %>% st_drop_geometry()
-  print(head(stand_dat))
   print("elsie 2")
   
   run_outputs <- forsys::run(
