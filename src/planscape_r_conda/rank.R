@@ -3,6 +3,8 @@ times2 <- function(number) {
   library(sf)
   library(dplyr)
   
+  print("elsie 0")
+  
   test_forest <- test_forest %>% forsys::combine_priorities(
   fields = c('priority1','priority2'), 
   weights = c(1,1), 
@@ -15,7 +17,9 @@ times2 <- function(number) {
   print("elsie 2")
 
   run_outputs <- forsys::run(
-    return_outputs = TRUE,
+    return_outputs = FALSE,
+    run_with_patchmax = FALSE,
+    write_outputs = FALSE,
     scenario_name = "test_scenario",
     stand_data = stand_dat,
     stand_id_field = "stand_id",
