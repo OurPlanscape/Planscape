@@ -15,6 +15,7 @@ generate_projects_for_a_single_scenario <- function(
   stand_area_field,
   stand_cost_field,
   geo_wkt_field,
+  eligibility_field,
   output_scenario_name,
   output_scenario_tag,
   enable_kmeans_clustering = FALSE
@@ -95,6 +96,7 @@ generate_projects_for_a_single_scenario <- function(
       patchmax_SDW = 1,
       patchmax_EPW = 0.5,
       patchmax_sample_frac = 0.01,
+      stand_threshold = paste(eligibility_field, ">0", sep=""),
       patchmax_exclusion_limit = 0.1,
       # TODO: clarify how to set global constraints.
       proj_fixed_target = FALSE
