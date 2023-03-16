@@ -23,7 +23,6 @@ ENV PATH=${PATH}:/miniconda3/bin
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
-RUN conda search geos
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gcc geos=3.11.0 poppler glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-extremes r-doparallel r-r.utils \
@@ -41,6 +40,7 @@ RUN conda install -y -c conda-forge gcc geos=3.11.0 poppler glib blas-devel udun
 # RUN R -e "library(sf);"
 
 ENV PATH=/miniconda3/bin:${PATH}
+RUN ls /miniconda3/bin
 RUN gcc --version
 RUN which gcc
 RUN which R
