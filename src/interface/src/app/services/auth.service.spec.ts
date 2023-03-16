@@ -231,10 +231,17 @@ describe('AuthService', () => {
       const mockUser = {
         email: 'test@test.com',
         username: 'test',
+        first_name: 'Foo',
+        last_name: 'Bar',
       };
 
       service.refreshLoggedInUser().subscribe((res) => {
-        expect(res).toEqual(mockUser);
+        expect(res).toEqual({
+          email: 'test@test.com',
+          username: 'test',
+          firstName: 'Foo',
+          lastName: 'Bar',
+        });
         done();
       });
 
@@ -259,11 +266,18 @@ describe('AuthService', () => {
       const mockUser = {
         email: 'test@test.com',
         username: 'test',
+        first_name: 'Foo',
+        last_name: 'Bar',
       };
 
       service.refreshLoggedInUser().subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeTrue();
-        expect(service.loggedInUser$.value).toEqual(mockUser);
+        expect(service.loggedInUser$.value).toEqual({
+          email: 'test@test.com',
+          username: 'test',
+          firstName: 'Foo',
+          lastName: 'Bar',
+        });
         done();
       });
 
