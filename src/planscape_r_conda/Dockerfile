@@ -22,14 +22,16 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils 
     
-# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-
 RUN conda install -y -c conda-forge r-sf
 # RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 # RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "library(sf)"
 
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
+RUN R -e "library(sf)"
 
+ENV PATH=/miniconda3/bin:${PATH}
+RUN R -e "library(sf)"
 # RUN echo $PATH
 # RUN echo $LD_LIBRARY_PATH
 # RUN ls /usr/local/lib
@@ -41,17 +43,17 @@ RUN R -e "library(sf)"
 # RUN pip install rpy2
 # RUN pip install awslambdaric
 
-# Copy function code
-ARG FUNCTION_DIR="/elsie"
-RUN mkdir -p ${FUNCTION_DIR}
-COPY lambda_handler.py ${FUNCTION_DIR}
-COPY rank.R ${FUNCTION_DIR}
-WORKDIR ${FUNCTION_DIR}
+# # Copy function code
+# ARG FUNCTION_DIR="/elsie"
+# RUN mkdir -p ${FUNCTION_DIR}
+# COPY lambda_handler.py ${FUNCTION_DIR}
+# COPY rank.R ${FUNCTION_DIR}
+# WORKDIR ${FUNCTION_DIR}
 
-ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
+# ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
-# Set the CMD to your handler 
-CMD ["lambda_handler.lambda_handler"]
+# # Set the CMD to your handler 
+# CMD ["lambda_handler.lambda_handler"]
 
 
 
