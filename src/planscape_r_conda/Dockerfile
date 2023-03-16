@@ -31,7 +31,8 @@ RUN conda install -y -c conda-forge gcc geos gdal poppler  glib blas-devel uduni
 
 # because we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+ENV PATH=/miniconda3/bin:${PATH}
 RUN gcc --version
 RUN which gcc
 
