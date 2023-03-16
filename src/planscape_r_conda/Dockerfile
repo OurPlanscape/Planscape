@@ -58,6 +58,7 @@ fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priori
 print('elsie0');\
 print('elsie1');\
 is.data.frame(stand_dat); \
+sp <- stand_dat %>% st_drop_geometry(); \
 stand_dat <- (stand_dat) %>% forsys::combine_priorities(\
 fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
 print('elsie2');\
