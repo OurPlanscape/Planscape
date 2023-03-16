@@ -7,22 +7,21 @@ import numpy as np
 # areas.
 class RasterConditionTreatmentEligibilitySelector:
     # Pixels that are eligible for treatment, keyed by x-pixel, then y-pixel.
-    # The value is the index representing the pixel.
+    # The value is the index representing the pixel in the input dataframe.
     pixels_to_treat: dict[int, dict[int, int]]
-    # Pixels that are ineligible for treatment, but may be included in project
-    # areas, keyed by x-pixel, then y-pixel.
-    # The value is the index representing the pixel.
+    # Pixels that are ineligible for treatment (but may be included in project
+    # areas), keyed by x-pixel, then y-pixel.
+    # The value is the index representing the pixel in the input dataframe.
     pixels_to_pass_through: dict[int, dict[int, int]]
 
     # Input parameter, data, is expected to be one of the outputs of class,
     # RasterConditionFetcher. Each row represents a pixel, and each column
     # represents a specific feature. Column headers include:
-    #   - x: the x pixel (starting from 0)
-    #   - y: the y pixel (starting from 0)
+    #   - x: the x-pixel index
+    #   - y: the y-pixel index
     #   - <priority name>: each priority has its own column. If a priority
     #       value exists for a given pixel, the element corresponding to the
     #       pixel is a float; otherwise, it's np.nan.
-    #       note: the value, for now, is 1.0 - normalized condition value.
     def __init__(
             self, data: dict[str, list],
             priorities: list[str]):
@@ -31,8 +30,8 @@ class RasterConditionTreatmentEligibilitySelector:
         self.pixels_to_treat, self.pixels_to_pass_through = \
             self._get_pixels_to_treat_and_pass_through(data, priorities)
 
-    # Double-checks that the values for the priorties listed are available in
-    # the data.
+    # Double-checks that the input data is a valid dataframe and contains all 
+    # the listed priorities. 
     def _validate_data_and_priorities(
             self, data: dict[str, list],
             priorities: list[str]):
@@ -51,7 +50,8 @@ class RasterConditionTreatmentEligibilitySelector:
                     "data column lengths are unequal for keys, x and %s" %
                     (p))
 
-    # Returns two dictionaries mapping each x-pixel to a set of y-pixels.
+    # Returns two dictionaries mapping each x-pixels to y-pixels to input 
+    # dataframe row index.
     # They capture the list of pixels to treat, and the list of pixels to pass
     # through via Patchmax's stand_threshold parameter.
     def _get_pixels_to_treat_and_pass_through(
@@ -82,7 +82,7 @@ class RasterConditionTreatmentEligibilitySelector:
         return True
 
     # Inserts an (x-pixel, y-pixel) pair into a dictionary mapping x-pixel to
-    # y-pixel to data index.
+    # y-pixel to input dataframe index.
     def _insert_value_in_position_dict(self, x: int, y: int, i: int,
                                        d: dict[int, set[int]]) -> None:
         if x not in d.keys():

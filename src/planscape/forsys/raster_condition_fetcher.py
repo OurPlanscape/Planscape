@@ -8,10 +8,12 @@ from django.contrib.gis.geos import GEOSGeometry
 from planscape import settings
 
 
-# Given a region and a list of priorities, fetches the relevant conditions.
+# Given a region and a list of priorities, fetches the relevant condition 
+# objects from DB.
 # Output conditions may not be listed in the same order as condition_ids.
-# Raises an error if any of the priorities don't have a corresponding
+# Raises an error if any of the input priorities don't have a corresponding
 # condition.
+# Assumes each priority has a single condition.
 def get_conditions(region: str, priorities: list[str]) -> list[Condition]:
     conditions = list(
         Condition.objects.filter(is_raw=False).select_related(
@@ -50,7 +52,7 @@ class RasterConditionFetcher:
     #       pixel is a float; otherwise, it's np.nan.
     #       note: the value, for now, is 1.0 - normalized condition value.
     data: dict[str, list]
-    # Maps x and y pixel positions to a row index in the data.
+    # Maps x-pixel to y-pixel to a row index in the self.data dataframe.
     x_to_y_to_index: dict[int, dict[int, int]]
 
     def __init__(self, region: str, priorities: list[str], geo: GEOSGeometry):
@@ -102,7 +104,7 @@ class RasterConditionFetcher:
                 conditions_to_raster_values[c], topleft_coords)
         return topleft_coords
 
-    # Given a ConditionPixelValues instance and coordinates represeting the
+    # Given a ConditionPixelValues instance and coordinates representing the
     # top-left origin, updates the coordinates if the ConditionPixelValues are
     # further up/further left according to the scale in settings.CRS_9822_SCALE.
     def _get_updated_topleft_coords(
@@ -129,8 +131,8 @@ class RasterConditionFetcher:
                 condition_pixel_values["upper_left_coord_y"],
                 settings.CRS_9822_SCALE[1]))
 
-    # Given two coordinates, selects the one that represents a lower pixel
-    # distance index according to the scale.
+    # Given two coordinates, selects the one that is further up/further left 
+    # according to the scale.
     def _select_topleft_coord(
             self, coord1: float, coord2: float, scale: float) -> float:
         return min(coord1, coord2) if scale > 0 else max(coord1, coord2)
@@ -175,6 +177,7 @@ class RasterConditionFetcher:
                             data[p].append(np.nan)
         return data, x_to_y_to_index
 
+    # Returns the width and height of the raster image represented by self.data.
     def _get_width_and_height(
             self,
             x_to_y_to_index: dict[int, dict[int, int]]) -> tuple[int, int]:
