@@ -4,7 +4,8 @@ times2 <- function(number) {
   library(dplyr)
   
   print("elsie 0")
-  
+
+  is.data.frame(test_forest)
   stand_dat <- test_forest %>% st_drop_geometry()
   is.data.frame(stand_dat)
   
