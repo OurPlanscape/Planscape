@@ -14,6 +14,7 @@ times2 <- function(number) {
   
 #   run_outputs <- forsys::run(
 #     return_outputs = FALSE,
+#     run_with_patchmax = FALSE,
 #     write_outputs = FALSE,
 #     scenario_name = "test_scenario",
 #     stand_data = stand_dat,
