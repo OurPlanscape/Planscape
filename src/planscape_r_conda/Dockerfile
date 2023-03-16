@@ -25,8 +25,8 @@ RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunit
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 
 RUN conda install -y -c conda-forge r-sf
-RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 RUN R -e "library(sf)"
 
 
