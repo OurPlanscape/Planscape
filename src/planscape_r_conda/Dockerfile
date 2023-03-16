@@ -34,7 +34,7 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils 
 
-
+# because we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 RUN gcc --version
 RUN which gcc
@@ -60,21 +60,21 @@ fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priori
 # RUN ls /miniconda3/lib/
 # RUN ls /lib64
 
-# RUN pip install --upgrade pip
-# RUN pip install rpy2
-# RUN pip install awslambdaric
+RUN pip install --upgrade pip
+RUN pip install rpy2
+RUN pip install awslambdaric
 
-# # Copy function code
-# ARG FUNCTION_DIR="/elsie"
-# RUN mkdir -p ${FUNCTION_DIR}
-# COPY lambda_handler.py ${FUNCTION_DIR}
-# COPY rank.R ${FUNCTION_DIR}
-# WORKDIR ${FUNCTION_DIR}
+# Copy function code
+ARG FUNCTION_DIR="/elsie"
+RUN mkdir -p ${FUNCTION_DIR}
+COPY lambda_handler.py ${FUNCTION_DIR}
+COPY rank.R ${FUNCTION_DIR}
+WORKDIR ${FUNCTION_DIR}
 
-# ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
+ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
-# # Set the CMD to your handler 
-# CMD ["lambda_handler.lambda_handler"]
+# Set the CMD to your handler 
+CMD ["lambda_handler.lambda_handler"]
 
 
 
