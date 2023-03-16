@@ -18,7 +18,8 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 RUN gcc --version
 RUN which gcc
 
-
+# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
+ENV PATH=${PATH}:/miniconda3/bin
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
@@ -26,8 +27,7 @@ RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils 
 
-# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
-# ENV PATH=/miniconda3/bin:${PATH}
+
 ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 RUN gcc --version
 RUN which gcc
