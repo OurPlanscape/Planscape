@@ -29,75 +29,79 @@ RUN conda install -y -c conda-forge gcc geos gdal poppler  glib blas-devel uduni
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils \
     r-wk r-s2 r-classint r-quadprog r-pacman r-gtools  r-directlabels
 
-# because we want to use gcc 12.2 which is installed by conda
+# we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+
+RUN conda install -y -c conda-forge r-sf
+
+RUN gcc --version
+RUN which gcc
+RUN R -e "library(sf);"
+
 ENV PATH=/miniconda3/bin:${PATH}
 RUN gcc --version
 RUN which gcc
-
-# RUN conda remove geos 
-# RUN conda install -y 
-RUN conda install -y -c conda-forge r-sf
+RUN R -e "library(sf);"
 
 
-RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE, dependencies = FALSE)"
-RUN R -e "library(forsys);library(sf);library(dplyr); \
-is.data.frame(test_forest); \
-stand_dat <- test_forest %>% st_drop_geometry(); \
-is.data.frame(stand_dat); \
-print('elsie');\
-test_forest <- (test_forest) %>% forsys::combine_priorities(\
-fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
-print('elsie0');\
-print('elsie1');\
-is.data.frame(stand_dat); \
-sp <- stand_dat %>% st_drop_geometry(); \
-print('elsie2');\
-stand_dat <- (stand_dat) %>% forsys::combine_priorities(\
-fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
-print('elsie3');\
-  run_outputs <- forsys::run( \
-    return_outputs = FALSE, \
-    run_with_patchmax = FALSE, \
-    write_outputs = FALSE, \
-    scenario_name = 'test_scenario', \ 
-    stand_data = stand_dat, \
-    stand_id_field = 'stand_id', \
-    proj_id_field = 'proj_id', \
-    stand_area_field = 'area_ha', \
-    scenario_priorities = 'priority1', \
-    scenario_output_fields = c('area_ha', 'priority1', 'priority2', 'priority3', 'priority4'), \
-    proj_fixed_target =  TRUE, \
-    proj_target_field = 'area_ha', \
-    proj_target_value = 2000 \
-  )"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE, dependencies = FALSE)"
+# RUN R -e "library(forsys);library(sf);library(dplyr); \
+# is.data.frame(test_forest); \
+# stand_dat <- test_forest %>% st_drop_geometry(); \
+# is.data.frame(stand_dat); \
+# print('elsie');\
+# test_forest <- (test_forest) %>% forsys::combine_priorities(\
+# fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
+# print('elsie0');\
+# print('elsie1');\
+# is.data.frame(stand_dat); \
+# sp <- stand_dat %>% st_drop_geometry(); \
+# print('elsie2');\
+# stand_dat <- (stand_dat) %>% forsys::combine_priorities(\
+# fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
+# print('elsie3');\
+#   run_outputs <- forsys::run( \
+#     return_outputs = FALSE, \
+#     run_with_patchmax = FALSE, \
+#     write_outputs = FALSE, \
+#     scenario_name = 'test_scenario', \ 
+#     stand_data = stand_dat, \
+#     stand_id_field = 'stand_id', \
+#     proj_id_field = 'proj_id', \
+#     stand_area_field = 'area_ha', \
+#     scenario_priorities = 'priority1', \
+#     scenario_output_fields = c('area_ha', 'priority1', 'priority2', 'priority3', 'priority4'), \
+#     proj_fixed_target =  TRUE, \
+#     proj_target_field = 'area_ha', \
+#     proj_target_value = 2000 \
+#   )"
 
 
 
-# RUN echo $PATH
-# RUN echo $LD_LIBRARY_PATH
-# RUN ls /usr/local/lib
-# RUN ls /usr/lib/
-# RUN ls /miniconda3/lib/
-# RUN ls /lib64
+# # RUN echo $PATH
+# # RUN echo $LD_LIBRARY_PATH
+# # RUN ls /usr/local/lib
+# # RUN ls /usr/lib/
+# # RUN ls /miniconda3/lib/
+# # RUN ls /lib64
 
-RUN pip install --upgrade pip
-RUN pip install rpy2
-RUN pip install awslambdaric
+# RUN pip install --upgrade pip
+# RUN pip install rpy2
+# RUN pip install awslambdaric
 
-# Copy function code
-ARG FUNCTION_DIR="/elsie"
-RUN mkdir -p ${FUNCTION_DIR}
-COPY lambda_handler.py ${FUNCTION_DIR}
-COPY rank.R ${FUNCTION_DIR}
-WORKDIR ${FUNCTION_DIR}
+# # Copy function code
+# ARG FUNCTION_DIR="/elsie"
+# RUN mkdir -p ${FUNCTION_DIR}
+# COPY lambda_handler.py ${FUNCTION_DIR}
+# COPY rank.R ${FUNCTION_DIR}
+# WORKDIR ${FUNCTION_DIR}
 
-ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
+# ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
-# Set the CMD to your handler 
-CMD ["lambda_handler.lambda_handler"]
+# # Set the CMD to your handler 
+# CMD ["lambda_handler.lambda_handler"]
 
 
 
