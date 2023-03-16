@@ -25,7 +25,7 @@ RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN conda search geos
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gcc geos=3.11.0 gdal poppler  glib blas-devel udunits2 r r-base r-essentials \
+RUN conda install -y -c conda-forge gcc geos=3.11.0 poppler  glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils \
     r-wk r-s2 r-classint r-quadprog r-pacman r-gtools  r-directlabels
 
@@ -38,12 +38,14 @@ RUN conda install -y -c conda-forge r-sf
 RUN gcc --version
 RUN which gcc
 RUN which R
+RUN gdalinfo --version
 RUN R -e "library(sf);"
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN gcc --version
 RUN which gcc
 RUN which R
+RUN gdalinfo --version
 RUN R -e "library(sf);"
 
 
