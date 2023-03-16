@@ -4,12 +4,15 @@ RUN apt-get update \
   && apt-get install -y wget \
 #   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
+  && apt-get install -y libgeos-dev \
   && apt-get install -y libssl-dev 
 #  && apt-get install -y gcc
 
 RUN gcc --version
 RUN which gcc
 RUN ls /usr/bin
+RUN geos-config --version
+
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
@@ -18,6 +21,8 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 RUN gcc --version
 RUN which gcc
+RUN geos-config --version
+
 
 # /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
 ENV PATH=${PATH}:/miniconda3/bin
@@ -32,6 +37,7 @@ RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r 
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 RUN gcc --version
 RUN which gcc
+RUN geos-config --version
 
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
     
