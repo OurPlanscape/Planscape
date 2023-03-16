@@ -15,14 +15,10 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
+import { User } from '../types';
 
 interface LogoutResponse {
   detail: string;
-}
-
-export interface User {
-  email?: string;
-  username?: string;
 }
 
 @Injectable({
@@ -75,7 +71,7 @@ export class AuthService {
         email,
         first_name: firstName,
         last_name: lastName,
-        department: department
+        department: department,
       })
       .pipe(
         concatMap((_) => {
