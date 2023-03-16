@@ -53,6 +53,10 @@ ALLOWED_HOSTS: list[str] = str(
 # Application definition
 
 INSTALLED_APPS = [
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'dj_rest_auth',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -62,17 +66,14 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_gis',
+    'rest_framework_simplejwt',
+    'rest_framework.authtoken',
     'boundary',
     'conditions',
     'existing_projects',
     'plan',
     'leaflet',
     'corsheaders',
-    'allauth',
-    'allauth.account',
-    'rest_framework.authtoken',
-    'dj_rest_auth',
-    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -194,6 +195,13 @@ REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'global',
 }
 
+AUTHENTICATION_BACKENDS = [
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 # JWT settings
 
 REST_USE_JWT = True
@@ -204,8 +212,11 @@ JWT_AUTH_HTTPONLY = False
 # allauth
 
 SITE_ID = 1
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_LOGOUT_ON_GET = True
+ACCOUNT_USERNAME_REQUIRED = False
 
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the
