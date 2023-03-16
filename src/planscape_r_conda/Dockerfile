@@ -39,8 +39,8 @@ RUN pip install awslambdaric
 RUN which gcc
 RUN gcc --version
 
-RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
 # Copy function code
 ARG FUNCTION_DIR="/elsie"
