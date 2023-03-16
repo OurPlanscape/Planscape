@@ -11,51 +11,57 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
 RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
-ENV PATH=${PATH}:/miniconda3/bin
 
-# RUN strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep GLIBCXX
+# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
+ENV PATH=${PATH}:/miniconda3/bin
+RUN geos-config --version
+
 
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal geos poppler gcc glib blas-devel udunits2 r r-base r-essentials \
-    r-stringi r-units r-tidyverse r-roxygen2 r-rgeos r-rgdal r-extremes r-doparallel r-r.utils 
+    r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils 
     
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so.3.11.1
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
+RUN geos-config --version
+
+ENV PATH=/miniconda3/bin:${PATH}
+RUN geos-config --version
 
 RUN conda install -y -c conda-forge r-sf
 
-# /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
-RUN echo $PATH
-RUN echo $LD_LIBRARY_PATH
-RUN ls /usr/local/lib
-RUN ls /usr/lib/
-RUN ls /miniconda3/lib/
-RUN ls /lib64
+
+# RUN echo $PATH
+# RUN echo $LD_LIBRARY_PATH
+# RUN ls /usr/local/lib
+# RUN ls /usr/lib/
+# RUN ls /miniconda3/lib/
+# RUN ls /lib64
 
 
-RUN pip install --upgrade pip
-RUN pip install rpy2
-RUN pip install awslambdaric
+# RUN pip install --upgrade pip
+# RUN pip install rpy2
+# RUN pip install awslambdaric
 
-RUN which gcc
-RUN gcc --version
+# RUN which gcc
+# RUN gcc --version
 
-RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
 
-# Copy function code
-ARG FUNCTION_DIR="/elsie"
-RUN mkdir -p ${FUNCTION_DIR}
-COPY lambda_handler.py ${FUNCTION_DIR}
-COPY rank.R ${FUNCTION_DIR}
-WORKDIR ${FUNCTION_DIR}
+# # Copy function code
+# ARG FUNCTION_DIR="/elsie"
+# RUN mkdir -p ${FUNCTION_DIR}
+# COPY lambda_handler.py ${FUNCTION_DIR}
+# COPY rank.R ${FUNCTION_DIR}
+# WORKDIR ${FUNCTION_DIR}
 
-ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
+# ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 
-# Set the CMD to your handler 
-CMD ["lambda_handler.lambda_handler"]
+# # Set the CMD to your handler 
+# CMD ["lambda_handler.lambda_handler"]
 
 
 
