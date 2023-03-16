@@ -58,7 +58,10 @@ export class SignupComponent {
     const password2: string = this.form.get('password2')?.value;
     this.authService.signup(username, email, password1, password2).subscribe(
       (_) => this.router.navigate(['map']),
-      (error) => (this.error = error)
+      (error) => {
+        this.error = error;
+        this.submitted = false;
+      }
     );
   }
 
