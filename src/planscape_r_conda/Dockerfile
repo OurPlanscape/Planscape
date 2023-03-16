@@ -30,6 +30,7 @@ ENV PATH=${PATH}:/miniconda3/bin
 RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
+RUN conda search geos
 RUN /miniconda3/bin/activate
 RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-rgdal r-extremes r-doparallel r-r.utils 
