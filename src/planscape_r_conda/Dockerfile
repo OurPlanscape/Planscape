@@ -5,7 +5,7 @@ RUN apt-get update \
 #   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
   && apt-get install -y libssl-dev \
-  && apt-get install -y gcc
+#  && apt-get install -y gcc
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 # -p is the directory to install into, -b to be able to run unattended
@@ -13,7 +13,7 @@ RUN bash Miniconda3-latest-Linux-x86_64.sh -p /miniconda3 -b
 RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 # /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
-ENV PATH=${PATH}:/miniconda3/bin
+ENV PATH=/miniconda3/bin:${PATH}
 
 RUN conda init bash
 RUN conda init zsh
