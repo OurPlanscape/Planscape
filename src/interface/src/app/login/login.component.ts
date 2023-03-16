@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services';
@@ -12,7 +13,7 @@ export class LoginComponent {
 
   error: any;
 
-  model: any = {};
+  form: FormGroup;
 
   readonly text1: string = `
     Planscape is a collaborative effort by the California Natural Resources Agency (CNRA) and the
@@ -36,15 +37,22 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
+    private formBuilder: FormBuilder,
     private router: Router,
-  ) { }
-
-  onSubmit() {
-    this.login(this.model.username, this.model.password);
+  ) {
+    this.form = this.formBuilder.group({
+      email: this.formBuilder.control('', [Validators.required, Validators.email]),
+      password: this.formBuilder.control('', Validators.required)
+    });
   }
 
-  login(username: string, password: string) {
-    this.authService.login(username, password).subscribe(
+  login() {
+    if (!this.form.valid) return;
+
+    const email: string = this.form.get('email')?.value;
+    const password: string = this.form.get('password')?.value;
+
+    this.authService.login(email, password).subscribe(
       _ => this.router.navigate(['map']),
       error => this.error = error
     );
