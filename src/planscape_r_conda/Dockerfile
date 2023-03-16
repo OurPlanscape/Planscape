@@ -4,14 +4,15 @@ RUN apt-get update \
   && apt-get install -y wget \
 #   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
-  && apt-get install -y libgeos-dev \
+#   && apt-get install -y libgeos-dev \
   && apt-get install -y libssl-dev 
 #  && apt-get install -y gcc
 
 RUN gcc --version
 RUN which gcc
 RUN ls /usr/bin
-RUN geos-config --version
+RUN ls /usr/local/bin
+# RUN geos-config --version
 
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -21,7 +22,7 @@ RUN rm Miniconda3-latest-Linux-x86_64.sh
 
 RUN gcc --version
 RUN which gcc
-RUN geos-config --version
+# RUN geos-config --version
 
 
 # /usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/miniconda3/bin
@@ -37,16 +38,19 @@ RUN conda install -y -c conda-forge gdal poppler gcc glib blas-devel udunits2 r 
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 RUN gcc --version
 RUN which gcc
-RUN geos-config --version
+# RUN geos-config --version
 
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-    
-RUN conda install -y -c conda-forge r-sf
-# RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
-# RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
-RUN R -e "library(sf)"
+# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 RUN gcc --version
 RUN which gcc
+
+RUN conda install -y -c conda-forge r-sf
+RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
+RUN R -e "remotes::install_github('forsys-sp/forsysr', force=TRUE)"
+RUN R -e "library(forsys);library(sf);library(dplyr); test_forest <- test_forest %>% forsys::combine_priorities(\
+fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority')"
+
 
 
 # RUN echo $PATH
