@@ -29,7 +29,6 @@ COPY rank.R ${FUNCTION_DIR}
 WORKDIR ${FUNCTION_DIR}
 
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
-ENTRYPOINT [ "/miniconda3/bin/python", "-m", "awslambdaric" ]
 # Set the CMD to your handler 
 CMD ["lambda_handler.lambda_handler"]
 
