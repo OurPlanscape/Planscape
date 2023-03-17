@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_gis',
+    'attributes',
     'boundary',
     'conditions',
     'existing_projects',
@@ -109,14 +110,15 @@ WSGI_APPLICATION = 'planscape.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
+PLANSCAPE_DATABASE_HOST = config('PLANSCAPE_DATABASE_HOST', default='')
+PLANSCAPE_DATABASE_PASSWORD = config('PLANSCAPE_DATABASE_PASSWORD', default='')
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "HOST": config('PLANSCAPE_DATABASE_HOST', default='localhost'),
+        "HOST": PLANSCAPE_DATABASE_HOST,
         "NAME": config('PLANSCAPE_DATABASE_NAME', default='planscape'),
         "USER": config('PLANSCAPE_DATABASE_USER', default='planscape'),
-        "PASSWORD": config('PLANSCAPE_DATABASE_PASSWORD', default='pass'),
+        "PASSWORD": PLANSCAPE_DATABASE_PASSWORD,
         "PORT": 5432,
         'TEST': {
             'NAME': 'auto_test',

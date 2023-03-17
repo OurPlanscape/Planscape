@@ -1,0 +1,41 @@
+{
+    "regions": [
+        {
+            "region_name": "sierra_cascade_inyo",
+            "filepath": "data/sierra_nevada",
+            "display_name": "Sierra Nevada",
+            "attributes": [
+                {
+                    "attribute_name": "distance_from_road",
+                    "filepath": "attributes",
+                    "filename": "distance_from_roads_300m.tif",
+                    "display_name": "Distance From Road",
+                    "source": "",
+                    "source_link": "",
+                    "data_provider": "",
+                    "data_download_link": "",
+                    "data_year": "",
+                    "reference_link": "",
+                    "min_value": "",
+                    "max_value": "",
+                    "units": "Meters"
+                },
+                {
+                    "attribute_name": "buildings",
+                    "filepath": "attributes",
+                    "filename": "buildings_300m.tif",
+                    "display_name": "Buildings",
+                    "source": "",
+                    "source_link": "",
+                    "data_provider": "",
+                    "data_download_link": "",
+                    "data_year": "",
+                    "reference_link": "",
+                    "min_value": "",
+                    "max_value": "",
+                    "units": "Boolean"
+                }
+            ]
+        }
+    ]
+}
