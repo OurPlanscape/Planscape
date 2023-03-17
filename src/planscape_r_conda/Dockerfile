@@ -11,6 +11,7 @@ RUN apt-get update \
 RUN gcc --version
 RUN which gcc
 RUN ls /usr/bin
+RUN ls /usr/lib
 RUN ls /usr/local/bin
   
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
@@ -43,6 +44,7 @@ ENV LD_LIBRARY_PATH=/miniconda3/lib
 ENV PATH=/miniconda3/bin:${PATH}
 RUN ldd --version
 RUN ls /miniconda3/bin
+RUN ls /miniconda3/lib
 RUN gcc --version
 RUN which gcc
 RUN which R
