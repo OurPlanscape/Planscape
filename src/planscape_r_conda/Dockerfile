@@ -16,6 +16,7 @@ RUN apt-get update \
 RUN R -e "install.packages('sf')" 
 RUN R -e "sessionInfo(); library(sf);"
 
+RUN echo $PATH
 RUN which pip
 RUN which python3
 RUN which R
