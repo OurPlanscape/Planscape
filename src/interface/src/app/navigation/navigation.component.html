@@ -17,15 +17,15 @@
           </a>
       </ng-container>
       <ng-container *featureFlag="'login'">
-        <div *ngIf="isLoggedIn$ | async; else showLogin">
-          <a class="nav-link"
-            (click)="logout()">
-            <mat-icon>logout</mat-icon>
-            <div class="nav-text">
-              Logout
-            </div>
-          </a>
-        </div>
+        <a
+          *ngIf="isLoggedIn$ | async; else showLogin"
+          class="nav-link"
+          (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <div class="nav-text">
+            Logout
+          </div>
+        </a>
         <ng-template #showLogin>
           <a routerLink="/login"
             class="nav-link"
