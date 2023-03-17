@@ -31,8 +31,8 @@ RUN conda install -y -c conda-forge gcc gdal poppler glib blas-devel udunits2 r 
 
 # we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 ENV LD_LIBRARY_PATH=/miniconda3/lib:usr/lib:/usr/local/lib
+ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 
 # RUN conda install -y -c conda-forge r-sf
 
@@ -45,6 +45,9 @@ ENV PATH=/miniconda3/bin:${PATH}
 RUN ldd --version
 RUN ls /miniconda3/bin
 RUN ls /miniconda3/lib
+RUN which g++
+RUN g++ --version
+RUN g++ -Wl,-rpath,'/miniconda3/lib'
 RUN gcc --version
 RUN gcc --print-file-name=libc.so
 RUN which gcc
