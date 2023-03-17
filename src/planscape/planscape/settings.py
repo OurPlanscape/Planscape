@@ -110,8 +110,8 @@ WSGI_APPLICATION = 'planscape.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-PLANSCAPE_DATABASE_HOST = config('PLANSCAPE_DATABASE_HOST', default='')
-PLANSCAPE_DATABASE_PASSWORD = config('PLANSCAPE_DATABASE_PASSWORD', default='')
+PLANSCAPE_DATABASE_HOST = config('PLANSCAPE_DATABASE_HOST', default='localhost')
+PLANSCAPE_DATABASE_PASSWORD = config('PLANSCAPE_DATABASE_PASSWORD', default='pass')
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
