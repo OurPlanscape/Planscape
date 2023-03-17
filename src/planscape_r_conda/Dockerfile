@@ -17,6 +17,7 @@ RUN R -e "install.packages('sf')"
 RUN R -e "sessionInfo(); library(sf);"
 
 RUN which pip
+RUN which python
 RUN pip install --upgrade pip
 RUN pip install rpy2
 RUN pip install awslambdaric
@@ -28,7 +29,7 @@ COPY lambda_handler.py ${FUNCTION_DIR}
 COPY rank.R ${FUNCTION_DIR}
 WORKDIR ${FUNCTION_DIR}
 
-ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
+ENTRYPOINT [ "/usr/bin/python3", "-m", "awslambdaric" ]
 # Set the CMD to your handler 
 CMD ["lambda_handler.lambda_handler"]
 
