@@ -47,7 +47,7 @@ RUN ls /miniconda3/bin
 RUN ls /miniconda3/lib
 RUN which g++
 RUN g++ --version
-RUN g++ -Wl,-rpath,'/miniconda3/lib'
+# RUN g++ -Wl,-rpath,'/miniconda3/lib'
 RUN gcc --version
 RUN gcc --print-file-name=libc.so
 RUN which gcc
