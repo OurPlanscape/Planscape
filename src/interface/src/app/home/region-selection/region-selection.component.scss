@@ -18,6 +18,11 @@
 // A section within the main section
 .content-section {
   display: flex;
+  flex-direction: column;
+}
+
+.button-row {
+  display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   gap: 40px;
