@@ -1,4 +1,8 @@
-FROM python:3.10-bullseye 
+# =========================
+# current issue, with conda, r-sf is too old. building sf from source 
+# requires a higher version of glibc that is available on the host machine, but not through the c libraries in the conda linux 
+# /miniconda3/bin/../x86_64-conda-linux-gnu library.
+# FROM python:3.10-bullseye 
 
 RUN apt-get update \
   && apt-get install -y wget \
@@ -29,10 +33,10 @@ RUN conda install -y -c conda-forge gcc gdal poppler glib blas-devel udunits2 r 
     r-stringi r-units r-tidyverse r-roxygen2 r-extremes r-doparallel r-r.utils \
     r-wk r-s2 r-classint r-quadprog r-pacman r-gtools  r-directlabels
 
-# we want to use gcc 12.2 which is installed by conda
-# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
-ENV LD_LIBRARY_PATH=/miniconda3/lib:usr/lib:/usr/local/lib
-ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+# # we want to use gcc 12.2 which is installed by conda
+# # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
+# ENV LD_LIBRARY_PATH=/miniconda3/lib:usr/lib:/usr/local/lib
+# ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 
 # RUN conda install -y -c conda-forge r-sf
 
@@ -41,22 +45,22 @@ ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 # RUN which R
 # RUN R -e "library(sf);"
 
-ENV PATH=/miniconda3/bin:${PATH}
-RUN ldd --version
-RUN ldd /miniconda3/lib/liblzma.so.5
-RUN ldd `which ls` | grep libc
-RUN ls /miniconda3/bin
-RUN ls /miniconda3/lib
-RUN which g++
-RUN g++ --version
-# RUN g++ -Wl,-rpath,'/miniconda3/lib'
-RUN gcc --version
-RUN gcc --print-file-name=libc.so
-RUN ls /miniconda3/bin/../x86_64-conda-linux-gnu/sysroot/usr/lib/../lib/
-RUN mkdir ~/.R
-RUN echo "CC=/miniconda3/bin/gcc" > ~/.R/Makevars
-RUN which gcc
-RUN which R
+# ENV PATH=/miniconda3/bin:${PATH}
+# RUN ldd --version
+# RUN ldd /miniconda3/lib/liblzma.so.5
+# RUN ldd `which ls` | grep libc
+# RUN ls /miniconda3/bin
+# RUN ls /miniconda3/lib
+# RUN which g++
+# RUN g++ --version
+# # RUN g++ -Wl,-rpath,'/miniconda3/lib'
+# RUN gcc --version
+# RUN gcc --print-file-name=libc.so
+# RUN ls /miniconda3/bin/../x86_64-conda-linux-gnu/sysroot/usr/lib/../lib/
+# RUN mkdir ~/.R
+# RUN echo "CC=/miniconda3/bin/gcc" > ~/.R/Makevars
+# RUN which gcc
+# RUN which R
 RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
 RUN R -e "sessionInfo(); library(sf);"
 
