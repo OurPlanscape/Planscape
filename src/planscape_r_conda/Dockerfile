@@ -46,6 +46,7 @@ RUN ldd --version
 RUN ls /miniconda3/bin
 RUN ls /miniconda3/lib
 RUN gcc --version
+RUN gcc --print-file-name=libc.so
 RUN which gcc
 RUN which R
 RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
