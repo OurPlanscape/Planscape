@@ -50,6 +50,8 @@ RUN g++ --version
 # RUN g++ -Wl,-rpath,'/miniconda3/lib'
 RUN gcc --version
 RUN gcc --print-file-name=libc.so
+RUN strings /miniconda3/lib/libstdc++.so.6 | grep GLIBCXX
+RUN strings /miniconda3/bin/../x86_64-conda-linux-gnu/sysroot/usr/lib/../lib/libstdc++.so.6 | grep GLIBCXX
 RUN which gcc
 RUN which R
 RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
