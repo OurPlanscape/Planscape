@@ -16,11 +16,15 @@ RUN apt-get update \
 RUN R -e "install.packages('sf')" 
 RUN R -e "sessionInfo(); library(sf);"
 
+# /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 RUN echo $PATH
 RUN which pip
 RUN which python3
 RUN which R
-RUN locate libR.so
+RUN ls /usr/lib
+RUN ls /usr/local/lib
+RUN ldd /usr/local/lib/R/library/methods/libs/methods.so
+
 RUN pip install --upgrade pip
 RUN pip install rpy2
 RUN pip install awslambdaric
