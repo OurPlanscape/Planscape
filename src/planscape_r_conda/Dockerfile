@@ -43,6 +43,7 @@ ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
 
 ENV PATH=/miniconda3/bin:${PATH}
 RUN ldd --version
+RUN ldd /miniconda3/lib/liblzma.so.5
 RUN ldd `which ls` | grep libc
 RUN ls /miniconda3/bin
 RUN ls /miniconda3/lib
