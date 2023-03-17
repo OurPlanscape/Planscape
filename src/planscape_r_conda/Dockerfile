@@ -17,7 +17,7 @@ RUN R -e "install.packages('sf')"
 RUN R -e "sessionInfo(); library(sf);"
 
 RUN which pip
-RUN which python
+RUN which python3
 RUN pip install --upgrade pip
 RUN pip install rpy2
 RUN pip install awslambdaric
