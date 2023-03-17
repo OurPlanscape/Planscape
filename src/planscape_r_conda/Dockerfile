@@ -2,7 +2,7 @@
 # current issue, with conda, r-sf is too old. building sf from source 
 # requires a higher version of glibc that is available on the host machine, but not through the c libraries in the conda linux 
 # /miniconda3/bin/../x86_64-conda-linux-gnu library.
-# FROM python:3.10-bullseye 
+FROM python:3.10-bullseye 
 
 RUN apt-get update \
   && apt-get install -y wget \
