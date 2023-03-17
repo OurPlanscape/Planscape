@@ -1,12 +1,12 @@
 <div class="center-block">
   <!-- Content text -->
   <section class="content-section">
-    <span *ngIf="!hasPlans">Welcome to Planscape!<br></span>
+    <span *ngIf="!hasPlans || !(loggedIn$ | async)">Welcome to Planscape!</span>
     Choose a region to explore
   </section>
 
   <!-- The region buttons -->
-  <section class="content-section">
+  <section class="button-row">
     <button
       mat-raised-button
       *ngFor="let region of regionOptions"
