@@ -20,6 +20,7 @@ RUN echo $PATH
 RUN which pip
 RUN which python3
 RUN which R
+RUN locate libR.so
 RUN pip install --upgrade pip
 RUN pip install rpy2
 RUN pip install awslambdaric
