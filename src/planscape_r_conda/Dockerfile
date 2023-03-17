@@ -41,6 +41,7 @@ ENV LD_LIBRARY_PATH=/miniconda3/lib
 # RUN R -e "library(sf);"
 
 ENV PATH=/miniconda3/bin:${PATH}
+RUN ldd --version
 RUN ls /miniconda3/bin
 RUN gcc --version
 RUN which gcc
