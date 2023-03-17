@@ -51,7 +51,7 @@ RUN g++ --version
 # RUN g++ -Wl,-rpath,'/miniconda3/lib'
 RUN gcc --version
 RUN gcc --print-file-name=libc.so
-RUN /miniconda3/bin/../x86_64-conda-linux-gnu/sysroot/usr/lib/../lib/libc.so
+RUN ls /miniconda3/bin/../x86_64-conda-linux-gnu/sysroot/usr/lib/../lib/
 RUN echo "CC=/miniconda3/bin/gcc" > ~/.R/Makevars
 RUN which gcc
 RUN which R
