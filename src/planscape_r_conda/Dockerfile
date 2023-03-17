@@ -52,7 +52,7 @@ RUN g++ --version
 RUN gcc --version
 RUN gcc --print-file-name=libc.so
 RUN /miniconda3/bin/../x86_64-conda-linux-gnu/sysroot/usr/lib/../lib/libc.so
-RUN echo "CC=/minicond3/bin/gcc" > ~/.R
+RUN echo "CC=/minicond3/bin/gcc" > ~/.R/Makevars
 RUN which gcc
 RUN which R
 RUN R -e "install.packages('sf', repos='http://cran.rstudio.com/')"
