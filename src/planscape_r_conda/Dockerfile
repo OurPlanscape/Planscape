@@ -13,9 +13,7 @@ RUN apt-get update \
 # Install Forsys
 # --------------
 # udunits2 is necessary for R package, sf.
-RUN R -e "install.packages('dplyr')" \
-  && R -e "install.packages('sf')" \
-  && R -e "install.packages('udunits2')"
+RUN R -e "install.packages('sf')" 
 RUN R -e "sessionInfo(); library(sf);"
 
 RUN which pip
