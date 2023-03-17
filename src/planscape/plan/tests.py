@@ -1255,6 +1255,91 @@ class CreateScenarioTest(TransactionTestCase):
             scenario=scenario.pk)
         self.assertEqual(weighted_pris.count(), 1)
 
+class UpdateScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.base_condition = BaseCondition.objects.create(
+            condition_name="cond1", condition_level=ConditionLevel.ELEMENT)
+        self.condition1 = Condition.objects.create(
+            condition_dataset=self.base_condition, raster_name="name1", is_raw=False)
+
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.plan = create_plan(
+            self.user, 'plan', stored_geometry, [])
+        self.project = Project.objects.create(
+            owner=self.user, plan=self.plan, max_budget=100)
+        self.project_area = ProjectArea.objects.create(
+            owner=self.user, project=self.project,
+            project_area=stored_geometry, estimated_area_treated=200)
+        self.scenario = Scenario.objects.create(
+            owner=self.user, plan=self.plan, project=self.project, notes='old note')
+        self.weight = ScenarioWeightedPriority.objects.create(
+            scenario=self.scenario, priority=self.condition1, weight=2)
+
+    def test_create_scenario_invalid_id(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': 10},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_not_owned_scenario(self):
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_note(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': self.scenario.pk, 'notes': "new note"},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenario = Scenario.objects.get(id=self.scenario.pk)
+        self.assertEqual(scenario.project, self.project)
+        self.assertEqual(scenario.notes, "new note")
+        self.assertEqual(scenario.status, Scenario.ScenarioStatus.INITIALIZED)
+
+    def test_remove_note(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': self.scenario.pk, 'notes': None},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenario = Scenario.objects.get(id=self.scenario.pk)
+        self.assertEqual(scenario.project, self.project)
+        self.assertEqual(scenario.notes, None)
+        self.assertEqual(scenario.status, Scenario.ScenarioStatus.INITIALIZED)
+
+    def test_update_invalid_status(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': self.scenario.pk, 'status': 99},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_status(self):
+        self.client.force_login(self.user)
+        response = self.client.patch(
+            reverse('plan:update_scenario'),
+            {'id': self.scenario.pk, 'status': Scenario.ScenarioStatus.SUCCESS},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenario = Scenario.objects.get(id=self.scenario.pk)
+        self.assertEqual(scenario.project, self.project)
+        self.assertEqual(scenario.notes, "old note")
+        self.assertEqual(scenario.status, Scenario.ScenarioStatus.SUCCESS)
 
 class GetScenarioTest(TransactionTestCase):
     def setUp(self):
