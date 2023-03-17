@@ -24,13 +24,14 @@ RUN conda init bash
 RUN conda init zsh
 RUN conda config --add channels conda-forge
 RUN /miniconda3/bin/activate
-RUN conda install -y -c conda-forge gcc libgdal poppler glib blas-devel udunits2 r r-base r-essentials \
+RUN conda install -y -c conda-forge gcc gdal poppler glib blas-devel udunits2 r r-base r-essentials \
     r-stringi r-units r-tidyverse r-roxygen2 r-extremes r-doparallel r-r.utils \
     r-wk r-s2 r-classint r-quadprog r-pacman r-gtools  r-directlabels
 
 # we want to use gcc 12.2 which is installed by conda
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6:/miniconda3/lib/libgeos.so:/miniconda3/lib/libgeos_c.so
 # ENV LD_PRELOAD=/miniconda3/lib/libstdc++.so.6
+ENV LD_LIBRARY_PATH=/miniconda3/lib
 
 # RUN conda install -y -c conda-forge r-sf
 
