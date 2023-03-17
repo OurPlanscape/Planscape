@@ -2,50 +2,51 @@
   <!-- Form -->
   <div class="constraints-content">
     <form class="constraints-form" [formGroup]="constraintsForm!">
-      <div class="flex-row">
-        <!-- Budget -->
-        <div formGroupName="budgetForm" required>
-          <label class="form-label" [class.required]="!hasBudgetOrMaxArea()">Budget</label>
-          <mat-radio-group formControlName="optimizeBudget" [required]="!hasBudgetOrMaxArea()">
-            <!-- Custom Budget -->
-              <mat-radio-button [value]="false">
-
-                <!-- Max -->
-                <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-                  <mat-label>Max</mat-label>
-                  <input
-                    [required]="maxBudgetRequired()"
-                    class="right-align"
-                    formControlName="maxBudget"
-                    matInput type="number">
-                    <span matPrefix>$&nbsp;</span>
-                </mat-form-field>
-              </mat-radio-button>
-
-            <!-- Optimized Budget -->
-            <mat-radio-button [value]="true">
-              Show estimated cost range
-            </mat-radio-button>
-          </mat-radio-group>
-        </div>
-
-        <div formGroupName="treatmentForm">
-          <!-- Treatment Percentage -->
-          <label class="form-label" [class.required]="!hasBudgetOrMaxArea()">
-            Max treatment percentage of total planning area
-          </label>
-
-          <!-- Max -->
-          <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-            <mat-label>Max</mat-label>
-            <input formControlName="maxArea" matInput type="number">
-            <span matSuffix>% &nbsp;</span>
-            <mat-hint class="subtext">Cannot exceed 90%</mat-hint>
-          </mat-form-field>
-        </div>
+      <!-- Cost input -->
+      <div formGroupName="budgetForm">
+        <label class="form-label required">
+          Cost input
+        </label>
+        <!-- Estimated cost in $ per acre -->
+        <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+          <mat-label>Est. treatment cost</mat-label>
+          <input
+            class="right-align"
+            formControlName="estimatedCost"
+            matInput
+            type="number">
+            <span matPrefix>$&nbsp;</span>
+            <span matSuffix>per acre</span>
+        </mat-form-field>
       </div>
 
-      <mat-error *ngIf="constraintsForm?.touched && !hasBudgetOrMaxArea()">One required</mat-error>
+      <div formGroupName="treatmentForm">
+        <!-- Treatment of total planning area -->
+        <label class="form-label required">
+          Treatment of total planning area
+        </label>
+
+        <div class="flex-row">
+          <div>
+            <!-- Max percentage of planning area -->
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+              <mat-label>Max</mat-label>
+              <input formControlName="maxArea" matInput type="number">
+              <span matSuffix>% &nbsp;</span>
+              <mat-hint class="subtext">Cannot exceed 90%</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div>
+            <!-- Max cost of treatment for planning area -->
+            <mat-form-field class="input-field" [class.disabled]="!enableMaxCost()" appearance="outline" floatLabel="always">
+              <mat-label>Max total cost</mat-label>
+              <input formControlName="maxCost" matInput type="number" [readonly]="!enableMaxCost()">
+              <span matPrefix>$&nbsp;</span>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
 
       <!-- Other Constraints-->
       <div>
@@ -57,7 +58,7 @@
               (change)="toggleRequiredExcludeDistance()">
               Exclude areas off a road by
             </mat-checkbox>
-            <mat-form-field class="input-field margin-left" appearance="outline" floatLabel="always">
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Distance</mat-label>
               <input formControlName="excludeDistance" matInput type="number">
               <span matSuffix>ft.</span>
@@ -69,15 +70,20 @@
               (change)="toggleRequiredExcludeSlope()">
               Exclude areas that are over
             </mat-checkbox>
-            <mat-form-field class="input-field margin-left" appearance="outline" floatLabel="always">
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Slope</mat-label>
               <input formControlName="excludeSlope" matInput type="number">
               <span matSuffix>degrees</span>
             </mat-form-field>
           </div>
         </div>
-        <div class="error-text">*Required</div>
       </div>
+
+      <mat-hint>
+        <mat-icon class="material-symbols-outlined">info</mat-icon>
+        <span>Total estimated costs are shown only when cost per acre is provided above</span>
+      </mat-hint>
+      <mat-error>*At least one required</mat-error>
 
       <!-- Next and Back -->
       <div>
