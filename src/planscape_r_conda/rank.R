@@ -1,22 +1,22 @@
 times2 <- function(number) {
-#   library(forsys)
+  library(forsys)
   library(sf)
-#   library(dplyr)
+  library(dplyr)
   
   print("elsie 0")
 
-#   is.data.frame(test_forest)
-#   stand_dat <- test_forest %>% st_drop_geometry()
-#   is.data.frame(stand_dat)
+   is.data.frame(test_forest)
+   stand_dat <- test_forest %>% st_drop_geometry()
+   is.data.frame(stand_dat)
   
-#   print("elsie 1")
+   print("elsie 1")
 
-#   output <- stand_dat %>% forsys::combine_priorities(
-#   fields = c('priority1','priority2'), 
-#   weights = c(1,1), 
-#   new_field = 'combo_priority')
+   output <- stand_dat %>% forsys::combine_priorities(
+   fields = c('priority1','priority2'), 
+   weights = c(1,1), 
+   new_field = 'combo_priority')
   
-#   print("elsie 2")
+   print("elsie 2")
 
 #   run_outputs <- forsys::run(
 #     return_outputs = FALSE,
