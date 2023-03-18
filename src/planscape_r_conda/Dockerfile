@@ -6,7 +6,7 @@ RUN apt-get update \
   && apt-get install -y python3-pip \
   && apt-get install -y python3-venv \
   && apt-get install -y gdal-bin \
-  && apt-get install -y libudunits2-dev \
+  && apt-get install -y libudunits2-dev 
 
 # --------------
 # Install Forsys
