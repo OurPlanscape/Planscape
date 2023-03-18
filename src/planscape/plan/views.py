@@ -17,6 +17,8 @@ from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer, ScenarioSerializer,
                               ScenarioWeightedPrioritySerializer)
 from planscape import settings
+import boto3
+import os
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
@@ -450,6 +452,8 @@ def create_project_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 # TODO: consolidate create_project_areas API to one call
+
+
 @csrf_exempt
 def create_project_areas_for_project(request: HttpRequest) -> HttpResponse:
     try:
@@ -537,6 +541,8 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
             scenario=scenario, priority=condition, weight=weight)
 
 # TODO: create scenario for project instead of plan
+
+
 @csrf_exempt
 def create_scenario(request: HttpRequest) -> HttpResponse:
     try:
@@ -786,3 +792,24 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
     except Exception as e:
         return HttpResponseBadRequest("failed score fetch: " + str(e))
+
+
+# TODO: finalize call logic after testing piping.
+# NOTE: To send a queue message from your local machine, populate AWS credential args.
+def queue_forsys_call(request: HttpRequest) -> HttpResponse:
+    try:
+        user = get_user(request)
+        client = boto3.client('sqs', region_name='us-west-1')
+
+        response = client.send_message(
+            QueueUrl='https://sqs.us-west-1.amazonaws.com/705618310400/forsys.fifo',
+            MessageBody="test",
+            MessageGroupId="elsie"
+        )
+        return JsonResponse({
+            'statusCode': 200,
+            'messageId': response['MessageId']
+        })
+
+    except Exception as e:
+        return HttpResponseBadRequest(str(e))
