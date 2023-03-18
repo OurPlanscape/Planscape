@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import boto3
 from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
@@ -17,8 +18,6 @@ from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer, ScenarioSerializer,
                               ScenarioWeightedPrioritySerializer)
 from planscape import settings
-import boto3
-import os
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
 
