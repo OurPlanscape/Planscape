@@ -18,3 +18,4 @@ typing_extensions
 uwsgi
 memory-profiler
 scikit-learn
+boto3
