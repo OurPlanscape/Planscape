@@ -7,7 +7,6 @@ RUN apt-get update \
   && apt-get install -y python3-venv \
   && apt-get install -y gdal-bin \
   && apt-get install -y libudunits2-dev \
-  && apt-get install -y gdal-bin
 
 # --------------
 # Install Forsys
@@ -16,40 +15,6 @@ RUN apt-get update \
 RUN R -e "install.packages('sf'); install.packages('udunits2'); install.packages('dplyr');" 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr')"
-RUN R -e "sessionInfo(); library(sf);"
-
-
- RUN R -e "library(forsys);library(sf);library(dplyr); \
- is.data.frame(test_forest); \
- stand_dat <- test_forest %>% st_drop_geometry(); \
- is.data.frame(stand_dat); \
- print('elsie');\
- test_forest <- (test_forest) %>% forsys::combine_priorities(\
- fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
- print('elsie0');\
- print('elsie1');\
- is.data.frame(stand_dat); \
- sp <- stand_dat %>% st_drop_geometry(); \
- print('elsie2');\
- stand_dat <- (stand_dat) %>% forsys::combine_priorities(\
- fields = c('priority1','priority2'), weights = c(1,1), new_field = 'combo_priority'); \ 
- print('elsie3');\
-   run_outputs <- forsys::run( \
-     return_outputs = FALSE, \
-     run_with_patchmax = FALSE, \
-     write_outputs = FALSE, \
-     scenario_name = 'test_scenario', \ 
-     stand_data = stand_dat, \
-     stand_id_field = 'stand_id', \
-     proj_id_field = 'proj_id', \
-     stand_area_field = 'area_ha', \
-     scenario_priorities = 'priority1', \
-     scenario_output_fields = c('area_ha', 'priority1', 'priority2', 'priority3', 'priority4'), \
-     proj_fixed_target =  TRUE, \
-     proj_target_field = 'area_ha', \
-    proj_target_value = 2000 \
-   )"
-
 
 
 # /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
