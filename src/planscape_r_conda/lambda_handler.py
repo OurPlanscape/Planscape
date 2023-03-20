@@ -15,6 +15,8 @@ FAILED_STATUS = "4"
 def lambda_handler(event, context):
     try:
         plan_id = event['Records']['body']
+        print("elsie0: " + str(plan_id))
+
         new_scenario = {
             'plan_id': plan_id,
             'priorities': ['biodiversity'],
@@ -24,20 +26,22 @@ def lambda_handler(event, context):
             "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/plan/create_scenario",
             json=new_scenario)
 
+        print("elsie1")
         scenario_id = resp.json()
+        print("elsie2: " + str(scenario_id))
         processing = {
             'id': scenario_id,
             'status': PROCESSING_STATUS
         }
         resp = requests.patch(PLANSCAPE_URL, json=processing)
-
+        print("elsie3 preforsys")
         r = robjects.r
         base = importr('base')
         utils = importr('utils')
         r.source('rank.R')
         r_f = robjects.r['times2']
         result = r_f(4)
-
+        print("elsie4 post forsys")
         response = client.send_message(
             QueueUrl=QUEUE_URL,
             MessageBody=SUCCESS_STATUS,
