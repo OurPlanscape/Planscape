@@ -62,7 +62,6 @@ export class AuthService {
     password2: string,
     firstName: string,
     lastName: string,
-    department: string
   ) {
     return this.http
       .post(this.API_ROOT.concat('registration/'), {
@@ -71,7 +70,6 @@ export class AuthService {
         email,
         first_name: firstName,
         last_name: lastName,
-        department: department,
       })
       .pipe(
         concatMap((_) => {

@@ -81,7 +81,6 @@ describe('SignupComponent', () => {
         'password',
         'Foo',
         'Bar',
-        ''
       );
     });
   });

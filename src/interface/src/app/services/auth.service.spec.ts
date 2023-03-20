@@ -150,7 +150,7 @@ describe('AuthService', () => {
       };
 
       service
-        .signup('email', 'password1', 'password2', 'Foo', 'Bar', '')
+        .signup('email', 'password1', 'password2', 'Foo', 'Bar')
         .subscribe((_) => {
           expect(service.loggedInStatus$.value).toBeTrue();
           done();
@@ -169,7 +169,7 @@ describe('AuthService', () => {
 
     it('if unsuccessful, does not make request to backend /login endpoint', (done) => {
       service
-        .signup('email', 'password1', 'password2', 'Foo', 'Bar', '')
+        .signup('email', 'password1', 'password2', 'Foo', 'Bar')
         .subscribe(
           (_) => {},
           (_) => {
