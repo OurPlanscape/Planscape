@@ -59,6 +59,15 @@ $primary-palette: map.get($color-config, 'primary');
   justify-content: space-between;
 }
 
+.condition-label {
+  white-space: normal;
+}
+
+.info-button {
+  margin-left: auto;
+  margin-right: 45px;
+}
+
 .mat-expansion-panel-body {
   margin: 0px -24px;
   padding: 0px 24px;
