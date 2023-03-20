@@ -13,9 +13,11 @@ from planscape import settings
 # Loads the raster in the raster path to the DB table,
 # attributes_attributeraster.
 # Of note: Multiple rasters will be written to the DB, each with dimensions,
-# 256 x 256.
+# 256 pixels x 256 pixels.
 # The names of the rasters in the DB will be the same as the name of the
-# rasters on disk (including the format indicator at the end).
+# rasters on disk. The name includes the file extension.
+# It's possible for two rasters with the same name to be loaded to the DB: 
+# before re-loading a raster, reemember to delete the previous version.
 def _load_raster(raster_path):
     cmds = 'export PGPASSWORD=' + settings.PLANSCAPE_DATABASE_PASSWORD + '; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
         raster_path + ' public.attributes_attributeraster | psql -U planscape -d planscape -h ' + settings.PLANSCAPE_DATABASE_HOST + ' -p 5432'
@@ -36,7 +38,7 @@ def _validate_region(region: dict):
     for key in ['attributes', 'region_name']:
         if region[key] is None or len(region[key]) == 0:
             raise Exception(
-                "attribute config eerror: region missing key, %s" % key)
+                "attribute config error: region missing key, %s" % key)
     for attribute in region['attributes']:
         _validate_attribute(attribute)
 
@@ -51,7 +53,7 @@ def _validate_attributes_config(attributes_config: dict):
         _validate_region(region)
 
 
-# Converts the nodata values in the raster input file into nan, and writes the
+# Converts the nodata values in the raster input file to nan, and writes the
 # resultant raster to the raster output file.
 # Usage:
 #   >> python manage.py shell
@@ -77,8 +79,8 @@ def convert_nodata_to_nan_in_raster_file(input_filename: str,
             dst.write(output_data.raster, 1)
 
 
-# Saves an attribute to db, updating AttributeRaster, BaseAttribute, and
-# Attribute.
+# Saves an attribute to the DB, and updates AttributeRaster, BaseAttribute, and
+# Attribute tables accordingly.
 # Usage:
 #   >> python manage.py shell
 #   >> from attributes.load import save_attribute_to_db
@@ -103,7 +105,7 @@ def save_attribute_to_db(
     attribute.save()
 
 
-# Loads the attributes listed in an attributes.json config file to DB.
+# Loads the attributes listed in an attributes.json config file to the DB.
 # An example attributes.json config file is in config/attributes.json.
 # Before calling, double-check that the raster filepaths correctly represent
 # data in the local disk.

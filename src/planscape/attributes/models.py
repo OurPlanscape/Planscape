@@ -38,11 +38,11 @@ class AttributeRaster(models.Model):
     tiles.  The table is not managed by Django but populated by raster2psql, 
     e.g.,
        raster2pgsql -s 9822 -a -I -C -Y -F –n name -f raster -t 256x256 \
-          ~/Downloads/wood/AvailableBiomass_2021_300m_base.tif \
-          public.conditions_conditionraster | \
+          ~/Downloads/attributes/slope_300m.tif \
+          public.attributes_attributeraster | \
           psql -U planscape -d planscape -h localhost -p 5432 
     When this command is run, the string stored in the column 'name' will be the
-    name of the file, i.e., 'AvailableBiomass_2021_300m_base.tif'. 
+    name of the file, i.e., 'slope_300m.tif'. 
     WARNING: This model has been tailored to match the output of raster2pgsql;
     any changes should be carefully considered.
     """
@@ -57,3 +57,4 @@ class AttributeRaster(models.Model):
 
     # A tile in the raster.
     raster = models.RasterField(null=True, srid=CRS_FOR_RASTERS)
+    
