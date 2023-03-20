@@ -6,10 +6,10 @@ from rpy2.robjects.packages import importr
 
 client = boto3.client('sqs', region_name='us-west-1')
 QUEUE_URL = 'https://sqs.us-west-1.amazonaws.com/705618310400/forsys_output.fifo'
-PLANSCAPE_URL = ''
-PROCESSING_STATUS = 2
-SUCCESS_STATUS = 3
-FAILED_STATUS = 4
+PLANSCAPE_URL = 'http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/plan/update_scenario'
+PROCESSING_STATUS = "2"
+SUCCESS_STATUS = "3"
+FAILED_STATUS = "4"
 
 
 def lambda_handler(event, context):
