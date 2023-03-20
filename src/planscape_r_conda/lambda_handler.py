@@ -14,7 +14,8 @@ FAILED_STATUS = "4"
 
 def lambda_handler(event, context):
     try:
-        plan_id = event['Records']['body']
+        plan_id = event['plan_id']
+        project_id = event['project_id']
         print("elsie0: " + str(plan_id))
 
         new_scenario = {
