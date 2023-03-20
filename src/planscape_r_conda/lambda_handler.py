@@ -20,6 +20,7 @@ def lambda_handler(event, context):
 
         new_scenario = {
             'plan_id': plan_id,
+            'project_id' : project_id,
             'priorities': ['biodiversity'],
             'weights': [1]
         }
