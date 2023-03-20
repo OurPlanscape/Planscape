@@ -28,7 +28,7 @@ RUN ldd /usr/local/lib/R/library/methods/libs/methods.so
 RUN ls /usr/local/lib/R/lib
 
 RUN pip install --upgrade pip
-RUN pip install rpy2 requests
+RUN pip install rpy2 requests boto3
 RUN pip install awslambdaric
 
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib/R/lib:/usr/local/lib/R/site-library/units/libs"
