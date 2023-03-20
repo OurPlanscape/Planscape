@@ -18,6 +18,10 @@ $primary-palette: map.get($color-config, 'primary');
   padding-bottom: 0px !important;
 }
 
+.condition-tree {
+  margin: 0px -24px;
+}
+
 .condition-tree-invisible {
   display: none;
 }
@@ -30,13 +34,6 @@ $primary-palette: map.get($color-config, 'primary');
 }
 
 /*
- * This padding sets alignment of the nested nodes.
- */
-.condition-tree .mat-nested-tree-node div[role=group] {
-  padding-left: 20px;
-}
-
-/*
  * Padding for leaf nodes.
  * Leaf nodes need to have padding so as to align with other non-leaf nodes
  * under the same parent.
@@ -46,7 +43,9 @@ $primary-palette: map.get($color-config, 'primary');
 }
 
 .mat-tree-node {
-  margin: 0px -16px 0px 0px;
+  box-sizing: border-box;
+  border-top: 1px solid #F5F5F5;
+  padding: 0px 4px 0px 24px;
 
   > .disabled {
     opacity: 0.5;
@@ -65,7 +64,7 @@ $primary-palette: map.get($color-config, 'primary');
 
 .info-button {
   margin-left: auto;
-  margin-right: 45px;
+  margin-right: 24px;
 }
 
 .mat-expansion-panel-body {
