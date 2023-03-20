@@ -1,14 +1,23 @@
-import { NestedTreeControl } from '@angular/cdk/tree';
+import { FlatTreeControl } from '@angular/cdk/tree';
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { MatTreeNestedDataSource } from '@angular/material/tree';
+import {
+  MatTreeFlatDataSource,
+  MatTreeFlattener,
+} from '@angular/material/tree';
 import { filter, Observable, take } from 'rxjs';
 import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG } from 'src/app/types';
 
 export interface ConditionsNode extends DataLayerConfig {
-  infoMenuOpen?: boolean;
-  disableSelect?: boolean; // Node should not include a radio button
-  styleDisabled?: boolean; // Node should be greyed out but still selectable
   children?: ConditionsNode[];
+  disableSelect?: boolean; // Node should not include a radio button
+}
+
+interface ConditionFlatNode {
+  expandable: boolean;
+  level: number;
+  condition: ConditionsNode;
+  infoMenuOpen?: boolean;
+  styleDisabled?: boolean; // Node should be greyed out but still selectable
 }
 
 @Component({
@@ -23,10 +32,29 @@ export class ConditionTreeComponent implements OnInit {
 
   @Output() changeConditionLayer = new EventEmitter<Map>();
 
-  conditionTreeControl = new NestedTreeControl<ConditionsNode>(
+  private _transformer = (node: ConditionsNode, level: number) => {
+    return {
+      expandable: !!node.children && node.children.length > 0,
+      level: level,
+      condition: node,
+    };
+  };
+
+  treeFlattener = new MatTreeFlattener(
+    this._transformer,
+    (node) => node.level,
+    (node) => node.expandable,
     (node) => node.children
   );
-  conditionDataSource = new MatTreeNestedDataSource<ConditionsNode>();
+
+  treeControl = new FlatTreeControl<ConditionFlatNode>(
+    (node) => node.level,
+    (node) => node.expandable
+  );
+  conditionDataSource = new MatTreeFlatDataSource(
+    this.treeControl,
+    this.treeFlattener
+  );
 
   constructor() {}
 
@@ -52,33 +80,26 @@ export class ConditionTreeComponent implements OnInit {
   }
 
   /** Used to compute whether a node in the condition layer tree has children. */
-  hasChild = (_: number, node: ConditionsNode) =>
-    !!node.children && node.children.length > 0;
+  hasChild = (_: number, node: ConditionFlatNode) => node.expandable;
 
-  onSelect(node: ConditionsNode): void {
+  onSelect(node: ConditionFlatNode): void {
     this.unstyleAndDeselectAllNodes();
     this.styleDescendantsDisabled(node);
   }
 
-  /** Unstyles and deselects all nodes in the tree using recursion. */
-  private unstyleAndDeselectAllNodes(node?: ConditionsNode): void {
-    if (!node && this.conditionDataSource.data.length > 0) {
-      this.conditionDataSource.data.forEach((node) =>
-        this.unstyleAndDeselectAllNodes(node)
-      );
-    } else if (node) {
-      node.styleDisabled = false;
-      node.children?.forEach((child) => this.unstyleAndDeselectAllNodes(child));
-    }
+  /** Unstyles and deselects all nodes. */
+  private unstyleAndDeselectAllNodes(): void {
+    this.treeControl.dataNodes.forEach((dataNode) => {
+      dataNode.styleDisabled = false;
+    });
   }
 
   /** Visually indicates that all the descendants of a condition layer node are
-   *  included in the current analysis by setting their style, using recursion.
+   *  included in the current analysis by setting their style.
    */
-  private styleDescendantsDisabled(node: ConditionsNode): void {
-    node.children?.forEach((child) => {
-      child.styleDisabled = true;
-      this.styleDescendantsDisabled(child);
+  private styleDescendantsDisabled(node: ConditionFlatNode): void {
+    this.treeControl.getDescendants(node).forEach((descendant) => {
+      descendant.styleDisabled = true;
     });
   }
 
@@ -88,28 +109,29 @@ export class ConditionTreeComponent implements OnInit {
   private findAndRevealNode(config: DataLayerConfig): ConditionsNode {
     if (!config.filepath || config.filepath === NONE_DATA_LAYER_CONFIG.filepath)
       return NONE_DATA_LAYER_CONFIG;
-    for (let pillar of this.conditionDataSource.data) {
-      if (pillar.filepath === config.filepath) {
-        return pillar;
-      }
-      if (pillar.children) {
-        for (let element of pillar.children) {
-          if (element.filepath === config.filepath) {
-            this.conditionTreeControl.expand(pillar);
-            return element;
-          }
-          if (element.children) {
-            for (let metric of element.children) {
-              if (metric.filepath === config.filepath) {
-                this.conditionTreeControl.expand(pillar);
-                this.conditionTreeControl.expand(element);
-                return metric;
-              }
-            }
-          }
-        }
+    for (let node of this.treeControl.dataNodes) {
+      if (node.condition.filepath === config.filepath) {
+        this.expandAncestors(node);
+        this.styleDescendantsDisabled(node);
+        return node.condition;
       }
     }
     return config;
+  }
+
+  /** Find and expand all the ancestors of a given node in the tree recursively. */
+  private expandAncestors(node: ConditionFlatNode): void {
+    const nodeLevel = node.level;
+    const nodeIndex = this.treeControl.dataNodes.indexOf(node) - 1;
+    // Iterate over nodes in reverse order starting from the node preceding
+    // the given node.
+    for (let index = nodeIndex; index >= 0; index--) {
+      const currentNode = this.treeControl.dataNodes[index];
+      if (currentNode.level < nodeLevel) {
+        this.treeControl.expand(currentNode);
+        this.expandAncestors(currentNode);
+        break;
+      }
+    }
   }
 }
