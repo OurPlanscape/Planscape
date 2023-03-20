@@ -16,20 +16,21 @@
           <div [class.disabled]="node.styleDisabled">
             <mat-radio-button [value]="node" *ngIf="!node.disableSelect"
               (change)="onSelect(node)">
-              {{node.display_name}}
+              <span class="condition-label">{{node.display_name}}</span>
             </mat-radio-button>
             <span *ngIf="node.disableSelect">
               {{node.display_name}}
             </span>
-            <button mat-icon-button
-              [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
-              (menuClosed)="node.infoMenuOpen = false">
-              <mat-icon color="primary">info_outline</mat-icon>
-            </button>
-            <mat-menu #popoverMenu="matMenu">
-              <app-layer-info-card [dataLayerConfig]="node"></app-layer-info-card>
-            </mat-menu>
           </div>
+          <button mat-icon-button
+            class="info-button"
+            [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
+            (menuClosed)="node.infoMenuOpen = false">
+            <mat-icon color="primary">info_outline</mat-icon>
+          </button>
+          <mat-menu #popoverMenu="matMenu">
+            <app-layer-info-card [dataLayerConfig]="node"></app-layer-info-card>
+          </mat-menu>
         </div>
       </mat-tree-node>
       <!-- This is the tree node template for expandable nodes -->
