@@ -27,6 +27,7 @@ def lambda_handler(event, context):
             json=new_scenario)
 
         print("elsie1")
+        print(resp.text)
         scenario_id = resp.json()
         print("elsie2: " + str(scenario_id))
         processing = {
