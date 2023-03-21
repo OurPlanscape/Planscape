@@ -14,38 +14,49 @@ FAILED_STATUS = "4"
 
 def lambda_handler(event, context):
     try:
-        plan_id = event['Records']['body']
-        print("elsie0: " + str(plan_id))
+        plan_id = event['plan_id']
+        project_id = event['project_id']
 
-        new_scenario = {
+        print("plan_id: " + str(plan_id))
+        print("project_id: " + str(project_id))
+
+        # TODO: add project_id in create scenario call
+        scenario = {
             'plan_id': plan_id,
             'priorities': ['biodiversity'],
             'weights': [1]
         }
         resp = requests.post(
             "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/plan/create_scenario/",
-            json=new_scenario)
+            json=scenario)
 
-        print("elsie1")
-        print(resp.text)
         scenario_id = resp.json()
-        print("elsie2: " + str(scenario_id))
+        print("created scenario id: " + str(scenario_id))
         processing = {
             'id': scenario_id,
             'status': PROCESSING_STATUS
         }
+        print("updated scenario to processing state: " + str(scenario_id))
+
+        print("start forsys run")
         resp = requests.patch(PLANSCAPE_URL, json=processing)
-        print("elsie3 preforsys")
         r = robjects.r
         base = importr('base')
         utils = importr('utils')
         r.source('rank.R')
         r_f = robjects.r['times2']
         result = r_f(4)
-        print("elsie4 post forsys")
+        print("forsys run completed")
+
+        forsys_results = {
+            'status' : SUCCESS_STATUS,
+            'project_id' : project_id,
+            'scenario_id' : scenario_id,
+        }
+        
         response = client.send_message(
             QueueUrl=QUEUE_URL,
-            MessageBody=SUCCESS_STATUS,
+            MessageBody=forsys_results,
             MessageGroupId="elsie"
         )
 
