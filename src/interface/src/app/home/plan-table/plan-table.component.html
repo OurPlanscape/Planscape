@@ -1,10 +1,12 @@
 <div class="root-container">
-  <h1>{{ datasource.data.length ? 'Welcome back!' : 'Welcome to Planscape!' }}</h1>
+  <h1>
+    {{ datasource.data.length && (loggedIn$ | async) ? 'Welcome back!' : 'Welcome to Planscape!' }}
+  </h1>
 
   <div class="plans-container">
     <h2>My Plans</h2>
 
-    <div *ngIf="datasource.data.length; else noplans">
+    <div *ngIf="datasource.data.length && (loggedIn$ | async); else noplans">
       <mat-table [dataSource]="datasource" matSort>
         <!-- Select Column -->
         <ng-container matColumnDef="select">
@@ -115,7 +117,10 @@
     </div>
 
     <ng-template #noplans class="no-saved-plans">
-      <p>There are no saved plans.</p>
+      <p *ngIf="(loggedIn$ | async); else signedout">There are no saved plans.</p>
+      <ng-template #signedout>
+        <p><a href="/signup">Create an account</a> to start making plans.</p>
+    </ng-template>
     </ng-template>
   </div>
 </div>

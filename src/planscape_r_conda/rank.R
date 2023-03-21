@@ -2,6 +2,8 @@ times2 <- function(number) {
   library(forsys)
   library(sf)
   library(dplyr)
+  
+  stand_dat <- test_forest %>% st_drop_geometry()
 
    run_outputs <- forsys::run(
      return_outputs = FALSE,

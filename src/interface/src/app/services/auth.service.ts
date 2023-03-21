@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CanActivate } from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   BehaviorSubject,
@@ -61,7 +61,7 @@ export class AuthService {
     password1: string,
     password2: string,
     firstName: string,
-    lastName: string,
+    lastName: string
   ) {
     return this.http
       .post(this.API_ROOT.concat('registration/'), {
@@ -134,16 +134,20 @@ export class AuthService {
   }
 }
 
-// This AuthGuard can be used to guard any routes that require permissions or a
-// logged in user. Currently it isn't used to guard any routes.
+/** An AuthGuard used to prevent access to pages that require sign-in. If the user is not signed
+ *  in, redirect to the sign-in page.
+ */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(): Observable<boolean> {
     return this.authService.refreshLoggedInUser().pipe(
       map((_) => true),
-      catchError((_) => of(false))
+      catchError((_) => {
+        this.router.navigate(['login']);
+        return of(false);
+      })
     );
   }
 }
