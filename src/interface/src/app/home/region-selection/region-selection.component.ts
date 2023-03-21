@@ -16,6 +16,7 @@ import { RegionOption, regionOptions } from '../../types';
 })
 export class RegionSelectionComponent implements OnInit {
   hasPlans: boolean = false;
+  loggedIn$ = this.authService.isLoggedIn$;
   readonly regionOptions: RegionOption[] = regionOptions;
 
   constructor(
