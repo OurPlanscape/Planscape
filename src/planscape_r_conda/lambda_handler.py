@@ -1,5 +1,6 @@
 import boto3
 import requests
+import json
 import rpy2
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
@@ -57,7 +58,7 @@ def lambda_handler(event, context):
 
         response = client.send_message(
             QueueUrl=QUEUE_URL,
-            MessageBody=forsys_results,
+            MessageBody=json.dumps(forsys_results),
             MessageGroupId="elsie"
         )
 
