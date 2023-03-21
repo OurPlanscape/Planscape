@@ -4,6 +4,7 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
 
@@ -396,13 +397,16 @@ describe('AuthGuard', () => {
       });
     });
 
-    it('returns false if refreshLoggedInUser fails', (done) => {
+    it('returns false and redirects to login if refreshLoggedInUser fails', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
         throwError(() => new Error())
       );
+      const routerStub: Router = TestBed.inject(Router);
+      spyOn(routerStub, 'navigate');
 
       service.canActivate().subscribe((result) => {
+        expect(routerStub.navigate).toHaveBeenCalledOnceWith(['login']);
         expect(result).toBeFalse();
         done();
       });
