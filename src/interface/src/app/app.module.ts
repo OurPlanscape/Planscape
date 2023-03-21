@@ -26,6 +26,7 @@ import { MapNameplateComponent } from './map/map-nameplate/map-nameplate.compone
 import { MapComponent } from './map/map.component';
 import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './map/project-card/project-card.component';
+import { SignInDialogComponent } from './map/sign-in-dialog/sign-in-dialog.component';
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
@@ -61,6 +62,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     ConditionTreeComponent,
     HomeComponent,
     PlanTableComponent,
+    SignInDialogComponent,
   ],
   imports: [
     AppRoutingModule,

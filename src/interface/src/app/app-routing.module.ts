@@ -1,4 +1,3 @@
-import { HomeComponent } from './home/home.component';
 import { Injectable, NgModule } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import {
@@ -9,12 +8,14 @@ import {
 } from '@angular/router';
 
 import { createFeatureGuard } from './features/feature.guard';
+import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
 import { PlanComponent } from './plan/plan.component';
 import { ScenarioConfirmationComponent } from './plan/scenario-confirmation/scenario-confirmation.component';
 import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
+import { AuthGuard } from './services';
 import { SignupComponent } from './signup/signup.component';
 
 const routes: Routes = [
@@ -45,6 +46,7 @@ const routes: Routes = [
         path: 'plan/:id',
         title: 'Plan Details',
         component: PlanComponent,
+        canActivate: [AuthGuard],
         children: [
           {
             path: `scenario/:id`,
@@ -62,7 +64,9 @@ const routes: Routes = [
         path: 'scenario-confirmation/:id',
         title: 'Generating Scenario',
         component: ScenarioConfirmationComponent,
+        canActivate: [AuthGuard],
       },
+      { path: '**', redirectTo: '' },
     ],
   },
 ];
