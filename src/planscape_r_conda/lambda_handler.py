@@ -37,6 +37,7 @@ def lambda_handler(event, context):
             'status': PROCESSING_STATUS
         }
         resp = requests.patch(PLANSCAPE_URL, json=processing)
+        print(resp.text)
         print("updated scenario to processing state: " + str(scenario_id))
 
         print("start forsys run")
