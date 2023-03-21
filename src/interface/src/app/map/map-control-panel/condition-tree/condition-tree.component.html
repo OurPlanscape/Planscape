@@ -13,7 +13,7 @@
         This padding value depends on the mat-icon-button width. -->
       <mat-tree-node
         *matTreeNodeDef="let node"
-        [class.selected]="node.styleSelected">
+        [class.selected]="map.config.dataLayerConfig === node.condition">
         <div class="mat-tree-node">
           <div class="selected-dot" [class.hidden]="!node.styleDescendantSelected"></div>
           <div [class.disabled]="node.styleDisabled">
@@ -42,7 +42,7 @@
       <!-- This is the tree node template for expandable nodes -->
       <mat-tree-node
         *matTreeNodeDef="let node;when: hasChild"
-        [class.selected]="node.styleSelected">
+        [class.selected]="map.config.dataLayerConfig === node.condition">
         <div class="mat-tree-node expandable-condition-node">
           <div class="selected-dot" [class.hidden]="!node.styleDescendantSelected"></div>
           <div [class.disabled]="node.styleDisabled">
