@@ -18,6 +18,8 @@ interface ConditionFlatNode {
   condition: ConditionsNode;
   infoMenuOpen?: boolean;
   styleDisabled?: boolean; // Node should be greyed out but still selectable
+  styleDescendantSelected?: boolean;  // Node should have a dot indicator
+  styleSelected?: boolean; // Node should have a colored background
 }
 
 @Component({
@@ -85,12 +87,16 @@ export class ConditionTreeComponent implements OnInit {
   onSelect(node: ConditionFlatNode): void {
     this.unstyleAndDeselectAllNodes();
     this.styleDescendantsDisabled(node);
+    node.styleSelected = true;
+    this.styleAncestorsSelected(node);
   }
 
   /** Unstyles and deselects all nodes. */
   private unstyleAndDeselectAllNodes(): void {
     this.treeControl.dataNodes.forEach((dataNode) => {
       dataNode.styleDisabled = false;
+      dataNode.styleDescendantSelected = false;
+      dataNode.styleSelected = false;
     });
   }
 
@@ -103,6 +109,22 @@ export class ConditionTreeComponent implements OnInit {
     });
   }
 
+  /** Find and style all the ancestors of a given node in the tree recursively. */
+  private styleAncestorsSelected(node: ConditionFlatNode): void {
+    const nodeLevel = node.level;
+    const nodeIndex = this.treeControl.dataNodes.indexOf(node) - 1;
+    // Iterate over nodes in reverse order starting from the node preceding
+    // the given node.
+    for (let index = nodeIndex; index >= 0; index--) {
+      const currentNode = this.treeControl.dataNodes[index];
+      if (currentNode.level < nodeLevel) {
+        currentNode.styleDescendantSelected = true;
+        this.styleAncestorsSelected(currentNode);
+        break;
+      }
+    }
+  }
+
   /** Find the node matching the given config in the condition tree (if any), and expand its ancestors
    *  so it becomes visible.
    */
@@ -112,7 +134,7 @@ export class ConditionTreeComponent implements OnInit {
     for (let node of this.treeControl.dataNodes) {
       if (node.condition.filepath === config.filepath) {
         this.expandAncestors(node);
-        this.styleDescendantsDisabled(node);
+        this.onSelect(node);
         return node.condition;
       }
     }
