@@ -37,13 +37,13 @@ describe('ConstraintsPanelComponent', () => {
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.constraintsForm = fb.group({
-      budgetForm: fb.group({
-        // Estimated cost in $ per acre
-        estimatedCost: ['', [Validators.min(0), Validators.required]],
-      }),
       treatmentForm: fb.group({
         // Max area treated as a % of planning area
         maxArea: ['', [Validators.min(0), Validators.max(90)]],
+      }),
+      budgetForm: fb.group({
+        // Estimated cost in $ per acre
+        estimatedCost: ['', [Validators.min(0), Validators.required]],
         // Max cost of treatment for entire planning area
         maxCost: ['', Validators.min(0)],
       }),

@@ -71,13 +71,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       // Step 2: Set constraints
       this.fb.group(
         {
-          budgetForm: this.fb.group({
-            // Estimated cost in $ per acre
-            estimatedCost: ['', Validators.min(0)],
-          }),
           treatmentForm: this.fb.group({
             // Max area treated as a % of planning area
             maxArea: ['', [Validators.min(0), Validators.max(90)]],
+          }),
+          budgetForm: this.fb.group({
+            // Estimated cost in $ per acre
+            estimatedCost: ['', Validators.min(0)],
             // Max cost of treatment for entire planning area
             maxCost: ['', Validators.min(0)],
           }),
@@ -161,7 +161,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   private loadConfig(): void {
     this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
       const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
-      const maxCost = this.formGroups[1].get('treatmentForm.maxCost');
+      const maxCost = this.formGroups[1].get('budgetForm.maxCost');
       const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
       const excludeDistance = this.formGroups[1].get('excludeDistance');
       const excludeSlope = this.formGroups[1].get('excludeSlope');
@@ -213,7 +213,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   private formValueToProjectConfig(): ProjectConfig {
     const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
-    const maxCost = this.formGroups[1].get('treatmentForm.maxCost');
+    const maxCost = this.formGroups[1].get('budgetForm.maxCost');
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
     const excludeDistance = this.formGroups[1].get('excludeDistance');
     const excludeSlope = this.formGroups[1].get('excludeSlope');

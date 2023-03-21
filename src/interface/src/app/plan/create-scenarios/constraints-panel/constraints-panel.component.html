@@ -2,26 +2,8 @@
   <!-- Form -->
   <div class="constraints-content">
     <form class="constraints-form" [formGroup]="constraintsForm!">
-      <!-- Cost input -->
-      <div formGroupName="budgetForm">
-        <label class="form-label required">
-          Cost input
-        </label>
-        <!-- Estimated cost in $ per acre -->
-        <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-          <mat-label>Est. treatment cost</mat-label>
-          <input
-            class="right-align"
-            formControlName="estimatedCost"
-            matInput
-            type="number">
-            <span matPrefix>$&nbsp;</span>
-            <span matSuffix>per acre</span>
-        </mat-form-field>
-      </div>
-
+      <!-- Treatment of total planning area -->
       <div formGroupName="treatmentForm">
-        <!-- Treatment of total planning area -->
         <label class="form-label required">
           Treatment of total planning area
         </label>
@@ -36,9 +18,32 @@
               <mat-hint class="subtext">Cannot exceed 90%</mat-hint>
             </mat-form-field>
           </div>
+        </div>
+      </div>
+
+      <!-- Cost input -->
+      <div formGroupName="budgetForm">
+        <label class="form-label required">
+          Cost input
+        </label>
+
+        <div class="flex-row">
+          <div>
+            <!-- Estimated cost in $ per acre -->
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+              <mat-label>Est. treatment cost</mat-label>
+              <input
+                class="right-align"
+                formControlName="estimatedCost"
+                matInput
+                type="number">
+                <span matPrefix>$&nbsp;</span>
+                <span matSuffix>per acre</span>
+            </mat-form-field>
+          </div>
 
           <div>
-            <!-- Max cost of treatment for planning area -->
+            <!-- Max cost of treatment -->
             <mat-form-field class="input-field" [class.disabled]="!enableMaxCost()" appearance="outline" floatLabel="always">
               <mat-label>Max total cost</mat-label>
               <input formControlName="maxCost" matInput type="number" [readonly]="!enableMaxCost()">
