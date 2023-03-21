@@ -11,10 +11,16 @@
       <!-- This is the tree node template for leaf nodes -->
       <!-- There is inline padding applied to this node using styles.
         This padding value depends on the mat-icon-button width. -->
-      <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+      <mat-tree-node
+        *matTreeNodeDef="let node"
+        [class.selected]="node.styleSelected">
         <div class="mat-tree-node">
+          <div class="selected-dot" [class.hidden]="!node.styleDescendantSelected"></div>
           <div [class.disabled]="node.styleDisabled">
-            <mat-radio-button [value]="node.condition" *ngIf="!node.condition.disableSelect"
+            <mat-radio-button
+              [value]="node.condition"
+              *ngIf="!node.condition.disableSelect"
+              class="white"
               (change)="onSelect(node)">
               <span class="condition-label">{{node.condition.display_name}}</span>
             </mat-radio-button>
@@ -34,10 +40,16 @@
         </div>
       </mat-tree-node>
       <!-- This is the tree node template for expandable nodes -->
-      <mat-tree-node  *matTreeNodeDef="let node;when: hasChild" matTreeNodePadding>
+      <mat-tree-node
+        *matTreeNodeDef="let node;when: hasChild"
+        [class.selected]="node.styleSelected">
         <div class="mat-tree-node expandable-condition-node">
+          <div class="selected-dot" [class.hidden]="!node.styleDescendantSelected"></div>
           <div [class.disabled]="node.styleDisabled">
-            <mat-radio-button [value]="node.condition" *ngIf="!node.condition.disableSelect"
+            <mat-radio-button
+              [value]="node.condition"
+              *ngIf="!node.condition.disableSelect"
+              class="white"
               (change)="onSelect(node)">
               {{node.condition.display_name}}
             </mat-radio-button>
@@ -45,8 +57,10 @@
               {{node.condition.display_name}}
             </span>
           </div>
-          <button mat-icon-button matTreeNodeToggle
-                  [attr.aria-label]="'Toggle ' + node.condition.display_name">
+          <button
+            mat-icon-button
+            matTreeNodeToggle
+            [attr.aria-label]="'Toggle ' + node.condition.display_name">
             <mat-icon class="mat-icon-rtl-mirror">
               {{treeControl.isExpanded(node) ? 'expand_less' : 'expand_more'}}
             </mat-icon>
