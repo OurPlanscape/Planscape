@@ -15,8 +15,10 @@ FAILED_STATUS = "4"
 
 def lambda_handler(event, context):
     try:
-        plan_id = event['plan_id']
-        project_id = event['project_id']
+        body = event['Records'][0]['body']
+        parsed = json.loads(body)
+        plan_id = parsed['plan_id']
+        project_id = parsed['project_id']
 
         print("plan_id: " + str(plan_id))
         print("project_id: " + str(project_id))
@@ -41,6 +43,7 @@ def lambda_handler(event, context):
         print(resp.text)
         print("updated scenario to processing state: " + str(scenario_id))
 
+        # TODO: return a set of generated project areas for TCSI region for visualization
         print("start forsys run")
         r = robjects.r
         base = importr('base')
@@ -51,11 +54,12 @@ def lambda_handler(event, context):
         print("forsys run completed")
 
         forsys_results = {
-            'status' : SUCCESS_STATUS,
-            'project_id' : str(project_id),
-            'scenario_id' : str(scenario_id),
+            'status': SUCCESS_STATUS,
+            'project_id': str(project_id),
+            'scenario_id': str(scenario_id),
         }
 
+        # TODO: pick a meaningful value for MessageGroupId
         response = client.send_message(
             QueueUrl=QUEUE_URL,
             MessageBody=json.dumps(forsys_results),
