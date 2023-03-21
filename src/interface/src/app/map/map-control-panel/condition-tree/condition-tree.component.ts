@@ -19,7 +19,6 @@ interface ConditionFlatNode {
   infoMenuOpen?: boolean;
   styleDisabled?: boolean; // Node should be greyed out but still selectable
   styleDescendantSelected?: boolean;  // Node should have a dot indicator
-  styleSelected?: boolean; // Node should have a colored background
 }
 
 @Component({
@@ -87,16 +86,14 @@ export class ConditionTreeComponent implements OnInit {
   onSelect(node: ConditionFlatNode): void {
     this.unstyleAndDeselectAllNodes();
     this.styleDescendantsDisabled(node);
-    node.styleSelected = true;
     this.styleAncestorsSelected(node);
   }
 
   /** Unstyles and deselects all nodes. */
-  private unstyleAndDeselectAllNodes(): void {
+  unstyleAndDeselectAllNodes(): void {
     this.treeControl.dataNodes.forEach((dataNode) => {
       dataNode.styleDisabled = false;
       dataNode.styleDescendantSelected = false;
-      dataNode.styleSelected = false;
     });
   }
 

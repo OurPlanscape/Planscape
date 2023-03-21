@@ -82,7 +82,6 @@ describe('ConditionTreeComponent', () => {
 
     component.onSelect(childNode);
 
-    expect(childNode.styleSelected).toBeTrue();
     expect(parentNode.styleDescendantSelected).toBeTrue();
 
     component.treeControl.dataNodes
@@ -91,7 +90,6 @@ describe('ConditionTreeComponent', () => {
       })
       .forEach((node) => {
         expect(node.styleDisabled).toBeFalse();
-        expect(node.styleSelected).toBeFalse();
         expect(node.styleDescendantSelected).toBeFalse();
       });
   });

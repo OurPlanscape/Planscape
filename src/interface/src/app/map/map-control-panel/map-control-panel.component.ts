@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  QueryList,
+  ViewChildren,
+} from '@angular/core';
 import { BehaviorSubject, filter, map, Observable } from 'rxjs';
 import {
   BaseLayerType,
@@ -10,7 +18,10 @@ import {
 
 import { NONE_DATA_LAYER_CONFIG } from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
-import { ConditionsNode } from './condition-tree/condition-tree.component';
+import {
+  ConditionsNode,
+  ConditionTreeComponent,
+} from './condition-tree/condition-tree.component';
 
 @Component({
   selector: 'app-map-control-panel',
@@ -18,6 +29,9 @@ import { ConditionsNode } from './condition-tree/condition-tree.component';
   styleUrls: ['./map-control-panel.component.scss'],
 })
 export class MapControlPanelComponent implements OnInit {
+  @ViewChildren(ConditionTreeComponent)
+  conditionTrees?: QueryList<ConditionTreeComponent>;
+
   @Input() boundaryConfig: BoundaryConfig[] | null = null;
   @Input() conditionsConfig$!: Observable<ConditionsConfig | null>;
   @Input() loadingIndicators: { [layerName: string]: boolean } = {};
@@ -96,6 +110,10 @@ export class MapControlPanelComponent implements OnInit {
     this.toggleExistingProjectsLayer.emit(map);
     map.config.dataLayerConfig = NONE_DATA_LAYER_CONFIG;
     this.changeConditionLayer.emit(map);
+  }
+
+  unstyleConditionTree(index: number): void {
+    this.conditionTrees?.get(index)?.unstyleAndDeselectAllNodes();
   }
 
   private conditionsConfigToDataRaw(
