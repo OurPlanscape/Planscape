@@ -549,6 +549,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         owner = get_user(request)
 
         body = json.loads(request.body)
+
+        # TODO: remove plan_id as required field in request. can be derived from project_id
         plan_id = body.get('plan_id', None)
         if plan_id is None or not (isinstance(plan_id, int)):
             raise ValueError("Must specify plan_id as an integer")
@@ -561,6 +563,19 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                 (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
             raise ValueError(
                 "Cannot create scenario; plan is not owned by user")
+
+        project_id = body.get('project_id', None)
+        if project_id is None or not (isinstance(project_id, int)):
+            raise ValueError("Must specify project_id as an integer")
+
+        # Get the project, and if the user is logged in, make sure either
+        # 1. the project owner and the owner are both None, or
+        # 2. the project owner and the owner are both not None, and are equal.
+        project = Project.objects.get(pk=int(project_id))
+        if not ((owner is None and project.owner is None) or
+                (owner is not None and project.owner is not None and owner.pk == project.owner.pk)):
+            raise ValueError(
+                "Cannot create scenario; project is not owned by user")
 
         priorities = body.get('priorities', None)
         weights = body.get('weights', None)
@@ -576,7 +591,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Each priority must have a single assigned weight")
 
-        scenario = Scenario.objects.create(owner=owner, plan=plan)
+        scenario = Scenario.objects.create(
+            owner=owner, plan=plan, project=project)
         _set_scenario_metadata(priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
@@ -680,8 +696,6 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 
         scenarios = Scenario.objects.select_related(
             'project').filter(owner=user, plan=plan_id)
-
-        # TODO: return config details when behavior is agreed upon
 
         return JsonResponse(
             [_serialize_scenario(scenario,
