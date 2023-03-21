@@ -12,7 +12,7 @@ export class ConstraintsPanelComponent {
   @Output() formBackEvent = new EventEmitter<void>();
 
   enableMaxCost(): boolean {
-    return !!this.constraintsForm?.get('treatmentForm.maxArea')?.value;
+    return !!this.constraintsForm?.get('budgetForm.estimatedCost')?.value;
   }
 
   toggleRequiredExcludeDistance() {

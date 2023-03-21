@@ -79,7 +79,7 @@ describe('CreateScenariosComponent', () => {
 
     component.formGroups[1].valueChanges.subscribe((_) => {
       expect(
-        component.formGroups[1].get('treatmentForm.maxCost')?.value
+        component.formGroups[1].get('budgetForm.maxCost')?.value
       ).toEqual(100);
     });
   });
