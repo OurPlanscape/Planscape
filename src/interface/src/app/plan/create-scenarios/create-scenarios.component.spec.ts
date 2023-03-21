@@ -30,6 +30,7 @@ describe('CreateScenariosComponent', () => {
           maxBudget: 100,
         }),
         updateProject: of(1),
+        bulkCreateProjectAreas: of(null),
         createProjectArea: of(1),
         createScenario: of('1'),
         updateStateWithShapes: undefined,
@@ -147,7 +148,7 @@ describe('CreateScenariosComponent', () => {
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
 
-    component.createScenarioAndProjectArea();
+    component.createScenarioAndProjectAreas();
 
     expect(fakePlanService.createScenario).toHaveBeenCalledOnceWith({
       id: 1,
@@ -164,18 +165,148 @@ describe('CreateScenariosComponent', () => {
     ]);
   });
 
-  it('creates uploaded project area when event is emitted', () => {
+  it('creates uploaded project areas when event is emitted', () => {
     component.scenarioConfigId = 1;
     component.formGroups[0].get('priorities')?.setValue(['test']);
     component.formGroups[2].get('uploadedArea')?.setValue(fakeGeoJson);
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
 
-    component.createScenarioAndProjectArea();
+    component.createScenarioAndProjectAreas();
 
-    expect(fakePlanService.createProjectArea).toHaveBeenCalledOnceWith(
+    expect(fakePlanService.bulkCreateProjectAreas).toHaveBeenCalledOnceWith(
       component.scenarioConfigId,
-      fakeGeoJson
+      []
     );
+  });
+
+  describe('convertSingleGeoJsonToGeoJsonArray', () => {
+    it('converts a geojson with multiple multipolygons into geojsons', () => {
+      const testMultiGeoJson: GeoJSON.GeoJSON = {
+        type: 'FeatureCollection',
+        features: [
+          {
+            type: 'Feature',
+            geometry: {
+              type: 'MultiPolygon',
+              coordinates: [
+                [
+                  [
+                    [-120.48760442258875, 38.86069261999541],
+                    [-120.25134738486939, 38.63563031791014],
+                    [-120.68265831280989, 38.65924332885403],
+                    [-120.48760442258875, 38.86069261999541],
+                  ],
+                ],
+                [
+                  [
+                    [-120.08926185006236, 38.70429439806091],
+                    [-119.83102710804575, 38.575493119820806],
+                    [-120.02882494064228, 38.56474992770867],
+                    [-120.12497630750148, 38.59268150226389],
+                    [-120.08926185006236, 38.70429439806091],
+                  ],
+                ],
+                [
+                  [
+                    [-120.32277500514876, 38.59483057427002],
+                    [-120.19090826710838, 38.65494898256424],
+                    [-120.1947892445163, 38.584354895060606],
+                    [-120.25934844928075, 38.55964521088927],
+                    [-120.32277500514876, 38.59483057427002],
+                  ],
+                ],
+              ],
+            },
+            properties: {},
+          },
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'Polygon',
+              coordinates: [
+                [
+                  [-120.399442, 38.957252],
+                  [-120.646674, 38.631876],
+                  [-120.020352, 38.651183],
+                  [-120.07804, 38.818293],
+                  [-120.306043, 38.79689],
+                  [-120.399442, 38.957252],
+                ],
+              ],
+            },
+          },
+        ],
+      };
+
+      const result =
+        component.convertSingleGeoJsonToGeoJsonArray(testMultiGeoJson);
+
+      expect(result).toEqual([
+        {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              geometry: {
+                type: 'MultiPolygon',
+                coordinates: [
+                  [
+                    [
+                      [-120.48760442258875, 38.86069261999541],
+                      [-120.25134738486939, 38.63563031791014],
+                      [-120.68265831280989, 38.65924332885403],
+                      [-120.48760442258875, 38.86069261999541],
+                    ],
+                  ],
+                  [
+                    [
+                      [-120.08926185006236, 38.70429439806091],
+                      [-119.83102710804575, 38.575493119820806],
+                      [-120.02882494064228, 38.56474992770867],
+                      [-120.12497630750148, 38.59268150226389],
+                      [-120.08926185006236, 38.70429439806091],
+                    ],
+                  ],
+                  [
+                    [
+                      [-120.32277500514876, 38.59483057427002],
+                      [-120.19090826710838, 38.65494898256424],
+                      [-120.1947892445163, 38.584354895060606],
+                      [-120.25934844928075, 38.55964521088927],
+                      [-120.32277500514876, 38.59483057427002],
+                    ],
+                  ],
+                ],
+              },
+              properties: {},
+            },
+          ],
+        },
+        {
+          type: 'FeatureCollection',
+          features: [
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'Polygon',
+                coordinates: [
+                  [
+                    [-120.399442, 38.957252],
+                    [-120.646674, 38.631876],
+                    [-120.020352, 38.651183],
+                    [-120.07804, 38.818293],
+                    [-120.306043, 38.79689],
+                    [-120.399442, 38.957252],
+                  ],
+                ],
+              },
+            },
+          ],
+        },
+      ]);
+    });
   });
 });
