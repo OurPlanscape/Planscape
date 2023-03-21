@@ -34,6 +34,7 @@ export class PlanTableComponent implements OnInit {
     'status',
     'options',
   ];
+  loggedIn$ = this.authService.loggedInStatus$;
 
   constructor(
     private dialog: MatDialog,
