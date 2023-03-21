@@ -7,8 +7,9 @@ from django.http import HttpRequest, QueryDict
 from forsys.default_forsys_request_params_polygons import (
     get_default_planning_area, get_default_project_areas)
 from forsys.merge_polygons import merge_polygons
-from plan.models import Project, ProjectArea
-from plan.views import get_plan_by_id, get_user
+from plan.models import (Project, ProjectArea, Plan,
+                         Scenario, ScenarioWeightedPriority)
+from plan.views import get_project_by_id, get_scenario_by_id, get_user
 
 # URL parameter name for ForsysRankingRequestParamsType or
 # ForsysGenerationRequestParamsType.
@@ -78,6 +79,43 @@ class ClusterAlgorithmRequestParams():
             self._URL_CLUSTER_PIXEL_INDEX_WEIGHT, self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT))
         if self.pixel_index_weight < 0:
             raise Exception("expected cluster_pixel_index_weight to be > 0")
+
+
+class DbRequestParams():
+    # Constants for parsing url parameters.
+    # Scenario ID indicates the scenario to be processed.
+    _URL_SCENARIO_ID = 'scenario_id'
+    # A boolean representing whether output data is to be saved to the DB.
+    _URL_WRITE_TO_DB = 'write_to_db'
+
+    # Class constructor inputs consists of an HttpRequest and parameters
+    # controlling whether or not to read and write from DB.
+    # - read_from_db indicates whether self.scenario should be None. It's
+    #   intended to be true for ForsysRankingRequestParamsFromDb and false for
+    #   ForsysGenerationRequestParamsFromUrlWithDefaults.
+    # - default_write_output_to_db_value sets the default value for
+    #   self.write_to_db. It's intended to be true for
+    #   ForsysRankingRequestParamsFromDb and false for
+    #   ForsysGenerationRequestParamsFromUrlWithDefaults.
+    def __init__(self, request: HttpRequest,
+                 default_write_output_to_db_value: bool,
+                 read_from_db: bool) -> None:
+        params = request.GET
+
+        self.write_to_db = params.get(
+            self._URL_WRITE_TO_DB, default_write_output_to_db_value)
+
+        if read_from_db and isinstance(params[self._URL_SCENARIO_ID], str):
+            user = get_user(request)
+            self.scenario = get_scenario_by_id(
+                user, self._URL_SCENARIO_ID, params)
+        else:
+            self.scenario = None
+
+    # If true, writes the output to the DB.
+    write_to_db: bool
+    # The scenario.
+    scenario: Scenario | None
 
 
 # Reads url parameters common to both
@@ -217,6 +255,8 @@ class ForsysGenerationRequestParams():
     # Parameters informing clustering prior to running Patchmax project area
     # generation.
     cluster_params: ClusterAlgorithmRequestParams
+    # Parameters informing whether Planscape will read and write to the DB.
+    db_params: DbRequestParams
 
     def __init__(self):
         self.region = None
@@ -224,6 +264,7 @@ class ForsysGenerationRequestParams():
         self.priority_weights = None
         self.planning_area = None
         self.cluster_params = None
+        self.db_params = None
 
     # Returns a dictionary mapping priorities to priority weights.
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -252,6 +293,11 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
         self._read_url_params_with_defaults(params)
+        request = HttpRequest()
+        request.GET = params
+        # By default, this request type is for sanity checking the flow and
+        # nothing should be written to DB.
+        self.db_params = DbRequestParams(request, False, False)
 
     def get_priority_weights_dict(self) -> dict[str, float]:
         return ForsysGenerationRequestParams.get_priority_weights_dict(self)
@@ -269,25 +315,56 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 class ForsysGenerationRequestParamsFromDb(
         ForsysGenerationRequestParamsFromUrlWithDefaults):
     def __init__(self, request: HttpRequest) -> None:
-        # TODO: init with ForsysGenerationRequestParams instead once DB
-        # configuratino has been updated.
-        ForsysGenerationRequestParamsFromUrlWithDefaults.__init__(
-            self, request.GET)
+        ForsysGenerationRequestParams.__init__(self)
+        self.cluster_params = ClusterAlgorithmRequestParams(request.GET)
         self._read_db_params(request)
 
-    def get_priority_weights_dict(self) -> dict[str, float]:
-        return ForsysGenerationRequestParams.get_priority_weights_dict(self)
-
     def _read_db_params(self, request: HttpRequest) -> None:
-        params = request.GET
+        self.db_params = DbRequestParams(request, True, True)
 
-        user = get_user(request)
-        plan = get_plan_by_id(user, params)
+        scenario = self.db_params.scenario
+        self._validate_scenario(scenario)
+
+        project = scenario.project
+        plan = Plan.objects.get(id=project.plan_id)
         self.region = plan.region_name
+        # TODO: the model for plan.geometry should be null=False.
         self.planning_area = plan.geometry
+        if self.planning_area is None:
+            raise Exception(
+                "geometry missing for plan ID, %d, for scenario ID, %d" %
+                (plan.pk, self.db_write_params.scenario.pk))
 
-        # TODO: read priorities and weights from DB once models have been
-        # updated.
+        self.priorities, self.priority_weights = self._get_weighted_priorities(
+            scenario)
+
+    def _validate_scenario(self, scenario: Scenario):
+        status = scenario.status
+        if not (status == Scenario.ScenarioStatus.INITIALIZED or
+                status == Scenario.ScenarioStatus.FAILED):
+            raise Exception(
+                "scenario status for scenario ID, %d" % (scenario.pk) +
+                ", is %s (expected Initialized or Failed)" %
+                (scenario.get_status_display()))
+
+        # TODO: the model for scenario.project should be null=False.
+        if scenario.project is None:
+            raise Exception(
+                "project is none for scenario ID, %d" % (scenario.pk))
+
+    def _get_weighted_priorities(
+        self, scenario: Scenario
+    ) -> tuple[list[str], list[float]]:
+        priorities = []
+        priority_weights = []
+        for w in ScenarioWeightedPriority.objects.filter(scenario=scenario):
+            priorities.append(w.priority.condition_dataset.condition_name)
+            priority_weights.append(w.weight)
+        if len(priorities) == 0:
+            raise Exception(
+                "no weighted priorities available for scenario ID, %d" %
+                (scenario.id))
+        return priorities, priority_weights
 
 
 # Sets planning area from HUC-12 boundary names.
