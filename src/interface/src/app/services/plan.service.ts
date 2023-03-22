@@ -392,7 +392,6 @@ export class PlanService {
   }
 
   private convertBackendScenarioToScenario(scenario: any): Scenario {
-    console.log(scenario);
     return {
       id: scenario.id,
       planId: scenario.plan,
