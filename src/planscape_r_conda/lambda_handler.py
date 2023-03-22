@@ -20,18 +20,19 @@ def lambda_handler(event, context):
         plan_id = parsed['plan_id']
         project_id = parsed['project_id']
 
-        print("plan_id: " + str(plan_id))
-        print("project_id: " + str(project_id))
+        print("plan_id: " + plan_id)
+        print("project_id: " + project_id)
 
         # TODO: add project_id in create scenario call
         scenario = {
-            'plan_id': plan_id,
+            'plan_id': int(plan_id),
             'priorities': ['biodiversity'],
             'weights': [1]
         }
         resp = requests.post(
             "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/plan/create_scenario/",
             json=scenario)
+        print(resp.text)
         scenario_id = resp.json()
         print("created scenario id: " + str(scenario_id))
 
@@ -65,6 +66,7 @@ def lambda_handler(event, context):
             MessageBody=json.dumps(forsys_results),
             MessageGroupId="elsie"
         )
+        print(resp.text)
 
         return {
             'message': response['MessageId']
