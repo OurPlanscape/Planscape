@@ -27,7 +27,8 @@ def _create_weighted_priorities(
             condition_dataset__condition_name=params.priorities[i],
             condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
         weighted_priority = ScenarioWeightedPriority.objects.create(
-            scenario=scenario, priority=condition, weight=params.priority_weights[i])
+            scenario=scenario, priority=condition, 
+            weight=params.priority_weights[i])
         weighted_priority.save()
 
 
@@ -35,6 +36,8 @@ def _create_weighted_priorities(
 # with a scenario.
 # This is primarily used for debug purposes, when 
 # ForsysGenerationRequestParams.db_params is missing a scenario.
+# TODO: this assumes ForsysGenerationRequestParams is well-formed; input 
+# validation logic needs to be added and tested.
 def create_plan_and_scenario(
         params: ForsysGenerationRequestParams) -> Scenario:
     user = params.db_params.user
@@ -45,8 +48,7 @@ def create_plan_and_scenario(
     project.save()
 
     scenario = Scenario.objects.create(
-        owner=user, plan=plan, project=project,
-        status=Scenario.ScenarioStatus.SUCCESS)
+        owner=user, plan=plan, project=project)
     scenario.save()
 
     _create_weighted_priorities(params, scenario)
@@ -70,6 +72,8 @@ def _get_multipolygon(wkt: str):
 # RankedProjectArea objects to the DB.
 # Forsys output data, represented by output_scenario, is the dictionary in
 # ForsysGenerationOutputForASingleScenario.scenario.
+# TODO: this assumes the input arguments are well-formed; input validation 
+# logic needs to be added and tested.
 def save_generation_output_to_db(scenario: Scenario,
                                  output_scenario: dict):
     owner = scenario.owner
