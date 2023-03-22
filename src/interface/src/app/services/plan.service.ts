@@ -392,6 +392,7 @@ export class PlanService {
   }
 
   private convertBackendScenarioToScenario(scenario: any): Scenario {
+    console.log(scenario);
     return {
       id: scenario.id,
       planId: scenario.plan,
@@ -436,16 +437,13 @@ export class PlanService {
       return [];
     }
 
-    let priorities: Priority[] = [];
-    Object.keys(scenarioPriorities).forEach((priority, weight) => {
-      priorities.push({
+    return Object.entries(scenarioPriorities).map(([priority, weight]) => {
+      return {
         id: priority,
         name: priority.replace(/_/g, " "),
         weight: weight,
-      });
+      }
     });
-
-    return priorities;
   }
 
   private convertConfigToScenario(config: ProjectConfig): any {
