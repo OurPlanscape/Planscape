@@ -1,11 +1,14 @@
 import rpy2.robjects as ro
 
+from django.contrib.gis.gdal import CoordTransform, SpatialReference
+from django.contrib.gis.geos import MultiPolygon
 from django.test import TestCase
 from forsys.merge_polygons_test import MergePolygonsTest
 from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
+from planscape import settings
 
 
 def _convert_dictionary_of_lists_to_rdf(
@@ -527,16 +530,25 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
              'ranked_projects':
              [{'id': 2, 'weighted_priority_scores': {'p1': 0.1, 'p2': 0.8},
                'total_score': 0.9, 'rank': 1,
-               'geo_wkt': MergePolygonsTest._create_polygon(self,
-                   ((1, 1), (0, 1), (0, -1), (1, -1), (1, 1))).wkt},
+               'geo_wkt': self._create_polygon_in_default_crs(((1, 1),
+                                                               (0, 1),
+                                                               (0, -1),
+                                                               (1, -1),
+                                                               (1, 1))).wkt},
               {'id': 1, 'weighted_priority_scores': {'p1': 0.5, 'p2': 0.2},
                'total_score': 0.7, 'rank': 2,
-               'geo_wkt': MergePolygonsTest._create_polygon(self,
-                   ((0, 0), (0, -1), (1, -1), (1, 0), (0, 0))).wkt},
+               'geo_wkt': self._create_polygon_in_default_crs(((0, 0),
+                                                               (0, -1),
+                                                               (1, -1),
+                                                               (1, 0),
+                                                               (0, 0))).wkt},
               {'id': 3, 'weighted_priority_scores': {'p1': 0.3, 'p2': 0.2},
                'total_score': 0.5, 'rank': 3,
-               'geo_wkt': MergePolygonsTest._create_polygon(self,
-                   ((0, 0), (0, -1), (1, -1), (1, 0), (0, 0))).wkt},],
+               'geo_wkt': self._create_polygon_in_default_crs(((0, 0),
+                                                               (0, -1),
+                                                               (1, -1),
+                                                               (1, 0),
+                                                               (0, 0))).wkt},],
              'cumulative_ranked_project_area': [11, 21, 33],
              'cumulative_ranked_project_cost': [600, 1100, 1900], })
 
@@ -602,6 +614,16 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
         self.assertEqual(
             str(context.exception),
             'header, geometry, is not a forsys output header')
+
+    def _create_polygon_in_default_crs(
+            self, coordinates: tuple[tuple[int, int]]) -> MultiPolygon:
+        geo = MergePolygonsTest._create_polygon(
+            self, coordinates)
+        geo.transform(CoordTransform(
+            SpatialReference(settings.CRS_9822_PROJ4),
+            SpatialReference(settings.DEFAULT_CRS)))
+        geo.srid = settings.DEFAULT_CRS
+        return geo
 
     def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
         stand_output = {
