@@ -6,7 +6,8 @@ RUN apt-get update \
   && apt-get install -y python3-pip \
   && apt-get install -y python3-venv \
   && apt-get install -y gdal-bin \
-  && apt-get install -y libudunits2-dev 
+  && apt-get install -y libudunits2-dev \
+  && apt-get install -y libglpk-dev 
 
 # --------------
 # Install Forsys
@@ -27,6 +28,7 @@ RUN ls /usr/lib
 RUN ls /usr/local/lib
 RUN ldd /usr/local/lib/R/library/methods/libs/methods.so
 RUN ls /usr/local/lib/R/lib
+RUN ldd /usr/local/lib/R/site-library/igraph/libs/igraph.so
 
 RUN pip install --upgrade pip
 RUN pip install rpy2 requests boto3
