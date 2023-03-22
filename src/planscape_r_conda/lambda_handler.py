@@ -52,6 +52,7 @@ def lambda_handler(event, context):
         r.source('rank.R')
         r_f = robjects.r['times2']
         result = r_f(4)
+        print(result)
         print("forsys run completed")
 
         forsys_results = {
@@ -66,7 +67,6 @@ def lambda_handler(event, context):
             MessageBody=json.dumps(forsys_results),
             MessageGroupId="elsie"
         )
-        print(resp.text)
 
         return {
             'message': response['MessageId']
