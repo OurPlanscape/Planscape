@@ -53,7 +53,7 @@ describe('AuthService', () => {
         accessToken: 'test',
       };
 
-      service.login('username', 'password').subscribe((res) => {
+      service.login('email', 'password').subscribe((res) => {
         expect(res).toEqual(mockResponse);
         done();
       });
@@ -65,7 +65,7 @@ describe('AuthService', () => {
       req.flush(mockResponse);
       httpTestingController
         .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
-        .flush({ username: 'username' });
+        .flush({ email: 'test@test.com' });
       httpTestingController.verify();
     });
 
@@ -74,7 +74,7 @@ describe('AuthService', () => {
         accessToken: 'test',
       };
 
-      service.login('username', 'password').subscribe((_) => {
+      service.login('email', 'password').subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeTrue();
         done();
       });
@@ -86,7 +86,7 @@ describe('AuthService', () => {
     });
 
     it('if unsuccessful, does not update logged in status', (done) => {
-      service.login('username', 'password').subscribe(
+      service.login('email', 'password').subscribe(
         (_) => {},
         (_) => {
           expect(service.loggedInStatus$.value).toBeFalse();
@@ -105,10 +105,10 @@ describe('AuthService', () => {
         accessToken: 'test',
       };
       const mockUser = {
-        username: 'username',
+        email: 'test@test.com',
       };
 
-      service.login('username', 'password').subscribe((_) => {
+      service.login('email', 'password').subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeTrue();
         done();
       });
@@ -125,7 +125,7 @@ describe('AuthService', () => {
     });
 
     it('if unsuccessful, does not make request to backend /user endpoint', (done) => {
-      service.login('username', 'password').subscribe(
+      service.login('email', 'password').subscribe(
         (_) => {
           expect(service.loggedInStatus$.value).toBeFalse();
           done();
@@ -145,72 +145,13 @@ describe('AuthService', () => {
   });
 
   describe('signup', () => {
-    it('makes request to /registration backend endpoint', (done) => {
+    it('if successful, makes request to backend /login endpoint', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
 
       service
-        .signup('username', 'email', 'password1', 'password2')
-        .subscribe((res) => {
-          expect(res).toEqual(mockResponse);
-          done();
-        });
-
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
-      );
-      expect(req.request.method).toEqual('POST');
-      req.flush(mockResponse);
-      httpTestingController
-        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
-        .flush({ username: 'username' });
-      httpTestingController.verify();
-    });
-
-    it('if successful, updates logged in status to true', (done) => {
-      const mockResponse = {
-        accessToken: 'test',
-      };
-
-      service
-        .signup('username', 'email', 'password1', 'password2')
-        .subscribe((_) => {
-          expect(service.loggedInStatus$.value).toBeTrue();
-          done();
-        });
-
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
-      );
-      req.flush(mockResponse);
-    });
-
-    it('if unsuccessful, does not update logged in status', (done) => {
-      service.signup('username', 'email', 'password1', 'password2').subscribe(
-        (_) => {},
-        (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
-          done();
-        }
-      );
-
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
-      );
-      req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
-    });
-
-    it('if successful, makes request to backend /user endpoint', (done) => {
-      const mockResponse = {
-        accessToken: 'test',
-      };
-      const mockUser = {
-        username: 'username',
-      };
-
-      service
-        .signup('username', 'email', 'password1', 'password2')
+        .signup('email', 'password1', 'password2', 'Foo', 'Bar')
         .subscribe((_) => {
           expect(service.loggedInStatus$.value).toBeTrue();
           done();
@@ -222,19 +163,21 @@ describe('AuthService', () => {
       req1.flush(mockResponse);
 
       const req2 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/user/'
+        BackendConstants.END_POINT + '/dj-rest-auth/login/'
       );
-      req2.flush(mockUser);
+      req2.flush(mockResponse);
     });
 
-    it('if unsuccessful, does not make request to backend /user endpoint', (done) => {
-      service.signup('username', 'email', 'password1', 'password2').subscribe(
-        (_) => {},
-        (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
-          done();
-        }
-      );
+    it('if unsuccessful, does not make request to backend /login endpoint', (done) => {
+      service
+        .signup('email', 'password1', 'password2', 'Foo', 'Bar')
+        .subscribe(
+          (_) => {},
+          (_) => {
+            expect(service.loggedInStatus$.value).toBeFalse();
+            done();
+          }
+        );
 
       const req = httpTestingController.expectOne(
         BackendConstants.END_POINT + '/dj-rest-auth/registration/'
@@ -287,11 +230,19 @@ describe('AuthService', () => {
       spyOn(cookieServiceStub, 'get').and.callThrough();
       const mockResponse = { access: true };
       const mockUser = {
-        username: 'username',
+        email: 'test@test.com',
+        username: 'test',
+        first_name: 'Foo',
+        last_name: 'Bar',
       };
 
       service.refreshLoggedInUser().subscribe((res) => {
-        expect(res).toEqual(mockUser);
+        expect(res).toEqual({
+          email: 'test@test.com',
+          username: 'test',
+          firstName: 'Foo',
+          lastName: 'Bar',
+        });
         done();
       });
 
@@ -314,12 +265,20 @@ describe('AuthService', () => {
     it('updates loggedInStatus to true when token is refreshed', (done) => {
       const mockResponse = { access: true };
       const mockUser = {
-        username: 'username',
+        email: 'test@test.com',
+        username: 'test',
+        first_name: 'Foo',
+        last_name: 'Bar',
       };
 
       service.refreshLoggedInUser().subscribe((_) => {
         expect(service.loggedInStatus$.value).toBeTrue();
-        expect(service.loggedInUser$.value).toEqual(mockUser);
+        expect(service.loggedInUser$.value).toEqual({
+          email: 'test@test.com',
+          username: 'test',
+          firstName: 'Foo',
+          lastName: 'Bar',
+        });
         done();
       });
 
@@ -388,7 +347,7 @@ describe('AuthGuard', () => {
     it('returns true if refreshLoggedInUser succeeds', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
-        of({ username: 'username' })
+        of({ email: 'test@test.com' })
       );
 
       service.canActivate().subscribe((result) => {

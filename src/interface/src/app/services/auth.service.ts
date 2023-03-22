@@ -15,13 +15,10 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
+import { User } from '../types';
 
 interface LogoutResponse {
   detail: string;
-}
-
-export interface User {
-  username: string;
 }
 
 @Injectable({
@@ -40,11 +37,11 @@ export class AuthService {
     private snackbar: MatSnackBar
   ) {}
 
-  login(username: string, password: string) {
+  login(email: string, password: string) {
     return this.http
       .post(
         this.API_ROOT.concat('login/'),
-        { username, password },
+        { email, password },
         { withCredentials: true }
       )
       .pipe(
@@ -60,22 +57,23 @@ export class AuthService {
   }
 
   signup(
-    username: string,
     email: string,
     password1: string,
-    password2: string
+    password2: string,
+    firstName: string,
+    lastName: string
   ) {
     return this.http
       .post(this.API_ROOT.concat('registration/'), {
-        username,
         password1,
         password2,
         email,
+        first_name: firstName,
+        last_name: lastName,
       })
       .pipe(
-        tap((_) => {
-          this.loggedInStatus$.next(true);
-          this.getLoggedInUser().pipe(take(1)).subscribe();
+        concatMap((_) => {
+          return this.login(email, password1);
         })
       );
   }
@@ -124,7 +122,10 @@ export class AuthService {
       .pipe(
         map((response: any) => {
           const user: User = {
+            email: response.email,
             username: response.username,
+            firstName: response.first_name,
+            lastName: response.last_name,
           };
           this.loggedInUser$.next(user);
           return user;

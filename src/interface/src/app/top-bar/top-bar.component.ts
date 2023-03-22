@@ -22,7 +22,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   @Output()
   toggleEvent = new EventEmitter<Event>();
 
-  username: string = '';
+  displayName: string = '';
 
   readonly color = 'primary';
   readonly regionOptions: RegionOption[] = regionOptions;
@@ -42,9 +42,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
         if (user) {
-          this.username = user.username;
+          this.displayName = user.firstName ? user.firstName : (user.username ? user.username : '');
         } else {
-          this.username = 'Guest';
+          this.displayName = 'Guest';
         }
       });
   }

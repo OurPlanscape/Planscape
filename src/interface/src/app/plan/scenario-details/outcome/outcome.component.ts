@@ -1,9 +1,15 @@
-import { Component, Input, SimpleChanges, OnChanges, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+  SimpleChanges,
+} from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { take, BehaviorSubject } from 'rxjs';
-import { User, AuthService } from 'src/app/services';
-
-import { Scenario, Plan, ProjectArea } from 'src/app/types';
+import { BehaviorSubject, take } from 'rxjs';
+import { AuthService } from 'src/app/services';
+import { Plan, ProjectArea, Scenario, User } from 'src/app/types';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
