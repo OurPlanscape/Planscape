@@ -1,6 +1,7 @@
 FROM rocker/tidyverse as final
 
 # libudunits2-dev is necessary for R package, sf.
+# libglpk-dev is necessary for R package, patchmax.
 RUN apt-get update \
   && apt-get install python3 \
   && apt-get install -y python3-pip \
