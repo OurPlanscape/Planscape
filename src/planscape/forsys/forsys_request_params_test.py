@@ -266,6 +266,7 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             params.cluster_params.pixel_index_weight, 0.01)
         self.assertIsNone(params.db_params.scenario)
         self.assertFalse(params.db_params.write_to_db)
+        self.assertNone(params.db_params.user)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -304,6 +305,35 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
         self.assertEqual(
             str(context.exception),
             'expected 3 priority weights, instead, 2 were given')
+        
+    def test_reads_user_from_url_params(self):
+        user = User.objects.create(username='testuser')
+        user.set_password('12345')
+        user.save()
+
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&debug_user_id=%d'%(user.pk))
+        settings.DEBUG = True
+        params = get_generation_request_params(request)
+        self.assertEqual(params.db_parmas.user.pk, user.pk)
+
+    def test_reads_bad_user_from_url_params(self):
+        user = User.objects.create(username='testuser')
+        user.set_password('12345')
+        user.save()
+
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&debug_user_id=9999')
+        settings.DEBUG = True
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEqual(
+            str(context.exception),
+            'failure failure')
 
 
 class TestForsysGenerationRequestParamsFromDb(TestCase):
@@ -346,6 +376,31 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         request.GET = QueryDict(
             'scenario_id=' + str(self.scenario_with_user.pk))
         request.user = self.user
+
+        params = get_generation_request_params(request)
+        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.planning_area.coords, ((
+            ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
+        self.assertListEqual(params.priorities, ['foo', 'bar', 'baz'])
+        self.assertListEqual(params.priority_weights, [1, 5, 3])
+
+        self.assertEqual(params.cluster_params.cluster_algorithm_type,
+                         ClusterAlgorithmType.NONE)
+        self.assertEqual(params.cluster_params.num_clusters, 500)
+        self.assertEqual(
+            params.cluster_params.pixel_index_weight, 0.01)
+
+        self.assertTrue(params.db_params.write_to_db)
+        self.assertEqual(params.db_params.scenario.pk,
+                         self.scenario_with_user.pk)
+
+    def test_read_ok_for_debug_user(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'scenario_id=' + str(self.scenario_with_user.pk) +
+            '&debug_user_id=' + str(self.user.pk))
+        settings.DEBUG = True
+
         params = get_generation_request_params(request)
         self.assertEqual(params.region, 'sierra_cascade_inyo')
         self.assertEqual(params.planning_area.coords, ((
@@ -366,12 +421,25 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
     def test_fails_on_no_user(self):
         request = HttpRequest()
         request.GET = QueryDict(
+            'scenario_id=' + str(self.scenario_with_user.pk) +
+            '&debug_user_id=' + str(self.user.pk))
+        settings.DEBUG = False
+
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEquals(
+            str(context.exception),
+            "You do not have permission to view this scenario.")
+
+    def test_fails_on_debug_user(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
             'scenario_id=' + str(self.scenario_with_user.pk))
         with self.assertRaises(Exception) as context:
             get_generation_request_params(request)
         self.assertEquals(
             str(context.exception),
-            "'HttpRequest' object has no attribute 'user'")
+            "You do not have permission to view this scenario.")
 
     def test_fails_on_wrong_user(self):
         wrong_user = User.objects.create(username='wrong_user')
@@ -417,9 +485,10 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
 
         with self.assertRaises(Exception) as context:
             get_generation_request_params(request)
-        self.assertEquals(
+        self.assertRegex(
             str(context.exception),
-            "scenario status for scenario ID, 5, is Pending (expected Initialized or Failed)")
+            "scenario status for scenario ID, [0-9]+, " +
+            "is Pending \(expected Initialized or Failed\)")
 
     def test_fails_zero_weighted_priorities(self):
         ScenarioWeightedPriority.objects.all().delete()
@@ -431,9 +500,9 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
 
         with self.assertRaises(Exception) as context:
             get_generation_request_params(request)
-        self.assertEquals(
+        self.assertRegex(
             str(context.exception),
-            "no weighted priorities available for scenario ID, 6")
+            "no weighted priorities available for scenario ID, [0-9]+")
 
 
 class ForsysGenerationRequestParamsFromHuc12(TestCase):
