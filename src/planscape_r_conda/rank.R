@@ -4,11 +4,11 @@ times2 <- function(number) {
   library(sf)
   library(dplyr)
   
-  stand_dat <- test_forest
+  stand_dat <- forsys::test_forest
 
    run_outputs <- forsys::run(
      return_outputs = TRUE,
-     run_with_patchmax = TRUE,
+     run_with_patchmax = FALSE,
      write_outputs = FALSE,
      scenario_name = "test_scenario",
      stand_data = stand_dat,
