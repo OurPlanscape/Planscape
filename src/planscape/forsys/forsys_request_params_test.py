@@ -266,7 +266,7 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             params.cluster_params.pixel_index_weight, 0.01)
         self.assertIsNone(params.db_params.scenario)
         self.assertFalse(params.db_params.write_to_db)
-        self.assertNone(params.db_params.user)
+        self.assertIsNone(params.db_params.user)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -317,9 +317,22 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             '&debug_user_id=%d'%(user.pk))
         settings.DEBUG = True
         params = get_generation_request_params(request)
-        self.assertEqual(params.db_parmas.user.pk, user.pk)
+        self.assertEqual(params.db_params.user.pk, user.pk)
 
-    def test_reads_bad_user_from_url_params(self):
+    def test_doesnt_read_user_from_url_params_in_prod(self):
+        user = User.objects.create(username='testuser')
+        user.set_password('12345')
+        user.save()
+
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&debug_user_id=%d'%(user.pk))
+        settings.DEBUG = False
+        params = get_generation_request_params(request)
+        self.assertIsNone(params.db_params.user)
+
+    def test_fails_to_read_bad_user_from_url_params(self):
         user = User.objects.create(username='testuser')
         user.set_password('12345')
         user.save()
@@ -333,7 +346,7 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             get_generation_request_params(request)
         self.assertEqual(
             str(context.exception),
-            'failure failure')
+            'User matching query does not exist.')
 
 
 class TestForsysGenerationRequestParamsFromDb(TestCase):
@@ -393,6 +406,7 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertTrue(params.db_params.write_to_db)
         self.assertEqual(params.db_params.scenario.pk,
                          self.scenario_with_user.pk)
+        self.assertEqual(params.db_params.user.pk, self.user.pk)
 
     def test_read_ok_for_debug_user(self):
         request = HttpRequest()
@@ -417,8 +431,9 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertTrue(params.db_params.write_to_db)
         self.assertEqual(params.db_params.scenario.pk,
                          self.scenario_with_user.pk)
+        self.assertEqual(params.db_params.user.pk, self.user.pk)
 
-    def test_fails_on_no_user(self):
+    def test_fails_for_debug_user_in_prod(self):
         request = HttpRequest()
         request.GET = QueryDict(
             'scenario_id=' + str(self.scenario_with_user.pk) +
@@ -430,8 +445,21 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertEquals(
             str(context.exception),
             "You do not have permission to view this scenario.")
+        
+    def test_fails_for_bad_debug_user(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'scenario_id=' + str(self.scenario_with_user.pk) +
+            '&debug_user_id=9999')
+        settings.DEBUG = True
 
-    def test_fails_on_debug_user(self):
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEquals(
+            str(context.exception),
+            "User matching query does not exist.")
+
+    def test_fails_on_no_user(self):
         request = HttpRequest()
         request.GET = QueryDict(
             'scenario_id=' + str(self.scenario_with_user.pk))
