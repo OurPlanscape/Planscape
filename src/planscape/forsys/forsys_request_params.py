@@ -2,6 +2,7 @@ from enum import IntEnum
 
 from boundary.models import BoundaryDetails
 from conditions.models import BaseCondition
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.http import HttpRequest, QueryDict
 from forsys.default_forsys_request_params_polygons import (
@@ -9,7 +10,8 @@ from forsys.default_forsys_request_params_polygons import (
 from forsys.merge_polygons import merge_polygons
 from plan.models import (Project, ProjectArea, Plan,
                          Scenario, ScenarioWeightedPriority)
-from plan.views import get_project_by_id, get_scenario_by_id, get_user
+from plan.views import get_scenario_by_id, get_user
+from planscape import settings
 
 # URL parameter name for ForsysRankingRequestParamsType or
 # ForsysGenerationRequestParamsType.
@@ -81,41 +83,80 @@ class ClusterAlgorithmRequestParams():
             raise Exception("expected cluster_pixel_index_weight to be > 0")
 
 
+# TODO: incorporate this with RankingRequestParams, too.
 class DbRequestParams():
     # Constants for parsing url parameters.
     # Scenario ID indicates the scenario to be processed.
     _URL_SCENARIO_ID = 'scenario_id'
-    # A boolean representing whether output data is to be saved to the DB.
+    # A boolean representing whether Forsys output data will be saved to the DB.
     _URL_WRITE_TO_DB = 'write_to_db'
 
-    # Class constructor inputs consists of an HttpRequest and parameters
-    # controlling whether or not to read and write from DB.
-    # - read_from_db indicates whether self.scenario should be None. It's
-    #   intended to be true for ForsysRankingRequestParamsFromDb and false for
-    #   ForsysGenerationRequestParamsFromUrlWithDefaults.
-    # - default_write_output_to_db_value sets the default value for
-    #   self.write_to_db. It's intended to be true for
-    #   ForsysRankingRequestParamsFromDb and false for
-    #   ForsysGenerationRequestParamsFromUrlWithDefaults.
-    def __init__(self, request: HttpRequest,
-                 default_write_output_to_db_value: bool,
-                 read_from_db: bool) -> None:
-        params = request.GET
+    # In production, the user can be accessed via get_user(request); however,
+    # for backend debugging purposes, this url parameter is also available for
+    # use if settings.DEBUG is true.
+    _URL_DEBUG_USER_ID = 'debug_user_id'
 
-        self.write_to_db = params.get(
-            self._URL_WRITE_TO_DB, default_write_output_to_db_value)
+    def __init__(self, request: HttpRequest,) -> None:
+        self.write_to_db = None
+        self.scenario = None
+        self.user = self._get_user(request)
 
-        if read_from_db and isinstance(params[self._URL_SCENARIO_ID], str):
-            user = get_user(request)
-            self.scenario = get_scenario_by_id(
-                user, self._URL_SCENARIO_ID, params)
-        else:
-            self.scenario = None
-
-    # If true, writes the output to the DB.
+    # If true, the output data of a Forsys run will be saved to the DB.
     write_to_db: bool
     # The scenario.
+    # This guides the write-to-db functions:
+    # - If none, an entirely new plan, project, and scenario are written to the
+    #   DB along with Forsys output data.
+    # - Otherwise, Forsys output data is saved to this scenario.
     scenario: Scenario | None
+    # The user.
+    # This is typically an HttpRequest attribute.
+    # If settings.DEBUG is true, however, this may also be set via url
+    # parameter, debug_user_id.
+    # This informs Scenario retrieval (since only scenarios visible to the user 
+    # may be retrieved) and is a field value when saving Forsys output data to 
+    # the DB.
+    user: User
+
+    def _get_user(self, request: HttpRequest) -> User:
+        if hasattr(request, 'user'):
+            user = get_user(request)
+            if user is not None:
+                return user
+
+        params = request.GET
+        if settings.DEBUG and self._URL_DEBUG_USER_ID in params.keys():
+            if not isinstance(params[self._URL_DEBUG_USER_ID], str):
+                raise Exception(
+                    "expected parameter, debug_user_id, to have a string value")
+            user_id = int(params.get(self._URL_DEBUG_USER_ID, "0"))
+            return User.objects.get(id=user_id)
+
+        return None
+
+
+# When Forsys parameters are read from url parameters with default values 
+# (for the sake of e2e tests), no scenario needs to be retrieved and, by 
+# default, write_to_db is false.
+class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
+    def __init__(self, request: HttpRequest):
+        DbRequestParams.__init__(self, request)
+        params = request.GET
+        self.write_to_db = params.get(
+            DbRequestParams._URL_WRITE_TO_DB, False)
+        self.scenario = None
+
+
+# When Forsys parameters are gleaned from DB table values (for production), a 
+# scenario is retrieved, and, by default, write_to_db is true.
+class DbRequestParamsForGenerationFromDb(DbRequestParams):
+    def __init__(self, request: HttpRequest):
+        DbRequestParams.__init__(self, request)
+        params = request.GET
+        self.write_to_db = params.get(
+            DbRequestParams._URL_WRITE_TO_DB, True)
+        self.scenario = get_scenario_by_id(
+            self.user, self._URL_SCENARIO_ID, params)
 
 
 # Reads url parameters common to both
@@ -292,12 +333,15 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
-        self._read_url_params_with_defaults(params)
+        
+        self.cluster_params = ClusterAlgorithmRequestParams(params)
+
         request = HttpRequest()
         request.GET = params
-        # By default, this request type is for sanity checking the flow and
-        # nothing should be written to DB.
-        self.db_params = DbRequestParams(request, False, False)
+        self.db_params = DbRequestParamsForGenerationFromUrlWithDefaults(
+            request)
+
+        self._read_url_params_with_defaults(params)
 
     def get_priority_weights_dict(self) -> dict[str, float]:
         return ForsysGenerationRequestParams.get_priority_weights_dict(self)
@@ -305,7 +349,6 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         self.planning_area = get_default_planning_area()
-        self.cluster_params = ClusterAlgorithmRequestParams(params)
 
 
 # Looks up forsys generation parameters from DB.
@@ -316,27 +359,14 @@ class ForsysGenerationRequestParamsFromDb(
         ForsysGenerationRequestParamsFromUrlWithDefaults):
     def __init__(self, request: HttpRequest) -> None:
         ForsysGenerationRequestParams.__init__(self)
+
+        # TODO: pass cluster parameters via DB.
         self.cluster_params = ClusterAlgorithmRequestParams(request.GET)
-        self._read_db_params(request)
 
-    def _read_db_params(self, request: HttpRequest) -> None:
-        self.db_params = DbRequestParams(request, True, True)
-
-        scenario = self.db_params.scenario
-        self._validate_scenario(scenario)
-
-        project = scenario.project
-        plan = Plan.objects.get(id=project.plan_id)
-        self.region = plan.region_name
-        # TODO: the model for plan.geometry should be null=False.
-        self.planning_area = plan.geometry
-        if self.planning_area is None:
-            raise Exception(
-                "geometry missing for plan ID, %d, for scenario ID, %d" %
-                (plan.pk, self.db_write_params.scenario.pk))
-
-        self.priorities, self.priority_weights = self._get_weighted_priorities(
-            scenario)
+        self.db_params = DbRequestParamsForGenerationFromDb(request)
+        self._validate_scenario(self.db_params.scenario)
+        
+        self._read_db_params()
 
     def _validate_scenario(self, scenario: Scenario):
         status = scenario.status
@@ -351,6 +381,22 @@ class ForsysGenerationRequestParamsFromDb(
         if scenario.project is None:
             raise Exception(
                 "project is none for scenario ID, %d" % (scenario.pk))
+
+    def _read_db_params(self) -> None:
+        scenario = self.db_params.scenario
+
+        project = scenario.project
+        plan = Plan.objects.get(id=project.plan_id)
+        self.region = plan.region_name
+        # TODO: the model for plan.geometry should be null=False.
+        self.planning_area = plan.geometry
+        if self.planning_area is None:
+            raise Exception(
+                "geometry missing for plan ID, %d, for scenario ID, %d" %
+                (plan.pk, self.db_write_params.scenario.pk))
+
+        self.priorities, self.priority_weights = self._get_weighted_priorities(
+            scenario)
 
     def _get_weighted_priorities(
         self, scenario: Scenario
