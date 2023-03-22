@@ -6,8 +6,8 @@ times2 <- function(number) {
   stand_dat <- test_forest %>% st_drop_geometry()
 
    run_outputs <- forsys::run(
-     return_outputs = FALSE,
-     run_with_patchmax = FALSE,
+     return_outputs = TRUE,
+     run_with_patchmax = TRUE,
      write_outputs = FALSE,
      scenario_name = "test_scenario",
      stand_data = stand_dat,
@@ -18,7 +18,7 @@ times2 <- function(number) {
      scenario_output_fields = c("area_ha", "priority1", "priority2", "priority3", "priority4"),
      proj_fixed_target =  TRUE,
      proj_target_field = "area_ha",
-     proj_target_value = 2000
+     proj_target_value = 2
    )
    return(run_outputs)
 }
