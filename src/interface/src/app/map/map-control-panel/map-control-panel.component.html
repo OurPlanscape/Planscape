@@ -159,7 +159,7 @@
           [conditionsData$]="conditionDataRaw$"
           [header]="'Current Condition'"
           [map]="map"
-          (changeConditionLayer)="changeConditionLayer.emit($event)">
+          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
         </app-condition-tree>
 
         <!-- Normalized current condition controls -->
@@ -168,7 +168,7 @@
           [conditionsData$]="conditionDataNormalized$"
           [header]="'Current Condition (Normalized)'"
           [map]="map"
-          (changeConditionLayer)="changeConditionLayer.emit($event)">
+          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
         </app-condition-tree>
 
         <!-- Disturbances controls -->
