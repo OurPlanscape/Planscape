@@ -30,7 +30,7 @@ PRIORITIES = 'priorities'
 
 def get_user(request: HttpRequest) -> User:
     user = None
-    if request.user.is_authenticated:
+    if hasattr(request, 'user') and request.user.is_authenticated:
         user = request.user
     if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
         raise ValueError("Must be logged in")
@@ -50,7 +50,20 @@ def get_scenario_by_id(
     return scenario
 
 
-def get_project_by_id(user: User, id_url_param: str, 
+def get_plan_by_id(user, id_url_param: str, params: QueryDict):
+    assert isinstance(params[id_url_param], str)
+    plan_id = params.get(id_url_param, "0")
+
+    plan = Plan.objects.annotate(
+        projects=Count('project', distinct=True)).annotate(
+        scenarios=Count('project__scenario')).get(
+        id=int(plan_id))
+    if plan.owner != user:
+        raise ValueError("You do not have permission to view this plan.")
+    return plan
+
+
+def get_project_by_id(user: User, id_url_param: str,
                       params: QueryDict) -> Project:
     assert isinstance(params[id_url_param], str)
     project_id = params.get(id_url_param, "0")
@@ -58,6 +71,7 @@ def get_project_by_id(user: User, id_url_param: str,
     if project.owner != user:
         raise ValueError("You do not have permission to view this project.")
     return project
+
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -150,19 +164,6 @@ def delete(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
-def get_plan_by_id(user, params: QueryDict):
-    assert isinstance(params['id'], str)
-    plan_id = params.get('id', "0")
-
-    plan = Plan.objects.annotate(
-        projects=Count('project', distinct=True)).annotate(
-        scenarios=Count('project__scenario')).get(
-        id=int(plan_id))
-    if plan.owner != user:
-        raise ValueError("You do not have permission to view this plan.")
-    return plan
-
-
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
     """
     Serializes a Plan into a dictionary.
@@ -193,7 +194,7 @@ def get_plan(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             _serialize_plan(
-                get_plan_by_id(user, request.GET),
+                get_plan_by_id(user, 'id', request.GET),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -668,6 +669,12 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
 
         weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
         project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
+
+        r = JsonResponse(
+            _serialize_scenario(
+                scenario, weights, project_areas, scenario.project),
+            safe=False)
+        
         return JsonResponse(
             _serialize_scenario(
                 scenario, weights, project_areas, scenario.project),
@@ -784,7 +791,7 @@ def unfavorite_scenario(request: HttpRequest) -> HttpResponse:
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
-        plan = get_plan_by_id(user, request.GET)
+        plan = get_plan_by_id(user, 'id', request.GET)
 
         condition_stats = fetch_or_compute_condition_stats(plan)
         conditions = []
