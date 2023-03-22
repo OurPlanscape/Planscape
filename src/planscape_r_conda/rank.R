@@ -6,6 +6,7 @@ times2 <- function(number) {
   
   stand_dat <- forsys::test_forest
 
+  # TODO: replace with an example that uses patchmax
    run_outputs <- forsys::run(
      return_outputs = TRUE,
      run_with_patchmax = FALSE,
