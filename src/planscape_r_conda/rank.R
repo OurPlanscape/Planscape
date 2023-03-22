@@ -7,6 +7,7 @@ times2 <- function(number) {
   stand_dat <- forsys::test_forest
 
   # TODO: replace with an example that uses patchmax
+  # Why is the min value for proj_target_value=100 for this dataset?
    run_outputs <- forsys::run(
      return_outputs = TRUE,
      run_with_patchmax = FALSE,
