@@ -15,6 +15,7 @@ RUN apt-get update \
 RUN R -e "install.packages('sf'); install.packages('udunits2'); install.packages('dplyr');" 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+RUN R -e "remotes::install_github('forsys-sp/patchmax')"
 
 
 # /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
