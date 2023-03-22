@@ -1,5 +1,6 @@
 times2 <- function(number) {
   library(forsys)
+  library(patchmax)
   library(sf)
   library(dplyr)
   
