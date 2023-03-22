@@ -30,8 +30,6 @@ export class SignupComponent {
       {
         firstName: this.formBuilder.control('', Validators.required),
         lastName: this.formBuilder.control('', Validators.required),
-        department: this.formBuilder.control(''),
-        username: this.formBuilder.control('', [Validators.required]),
         email: this.formBuilder.control('', [
           Validators.required,
           Validators.email,
@@ -52,17 +50,20 @@ export class SignupComponent {
     if (this.submitted) return;
 
     this.submitted = true;
-    const username: string = this.form.get('username')?.value;
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
-    this.authService.signup(username, email, password1, password2).subscribe(
-      (_) => this.router.navigate(['map']),
-      (error) => {
-        this.error = error;
-        this.submitted = false;
-      }
-    );
+    const firstName: string = this.form.get('firstName')?.value;
+    const lastName: string = this.form.get('lastName')?.value;
+    this.authService
+      .signup(email, password1, password2, firstName, lastName)
+      .subscribe(
+        (_) => this.router.navigate(['map']),
+        (error) => {
+          this.error = error;
+          this.submitted = false;
+        }
+      );
   }
 
   login() {
