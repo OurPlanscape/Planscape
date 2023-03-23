@@ -8,16 +8,25 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { BehaviorSubject, concatMap, of, Subject, take } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import {
+  BehaviorSubject,
+  Subject,
+  take,
+  concatMap,
+  of,
+  throwError,
+} from 'rxjs';
+import { catchError, takeUntil } from 'rxjs/operators';
+
 import { PlanService } from 'src/app/services';
 import {
   colorTransitionTrigger,
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, ProjectConfig } from 'src/app/types';
+import { Plan, ProjectArea, ProjectConfig } from 'src/app/types';
 
 interface StepState {
   complete?: boolean;
@@ -58,6 +67,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
+    private matSnackBar: MatSnackBar,
     private planService: PlanService,
     private router: Router
   ) {
@@ -257,14 +267,28 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Creates the scenario and the uploaded project area, if provided. */
-  createScenarioAndProjectArea(): void {
-    this.createUploadedProjectArea()
+  /** Creates the scenario and the uploaded project areas, if provided. */
+  createScenarioAndProjectAreas(): void {
+    this.createUploadedProjectAreas()
       .pipe(
         take(1),
         concatMap(() => {
           return this.planService.createScenario(
             this.formValueToProjectConfig()
+          );
+        }),
+        catchError(() => {
+          this.matSnackBar.open(
+            '[Error] Project area shapefile should only include polygons or multipolygons',
+            'Dismiss',
+            {
+              duration: 10000,
+              panelClass: ['snackbar-error'],
+              verticalPosition: 'top',
+            }
+          );
+          return throwError(
+            () => new Error('Problem creating uploaded project areas')
           );
         })
       )
@@ -275,15 +299,37 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       });
   }
 
-  createUploadedProjectArea() {
+  createUploadedProjectAreas() {
     const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
     if (this.scenarioConfigId && uploadedArea) {
-      return this.planService.createProjectArea(
+      return this.planService.bulkCreateProjectAreas(
         this.scenarioConfigId,
-        uploadedArea
+        this.convertSingleGeoJsonToGeoJsonArray(uploadedArea)
       );
     }
     return of(null);
+  }
+
+  /**
+   * Converts each feature found in a GeoJSON into individual GeoJSONs, else
+   * returns the original GeoJSON, which may result in an error upon project area creation.
+   * Only polygon or multipolygon feature types are expected in the uploaded shapefile.
+   */
+  convertSingleGeoJsonToGeoJsonArray(
+    original: GeoJSON.GeoJSON
+  ): GeoJSON.GeoJSON[] {
+    const geometries: GeoJSON.GeoJSON[] = [];
+    if (original.type === 'FeatureCollection' && original.features) {
+      original.features.forEach((feat) => {
+        geometries.push({
+          type: 'FeatureCollection',
+          features: [feat],
+        });
+      });
+    } else {
+      geometries.push(original);
+    }
+    return geometries;
   }
 
   changeCondition(filepath: string): void {
