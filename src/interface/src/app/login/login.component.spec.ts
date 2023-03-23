@@ -1,6 +1,6 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
@@ -10,17 +10,17 @@ import { LoginComponent } from './login.component';
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
+  let fakeAuthService: AuthService;
 
   beforeEach(() => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
-    const fakeAuthService = jasmine.createSpyObj<AuthService>(
+    fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       { login: of({}) },
       {}
     );
     TestBed.configureTestingModule({
-      imports: [FormsModule],
-      schemas: [NO_ERRORS_SCHEMA],
+      imports: [FormsModule, ReactiveFormsModule],
       declarations: [LoginComponent],
       providers: [
         { provide: Router, useFactory: routerStub },
@@ -35,13 +35,20 @@ describe('LoginComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('onSubmit', () => {
-    it('calls login()', () => {
-      spyOn(component, 'login').and.callThrough();
+  describe('login', () => {
+    it('login is disabled if form is invalid', () => {
+      component.login();
 
-      component.onSubmit();
+      expect(fakeAuthService.login).toHaveBeenCalledTimes(0);
+    });
 
-      expect(component.login).toHaveBeenCalled();
+    it('calls auth service if form is valid', () => {
+      component.form.get('email')?.setValue('test@test.com');
+      component.form.get('password')?.setValue('password');
+
+      component.login();
+
+      expect(fakeAuthService.login).toHaveBeenCalledOnceWith('test@test.com', 'password');
     });
   });
 

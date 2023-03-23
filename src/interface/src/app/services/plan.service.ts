@@ -195,6 +195,23 @@ export class PlanService {
       );
   }
 
+  /** Creates multiple project areas for a project. */
+  bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
+    const url = BackendConstants.END_POINT.concat('/plan/create_project_areas_for_project/');
+    return this.http
+      .post<number>(
+        url,
+        {
+          project_id: Number(projectId),
+          geometries: projectAreas,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(take(1), map(() => null));
+  }
+
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
     const url = BackendConstants.END_POINT.concat('/plan/update_project/');
@@ -437,20 +454,18 @@ export class PlanService {
       return [];
     }
 
-    let priorities: Priority[] = [];
-    Object.keys(scenarioPriorities).forEach((priority, weight) => {
-      priorities.push({
+    return Object.entries(scenarioPriorities).map(([priority, weight]) => {
+      return {
         id: priority,
         name: priority.replace(/_/g, ' '),
         weight: weight,
-      });
+      }
     });
-
-    return priorities;
   }
 
   private convertConfigToScenario(config: ProjectConfig): any {
     return {
+      project_id: config.id,
       plan_id: config.planId,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
