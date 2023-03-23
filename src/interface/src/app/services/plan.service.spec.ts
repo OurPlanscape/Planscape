@@ -396,6 +396,7 @@ describe('PlanService', () => {
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
+        project_id: 1,
         plan_id: 2,
         est_cost: undefined,
         max_budget: 200,
