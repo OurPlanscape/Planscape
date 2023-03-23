@@ -670,11 +670,6 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
         weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
         project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
 
-        r = JsonResponse(
-            _serialize_scenario(
-                scenario, weights, project_areas, scenario.project),
-            safe=False)
-        
         return JsonResponse(
             _serialize_scenario(
                 scenario, weights, project_areas, scenario.project),
