@@ -396,6 +396,7 @@ export class PlanService {
     return {
       id: config.id,
       planId: config.plan_id,
+      est_cost: config.est_cost,
       max_budget: config.max_budget,
       max_road_distance: config.max_road_distance,
       max_slope: config.max_slope,
@@ -457,7 +458,7 @@ export class PlanService {
     Object.keys(scenarioPriorities).forEach((priority, weight) => {
       priorities.push({
         id: priority,
-        name: priority.replace(/_/g, " "),
+        name: priority.replace(/_/g, ' '),
         weight: weight,
       });
     });
@@ -468,6 +469,7 @@ export class PlanService {
   private convertConfigToScenario(config: ProjectConfig): any {
     return {
       plan_id: config.planId,
+      est_cost: config.est_cost,
       max_budget: config.max_budget,
       max_road_distance: config.max_road_distance,
       max_slope: config.max_slope,

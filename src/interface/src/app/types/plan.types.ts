@@ -51,6 +51,7 @@ export interface Priority {
 export interface ProjectConfig {
   id: number;
   planId?: number;
+  est_cost?: number;
   max_budget?: number;
   max_treatment_area_ratio?: number;
   max_road_distance?: number;

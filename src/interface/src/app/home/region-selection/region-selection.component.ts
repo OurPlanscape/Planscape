@@ -16,6 +16,7 @@ import { RegionOption, regionOptions } from '../../types';
 })
 export class RegionSelectionComponent implements OnInit {
   hasPlans: boolean = false;
+  loggedIn$ = this.authService.isLoggedIn$;
   readonly regionOptions: RegionOption[] = regionOptions;
 
   constructor(
@@ -28,7 +29,7 @@ export class RegionSelectionComponent implements OnInit {
   ngOnInit(): void {
     let user$ = this.authService.loggedInUser$;
     this.planService
-      .listPlansByUser(user$.value ? user$.value.username : null)
+      .listPlansByUser(user$.value?.username ? user$.value.username : null)
       .pipe(take(1))
       .subscribe((plans) => (this.hasPlans = plans.length !== 0));
   }

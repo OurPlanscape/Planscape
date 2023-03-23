@@ -6,6 +6,7 @@ from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
 from django.db.models.query import QuerySet
@@ -28,13 +29,49 @@ MAX_SLOPE = 'max_slope'
 PRIORITIES = 'priorities'
 
 
-def get_user(request: HttpRequest):
+def get_user(request: HttpRequest) -> User:
     user = None
-    if request.user.is_authenticated:
+    if hasattr(request, 'user') and request.user.is_authenticated:
         user = request.user
     if user is None and not (settings.PLANSCAPE_GUEST_CAN_SAVE):
         raise ValueError("Must be logged in")
     return user
+
+
+def get_scenario_by_id(
+        user: User, id_url_param: str, params: QueryDict) -> Scenario:
+    assert isinstance(params[id_url_param], str)
+    scenario_id = params.get(id_url_param, "0")
+    scenario = Scenario.objects.select_related(
+        'project').get(id=scenario_id)
+
+    if scenario.owner != user:
+        raise ValueError(
+            "You do not have permission to view this scenario.")
+    return scenario
+
+
+def get_plan_by_id(user, id_url_param: str, params: QueryDict):
+    assert isinstance(params[id_url_param], str)
+    plan_id = params.get(id_url_param, "0")
+
+    plan = Plan.objects.annotate(
+        projects=Count('project', distinct=True)).annotate(
+        scenarios=Count('project__scenario')).get(
+        id=int(plan_id))
+    if plan.owner != user:
+        raise ValueError("You do not have permission to view this plan.")
+    return plan
+
+
+def get_project_by_id(user: User, id_url_param: str,
+                      params: QueryDict) -> Project:
+    assert isinstance(params[id_url_param], str)
+    project_id = params.get(id_url_param, "0")
+    project = Project.objects.get(id=project_id)
+    if project.owner != user:
+        raise ValueError("You do not have permission to view this project.")
+    return project
 
 
 @csrf_exempt
@@ -128,19 +165,6 @@ def delete(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
-def get_plan_by_id(user, params: QueryDict):
-    assert isinstance(params['id'], str)
-    plan_id = params.get('id', "0")
-
-    plan = Plan.objects.annotate(
-        projects=Count('project', distinct=True)).annotate(
-        scenarios=Count('project__scenario')).get(
-        id=int(plan_id))
-    if plan.owner != user:
-        raise ValueError("You do not have permission to view this plan.")
-    return plan
-
-
 def _serialize_plan(plan: Plan, add_geometry: bool) -> dict:
     """
     Serializes a Plan into a dictionary.
@@ -171,7 +195,7 @@ def get_plan(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             _serialize_plan(
-                get_plan_by_id(user, request.GET),
+                get_plan_by_id(user, 'id', request.GET),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -196,7 +220,8 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
 
 
 # TODO: add validation for requiring either max budget or max area to be set for a generation run
-def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
+def _validate_constraint_values(
+        max_budget, max_treatment_area_ratio, max_road_distance, max_slope):
     if max_budget is not None and not (isinstance(max_budget, (int, float))):
         raise ValueError("Max budget must be a number value")
 
@@ -205,7 +230,8 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
         raise ValueError(
             "Max treatment must be a number value >= 0.0")
 
-    if max_road_distance is not None and not (isinstance(max_road_distance, (int, float))):
+    if max_road_distance is not None and not (
+            isinstance(max_road_distance, (int, float))):
         raise ValueError("Max distance from road must be a number value")
 
     if (max_slope is not None and
@@ -214,8 +240,9 @@ def _validate_constraint_values(max_budget, max_treatment_area_ratio, max_road_d
             "Max slope must be a number value >= 0.0")
 
 
-def _set_project_parameters(max_budget, max_treatment_area_ratio, max_road_distance,
-                            max_slope, project: Project):
+def _set_project_parameters(
+        max_budget, max_treatment_area_ratio, max_road_distance, max_slope,
+        project: Project):
     project.max_budget = float(max_budget) if max_budget else None
     project.max_treatment_area_ratio = float(
         max_treatment_area_ratio) if max_treatment_area_ratio else None
@@ -231,7 +258,8 @@ def _set_priorities(priorities, project: Project):
                 condition_name=priorities[i])
             # is_raw=False required because for metrics, we store both current raw and current normalized data.
             condition = Condition.objects.get(
-                condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+                condition_dataset=base_condition,
+                condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
             project.priorities.add(condition)
 
 
@@ -338,23 +366,17 @@ def list_projects_for_plan(request: HttpRequest) -> HttpResponse:
 
         projects = Project.objects.filter(owner=user, plan=int(plan_id))
 
-        return JsonResponse([_serialize_project(project) for project in projects], safe=False)
+        return JsonResponse([_serialize_project(project)
+                             for project in projects],
+                            safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 def get_project(request: HttpRequest) -> HttpResponse:
     try:
-        assert isinstance(request.GET['id'], str)
-        project_id = request.GET.get('id', "0")
-
         user = get_user(request)
-
-        project = Project.objects.get(id=project_id)
-        if project.owner != user:
-            raise ValueError(
-                "You do not have permission to view this project.")
-
+        project = get_project_by_id(user, 'id', request.GET)
         return JsonResponse(_serialize_project(project))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -509,17 +531,9 @@ def _serialize_project_areas(areas: QuerySet):
 
 def get_project_areas(request: HttpRequest) -> HttpResponse:
     try:
-        assert isinstance(request.GET['project_id'], str)
-        project_id = request.GET.get('project_id', "0")
-        project_exists = Project.objects.get(id=project_id)
-
         user = get_user(request)
-
-        if project_exists.owner != user:
-            raise ValueError(
-                "You do not have permission to view this project.")
-
-        project_areas = ProjectArea.objects.filter(project=project_id)
+        project = get_project_by_id(user, 'project_id', request.GET)
+        project_areas = ProjectArea.objects.filter(project=project.pk)
         response = _serialize_project_areas(project_areas)
         return JsonResponse(response)
     except Exception as e:
@@ -534,7 +548,8 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
             condition_name=priorities[i])
         # is_raw=False required because for metrics, we store both current raw and current normalized data.
         condition = Condition.objects.get(
-            condition_dataset=base_condition, condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+            condition_dataset=base_condition,
+            condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
         weight = weights[i] if weights is not None else None
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
@@ -549,6 +564,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         owner = get_user(request)
 
         body = json.loads(request.body)
+
+        # TODO: remove plan_id as required field in request. can be derived from project_id
         plan_id = body.get('plan_id', None)
         if plan_id is None or not (isinstance(plan_id, int)):
             raise ValueError("Must specify plan_id as an integer")
@@ -561,6 +578,19 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
                 (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
             raise ValueError(
                 "Cannot create scenario; plan is not owned by user")
+
+        project_id = body.get('project_id', None)
+        if project_id is None or not (isinstance(project_id, int)):
+            raise ValueError("Must specify project_id as an integer")
+
+        # Get the project, and if the user is logged in, make sure either
+        # 1. the project owner and the owner are both None, or
+        # 2. the project owner and the owner are both not None, and are equal.
+        project = Project.objects.get(pk=int(project_id))
+        if not ((owner is None and project.owner is None) or
+                (owner is not None and project.owner is not None and owner.pk == project.owner.pk)):
+            raise ValueError(
+                "Cannot create scenario; project is not owned by user")
 
         priorities = body.get('priorities', None)
         weights = body.get('weights', None)
@@ -576,7 +606,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             raise ValueError(
                 "Each priority must have a single assigned weight")
 
-        scenario = Scenario.objects.create(owner=owner, plan=plan)
+        scenario = Scenario.objects.create(
+            owner=owner, plan=plan, project=project)
         _set_scenario_metadata(priorities, weights, notes, scenario)
         scenario.save()
         return HttpResponse(str(scenario.pk))
@@ -622,7 +653,8 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, project: Project) -> dict:
+def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet,
+                        project: Project) -> dict:
     result = ScenarioSerializer(scenario).data
 
     if 'creation_time' in result:
@@ -634,8 +666,9 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, 
     for weight in weights:
         serialized_weight = ScenarioWeightedPrioritySerializer(weight).data
         if 'priority' in serialized_weight and 'weight' in serialized_weight:
-            result['priorities'][Condition.objects.get(
-                pk=serialized_weight['priority']).condition_dataset.condition_name] = serialized_weight['weight']
+            result['priorities'][
+                Condition.objects.get(pk=serialized_weight['priority']).
+                condition_dataset.condition_name] = serialized_weight['weight']
 
     result['project_areas'] = _serialize_project_areas(areas)
     # TODO: project should be a required field
@@ -648,19 +681,16 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet, 
 @csrf_exempt
 def get_scenario(request: HttpRequest) -> HttpResponse:
     try:
-        assert isinstance(request.GET['id'], str)
-        scenario_id = request.GET.get('id', "0")
-        scenario = Scenario.objects.select_related(
-            'project').get(id=scenario_id)
-
         user = get_user(request)
+        scenario = get_scenario_by_id(user, 'id', request.GET)
 
-        if scenario.owner != user:
-            raise ValueError(
-                "You do not have permission to view this scenario.")
         weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
         project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
-        return JsonResponse(_serialize_scenario(scenario, weights, project_areas, scenario.project), safe=False)
+
+        return JsonResponse(
+            _serialize_scenario(
+                scenario, weights, project_areas, scenario.project),
+            safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -680,8 +710,6 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 
         scenarios = Scenario.objects.select_related(
             'project').filter(owner=user, plan=plan_id)
-
-        # TODO: return config details when behavior is agreed upon
 
         return JsonResponse(
             [_serialize_scenario(scenario,
@@ -773,7 +801,7 @@ def unfavorite_scenario(request: HttpRequest) -> HttpResponse:
 def get_scores(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
-        plan = get_plan_by_id(user, request.GET)
+        plan = get_plan_by_id(user, 'id', request.GET)
 
         condition_stats = fetch_or_compute_condition_stats(plan)
         conditions = []
@@ -795,6 +823,7 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 # TODO: finalize call logic after testing piping.
 # NOTE: To send a queue message from your local machine, populate AWS credential args.
+# TODO: feed plan_id and scenario_id from user input into the queue message body 
 def queue_forsys_call(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
