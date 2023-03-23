@@ -28,7 +28,7 @@ RUN ldd /usr/local/lib/R/library/methods/libs/methods.so
 RUN ls /usr/local/lib/R/lib
 
 RUN pip install --upgrade pip
-RUN pip install rpy2 requests boto3
+RUN pip install rpy2 requests boto3 numpy
 RUN pip install awslambdaric
 
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib/R/lib:/usr/local/lib/R/site-library/units/libs"
@@ -39,6 +39,8 @@ ARG FUNCTION_DIR="/elsie"
 RUN mkdir -p ${FUNCTION_DIR}
 COPY lambda_handler.py ${FUNCTION_DIR}
 COPY rank.R ${FUNCTION_DIR}
+COPY stand_output.csv ${FUNCTION_DIR}
+COPY project_output.csv ${FUNCTION_DIR}
 WORKDIR ${FUNCTION_DIR}
 
 ENTRYPOINT [ "/usr/bin/python3", "-m", "awslambdaric" ]

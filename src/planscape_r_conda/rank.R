@@ -20,5 +20,8 @@ times2 <- function(number) {
      proj_target_field = "area_ha",
      proj_target_value = 2
    )
-   return(run_outputs)
+
+   stand_output <- read.csv("stand_output.csv")
+   project_output <- read.csv("project_output.csv")
+   return(list(stand_output, project_output))
 }

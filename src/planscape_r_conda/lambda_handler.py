@@ -55,6 +55,11 @@ def lambda_handler(event, context):
         print(result)
         print("forsys run completed")
 
+        # rdf = "placeholder read the dataframe from a file"
+        # forsys_project_output_df : dict[str, list] = {
+        #     key: np.asarray(rdf.rx2(key)) for key in rdf.names}
+        # print(forsys_project_output_df.keys())
+
         forsys_results = {
             'status': SUCCESS_STATUS,
             'project_id': str(project_id),
