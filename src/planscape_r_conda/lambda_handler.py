@@ -1,5 +1,6 @@
 import boto3
 import requests
+import numpy as np
 import json
 import rpy2
 import rpy2.robjects as robjects
@@ -51,14 +52,17 @@ def lambda_handler(event, context):
         utils = importr('utils')
         r.source('rank.R')
         r_f = robjects.r['times2']
-        result = r_f(4)
-        print(result)
+        raw_forsys_output = r_f(4)
         print("forsys run completed")
 
-        # rdf = "placeholder read the dataframe from a file"
-        # forsys_project_output_df : dict[str, list] = {
-        #     key: np.asarray(rdf.rx2(key)) for key in rdf.names}
-        # print(forsys_project_output_df.keys())
+        stand_output_rdf = raw_forsys_output[0]
+        project_output_rdf = raw_forsys_output[1]
+        forsys_project_output_df: dict[str, list] = {
+            key: np.asarray(project_output_rdf.rx2(key)) for key in project_output_rdf.names}
+        print(forsys_project_output_df.keys())
+        forsys_stand_output_df: dict[str, list] = {
+            key: np.asarray(stand_output_rdf.rx2(key)) for key in stand_output_rdf.names}
+        print(forsys_stand_output_df.keys())
 
         forsys_results = {
             'status': SUCCESS_STATUS,
