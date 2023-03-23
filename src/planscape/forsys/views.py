@@ -20,6 +20,8 @@ from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
+from forsys.write_forsys_output_to_db import (
+    create_plan_and_scenario, save_generation_output_to_db)
 from memory_profiler import profile
 from planscape import settings
 from pytz import timezone
@@ -251,6 +253,16 @@ def generate_project_areas_for_a_single_scenario(
         response['forsys'] = {}
         response['forsys']['input'] = forsys_input.forsys_input
         response['forsys']['output'] = forsys_output.scenario
+
+        if params.db_params.write_to_db:
+            scenario = create_plan_and_scenario(params) \
+                if params.db_params.scenario is None \
+                else params.db_params.scenario
+            save_generation_output_to_db(scenario, forsys_output.scenario)
+            response['db'] = {}
+            response['db']['scenario_id'] = str(scenario.pk)
+            response['db']['project_id'] = str(scenario.project.pk)
+            response['db']['plan_id'] = str(scenario.plan.pk)
 
         if settings.DEBUG:
             _tear_down_cprofiler(pr, 'output/cprofiler.log')
