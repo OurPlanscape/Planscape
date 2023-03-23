@@ -348,6 +348,37 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             str(context.exception),
             'User matching query does not exist.')
 
+    def test_reads_per_project_constraints_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&max_area_per_project=100&max_cost_per_project=5000')
+        params = get_generation_request_params(request)
+        self.assertEqual(params.max_area_per_project_in_km2, 100)
+        self.assertEqual(params.max_cost_per_project_in_usd, 5000)
+
+    def test_raises_error_on_bad_max_cost_per_project_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&max_cost_per_project=0')
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_cost_per_project, to have a positive value')
+
+    def test_raises_error_on_bad_max_area_per_project_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&max_area_per_project=0')
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_area_per_project, to have a positive value')
+
 
 class TestForsysGenerationRequestParamsFromDb(TestCase):
     def setUp(self) -> None:
