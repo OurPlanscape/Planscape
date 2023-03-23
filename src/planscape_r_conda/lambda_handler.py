@@ -58,10 +58,10 @@ def lambda_handler(event, context):
         stand_output_rdf = raw_forsys_output[0]
         project_output_rdf = raw_forsys_output[1]
         forsys_project_output_df: dict[str, list] = {
-            key: np.asarray(project_output_rdf.rx2(key)) for key in project_output_rdf.names}
+            key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
         print(forsys_project_output_df.keys())
         forsys_stand_output_df: dict[str, list] = {
-            key: np.asarray(stand_output_rdf.rx2(key)) for key in stand_output_rdf.names}
+            key: (np.asarray(stand_output_rdf.rx2(key)).tolist()) for key in stand_output_rdf.names}
         print(forsys_stand_output_df.keys())
 
         forsys_outputs = {
