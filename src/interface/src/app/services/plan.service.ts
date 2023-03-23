@@ -195,6 +195,23 @@ export class PlanService {
       );
   }
 
+  /** Creates multiple project areas for a project. */
+  bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
+    const url = BackendConstants.END_POINT.concat('/plan/create_project_areas_for_project/');
+    return this.http
+      .post<number>(
+        url,
+        {
+          project_id: Number(projectId),
+          geometries: projectAreas,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(take(1), map(() => null));
+  }
+
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
     const url = BackendConstants.END_POINT.concat('/plan/update_project/');
