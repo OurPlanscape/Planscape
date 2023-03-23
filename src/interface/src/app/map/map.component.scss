@@ -45,48 +45,29 @@
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: row;
-  height: $info-bar-height;
+  height: $toolbar-height;
   position: absolute;
   width: 100%;
   z-index: 2;
 }
 
-.create-plan-button {
+.actions-bar-text {
   align-items: center;
-  background-color: #ffffff;
-  border-radius: 50px;
+  color: #ffffff;
+  display: flex;
+  font-size: 13px;
   font-weight: 500;
-  height: 35px;
   margin: 8px 0px 0px 20px;
 }
 
-.arrow {
-  border: solid #565656;
-  border-width: 0 3px 3px 0;
-  display: inline-block;
-  height: 0;
-  padding: 3px;
-  pointer-events: none;
-  position: relative;
-  width: 0;
-}
-
-.right {
-  transform: rotate(-45deg);
-  -webkit-transform: rotate(-45deg);
-}
-
-.left {
-  left: 5px;
-  transform: rotate(135deg);
-  -webkit-transform: rotate(135deg);
-}
-
 .draw-area-button, .upload-area-button {
-  background-color: #ffffff;
-  border-radius: 50px;
-  height: 35px;
-  margin: 8px 0px 0px 10px;
+  background-color: #3367D6;
+  border-radius: 4px;
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.12), 0px 2px 2px rgba(0, 0, 0, 0.2), 0px 1px 1px rgba(0, 0, 0, 0.14);
+  color: #ffffff;
+  font-size: 13px;
+  height: 32px;
+  margin: 10px 0px 0px 12px;
   pointer-events: auto;
   width: fit-content;
 
@@ -96,7 +77,14 @@
 }
 
 .selected {
-  background-color: #b9b9b9;
+  background-color: #ffffff;
+  color: #3367D6;
+}
+
+.deselected {
+  background-color: transparent;
+  box-shadow: none;
+  color: #ffffff;
 }
 
 .upload-wrapper {
@@ -109,16 +97,24 @@
   }
 }
 
-.confirm-area-button {
+.done-button {
+  background-color: #3367D6;
   color: #ffffff;
-  margin: 4px 20px 0px 0px;
+  font-size: 13px;
+  height: 32px;
+  margin: 10px 12px 0px 0px;
   pointer-events: auto;
   width: fit-content;
+
+  &:disabled {
+    background-color: #b9b9b9;
+  }
 }
 
 .cancel-button {
   color: #ffffff;
-  margin: 4px 20px 0px 20px;
+  font-size: 13px;
+  margin: 10px 20px 0px 20px;
   margin-left: auto;
   pointer-events: auto;
   width: fit-content;
