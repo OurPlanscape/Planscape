@@ -132,6 +132,34 @@ export class AuthService {
         })
       );
   }
+
+  changePassword(password1: string, password2: string): Observable<any> {
+    return this.http.post(this.API_ROOT.concat('password/change/'), {
+      new_password1: password1,
+      new_password2: password2,
+    }, {
+      withCredentials: true,
+    });
+  }
+
+  updateUser(newUser: User): Observable<User> {
+    return this.http.patch(this.API_ROOT.concat('user/'), {
+      ...newUser,
+      first_name: newUser.firstName,
+      last_name: newUser.lastName,
+    }, {
+      withCredentials: true
+    }).pipe(map((response: any) => {
+      const user: User = {
+        email: response.email,
+        username: response.username,
+        firstName: response.first_name,
+        lastName: response.last_name,
+      };
+      this.loggedInUser$.next(user);
+      return user;
+    }));
+  }
 }
 
 /** An AuthGuard used to prevent access to pages that require sign-in. If the user is not signed
