@@ -225,7 +225,8 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.FORSYS_GEO_WKT_HEADER)
     return parsed_output
 
-
+    # TODO: Create test endpoint that instantiates ForsysGenerationOutputForASingleScenario 
+    # with stand and project output files 
 def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
