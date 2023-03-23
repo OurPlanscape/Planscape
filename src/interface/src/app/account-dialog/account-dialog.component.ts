@@ -5,6 +5,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, take } from 'rxjs';
 
 import { AuthService } from '../services';
@@ -25,7 +26,11 @@ export class AccountDialogComponent implements OnInit {
   error: any;
   user$!: Observable<User | null>;
 
-  constructor(private authService: AuthService, private fb: FormBuilder) {
+  constructor(
+    private authService: AuthService,
+    private fb: FormBuilder,
+    private snackbar: MatSnackBar
+  ) {
     this.changePasswordForm = this.fb.group(
       {
         password1: this.fb.control('', [
@@ -88,6 +93,9 @@ export class AccountDialogComponent implements OnInit {
           this.changingPassword = false;
           this.disableChangeButton = false;
           this.error = null;
+          this.snackbar.open('Updated password successfully', undefined, {
+            duration: 3000,
+          });
         },
         (err) => {
           this.error = err;
@@ -113,6 +121,9 @@ export class AccountDialogComponent implements OnInit {
           this.editingAccount = false;
           this.disableEditButton = false;
           this.error = null;
+          this.snackbar.open('Updated account successfully', undefined, {
+            duration: 3000,
+          });
         },
         (err) => {
           this.error = err;
