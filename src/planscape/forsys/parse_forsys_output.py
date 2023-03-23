@@ -2,8 +2,10 @@ import rpy2
 
 import numpy as np
 
+from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from forsys.merge_polygons import merge_polygons
+from planscape import settings
 from typing import TypedDict
 
 
@@ -431,8 +433,14 @@ class ForsysGenerationOutputForASingleScenario(
                     ) -> dict[int, Polygon | MultiPolygon]:
         merged_polygons = {}
         for id in project_area_geometries.keys():
-            merged_polygons[id] = merge_polygons(
+            geo = merge_polygons(
                 project_area_geometries[id], 0)
+            geo.transform(
+                CoordTransform(
+                    SpatialReference(settings.CRS_9822_PROJ4),
+                    SpatialReference(settings.DEFAULT_CRS)))
+            geo.srid = settings.DEFAULT_CRS
+            merged_polygons[id] = geo
         return merged_polygons
 
     def _populate_geo_wkt_in_ranked_projects(

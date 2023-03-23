@@ -37,12 +37,15 @@ describe('ConstraintsPanelComponent', () => {
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.constraintsForm = fb.group({
-      budgetForm: fb.group({
-        maxBudget: [''],
-        optimizeBudget: [false, Validators.required],
-      }),
       treatmentForm: fb.group({
-        maxArea: ['', Validators.required],
+        // Max area treated as a % of planning area
+        maxArea: ['', [Validators.min(0), Validators.max(90)]],
+      }),
+      budgetForm: fb.group({
+        // Estimated cost in $ per acre
+        estimatedCost: ['', [Validators.min(0), Validators.required]],
+        // Max cost of treatment for entire planning area
+        maxCost: ['', Validators.min(0)],
       }),
       excludeAreasByDegrees: [false],
       excludeAreasByDistance: [false],
@@ -63,8 +66,7 @@ describe('ConstraintsPanelComponent', () => {
       await loader.getAllHarnesses(MatButtonHarness)
     )[0];
     // Set form to valid state
-    component.constraintsForm?.get('budgetForm.maxBudget')?.setValue('1');
-    component.constraintsForm?.get('treatmentForm.maxArea')?.setValue('1');
+    component.constraintsForm?.get('budgetForm.estimatedCost')?.setValue('1');
 
     expect(component.constraintsForm?.valid).toBeTrue();
     expect(await nextButton.isDisabled()).toBeFalse();
@@ -80,6 +82,8 @@ describe('ConstraintsPanelComponent', () => {
     const nextButton: MatButtonHarness = (
       await loader.getAllHarnesses(MatButtonHarness)
     )[0];
+
+    expect(component.constraintsForm?.valid).toBeFalse();
 
     // Click next button
     await nextButton.click();

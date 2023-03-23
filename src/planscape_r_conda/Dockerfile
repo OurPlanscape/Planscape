@@ -1,12 +1,14 @@
 FROM rocker/tidyverse as final
 
 # libudunits2-dev is necessary for R package, sf.
+# libglpk-dev is necessary for R package, patchmax.
 RUN apt-get update \
   && apt-get install python3 \
   && apt-get install -y python3-pip \
   && apt-get install -y python3-venv \
   && apt-get install -y gdal-bin \
-  && apt-get install -y libudunits2-dev 
+  && apt-get install -y libudunits2-dev \
+  && apt-get install -y libglpk-dev 
 
 # --------------
 # Install Forsys
@@ -15,6 +17,7 @@ RUN apt-get update \
 RUN R -e "install.packages('sf'); install.packages('udunits2'); install.packages('dplyr');" 
 RUN R -e "install.packages('remotes', repos='http://cran.rstudio.com/')"
 RUN R -e "remotes::install_github('forsys-sp/forsysr')"
+RUN R -e "remotes::install_github('forsys-sp/patchmax')"
 
 
 # /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -26,9 +29,10 @@ RUN ls /usr/lib
 RUN ls /usr/local/lib
 RUN ldd /usr/local/lib/R/library/methods/libs/methods.so
 RUN ls /usr/local/lib/R/lib
+RUN ldd /usr/local/lib/R/site-library/igraph/libs/igraph.so
 
 RUN pip install --upgrade pip
-RUN pip install rpy2 requests boto3
+RUN pip install rpy2 requests boto3 numpy
 RUN pip install awslambdaric
 
 ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/lib/R/lib:/usr/local/lib/R/site-library/units/libs"
@@ -39,6 +43,8 @@ ARG FUNCTION_DIR="/elsie"
 RUN mkdir -p ${FUNCTION_DIR}
 COPY lambda_handler.py ${FUNCTION_DIR}
 COPY rank.R ${FUNCTION_DIR}
+COPY stand_output.csv ${FUNCTION_DIR}
+COPY project_output.csv ${FUNCTION_DIR}
 WORKDIR ${FUNCTION_DIR}
 
 ENTRYPOINT [ "/usr/bin/python3", "-m", "awslambdaric" ]

@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { AuthService } from '../services';
-import { User } from './../services/auth.service';
+import { User } from './../types/user.types';
 import { AccountDialogComponent } from './account-dialog.component';
 
 describe('AccountDialogComponent', () => {

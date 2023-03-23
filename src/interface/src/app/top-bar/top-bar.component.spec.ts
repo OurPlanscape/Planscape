@@ -5,8 +5,8 @@ import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 
 import { MaterialModule } from '../material/material.module';
-import { AuthService, SessionService, User } from '../services';
-import { Region } from '../types';
+import { AuthService, SessionService } from '../services';
+import { Region, User } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
 
@@ -96,13 +96,22 @@ describe('TopBarComponent', () => {
 
   describe('username', () => {
     it('should be "Guest" when no user is logged in', () => {
-      expect(component.username).toEqual('Guest');
+      expect(component.displayName).toEqual('Guest');
     });
 
-    it('should be the username of the logged in user', () => {
+    it('should be the first name of the logged in user', () => {
+      mockAuthService.loggedInUser$?.next({
+        firstName: 'Foo',
+        username: 'User',
+      });
+
+      expect(component.displayName).toEqual('Foo');
+    });
+
+    it('should be the username of the logged in user if they have no first name', () => {
       mockAuthService.loggedInUser$?.next({ username: 'User' });
 
-      expect(component.username).toEqual('User');
+      expect(component.displayName).toEqual('User');
     });
   });
 });

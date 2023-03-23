@@ -1,12 +1,15 @@
 times2 <- function(number) {
   library(forsys)
+  library(patchmax)
   library(sf)
   library(dplyr)
   
-  stand_dat <- test_forest %>% st_drop_geometry()
+  stand_dat <- forsys::test_forest
 
+  # TODO: replace with an example that uses patchmax
+  # Why is the min value for proj_target_value=100 for this dataset?
    run_outputs <- forsys::run(
-     return_outputs = FALSE,
+     return_outputs = TRUE,
      run_with_patchmax = FALSE,
      write_outputs = FALSE,
      scenario_name = "test_scenario",
@@ -18,7 +21,10 @@ times2 <- function(number) {
      scenario_output_fields = c("area_ha", "priority1", "priority2", "priority3", "priority4"),
      proj_fixed_target =  TRUE,
      proj_target_field = "area_ha",
-     proj_target_value = 2000
+     proj_target_value = 100
    )
-   return(run_outputs)
+
+   stand_output <- read.csv("stand_output.csv")
+   project_output <- read.csv("project_output.csv")
+   return(list(stand_output, project_output))
 }

@@ -4,6 +4,7 @@ import {
   AbstractControl,
   FormBuilder,
   FormGroup,
+  ValidationErrors,
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
@@ -16,17 +17,8 @@ import {
   concatMap,
   of,
   throwError,
-  EMPTY,
 } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
-import {
-  Feature,
-  FeatureCollection,
-  Geometry,
-  MultiPolygon,
-  Polygon,
-} from 'geojson';
-import * as L from 'leaflet';
 
 import { PlanService } from 'src/app/services';
 import {
@@ -89,12 +81,15 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       // Step 2: Set constraints
       this.fb.group(
         {
-          budgetForm: this.fb.group({
-            maxBudget: ['', Validators.min(0)],
-            optimizeBudget: [false],
-          }),
           treatmentForm: this.fb.group({
+            // Max area treated as a % of planning area
             maxArea: ['', [Validators.min(0), Validators.max(90)]],
+          }),
+          budgetForm: this.fb.group({
+            // Estimated cost in $ per acre
+            estimatedCost: ['', Validators.min(0)],
+            // Max cost of treatment for entire planning area
+            maxCost: ['', Validators.min(0)],
           }),
           excludeAreasByDegrees: [false],
           excludeAreasByDistance: [false],
@@ -163,17 +158,20 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private constraintsFormValidator(constraintsForm: AbstractControl): boolean {
-    // Only one of budget or max treatment percentage is required.
-    const maxBudget = constraintsForm.get('budgetForm.maxBudget');
-    const optimizeBudget = constraintsForm.get('budgetForm.optimizeBudget');
+  private constraintsFormValidator(
+    constraintsForm: AbstractControl
+  ): ValidationErrors | null {
+    // Only one of budget or treatment area constraints is required.
+    const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
     const maxArea = constraintsForm.get('treatmentForm.maxArea');
-    return !!maxBudget?.value || !!optimizeBudget?.value || !!maxArea?.value;
+    const valid = !!estimatedCost?.value || !!maxArea?.value;
+    return valid ? null : { budgetOrAreaRequired: true };
   }
 
   private loadConfig(): void {
     this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
-      const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
+      const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
+      const maxCost = this.formGroups[1].get('budgetForm.maxCost');
       const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
       const excludeDistance = this.formGroups[1].get('excludeDistance');
       const excludeSlope = this.formGroups[1].get('excludeSlope');
@@ -182,8 +180,11 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         'priorityWeightsForm'
       ) as FormGroup;
 
+      if (config.est_cost) {
+        estimatedCost?.setValue(config.est_cost);
+      }
       if (config.max_budget) {
-        maxBudget?.setValue(config.max_budget);
+        maxCost?.setValue(config.max_budget);
       }
       if (config.max_treatment_area_ratio) {
         maxArea?.setValue(config.max_treatment_area_ratio);
@@ -221,7 +222,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   }
 
   private formValueToProjectConfig(): ProjectConfig {
-    const maxBudget = this.formGroups[1].get('budgetForm.maxBudget');
+    const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
+    const maxCost = this.formGroups[1].get('budgetForm.maxCost');
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
     const excludeDistance = this.formGroups[1].get('excludeDistance');
     const excludeSlope = this.formGroups[1].get('excludeSlope');
@@ -232,8 +234,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       id: this.scenarioConfigId!,
       planId: Number(this.plan$.getValue()?.id),
     };
-    if (maxBudget?.valid)
-      projectConfig.max_budget = parseFloat(maxBudget.value);
+    if (estimatedCost?.valid)
+      projectConfig.est_cost = parseFloat(estimatedCost.value);
+    if (maxCost?.valid) projectConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid)
       projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
     if (excludeDistance?.valid)

@@ -14,6 +14,7 @@ import * as shp from 'shpjs';
 
 import { MaterialModule } from '../material/material.module';
 import {
+  AuthService,
   MapService,
   PlanService,
   PlanState,
@@ -36,6 +37,7 @@ import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
+import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -43,6 +45,7 @@ describe('MapComponent', () => {
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
   let sessionInterval = new BehaviorSubject<number>(0);
+  let userSignedIn$ = new BehaviorSubject<boolean>(false);
 
   beforeEach(() => {
     const fakeGeoJson: GeoJSON.GeoJSON = {
@@ -75,6 +78,13 @@ describe('MapComponent', () => {
       region: Region.SIERRA_NEVADA,
       planningArea: fakeGeoJson,
     };
+    const fakeAuthService = jasmine.createSpyObj<AuthService>(
+      'AuthService',
+      {},
+      {
+        loggedInStatus$: userSignedIn$,
+      }
+    );
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
@@ -156,6 +166,7 @@ describe('MapComponent', () => {
         PlanCreateDialogComponent,
       ],
       providers: [
+        { provide: AuthService, useValue: fakeAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
         { provide: PlanService, useValue: fakePlanService },
@@ -596,7 +607,29 @@ describe('MapComponent', () => {
   });
 
   describe('Create plan', () => {
-    it('opens create plan dialog', async () => {
+    it('if user is signed out, opens sign in dialog', async () => {
+      userSignedIn$.next(false);
+      const fakeMatDialog: MatDialog =
+        fixture.debugElement.injector.get(MatDialog);
+
+      fixture.componentInstance.showConfirmAreaButton$ =
+        new BehaviorSubject<boolean>(true);
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.confirm-area-button',
+        })
+      );
+
+      await button.click();
+
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
+        SignInDialogComponent,
+        { maxWidth: '560px' }
+      );
+    });
+
+    it('if user is signed in, opens create plan dialog', async () => {
+      userSignedIn$.next(true);
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
       const planServiceStub: PlanService =
@@ -611,11 +644,15 @@ describe('MapComponent', () => {
 
       await button.click();
 
-      expect(fakeMatDialog.open).toHaveBeenCalled();
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
+        PlanCreateDialogComponent,
+        { maxWidth: '560px' }
+      );
       expect(planServiceStub.createPlan).toHaveBeenCalled();
     });
 
     it('dialog calls create plan with name and planning area', async () => {
+      userSignedIn$.next(true);
       const planServiceStub: PlanService =
         fixture.debugElement.injector.get(PlanService);
       const routerStub: Router = fixture.debugElement.injector.get(Router);

@@ -1,12 +1,13 @@
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from 'src/app/material/material.module';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SimpleChange, SimpleChanges } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
+import { MaterialModule } from 'src/app/material/material.module';
+import { AuthService } from 'src/app/services';
+import { User } from 'src/app/types';
 
 import { OutcomeComponent } from './outcome.component';
-import { AuthService, User } from 'src/app/services';
 
 describe('OutcomeComponent', () => {
   let component: OutcomeComponent;
@@ -29,26 +30,26 @@ describe('OutcomeComponent', () => {
       id: '1',
       notes: 'bee happy',
       projectAreas: [{
-        id: 10,
-        estimatedAreaTreated: 2000,
-      },
-      {
-        id: 11,
-        estimatedAreaTreated: 5000,
-      },
-      {
-        id: 12,
-        estimatedAreaTreated: 6000,
-      },
-    ],
+          id: 10,
+          estimatedAreaTreated: 2000,
+        },
+        {
+          id: 11,
+          estimatedAreaTreated: 5000,
+        },
+        {
+          id: 12,
+          estimatedAreaTreated: 6000,
+        },
+      ],
     }
     await TestBed.configureTestingModule({
       imports: [ BrowserAnimationsModule, MaterialModule, ReactiveFormsModule],
       declarations: [ OutcomeComponent ],
       providers: [ FormBuilder,
         {
-        provide: AuthService,
-        useValue: fakeAuthService,
+          provide: AuthService,
+          useValue: fakeAuthService,
         },
       ],
     })
