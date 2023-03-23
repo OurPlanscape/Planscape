@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, take } from 'rxjs';
 
 import { AuthService } from '../services';
 import { User } from '../types';
@@ -21,5 +21,9 @@ export class AccountDialogComponent implements OnInit {
   displayName(user: User): string {
     if (user.firstName) return user.firstName.concat(' ', user.lastName ?? '');
     else return user.username ?? user.email!;
+  }
+
+  logout(): void {
+    this.authService.logout().pipe(take(1)).subscribe();
   }
 }

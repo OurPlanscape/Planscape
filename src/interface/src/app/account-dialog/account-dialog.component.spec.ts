@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { AuthService } from '../services';
@@ -9,11 +9,14 @@ import { AccountDialogComponent } from './account-dialog.component';
 describe('AccountDialogComponent', () => {
   let component: AccountDialogComponent;
   let fixture: ComponentFixture<AccountDialogComponent>;
+  let fakeAuthService: AuthService;
 
   beforeEach(() => {
-    const fakeAuthService = jasmine.createSpyObj<AuthService>(
+    fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
-      {},
+      {
+        logout: of(),
+      },
       {
         loggedInUser$: new BehaviorSubject<User | null>(null),
       }
@@ -30,5 +33,11 @@ describe('AccountDialogComponent', () => {
 
   it('can load instance', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('logs user out', () => {
+    component.logout();
+
+    expect(fakeAuthService.logout).toHaveBeenCalledOnceWith();
   });
 });
