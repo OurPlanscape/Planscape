@@ -95,8 +95,8 @@
           <mat-label>Email</mat-label>
           <input
             type="text"
-            required
-            formControlName="email"
+            disabled
+            [value]="editAccountForm.get('email')?.value"
             matInput>
         </mat-form-field>
 
