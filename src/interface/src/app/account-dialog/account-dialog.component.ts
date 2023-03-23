@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { AuthService, User } from '../services';
+import { AuthService } from '../services';
+import { User } from '../types';
 
 @Component({
   selector: 'app-account-dialog',
@@ -15,5 +16,10 @@ export class AccountDialogComponent implements OnInit {
 
   ngOnInit(): void {
     this.user$ = this.authService.loggedInUser$;
+  }
+
+  displayName(user: User): string {
+    if (user.firstName) return user.firstName.concat(' ', user.lastName ?? '');
+    else return user.username ?? user.email!;
   }
 }

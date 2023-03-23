@@ -1,41 +1,41 @@
 {
-    "regions": [
+    "attributes": [
         {
-            "region_name": "sierra_cascade_inyo",
-            "filepath": "data/sierra_nevada",
-            "display_name": "Sierra Nevada",
-            "attributes": [
-                {
-                    "attribute_name": "distance_from_road",
-                    "filepath": "attributes",
-                    "filename": "distance_from_roads_300m.tif",
-                    "display_name": "Distance From Road",
-                    "source": "",
-                    "source_link": "",
-                    "data_provider": "",
-                    "data_download_link": "",
-                    "data_year": "",
-                    "reference_link": "",
-                    "min_value": "",
-                    "max_value": "",
-                    "units": "Meters"
-                },
-                {
-                    "attribute_name": "buildings",
-                    "filepath": "attributes",
-                    "filename": "buildings_300m.tif",
-                    "display_name": "Buildings",
-                    "source": "",
-                    "source_link": "",
-                    "data_provider": "",
-                    "data_download_link": "",
-                    "data_year": "",
-                    "reference_link": "",
-                    "min_value": "",
-                    "max_value": "",
-                    "units": "Boolean"
-                }
-            ]
+            "attribute_name": "road_proximity",
+            "filepath": "data/attributes",
+            "filename": "road_proximity_300m.tif",
+            "display_name": "Road Proximity",
+            "source": "U.S. Census",
+            "source_link": "https://www.census.gov/cgi-bin/geo/shapefiles/index.php?year=2021&layergroup=Roads",
+            "analysis": "Planscape/analysis/code/calculate_buildings_raster.R",
+            "min_value": "0",
+            "max_value": "21027.84",
+            "units": "Meters"
+        },
+        {
+            "attribute_name": "buildings",
+            "filepath": "data/attributes",
+            "filename": "buildings_300m.tif",
+            "display_name": "Buildings",
+            "source": "Microsoft",
+            "source_link": "https://github.com/Microsoft/USBuildingFootprints",
+            "data_download_link": "https://usbuildingdata.blob.core.windows.net/usbuildings-v2/California.geojson.zip",
+            "analysis": "Planscape/analysis/code/calculate_buildings_raster.R",
+            "min_value": "0",
+            "max_value": "1",
+            "units": "Boolean"
+        },
+        {
+            "attribute_name": "slope",
+            "filepath": "data/attributes",
+            "filename": "slope_300m.tif",
+            "display_name": "Slope",
+            "source": "ACCEL (but provided by N. Povak)",
+            "data_download_link": "<BOX URL>/Planscape Data/Cost and operability/elevation_ACCEL_slope.zip",
+            "analysis": "",
+            "min_value": "0.2382655",
+            "max_value": "1122.671",
+            "units": "Percent Rise: (elevation / distance) * 100"
         }
     ]
 }

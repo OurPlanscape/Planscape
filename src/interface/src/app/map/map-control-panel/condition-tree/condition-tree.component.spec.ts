@@ -55,25 +55,42 @@ describe('ConditionTreeComponent', () => {
     });
 
     it('styles children of a selected node and unstyles all other nodes', () => {
-      const nodeWithChildren = component.conditionDataSource.data[0];
-      const nodeWithoutChildren = component.conditionDataSource.data[1];
+      const nodeWithChildren = component.treeControl.dataNodes[0];
+      const nodeWithoutChildren = component.treeControl.dataNodes[4];
 
       component.onSelect(nodeWithChildren);
 
-      nodeWithChildren.children?.forEach((child) => {
-        expect(child.styleDisabled).toBeTrue();
-      });
+      component.treeControl
+        .getDescendants(nodeWithChildren)
+        .forEach((descendant) => {
+          expect(descendant.styleDisabled).toBeTrue();
+        });
       expect(nodeWithChildren.styleDisabled).toBeFalse();
       expect(nodeWithoutChildren.styleDisabled).toBeFalse();
 
       component.onSelect(nodeWithoutChildren);
 
-      component.conditionDataSource.data.forEach((node) => {
+      component.treeControl.dataNodes.forEach((node) => {
         expect(node.styleDisabled).toBeFalse();
-        node.children?.forEach((child) => {
-          expect(child.styleDisabled).toBeFalse();
-        });
       });
     });
+  });
+
+  it('styles ancestors of a selected node and unstyles all other nodes', () => {
+    const childNode = component.treeControl.dataNodes[1];
+    const parentNode = component.treeControl.dataNodes[0];
+
+    component.onSelect(childNode);
+
+    expect(parentNode.styleDescendantSelected).toBeTrue();
+
+    component.treeControl.dataNodes
+      .filter((node) => {
+        return node !== childNode && node !== parentNode;
+      })
+      .forEach((node) => {
+        expect(node.styleDisabled).toBeFalse();
+        expect(node.styleDescendantSelected).toBeFalse();
+      });
   });
 });
