@@ -23,6 +23,7 @@ import { filter, switchMap } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
 import {
+  AuthService,
   MapService,
   PlanService,
   PlanState,
@@ -47,6 +48,7 @@ import {
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
+import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 
 export enum AreaCreationAction {
   NONE = 0,
@@ -116,6 +118,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   constructor(
     public applicationRef: ApplicationRef,
+    private authService: AuthService,
     private mapService: MapService,
     private dialog: MatDialog,
     private matSnackBar: MatSnackBar,
@@ -330,14 +333,20 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     );
   }
 
-  /** Configures and opens the Create Plan dialog */
+  /** If the user is signed in, configures and opens the Create Plan dialog.
+   *  If the user is signed out, configure and open the Sign In dialog.
+   */
   openCreatePlanDialog() {
-    const dialogConfig = new MatDialogConfig();
-    dialogConfig.maxWidth = '560px';
+    if (!this.authService.loggedInStatus$.value) {
+      this.openSignInDialog();
+      return;
+    }
 
     const openedDialog = this.dialog.open(
       PlanCreateDialogComponent,
-      dialogConfig
+      {
+        maxWidth: '560px'
+      }
     );
 
     openedDialog.afterClosed().subscribe((result) => {
@@ -345,6 +354,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
         this.createPlan(result.value, this.mapManager.convertToPlanningArea());
       }
     });
+  }
+
+  private openSignInDialog() {
+    this.dialog.open(
+      SignInDialogComponent,
+      {
+        maxWidth: '560px'
+      }
+    );
   }
 
   private createPlan(name: string, shape: GeoJSON.GeoJSON) {

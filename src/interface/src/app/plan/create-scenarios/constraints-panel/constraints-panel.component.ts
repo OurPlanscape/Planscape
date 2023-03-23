@@ -11,19 +11,8 @@ export class ConstraintsPanelComponent {
   @Output() formNextEvent = new EventEmitter<void>();
   @Output() formBackEvent = new EventEmitter<void>();
 
-  hasBudgetOrMaxArea(): boolean {
-    return (
-      !!this.constraintsForm?.get('budgetForm.maxBudget')?.value ||
-      !!this.constraintsForm?.get('budgetForm.optimizeBudget')?.value ||
-      !!this.constraintsForm?.get('treatmentForm.maxArea')?.value
-    );
-  }
-
-  maxBudgetRequired(): boolean {
-    return (
-      !this.constraintsForm?.get('budgetForm.optimizeBudget')?.value &&
-      !this.constraintsForm?.get('treatmentForm.maxArea')?.value
-    );
+  enableMaxCost(): boolean {
+    return !!this.constraintsForm?.get('budgetForm.estimatedCost')?.value;
   }
 
   toggleRequiredExcludeDistance() {

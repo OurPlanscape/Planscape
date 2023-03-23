@@ -79,7 +79,7 @@ describe('CreateScenariosComponent', () => {
 
     component.formGroups[1].valueChanges.subscribe((_) => {
       expect(
-        component.formGroups[1].get('budgetForm.maxBudget')?.value
+        component.formGroups[1].get('budgetForm.maxCost')?.value
       ).toEqual(100);
     });
   });
@@ -91,6 +91,8 @@ describe('CreateScenariosComponent', () => {
     expect(fakePlanService.updateProject).toHaveBeenCalledOnceWith({
       id: 1,
       planId: 1,
+      est_cost: NaN,
+      max_budget: NaN,
       max_treatment_area_ratio: NaN,
       max_road_distance: NaN,
       max_slope: NaN,
@@ -152,6 +154,8 @@ describe('CreateScenariosComponent', () => {
     expect(fakePlanService.createScenario).toHaveBeenCalledOnceWith({
       id: 1,
       planId: 1,
+      est_cost: NaN,
+      max_budget: NaN,
       max_treatment_area_ratio: NaN,
       max_road_distance: NaN,
       max_slope: NaN,
