@@ -16,8 +16,9 @@ from planscape import settings
 # 256 pixels x 256 pixels.
 # The names of the rasters in the DB will be the same as the name of the
 # rasters on disk. The name includes the file extension.
-# It's possible for two rasters with the same name to be loaded to the DB:
-# before re-loading a raster, reemember to delete the previous version.
+# Warning: it's possible for multiple rasters with the same name to be loaded 
+# to the DB: before re-loading a raster, remember to delete the previous 
+# version.
 def _load_raster(raster_path):
     cmds = 'export PGPASSWORD=' + settings.PLANSCAPE_DATABASE_PASSWORD + \
         '; raster2pgsql -s ' + str(settings.CRS_FOR_RASTERS) + \
@@ -53,8 +54,6 @@ def _validate_attributes_config(attributes_config: dict):
 #   >> convert_nodata_to_nan_in_raster_file(<input_path>, <output_path>)
 # note: Input and output filenames encompass the entire path!
 #   e.g. /Users/<dir1>/<dir2>/<...>/buildings.tif
-# note: This isn't called autommatically in save_attribute_to_db and
-# load_attributes: it must be called separately as needed.
 def convert_nodata_to_nan_in_raster_file(input_filename: str,
                                          output_filename: str):
     with rasterio.open(input_filename) as src:
@@ -71,7 +70,7 @@ def convert_nodata_to_nan_in_raster_file(input_filename: str,
             dst.write(output_data.raster, 1)
 
 
-# Saves an attribute to the DB (and updates AttributeRaster and
+# Loads an attribute to the DB (and updates AttributeRaster and
 # Attribute tables accordingly).
 # Usage:
 #   >> python manage.py shell

@@ -43,4 +43,3 @@ class AttributeRaster(models.Model):
 
     # A tile in the raster.
     raster = models.RasterField(null=True, srid=CRS_FOR_RASTERS)
-    
