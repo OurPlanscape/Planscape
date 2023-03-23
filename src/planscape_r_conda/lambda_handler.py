@@ -55,7 +55,7 @@ def lambda_handler(event, context):
         raw_forsys_output = r_f(4)
         print("forsys run completed")
 
-        stand_output_rdf = raw_forsys_output[1]
+        stand_output_rdf = raw_forsys_output[0]
         project_output_rdf = raw_forsys_output[1]
         forsys_project_output_df: dict[str, list] = {
             key: np.asarray(project_output_rdf.rx2(key)) for key in project_output_rdf.names}
