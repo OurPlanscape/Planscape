@@ -795,6 +795,7 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 # TODO: finalize call logic after testing piping.
 # NOTE: To send a queue message from your local machine, populate AWS credential args.
+# TODO: feed plan_id and scenario_id from user input into the queue message body 
 def queue_forsys_call(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
