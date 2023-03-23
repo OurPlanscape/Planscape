@@ -64,21 +64,34 @@ def lambda_handler(event, context):
             key: np.asarray(stand_output_rdf.rx2(key)) for key in stand_output_rdf.names}
         print(forsys_stand_output_df.keys())
 
+        forsys_outputs = {
+            'stand' : forsys_stand_output_df,
+            'project' : forsys_project_output_df
+        }
+        json_outputs = json.dumps(forsys_outputs)
+        print(json.loads(json_outputs))
+
+        # resp = requests.post(
+        #     "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/create_scenario/",
+        #     json=forsys_outputs)
+        # print(resp.text)
+        # scenario_id = resp.json()
+
         forsys_results = {
             'status': SUCCESS_STATUS,
             'project_id': str(project_id),
             'scenario_id': str(scenario_id),
         }
 
-        # TODO: pick a meaningful value for MessageGroupId
-        response = client.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=json.dumps(forsys_results),
-            MessageGroupId="elsie"
-        )
+        # # TODO: pick a meaningful value for MessageGroupId
+        # response = client.send_message(
+        #     QueueUrl=QUEUE_URL,
+        #     MessageBody=json.dumps(forsys_results),
+        #     MessageGroupId="elsie"
+        # )
 
         return {
-            'message': response['MessageId']
+            'success': event['Records'][0]['messageId']
         }
     except Exception as e:
         response = client.send_message(
