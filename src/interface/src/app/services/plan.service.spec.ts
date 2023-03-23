@@ -215,6 +215,25 @@ describe('PlanService', () => {
     });
   });
 
+  describe('bulkCreateProjectAreas', () => {
+    it('should make HTTP request to backend', () => {
+      service.bulkCreateProjectAreas(1, [fakeGeoJson]).subscribe((res) => {
+        expect(res).toEqual(null);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_project_areas_for_project/')
+      );
+      expect(req.request.body).toEqual({
+        project_id: 1,
+        geometries: [fakeGeoJson],
+      });
+      expect(req.request.method).toEqual('POST');
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
   describe('updateProject', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
@@ -377,6 +396,7 @@ describe('PlanService', () => {
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
+        project_id: 1,
         plan_id: 2,
         est_cost: undefined,
         max_budget: 200,

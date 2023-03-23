@@ -35,8 +35,8 @@
             <div class="flex-row space-between">
               <h2>{{ priority.name | titlecase  }}</h2>
               <div class="flex-row">
-                <mat-slider [disabled]=true [min]="1" [max]="5" [thumbLabel]="true" [value]="priority.weight"
-                  color="primary" [step]="1">
+                <mat-slider [disabled]=true [min]="0" [max]="5" [thumbLabel]="true" [value]="priority.weight"
+                  color="primary">
                   <input matSliderThumb>
                 </mat-slider>
                 <div class="slider-label">{{priority.weight}}</div>
