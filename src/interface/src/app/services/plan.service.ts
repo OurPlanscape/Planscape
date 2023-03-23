@@ -451,6 +451,7 @@ export class PlanService {
 
   private convertConfigToScenario(config: ProjectConfig): any {
     return {
+      project_id: config.id,
       plan_id: config.planId,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
