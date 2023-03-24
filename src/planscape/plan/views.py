@@ -629,7 +629,7 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
         scenario = Scenario.objects.get(id=scenario_id)
         if scenario.owner != owner:
             raise ValueError(
-                "You do not have permission to view this project.")
+                "You do not have permission to update this scenario.")
 
         notes = body.get("notes", None)
         status = body.get("status", None)
@@ -646,7 +646,7 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
             s.save()
         else:
             raise KeyError(
-                "HTTP methods other than PUT are not yet implemented")
+                "HTTP methods other than PATCH are not yet implemented")
         scenario.save()
         return JsonResponse({'updated': scenario.pk})
     except Exception as e:

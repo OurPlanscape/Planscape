@@ -113,8 +113,8 @@ export class ScenarioDetailsComponent implements OnInit {
     this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 
-  private drawProjectAreas(projectAreas: ProjectArea[]): void {   
-    var areas: any[] = []
+  private drawProjectAreas(projectAreas: ProjectArea[]): void {
+    const areas: any[] = []
     projectAreas.forEach((projectArea) => {
       areas.push(projectArea.projectArea)
     });
