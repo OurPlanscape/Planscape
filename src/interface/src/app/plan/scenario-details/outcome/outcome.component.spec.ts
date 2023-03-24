@@ -28,6 +28,29 @@ describe('OutcomeComponent', () => {
         loggedInUser$: new BehaviorSubject<User | null>(null),
       }
     );
+    const fakeGeoJson: GeoJSON.GeoJSON = {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          geometry: {
+            type: 'MultiPolygon',
+            coordinates: [
+              [
+                [
+                  [10, 20],
+                  [10, 30],
+                  [15, 15],
+                ],
+              ],
+            ],
+          },
+          properties: {
+            shape_name: 'Test',
+          },
+        },
+      ],
+    };
     const snackbarSpy = jasmine.createSpyObj<MatSnackBar>(
       'MatSnackBar',
       {
@@ -44,15 +67,15 @@ describe('OutcomeComponent', () => {
       projectAreas: [
         {
           id: 10,
-          estimatedAreaTreated: 2000,
+          projectArea: fakeGeoJson,
         },
         {
           id: 11,
-          estimatedAreaTreated: 5000,
+          projectArea: fakeGeoJson,
         },
         {
           id: 12,
-          estimatedAreaTreated: 6000,
+          projectArea: fakeGeoJson,
         },
       ],
     };
@@ -87,7 +110,7 @@ describe('OutcomeComponent', () => {
   });
 
   it('should calculate the total acres treated', () => {
-    expect(component.totalAcresTreated).toEqual(13000);
+    expect(component.totalAcresTreated).toEqual(207878832);
   });
 
   it('should call PlanService on note form submit', async () => {
