@@ -43,9 +43,9 @@ export interface Scenario {
 }
 
 export interface Priority {
-  id: string,
-  name: string,
-  weight: number,
+  id: string;
+  name: string;
+  weight: number;
 }
 
 export interface ProjectConfig {
@@ -62,11 +62,12 @@ export interface ProjectConfig {
 }
 
 export interface ProjectArea {
-  id: string,
-  projectId?: string,
-  projectArea: GeoJSON.GeoJSON,
-  owner?: string,
-  estimatedAreaTreated?: number
+  id: string;
+  projectId?: string;
+  projectArea: GeoJSON.GeoJSON;
+  owner?: string;
+  estimatedAreaTreated?: number;
+  actualAcresTreated?: number;
 }
 
 export interface PlanConditionScores {
