@@ -19,4 +19,4 @@ uwsgi
 memory-profiler
 scikit-learn
 boto3
-pstats
+pytz
