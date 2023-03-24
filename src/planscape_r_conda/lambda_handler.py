@@ -64,7 +64,10 @@ def lambda_handler(event, context):
             key: (np.asarray(stand_output_rdf.rx2(key)).tolist()) for key in stand_output_rdf.names}
         print(forsys_stand_output_df.keys())
 
+        # TODO: provide user_id via queue message
         forsys_outputs = {
+            'user_id': 5, 
+            'scenario_id' : scenario_id,
             'stand' : forsys_stand_output_df,
             'project' : forsys_project_output_df
         }

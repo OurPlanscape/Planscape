@@ -274,15 +274,28 @@ def generate_project_areas_for_a_single_scenario(
 def generate_project_areas_prototype(
         request: HttpRequest) -> HttpResponse:
     try:
-        f = open(os.path.join(os.path.dirname(__file__), "test.json"))
-        forsys_output_json = json.load(f)
-        f.close()
+        body = json.loads(request.body)
+        if not 'stand' in body or not 'project' in body:
+            raise ValueError(
+                "Either the forsys stand or project dictionary is missing")
+        forsys_output_json = {
+            'stand': body['stand'],
+            'project': body['project']
+        }
 
-        request = HttpRequest()
-        request.GET = QueryDict(
+        user_id = body.get('user_id', None)
+        if user_id is not (isinstance(user_id, int)):
+            raise ValueError("Must specify user_id as an integer")
+
+        scenario_id = body.get('scenario_id', None)
+        if scenario_id is not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+
+        temp_request = HttpRequest()
+        temp_request.GET = QueryDict(
             'request_type=0' +
-            '&debug_user_id=5' +
-            '&scenario_id=21' +
+            '&debug_user_id=' + str(user_id) +
+            '&scenario_id=21' + str(scenario_id) +
             '&priorities=storage&priorities=california_spotted_owl&priorities=functional_fire&priorities=forest_structure&priorities=max_sdi' +
             '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0&priority_weights=2.0&priority_weights=1.0')
         params = get_generation_request_params(request)
