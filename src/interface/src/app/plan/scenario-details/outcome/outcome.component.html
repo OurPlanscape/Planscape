@@ -1,6 +1,6 @@
 <!-- Plan Info -->
 <div class="plan-info">
-  <span>Creator: {{ (currentUser$ | async)?.username || 'Guest' }}</span>
+  <span>Creator: {{ displayName }}</span>
   <br>
   <span>Created: {{ scenario?.createdTimestamp | date:'MM/dd/yyyy'}}</span>
 </div>
@@ -15,7 +15,6 @@
       <div class="constraints">
         <h3>Constraints</h3>
         <ul>
-          <li>Calculating score: Current conditions</li>
           <li>Show estimated cost range based on estimated treatment costs per acre
             (Est. max: <b>${{ scenario?.config?.max_budget }}</b>)</li>
           <li><b>{{ scenario?.config?.max_treatment_area_ratio }}%</b> max treatment percentage of total planning area</li>
@@ -35,8 +34,8 @@
             <div class="flex-row space-between">
               <h2>{{ priority.name | titlecase  }}</h2>
               <div class="flex-row">
-                <mat-slider [disabled]=true [min]="1" [max]="5" [thumbLabel]="true" [value]="priority.weight"
-                  color="primary" [step]="1">
+                <mat-slider [disabled]=true [min]="0" [max]="5" [thumbLabel]="true" [value]="priority.weight"
+                  color="primary">
                   <input matSliderThumb>
                 </mat-slider>
                 <div class="slider-label">{{priority.weight}}</div>
@@ -44,21 +43,6 @@
             </div>
             <mat-divider></mat-divider>
           </ng-container>
-        </div>
-
-        <!-- Project area % -->
-        <div>
-          <h3>Project areas</h3>
-          <div class="flex-row space-between">
-            <h2>Show top % of project areas</h2>
-            <div class="flex-row">
-              <div class="slider-label">10%</div>
-              <mat-slider [disabled]=true [min]="10" [max]="40" [thumbLabel]="true" [value]="30">
-                <input matSliderThumb>
-              </mat-slider>
-              <div class="slider-label">40%</div>
-            </div>
-          </div>
         </div>
       </div>
     </mat-expansion-panel>
@@ -72,25 +56,27 @@
       <div class="project-areas-wrapper">
         <div class="project-areas-overview">
           <div class="flex-row space-between reduced-height-row">
-            <h3>Top % highest priority</h3>
+            <h3>Project areas</h3>
             <h3>Total treated</h3>
+            <h3>% of planning area</h3>
             <h3>Est. cost range</h3>
           </div>
           <div class="flex-row space-between reduced-height-row">
             <span>{{ scenario?.projectAreas?.length || '0' }} project areas</span>
             <span>{{ totalAcresTreated }} ac</span>
+            <span>{{ (totalAcresTreated / totalPlanningAreaAcres) * 100 | number: '1.0-5' }}%</span>
             <span>{{ totalCostRange }}</span>
           </div>
         </div>
         <!-- Project area cards -->
-        <div class="section-header">Prioritized Project Areas</div>
+        <div class="section-header">Project Area details</div>
         <div>
           <div *ngFor="let projectArea of scenario?.projectAreas; index as i">
             <div class="project-area-card">
               <div class="flex-row"><h1>Area {{ i+1 }}</h1></div>
               <div class="area-info-wrapper">
                 <div class="flex-row space-between darker-h1">
-                  <span>{{ projectArea.estimatedAreaTreated }}</span>
+                  <span>{{ projectArea.actualAcresTreated }}</span>
                   <span>tbd</span>
                   <span>tbd</span>
                 </div>
@@ -115,7 +101,7 @@
   <!-- Notes -->
   <div class="scenario-notes-wrapper">
     <div class="section-header">Scenario creator's notes</div>
-    <form [formGroup] = "scenarioNotes">
+    <form [formGroup]="scenarioNotes" (ngSubmit)="onSubmit()">
       <div>
         <textarea
           class="notes-text"
