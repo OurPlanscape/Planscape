@@ -1,3 +1,4 @@
+import { DeleteAccountDialogComponent } from './delete-account-dialog/delete-account-dialog.component';
 import { Component, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -5,6 +6,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable, take } from 'rxjs';
 
@@ -28,6 +30,7 @@ export class AccountDialogComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private dialog: MatDialog,
     private fb: FormBuilder,
     private snackbar: MatSnackBar
   ) {
@@ -136,5 +139,9 @@ export class AccountDialogComponent implements OnInit {
     const password1 = group.get('password1')?.value;
     const password2 = group.get('password2')?.value;
     return password1 === password2 ? null : { passwordsNotEqual: true };
+  }
+
+  openDeleteAccountDialog(): void {
+    this.dialog.open(DeleteAccountDialogComponent);
   }
 }

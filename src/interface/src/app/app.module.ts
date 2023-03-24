@@ -42,6 +42,7 @@ import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
 
 @NgModule({
   declarations: [
@@ -63,6 +64,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     HomeComponent,
     PlanTableComponent,
     SignInDialogComponent,
+    DeleteAccountDialogComponent,
   ],
   imports: [
     AppRoutingModule,
