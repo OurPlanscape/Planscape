@@ -612,11 +612,12 @@ describe('MapComponent', () => {
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
 
+      component.selectedAreaCreationAction = component.AreaCreationAction.DRAW;
       fixture.componentInstance.showConfirmAreaButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
-          selector: '.confirm-area-button',
+          selector: '.done-button',
         })
       );
 
@@ -634,11 +635,12 @@ describe('MapComponent', () => {
         fixture.debugElement.injector.get(MatDialog);
       const planServiceStub: PlanService =
         fixture.debugElement.injector.get(PlanService);
+      component.selectedAreaCreationAction = component.AreaCreationAction.DRAW;
       fixture.componentInstance.showConfirmAreaButton$ =
         new BehaviorSubject<boolean>(true);
       const button = await loader.getHarness(
         MatButtonHarness.with({
-          selector: '.confirm-area-button',
+          selector: '.done-button',
         })
       );
 
