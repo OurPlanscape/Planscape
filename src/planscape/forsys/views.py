@@ -22,8 +22,7 @@ from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
-from forsys.write_forsys_output_to_db import (add_weighted_priorities,
-                                              create_plan_and_scenario,
+from forsys.write_forsys_output_to_db import (create_plan_and_scenario,
                                               save_generation_output_to_db)
 from memory_profiler import profile
 from planscape import settings
