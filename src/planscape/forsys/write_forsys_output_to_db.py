@@ -55,6 +55,12 @@ def create_plan_and_scenario(
 
     return scenario
 
+def add_weighted_priorities(params: ForsysGenerationRequestParams, scenario_id: int) -> Scenario:
+    scenario = Scenario.objects.get(id=scenario_id)
+    _create_weighted_priorities(params, scenario)
+
+    return scenario
+
 
 # Given a WKT, returns a MultiPolygon.
 def _get_multipolygon(wkt: str):
