@@ -1,5 +1,6 @@
 import cProfile
 import io
+import json
 import logging
 import os
 import pstats
@@ -8,26 +9,25 @@ from pstats import SortKey
 
 import numpy as np
 import pandas as pd
+import rpy2
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse)
-from forsys.forsys_request_params import (
-    ClusterAlgorithmType, get_generation_request_params,
-    get_ranking_request_params)
+                         JsonResponse, QueryDict)
+from forsys.forsys_request_params import (ClusterAlgorithmType,
+                                          get_generation_request_params,
+                                          get_ranking_request_params)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
 from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
-from forsys.write_forsys_output_to_db import (
-    create_plan_and_scenario, save_generation_output_to_db)
+from forsys.write_forsys_output_to_db import (add_weighted_priorities,
+                                              create_plan_and_scenario,
+                                              save_generation_output_to_db)
 from memory_profiler import profile
 from planscape import settings
 from pytz import timezone
-
-import rpy2
-
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
@@ -227,8 +227,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.FORSYS_GEO_WKT_HEADER)
     return parsed_output
 
-    # TODO: Create test endpoint that instantiates ForsysGenerationOutputForASingleScenario 
-    # with stand and project output files 
+
 def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
@@ -268,6 +267,41 @@ def generate_project_areas_for_a_single_scenario(
             _tear_down_cprofiler(pr, 'output/cprofiler.log')
 
         return JsonResponse(response)
+    except Exception as e:
+        logger.error('project area generation error: ' + str(e))
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def generate_project_areas_prototype(
+        request: HttpRequest) -> HttpResponse:
+    try:
+        f = open('/Users/elsieling/cnra/env/Planscape/src/planscape/forsys/test.json')
+        forsys_output_json = json.load(f)
+        f.close()
+
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=0' +
+            '&debug_user_id=5' +
+            '&scenario_id=21' +
+            '&priorities=storage&priorities=california_spotted_owl&priorities=functional_fire&priorities=forest_structure&priorities=max_sdi' +
+            '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0&priority_weights=2.0&priority_weights=1.0')
+        params = get_generation_request_params(request)
+        headers = ForsysInputHeaders(params.priorities)
+
+        priority_weights_dict = {
+            headers.priority_headers[i]: params.priority_weights[i]
+            for i in range(len(headers.priority_headers))}
+
+        parsed_output = ForsysGenerationOutputForASingleScenario(
+            forsys_output_json, priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
+            headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
+            headers.FORSYS_GEO_WKT_HEADER)
+
+        save_generation_output_to_db(
+            params.db_params.scenario, parsed_output.scenario)
+
+        return JsonResponse(parsed_output.scenario, safe=False)
     except Exception as e:
         logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
