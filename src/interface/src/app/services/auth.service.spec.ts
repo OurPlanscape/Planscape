@@ -169,15 +169,13 @@ describe('AuthService', () => {
     });
 
     it('if unsuccessful, does not make request to backend /login endpoint', (done) => {
-      service
-        .signup('email', 'password1', 'password2', 'Foo', 'Bar')
-        .subscribe(
-          (_) => {},
-          (_) => {
-            expect(service.loggedInStatus$.value).toBeFalse();
-            done();
-          }
-        );
+      service.signup('email', 'password1', 'password2', 'Foo', 'Bar').subscribe(
+        (_) => {},
+        (_) => {
+          expect(service.loggedInStatus$.value).toBeFalse();
+          done();
+        }
+      );
 
       const req = httpTestingController.expectOne(
         BackendConstants.END_POINT + '/dj-rest-auth/registration/'
@@ -308,6 +306,77 @@ describe('AuthService', () => {
         .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/')
         .flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
+    });
+  });
+
+  describe('changePassword', () => {
+    it('makes request to backend', () => {
+      service.changePassword('testpass', 'testpass').subscribe();
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT + '/dj-rest-auth/password/change/'
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({
+        new_password1: 'testpass',
+        new_password2: 'testpass',
+      });
+      req.flush({ details: 'success' });
+      httpTestingController.verify();
+    });
+  });
+
+  describe('updateUser', () => {
+    it('makes request to backend', (done) => {
+      const backendUser = {
+        first_name: 'Foo',
+        last_name: 'Bar',
+        username: 'test',
+        email: 'test@test.com',
+      };
+      const frontendUser = {
+        firstName: 'Foo',
+        lastName: 'Bar',
+        username: 'test',
+        email: 'test@test.com',
+      };
+
+      service.updateUser(frontendUser).subscribe((res) => {
+        expect(res).toEqual(frontendUser);
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT + '/dj-rest-auth/user/'
+      );
+      expect(req.request.method).toEqual('PATCH');
+      expect(req.request.body).toEqual(backendUser);
+      req.flush(backendUser);
+      httpTestingController.verify();
+    });
+
+    it('updates logged in user', (done) => {
+      const backendUser = {
+        first_name: 'Foo',
+        last_name: 'Bar',
+        username: 'test',
+        email: 'test@test.com',
+      };
+      const frontendUser = {
+        firstName: 'Foo',
+        lastName: 'Bar',
+        username: 'test',
+        email: 'test@test.com',
+      };
+
+      service.updateUser(frontendUser).subscribe((_) => {
+        expect(service.loggedInUser$.value).toEqual(frontendUser);
+        done();
+      });
+
+      httpTestingController
+        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
+        .flush(backendUser);
     });
   });
 });

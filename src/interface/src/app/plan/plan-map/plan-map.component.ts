@@ -90,7 +90,7 @@ export class PlanMapComponent
       )
       .subscribe(([plan, currentScenarioId]) => {
         if (currentScenarioId) {
-          this.drawPlanningArea(plan!, '#ffffff');
+          this.drawPlanningArea(plan!, '#77aff3');
         } else {
           this.drawPlanningArea(plan!);
         }
@@ -113,7 +113,7 @@ export class PlanMapComponent
         color: color ?? '#3367D6',
         fillColor: color ?? '#3367D6',
         fillOpacity: opacity ?? 0.1,
-        weight: 5,
+        weight: 7,
       },
     }).addTo(this.map);
     this.map.fitBounds(this.drawingLayer.getBounds(), {
@@ -166,8 +166,8 @@ export class PlanMapComponent
 
     this.projectAreasLayer = L.geoJSON(shapes, {
       style: (_) => ({
-        color: '#3367D6',
-        fillColor: '#3367D6',
+        color: '#0f5acd',
+        fillColor: '#0f5acd',
         fillOpacity: 0.1,
         weight: 5,
       }),

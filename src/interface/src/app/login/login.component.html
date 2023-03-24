@@ -4,35 +4,31 @@
     <div class="signin-card">
       <h1 class="signin-title">Sign in to Planscape</h1>
 
-      <form (ngSubmit)="onSubmit()">
-        <div>
-          <mat-form-field appearance="fill">
-            <input
-              type="text" id="username"
-              required
-              placeholder="Email"
-              [(ngModel)]="model.username" name="username"
-              #name="ngModel"
-              matInput>
-          </mat-form-field>
-        </div>
+      <form [formGroup]="form" (ngSubmit)="login()">
+        <mat-form-field appearance="fill">
+          <mat-label>Email</mat-label>
+          <input
+            type="text"
+            required
+            formControlName="email"
+            matInput>
+        </mat-form-field>
 
-        <div>
-          <mat-form-field appearance="fill">
-            <input
-              type="password" id="password"
-              required
-              placeholder="Password"
-              [(ngModel)]="model.password" name="password"
-              #password="ngModel"
-              matInput>
-          </mat-form-field>
-        </div>
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="password"
+            matInput>
+        </mat-form-field>
 
         <p>{{ error?.message }}</p>
             <p *ngIf="error">{{ error?.error | json }}</p>
 
-        <button mat-flat-button color="primary" type="submit">Sign in</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="!form.valid">
+          Sign in
+        </button>
 
       </form>
 

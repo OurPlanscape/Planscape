@@ -215,6 +215,25 @@ describe('PlanService', () => {
     });
   });
 
+  describe('bulkCreateProjectAreas', () => {
+    it('should make HTTP request to backend', () => {
+      service.bulkCreateProjectAreas(1, [fakeGeoJson]).subscribe((res) => {
+        expect(res).toEqual(null);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/create_project_areas_for_project/')
+      );
+      expect(req.request.body).toEqual({
+        project_id: 1,
+        geometries: [fakeGeoJson],
+      });
+      expect(req.request.method).toEqual('POST');
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
   describe('updateProject', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
@@ -377,6 +396,7 @@ describe('PlanService', () => {
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
+        project_id: 1,
         plan_id: 2,
         est_cost: undefined,
         max_budget: 200,
@@ -436,6 +456,50 @@ describe('PlanService', () => {
           config: projectConfig,
         },
       ]);
+      httpTestingController.verify();
+    });
+  });
+
+  describe('updateScenarioNotes', () => {
+    it('should make HTTP request to backend', () => {
+      const projectConfig: ProjectConfig = {
+        id: 1,
+        planId: undefined,
+        est_cost: undefined,
+        max_budget: undefined,
+        max_road_distance: undefined,
+        max_slope: undefined,
+        max_treatment_area_ratio: undefined,
+        priorities: undefined,
+        createdTimestamp: undefined,
+        weights: undefined,
+      };
+      const scenario: Scenario = {
+        id: '1',
+        planId: undefined,
+        projectId: undefined,
+        config: projectConfig,
+        priorities: [],
+        projectAreas: [],
+        createdTimestamp: undefined,
+        notes: 'hello',
+        owner: undefined,
+        favorited: undefined,
+      };
+
+      service.updateScenarioNotes(scenario).subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/update_scenario/')
+      );
+      expect(req.request.body).toEqual({
+        id: scenario.id,
+        notes: scenario.notes,
+      });
+      expect(req.request.method).toEqual('PATCH');
+      req.flush(1);
       httpTestingController.verify();
     });
   });

@@ -56,22 +56,22 @@ jobs:
           echo "backend_image=$ECR_REGISTRY/$ECR_REPOSITORY:backend-$IMAGE_TAG" >> $GITHUB_ENV
           echo "r_conda_image=$ECR_REGISTRY/$ECR_REPOSITORY:r-conda-$IMAGE_TAG" >> $GITHUB_ENV
 
-#       - name: Build, tag, and push frontend
-#         id: build-frontend
-#         run: |
-#           cd src/interface
-#           sed -i "s/localhost/${{ env.EC2_LOAD_BALANCER }}/" src/environments/environment.prod.ts
-#           docker build -t planscape-frontend . 
-#           docker tag planscape-frontend:latest ${{ env.frontend_image }}
-#           docker push ${{ env.frontend_image }}
+      - name: Build, tag, and push frontend
+        id: build-frontend
+        run: |
+          cd src/interface
+          sed -i "s/localhost/${{ env.EC2_LOAD_BALANCER }}/" src/environments/environment.prod.ts
+          docker build -t planscape-frontend . 
+          docker tag planscape-frontend:latest ${{ env.frontend_image }}
+          docker push ${{ env.frontend_image }}
 
-#       - name: Build, tag, and push backend
-#         id: build-backend
-#         run: |
-#           cd src/planscape
-#           docker build -t planscape-backend .
-#           docker tag planscape-backend:latest ${{ env.backend_image }}
-#           docker push ${{ env.backend_image }}
+      - name: Build, tag, and push backend
+        id: build-backend
+        run: |
+          cd src/planscape
+          docker build -t planscape-backend .
+          docker tag planscape-backend:latest ${{ env.backend_image }}
+          docker push ${{ env.backend_image }}
           
       - name: Build, tag, and push r-conda
         id: build-r-conda
@@ -81,29 +81,29 @@ jobs:
           docker tag planscape-r-conda:latest ${{ env.r_conda_image }}
           docker push ${{ env.r_conda_image }}
 
-#       - name: Render backend
-#         id: render-backend-container
-#         uses: aws-actions/amazon-ecs-render-task-definition@v1
-#         with:
-#           task-definition: ${{ env.ECS_TASK_DEFINITION }}
-#           container-name: backend
-#           image: ${{ env.backend_image }}
-#           environment-variables: |
-#             LOG_LEVEL=info
-#             ENVIRONMENT=prod
+      - name: Render backend
+        id: render-backend-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: backend
+          image: ${{ env.backend_image }}
+          environment-variables: |
+            LOG_LEVEL=info
+            ENVIRONMENT=prod
 
-#       - name: Modify Amazon ECS task definition with frontend container
-#         id: render-frontend-container
-#         uses: aws-actions/amazon-ecs-render-task-definition@v1
-#         with:
-#           task-definition: ${{ steps.render-backend-container.outputs.task-definition }}
-#           container-name: frontend
-#           image: ${{ env.frontend_image }}
+      - name: Modify Amazon ECS task definition with frontend container
+        id: render-frontend-container
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-backend-container.outputs.task-definition }}
+          container-name: frontend
+          image: ${{ env.frontend_image }}
 
-#       - name: Deploy Amazon ECS task definition
-#         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
-#         with:
-#           task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
-#           service: ${{ env.ECS_SERVICE }}
-#           cluster: ${{ env.ECS_CLUSTER }}
-#           wait-for-service-stability: true
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: ${{ steps.render-frontend-container.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
