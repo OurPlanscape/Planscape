@@ -274,7 +274,7 @@ def generate_project_areas_for_a_single_scenario(
 def generate_project_areas_prototype(
         request: HttpRequest) -> HttpResponse:
     try:
-        f = open('/Users/elsieling/cnra/env/Planscape/src/planscape/forsys/test.json')
+        f = open(os.path.join(os.path.dirname(__file__), "test.json"))
         forsys_output_json = json.load(f)
         f.close()
 
