@@ -146,7 +146,7 @@ describe('PlanMapComponent', () => {
         currentScenarioId: '5',
       });
 
-      expect(spy).toHaveBeenCalledWith(fakePlan, '#ffffff');
+      expect(spy).toHaveBeenCalledWith(fakePlan, '#77aff3');
       expect(component.map.hasLayer(component.drawingLayer!)).toBeTrue();
     });
 

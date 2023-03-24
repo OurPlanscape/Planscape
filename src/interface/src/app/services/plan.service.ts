@@ -197,7 +197,9 @@ export class PlanService {
 
   /** Creates multiple project areas for a project. */
   bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
-    const url = BackendConstants.END_POINT.concat('/plan/create_project_areas_for_project/');
+    const url = BackendConstants.END_POINT.concat(
+      '/plan/create_project_areas_for_project/'
+    );
     return this.http
       .post<number>(
         url,
@@ -209,7 +211,10 @@ export class PlanService {
           withCredentials: true,
         }
       )
-      .pipe(take(1), map(() => null));
+      .pipe(
+        take(1),
+        map(() => null)
+      );
   }
 
   /** Updates a project with new parameters. */
@@ -315,6 +320,19 @@ export class PlanService {
         withCredentials: true,
       }
     );
+  }
+
+  /** Updates a scenario with new notes. */
+  updateScenarioNotes(scenario: Scenario): Observable<number> {
+    const url = BackendConstants.END_POINT.concat('/plan/update_scenario/');
+    return this.http
+      .patch<number>(url, {
+        id: scenario.id,
+        notes: scenario.notes,
+      }, {
+        withCredentials: true,
+      })
+      .pipe(take(1));
   }
 
   /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
@@ -459,7 +477,7 @@ export class PlanService {
         id: priority,
         name: priority.replace(/_/g, ' '),
         weight: weight,
-      }
+      };
     });
   }
 

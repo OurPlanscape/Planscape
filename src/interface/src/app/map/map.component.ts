@@ -110,7 +110,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Actions bar variables */
   readonly AreaCreationAction = AreaCreationAction;
   showUploader = false;
-  showAreaCreationActionButtons = false;
   selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
   showConfirmAreaButton$ = new BehaviorSubject(false);
 
