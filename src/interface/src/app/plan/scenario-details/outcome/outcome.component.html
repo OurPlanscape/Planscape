@@ -1,6 +1,6 @@
 <!-- Plan Info -->
 <div class="plan-info">
-  <span>Creator: {{ (currentUser$ | async)?.username || 'Guest' }}</span>
+  <span>Creator: {{ displayName }}</span>
   <br>
   <span>Created: {{ scenario?.createdTimestamp | date:'MM/dd/yyyy'}}</span>
 </div>
@@ -15,7 +15,6 @@
       <div class="constraints">
         <h3>Constraints</h3>
         <ul>
-          <li>Calculating score: Current conditions</li>
           <li>Show estimated cost range based on estimated treatment costs per acre
             (Est. max: <b>${{ scenario?.config?.max_budget }}</b>)</li>
           <li><b>{{ scenario?.config?.max_treatment_area_ratio }}%</b> max treatment percentage of total planning area</li>
@@ -45,21 +44,6 @@
             <mat-divider></mat-divider>
           </ng-container>
         </div>
-
-        <!-- Project area % -->
-        <div>
-          <h3>Project areas</h3>
-          <div class="flex-row space-between">
-            <h2>Show top % of project areas</h2>
-            <div class="flex-row">
-              <div class="slider-label">10%</div>
-              <mat-slider [disabled]=true [min]="10" [max]="40" [thumbLabel]="true" [value]="30">
-                <input matSliderThumb>
-              </mat-slider>
-              <div class="slider-label">40%</div>
-            </div>
-          </div>
-        </div>
       </div>
     </mat-expansion-panel>
 
@@ -72,18 +56,20 @@
       <div class="project-areas-wrapper">
         <div class="project-areas-overview">
           <div class="flex-row space-between reduced-height-row">
-            <h3>Top % highest priority</h3>
+            <h3>Project areas</h3>
             <h3>Total treated</h3>
+            <h3>% of planning area</h3>
             <h3>Est. cost range</h3>
           </div>
           <div class="flex-row space-between reduced-height-row">
             <span>{{ scenario?.projectAreas?.length || '0' }} project areas</span>
             <span>{{ totalAcresTreated }} ac</span>
+            <span>{{ (totalAcresTreated / totalPlanningAreaAcres) | number: '1.0-5' }}%</span>
             <span>{{ totalCostRange }}</span>
           </div>
         </div>
         <!-- Project area cards -->
-        <div class="section-header">Prioritized Project Areas</div>
+        <div class="section-header">Project Area details</div>
         <div>
           <div *ngFor="let projectArea of scenario?.projectAreas; index as i">
             <div class="project-area-card">
