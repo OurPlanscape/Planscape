@@ -10,12 +10,26 @@ from plan.models import (
 from pytz import timezone
 
 
+# Given a WKT, returns a MultiPolygon.
+def _get_multipolygon(wkt: str):
+    geo = GEOSGeometry(wkt)
+    if geo.geom_typeid == 6:
+        return geo
+    elif geo.geom_typeid == 3:
+        multi = MultiPolygon((geo))
+        multi.srid = geo.srid
+        return multi
+
+    raise Exception(
+        "geometry, %s, is neither a polygon nor a multipolylgon" % (wkt))
+
+
 def _create_plan(params: ForsysGenerationRequestParams) -> Plan:
     plan = Plan.objects.create(
         owner=params.db_params.user, name=datetime.now().astimezone(
             timezone('US/Pacific')
         ).strftime("%Y%-m-%d-%H:%M"), region_name=params.region,
-        geometry=params.planning_area)
+        geometry=_get_multipolygon(params.planning_area))
     plan.save()
     return plan
 
@@ -27,16 +41,16 @@ def _create_weighted_priorities(
             condition_dataset__condition_name=params.priorities[i],
             condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
         weighted_priority = ScenarioWeightedPriority.objects.create(
-            scenario=scenario, priority=condition, 
+            scenario=scenario, priority=condition,
             weight=params.priority_weights[i])
         weighted_priority.save()
 
 
 # Creates a plan, project, scenario, and the weighted priorities associated
 # with a scenario.
-# This is primarily used for debug purposes, when 
+# This is primarily used for debug purposes, when
 # ForsysGenerationRequestParams.db_params is missing a scenario.
-# TODO: this assumes ForsysGenerationRequestParams is well-formed; input 
+# TODO: this assumes ForsysGenerationRequestParams is well-formed; input
 # validation logic needs to be added and tested.
 def create_plan_and_scenario(
         params: ForsysGenerationRequestParams) -> Scenario:
@@ -56,23 +70,11 @@ def create_plan_and_scenario(
     return scenario
 
 
-# Given a WKT, returns a MultiPolygon.
-def _get_multipolygon(wkt: str):
-    geo = GEOSGeometry(wkt)
-    if geo.geom_typeid == 6:
-        return geo
-    elif geo.geom_typeid == 3:
-        return MultiPolygon((geo))
-
-    raise Exception(
-        "geometry, %s, is neither a polygon nor a multipolylgon" % (wkt))
-
-
-# Given a Scenario and Forsys output data, adds ProjectArea and 
+# Given a Scenario and Forsys output data, adds ProjectArea and
 # RankedProjectArea objects to the DB.
 # Forsys output data, represented by output_scenario, is the dictionary in
 # ForsysGenerationOutputForASingleScenario.scenario.
-# TODO: this assumes the input arguments are well-formed; input validation 
+# TODO: this assumes the input arguments are well-formed; input validation
 # logic needs to be added and tested.
 def save_generation_output_to_db(scenario: Scenario,
                                  output_scenario: dict):
