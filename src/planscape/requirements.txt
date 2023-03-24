@@ -20,3 +20,4 @@ memory-profiler
 scikit-learn
 boto3
 pytz
+scipy
