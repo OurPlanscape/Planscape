@@ -821,18 +821,38 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("failed score fetch: " + str(e))
 
 
-# TODO: finalize call logic after testing piping.
-# NOTE: To send a queue message from your local machine, populate AWS credential args.
-# TODO: feed plan_id and scenario_id from user input into the queue message body 
-def queue_forsys_call(request: HttpRequest) -> HttpResponse:
+# NOTE: To send a queue message from your local machine, populate AWS credentials.
+# TODO: disallow if not logged in as user
+def queue_forsys_prototype(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
-        client = boto3.client('sqs', region_name='us-west-1')
+        body = json.loads(request.body)
 
+        plan_id = body.get('plan_id', None)
+        if plan_id is None or not (isinstance(plan_id, int)):
+            raise ValueError("Must specify plan_id as an integer")
+        plan = Plan.objects.get(pk=int(plan_id))
+        if plan.owner != user:
+            raise ValueError(
+                "You do not have permission to view this plan.")
+        
+        project_id = body.get('project_id', None)
+        if project_id is None or not (isinstance(project_id, int)):
+            raise ValueError("Must specify project_id as an integer")
+        project = Project.objects.get(pk=int(project_id))
+        if project.owner != user:
+            raise ValueError(
+                "You do not have permission to view this project.")
+        
+        create_scenario = {
+            'plan_id': str(plan.pk),
+            'project_id': str(project.pk)
+        }
+        client = boto3.client('sqs', region_name='us-west-1')
         response = client.send_message(
             QueueUrl='https://sqs.us-west-1.amazonaws.com/705618310400/forsys.fifo',
-            MessageBody="test",
-            MessageGroupId="elsie"
+            MessageBody=json.dumps(create_scenario),
+            MessageGroupId="Guest" if user is None else str(user.pk)
         )
         return JsonResponse({
             'statusCode': 200,
