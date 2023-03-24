@@ -115,7 +115,7 @@
   <!-- Notes -->
   <div class="scenario-notes-wrapper">
     <div class="section-header">Scenario creator's notes</div>
-    <form [formGroup] = "scenarioNotes">
+    <form [formGroup]="scenarioNotes" (ngSubmit)="onSubmit()">
       <div>
         <textarea
           class="notes-text"
