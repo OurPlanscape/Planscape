@@ -460,6 +460,50 @@ describe('PlanService', () => {
     });
   });
 
+  describe('updateScenarioNotes', () => {
+    it('should make HTTP request to backend', () => {
+      const projectConfig: ProjectConfig = {
+        id: 1,
+        planId: undefined,
+        est_cost: undefined,
+        max_budget: undefined,
+        max_road_distance: undefined,
+        max_slope: undefined,
+        max_treatment_area_ratio: undefined,
+        priorities: undefined,
+        createdTimestamp: undefined,
+        weights: undefined,
+      };
+      const scenario: Scenario = {
+        id: '1',
+        planId: undefined,
+        projectId: undefined,
+        config: projectConfig,
+        priorities: [],
+        projectAreas: [],
+        createdTimestamp: undefined,
+        notes: 'hello',
+        owner: undefined,
+        favorited: undefined,
+      };
+
+      service.updateScenarioNotes(scenario).subscribe((res) => {
+        expect(res).toEqual(1);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/update_scenario/')
+      );
+      expect(req.request.body).toEqual({
+        id: scenario.id,
+        notes: scenario.notes,
+      });
+      expect(req.request.method).toEqual('PATCH');
+      req.flush(1);
+      httpTestingController.verify();
+    });
+  });
+
   describe('deleteScenarios', () => {
     it('should make HTTP request to backend', (done) => {
       service.deleteScenarios(['1']).subscribe((res) => {
