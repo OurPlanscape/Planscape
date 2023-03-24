@@ -1,5 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { Observable, take } from 'rxjs';
 
 import { AuthService } from '../services';
 import { User } from '../types';
@@ -10,9 +17,38 @@ import { User } from '../types';
   styleUrls: ['./account-dialog.component.scss'],
 })
 export class AccountDialogComponent implements OnInit {
+  changingPassword: boolean = false;
+  changePasswordForm: FormGroup;
+  disableChangeButton: boolean = false;
+  disableEditButton: boolean = false;
+  editingAccount: boolean = false;
+  editAccountForm: FormGroup;
+  error: any;
   user$!: Observable<User | null>;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private fb: FormBuilder,
+    private snackbar: MatSnackBar
+  ) {
+    this.changePasswordForm = this.fb.group(
+      {
+        password1: this.fb.control('', [
+          Validators.required,
+          Validators.minLength(8),
+        ]),
+        password2: this.fb.control('', [Validators.required]),
+      },
+      {
+        validator: this.passwordsMatchValidator,
+      }
+    );
+    this.editAccountForm = this.fb.group({
+      firstName: this.fb.control('', Validators.required),
+      lastName: this.fb.control('', Validators.required),
+      email: this.fb.control('', [Validators.required, Validators.email]),
+    });
+  }
 
   ngOnInit(): void {
     this.user$ = this.authService.loggedInUser$;
@@ -21,5 +57,84 @@ export class AccountDialogComponent implements OnInit {
   displayName(user: User): string {
     if (user.firstName) return user.firstName.concat(' ', user.lastName ?? '');
     else return user.username ?? user.email!;
+  }
+
+  changePassword(): void {
+    this.changingPassword = true;
+    this.error = null;
+  }
+
+  editAccount(): void {
+    const user = this.authService.loggedInUser$.getValue();
+    this.editAccountForm.get('firstName')?.setValue(user?.firstName);
+    this.editAccountForm.get('lastName')?.setValue(user?.lastName);
+    this.editAccountForm.get('email')?.setValue(user?.email);
+    this.editingAccount = true;
+    this.error = null;
+  }
+
+  logout(): void {
+    this.authService.logout().pipe(take(1)).subscribe();
+  }
+
+  savePassword(): void {
+    if (this.changePasswordForm.invalid) return;
+
+    this.disableChangeButton = true;
+
+    this.authService
+      .changePassword(
+        this.changePasswordForm.get('password1')?.value,
+        this.changePasswordForm.get('password2')?.value
+      )
+      .pipe(take(1))
+      .subscribe(
+        (_) => {
+          this.changingPassword = false;
+          this.disableChangeButton = false;
+          this.error = null;
+          this.snackbar.open('Updated password successfully', undefined, {
+            duration: 3000,
+          });
+        },
+        (err) => {
+          this.error = err;
+          this.disableChangeButton = false;
+        }
+      );
+  }
+
+  saveEdits(): void {
+    if (this.editAccountForm.invalid) return;
+
+    this.disableEditButton = true;
+
+    this.authService
+      .updateUser({
+        firstName: this.editAccountForm.get('firstName')?.value,
+        lastName: this.editAccountForm.get('lastName')?.value,
+        email: this.editAccountForm.get('email')?.value,
+      })
+      .pipe(take(1))
+      .subscribe(
+        (_) => {
+          this.editingAccount = false;
+          this.disableEditButton = false;
+          this.error = null;
+          this.snackbar.open('Updated account successfully', undefined, {
+            duration: 3000,
+          });
+        },
+        (err) => {
+          this.error = err;
+          this.disableEditButton = false;
+        }
+      );
+  }
+
+  private passwordsMatchValidator(group: AbstractControl) {
+    const password1 = group.get('password1')?.value;
+    const password2 = group.get('password2')?.value;
+    return password1 === password2 ? null : { passwordsNotEqual: true };
   }
 }
