@@ -1,0 +1,14 @@
+{
+    "coefficients": {
+        "high_severity_potential_smoke_emissions": 0.30,
+        "moderate_severity_potential_smoke_emissions": 0.27,
+        "california_spotted_owl": 0.56,
+        "pacific_fisher": 0.45,
+        "total_carbon": 0.36,
+        "seral_stage": -0.14,
+        "tree_to_shrub_cover_ratio": 0.20,
+        "max_sdi": 0.52,
+        "evapotranspiration_precipitation": 0.31,
+        "runoff": -0.13
+    }
+}

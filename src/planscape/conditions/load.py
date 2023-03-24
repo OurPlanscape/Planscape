@@ -1,5 +1,7 @@
 import os
 import subprocess
+import json
+from copy import deepcopy
 from typing import cast
 
 from base.condition_types import ConditionLevel, ConditionScoreType
@@ -242,3 +244,95 @@ def compute_pillars(region_name: str, save: bool, reload: bool):
             continue
         _load_condition(pillar['pillar_name'], ConditionLevel.PILLAR,
                         ConditionScoreType.CURRENT, os.path.basename(raster_path), region['region_name'], filepath)
+
+
+def load_impact_of_treatment_model(filepath):
+    f = open(filepath)
+    coeffs = json.load(f)["coefficients"]
+    f.close()
+    return coeffs
+
+
+def simulate_TPA_treatment():
+    # Obtaining "Trees Per Acre" (TPA) raster as predictor for impact of treatment.
+    reader = ConditionReader()
+    TPA = reader.read('sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m', condition_type=0)
+    # Getting hypothetical raster of treatment implemented everywhere,
+    # thus raising normalized value of the metric to 0.5
+    TPA_after_treatment = deepcopy(TPA)
+    TPA_impact_of_treatment = deepcopy(TPA)
+    TPA_after_treatment.raster[TPA_after_treatment.raster < 0.5] = 0.5
+    TPA_impact_of_treatment.raster = TPA_impact_of_treatment.raster - TPA.raster
+    # Returning per cell improvement in TPA metric due to treatment 
+    return TPA_impact_of_treatment
+
+
+def compute_metric_impact(metric, predictor_change, coeff):
+    computed_metric = deepcopy(metric)
+    computed_metric.raster = computed_metric.raster + predictor_change.raster * coeff
+    return computed_metric
+
+
+#def compute_conditions_after_treatment(region_name: str, save: bool, reload: bool):
+def load_metrics(region_name: str, save: bool, reload: bool):
+    """Computes pillar rasters based on the conditions config and saves them locally. Optionally loads them to our database.
+
+    Args:
+      region: The region to compute
+      reload: True if the raster should be reloaded 
+    """
+    config_path = os.path.join(settings.BASE_DIR, 'config/conditions.json')
+    config = PillarConfig(config_path)
+    # Loading model coefficients from config file
+    coeff_path = os.path.join(settings.BASE_DIR, 'config/coefficients_impact_of_treatment.json')
+    coeffs = load_impact_of_treatment_model(coeff_path)
+    region = config.get_region(region_name)
+    if region is None:
+        return
+    
+    TPA_impact_of_treatment = simulate_TPA_treatment()
+
+    # Traversing over metrics tree to find metrics that are affected by treatment                        
+    for pillar in config.get_pillars(region):
+        if not pillar.get('display', False):
+            continue
+        for element in config.get_elements(pillar):
+            for metric in config.get_metrics(element):
+                metric_name = metric['metric_name']
+                print(metric_name)
+
+                #reader = ConditionReader()
+                #condition = reader.read(metric['filepath'], condition_type=0)
+
+                # Checking if metric is impacted
+                # (for metrics without coefficient we have no information on impact)
+                if metric_name in coeffs.keys():
+                    print("calculating impact for " + metric_name)
+                    filepath = "impact_of_treatment_" + metric_name
+
+                    query = BaseCondition.objects.filter(condition_name=metric_name)
+                    if len(query) > 0:
+                        print("BaseCondition " +
+                            metric['metric_name'] + " already exists; deleting.")
+                        query.delete()
+
+                    # Calculating probable change in metric due to change in TPA
+                    coeff = coeffs[metric_name]
+                    computed_metric = compute_metric_impact(
+                        metric=metric,
+                        predictor_change=TPA_impact_of_treatment.raster,
+                        coeff=coeff)
+
+                    # Save locally
+                    if save and computed_metric is not None:
+                        _save_condition(computed_metric.raster, filepath,
+                                        computed_metric.profile)
+
+                    # Load to database
+                    if not reload:
+                        continue
+                    _load_condition(pillar['pillar_name'], ConditionLevel.PILLAR,
+                                    ConditionScoreType.CURRENT, os.path.basename(raster_path), region['region_name'], filepath)
+
+
+
