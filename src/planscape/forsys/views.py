@@ -8,26 +8,24 @@ from pstats import SortKey
 
 import numpy as np
 import pandas as pd
+import rpy2
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
-from forsys.forsys_request_params import (
-    ClusterAlgorithmType, get_generation_request_params,
-    get_ranking_request_params)
+from forsys.forsys_request_params import (ClusterAlgorithmType,
+                                          get_generation_request_params,
+                                          get_ranking_request_params)
 from forsys.get_forsys_inputs import (ForsysGenerationInput,
                                       ForsysInputHeaders, ForsysRankingInput)
 from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
-from forsys.write_forsys_output_to_db import (
-    create_plan_and_scenario, save_generation_output_to_db)
+from forsys.write_forsys_output_to_db import (create_plan_and_scenario,
+                                              save_generation_output_to_db)
 from memory_profiler import profile
 from planscape import settings
 from pytz import timezone
-
-import rpy2
-
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
