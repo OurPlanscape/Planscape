@@ -29,9 +29,9 @@ These settings are
   PLANSCAPE_CACHE_LOCATION: Cache location (important for memcached, etc.)
 """
 import os
+from pathlib import Path
 
 from decouple import config
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -51,11 +51,17 @@ ALLOWED_HOSTS: list[str] = str(
 
 
 # Application definition
-
+planscape_apps = ['attributes',
+                  'boundary',
+                  'conditions',
+                  'existing_projects',
+                  'plan',
+                  'users']
 INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'corsheaders',
     'dj_rest_auth',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -64,19 +70,12 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'leaflet',
     'rest_framework',
     'rest_framework_gis',
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
-    'attributes',
-    'boundary',
-    'conditions',
-    'existing_projects',
-    'plan',
-    'leaflet',
-    'corsheaders',
-    'users',
-]
+] + planscape_apps
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -112,8 +111,10 @@ WSGI_APPLICATION = 'planscape.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-PLANSCAPE_DATABASE_HOST = config('PLANSCAPE_DATABASE_HOST', default='localhost')
-PLANSCAPE_DATABASE_PASSWORD = config('PLANSCAPE_DATABASE_PASSWORD', default='pass')
+PLANSCAPE_DATABASE_HOST = config(
+    'PLANSCAPE_DATABASE_HOST', default='localhost')
+PLANSCAPE_DATABASE_PASSWORD = config(
+    'PLANSCAPE_DATABASE_PASSWORD', default='pass')
 PLANSCAPE_PORT = config('PLANSCAPE_PORT', default=5432)
 DATABASES = {
     "default": {
@@ -135,18 +136,11 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+        'NAME':
+        'django.contrib.auth.password_validation.UserAttributeSimilarityValidator', },
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator', },
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator', },
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },]
 
 
 # Internationalization
@@ -173,17 +167,23 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SPATIALITE_LIBRARY_PATH = '/opt/homebrew/lib/mod_spatialite.dylib'
 
-CORS_ALLOWED_ORIGINS = str(config(
-    'PLANSCAPE_CORS_ALLOWED_ORIGINS', default='http://localhost:4200')).split(',')
-CORS_ALLOWED_HOSTS = str(config(
-    'PLANSCAPE_CORS_ALLOWED_HOSTS', default='http://localhost:4200')).split(',')
+CORS_ALLOWED_ORIGINS = str(
+    config(
+        'PLANSCAPE_CORS_ALLOWED_ORIGINS',
+        default='http://localhost:4200')).split(',')
+CORS_ALLOWED_HOSTS = str(
+    config(
+        'PLANSCAPE_CORS_ALLOWED_HOSTS',
+        default='http://localhost:4200')).split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # Cross-Site Request Forgery protection settings
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = str(config(
-    'PLANSCAPE_CSRF_TRUSTED_ORIGINS', default='http://localhost:4200')).split(',')
+CSRF_TRUSTED_ORIGINS = str(
+    config(
+        'PLANSCAPE_CSRF_TRUSTED_ORIGINS',
+        default='http://localhost:4200')).split(',')
 CSRF_HEADER_NAME = 'CSRF_COOKIE'
 
 # True if a non-logged-in user can save plans.
@@ -234,7 +234,7 @@ CRS_FOR_RASTERS = 9822
 CRS_9822_PROJ4 = (
     '+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 '
     '+datum=WGS84 +units=m +no_defs')
-CRS_9822_SCALE = (300, -300) # a raster transform has origin, scale, and skew.
+CRS_9822_SCALE = (300, -300)  # a raster transform has origin, scale, and skew.
 
 # The area of a raster pixel (in km-squared).
 RASTER_PIXEL_AREA = 0.300 * 0.300
