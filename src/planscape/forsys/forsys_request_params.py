@@ -413,6 +413,9 @@ class ForsysGenerationRequestParamsFromDb(
         self.priorities, self.priority_weights = self._get_weighted_priorities(
             scenario)
 
+        self.max_cost_per_project_in_usd = project.max_cost_per_project_in_usd
+        self.max_area_per_project_in_km2 = project.max_area_per_project_in_km2
+
     def _get_weighted_priorities(
         self, scenario: Scenario
     ) -> tuple[list[str], list[float]]:
