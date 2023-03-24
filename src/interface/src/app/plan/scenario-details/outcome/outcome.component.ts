@@ -10,6 +10,10 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, take } from 'rxjs';
 import { AuthService } from 'src/app/services';
 import { Plan, ProjectArea, Scenario, User } from 'src/app/types';
+import { FeatureCollection } from 'geojson';
+import area from '@turf/area';
+
+const SQUARE_METERS_PER_ACRE = 0.0002471054;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,9 +25,11 @@ export class OutcomeComponent implements OnInit, OnChanges {
   @Input() plan: Plan | null = null;
   @Input() scenario: Scenario | null = null;
   currentUser$ = new BehaviorSubject<User | null>(null);
+  displayName = '';
   scenarioNotes: FormGroup;
   totalAcresTreated: number = 0;
-  totalCostRange: string = '';
+  totalPlanningAreaAcres: number = 0;
+  totalCostRange: string = 'tbd';
 
   constructor(
     private authService: AuthService,
@@ -35,7 +41,17 @@ export class OutcomeComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    this.authService.loggedInUser$.pipe(take(1)).subscribe(this.currentUser$)
+    this.authService.loggedInUser$.pipe(take(1)).subscribe((user) => {
+      if (user) {
+        this.currentUser$.next(user);
+        this.displayName = user.firstName ? user.firstName : (user.username ? user.username : '');
+      } else {
+        this.displayName = 'Guest';
+      }
+    });
+    if (this.plan) {
+      this.totalPlanningAreaAcres = this.calculatePlanningAreaAcres(this.plan.planningArea!);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -56,5 +72,11 @@ export class OutcomeComponent implements OnInit, OnChanges {
     return projectAreas.reduce((totalAcres, projectArea) => {
       return totalAcres + (projectArea.estimatedAreaTreated ?? 0);
     }, 0);
+  }
+
+  private calculatePlanningAreaAcres(planningArea: GeoJSON.GeoJSON) {
+    const squareMeters = area(planningArea as FeatureCollection);
+    const acres = squareMeters * SQUARE_METERS_PER_ACRE;
+    return Math.round(acres);
   }
 }
