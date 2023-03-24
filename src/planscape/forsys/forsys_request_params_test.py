@@ -267,6 +267,8 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
         self.assertIsNone(params.db_params.scenario)
         self.assertFalse(params.db_params.write_to_db)
         self.assertIsNone(params.db_params.user)
+        self.assertIsNone(params.max_cost_per_project_in_usd)
+        self.assertIsNone(params.max_area_per_project_in_km2)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -397,7 +399,9 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
             geometry=self.stored_geometry)
 
         self.project_with_user = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user)
+            owner=self.user, plan=self.plan_with_user,
+            max_cost_per_project_in_usd=1000,
+            max_area_per_project_in_km2=500)
 
         self.scenario_with_user = Scenario.objects.create(
             owner=self.user, plan=self.plan_with_user,
@@ -438,6 +442,8 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertEqual(params.db_params.scenario.pk,
                          self.scenario_with_user.pk)
         self.assertEqual(params.db_params.user.pk, self.user.pk)
+        self.assertEqual(params.max_cost_per_project_in_usd, 1000)
+        self.assertEqual(params.max_area_per_project_in_km2, 500)
 
     def test_read_ok_for_debug_user(self):
         request = HttpRequest()
