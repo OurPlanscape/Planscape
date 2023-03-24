@@ -379,6 +379,49 @@ describe('AuthService', () => {
         .flush(backendUser);
     });
   });
+
+  describe('deleteUser', () => {
+    it('makes request to backend', (done) => {
+      const user = {
+        firstName: 'Foo',
+        lastName: 'Bar',
+        username: 'test',
+        email: 'test@test.com',
+      };
+
+      service.deleteUser(user).subscribe((res) => {
+        expect(res).toBeTrue();
+        done();
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT + '/users/delete/'
+      );
+      expect(req.request.method).toEqual('POST');
+      expect(req.request.body).toEqual({ email: 'test@test.com' });
+      req.flush({ deleted: true });
+      httpTestingController.verify();
+    });
+  });
+
+  it('logs out user if successful', (done) => {
+    const user = {
+      firstName: 'Foo',
+      lastName: 'Bar',
+      username: 'test',
+      email: 'test@test.com',
+    };
+
+    service.deleteUser(user).subscribe((res) => {
+      expect(service.loggedInStatus$.value).toBeFalse();
+      expect(service.loggedInUser$.value).toBeNull();
+      done();
+    });
+
+    httpTestingController
+      .expectOne(BackendConstants.END_POINT + '/users/delete/')
+      .flush({ deleted: true });
+  });
 });
 
 describe('AuthGuard', () => {

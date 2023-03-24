@@ -9,6 +9,14 @@
   <div class="button-row">
     <button mat-raised-button (click)="cancel()">CANCEL</button>
 
-    <button mat-raised-button color="warn">DELETE</button>
+    <button
+      mat-raised-button
+      color="warn"
+      (click)="deleteAccount()"
+      [disabled]="disableDeleteButton">
+      DELETE
+    </button>
   </div>
+
+  <p *ngIf="error">{{ error }}</p>
 </div>
