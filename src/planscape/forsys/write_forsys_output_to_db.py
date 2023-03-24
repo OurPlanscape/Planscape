@@ -10,7 +10,8 @@ from plan.models import (
 from pytz import timezone
 
 
-# Given a WKT, returns a MultiPolygon.
+# Given a WKT, validates that the WKT repreesents either a Polygon or 
+# MultiPolygon, then returns a MultiPolygon.
 def _get_multipolygon(wkt: str):
     geo = GEOSGeometry(wkt)
     if geo.geom_typeid == 6:
@@ -21,7 +22,7 @@ def _get_multipolygon(wkt: str):
         return multi
 
     raise Exception(
-        "geometry, %s, is neither a polygon nor a multipolylgon" % (wkt))
+        "geometry, %s, is neither a polygon nor a multipolygon" % (wkt))
 
 
 def _create_plan(params: ForsysGenerationRequestParams) -> Plan:
