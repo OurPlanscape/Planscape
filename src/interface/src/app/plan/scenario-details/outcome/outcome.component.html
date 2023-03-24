@@ -64,7 +64,7 @@
           <div class="flex-row space-between reduced-height-row">
             <span>{{ scenario?.projectAreas?.length || '0' }} project areas</span>
             <span>{{ totalAcresTreated }} ac</span>
-            <span>{{ (totalAcresTreated / totalPlanningAreaAcres) | number: '1.0-5' }}%</span>
+            <span>{{ (totalAcresTreated / totalPlanningAreaAcres) * 100 | number: '1.0-5' }}%</span>
             <span>{{ totalCostRange }}</span>
           </div>
         </div>
@@ -76,7 +76,7 @@
               <div class="flex-row"><h1>Area {{ i+1 }}</h1></div>
               <div class="area-info-wrapper">
                 <div class="flex-row space-between darker-h1">
-                  <span>{{ projectArea.estimatedAreaTreated }}</span>
+                  <span>{{ projectArea.actualAcresTreated }}</span>
                   <span>tbd</span>
                   <span>tbd</span>
                 </div>

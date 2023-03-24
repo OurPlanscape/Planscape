@@ -31,9 +31,7 @@ export class OutcomeComponent implements OnInit, OnChanges {
   totalPlanningAreaAcres: number = 0;
   totalCostRange: string = 'tbd';
 
-  constructor(
-    private authService: AuthService,
-    private fb: FormBuilder) {
+  constructor(private authService: AuthService, private fb: FormBuilder) {
     // TODO: Call update scenario on submit.
     this.scenarioNotes = fb.group({
       notes: '',
@@ -44,13 +42,15 @@ export class OutcomeComponent implements OnInit, OnChanges {
     this.authService.loggedInUser$.pipe(take(1)).subscribe((user) => {
       if (user) {
         this.currentUser$.next(user);
-        this.displayName = user.firstName ? user.firstName : (user.username ? user.username : '');
+        this.displayName = user.firstName ? user.firstName : (user.username ?? '');
       } else {
         this.displayName = 'Guest';
       }
     });
     if (this.plan) {
-      this.totalPlanningAreaAcres = this.calculatePlanningAreaAcres(this.plan.planningArea!);
+      this.totalPlanningAreaAcres = this.calculateAcres(
+        this.plan.planningArea!
+      );
     }
   }
 
@@ -62,20 +62,27 @@ export class OutcomeComponent implements OnInit, OnChanges {
       ) {
         this.scenarioNotes.controls['notes'].setValue(this.scenario.notes);
       }
-      this.totalAcresTreated = this.calculateTotalAcresTreated(
-        this.scenario.projectAreas || []
-      );
+      if (this.scenario?.projectAreas) {
+        this.scenario?.projectAreas.forEach((projectArea) => {
+          projectArea.actualAcresTreated = this.calculateAcres(
+            projectArea.projectArea
+          );
+        });
+        this.totalAcresTreated = this.calculateTotalAcresTreated(
+          this.scenario.projectAreas
+        );
+      }
     }
   }
 
   private calculateTotalAcresTreated(projectAreas: ProjectArea[]): number {
     return projectAreas.reduce((totalAcres, projectArea) => {
-      return totalAcres + (projectArea.estimatedAreaTreated ?? 0);
+      return totalAcres + (projectArea.actualAcresTreated ?? 0);
     }, 0);
   }
 
-  private calculatePlanningAreaAcres(planningArea: GeoJSON.GeoJSON) {
-    const squareMeters = area(planningArea as FeatureCollection);
+  private calculateAcres(shape: GeoJSON.GeoJSON) {
+    const squareMeters = area(shape as FeatureCollection);
     const acres = squareMeters * SQUARE_METERS_PER_ACRE;
     return Math.round(acres);
   }
