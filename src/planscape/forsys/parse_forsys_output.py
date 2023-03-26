@@ -86,11 +86,11 @@ class ForsysRankingOutputForMultipleScenarios():
     # Of note, priorities must be listed in the same format and order they're
     # listed for the forsys call.
     def __init__(
-            self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
+            self, raw_forsys_output: dict,
             priorities: list[str],
             max_area: float, max_cost: float, project_id_header: str,
             area_header: str, cost_header: str):
-        self._save_raw_forsys_project_output_as_dict(raw_forsys_output)
+        self._forsys_project_output_df = raw_forsys_output["project"]
 
         self._set_header_names(priorities, area_header,
                                cost_header, project_id_header)
@@ -108,12 +108,6 @@ class ForsysRankingOutputForMultipleScenarios():
             else:
                 self._append_ranked_project_to_new_scenario(
                     scenario_str, scenario_weights, i)
-
-    def _save_raw_forsys_project_output_as_dict(
-            self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
-        rdf = raw_forsys_output[self._PROJECT_OUTPUT_INDEX]
-        self._forsys_project_output_df = {
-            key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
     def _check_header_name(self, header) -> None:
         if header not in self._forsys_project_output_df.keys():
@@ -283,12 +277,6 @@ class ForsysRankingOutputForASingleScenario():
              'cumulative_ranked_project_cost': []})
         for i in range(len(self._forsys_project_output_df[project_id_header])):
             self._append_ranked_project_to_scenario(priority_weights, i)
-
-    def _save_raw_forsys_project_output_as_dict(
-            self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
-        rdf = raw_forsys_output[self._PROJECT_OUTPUT_INDEX]
-        self._forsys_project_output_df = {
-            key: np.asarray(rdf.rx2(key)) for key in rdf.names}
 
     def _check_header_name(self, header) -> None:
         if header not in self._forsys_project_output_df.keys():
