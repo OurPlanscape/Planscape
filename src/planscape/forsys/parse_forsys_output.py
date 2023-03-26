@@ -284,6 +284,9 @@ class ForsysRankingOutputForASingleScenario():
         for i in range(len(self._forsys_project_output_df[project_id_header])):
             self._append_ranked_project_to_scenario(priority_weights, i)
 
+    # TODO: consolidate with init function above when the Lambda/Django interface is finalized.
+    # This method accepts a raw_forsys_output Python dict instead of a rpy2 object. The resulting dictionary stored in 
+    # _forsys_project_output_df is expected to be the same.
     def __init__(self, raw_forsys_output: dict,
                  priority_weights: dict[str, float], max_area, max_cost,
                  project_id_header: str, area_header: str, cost_header: str):
@@ -420,6 +423,9 @@ class ForsysGenerationOutputForASingleScenario(
             self._forsys_stand_output_df)
         self._populate_geo_wkt_in_ranked_projects(project_area_geometries)
 
+    # TODO: consolidate with init function above when the Lambda/Django interface is finalized.
+    # This method accepts a raw_forsys_output Python dict instead of a rpy2 object. The resulting dictionary stored in 
+    # _forsys_stand_output_df is expected to be the same.
     def __init__(
             self, raw_forsys_output: dict,
             priority_weights: dict[str, float],
