@@ -14,10 +14,10 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
 from plan.models import (Plan, Project, ProjectArea, Scenario,
-                         ScenarioWeightedPriority)
+                         ScenarioWeightedPriority, RankedProjectArea)
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer, ScenarioSerializer,
-                              ScenarioWeightedPrioritySerializer)
+                              ScenarioWeightedPrioritySerializer, RankedProjectAreaSerializer)
 from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
@@ -40,7 +40,11 @@ def get_user(request: HttpRequest) -> User:
 
 def get_scenario_by_id(
         user: User, id_url_param: str, params: QueryDict) -> Scenario:
+    print("assssss")
+    print(params)
+    type(params[id_url_param])
     assert isinstance(params[id_url_param], str)
+    print("ejllakjsdf")
     scenario_id = params.get(id_url_param, "0")
     scenario = Scenario.objects.select_related(
         'project').get(id=scenario_id)
@@ -653,7 +657,7 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet,
+def _serialize_scenario(scenario: Scenario, weights: QuerySet, ranked_project_areas: QuerySet,
                         project: Project) -> dict:
     result = ScenarioSerializer(scenario).data
 
@@ -670,7 +674,11 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, areas: QuerySet,
                 Condition.objects.get(pk=serialized_weight['priority']).
                 condition_dataset.condition_name] = serialized_weight['weight']
 
-    result['project_areas'] = _serialize_project_areas(areas)
+    result['project_areas'] = {}
+    for area in ranked_project_areas:
+        result['project_areas'][area.pk] = RankedProjectAreaSerializer(
+            area).data
+
     # TODO: project should be a required field
     if project is not None:
         result['config'] = _serialize_project(project)
@@ -683,13 +691,13 @@ def get_scenario(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
         scenario = get_scenario_by_id(user, 'id', request.GET)
-
         weights = ScenarioWeightedPriority.objects.filter(scenario=scenario)
-        project_areas = ProjectArea.objects.filter(project=scenario.project.pk)
+        ranked_project_areas = RankedProjectArea.objects.select_related(
+            'project_area').filter(scenario=scenario)
 
         return JsonResponse(
             _serialize_scenario(
-                scenario, weights, project_areas, scenario.project),
+                scenario, weights, ranked_project_areas, scenario.project),
             safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -715,7 +723,7 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
             [_serialize_scenario(scenario,
                                  weights=ScenarioWeightedPriority.objects.filter(
                                      scenario=scenario),
-                                 areas=ProjectArea.objects.filter(project=scenario.project.pk), project=scenario.project)
+                                 ranked_project_areas=RankedProjectArea.objects.select_related('project_area').filter(scenario=scenario), project=scenario.project)
              for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -823,7 +831,7 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 # TODO: finalize call logic after testing piping.
 # NOTE: To send a queue message from your local machine, populate AWS credential args.
-# TODO: feed plan_id and scenario_id from user input into the queue message body 
+# TODO: feed plan_id and scenario_id from user input into the queue message body
 def queue_forsys_call(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
