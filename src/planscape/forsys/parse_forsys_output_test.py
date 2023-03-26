@@ -32,7 +32,7 @@ def _convert_dictionary_of_lists_to_rdf(
 
 class TestForsysRankingOutputForMultipleScenarios(TestCase):
     def test_parses_output(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, None, "proj_id", "area", "cost")
@@ -88,7 +88,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_fails_if_priority_ordering_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # priority order is ["p2", "p1"] instead of ["p1", "p2"]
@@ -100,7 +100,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                          'header, Pr_1_p2, is not a forsys output header')
 
     def test_fails_if_proj_id_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
@@ -112,7 +112,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                          'header, project_id, is not a forsys output header')
 
     def test_fails_if_area_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
@@ -125,7 +125,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             'header, ETrt_area_ha, is not a forsys output header')
 
     def test_fails_if_cost_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
@@ -138,7 +138,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             'header, ETrt_c, is not a forsys output header')
 
     def test_limits_area(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             25, None, "proj_id", "area", "cost")
@@ -184,7 +184,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_limits_area_by_skipping_top_project(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             10, None, "proj_id", "area", "cost")
@@ -220,7 +220,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_limits_cost(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, 1200, "proj_id", "area", "cost")
@@ -266,7 +266,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_limits_cost_by_skipping_top_project(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, 550, "proj_id", "area", "cost")
@@ -301,7 +301,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                                  }
                              })
 
-    def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
+    def _get_parsed_forsys_output(self) -> dict:
         data = {
             "proj_id": [1, 2, 3, 2, 1, 3],
             "Pr_1_p1": [1, 1, 1, 1, 1, 1],
@@ -316,7 +316,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             {"stand_output": _convert_dictionary_of_lists_to_rdf(self, {}),
              "project_output": _convert_dictionary_of_lists_to_rdf(self, data),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return raw_forsys_output
+        return convert_rdfs_vector_to_dict_of_lists(raw_forsys_output)
 
 
 class TestForsysRankingOutputForASingleScenario(TestCase):
