@@ -83,6 +83,20 @@ def convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
+def convert_rdfs_vector_to_dict_of_lists(raw_forsys_output: "rpy2.robjects.vectors.ListVector") -> dict:
+    stand_output_rdf = raw_forsys_output[0]
+    project_output_rdf = raw_forsys_output[1]
+    forsys_project_output_df: dict[str, list] = {
+        key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
+    forsys_stand_output_df: dict[str, list] = {
+        key: (np.asarray(stand_output_rdf.rx2(key)).tolist()) for key in stand_output_rdf.names}
+
+    return {
+        'stand': forsys_stand_output_df,
+        'project': forsys_project_output_df
+    }
+
+
 def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
         max_area_in_km2: float | None, max_cost_in_usd: float | None,
@@ -104,7 +118,8 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_cost_header)
 
     parsed_output = ForsysRankingOutputForMultipleScenarios(
-        forsys_output, forsys_priority_headers, max_area_in_km2,
+        convert_rdfs_vector_to_dict_of_lists(
+            forsys_output), forsys_priority_headers, max_area_in_km2,
         max_cost_in_usd, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header)
 
@@ -224,7 +239,8 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(headers.priority_headers))}
     parsed_output = ForsysGenerationOutputForASingleScenario(
-        forsys_output, priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
+        convert_rdfs_vector_to_dict_of_lists(
+            forsys_output), priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
         headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
         headers.FORSYS_GEO_WKT_HEADER)
     return parsed_output
@@ -273,6 +289,7 @@ def generate_project_areas_for_a_single_scenario(
         logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+
 @csrf_exempt
 def generate_project_areas_prototype(
         request: HttpRequest) -> HttpResponse:
@@ -295,21 +312,21 @@ def generate_project_areas_prototype(
             raise ValueError("Must specify scenario_id as an integer")
 
         weighted_priorities = {
-                'storage' : 5.0,
-                'california_spotted_owl': 2.0,
-                'functional_fire' : 1.0,
-                'forest_structure': 2.0,
-                'max_sdi' : 1.0
+            'storage': 5.0,
+            'california_spotted_owl': 2.0,
+            'functional_fire': 1.0,
+            'forest_structure': 2.0,
+            'max_sdi': 1.0
         }
-        
-        # TODO: move this to a HTTP call in the lambda as part of scenario creation 
+
+        # TODO: move this to a HTTP call in the lambda as part of scenario creation
         scenario = Scenario.objects.get(id=scenario_id)
         for priority, weight in weighted_priorities.items():
             condition = Condition.objects.select_related('condition_dataset').get(
                 condition_dataset__condition_name=priority,
                 condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
             weighted_priority = ScenarioWeightedPriority.objects.create(
-                scenario=scenario, priority=condition, 
+                scenario=scenario, priority=condition,
                 weight=weight)
             weighted_priority.save()
 
@@ -318,7 +335,8 @@ def generate_project_areas_prototype(
             'request_type=0' +
             '&debug_user_id=' + str(user_id) +
             '&scenario_id=' + str(scenario_id))
-        params = get_generation_request_params(temp_request) # returns ForsysGenerationRequestParamsFromDb
+        # returns ForsysGenerationRequestParamsFromDb
+        params = get_generation_request_params(temp_request)
         headers = ForsysInputHeaders(params.priorities)
 
         priority_weights_dict = {
