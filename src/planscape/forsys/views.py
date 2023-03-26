@@ -10,9 +10,11 @@ from pstats import SortKey
 import numpy as np
 import pandas as pd
 import rpy2
+from base.condition_types import ConditionScoreType
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+from django.views.decorators.csrf import csrf_exempt
 from forsys.forsys_request_params import (ClusterAlgorithmType,
                                           get_generation_request_params,
                                           get_ranking_request_params)
@@ -25,9 +27,9 @@ from forsys.parse_forsys_output import (
 from forsys.write_forsys_output_to_db import (create_plan_and_scenario,
                                               save_generation_output_to_db)
 from memory_profiler import profile
+from plan.models import Condition, Scenario, ScenarioWeightedPriority
 from planscape import settings
 from pytz import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
@@ -292,14 +294,31 @@ def generate_project_areas_prototype(
         if not (isinstance(scenario_id, int)):
             raise ValueError("Must specify scenario_id as an integer")
 
+        weighted_priorities = {
+                'storage' : 5.0,
+                'california_spotted_owl': 2.0,
+                'functional_fire' : 1.0,
+                'forest_structure': 2.0,
+                'max_sdi' : 1.0
+        }
+        
+        # TODO: move this to a HTTP call in the lambda as part of scenario creation 
+        scenario = Scenario.objects.get(id=scenario_id)
+        for priority, weight in weighted_priorities.items():
+            condition = Condition.objects.select_related('condition_dataset').get(
+                condition_dataset__condition_name=priority,
+                condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+            weighted_priority = ScenarioWeightedPriority.objects.create(
+                scenario=scenario, priority=condition, 
+                weight=weight)
+            weighted_priority.save()
+
         temp_request = HttpRequest()
         temp_request.GET = QueryDict(
             'request_type=0' +
             '&debug_user_id=' + str(user_id) +
-            '&scenario_id=' + str(scenario_id) +
-            '&priorities=storage&priorities=california_spotted_owl&priorities=functional_fire&priorities=forest_structure&priorities=max_sdi' +
-            '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0&priority_weights=2.0&priority_weights=1.0')
-        params = get_generation_request_params(temp_request)
+            '&scenario_id=' + str(scenario_id))
+        params = get_generation_request_params(temp_request) # returns ForsysGenerationRequestParamsFromDb
         headers = ForsysInputHeaders(params.priorities)
 
         priority_weights_dict = {
