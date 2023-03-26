@@ -27,6 +27,7 @@ from forsys.write_forsys_output_to_db import (create_plan_and_scenario,
 from memory_profiler import profile
 from planscape import settings
 from pytz import timezone
+from django.views.decorators.csrf import csrf_exempt
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
@@ -270,7 +271,7 @@ def generate_project_areas_for_a_single_scenario(
         logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-
+@csrf_exempt
 def generate_project_areas_prototype(
         request: HttpRequest) -> HttpResponse:
     try:
@@ -284,21 +285,21 @@ def generate_project_areas_prototype(
         }
 
         user_id = body.get('user_id', None)
-        if user_id is not (isinstance(user_id, int)):
+        if not (isinstance(user_id, int)):
             raise ValueError("Must specify user_id as an integer")
 
         scenario_id = body.get('scenario_id', None)
-        if scenario_id is not (isinstance(scenario_id, int)):
+        if not (isinstance(scenario_id, int)):
             raise ValueError("Must specify scenario_id as an integer")
 
         temp_request = HttpRequest()
         temp_request.GET = QueryDict(
             'request_type=0' +
             '&debug_user_id=' + str(user_id) +
-            '&scenario_id=21' + str(scenario_id) +
+            '&scenario_id=' + str(scenario_id) +
             '&priorities=storage&priorities=california_spotted_owl&priorities=functional_fire&priorities=forest_structure&priorities=max_sdi' +
             '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0&priority_weights=2.0&priority_weights=1.0')
-        params = get_generation_request_params(request)
+        params = get_generation_request_params(temp_request)
         headers = ForsysInputHeaders(params.priorities)
 
         priority_weights_dict = {
