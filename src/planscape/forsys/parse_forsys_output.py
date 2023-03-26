@@ -261,32 +261,11 @@ class ForsysRankingOutputForASingleScenario():
     _max_area: float | None
     _max_cost: float | None
 
-    # Initializes a ForsysScenarioOutput instance given raw forsys output
+    # Initializes a ForsysScenarioOutput instance given a pre-converted forsys output
     # and the following inputs to the forsys call: header names, list of
     # priorities.
     # Of note, priorities must be listed in the same format and order they're
     # listed for the forsys call.
-    # def __init__(self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
-    #              priority_weights: dict[str, float], max_area, max_cost,
-    #              project_id_header: str, area_header: str, cost_header: str):
-    #     self._save_raw_forsys_project_output_as_dict(raw_forsys_output)
-
-    #     self._set_header_names(list(priority_weights.keys()), area_header,
-    #                            cost_header, project_id_header)
-
-    #     self._max_area = max_area
-    #     self._max_cost = max_cost
-
-    #     self.scenario = Scenario(
-    #         {'priority_weights': priority_weights, 'ranked_projects': [],
-    #          'cumulative_ranked_project_area': [],
-    #          'cumulative_ranked_project_cost': []})
-    #     for i in range(len(self._forsys_project_output_df[project_id_header])):
-    #         self._append_ranked_project_to_scenario(priority_weights, i)
-
-    # TODO: consolidate with init function above when the Lambda/Django interface is finalized.
-    # This method accepts a raw_forsys_output Python dict instead of a rpy2 object. The resulting dictionary stored in 
-    # _forsys_project_output_df is expected to be the same.
     def __init__(self, raw_forsys_output: dict,
                  priority_weights: dict[str, float], max_area, max_cost,
                  project_id_header: str, area_header: str, cost_header: str):
@@ -404,28 +383,6 @@ class ForsysGenerationOutputForASingleScenario(
     # that it's easier to process in Python.
     _forsys_stand_output_df: dict[str, list]
 
-    # def __init__(
-    #         self, raw_forsys_output: "rpy2.robjects.vectors.ListVector",
-    #         priority_weights: dict[str, float],
-    #         project_id_header: str, area_header: str, cost_header: str,
-    #         geo_wkt_header: str):
-    #     ForsysRankingOutputForASingleScenario.__init__(
-    #         self, raw_forsys_output, priority_weights, None, None,
-    #         project_id_header, area_header, cost_header)
-
-    #     self._save_raw_forsys_stand_output_as_dict(raw_forsys_output)
-    #     if geo_wkt_header not in self._forsys_stand_output_df.keys():
-    #         raise Exception(
-    #             "header, %s, is not a forsys output header" % geo_wkt_header)
-    #     self._geo_wkt_header = geo_wkt_header
-
-    #     project_area_geometries = self._get_project_area_geometries(
-    #         self._forsys_stand_output_df)
-    #     self._populate_geo_wkt_in_ranked_projects(project_area_geometries)
-
-    # TODO: consolidate with init function above when the Lambda/Django interface is finalized.
-    # This method accepts a raw_forsys_output Python dict instead of a rpy2 object. The resulting dictionary stored in 
-    # _forsys_stand_output_df is expected to be the same.
     def __init__(
             self, raw_forsys_output: dict,
             priority_weights: dict[str, float],
