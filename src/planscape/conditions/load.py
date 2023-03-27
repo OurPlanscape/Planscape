@@ -68,7 +68,9 @@ def _load_metric(metric: Metric, metric_type: str, base_metric: BaseCondition):
         os.path.dirname(os.path.join(settings.BASE_DIR, '../..')), metric_filepath) + metric_type
 
     cmds = 'export PGPASSWORD=pass; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
-        metric_path + ' public.conditions_conditionraster | psql -U planscape -d planscape -h localhost -p 5432'
+        metric_path + ' public.conditions_conditionraster | psql -U planscape -d planscape -h ' \
+            + settings.PLANSCAPE_DATABASE_HOST + \
+                ' -p ' + str(settings.PLANSCAPE_PORT)
     subprocess.call(cmds, shell=True)
     print("Saved ConditionRaster: " + metric_path)
 
@@ -141,7 +143,10 @@ def _load_condition(condition_name: str, condition_level: ConditionLevel, condit
     print("Saved Condition: " + condition.raster_name)
 
     cmds = 'export PGPASSWORD=pass; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
-        filepath + ' public.conditions_conditionraster | psql -U planscape -d planscape -h localhost -p 5432'
+        filepath + ' public.conditions_conditionraster | psql -U planscape -d planscape -h ' \
+            + settings.PLANSCAPE_DATABASE_HOST + \
+                ' -p ' + str(settings.PLANSCAPE_PORT)
+
     subprocess.call(cmds, shell=True)
     print("Saved Raster: " + filepath)
 
@@ -323,11 +328,20 @@ def load_impact_of_treatment(region_name: str, save: bool, reload: bool):
                         predictor_change=TPA_impact_of_treatment.raster,
                         coeff=coeff)
                     
+                    # Writing raster locally
                     data_path = os.path.join(settings.BASE_DIR, '../..')
                     base_filepath = os.path.join(os.path.dirname(
                         data_path), metric_filepath) + metric_type
                     with rasterio.open(base_filepath, 'w', computed_metric) as dst:
                         dst.write(computed_metric.raster, 1)
+                    
+                    # Writing raster to DB
+                    cmds = 'export PGPASSWORD=pass; raster2pgsql -s 9822 -a -I -C -Y -f raster -n name -t 256x256 ' + \
+                        metric_path + ' public.conditions_conditionraster | psql -U planscape -d planscape -h ' \
+                            + settings.PLANSCAPE_DATABASE_HOST + \
+                                ' -p ' + str(settings.PLANSCAPE_PORT)
+                    subprocess.call(cmds, shell=True)
+                    print("Saved ConditionRaster: " + metric_path)
 
 
 
