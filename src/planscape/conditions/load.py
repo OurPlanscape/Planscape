@@ -274,7 +274,7 @@ def compute_metric_impact(metric, predictor_change, coeff):
 
 
 #def compute_conditions_after_treatment(region_name: str, save: bool, reload: bool):
-def load_metrics(region_name: str, save: bool, reload: bool):
+def load_impact_of_treatment(region_name: str, save: bool, reload: bool):
     """Computes pillar rasters based on the conditions config and saves them locally. Optionally loads them to our database.
 
     Args:
@@ -308,13 +308,13 @@ def load_metrics(region_name: str, save: bool, reload: bool):
                 # (for metrics without coefficient we have no information on impact)
                 if metric_name in coeffs.keys():
                     print("calculating impact for " + metric_name)
-                    filepath = "impact_of_treatment_" + metric_name
+                    metric_filepath = "impact_of_treatment_" + metric_name
 
                     query = BaseCondition.objects.filter(condition_name=metric_name)
-                    if len(query) > 0:
-                        print("BaseCondition " +
-                            metric['metric_name'] + " already exists; deleting.")
-                        query.delete()
+                    #if len(query) > 0:
+                        #print("BaseCondition " +
+                        #    metric['metric_name'] + " already exists; deleting.")
+                        #query.delete()
 
                     # Calculating probable change in metric due to change in TPA
                     coeff = coeffs[metric_name]
@@ -322,17 +322,12 @@ def load_metrics(region_name: str, save: bool, reload: bool):
                         metric=metric,
                         predictor_change=TPA_impact_of_treatment.raster,
                         coeff=coeff)
-
-                    # Save locally
-                    if save and computed_metric is not None:
-                        _save_condition(computed_metric.raster, filepath,
-                                        computed_metric.profile)
-
-                    # Load to database
-                    if not reload:
-                        continue
-                    _load_condition(pillar['pillar_name'], ConditionLevel.PILLAR,
-                                    ConditionScoreType.CURRENT, os.path.basename(raster_path), region['region_name'], filepath)
+                    
+                    data_path = os.path.join(settings.BASE_DIR, '../..')
+                    base_filepath = os.path.join(os.path.dirname(
+                        data_path), metric_filepath) + metric_type
+                    with rasterio.open(base_filepath, 'w', computed_metric) as dst:
+                        dst.write(computed_metric.raster, 1)
 
 
 
