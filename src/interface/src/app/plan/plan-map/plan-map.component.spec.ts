@@ -41,7 +41,7 @@ describe('PlanMapComponent', () => {
         new L.LatLng(38.47079787227401, -120.5164425608172),
         new L.LatLng(38.52668443555346, -120.11828371421737),
       ]).toGeoJSON(),
-    }
+    };
     fakePlanState$ = new BehaviorSubject<PlanState>({
       ...emptyPlanState,
     });
@@ -110,7 +110,29 @@ describe('PlanMapComponent', () => {
   });
 
   describe('expand panel button', () => {
+    it('hides button if no config or scenario is active', (done) => {
+      component.showTogglePanelButton().subscribe((result) => {
+        expect(result).toBeFalse();
+        done();
+      });
+    });
+
+    it('shows button if a config or scenario is active', (done) => {
+      fakePlanState$.next({
+        ...fakePlanState$.value,
+        currentConfigId: 1,
+      });
+      component.showTogglePanelButton().subscribe((result) => {
+        expect(result).toBeTrue();
+        done();
+      });
+    });
+
     it('button updates plan state', async () => {
+      fakePlanState$.next({
+        ...fakePlanState$.value,
+        currentConfigId: 1,
+      });
       const button = await loader.getHarness(
         MatButtonHarness.with({ text: /COLLAPSE/ })
       );
