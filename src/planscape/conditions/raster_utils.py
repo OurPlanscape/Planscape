@@ -97,12 +97,13 @@ def _append_to_list(
 def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
     if geo.srid == settings.CRS_FOR_RASTERS:
         return geo
-    geo.transform(
+    transformed_geo = geo.clone()
+    transformed_geo.transform(
         CoordTransform(
             SpatialReference(geo.srid),
             SpatialReference(settings.CRS_9822_PROJ4)))
-    geo.srid = settings.CRS_FOR_RASTERS
-    return geo
+    transformed_geo.srid = settings.CRS_FOR_RASTERS
+    return transformed_geo
 
 
 # Returns None if no intersection exists between a geometry and the condition
