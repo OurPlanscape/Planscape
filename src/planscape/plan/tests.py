@@ -11,7 +11,7 @@ from django.urls import reverse
 from planscape import settings
 
 from .models import (ConditionScores, Plan, Project, ProjectArea, Scenario,
-                     ScenarioWeightedPriority)
+                     ScenarioWeightedPriority, RankedProjectArea)
 
 
 class CreatePlanTest(TransactionTestCase):
@@ -1392,6 +1392,8 @@ class GetScenarioTest(TransactionTestCase):
             scenario=self.scenario, priority=self.condition1, weight=2)
         self.weight2 = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario, priority=self.condition2, weight=3)
+        self.ranked_project_area = RankedProjectArea.objects.create(
+            scenario=self.scenario, project_area=self.project_area, rank=1, weighted_score=2)
 
     def test_get_nonexistent_scenario(self):
         response = self.client.get(
@@ -1426,11 +1428,12 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(scenario['notes'], 'my note')
         self.assertEqual(scenario['priorities'], {
                          'cond1': 2, 'cond2': 3})
-        self.assertEqual(scenario['project_areas'][str(
-            self.project_area.pk)]['geometry'], self.geometry)
-        self.assertEqual(scenario['project_areas'][str(
-            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
         self.assertEqual(scenario['config']['max_budget'], 100)
+        scenario_output = scenario['ranked_project_areas'][str(
+            self.ranked_project_area.pk)]['project_area']
+        self.assertEqual(scenario_output['geometry'], self.geometry)
+        self.assertEqual(
+            scenario_output['properties']['estimated_area_treated'], 200)
 
 
 class ListScenariosTest(TransactionTestCase):
@@ -1459,18 +1462,24 @@ class ListScenariosTest(TransactionTestCase):
         self.project_area = ProjectArea.objects.create(
             owner=self.user, project=self.project,
             project_area=stored_geometry, estimated_area_treated=200)
+
         self.scenario1 = Scenario.objects.create(
             owner=self.user, plan=self.plan, project=self.project, notes='my note')
         self.weight = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario1, priority=self.condition1, weight=2)
         self.weight2 = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario1, priority=self.condition2, weight=3)
+        self.ranked_project_area1 = RankedProjectArea.objects.create(
+            scenario=self.scenario1, project_area=self.project_area, rank=1, weighted_score=2)
+
         self.scenario2 = Scenario.objects.create(
             owner=self.user, plan=self.plan, project=self.project, notes='my note2')
         self.weight = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario2, priority=self.condition1, weight=4)
         self.weight2 = ScenarioWeightedPriority.objects.create(
             scenario=self.scenario2, priority=self.condition2, weight=5)
+        self.ranked_project_area2 = RankedProjectArea.objects.create(
+            scenario=self.scenario2, project_area=self.project_area, rank=4, weighted_score=5)
 
     def test_list_nonexistent_plan(self):
         response = self.client.get(
@@ -1501,21 +1510,23 @@ class ListScenariosTest(TransactionTestCase):
         self.assertEqual(scenario1['id'], self.scenario1.pk)
         self.assertEqual(scenario1['priorities'], {
                          'cond1': 2, 'cond2': 3})
-        self.assertEqual(scenario1['project_areas'][str(
-            self.project_area.pk)]['geometry'], self.geometry)
-        self.assertEqual(scenario1['project_areas'][str(
-            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
         self.assertEqual(scenario1['config']['max_budget'], 100)
+        scenario1_output = scenario1['ranked_project_areas'][str(
+            self.ranked_project_area1.pk)]['project_area']
+        self.assertEqual(scenario1_output['geometry'], self.geometry)
+        self.assertEqual(
+            scenario1_output['properties']['estimated_area_treated'], 200)
 
         scenario2 = response.json()[1]
         self.assertEqual(scenario2['id'], self.scenario2.pk)
         self.assertEqual(scenario2['priorities'], {
                          'cond1': 4, 'cond2': 5})
-        self.assertEqual(scenario2['project_areas'][str(
-            self.project_area.pk)]['geometry'], self.geometry)
-        self.assertEqual(scenario2['project_areas'][str(
-            self.project_area.pk)]['properties']['estimated_area_treated'], 200)
         self.assertEqual(scenario2['config']['max_budget'], 100)
+        scenario2_output = scenario2['ranked_project_areas'][str(
+            self.ranked_project_area2.pk)]['project_area']
+        self.assertEqual(scenario2_output['geometry'], self.geometry)
+        self.assertEqual(
+            scenario2_output['properties']['estimated_area_treated'], 200)
 
 
 class DeleteScenariosTest(TransactionTestCase):

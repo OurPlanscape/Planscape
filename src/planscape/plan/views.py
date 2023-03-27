@@ -40,11 +40,8 @@ def get_user(request: HttpRequest) -> User:
 
 def get_scenario_by_id(
         user: User, id_url_param: str, params: QueryDict) -> Scenario:
-    print("assssss")
-    print(params)
     type(params[id_url_param])
     assert isinstance(params[id_url_param], str)
-    print("ejllakjsdf")
     scenario_id = params.get(id_url_param, "0")
     scenario = Scenario.objects.select_related(
         'project').get(id=scenario_id)
@@ -674,10 +671,10 @@ def _serialize_scenario(scenario: Scenario, weights: QuerySet, ranked_project_ar
                 Condition.objects.get(pk=serialized_weight['priority']).
                 condition_dataset.condition_name] = serialized_weight['weight']
 
-    result['project_areas'] = {}
-    for area in ranked_project_areas:
-        result['project_areas'][area.pk] = RankedProjectAreaSerializer(
-            area).data
+    result['ranked_project_areas'] = {}
+    for ranking in ranked_project_areas:
+        result['ranked_project_areas'][ranking.pk] = RankedProjectAreaSerializer(
+            ranking).data
 
     # TODO: project should be a required field
     if project is not None:
