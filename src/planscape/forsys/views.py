@@ -1,6 +1,5 @@
 import cProfile
 import io
-import json
 import logging
 import os
 import pstats
@@ -12,7 +11,7 @@ import pandas as pd
 import rpy2
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse, QueryDict)
+                         JsonResponse)
 from forsys.forsys_request_params import (ClusterAlgorithmType,
                                           get_generation_request_params,
                                           get_ranking_request_params)
@@ -27,7 +26,6 @@ from forsys.write_forsys_output_to_db import (create_plan_and_scenario,
 from memory_profiler import profile
 from planscape import settings
 from pytz import timezone
-from django.views.decorators.csrf import csrf_exempt
 
 # Configures global logging.
 logger = logging.getLogger(__name__)
@@ -227,7 +225,8 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.FORSYS_GEO_WKT_HEADER)
     return parsed_output
 
-
+    # TODO: Create test endpoint that instantiates ForsysGenerationOutputForASingleScenario 
+    # with stand and project output files 
 def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
@@ -267,54 +266,6 @@ def generate_project_areas_for_a_single_scenario(
             _tear_down_cprofiler(pr, 'output/cprofiler.log')
 
         return JsonResponse(response)
-    except Exception as e:
-        logger.error('project area generation error: ' + str(e))
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
-@csrf_exempt
-def generate_project_areas_prototype(
-        request: HttpRequest) -> HttpResponse:
-    try:
-        body = json.loads(request.body)
-        if not 'stand' in body or not 'project' in body:
-            raise ValueError(
-                "Either the forsys stand or project dictionary is missing")
-        forsys_output_json = {
-            'stand': body['stand'],
-            'project': body['project']
-        }
-
-        user_id = body.get('user_id', None)
-        if not (isinstance(user_id, int)):
-            raise ValueError("Must specify user_id as an integer")
-
-        scenario_id = body.get('scenario_id', None)
-        if not (isinstance(scenario_id, int)):
-            raise ValueError("Must specify scenario_id as an integer")
-
-        temp_request = HttpRequest()
-        temp_request.GET = QueryDict(
-            'request_type=0' +
-            '&debug_user_id=' + str(user_id) +
-            '&scenario_id=' + str(scenario_id) +
-            '&priorities=storage&priorities=california_spotted_owl&priorities=functional_fire&priorities=forest_structure&priorities=max_sdi' +
-            '&priority_weights=5.0&priority_weights=2.0&priority_weights=1.0&priority_weights=2.0&priority_weights=1.0')
-        params = get_generation_request_params(temp_request)
-        headers = ForsysInputHeaders(params.priorities)
-
-        priority_weights_dict = {
-            headers.priority_headers[i]: params.priority_weights[i]
-            for i in range(len(headers.priority_headers))}
-
-        parsed_output = ForsysGenerationOutputForASingleScenario(
-            forsys_output_json, priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
-            headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
-            headers.FORSYS_GEO_WKT_HEADER)
-
-        save_generation_output_to_db(
-            params.db_params.scenario, parsed_output.scenario)
-
-        return JsonResponse(parsed_output.scenario, safe=False)
     except Exception as e:
         logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))

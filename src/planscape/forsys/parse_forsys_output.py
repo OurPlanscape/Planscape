@@ -284,24 +284,6 @@ class ForsysRankingOutputForASingleScenario():
         for i in range(len(self._forsys_project_output_df[project_id_header])):
             self._append_ranked_project_to_scenario(priority_weights, i)
 
-    def __init__(self, raw_forsys_output: dict,
-                 priority_weights: dict[str, float], max_area, max_cost,
-                 project_id_header: str, area_header: str, cost_header: str):
-        self._forsys_project_output_df = raw_forsys_output["project"]
-
-        self._set_header_names(list(priority_weights.keys()), area_header,
-                               cost_header, project_id_header)
-
-        self._max_area = max_area
-        self._max_cost = max_cost
-
-        self.scenario = Scenario(
-            {'priority_weights': priority_weights, 'ranked_projects': [],
-             'cumulative_ranked_project_area': [],
-             'cumulative_ranked_project_cost': []})
-        for i in range(len(self._forsys_project_output_df[project_id_header])):
-            self._append_ranked_project_to_scenario(priority_weights, i)
-
     def _save_raw_forsys_project_output_as_dict(
             self, raw_forsys_output: "rpy2.robjects.vectors.DataFrame") -> None:
         rdf = raw_forsys_output[self._PROJECT_OUTPUT_INDEX]
@@ -411,25 +393,6 @@ class ForsysGenerationOutputForASingleScenario(
             project_id_header, area_header, cost_header)
 
         self._save_raw_forsys_stand_output_as_dict(raw_forsys_output)
-        if geo_wkt_header not in self._forsys_stand_output_df.keys():
-            raise Exception(
-                "header, %s, is not a forsys output header" % geo_wkt_header)
-        self._geo_wkt_header = geo_wkt_header
-
-        project_area_geometries = self._get_project_area_geometries(
-            self._forsys_stand_output_df)
-        self._populate_geo_wkt_in_ranked_projects(project_area_geometries)
-
-    def __init__(
-            self, raw_forsys_output: dict,
-            priority_weights: dict[str, float],
-            project_id_header: str, area_header: str, cost_header: str,
-            geo_wkt_header: str):
-        ForsysRankingOutputForASingleScenario.__init__(
-            self, raw_forsys_output, priority_weights, None, None,
-            project_id_header, area_header, cost_header)
-
-        self._forsys_stand_output_df = raw_forsys_output["stand"]
         if geo_wkt_header not in self._forsys_stand_output_df.keys():
             raise Exception(
                 "header, %s, is not a forsys output header" % geo_wkt_header)
