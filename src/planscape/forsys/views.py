@@ -284,4 +284,3 @@ if settings.DEBUG:
     memfp = open('output/memprofiler.log', 'w+')
     generate_project_areas_for_a_single_scenario = profile(stream=memfp)(
         generate_project_areas_for_a_single_scenario)
-    
