@@ -31,6 +31,7 @@ These settings are
 import os
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
 from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -176,6 +177,7 @@ CORS_ALLOWED_HOSTS = str(
         'PLANSCAPE_CORS_ALLOWED_HOSTS',
         default='http://localhost:4200')).split(',')
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = list(default_headers) + ['Set-Cookie']
 
 # Cross-Site Request Forgery protection settings
 CSRF_USE_SESSIONS = False
@@ -185,6 +187,10 @@ CSRF_TRUSTED_ORIGINS = str(
         'PLANSCAPE_CSRF_TRUSTED_ORIGINS',
         default='http://localhost:4200')).split(',')
 CSRF_HEADER_NAME = 'CSRF_COOKIE'
+SESSION_COOKIE_SECURE = False
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_SAMESITE = None
+SESSION_COOKIE_SAMESITE = None
 
 # True if a non-logged-in user can save plans.
 PLANSCAPE_GUEST_CAN_SAVE = True
