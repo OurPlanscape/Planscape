@@ -6,7 +6,7 @@ import { of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
-import { PlanService } from './../services/plan.service';
+import { AuthService, PlanService } from '../services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
@@ -15,6 +15,7 @@ import { PlanModule } from './plan.module';
 describe('PlanComponent', () => {
   let component: PlanComponent;
   let fixture: ComponentFixture<PlanComponent>;
+  let mockAuthService: Partial<AuthService>;
 
   const fakeGeoJson: GeoJSON.GeoJSON = {
     type: 'FeatureCollection',
@@ -59,6 +60,8 @@ describe('PlanComponent', () => {
       }
     );
 
+    mockAuthService = {};
+
     const fakeService = jasmine.createSpyObj('PlanService', {
       getPlan: of(fakePlan),
       getProjectsForPlan: of([]),
@@ -80,6 +83,7 @@ describe('PlanComponent', () => {
       declarations: [PlanComponent, PlanMapComponent, PlanOverviewComponent],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
+        { provide: AuthService, useValue: mockAuthService },
         { provide: PlanService, useValue: fakeService },
       ],
     }).compileComponents();

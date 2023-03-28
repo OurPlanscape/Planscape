@@ -374,29 +374,6 @@ export class PlanService {
     );
   }
 
-  getUser(userId: string): Observable<User> {
-    const url = BackendConstants.END_POINT.concat(
-      '/plan/get_user_by_id/?id=',
-      userId,
-    );
-    return this.http
-      .get(url, {
-        withCredentials: true,
-      })
-      .pipe(
-        take(1),
-        map((response: any) => {
-          const user: User = {
-            email: response.email,
-            username: response.username,
-            firstName: response.first_name,
-            lastName: response.last_name,
-          };
-          return user;
-        })
-      );
-  }
-
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),

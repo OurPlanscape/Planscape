@@ -16,7 +16,7 @@ import {
 } from 'rxjs';
 
 import { Plan, User } from '../types';
-import { PlanService } from './../services/plan.service';
+import { AuthService, PlanService } from '../services';
 
 @Component({
   selector: 'app-plan',
@@ -35,6 +35,7 @@ export class PlanComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   constructor(
+    private authService: AuthService,
     private planService: PlanService,
     private route: ActivatedRoute,
     private router: Router
@@ -61,7 +62,7 @@ export class PlanComponent implements OnInit, OnDestroy {
 
     this.planOwner$ = plan$.pipe(
       concatMap((plan) => {
-        return this.planService.getUser(plan.ownerId);
+        return this.authService.getUser(plan.ownerId);
       })
     );
   }

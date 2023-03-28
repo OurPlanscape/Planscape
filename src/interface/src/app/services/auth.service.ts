@@ -146,6 +146,30 @@ export class AuthService {
     );
   }
 
+  /** Gets a user given the id. */
+  getUser(userId: string): Observable<User> {
+    const url = BackendConstants.END_POINT.concat(
+      '/users/get_user_by_id/?id=',
+      userId,
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response: any) => {
+          const user: User = {
+            email: response.email,
+            username: response.username,
+            firstName: response.first_name,
+            lastName: response.last_name,
+          };
+          return user;
+        })
+      );
+  }
+
   updateUser(newUser: User): Observable<User> {
     return this.http
       .patch(
@@ -174,7 +198,8 @@ export class AuthService {
       );
   }
 
-  /** "Deletes" user from backend. The behavior of this command is to disable the user account,
+  /**
+   * "Deletes" user from backend. The behavior of this command is to disable the user account,
    *  not fully delete it, so data can be restored later if necessary.
    */
   deleteUser(user: User): Observable<boolean> {

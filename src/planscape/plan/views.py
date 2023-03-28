@@ -17,8 +17,7 @@ from plan.models import (Plan, Project, ProjectArea, Scenario,
                          ScenarioWeightedPriority)
 from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
                               ProjectSerializer, ScenarioSerializer,
-                              ScenarioWeightedPrioritySerializer,
-                              UserSerializer)
+                              ScenarioWeightedPrioritySerializer)
 from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
@@ -72,18 +71,6 @@ def get_project_by_id(user: User, id_url_param: str,
     if project.owner != user:
         raise ValueError("You do not have permission to view this project.")
     return project
-
-@csrf_exempt
-def get_user_by_id(request: HttpRequest) -> HttpResponse:
-    try:
-        assert isinstance(request.GET['id'], str)
-        user_id = request.GET.get('id', "0")
-        if user_id is None:
-            raise ValueError("Must specify user_id")
-        user = User.objects.get(id=user_id)
-        return JsonResponse(UserSerializer(user).data, safe=False)
-    except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
