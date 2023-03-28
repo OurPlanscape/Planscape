@@ -392,7 +392,6 @@ export class PlanService {
             firstName: response.first_name,
             lastName: response.last_name,
           };
-          console.log(user);
           return user;
         })
       );
