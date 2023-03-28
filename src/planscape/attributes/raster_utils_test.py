@@ -1,4 +1,4 @@
-from attributes.attribute_retrieval_test_utils import create_attribute_raster
+from attributes.models import AttributeRaster
 from attributes.raster_utils import get_attribute_values_from_raster
 from conditions.raster_condition_retrieval_testcase import \
     RasterRetrievalTestCase
@@ -14,7 +14,7 @@ class AttributePixelsTest(RasterRetrievalTestCase):
                          5, 6, 7, 8,
                          9, 10, 11, 12,
                          13, 14, 15, 16))
-        create_attribute_raster(foo_raster, "foo")
+        AttributeRaster.objects.create(raster=foo_raster, name="foo")
 
     def test_returns_pixels(self):
         geo = RasterRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
