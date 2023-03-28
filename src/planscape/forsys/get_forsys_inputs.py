@@ -175,7 +175,8 @@ class ForsysGenerationInput():
 
         self._treatment_eligibility_selector = \
             RasterConditionTreatmentEligibilitySelector(
-                self._condition_fetcher.data, priorities)
+                self._condition_fetcher.data, priorities,
+                params.stand_eligibility_params)
 
         self.forsys_input = self._initialize_headers(headers, priorities)
         next_stand_id = 0

@@ -1,6 +1,7 @@
 import numpy as np
 
 from django.test import TestCase
+from forsys.forsys_request_params import StandEligibilityParams
 from forsys.raster_condition_treatment_eligibility_selector import RasterConditionTreatmentEligibilitySelector
 
 
@@ -11,10 +12,12 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
                      'foo': [0.1, 0.2, 0.5, np.nan],
                      'bar': [0.5, 0.1, np.nan, 0.2]
                      }
+        
+        self.stand_eligibility_params = StandEligibilityParams()
 
     def test_selects_pixels(self):
         selector = RasterConditionTreatmentEligibilitySelector(
-            self.data,  ['foo', 'bar'])
+            self.data,  ['foo', 'bar'], self.stand_eligibility_params)
         self.assertEqual(selector.pixels_to_treat, {0: {0: 0}, 1: {0: 1}})
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {1: 2}, 1: {1: 3}})
@@ -22,7 +25,7 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
     def test_fails_for_missing_priorities(self):
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar', 'baz'])
+                self.data,  ['foo', 'bar', 'baz'], self.stand_eligibility_params)
         self.assertEqual(
             str(context.exception),
             "data missing input priority, baz")
@@ -32,7 +35,7 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data.pop('x')
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'])
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
         self.assertEqual(
             str(context.exception),
             "data missing key, x")
@@ -42,7 +45,7 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data.pop('y')
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'])
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
         self.assertEqual(
             str(context.exception),
             "data missing key, y")
@@ -52,7 +55,7 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data['x'].append(10)
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'])
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and y")
@@ -67,7 +70,7 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data['bar'].append(0.1)
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'])
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and foo")
