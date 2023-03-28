@@ -9,7 +9,7 @@ from django.test import TestCase
 from planscape import settings
 
 
-class RasterConditionRetrievalTestCase(TestCase):
+class RasterRetrievalTestCase(TestCase):
     def setUp(self) -> None:
         # Add a row for CRS 9822 to the spatial_ref_sys table, and the GeoTiff to the table.
         with connection.cursor() as cursor:
@@ -21,8 +21,6 @@ class RasterConditionRetrievalTestCase(TestCase):
         self.yorig = 2100954
         self.xscale = 300
         self.yscale = -300
-
-        self.region = 'sierra_cascade_inyo'
 
     def _create_geo(
             self, xmin: int, xmax: int, ymin: int, ymax: int) -> MultiPolygon:
@@ -57,6 +55,14 @@ class RasterConditionRetrievalTestCase(TestCase):
             }]
         })
         return raster
+
+    
+
+class RasterConditionRetrievalTestCase(RasterRetrievalTestCase):
+    def setUp(self) -> None:
+        RasterRetrievalTestCase.setUp(self)
+
+        self.region = 'sierra_cascade_inyo'
 
     def _create_condition_raster(
             self, condition_raster: GDALRaster,
