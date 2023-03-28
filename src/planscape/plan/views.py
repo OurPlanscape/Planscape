@@ -21,6 +21,7 @@ from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
 from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
+# TODO: disallow calls if not logged in as user
 
 MAX_BUDGET = 'max_budget'
 MAX_TREATMENT_AREA_RATIO = 'max_treatment_area_ratio'
@@ -822,37 +823,21 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 
 # NOTE: To send a queue message from your local machine, populate AWS credentials.
-# TODO: disallow if not logged in as user
-def queue_forsys_prototype(request: HttpRequest) -> HttpResponse:
+def queue_forsys_lambda_prototype(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
-        body = json.loads(request.body)
-
-        plan_id = body.get('plan_id', None)
-        if plan_id is None or not (isinstance(plan_id, int)):
-            raise ValueError("Must specify plan_id as an integer")
-        plan = Plan.objects.get(pk=int(plan_id))
-        if plan.owner != user:
-            raise ValueError(
-                "You do not have permission to view this plan.")
+        scenario_id = create_scenario(request)
+        user_id = "Guest" if user is None else str(user.pk)
         
-        project_id = body.get('project_id', None)
-        if project_id is None or not (isinstance(project_id, int)):
-            raise ValueError("Must specify project_id as an integer")
-        project = Project.objects.get(pk=int(project_id))
-        if project.owner != user:
-            raise ValueError(
-                "You do not have permission to view this project.")
-        
-        create_scenario = {
-            'plan_id': str(plan.pk),
-            'project_id': str(project.pk)
+        update_scenario = {
+            'user_id': user_id,
+            'scenario_id': str(scenario_id),
         }
         client = boto3.client('sqs', region_name='us-west-1')
         response = client.send_message(
             QueueUrl='https://sqs.us-west-1.amazonaws.com/705618310400/forsys.fifo',
-            MessageBody=json.dumps(create_scenario),
-            MessageGroupId="Guest" if user is None else str(user.pk)
+            MessageBody=json.dumps(update_scenario),
+            MessageGroupId=user_id
         )
         return JsonResponse({
             'statusCode': 200,

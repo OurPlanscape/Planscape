@@ -18,51 +18,26 @@ def lambda_handler(event, context):
     try:
         body = event['Records'][0]['body']
         parsed = json.loads(body)
-        plan_id = parsed['plan_id']
-        project_id = parsed['project_id']
+        user_id = parsed['user_id']
+        scenario_id = parsed['scenario_id']
 
-        print("plan_id: " + plan_id)
-        print("project_id: " + project_id)
+        # TODO: update processing status of Scenario via HTTP call 
 
-        # TODO: add project_id in create scenario call
-        scenario = {
-            'plan_id': int(plan_id),
-            'priorities': ['biodiversity'],
-            'weights': [1]
-        }
-        resp = requests.post(
-            "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/plan/create_scenario/",
-            json=scenario)
-        print(resp.text)
-        scenario_id = resp.json()
-        print("created scenario id: " + str(scenario_id))
-
-        processing = {
-            'id': scenario_id,
-            'status': PROCESSING_STATUS
-        }
-        resp = requests.patch(PLANSCAPE_URL, json=processing)
-        print(resp.text)
-        print("updated scenario to processing state: " + str(scenario_id))
-
-        # TODO: return a set of generated project areas for TCSI region for visualization
-        print("start forsys run")
+        # Hardcoded patchmax run to verify that the library runs in the Lambda
         r = robjects.r
         base = importr('base')
         utils = importr('utils')
         r.source('rank.R')
         r_f = robjects.r['times2']
+        # Returns static outputs from project_output.csv, stand_output.csv
         raw_forsys_output = r_f(4)
-        print("forsys run completed")
 
         stand_output_rdf = raw_forsys_output[0]
+        forsys_stand_output_df: dict[str, list] = {
+            key: (np.asarray(stand_output_rdf.rx2(key)).tolist()) for key in stand_output_rdf.names}
         project_output_rdf = raw_forsys_output[1]
         forsys_project_output_df: dict[str, list] = {
             key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
-        print(forsys_project_output_df.keys())
-        forsys_stand_output_df: dict[str, list] = {
-            key: (np.asarray(stand_output_rdf.rx2(key)).tolist()) for key in stand_output_rdf.names}
-        print(forsys_stand_output_df.keys())
 
         forsys_outputs = {
             'stand' : forsys_stand_output_df,
@@ -70,10 +45,12 @@ def lambda_handler(event, context):
         }
         json_outputs = json.dumps(forsys_outputs)
 
+        # TODO: re-enable when PR to add generate_project_areas_from_lambda_output_prototype endpoint is submitted.
+        # Endpoint expects body containing: stand, project, user_id, scenario_id 
+        
         # resp = requests.post(
         #     "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/create_scenario/",
         #     json=forsys_outputs)
-        # print(resp.text)
         # scenario_id = resp.json()
 
         return {
@@ -83,7 +60,7 @@ def lambda_handler(event, context):
         response = client.send_message(
             QueueUrl=QUEUE_URL,
             MessageBody=FAILED_STATUS,
-            MessageGroupId="elsie"
+            MessageGroupId=user_id
         )
         return {
             'message': str(e)
