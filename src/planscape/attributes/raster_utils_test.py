@@ -1,22 +1,20 @@
-import numpy as np
-from attributes.models import Attribute, AttributeRaster
-from attributes.attribute_retrieval_testcase import RasterAttributeRetrievalTestCase
-from conditions.raster_condition_retrieval_testcase import RasterRetrievalTestCase
-from django.contrib.gis.geos import MultiPolygon, Polygon
+from attributes.models import AttributeRaster
 from attributes.raster_utils import get_attribute_values_from_raster
+from conditions.raster_condition_retrieval_testcase import \
+    RasterRetrievalTestCase
+from django.contrib.gis.geos import MultiPolygon, Polygon
 
 
-class AttributePixelsTest(RasterAttributeRetrievalTestCase):
+class AttributePixelsTest(RasterRetrievalTestCase):
     def setUp(self) -> None:
-        RasterAttributeRetrievalTestCase.setUp(self)
+        RasterRetrievalTestCase.setUp(self)
 
         foo_raster = RasterRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
                          5, 6, 7, 8,
                          9, 10, 11, 12,
                          13, 14, 15, 16))
-        RasterAttributeRetrievalTestCase._create_attribute_raster(
-            self, foo_raster, "foo")
+        AttributeRaster.objects.create(raster=foo_raster, name="foo")
 
     def test_returns_pixels(self):
         geo = RasterRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
@@ -78,7 +76,7 @@ class AttributePixelsTest(RasterAttributeRetrievalTestCase):
         self.assertIsNone(values)
 
     def test_fails_for_missing_raster(self):
-        geo = RasterAttributeRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
+        geo = RasterRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         with self.assertRaises(Exception) as context:
             get_attribute_values_from_raster(geo, "nonexistent_raster_name")
         self.assertEqual(
