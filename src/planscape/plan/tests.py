@@ -1901,7 +1901,3 @@ class BulkCreateProjectAreaTest(TransactionTestCase):
         self.assertEqual(area.project, self.project_no_user)
         self.assertEqual(area.project_area.coords,
                          self.stored_geometry2.coords)
-
-
-# TODO: add mocks for SQS calls
-# class QueueForsysPrototypeTest(TransactionTestCase)

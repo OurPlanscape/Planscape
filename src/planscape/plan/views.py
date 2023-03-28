@@ -823,6 +823,7 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 
 # NOTE: To send a queue message from your local machine, populate AWS credentials.
+# TODO: Add tests that mock SQS calls
 def queue_forsys_lambda_prototype(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
