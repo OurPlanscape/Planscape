@@ -3,9 +3,9 @@ from plan.views import (create_plan, create_project, create_project_area,
                         create_project_areas_for_project, create_scenario,
                         delete, delete_projects, delete_scenarios,
                         favorite_scenario, get_plan, get_project,
-                        get_project_areas, get_scenario, get_scores, 
-                        list_plans_by_owner, list_projects_for_plan, 
-                        list_scenarios_for_plan, unfavorite_scenario, 
+                        get_project_areas, get_scenario, get_scores,
+                        list_plans_by_owner, list_projects_for_plan,
+                        list_scenarios_for_plan, unfavorite_scenario,
                         update_project, update_scenario, queue_forsys_call)
 
 app_name = 'plan'
