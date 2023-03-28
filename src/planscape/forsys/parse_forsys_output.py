@@ -86,7 +86,7 @@ class ForsysRankingOutputForMultipleScenarios():
     # Of note, priorities must be listed in the same format and order they're
     # listed for the forsys call.
     def __init__(
-            self, raw_forsys_output: dict,
+            self, raw_forsys_output: dict[str, dict[str, list]],
             priorities: list[str],
             max_area: float, max_cost: float, project_id_header: str,
             area_header: str, cost_header: str):
@@ -260,7 +260,7 @@ class ForsysRankingOutputForASingleScenario():
     # priorities.
     # Of note, priorities must be listed in the same format and order they're
     # listed for the forsys call.
-    def __init__(self, raw_forsys_output: dict,
+    def __init__(self, raw_forsys_output: dict[str, dict[str, list]],
                  priority_weights: dict[str, float], max_area, max_cost,
                  project_id_header: str, area_header: str, cost_header: str):
         self._forsys_project_output_df = raw_forsys_output["project"]
@@ -372,7 +372,7 @@ class ForsysGenerationOutputForASingleScenario(
     _forsys_stand_output_df: dict[str, list]
 
     def __init__(
-            self, raw_forsys_output: dict,
+            self, raw_forsys_output: dict[str, dict[str, list]],
             priority_weights: dict[str, float],
             project_id_header: str, area_header: str, cost_header: str,
             geo_wkt_header: str):
