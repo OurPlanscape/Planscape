@@ -315,26 +315,6 @@ def generate_project_areas_from_lambda_output_prototype(
                 raise ValueError(
                     "Scenario to update with lambda outputs does not belong to user.")
 
-        # TODO: weighted priorities should be saved when a Scenario is created and a user clicks "Generate Scenario"
-        # These are created inline for now because the corresponding HTTP endpoint doesn't exist yet.
-        weighted_priorities = {
-            'storage': 5.0,
-            'california_spotted_owl': 2.0,
-            'functional_fire': 1.0,
-            'forest_structure': 2.0,
-            'max_sdi': 1.0
-        }
-
-        # TODO: move this to a HTTP call in the lambda as part of scenario creation
-        for priority, weight in weighted_priorities.items():
-            condition = Condition.objects.select_related('condition_dataset').get(
-                condition_dataset__condition_name=priority,
-                condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
-            weighted_priority = ScenarioWeightedPriority.objects.create(
-                scenario=scenario, priority=condition,
-                weight=weight)
-            weighted_priority.save()
-
         temp_request = HttpRequest()
         temp_request.GET = QueryDict(
             'request_type=0' +
