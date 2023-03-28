@@ -10,7 +10,7 @@ from typing import TypedDict
 
 # Name of the table and column from models.py.
 RASTER_SCHEMA = 'public'
-RASTER_TABLE = 'conditions_conditionraster'
+RASTER_CONDITION_TABLE = 'conditions_conditionraster'
 RASTER_COLUMN = 'raster'
 RASTER_NAME_COLUMN = 'name'
 
@@ -26,7 +26,7 @@ class ConditionStatistics(TypedDict):
 
 
 # A collection of raw raster pixel values.
-class ConditionPixelValues(TypedDict):
+class RasterPixelValues(TypedDict):
     # x indices of pixels relative to top-left coordinate
     pixel_dist_x: list[int]
     # y indices of pixels relative to top-left coordinate
@@ -38,6 +38,9 @@ class ConditionPixelValues(TypedDict):
     upper_left_coord_x: float
     # y coordinate of the upper-left corner of a Raster image.
     upper_left_coord_y: float
+
+
+ConditionPixelValues = RasterPixelValues
 
 
 # Validates that a geomeetry is compatible with rasters stored in the DB.
@@ -111,12 +114,12 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
 # Otherwise, returns ConditionStatistics.
 def compute_condition_stats_from_raster(
         geo: GEOSGeometry, raster_name: str) -> ConditionStatistics | None:
-    _validate_geo(geo)
     _validate_condition_raster_name(raster_name)
+    _validate_geo(geo)
     with connection.cursor() as cursor:
         cursor.callproc(
             'get_condition_stats',
-            (RASTER_TABLE, RASTER_SCHEMA, raster_name,
+            (RASTER_CONDITION_TABLE, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchone()
         if fetch is None or len(fetch) != 3:
@@ -177,14 +180,13 @@ def fetch_or_compute_condition_stats(
 
 # Fetches raster pixel values for all non-NaN pixels that intersect with geo.
 # If no intersection exists, returns None.
-def get_condition_values_from_raster(
-        geo: GEOSGeometry, raster_name: str) -> ConditionPixelValues | None:
+def get_pixel_values_from_raster(
+        geo: GEOSGeometry, table_name: str, raster_name: str) -> RasterPixelValues | None:
     _validate_geo(geo)
-    _validate_condition_raster_name(raster_name)
     with connection.cursor() as cursor:
         cursor.callproc(
             'get_condition_pixels',
-            (RASTER_TABLE, RASTER_SCHEMA, raster_name,
+            (table_name, RASTER_SCHEMA, raster_name,
              RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
         fetch = cursor.fetchall()
     if len(fetch) == 0:
@@ -197,4 +199,11 @@ def get_condition_values_from_raster(
         _append_to_list(values, 'pixel_dist_x', entry[2] - 1)
         _append_to_list(values, 'pixel_dist_y', entry[3] - 1)
         _append_to_list(values, 'values', entry[4])
-    return ConditionPixelValues(values)
+    return RasterPixelValues(values)
+
+
+def get_condition_values_from_raster(
+        geo: GEOSGeometry, raster_name: str) -> ConditionPixelValues | None:
+    _validate_condition_raster_name(raster_name)
+    return get_pixel_values_from_raster(
+        geo, RASTER_CONDITION_TABLE, raster_name)

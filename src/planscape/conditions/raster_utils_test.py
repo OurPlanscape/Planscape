@@ -14,8 +14,6 @@ class ConditionStatsTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
-    def test_returns_stats(self):
-        geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
                          5, 6, 7, 8,
@@ -23,6 +21,9 @@ class ConditionStatsTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16))
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
+
+    def test_returns_stats(self):
+        geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         stats = compute_condition_stats_from_raster(geo, "foo")
         self.assertDictEqual(
             stats, {'mean': 36.0 / 8, 'sum': 36.0, 'count': 8})
@@ -64,13 +65,6 @@ class ConditionStatsTest(RasterConditionRetrievalTestCase):
 
     def test_returns_stats_for_no_intersection(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 7, 10, 0, 1)
-        foo_raster = RasterConditionRetrievalTestCase._create_raster(
-            self, 4, 4, (1, 2, 3, 4,
-                         5, 6, 7, 8,
-                         9, 10, 11, 12,
-                         13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_raster(
-            self, foo_raster, "foo")
         stats = compute_condition_stats_from_raster(geo, "foo")
         self.assertDictEqual(stats, {'mean': None, 'sum': 0.0, 'count': 0.0})
 
@@ -329,8 +323,6 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:
         RasterConditionRetrievalTestCase.setUp(self)
 
-    def test_returns_pixels(self):
-        geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         foo_raster = RasterConditionRetrievalTestCase._create_raster(
             self, 4, 4, (1, 2, 3, 4,
                          5, 6, 7, 8,
@@ -338,6 +330,9 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
                          13, 14, 15, 16))
         RasterConditionRetrievalTestCase._create_condition_raster(
             self, foo_raster, "foo")
+
+    def test_returns_pixels(self):
+        geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 3, 0, 1)
         values = get_condition_values_from_raster(geo, "foo")
         self.assertAlmostEqual(values['upper_left_coord_x'], -2116971)
         self.assertAlmostEqual(values['upper_left_coord_y'], 2100954)
@@ -348,13 +343,6 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
     def test_returns_pixels_for_intersection(self):
         # The geo spans beyond raster values.
         geo = RasterConditionRetrievalTestCase._create_geo(self, 0, 10, -2, 1)
-        foo_raster = RasterConditionRetrievalTestCase._create_raster(
-            self, 4, 4, (1, 2, 3, 4,
-                         5, 6, 7, 8,
-                         9, 10, 11, 12,
-                         13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_raster(
-            self, foo_raster, "foo")
         values = get_condition_values_from_raster(geo, "foo")
         self.assertAlmostEqual(values['upper_left_coord_x'], -2116971)
         self.assertAlmostEqual(values['upper_left_coord_y'], 2100954)
@@ -399,13 +387,6 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
 
     def test_returns_pixel_values_for_no_intersection(self):
         geo = RasterConditionRetrievalTestCase._create_geo(self, 7, 10, 0, 1)
-        foo_raster = RasterConditionRetrievalTestCase._create_raster(
-            self, 4, 4, (1, 2, 3, 4,
-                         5, 6, 7, 8,
-                         9, 10, 11, 12,
-                         13, 14, 15, 16))
-        RasterConditionRetrievalTestCase._create_condition_raster(
-            self, foo_raster, "foo")
         values = get_condition_values_from_raster(geo, "foo")
         self.assertIsNone(values)
 
