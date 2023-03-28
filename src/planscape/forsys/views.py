@@ -83,7 +83,7 @@ def convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
-def convert_rdfs_vector_to_dict_of_lists(raw_forsys_output: "rpy2.robjects.vectors.ListVector") -> dict:
+def convert_r_listvector_to_python_dict(raw_forsys_output: "rpy2.robjects.vectors.ListVector") -> dict:
     stand_output_rdf = raw_forsys_output[0]
     project_output_rdf = raw_forsys_output[1]
     forsys_project_output_df: dict[str, list] = {
@@ -118,7 +118,7 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_cost_header)
 
     parsed_output = ForsysRankingOutputForMultipleScenarios(
-        convert_rdfs_vector_to_dict_of_lists(
+        convert_r_listvector_to_python_dict(
             forsys_output), forsys_priority_headers, max_area_in_km2,
         max_cost_in_usd, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header)
@@ -239,7 +239,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(headers.priority_headers))}
     parsed_output = ForsysGenerationOutputForASingleScenario(
-        convert_rdfs_vector_to_dict_of_lists(
+        convert_r_listvector_to_python_dict(
             forsys_output), priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
         headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
         headers.FORSYS_GEO_WKT_HEADER)
@@ -291,7 +291,7 @@ def generate_project_areas_for_a_single_scenario(
 
 
 @csrf_exempt
-def generate_project_areas_prototype(
+def generate_project_areas_from_lambda_output_prototype(
         request: HttpRequest) -> HttpResponse:
     try:
         body = json.loads(request.body)
@@ -310,7 +310,13 @@ def generate_project_areas_prototype(
         scenario_id = body.get('scenario_id', None)
         if not (isinstance(scenario_id, int)):
             raise ValueError("Must specify scenario_id as an integer")
+        scenario = Scenario.objects.get(id=scenario_id)
+        if scenario.owner.pk != user_id:
+                raise ValueError(
+                    "Scenario to update with lambda outputs does not belong to user.")
 
+        # TODO: weighted priorities should be saved when a Scenario is created and a user clicks "Generate Scenario"
+        # These are created inline for now because the corresponding HTTP endpoint doesn't exist yet.
         weighted_priorities = {
             'storage': 5.0,
             'california_spotted_owl': 2.0,
@@ -320,7 +326,6 @@ def generate_project_areas_prototype(
         }
 
         # TODO: move this to a HTTP call in the lambda as part of scenario creation
-        scenario = Scenario.objects.get(id=scenario_id)
         for priority, weight in weighted_priorities.items():
             condition = Condition.objects.select_related('condition_dataset').get(
                 condition_dataset__condition_name=priority,
@@ -335,8 +340,7 @@ def generate_project_areas_prototype(
             'request_type=0' +
             '&debug_user_id=' + str(user_id) +
             '&scenario_id=' + str(scenario_id))
-        # returns ForsysGenerationRequestParamsFromDb
-        params = get_generation_request_params(temp_request)
+        params = get_generation_request_params(temp_request) # returns ForsysGenerationRequestParamsFromDb
         headers = ForsysInputHeaders(params.priorities)
 
         priority_weights_dict = {

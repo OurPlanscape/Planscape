@@ -8,7 +8,7 @@ from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
-from forsys.views import convert_rdfs_vector_to_dict_of_lists
+from forsys.views import convert_r_listvector_to_python_dict
 from planscape import settings
 
 
@@ -316,7 +316,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             {"stand_output": _convert_dictionary_of_lists_to_rdf(self, {}),
              "project_output": _convert_dictionary_of_lists_to_rdf(self, data),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return convert_rdfs_vector_to_dict_of_lists(raw_forsys_output)
+        return convert_r_listvector_to_python_dict(raw_forsys_output)
 
 
 class TestForsysRankingOutputForASingleScenario(TestCase):
@@ -500,7 +500,7 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
             {"stand_output": _convert_dictionary_of_lists_to_rdf(self, {}),
              "project_output": _convert_dictionary_of_lists_to_rdf(self, data),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return convert_rdfs_vector_to_dict_of_lists(raw_forsys_output)
+        return convert_r_listvector_to_python_dict(raw_forsys_output)
 
 
 class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
@@ -638,4 +638,4 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
                 self,
                 project_output),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return convert_rdfs_vector_to_dict_of_lists(raw_forsys_output)
+        return convert_r_listvector_to_python_dict(raw_forsys_output)
