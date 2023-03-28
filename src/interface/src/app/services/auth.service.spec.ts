@@ -9,6 +9,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
+import { User } from '../types';
 import { AuthGuard, AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -377,6 +378,28 @@ describe('AuthService', () => {
       httpTestingController
         .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
         .flush(backendUser);
+    });
+  });
+
+  describe('getUser', () => {
+    it('should make HTTP request to backend', () => {
+      const user: User = {
+        email: undefined,
+        username: undefined,
+        firstName: undefined,
+        lastName: undefined,
+      };
+
+      service.getUser('1').subscribe((res) => {
+        expect(res).toEqual(user);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/users/get_user_by_id/?id=1')
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(user);
+      httpTestingController.verify();
     });
   });
 
