@@ -37,6 +37,7 @@ def get_user(request: HttpRequest) -> User:
         raise ValueError("Must be logged in")
     return user
 
+
 def get_scenario_by_id(
         user: User, id_url_param: str, params: QueryDict) -> Scenario:
     assert isinstance(params[id_url_param], str)
@@ -71,6 +72,7 @@ def get_project_by_id(user: User, id_url_param: str,
     if project.owner != user:
         raise ValueError("You do not have permission to view this project.")
     return project
+
 
 @csrf_exempt
 def create_plan(request: HttpRequest) -> HttpResponse:
@@ -378,6 +380,7 @@ def get_project(request: HttpRequest) -> HttpResponse:
         return JsonResponse(_serialize_project(project))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
 
 def _serialize_project(project: Project) -> dict:
     """
