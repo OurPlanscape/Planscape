@@ -718,9 +718,9 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             [_serialize_scenario(scenario,
-                                 weights=ScenarioWeightedPriority.objects.filter(
-                                     scenario=scenario),
-                                 ranked_project_areas=RankedProjectArea.objects.select_related('project_area').filter(scenario=scenario), project=scenario.project)
+                                 weights=ScenarioWeightedPriority.objects.filter(scenario=scenario),
+                                 ranked_project_areas=RankedProjectArea.objects.select_related('project_area').filter(scenario=scenario),
+                                 project=scenario.project)
              for scenario in scenarios], safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
