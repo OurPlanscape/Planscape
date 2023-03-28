@@ -4,7 +4,8 @@ from django.contrib.gis.geos import Polygon
 from forsys.cluster_stands import ClusteredStands
 from forsys.forsys_request_params import (ClusterAlgorithmType,
                                           ForsysGenerationRequestParams,
-                                          ForsysRankingRequestParams)
+                                          ForsysRankingRequestParams,
+                                          StandEligibilityParams)
 from forsys.merge_polygons import merge_polygons
 from forsys.raster_condition_fetcher import (RasterConditionFetcher,
                                              get_conditions)
@@ -171,7 +172,9 @@ class ForsysGenerationInput():
         geo = get_raster_geo(planning_area)
 
         self._condition_fetcher = RasterConditionFetcher(
-            region, priorities, geo)
+            region, priorities, self._get_attributes_to_retrieve(
+                params.stand_eligibility_params),
+            geo)
 
         self._treatment_eligibility_selector = \
             RasterConditionTreatmentEligibilitySelector(
@@ -211,6 +214,17 @@ class ForsysGenerationInput():
             headers, priorities, self._condition_fetcher,
             self._treatment_eligibility_selector.pixels_to_pass_through,
             self.forsys_input, next_stand_id)
+
+    def _get_attributes_to_retrieve(self, params: StandEligibilityParams
+                                    ) -> list[str]:
+        attributes = []
+        if params.filter_by_buildings:
+            attributes.append(params.BUILDINGS_KEY)
+        if params.filter_by_road_proximity:
+            attributes.append(params.ROAD_PROXIMITY_KEY)
+        if params.filter_by_slope:
+            attributes.append(params.SLOPE_KEY)
+        return attributes
 
     def _initialize_headers(self, headers: ForsysInputHeaders,
                             priorities: list[str]) -> dict[str, list]:
