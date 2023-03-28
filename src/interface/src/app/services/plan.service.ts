@@ -11,7 +11,7 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region } from '../types';
+import { BasePlan, Plan, Region, User } from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
@@ -374,6 +374,30 @@ export class PlanService {
     );
   }
 
+  getUser(userId: string): Observable<User> {
+    const url = BackendConstants.END_POINT.concat(
+      '/plan/get_user_by_id/?id=',
+      userId,
+    );
+    return this.http
+      .get(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        take(1),
+        map((response: any) => {
+          const user: User = {
+            email: response.email,
+            username: response.username,
+            firstName: response.first_name,
+            lastName: response.last_name,
+          };
+          console.log(user);
+          return user;
+        })
+      );
+  }
+
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
@@ -382,6 +406,7 @@ export class PlanService {
       region: plan.region_name,
       planningArea: plan.geometry,
       savedScenarios: plan.scenarios ?? 0,
+      configs: plan.projects ?? 0,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         plan.creation_timestamp
       ),
