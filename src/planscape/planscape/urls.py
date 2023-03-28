@@ -24,6 +24,7 @@ urlpatterns = [
     path('planscape-backend/plan/', include('plan.urls')),
     path('planscape-backend/projects/', include('existing_projects.urls')),
     # Auth URLs
+    path('planscape-backend/users/', include('users.urls')),
     path('planscape-backend/dj-rest-auth/', include('dj_rest_auth.urls')),
     path('planscape-backend/dj-rest-auth/registration/',
          include('dj_rest_auth.registration.urls')),

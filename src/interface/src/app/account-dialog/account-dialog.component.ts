@@ -5,11 +5,14 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
 
 import { AuthService } from '../services';
 import { User } from '../types';
+import { DeleteAccountDialogComponent } from './delete-account-dialog/delete-account-dialog.component';
 
 @Component({
   selector: 'app-account-dialog',
@@ -28,7 +31,10 @@ export class AccountDialogComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
+    private dialog: MatDialog,
+    private dialogRef: MatDialogRef<AccountDialogComponent>,
     private fb: FormBuilder,
+    private router: Router,
     private snackbar: MatSnackBar
   ) {
     this.changePasswordForm = this.fb.group(
@@ -136,5 +142,21 @@ export class AccountDialogComponent implements OnInit {
     const password1 = group.get('password1')?.value;
     const password2 = group.get('password2')?.value;
     return password1 === password2 ? null : { passwordsNotEqual: true };
+  }
+
+  openDeleteAccountDialog(): void {
+    this.dialog
+      .open(DeleteAccountDialogComponent, {
+        data: {
+          user: this.authService.loggedInUser$.value,
+        },
+      })
+      .afterClosed()
+      .subscribe((data) => {
+        if (data.deletedAccount) {
+          this.dialogRef.close();
+          this.router.navigate(['login']);
+        }
+      });
   }
 }

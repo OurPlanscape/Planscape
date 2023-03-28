@@ -1,11 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { AuthService } from '../services';
 import { User } from './../types/user.types';
 import { AccountDialogComponent } from './account-dialog.component';
+import { DeleteAccountDialogComponent } from './delete-account-dialog/delete-account-dialog.component';
 
 describe('AccountDialogComponent', () => {
   let component: AccountDialogComponent;
@@ -28,10 +31,40 @@ describe('AccountDialogComponent', () => {
         }),
       }
     );
+    const fakeDialog = jasmine.createSpyObj(
+      'MatDialog',
+      {
+        open: jasmine.createSpyObj(
+          'MatDialogRef',
+          {
+            afterClosed: of({ deletedAccount: true }),
+          },
+          {}
+        ),
+      },
+      {}
+    );
+    const fakeDialogRef = jasmine.createSpyObj(
+      'MatDialogRef',
+      {
+        close: undefined,
+      },
+      {}
+    );
     TestBed.configureTestingModule({
       imports: [FormsModule, MaterialModule, ReactiveFormsModule],
       declarations: [AccountDialogComponent],
-      providers: [{ provide: AuthService, useValue: fakeAuthService }],
+      providers: [
+        { provide: AuthService, useValue: fakeAuthService },
+        {
+          provide: MatDialog,
+          useValue: fakeDialog,
+        },
+        {
+          provide: MatDialogRef<AccountDialogComponent>,
+          useValue: fakeDialogRef,
+        },
+      ],
     });
     fixture = TestBed.createComponent(AccountDialogComponent);
     component = fixture.componentInstance;
@@ -94,5 +127,36 @@ describe('AccountDialogComponent', () => {
       'testpass',
       'testpass'
     );
+  });
+
+  it('deleting account opens dialog', () => {
+    const dialog = fixture.debugElement.injector.get(MatDialog);
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
+
+    component.openDeleteAccountDialog();
+
+    expect(dialog.open).toHaveBeenCalledOnceWith(DeleteAccountDialogComponent, {
+      data: {
+        user: {
+          firstName: 'Foo',
+          lastName: 'Bar',
+          email: 'test@test.com',
+        },
+      },
+    });
+  });
+
+  it('deleting account successfully routes to login', () => {
+    const dialogRef = fixture.debugElement.injector.get(
+      MatDialogRef<AccountDialogComponent>
+    );
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate').and.returnValue(Promise.resolve(true));
+
+    component.openDeleteAccountDialog();
+
+    expect(dialogRef.close).toHaveBeenCalledOnceWith();
+    expect(router.navigate).toHaveBeenCalledOnceWith(['login']);
   });
 });
