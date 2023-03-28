@@ -159,6 +159,9 @@ class DbRequestParamsForGenerationFromDb(DbRequestParams):
             self.user, self._URL_SCENARIO_ID, params)
         
 
+# Parameters for deciding whether a stand is eligible for treatment.
+# TODO: make it possible to parse these parameters from URL and/or read them 
+# from the DB.
 class StandEligibilityParams:
     BUILDINGS_KEY = "buildings"
     ROAD_PROXIMITY_KEY = "road_proximity"
