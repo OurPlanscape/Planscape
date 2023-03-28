@@ -5,7 +5,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region } from '../types';
+import { BasePlan, Plan, Region, User } from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
@@ -94,12 +94,35 @@ describe('PlanService', () => {
     });
   });
 
+  describe('getUser', () => {
+    it('should make HTTP request to backend', () => {
+      const user: User = {
+        email: undefined,
+        username: undefined,
+        firstName: undefined,
+        lastName: undefined,
+      };
+
+      service.getUser('1').subscribe((res) => {
+        expect(res).toEqual(user);
+      });
+
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/plan/get_user_by_id/?id=1')
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(user);
+      httpTestingController.verify();
+    });
+  });
+
   describe('getPlan', () => {
     it('should make HTTP get request to DB', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
         savedScenarios: 0,
+        configs: 0,
         createdTimestamp: undefined,
       };
 
