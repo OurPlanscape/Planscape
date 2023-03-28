@@ -267,7 +267,7 @@ def simulate_TPA_treatment():
     TPA_after_treatment = deepcopy(TPA)
     TPA_impact_of_treatment = deepcopy(TPA)
     TPA_after_treatment.raster[TPA_after_treatment.raster < 0.5] = 0.5
-    TPA_impact_of_treatment.raster = TPA_impact_of_treatment.raster - TPA.raster
+    TPA_impact_of_treatment.raster = TPA_after_treatment.raster - TPA.raster
     # Returning per cell improvement in TPA metric due to treatment 
     return TPA_impact_of_treatment
 
@@ -304,22 +304,12 @@ def load_impact_of_treatment(region_name: str, save: bool, reload: bool):
         for element in config.get_elements(pillar):
             for metric in config.get_metrics(element):
                 metric_name = metric['metric_name']
-                print(metric_name)
-
-                #reader = ConditionReader()
-                #condition = reader.read(metric['filepath'], condition_type=0)
 
                 # Checking if metric is impacted
                 # (for metrics without coefficient we have no information on impact)
                 if metric_name in coeffs.keys():
                     print("calculating impact for " + metric_name)
                     metric_filepath = "impact_of_treatment_" + metric_name
-
-                    query = BaseCondition.objects.filter(condition_name=metric_name)
-                    #if len(query) > 0:
-                        #print("BaseCondition " +
-                        #    metric['metric_name'] + " already exists; deleting.")
-                        #query.delete()
 
                     # Calculating probable change in metric due to change in TPA
                     coeff = coeffs[metric_name]
