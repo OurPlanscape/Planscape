@@ -1,11 +1,11 @@
 import numpy as np
 
-from attributes.models import Attribute
-from attributes.attribute_retrieval_test_utils import save_attribute_to_db
+from attributes.models import Attribute, AttributeRaster
 from base.condition_types import ConditionLevel
 from conditions.models import BaseCondition, Condition
 from conditions.raster_condition_retrieval_testcase import \
     RasterConditionRetrievalTestCase
+from django.contrib.gis.gdal import GDALRaster
 from django.test import TestCase
 from forsys.assert_dict_almost_equal import assert_dict_almost_equal
 from forsys.raster_condition_fetcher import (
@@ -98,7 +98,7 @@ class RasterConditionFetcherTest(RasterConditionRetrievalTestCase):
                          0, 0, 0, 0,
                          1, 1, 0, 0,
                          0, 0, 1, 1))
-        save_attribute_to_db("zux", "zux_raster", zux_raster)
+        self._save_attribute_to_db("zux", "zux_raster", zux_raster)
 
     def test_fetches_raster_conditions(self):
         condition_fetcher = RasterConditionFetcher(
@@ -154,3 +154,12 @@ class RasterConditionFetcherTest(RasterConditionRetrievalTestCase):
                 1: {0: 1, 1: 5},
                 2: {0: 2, 1: 6},
                 3: {0: 3, 1: 7}})
+
+    def _save_attribute_to_db(
+            self, attribute_name: str, attribute_raster_name: str,
+            attribute_raster: GDALRaster) -> int:
+        attribute = Attribute.objects.create(
+            attribute_name=attribute_name, raster_name=attribute_raster_name)
+        AttributeRaster.objects.create(
+            raster=attribute_raster, name=attribute_raster_name)
+        return attribute.pk
