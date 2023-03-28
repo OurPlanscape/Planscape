@@ -72,6 +72,8 @@
 
     <!-- Edit account details -->
     <ng-container *ngIf="editingAccount">
+      <button mat-button color="primary" (click)="openDeleteAccountDialog()">DELETE ACCOUNT</button>
+
       <form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
         <mat-form-field>
           <mat-label>First name</mat-label>

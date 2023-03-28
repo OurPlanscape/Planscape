@@ -7,7 +7,13 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import { BehaviorSubject, combineLatest, Subject, takeUntil } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  Observable,
+  Subject,
+  takeUntil,
+} from 'rxjs';
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import { FrontendConstants, Plan } from 'src/app/types';
@@ -19,9 +25,7 @@ import { BackendConstants } from './../../backend-constants';
   templateUrl: './plan-map.component.html',
   styleUrls: ['./plan-map.component.scss'],
 })
-export class PlanMapComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() plan = new BehaviorSubject<Plan | null>(null);
   @Input() mapId?: string;
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
@@ -173,6 +177,15 @@ export class PlanMapComponent
       }),
     });
     this.projectAreasLayer.addTo(this.map);
+  }
+
+  showTogglePanelButton(): Observable<boolean> {
+    return this.planService.planState$.pipe(
+      map(
+        (planState) =>
+          !!planState.currentConfigId || !!planState.currentScenarioId
+      )
+    );
   }
 
   togglePanel(): void {
