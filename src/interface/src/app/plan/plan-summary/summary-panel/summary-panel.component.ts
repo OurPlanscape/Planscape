@@ -1,19 +1,20 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import area from '@turf/area';
 import { FeatureCollection } from 'geojson';
 
-import { Plan, Region } from '../../../types';
+import { Plan, Region, User } from '../../../types';
 
 export interface SummaryInput {
   id?: string;
   type: string;
   name: string;
-  ownerId: string; // Todo: Need to convert ownerId to username
+  owner: string;
   region: Region;
   area: GeoJSON.GeoJSON;
   status?: string;
   createdTime?: number;
-  scenarios: number;
+  scenarios?: number;
+  configs?: number;
   acres: number;
 }
 
@@ -43,7 +44,7 @@ const SQUARE_METERS_PER_ACRE = 0.0002471054;
 })
 export class SummaryPanelComponent implements OnChanges {
   @Input() plan: Plan | null = null;
-  // Todo: update these when available.
+  @Input() owner: User | null = null;
 
   summaryInput: SummaryInput | null = null;
   conditionScore: ConditionName = ConditionName.POOR;
@@ -56,11 +57,12 @@ export class SummaryPanelComponent implements OnChanges {
           id: this.plan.id,
           type: 'Plan',
           name: this.plan.name,
-          ownerId: this.plan.ownerId? this.plan.ownerId : 'guest',
+          owner: this.owner?.firstName ? this.owner?.firstName + ' ' + this.owner?.lastName : (this.owner?.username ?? 'Guest'),
           region: this.plan.region,
           area: this.plan.planningArea!,
           createdTime: this.plan.createdTimestamp,
-          scenarios: this.plan.savedScenarios? this.plan.savedScenarios : 0,
+          scenarios: this.plan.savedScenarios,
+          configs: this.plan.configs,
           acres: this.calculateAcres(this.plan.planningArea!),
           status: 'In progress',
         }

@@ -5,9 +5,17 @@ import {
   NavigationEnd,
   Router,
 } from '@angular/router';
-import { BehaviorSubject, filter, Subject, take, takeUntil } from 'rxjs';
+import {
+  BehaviorSubject,
+  concatMap,
+  filter,
+  Observable,
+  Subject,
+  take,
+  takeUntil,
+} from 'rxjs';
 
-import { Plan } from '../types';
+import { Plan, User } from '../types';
 import { PlanService } from './../services/plan.service';
 
 @Component({
@@ -18,6 +26,7 @@ import { PlanService } from './../services/plan.service';
 export class PlanComponent implements OnInit, OnDestroy {
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
+  planOwner$ = new Observable<User | null>;
   planNotFound: boolean = false;
   showOverview$ = new BehaviorSubject<boolean>(false);
 
@@ -30,6 +39,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router
   ) {
+    // TODO: Move everything in the constructor to ngOnInit
     const planId = this.route.snapshot.paramMap.get('id');
 
     if (planId === null) {
@@ -37,18 +47,23 @@ export class PlanComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.planService
-      .getPlan(planId)
-      .pipe(take(1))
-      .subscribe(
-        (plan) => {
-          this.plan = plan;
-          this.currentPlan$.next(this.plan);
-        },
-        (error) => {
-          this.planNotFound = true;
-        }
-      );
+    const plan$ = this.planService.getPlan(planId).pipe(take(1));
+
+    plan$.subscribe({
+      next: (plan) => {
+        this.plan = plan;
+        this.currentPlan$.next(this.plan);
+      },
+      error: (error) => {
+        this.planNotFound = true;
+      },
+    });
+
+    this.planOwner$ = plan$.pipe(
+      concatMap((plan) => {
+        return this.planService.getUser(plan.ownerId);
+      })
+    );
   }
 
   ngOnInit() {

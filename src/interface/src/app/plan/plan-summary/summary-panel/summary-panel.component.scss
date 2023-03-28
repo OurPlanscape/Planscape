@@ -33,7 +33,8 @@
 
 .grid-container {
   display: grid;
-  grid-template-columns: 130px 130px;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 16px 0px 0px 0px;
 }
 
 .grid-item {
@@ -45,6 +46,10 @@
 .grid-title {
   color: #455a64;
   font-size: 20px;
+}
+
+.summary-info {
+  margin: 16px 0px 0px 0px;
 }
 
 .summary-footer {
