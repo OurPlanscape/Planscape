@@ -1,12 +1,12 @@
-dj-rest-auth
+dj-rest-auth~=2.2.5
 django~=4.1.1
-django-allauth
+django-allauth~=0.53.1
 django-cors-headers
 django-filter~=21.1.0
 django-leaflet
-djangorestframework~=3.13.0
+djangorestframework~=3.13.1
 djangorestframework-gis~=0.18.0
-djangorestframework-simplejwt
+djangorestframework-simplejwt~=5.2.2
 numpy
 pandas
 psycopg2>=2.9.3
