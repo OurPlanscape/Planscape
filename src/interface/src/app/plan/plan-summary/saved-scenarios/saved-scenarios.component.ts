@@ -16,7 +16,6 @@ interface ScenarioRow extends Scenario {
 })
 export class SavedScenariosComponent implements OnInit {
   @Input() plan: Plan | null = null;
-  @Output() createScenarioEvent = new EventEmitter<void>();
 
   readonly text1: string = `
     Scenarios consist of prioritized project areas for treatment within this planning area,
@@ -55,10 +54,6 @@ export class SavedScenariosComponent implements OnInit {
       .subscribe((scenarios) => {
         this.scenarios = scenarios;
       });
-  }
-
-  createScenario(): void {
-    this.createScenarioEvent.emit();
   }
 
   viewScenario(id?: string): void {

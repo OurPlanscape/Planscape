@@ -72,14 +72,6 @@ describe('SavedScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('createScenario should emit event', () => {
-    spyOn(component.createScenarioEvent, 'emit');
-
-    component.createScenario();
-
-    expect(component.createScenarioEvent.emit).toHaveBeenCalled();
-  });
-
   it('should call service for list of scenarios', () => {
     expect(fakePlanService.getScenariosForPlan).toHaveBeenCalledOnceWith('1');
 
