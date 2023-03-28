@@ -4,7 +4,7 @@ from rest_framework.serializers import IntegerField
 from rest_framework_gis import serializers as gis_serializers
 
 from .models import (Plan, Project, ProjectArea, Scenario,
-                     ScenarioWeightedPriority)
+                     ScenarioWeightedPriority, User)
 
 
 class PlanSerializer(gis_serializers.GeoFeatureModelSerializer):
@@ -47,3 +47,8 @@ class ProjectAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
         model = ProjectArea
         fields = '__all__'
         geo_field = "project_area"
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = '__all__'
