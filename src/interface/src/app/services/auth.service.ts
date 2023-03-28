@@ -173,6 +173,30 @@ export class AuthService {
         })
       );
   }
+
+  /** "Deletes" user from backend. The behavior of this command is to disable the user account,
+   *  not fully delete it, so data can be restored later if necessary.
+   */
+  deleteUser(user: User): Observable<boolean> {
+    return this.http
+      .post(
+        BackendConstants.END_POINT.concat('/users/delete/'),
+        {
+          email: user.email,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        take(1),
+        map((result: any) => {
+          this.loggedInStatus$.next(false);
+          this.loggedInUser$.next(null);
+          return result.deleted;
+        })
+      );
+  }
 }
 
 /** An AuthGuard used to prevent access to pages that require sign-in. If the user is not signed
