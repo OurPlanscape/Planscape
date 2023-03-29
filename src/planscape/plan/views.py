@@ -21,6 +21,7 @@ from plan.serializers import (PlanSerializer, ProjectAreaSerializer,
 from planscape import settings
 
 # TODO: remove csrf_exempt decorators when logged in users are required.
+# TODO: disallow calls if not logged in as user
 
 MAX_BUDGET = 'max_budget'
 MAX_TREATMENT_AREA_RATIO = 'max_treatment_area_ratio'
@@ -821,18 +822,23 @@ def get_scores(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("failed score fetch: " + str(e))
 
 
-# TODO: finalize call logic after testing piping.
-# NOTE: To send a queue message from your local machine, populate AWS credential args.
-# TODO: feed plan_id and scenario_id from user input into the queue message body 
-def queue_forsys_call(request: HttpRequest) -> HttpResponse:
+# NOTE: To send a queue message from your local machine, populate AWS credentials.
+# TODO: Add tests that mock SQS calls
+def queue_forsys_lambda_prototype(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
+        scenario_id = create_scenario(request)
+        user_id = "Guest" if user is None else str(user.pk)
+        
+        update_scenario = {
+            'user_id': user_id,
+            'scenario_id': str(scenario_id),
+        }
         client = boto3.client('sqs', region_name='us-west-1')
-
         response = client.send_message(
             QueueUrl='https://sqs.us-west-1.amazonaws.com/705618310400/forsys.fifo',
-            MessageBody="test",
-            MessageGroupId="elsie"
+            MessageBody=json.dumps(update_scenario),
+            MessageGroupId=user_id
         )
         return JsonResponse({
             'statusCode': 200,
