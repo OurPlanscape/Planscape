@@ -11,7 +11,7 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region, User } from '../types';
+import { BasePlan, Plan, Region } from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
