@@ -148,6 +148,12 @@ class ForsysGenerationInput():
     # raster.
     TREATMENT_COST_PER_KM_SQUARED = 5000 * 1000 * 1000
 
+    # Keys that represent buildings, road proximity, and slope in
+    # RasterConditionFetcher data structures.
+    BUILDINGS_KEY = "buildings"
+    ROAD_PROXIMITY_KEY = "road_proximity"
+    SLOPE_KEY = "slope"
+
     # A dictionary representing a forsys input dataframe.
     # In the dataframe, headers correspond to ForsysInputHeaders headers. Each
     # row represents a unique stand.
@@ -179,7 +185,8 @@ class ForsysGenerationInput():
         self._treatment_eligibility_selector = \
             RasterConditionTreatmentEligibilitySelector(
                 self._condition_fetcher.data, priorities,
-                params.stand_eligibility_params)
+                params.stand_eligibility_params, self.BUILDINGS_KEY,
+                self.ROAD_PROXIMITY_KEY, self.SLOPE_KEY)
 
         self.forsys_input = self._initialize_headers(headers, priorities)
         next_stand_id = 0
@@ -219,11 +226,11 @@ class ForsysGenerationInput():
                                     ) -> list[str]:
         attributes = []
         if params.filter_by_buildings:
-            attributes.append(params.BUILDINGS_KEY)
+            attributes.append(self.BUILDINGS_KEY)
         if params.filter_by_road_proximity:
-            attributes.append(params.ROAD_PROXIMITY_KEY)
+            attributes.append(self.ROAD_PROXIMITY_KEY)
         if params.filter_by_slope:
-            attributes.append(params.SLOPE_KEY)
+            attributes.append(self.SLOPE_KEY)
         return attributes
 
     def _initialize_headers(self, headers: ForsysInputHeaders,

@@ -27,19 +27,24 @@ class RasterConditionTreatmentEligibilitySelector:
     def __init__(
             self, data: dict[str, list],
             priorities: list[str],
-            stand_eligibility_params: StandEligibilityParams):
-        self._validate_inputs(data, priorities, stand_eligibility_params)
+            stand_eligibility_params: StandEligibilityParams,
+            buildings_key: str, road_proximity_key: str, slope_key: str):
+        self._validate_inputs(
+            data, priorities, stand_eligibility_params, buildings_key,
+            road_proximity_key, slope_key)
 
         self.pixels_to_treat, self.pixels_to_pass_through = \
-            self._get_pixels_to_treat_and_pass_through(data, priorities,
-                                                       stand_eligibility_params)
+            self._get_pixels_to_treat_and_pass_through(
+                data, priorities, stand_eligibility_params, buildings_key,
+                road_proximity_key, slope_key)
 
     # Double-checks that the input data is a valid dataframe and contains all
     # the listed priorities.
-    def _validate_inputs(
-            self, data: dict[str, list],
-            priorities: list[str],
-            stand_eligibility_params: StandEligibilityParams):
+    def _validate_inputs(self, data: dict[str, list],
+                         priorities: list[str],
+                         stand_eligibility_params: StandEligibilityParams,
+                         buildings_key: str, road_proximity_key: str,
+                         slope_key: str):
         if "x" not in data.keys():
             raise Exception("data missing key, x")
         if "y" not in data.keys():
@@ -55,14 +60,11 @@ class RasterConditionTreatmentEligibilitySelector:
                     "data column lengths are unequal for keys, x and %s" %
                     (p))
         if stand_eligibility_params.filter_by_buildings:
-            self._validate_attribute(
-                data, stand_eligibility_params.BUILDINGS_KEY)
+            self._validate_attribute(data, buildings_key)
         if stand_eligibility_params.filter_by_road_proximity:
-            self._validate_attribute(
-                data, stand_eligibility_params.ROAD_PROXIMITY_KEY)
+            self._validate_attribute(data, road_proximity_key)
         if stand_eligibility_params.filter_by_slope:
-            self._validate_attribute(
-                data, stand_eligibility_params.SLOPE_KEY)
+            self._validate_attribute(data, slope_key)
 
     def _validate_attribute(self, data: dict[str, list], attribute: str):
         if attribute not in data.keys():
@@ -79,10 +81,9 @@ class RasterConditionTreatmentEligibilitySelector:
     # They capture the list of pixels to treat, and the list of pixels to pass
     # through via Patchmax's stand_threshold parameter.
     def _get_pixels_to_treat_and_pass_through(
-            self,
-        data: dict[str, list],
-        priorities: list[str],
-        stand_eligibility_params: StandEligibilityParams
+            self, data: dict[str, list], priorities: list[str],
+            stand_eligibility_params: StandEligibilityParams,
+            buildings_key: str, road_proximity_key: str, slope_key: str
     ) -> tuple[dict[int, dict[int, int]],
                dict[int, dict[int, int]]]:
         pixels_to_treat = {}
@@ -90,11 +91,13 @@ class RasterConditionTreatmentEligibilitySelector:
         for i in range(len(data['x'])):
             x = data['x'][i]
             y = data['y'][i]
-            if self._is_too_far_from_road(data, stand_eligibility_params, i):
+            if self._is_too_far_from_road(
+                    data, stand_eligibility_params, road_proximity_key, i):
                 continue
 
             if self._is_eligible(
-                    data, priorities, stand_eligibility_params, i):
+                    data, priorities, stand_eligibility_params, buildings_key,
+                    road_proximity_key, slope_key, i):
                 self._insert_value_in_position_dict(x, y, i, pixels_to_treat)
             else:
                 self._insert_value_in_position_dict(
@@ -102,35 +105,42 @@ class RasterConditionTreatmentEligibilitySelector:
 
         return pixels_to_treat, pixels_to_pass_through
 
-    # Returns true if filter_by_road_proximity is true and the stand at index i 
+    # Returns true if filter_by_road_proximity is true and the stand at index i
     # is too far away from the road or is missing road data.
     def _is_too_far_from_road(
             self, data: dict[str, list],
-            stand_eligibility_params: StandEligibilityParams, i: int) -> bool:
+            stand_eligibility_params: StandEligibilityParams,
+            road_proximity_key: str, i: int) -> bool:
         if not stand_eligibility_params.filter_by_road_proximity:
             return False
-        if stand_eligibility_params.ROAD_PROXIMITY_KEY not in data.keys():
+        if road_proximity_key not in data.keys():
             return True
-        return data[stand_eligibility_params.ROAD_PROXIMITY_KEY][i] > \
-            stand_eligibility_params.max_distance_from_road_in_meters
+        v = data[road_proximity_key][i]
+        if not (isinstance(v, float) or isinstance(v, int)):
+            return True
+        return v > stand_eligibility_params.max_distance_from_road_in_meters
 
-    # Returns true if a stand is eligible for treatment (i.e. all condition 
-    # scores are present, and it isn't a building or road, and its slope isn't 
+    # Returns true if a stand is eligible for treatment (i.e. all condition
+    # scores are present, and it isn't a building or road, and its slope isn't
     # too high)
     def _is_eligible(
             self, data: dict[str, list],
             priorities: list[str],
-            stand_eligibility_params: StandEligibilityParams, i: int) -> bool:
+            stand_eligibility_params: StandEligibilityParams,
+            buildings_key: str, road_proximity_key: str, slope_key: str,
+            i: int) -> bool:
         if not self._all_condition_scores_are_present(data, priorities, i):
             return False
-        if self._is_building(data, stand_eligibility_params, i):
+        if self._is_building(data, stand_eligibility_params, buildings_key, i):
             return False
-        if self._is_road(data, stand_eligibility_params, i):
+        if self._is_road(
+                data, stand_eligibility_params, road_proximity_key, i):
             return False
-        return not self._has_high_slope(data, stand_eligibility_params, i)
+        return not self._has_high_slope(
+            data, stand_eligibility_params, slope_key, i)
 
     # Returns true if all condition impact scores are present in the condition
-    # impact score data frame for the stand at index, i (i.e. none of them are 
+    # impact score data frame for the stand at index, i (i.e. none of them are
     # NaN).
     def _all_condition_scores_are_present(
         self, data: dict[str, list],
@@ -140,37 +150,50 @@ class RasterConditionTreatmentEligibilitySelector:
                 return False
         return True
 
-    # Returns true if filter_by_buildings is enabled and the stand at index i 
+    # Returns true if filter_by_buildings is enabled and the stand at index i
     # is a building or missing building data.
-    def _is_building(
-            self, data: dict[str, list],
-            stand_eligibility_params: StandEligibilityParams, i: int) -> bool:
+    def _is_building(self, data: dict[str, list],
+                     stand_eligibility_params: StandEligibilityParams,
+                     buildings_key: str, i: int) -> bool:
         if not stand_eligibility_params.filter_by_buildings:
             return False
-        if stand_eligibility_params.BUILDINGS_KEY not in data.keys():
+        if buildings_key not in data.keys():
             return True
-        return data[stand_eligibility_params.BUILDINGS_KEY][i] > 0
-    
-    # Returns true if filter_by_buildings is enabled and the stand at index i 
+        v = data[buildings_key][i]
+        if not (isinstance(v, bool) or isinstance(v, int) or
+                isinstance(v, float)):
+            return True
+        return v > 0
+
+    # Returns true if filter_by_buildings is enabled and the stand at index i
     # is a road (i.e. is 0 meters away from a road) or is missing building data.
-    def _is_road(self, data: dict[str, list],
-            stand_eligibility_params: StandEligibilityParams, i: int) -> bool:
+    def _is_road(
+            self, data: dict[str, list],
+            stand_eligibility_params: StandEligibilityParams,
+            road_proximity_key: str, i: int) -> bool:
         if not stand_eligibility_params.filter_by_road_proximity:
             return False
-        if stand_eligibility_params.ROAD_PROXIMITY_KEY not in data.keys():
+        if road_proximity_key not in data.keys():
             return True
-        return data[stand_eligibility_params.ROAD_PROXIMITY_KEY][i] == 0
+        v = data[road_proximity_key][i]
+        if not (isinstance(v, float) or isinstance(v, int)):
+            return True
+        return v == 0
 
-    # Returns true if filter_by_slope is enabled and the stand at index i 
+    # Returns true if filter_by_slope is enabled and the stand at index i
     # has high slope or missing is missing slope data.
     def _has_high_slope(
             self, data: dict[str, list],
-            stand_eligibility_params: StandEligibilityParams, i: int) -> bool:
+            stand_eligibility_params: StandEligibilityParams, slope_key: str,
+            i: int) -> bool:
         if not stand_eligibility_params.filter_by_slope:
             return False
-        if stand_eligibility_params.SLOPE_KEY not in data.keys():
+        if slope_key not in data.keys():
             return True
-        return data[stand_eligibility_params.SLOPE_KEY][i] > stand_eligibility_params.max_slope_in_percent_rise
+        v = data[slope_key][i]
+        if not (isinstance(v, float) or isinstance(v, int)):
+            return True
+        return v > stand_eligibility_params.max_slope_in_percent_rise
 
     # Inserts an (x-pixel, y-pixel) pair into a dictionary mapping x-pixel to
     # y-pixel to input dataframe index.
