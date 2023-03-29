@@ -54,9 +54,9 @@ class RasterConditionFetcher:
     # This contains results that were directly returned by
     # conditions.raster_utils.get_condition_values_from_raster and attributes.
     # raster_utils.get_attribute_valuse_from_raster.
-    raster_values: dict[str, ConditionPixelValues]
+    raster_values: dict[str, RasterPixelValues]
 
-    # The origin coordinate used to merging ConditionPixelValues instances into
+    # The origin coordinate used to merging RasterPixelValues instances into
     # a single dataframe.
     topleft_coords: tuple[float, float]
     # The width of the image represented by the single dataframe.
@@ -126,12 +126,19 @@ class RasterConditionFetcher:
                     name)
             raster_values[name] = values
 
+    # Fetches attribute raster values for a given GEOSGeometry and emits it in
+    # a {attribute name: AttributePixelValues} dictionary.
     def _fetch_attribute_raster_values(
             self, attributes: list[Attribute],
             geo: GEOSGeometry, raster_values: dict[str, RasterPixelValues]):
         for a in attributes:
-            raster_values[a.attribute_name] = get_attribute_values_from_raster(
-                geo, a.raster_name)
+            name = a.attribute_name
+            values = get_attribute_values_from_raster(geo, a.raster_name)
+            if values is None:
+                raise Exception(
+                    "plan has no intersection with attribute raster, %s" %
+                    name)
+            raster_values[name] = values
 
     # Identifies the topleft (aka origin) coordinates across all
     # ConditionPixelValues and AttributePixelValues instances in a {name:
@@ -179,7 +186,7 @@ class RasterConditionFetcher:
             self, coord1: float, coord2: float, scale: float) -> float:
         return min(coord1, coord2) if scale > 0 else max(coord1, coord2)
 
-    # Reformats the input {condition name, ConditionPixelValues} dictionary
+    # Reformats the input {name, RasterPixelValues} dictionary
     # into a dataframe where columns represent x pixel position, y pixel
     # position, and priority conditions, and rows represent individual pixels
     # and their condition values.
@@ -213,9 +220,9 @@ class RasterConditionFetcher:
         for condition in priorities:
             rv = raster_values[condition]
             for i in range(len(rv["pixel_dist_x"])):
-                x = rv["pixel_dist_x"][i] + self._get_pixel_dif(
+                x = rv["pixel_dist_x"][i] + self._get_pixel_diff(
                     rv['upper_left_coord_x'], topleft_coords[0])
-                y = rv["pixel_dist_y"][i] + self._get_pixel_dif(
+                y = rv["pixel_dist_y"][i] + self._get_pixel_diff(
                     rv['upper_left_coord_y'], topleft_coords[1])
                 # TODO: using normalized conditions, impact is 1.0 - condition
                 # score. This needs to be updated once we move to AP scores.
@@ -248,9 +255,9 @@ class RasterConditionFetcher:
         for attribute in land_attributes:
             rv = raster_values[attribute]
             for i in range(len(rv["pixel_dist_x"])):
-                x = rv["pixel_dist_x"][i] + self._get_pixel_dif(
+                x = rv["pixel_dist_x"][i] + self._get_pixel_diff(
                     rv['upper_left_coord_x'], topleft_coords[0])
-                y = rv["pixel_dist_y"][i] + self._get_pixel_dif(
+                y = rv["pixel_dist_y"][i] + self._get_pixel_diff(
                     rv['upper_left_coord_y'], topleft_coords[1])
                 value = rv["values"][i]
 
@@ -272,7 +279,13 @@ class RasterConditionFetcher:
                     for p in priorities:
                         data[p].append(np.nan)
 
-    def _get_pixel_dif(self, upper_left_coord, target_upper_left_coord) -> int:
+    # Given an upper-left coordinate and a target upper-left coordinate, 
+    # computes the difference in pixel position.
+    # i.e. pixel position i relative to the original upper-left coordinate will 
+    # be pixel position (i + pixel_diff) relative to the target upper-left 
+    # coordinate.
+    def _get_pixel_diff(
+            self, upper_left_coord, target_upper_left_coord) -> int:
         return int((upper_left_coord - target_upper_left_coord) /
                    settings.CRS_9822_SCALE[0])
 

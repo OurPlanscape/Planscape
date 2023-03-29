@@ -14,10 +14,15 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
                      }
 
         self.stand_eligibility_params = StandEligibilityParams()
+        self.buildings_key = "buildings"
+        self.road_proximity_key = "road_proximity"
+        self.slope_key = "slope"
 
     def test_selects_condition_pixels(self):
         selector = RasterConditionTreatmentEligibilitySelector(
-            self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+            self.data, ['foo', 'bar'],
+            self.stand_eligibility_params, self.buildings_key,
+            self.road_proximity_key, self.slope_key)
         self.assertEqual(selector.pixels_to_treat, {0: {0: 0}, 1: {0: 1}})
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {1: 2}, 1: {1: 3}})
@@ -26,7 +31,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
                 self.data, ['foo', 'bar', 'baz'],
-                self.stand_eligibility_params)
+                self.stand_eligibility_params, self.buildings_key,
+                self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data missing input priority, baz")
@@ -36,7 +42,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data.pop('x')
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data missing key, x")
@@ -46,7 +53,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data.pop('y')
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data missing key, y")
@@ -56,7 +64,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data['x'].append(10)
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and y")
@@ -71,7 +80,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         data['bar'].append(0.1)
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and foo")
@@ -82,7 +92,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params = self.stand_eligibility_params
         eligibility_params.filter_by_buildings = True
         selector = RasterConditionTreatmentEligibilitySelector(
-            self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+            self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+            self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(selector.pixels_to_treat, {1: {0: 1}})
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {0: 0, 1: 2}, 1: {1: 3}})
@@ -92,7 +103,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params.filter_by_buildings = True
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data missing input attribute, buildings")
@@ -104,31 +116,34 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params.filter_by_buildings = True
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], self.stand_eligibility_params)
+                self.data,  ['foo', 'bar'], self.stand_eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and buildings")
 
     def test_responds_to_road_proximity_zero(self):
         data = self.data
-        data['road_proximity'] = [0, 300, 500, 600]
+        data['road_proximity'] = [0.0, 300.0, 500.0, 600.0]
         eligibility_params = self.stand_eligibility_params
         eligibility_params.filter_by_road_proximity = True
-        eligibility_params.max_distance_from_road_in_meters = 800
+        eligibility_params.max_distance_from_road_in_meters = 800.0
         selector = RasterConditionTreatmentEligibilitySelector(
-            data,  ['foo', 'bar'], eligibility_params)
+            data,  ['foo', 'bar'], eligibility_params, self.buildings_key,
+            self.road_proximity_key, self.slope_key)
         self.assertEqual(selector.pixels_to_treat, {1: {0: 1}})
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {0: 0, 1: 2}, 1: {1: 3}})
 
     def test_responds_to_road_proximity_threshold(self):
         data = self.data
-        data['road_proximity'] = [200, 300, 500, 1000]
+        data['road_proximity'] = [200.0, 300.0, 500.0, 1000.0]
         eligibility_params = self.stand_eligibility_params
         eligibility_params.filter_by_road_proximity = True
-        eligibility_params.max_distance_from_road_in_meters = 800
+        eligibility_params.max_distance_from_road_in_meters = 800.0
         selector = RasterConditionTreatmentEligibilitySelector(
-            data,  ['foo', 'bar'], eligibility_params)
+            data,  ['foo', 'bar'], eligibility_params, self.buildings_key,
+            self.road_proximity_key, self.slope_key)
         self.assertEqual(selector.pixels_to_treat, {0: {0: 0}, 1: {0: 1}})
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {1: 2}})
@@ -139,7 +154,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params.max_distance_from_road_in_meters = 800
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], eligibility_params)
+                self.data,  ['foo', 'bar'], eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data missing input attribute, road_proximity")
@@ -152,19 +168,21 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params.max_distance_from_road_in_meters = 800
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                data,  ['foo', 'bar'], eligibility_params)
+                data,  ['foo', 'bar'], eligibility_params, self.buildings_key,
+                self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and road_proximity")
 
     def test_responds_to_slope_threshold(self):
         data = self.data
-        data['slope'] = [1000, 300, 500, 600]
+        data['slope'] = [1000.0, 300.0, 500.0, 600.0]
         eligibility_params = self.stand_eligibility_params
         eligibility_params.filter_by_slope = True
-        eligibility_params.max_slope_in_percent_rise = 800
+        eligibility_params.max_slope_in_percent_rise = 800.0
         selector = RasterConditionTreatmentEligibilitySelector(
-            data,  ['foo', 'bar'], eligibility_params)
+            data,  ['foo', 'bar'], eligibility_params, self.buildings_key,
+            self.road_proximity_key, self.slope_key)
         self.assertEqual(selector.pixels_to_treat, {1: {0: 1}})
         self.assertEqual(selector.pixels_to_pass_through,
                          {0: {0: 0, 1: 2}, 1: {1: 3}})
@@ -175,7 +193,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params.max_slope_in_percent_rise = 800
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                self.data,  ['foo', 'bar'], eligibility_params)
+                self.data,  ['foo', 'bar'], eligibility_params,
+                self.buildings_key, self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data missing input attribute, slope")
@@ -188,7 +207,8 @@ class RasterConditionTreatmentEligibilitySelectorTest(TestCase):
         eligibility_params.max_slope_in_percent_rise = 800
         with self.assertRaises(Exception) as context:
             RasterConditionTreatmentEligibilitySelector(
-                data,  ['foo', 'bar'], eligibility_params)
+                data,  ['foo', 'bar'], eligibility_params, self.buildings_key,
+                self.road_proximity_key, self.slope_key)
         self.assertEqual(
             str(context.exception),
             "data column lengths are unequal for keys, x and slope")
