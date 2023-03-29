@@ -82,15 +82,17 @@ generate_projects_for_a_single_scenario <- function(
   }
 
   # These are used for setting per-project constraints for cost.
-  proj_target_field = NULL
-  proj_target_value = NULL
+  _proj_target_field = NULL
+  _proj_target_value = NULL
+  _proj_fixed_target = False
 
   # Add cost-per-project params only if needed
   # TODO: find a more elegant way to do this?  Appending a list seems to coerce
   # the values (max_cost) into a string, which generates an R warning.
   if (!identical(max_cost_per_project_in_usd, "")) {
-    proj_target_field = stand_cost_field
-    proj_target_value = as.double(max_cost_per_project_in_usd)
+    _proj_target_field = stand_cost_field
+    _proj_target_value = as.double(max_cost_per_project_in_usd)
+    _proj_fixed_target = True
   }
 
 
@@ -122,9 +124,9 @@ generate_projects_for_a_single_scenario <- function(
       stand_threshold = paste0(eligibility_field, ">0"),
       patchmax_exclusion_limit = 0.1,
       # TODO: clarify how to set global constraints.
-      proj_fixed_target = FALSE,
-      proj_target_field = proj_target_field,
-      proj_target_value = proj_target_value
+      proj_fixed_target = _proj_fixed_target,
+      proj_target_field = _proj_target_field,
+      proj_target_value = _proj_target_value
     )
   )
 
