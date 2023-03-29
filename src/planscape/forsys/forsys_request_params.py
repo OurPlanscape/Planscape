@@ -166,20 +166,23 @@ class StandEligibilityParams:
     # If true, stands occupied by buildings are deemed ineligible for treatment.
     filter_by_buildings: bool
 
-    # If true, stands with slope greater than max_slope_in_percent_rise are deemed ineligible for treatment.
+    # If true, stands with slope greater than max_slope_in_percent_rise are 
+    # deemed ineligible for treatment.
     filter_by_slope: bool
     max_slope_in_percent_rise: float
 
-    # If true, stands occupied by roads (proximity=0) are deemed ineligible for treatment while stands with road proximity greater than max_distance_from_road_in_meters are filtered.
+    # If true, stands occupied by roads (proximity=0) are deemed ineligible for 
+    # treatment while stands with road proximity greater than 
+    # max_distance_from_road_in_meters are filtered.
     filter_by_road_proximity: bool
     max_distance_from_road_in_meters: float
 
     def __init__(self):
-        self.filter_by_buildings = False
-        self.filter_by_slope = False
+        self.filter_by_buildings = True
+        self.filter_by_slope = True
         # This corresponds with 35 degrees.
         self.max_slope_in_percent_rise = 70.0
-        self.filter_by_road_proximity = False
+        self.filter_by_road_proximity = True
         # Advised to set this to ~60 meters, but that's not testable for 300m
         # data.
         # TODO: after switching to 30m data, change the default value.
