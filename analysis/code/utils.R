@@ -11,7 +11,7 @@ find_useable_observations <- function(response, metric, df, predictors, ...) {
   return(useable_observations)
 }
 
-fit_glmnet <- function(useable, response, df, predictors, alpha = 0.2, ...) {
+fit_glmnet <- function(useable, response, df, predictors, alpha = 0.0, ...) {
   # preprocessing data to limit columns and rows to valid ones
   x <- df[useable, predictors]
   response <- response[useable]
@@ -54,4 +54,24 @@ calculate_cod <- function(test_useable, test_y, pred, ...) {
     obs = test_y[test_useable]) %>%
     pluck('Rsquared')
   return(cod)
+}
+
+# Adjusting top and bottom percentiles in the data
+remove_outliers <- function(x, percentiles = .01) {
+  thresholds <- quantile(x, probs = c(.01, 1-.01), na.rm = TRUE)
+  x[x < thresholds[[1]]] <- thresholds[[1]]
+  x[x > thresholds[[2]]] <- thresholds[[2]]
+  return(x)
+}
+
+normalize_values <- function(x) {
+  ((x + min(x, na.rm = TRUE)) / max(x, na.rm = TRUE)) * 2 - 1
+}
+
+# Calculating opportunity score (a.k.a. Adapt-Protect score)
+score_rescale <- function(raster1, raster2) {
+  max_value <- max(raster1, raster2)
+  rescale_factor <- (2 - sqrt(2)) / sqrt(2)
+  raster_rescaled <- (2 * max_value + rescale_factor - 1) / (rescale_factor + 1)
+  return(raster_rescaled)
 }

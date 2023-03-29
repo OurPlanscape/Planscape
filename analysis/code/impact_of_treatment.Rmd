@@ -1,7 +1,7 @@
 ---
-title: "Prototype Analysis for Inferring Treatment Impact"
+title: "Prototype Analysis for Inferring Treatment Impact - ACCEL dataset"
 author: "Laurens Geffert"
-date: "2022-11-21"
+date: "2023-01-10"
 output: rmarkdown::github_document
 ---
 
@@ -12,137 +12,236 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = '##',
   fig.retina = 2,
-  fig.path = '../output/impact_of_treatment_files/impact_of_treatment_')
+  fig.path = '../output/impact_of_treatment_files/impact_of_treatment_accel')
 ```
 
 ```{r setup, echo = FALSE, error = TRUE}
 library(sf)
+library(fs)
 library(raster)
 library(tidyverse)
+library(tidymodels)
 library(magrittr)
 library(purrr)
 library(zeallot)
 library(mice)
+library(corrr)
 ```
 
 
-We're using TCSI data for now. The analysis should be replicated with RRK data
-at a later stage. Some of the data needs some pre-processing. Climate class
-is not at the same resolution and extent as the other layers. All layers are
-stacked and masked to the TCSI area. Finally, we generate a random sample of
-cells to keep processing times manageable.
+We're using the raw values from the ACCEL data set in this analysis and manually replicate the normalization step to avoid issues with bidirectional metrics. Some of the data needs some pre-processing. We're also including the raw climate variables that were used to calculate Climate Class because modelling will get better results when using continuous values rather than reclassified categorical variables. All layers are stacked and masked to the Sierra Nevada ACCEL area.
 
-```{r load_data, error = TRUE}
+```{r defining_inputs, error = TRUE, run = FALSE}
 # Using this raster as the target resolution and extent
-default_raster <- raster('../data/TCSI_box/metrics/forest_structure_current_soe.tif')
+default_raster <- raster('../data/ACCEL RRK - all layers/airQuality/particulate/PotentialSmokeHighSeverity_2021_300m_base.tif')
+# TODO: Get standard extent raster from Nick
 
-resample_if_needed <- function(r, default_raster, ...) {
+resample_if_needed <- function(r, default_raster, silent = TRUE, ...) {
   if (!all(dim(r) == dim(default_raster))) {
-    print(paste('resampling raster', names(r)))
+    if (!compareCRS(r, default_raster)) {
+      message(paste('reprojecting raster', names(r)))
+      # climate class layer has coded NA values
+      if (names(r) == 'climClass') {
+        r[r == 128] <- NA
+      }
+      r <- projectRaster(from = r, to = default_raster, method = 'ngb')
+    }
+    message(paste('resampling raster', names(r)))
     r <- raster::resample(x = r, y = default_raster, 'ngb')
   } else {
-    print(paste('no need to resample', names(r)))
+    if (!silent) message(paste('no need to resample', names(r)))
   }
   return(r)
 }
 
-# load all metrics
-df_rasters <- tibble(
-  name = c(
-    'for_str_td',
-    'for_str_ba',
-    'for_str_ltd',
-    'for_com_se',
-    'for_com_sl',
-    'for_com_drid',
-    'fir_fun_tslf',
-    'fir_fun_frid',
-    'fad_sev_hsp',
-    'bio_foc_cso',
-    'bio_div_sr',
-    'bio_com_fgr',
-    'co2_stb_stb',
-    'zzz_zzz_climclass'),
-  path = c(
-    '../data/TCSI_box/metrics/forest_structure_current_soe.tif',
-    '../data/TCSI_box/metrics/baph_current.tif',
-    '../data/TCSI_box/metrics/large_tree_current.tif',
-    '../data/TCSI_box/metrics/seral_stage_soe_current_early.tif',
-    '../data/TCSI_box/metrics/seral_stage_soe_current_late.tif',
-    '../data/TCSI_box/metrics/drid_current_soe.tif',
-    '../data/TCSI_box/metrics/2A2_CURRENT_Prop_Fire_Dist_FULL.tif',
-    '../data/TCSI_box/metrics/frid_current_soe.tif',
-    '../data/TCSI_box/metrics/9A1_prob_FLEP4.tif',
-    '../data/TCSI_box/metrics/focal_species_current.tif',
-    '../data/TCSI_box/metrics/species_richness_current.tif',
-    '../data/TCSI_box/metrics/functional_richness_current.tif',
-    '../data/TCSI_box/metrics/carbon_current.tif',
-    '../data/TCSI_box/ClimateClasses/ClimateClasses.img'))
+# getting file paths of all metrics
+metrics <- tibble(
+  filename = '../data/ACCEL RRK - all layers/' |>
+    dir_ls(recurse = TRUE) |>
+    str_subset('(\\.tif$)|(\\.img$)'))
 
-# resample if resolution or extent do not map
-df_rasters %<>%
-  mutate(r = path %>%
-    map(.f = raster) %>%
-    map2(.y = name, .f = ~set_names(.x, .y))) %>%
+# getting name hierarchy
+metrics <- metrics |>
+  mutate(
+    subfolder = str_extract(
+      string = filename,
+      pattern = '(?<=..\\/data\\/ACCEL RRK - all layers\\/).+(?=(\\.tif$)|(\\.img$))')) |>
+  separate(
+    col = subfolder,
+    into = c('pillar', 'element', 'folder', 'metric'),
+    sep = '/',
+    fill = 'left') |>
+  mutate(
+    folder = coalesce(folder, metric),
+    element = coalesce(element, folder),
+    pillar = coalesce(pillar, element)) |>
+  # filtering out 30m rasters
+  filter(str_detect(metric, '30m', negate = TRUE)) |>
+  # filtering out normalized rasters
+  filter(str_detect(metric, '[Nn]ormalized', negate = TRUE))
+
+# adding climate variables
+metrics <- tibble(
+  filename = c(
+    "../data/Climate Class/input rasters/aet1981_2010.tif",
+    "../data/Climate Class/input rasters/cwd1981_2010.tif",
+    "../data/Climate Class/input rasters/tmn1981_2010.tif",
+    "../data/Climate Class/input rasters/tmx1981_2010.tif"),
+  pillar = 'climate',
+  element = 'climate',
+  folder = 'climate',
+  metric = 'climate') |>
+  bind_rows(metrics)
+
+# adding ACCEL mask
+metrics <- tibble(
+  filename = '../data/ACCEL_MASK.tif',
+  pillar = 'mask',
+  element = 'mask',
+  folder = 'mask',
+  metric = 'mask') |>
+  bind_rows(metrics)
+
+# loading rasters
+rasters <- metrics |>
+  mutate(r = filename |>
+           map(.f = raster) |>
+           map2(.y = metric, .f = ~set_names(.x, .y))) |>
   mutate(r = map(r, resample_if_needed, default_raster = default_raster))
 
-# convert raster values into dataframe
-x <- df_rasters %>%
-  pluck('r') %>%
-  stack() %>%
-  values()
-
-# create a sample that's easier to work with in memory
-sierra_metrics <- c('bio_div_sr', 'bio_com_fgr', 'bio_foc_cso', 'zzz_zzz_climclass')
-df <- x[sample(nrow(x), size = 1e7, replace = FALSE), ] %>%
-  as_tibble() %>%
-  # drop all rows that only contain NA for TCSI metrics
-  filter(if_any(-one_of(sierra_metrics), ~ !is.na(.))) %>%
-  # introducing sampling to speed up the code during dev TODO: take this out
-  sample_n(1e4)
-
-head(df)
+# persisting data for faster restarting from here
+write_rds(
+  x = rasters,
+  file = '../output/rrk_rasters_raw_processed.rds')
 ```
 
 
-Here we plot a histogram of the values for each metric. We're using only the
-interpreted values (range -1 to 1). You can see that some of the variables are
-approximately normally distributed while others look almost like binomial
-distributions.
+```{r loading_data, error = TRUE}
+source('../code/utils.R')
+
+# restoring pre-loaded data
+rasters <- read_rds(file = '../output/rrk_rasters_raw_processed.rds')
+
+# converting raster values into dataframe
+df <- rasters %>%
+  pluck('r') %>%
+  stack() %>%
+  values() %>%
+  as_tibble() %>%
+  # dropping anything outside of study area
+  filter(!is.na(mask))
+  
+# checking missingness and generate breakdown per variable
+df_missingness <- df %>%
+  mutate_all(is.na) %>%
+  # counting NA cells per metric
+  {tibble(
+    metric = colnames(.),
+    n_na = colSums(.),
+    perc_na = colSums(.) / nrow(.) * 100)} %>%
+  arrange(desc(perc_na))
+
+df_normalized <- df %>%
+  dplyr::select(
+    # removing variables that are not needed anymore
+    -mask,
+    # removing variables that are problematic due to missing values
+    -Meadow_SensNDWI_2019_300m_base,
+    -DamagePotential_WUI_2022_300m_base,
+    -DamagePotential_WUI_2022,
+    -StructureExposureScore_WUI_2022_300m_base,
+    -StructureExposureScore_WUI_2022,
+    # removing socioeconomic variables that will be difficult to predict
+    -LowIncome_CCI_2021_300m_base,
+    -UnemploymentPctl_2021_300m_base,
+    -HousingBurdenPctl_2021_300m_base,
+    # removing redundant variables
+    -ACCEL_habitatConnectivity_valuesInt,
+    -CA_Black_Oak_Stand_Distribution_2016to2020,
+    -CA_Black_Oak_Stand_Distribution_2016to2020,
+    # and removing some more
+    -ACCEL_habitatConnectivity_values_300m,
+    -skidder_bio_cost_proj_clip_300m_base,
+    -skidder_saw_cost_proj_clip2_300m_base,
+    -xmechctrl_8_2022_300m,
+    -Mortality_MMI_2017_2021_300m,
+    -Mortality_MMI_2017_2021_compressed,
+    -meanPFRID_300m) %>%
+  # engineering new variables for small trees and non-tree biomass
+  mutate(
+    biomass_small =
+      AvailableBiomass_2021_300m_base -
+      LargeTreeCarbon_2021_300m_base,
+    TPA_small =
+      TPA_2021_300m_base -
+      TPA_30in_up_2021_300m_base) %>%
+  # removing outliers
+  mutate(across(
+    PotentialSmokeHighSeverity_2021_300m_base:TPA_small,
+    remove_outliers)) %>%
+  # normalizing values to -1 to 1 range
+  mutate(across(
+    PotentialSmokeHighSeverity_2021_300m_base:TPA_small,
+    normalize_values))
+```
+
+```{r filtering_data, error = TRUE}
+# drop all variables that are mostly NA
+df_normalized <- df_normalized %>%
+  # dropping all rows that are mostly NA
+  filter(rowSums(!is.na(.)) > 4)
+
+# creating test and validation split
+set.seed(42)
+data_split <- initial_split(df_normalized, prop = 3/4)
+df_train <- training(data_split)
+df_test  <- testing(data_split)
+```
+
+
+Here we plot a histogram of the values for each metric. We're using only the interpreted values (range -1 to 1), except for climate. You can see that some of the variables are approximately normally distributed while others look almost like binomial distributions.
 
 ```{r plot_metric_histogram, error = TRUE}
-# plot a histogram for each metric
-df %>%
+# plotting a histogram for each metric
+df_train %>%
   pivot_longer(everything()) %>%
   filter(complete.cases(.)) %>%
   ggplot(aes(x = value)) +
-  geom_histogram() +
+  geom_histogram(bins = 30) +
   facet_wrap(~name, scales = 'free')
 ```
 
 
-We can investigate correlations between metrics with a pair plot collection of
-scatterplots. We're also adding a trend line to make it easier to spot
-relationships between the metrics where many observations fall into the same
-value range.
+```{r}
+# showing correlations between variables
+df_train %>%
+  correlate() %>%
+  rplot()
+```
 
-```{r pair_plot, error = TRUE}
-df %>%
-  # drop variables to save space on pair plot
-  select(starts_with(c('for', 'fir'))) %>%
-  select(-fir_fun_tslf) %>%
-  # drop any rows with NAs
-  filter(complete.cases(.)) %>%
+
+We can investigate correlations between metrics with a pair plot collection of scatterplots. We're also adding a trend line to make it easier to spot relationships between the metrics where many observations fall into the same value range.
+
+```{r}
+# investigate correlations between metrics with a pair plot collection
+df_train %>%
+  sample_n(1e4) %>%
+  select(one_of(
+    'AvailableBiomass_2021_300m_base',
+    'BASATOT_2021_300m_base',
+    'LargeTreeCarbon_2021_300m_base',
+    'TPA_2021_300m_base',
+    'TPA_30in_up_2021_300m_base',
+    'TPA_small'
+  )) %>%
   # self-join data to get pairs of observations
   mutate(row_id = row_number()) %>%
   pivot_longer(cols = -row_id) %>%
   full_join(., ., by = 'row_id') %>%
   # create pair plot
   ggplot( aes(x = value.x, y = value.y)) + 
-  #geom_density2d_filled() +
-  #scale_fill_viridis_d() +
   geom_point(alpha = .02) +
-  geom_smooth(method = 'gam', alpha = .5, color = 'coral') +
+  geom_smooth(method = 'gam', alpha = .2, color = 'coral') +
   facet_grid(name.x ~ name.y, scales = 'free', switch = 'y') +
   theme_minimal() +
   theme(
@@ -153,427 +252,100 @@ df %>%
 ```
 
 
-To compare good and bad conditions more directly, we can restrict our analysis
-to the top and bottom 10% of cell values. This allows us to see if the
-distribution of other metrics changes substantially between e.g. good tree
-density and bad tree density cells.
+Let's build a model to capture the relationship between the different metrics. We will use a selection of "independent" and "direct impact" metrics as predictors. Independent metrics are what we consider metrics which are unlikely to change due to management, namely climatic variables. Direct impact metrics that can be moved through management intervention, namely total basal area, trees per acre, and large trees per acre. Using these predictors we build a model for each indirectly impacted metric to estimate the strength of relationship.
 
-```{r find_good_bad_cells_td, error = TRUE}
+```{r modeling}
+# training models for each metric
+source('../code/utils.R')
 
-
-# Find areas with top 10% tree density and bottom 10% tree density,
-# then look at histograms for other metrics
-td_good <- df$for_str_td %>% quantile(.9, na.rm = TRUE)
-td_bad <- df$for_str_td %>% quantile(.1, na.rm = TRUE)
-
-# Drop all cells with mediocre tree density
-df_quality_td <- df %>%
-  mutate(quality_td = case_when(
-    for_str_td >= td_good ~ 'good',
-    for_str_td <= td_bad ~ 'bad',
-    TRUE ~ NA_character_)) %>%
-  filter(!is.na(quality_td))
-
-# plot distribution of other metrics for good and bad tree density cells
-df_quality_td %>%
-  pivot_longer(-quality_td) %>%
-  ggplot(aes(x = value, group = quality_td, fill = quality_td)) +
-  geom_density(alpha = .5) +
-  facet_wrap(~name, scales = 'free')
+modifiable <- c(
+  'AvailableBiomass_2021_300m_base',
+  'BASATOT_2021_300m_base',
+  'LargeTreeCarbon_2021_300m_base',
+  'TPA_2021_300m_base',
+  'TPA_30in_up_2021_300m_base',
+  'TPA_small'
+  )
+# building models for each metric
+predictors <- c(
+  'climate.1',
+  'climate.2',
+  'climate.3',
+  'climate.4',
+  'LargeTreeCarbon_2021_300m_base',
+  'TPA_30in_up_2021_300m_base',
+  'TPA_small'
+  )
+x <- df_train %>%
+  # generating a table with one row per response metric
+  #select(-one_of(predictors)) %>%
+  colnames() %>%
+  tibble(metric = .) %>%
+  # removing metrics that aren't meaningful to predict
+  filter(!metric %in% modifiable) %>%
+  filter(!metric %in% predictors) %>%
+  filter(!str_detect(metric, '^climate')) %>%
+  # getting training response variable
+  mutate(train_y = map(metric, ~pluck(df_train, .x))) %>%
+  mutate(train_useable = map2(
+    .x = train_y,
+    .y = metric,
+    .f = find_useable_observations,
+    df = df_train,
+    predictors = predictors)) %>%
+  # getting test response variable
+  mutate(test_y = map(metric, ~pluck(df_test, .x))) %>%
+  mutate(test_useable = pmap(.,
+    find_useable_observations,
+    df = df_test,
+    response = test_y,
+    predictors = predictors)) %>%
+  # training a model for each metric
+  mutate(model = map2(
+    .x = train_useable,
+    .y = train_y,
+    .f = fit_glmnet,
+    df = df_train,
+    predictors = predictors)) %>%
+  mutate(coeff = pmap(., get_coefficients)) %>%
+  # making prediction on test data
+  mutate(pred = pmap(.,
+    predict_values,
+    df = df_test,
+    predictors = predictors)) %>%
+  mutate(cod = pmap_dbl(., calculate_cod))
 ```
 
 
-The distribution plots above are helpful to understand the relationships between
-different metrics, but it is infeasible to create and visually inspect them for
-all metric pairs in the dataset. Therefore, we use two numeric values, the 
-spearman rank correlation coefficient and the kolmogorov-smirnov D-statistic to
-measure how interrelated two variables are.
+Quality of model outputs can be checked using the coefficient of determination for each model. Here we're returning that in tabular format.
 
-```{r test_good_bad_difference, error = TRUE}
-
-# filter data to only include top and bottom x percent for a given metric
-filter_high_low <- function(df, var_name, quantile = .1) {
-  
-  message('\n\nsplitting by ', var_name)
-  
-  threshold_good <- df %>%
-    pluck(var_name) %>%
-    quantile(1 - quantile, na.rm = TRUE)
-  threshold_bad <- df %>%
-    pluck(var_name) %>%
-    quantile(quantile, na.rm = TRUE)
-  # over 90% of this metric are -1!
-  if (var_name == 'bio_foc_cso') {
-    threshold_good <- 1
-  }
-  df %>%
-    mutate(quality = case_when(
-      !!sym(var_name) >= threshold_good ~ 'good',
-      !!sym(var_name) <= threshold_bad ~ 'bad',
-      TRUE ~ 'neutral')) %>%
-    filter(quality != 'neutral')
-}
-
-# run a kolmogorov-smirnov test to compare the distributions of one metric
-# between the top and bottom value groups of another metric
-ks_test <- function(df,
-                    column_testing,
-                    column_grouping = 'quality') {
-  message('\ntesting for ', column_testing)
-  out <- ks.test(
-    x = df %>%
-      filter(!!sym(column_grouping) == 'good') %>%
-      pluck(column_testing),
-    y = df %>%
-      filter(!!sym(column_grouping) == 'bad') %>%
-      pluck(column_testing))
-  return(out)
-}
-
-# create all metric pairs
-metrics <- df %>%
-  select(-zzz_zzz_climclass) %>%
-  colnames()
-combinations <- crossing(
-  metric.x = metrics,
-  metric.y = metrics) %>% 
-  filter(metric.x != metric.y)
-
-# run ks-test for each metric pair
-results <- combinations %>%
-  mutate(ks_result = map2(
-    .x = metric.x, .y = metric.y,
-    .f = ~ df %>%
-      filter_high_low(var_name = .x) %>%
-      ks_test(column_testing = .y))) %>%
-  mutate(
-    spearman_cor = map2_dbl(
-      .x = metric.x, .y = metric.y, 
-      .f = ~ df %>%
-        select(.x, .y) %>%
-        filter(complete.cases(.)) %>%
-        cor(method = 'spearman') %>%
-        pluck(2))) %>%
-  mutate(
-    ks_D = map_dbl(ks_result, ~.x$statistic),
-    ks_p = map_dbl(ks_result, ~.x$p.value)) %>%
-  select(-ks_result)
-
-results %>%
-  arrange(ks_p, desc(ks_D))
-
-write.csv(results,file = 'output/cor.csv')
+```{r modeling_check}
+# looking and strength of prediction
+cod <- x %>%
+  select(metric, cod) %>%
+  arrange(desc(cod)); print(cod, n = 40)
 ```
 
 
-We can try to use the relationships between the metrics to predict the likely
-value of a metric AFTER treatment, given the values of the metrics BEFORE
-treatment as well as the value of some selected metrics that we know will change
-to a specific value as the DIRECT result of landscape treatment.
+Finally, we write out the results of our modeling effort as a csv containing the coefficients for each predictor, but leaving out the climatic variables since these were just included to account for site-specific differences.
 
-Here, we assume that *basal area*, *tree density*, and *large tree density*
-may be changed as a direct result of landscape treatment. *Climate class* will
-always remain unchanged. All other metrics may change as an indirect result of
-treatment. We will try to estimate these direct impacts using a machine learning
-approach. Specifically, we can use multiple linear model imputation from the 
-`mice` package to achieve this.
+```{r modeling_results}
+# extracting coefficients for direct impact variables
+coeffs <- x %>%
+  select(metric, cod, coeff) %>%
+  unnest_wider(coeff) %>%
+  select(-starts_with('climate'), -`(Intercept)`); print(coeffs, n = 40)
 
-Let's test this below:
-
-```{r, error = TRUE}
-
-df_imputation <- df %>%
-  # convert climate class to factor so it can be used for imputation
-  mutate(climclass = as.factor(zzz_zzz_climclass)) %>%
-  select(-zzz_zzz_climclass) %>%
-  # drop collinear metric
-  select(-fir_fun_frid) %>%
-  # drop incomplete cases for now
-  filter(complete.cases(.))
-
-# these variables will not change and therefore should not be masked / imputed
-exclude <- c('climclass', 'for_str_td', 'for_str_ba', 'for_str_ltd')
-
-# Drops random fields from metrics data frame. Returns masked data frame and an
-# index list with the row + col indices of the values that were dropped
-drop_random_values <- function(
-    df,
-    exclude = c('climclass', 'for_str_td', 'for_str_ba', 'for_str_ltd'),
-    p = .2,
-    seed = 42) {
-  set.seed(seed)
-  # drop columns that are excluded from sampling
-  excluded <- df[, exclude]
-  df <- select(df, -all_of(!!exclude))
-  # sample of random rows with given probability
-  sample_mask <- tibble(.rows = nrow(df))
-  for (i in colnames(df)) {
-    i_mask <- rbinom(nrow(df), 1, p)
-    sample_mask <- sample_mask %>%
-      {. == 1} %>%
-      bind_cols(i_mask) %>%
-      set_names(c(colnames(sample_mask), i))
-    df[i_mask == 1, i] <- NA
-  }
-  df <- bind_cols(df, excluded)
-  return(list(df, sample_mask))
-}
-
-# drop some random cells
-c(df_masked, sample_mask) %<-% drop_random_values(df_imputation, p = .2)
-# compare NAs in masked data to the original, and to the sample mask.
-# Should all be TRUE! (unless original data contained NAs)
-all((is.na(df_masked) & !is.na(df_imputation)) == sample_mask)
-
-# start mice setup
-ini <- mice(
-  data = df_masked,
-  # find metrics with minimum correlation for prediction
-  pred = quickpred(df_masked, mincor = .1),
-  maxit = 0)
-# specify post-processing logic for mice
-# since interpreted values should fall within [-1, 1] range.
-# see https://www.gerkovink.com/miceVignettes/Passive_Post_processing/Passive_imputation_post_processing.html for details
-post_processing <- ini$post
-post_processing_logic <- 'imp[[j]][, i] <- squeeze(imp[[j]][, i], c(-1, 1))'
-post_processing[1:length(post_processing)-1] <- post_processing_logic
-
-# specify prediction relationship.
-pred <- ini$predictorMatrix
-# always use climate class
-pred[, 'climclass'] <- 1
-
-# fit imputation model
-imputation <- mice(
-  data = df_masked,
-  method = 'norm.predict',
-  post = post_processing,
-  m = 1,
-  maxit = 10,
-  seed = 42,
-  print = FALSE)
-# run actual imputation
-df_completed <- imputation %>%
-  complete() %>%
-  tibble()
-
-df_comparison <- tibble()
-for (i in colnames(df_completed)) {
-  if (!i %in% exclude) {
-    # find values that were removed
-    gaps <- is.na(df_masked[[i]]) & !is.na(df_imputation[[i]])
-    x_i <- tibble(
-      variable = i,
-      predicted = df_completed[[i]][gaps],
-      actual = df_imputation[[i]][gaps])
-    df_comparison <- bind_rows(df_comparison, x_i)
-  }
-}
-
-# check correlation between predicted and actual values
-out_correlation <- df_comparison %>%
-  #filter(complete.cases(.)) %>%
-  select(predicted, actual) %>%
-  {cor(., method = 'spearman')[[2]]}
-out_correlation
-
-# show density plot
-df_comparison %>%
-  ggplot(aes(x = actual, y = predicted)) +
-  geom_point(alpha = 0.2) +
-  #geom_density2d_filled() +
-  geom_smooth(method = 'gam', alpha = .5, color = 'coral') +
-  facet_wrap(~ variable, scales = 'free') +
-  theme_minimal() +
-  theme(
-    panel.grid = element_blank(),
-    # axis.text = element_blank(),
-    # axis.ticks = element_blank(),
-    axis.title = element_blank())
-```
-
-The results look promising for some metrics, like *functional group richness*
-and *carbon stability* but less sensible for others such as
-*probability of high severity fires*.
-
-
-We need to add one more step to our approach: We want to model the likely values
-of metrics after treatment. Direct impact will be simulated by moving the
-metrics tree density and basal area, indirect impacts need to be estimated by
-the model. However, we can use the values of the metric prior to treatment for
-our estimates, because e.g. areas with low probability of severe fires will
-still have a low severity afterwards, probably even lower!
-
-That means we can use the pre-treatment values in our estimation, and we can
-also include the knowledge on directionality (e.g. probability of high severity
-fires will remain the same or decrease).
-
-
-```{r}
-# identify potential treatment rows via undesireable conditions
-# in directly impacted metrics
-archetype <- df_imputation %>%
-  mutate(archetype = for_str_td > 0 & for_str_ba == 1) %>%
-  pluck('archetype')
-
-# static variables that don't change due to treatment
-df_static <- df_imputation %>%
-  select(climclass)
-# pre-treatment conditions
-df_pretreat <- df_imputation %>%
-  select(-climclass) %>%
-  set_colnames(paste0('pretreat_', colnames(.)))
-# create table for post treatment values
-df_posttreat <- df_imputation %>%
-  select(-climclass) %>%
-  set_colnames(paste0('posttreat_', colnames(.)))
-
-direct_metrics <- c(
-  'pretreat_for_str_td', 'pretreat_for_str_ba',
-  'posttreat_for_str_td', 'posttreat_for_str_ba')
-indirect_metrics <- c(
-  colnames(df_pretreat),
-  colnames(df_posttreat)) %>%
-  setdiff(direct_metrics)
-
-# set indirect metrics in  stands with desireable forest structure variables
-# to NA in pre-treatment
-df_pretreat[archetype, colnames(df_pretreat) %in% indirect_metrics] <- NA
-# set indirect metrics in treatment stands to NA in post-treatment
-df_posttreat[!archetype, colnames(df_posttreat) %in% indirect_metrics] <- NA
-# set post treatment direct metrics in treatment stands to desired conditions
-df_posttreat[!archetype, 'posttreat_for_str_td'] <- .1
-df_posttreat[!archetype, 'posttreat_for_str_ba'] <- 1
-
-# combine the tables
-df_prediction <- bind_cols(df_static, df_pretreat, df_posttreat)
-
-# start mice setup
-ini <- mice(
-  # use the full dataset instead this time
-  data = df_prediction,
-  # find metrics with minimum correlation for prediction
-  pred = quickpred(df_prediction, mincor = .1),
-  maxit = 0,
-  remove.collinear = FALSE,
-  print = FALSE)
-
-# specify prediction relationship.
-pred <- ini$predictorMatrix
-# always use climate class
-pred[, 'climclass'] <- 1
-
-# specify post-processing logic for mice
-adjust_iv <- function(imp, i, j) {
-  squeeze(imp[[j]][, i], c(-1, 1))
-}
-post_processing <- ini$post
-post_processing_logic <- 'imp[[j]][, i] <- adjust_iv(imp, i, j)'
-post_processing[1:length(post_processing)-1] <- post_processing_logic
-
-# run actual imputation
-imputation <- mice(
-  data = df_prediction,
-  method = 'norm.predict',
-  pred = pred,
-  post = post_processing,
-  m = 1,
-  maxit = 10,
-  seed = 42,
-  remove.collinear = FALSE,
-  print = FALSE)
-df_completed <- imputation %>%
-  complete() %>%
-  tibble()
-
-df_completed %>%
-  # drop archetype rows
-  filter(imputation$where[, 14:25] %>% rowSums == 10) %>%
-  select(starts_with('posttreat')) %>%
-  bind_rows(df_pretreat) %>%
-  pivot_longer(everything()) %>%
-  mutate(
-    post = case_when(
-      str_detect(name, '^post') ~ 'post treatment',
-      TRUE ~ 'pre treatment'),
-    name = name %>% str_remove('pretreat_') %>% str_remove('posttreat_')) %>%
-  # TODO: remove
-  filter(complete.cases(.)) %>%
-  pivot_wider(
-    names_from = post,
-    values_from = value,
-    values_fn = list(value = mean)) %>%
-  select(name, `pre treatment`, `post treatment`) %>%
-  mutate(delta = `post treatment` - `pre treatment`)
-```
-
-To be honest, the results don't seem to make a lot of sense. *carbon*
-has increased when it surely should have gone down due to removal of biomass,
-most other metrics have declined. I think the problem may be that we only
-presented the archetype cells as "labelled data" to the model, thus inducing
-bias into our forecast.
-
-Let's try instead to use all stands as labeled data.
-
-```{r}
-
-# df_rf <- tibble(
-#   metric = df_imputation |> select(-climclass) %>% colnames(),
-#   X = list(df_imputation)) |>
-#   mutate(
-#     y = map2(.x = X, .y = metric, .f = ~pluck(.x, .y)),
-#     X = map2(.x = X, .y = metric, .f = ~select(.x, -.y)))
-# 
-# library(randomForest)
-# library(glmnet)
-# library(broom)
-# 
-# df_rf <- df_rf %>%
-#   mutate(
-#     glmnet = map2(X, y, ~cv.glmnet(.x[[1]], .y[[1]])))
-# #    rf = map2(X, y, ~randomForest(.x, .y)))
-# 
-# df_rf <- df_rf %>%
-#   mutate(
-#     stats_glm = map(glmnet, tidy))
-# 
-# cv.glmnet(
-#   x = as.matrix(df_rf$X[[10]]),
-#   y = df_rf$y[[10]],
-#   type.measure = 'mse')
-# # 
-# # ?randomForest
-# # df_imputation
-  
+write_csv(coeffs, '../output/impact_of_treatment_models.csv')
 ```
 
 
 
 
 
-```{r}
-
-# 
-# # don't predict basal area, tree density, large tree density, or climate class
-# # because these will be set manually
-# pred[c(
-#   'for_str_td',
-#   'for_str_ba',
-#   'for_str_ltd',
-#   'climclass'), ] <- 0
-# # don't use any of the indirectly impacted metrics
-# # because they might interact with one-another
-# pred[, c(
-#  'for_com_se',
-#  'for_com_sl',
-#  'for_com_drid',
-#  'fir_fun_tslf',
-#  'fad_sev_hsp',
-#  'bio_foc_cso',
-#  'bio_div_sr',
-#  'bio_com_fgr',
-#  'co2_stb_stb')] <- 0
-# 
 
 
-```
+
+
+
+
