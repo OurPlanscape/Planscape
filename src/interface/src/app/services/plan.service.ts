@@ -382,6 +382,7 @@ export class PlanService {
       region: plan.region_name,
       planningArea: plan.geometry,
       savedScenarios: plan.scenarios ?? 0,
+      configs: plan.projects ?? 0,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         plan.creation_timestamp
       ),

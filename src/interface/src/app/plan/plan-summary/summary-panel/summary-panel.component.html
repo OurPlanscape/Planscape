@@ -1,37 +1,32 @@
 <div class="summary-panel">
   <div class="summary-header">
-    <div class="summary-title">{{summaryInput?.type}} Summary</div>
-    <div class="summary-subtitle">Status: {{summaryInput?.status}}</div>
+    <div class="summary-title">About the area</div>
   </div>
   <div class="summary-content">
-    <div>Owner: Unavailable</div>
-    <div>Created: {{summaryInput?.createdTime | date}}</div>
-    <div>Last updated: Unavailable</div>
-    <div>Region: {{summaryInput?.region}}</div>
-
     <div class="grid-container">
       <div class="grid-item">
-        <span class="grid-title" [style.color]="conditionScoreColorMap[conditionScore]">{{conditionScore}}</span>
-        <span class="grid-subtitle">current condition</span>
-      </div>
-      <div class="grid-item">
-        <span class="grid-title" [style.color]="conditionScoreColorMap[futureConditionScore]">{{futureConditionScore}}</span>
-        <span class="grid-subtitle">future condition</span>
-      </div>
-      <div class="grid-item">
-        <span class="grid-title">{{summaryInput?.acres}}</span>
+        <span class="grid-title">{{ summaryInput?.acres }}</span>
         <span class="grid-subtitle">acres</span>
       </div>
       <div class="grid-item">
-        <span class="grid-title">0</span>
+        <span class="grid-title"> {{ summaryInput?.configs }} </span>
+        <span class="grid-subtitle">configs</span>
+      </div>
+      <div class="grid-item">
+        <span class="grid-title">{{ summaryInput?.scenarios }}</span>
         <span class="grid-subtitle">scenarios</span>
       </div>
     </div>
+
+    <div class="summary-info">
+      <div>Region: {{ summaryInput?.region }}</div>
+      <div>Creator: {{ summaryInput?.owner }}</div>
+      <div>Created: {{ summaryInput?.createdTime | date:'MM/dd/yyyy' }}</div>
+      <div>Last activity: Unavailable</div>
+    </div>
   </div>
   <div class="summary-footer">
-    <div class="summary-actions">
-      <button mat-flat-button>Share</button>
-      <button mat-flat-button>Subscribe</button>
-    </div>
+    <!-- TODO: Add action buttons seen in new mocks. -->
+    <div class="summary-actions"></div>
   </div>
 </div>

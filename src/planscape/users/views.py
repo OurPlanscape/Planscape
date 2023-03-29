@@ -3,12 +3,24 @@ import json
 from django.contrib.auth.models import User
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
+from users.serializers import UserSerializer
 
 def get_user(request: HttpRequest) -> User:
     user = None
     if hasattr(request, 'user') and request.user.is_authenticated:
         user = request.user
     return user
+
+def get_user_by_id(request: HttpRequest) -> HttpResponse:
+    try:
+        assert isinstance(request.GET['id'], str)
+        user_id = request.GET.get('id', "0")
+        if user_id is None:
+            raise ValueError("Must specify user_id")
+        user = User.objects.get(id=user_id)
+        return JsonResponse(UserSerializer(user).data, safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 def delete_user(request: HttpRequest) -> HttpResponse:
     try:
