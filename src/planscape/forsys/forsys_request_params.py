@@ -113,8 +113,8 @@ class DbRequestParams():
     # This is typically an HttpRequest attribute.
     # If settings.DEBUG is true, however, this may also be set via url
     # parameter, debug_user_id.
-    # This informs Scenario retrieval (since only scenarios visible to the user
-    # may be retrieved) and is a field value when saving Forsys output data to
+    # This informs Scenario retrieval (since only scenarios visible to the user 
+    # may be retrieved) and is a field value when saving Forsys output data to 
     # the DB.
     user: User
 
@@ -135,8 +135,8 @@ class DbRequestParams():
         return None
 
 
-# When Forsys parameters are read from url parameters with default values
-# (for the sake of e2e tests), no scenario needs to be retrieved and, by
+# When Forsys parameters are read from url parameters with default values 
+# (for the sake of e2e tests), no scenario needs to be retrieved and, by 
 # default, write_to_db is false.
 class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
     def __init__(self, request: HttpRequest):
@@ -147,7 +147,7 @@ class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
         self.scenario = None
 
 
-# When Forsys parameters are gleaned from DB table values (for production), a
+# When Forsys parameters are gleaned from DB table values (for production), a 
 # scenario is retrieved, and, by default, write_to_db is true.
 class DbRequestParamsForGenerationFromDb(DbRequestParams):
     def __init__(self, request: HttpRequest):
@@ -333,7 +333,7 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
-
+        
         self.cluster_params = ClusterAlgorithmRequestParams(params)
 
         request = HttpRequest()
@@ -365,12 +365,12 @@ class ForsysGenerationRequestParamsFromDb(
 
         self.db_params = DbRequestParamsForGenerationFromDb(request)
         self._validate_scenario(self.db_params.scenario)
-
+        
         self._read_db_params()
 
     def _validate_scenario(self, scenario: Scenario):
         status = scenario.status
-        if not (status == Scenario.ScenarioStatus.INITIALIZED or status == Scenario.ScenarioStatus.PROCESSING or
+        if not (status == Scenario.ScenarioStatus.INITIALIZED or
                 status == Scenario.ScenarioStatus.FAILED):
             raise Exception(
                 "scenario status for scenario ID, %d" % (scenario.pk) +
