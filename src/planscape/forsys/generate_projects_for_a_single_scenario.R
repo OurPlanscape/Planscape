@@ -73,13 +73,26 @@ generate_projects_for_a_single_scenario <- function(
       mutate({{geo_wkt_field}} := st_as_text(geometry))
   }
 
-  # for setting max costs
-  proj_target_value = NULL
-  proj_target_field = NULL
-  if (max_cost_per_project_in_usd) {
-    proj_target_field = stand_cost_field
-    proj_target_value = max_cost_per_project_in_usd
+  # TODO: Should we even set a patchmax_proj_size if the client doesn't
+  # specify one?  The code would otherwise run with no limit (and seems to work).
+  if (identical(max_area_per_project_in_km2, "")) {
+     max_area_per_project_in_km2 = 20.0 # default setting
+  } else {
+     max_area_per_project_in_km2 = as.double(max_area_per_project_in_km2)
   }
+
+  # These are used for setting per-project constraints for cost.
+  proj_target_field = NULL
+  proj_target_value = NULL
+
+  # Add cost-per-project params only if needed
+  # TODO: find a more elegant way to do this?  Appending a list seems to coerce
+  # the values (max_cost) into a string, which generates an R warning.
+  if (!identical(max_cost_per_project_in_usd, "")) {
+    proj_target_field = stand_cost_field
+    proj_target_value = as.double(max_cost_per_project_in_usd)
+  }
+
 
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
   suppressMessages(
