@@ -303,22 +303,15 @@ def generate_project_areas_from_lambda_output_prototype(
             'project': body['project']
         }
 
-        user_id = body.get('user_id', None)
-        if not (isinstance(user_id, int)):
-            raise ValueError("Must specify user_id as an integer")
-
         scenario_id = body.get('scenario_id', None)
         if not (isinstance(scenario_id, int)):
             raise ValueError("Must specify scenario_id as an integer")
         scenario = Scenario.objects.get(id=scenario_id)
-        if scenario.owner.pk != user_id:
-                raise ValueError(
-                    "Scenario to update with lambda outputs does not belong to user.")
 
         temp_request = HttpRequest()
         temp_request.GET = QueryDict(
             'request_type=0' +
-            '&debug_user_id=' + str(user_id) +
+            '&debug_user_id=' + str(scenario.owner.pk) +
             '&scenario_id=' + str(scenario_id))
         params = get_generation_request_params(temp_request) # returns ForsysGenerationRequestParamsFromDb
         headers = ForsysInputHeaders(params.priorities)
