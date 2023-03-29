@@ -100,6 +100,7 @@ describe('PlanService', () => {
         ...mockPlan,
         id: '1',
         savedScenarios: 0,
+        configs: 0,
         createdTimestamp: undefined,
       };
 

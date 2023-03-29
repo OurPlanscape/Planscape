@@ -9,6 +9,7 @@ export interface Plan extends BasePlan {
   createdTimestamp?: number;
   updatedTimestamp?: number;
   savedScenarios?: number;
+  configs?: number;
 }
 
 export interface BasePlan {
