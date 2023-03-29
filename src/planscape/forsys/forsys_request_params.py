@@ -178,11 +178,11 @@ class StandEligibilityParams:
     max_distance_from_road_in_meters: float
 
     def __init__(self):
-        self.filter_by_buildings = True
-        self.filter_by_slope = True
+        self.filter_by_buildings = False
+        self.filter_by_slope = False
         # This corresponds with 35 degrees.
         self.max_slope_in_percent_rise = 70.0
-        self.filter_by_road_proximity = True
+        self.filter_by_road_proximity = False
         # Advised to set this to ~60 meters, but that's not testable for 300m
         # data.
         # TODO: after switching to 30m data, change the default value.
