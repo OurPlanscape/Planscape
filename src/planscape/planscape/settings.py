@@ -195,14 +195,21 @@ SESSION_COOKIE_SAMESITE = None
 # True if a non-logged-in user can save plans.
 PLANSCAPE_GUEST_CAN_SAVE = True
 
-# REST Framework settings
+# Authentication settings (dj-rest-auth)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ),
     'NON_FIELD_ERRORS_KEY': 'global',
+}
+
+REST_AUTH = {
+    'USE_JWT': True,
+    'JWT_AUTH_COOKIE': 'my-app-auth',
+    'JWT_AUTH_REFRESH_COOKIE': 'my-refresh-token',
+    'JWT_AUTH_HTTPONLY': False,
+    'REGISTER_SERIALIZER': 'users.serializers.NameRegistrationSerializer',
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -211,17 +218,6 @@ AUTHENTICATION_BACKENDS = [
     # `allauth` specific authentication methods, such as login by e-mail
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
-
-REST_AUTH_REGISTER_SERIALIZERS = {
-    'REGISTER_SERIALIZER': 'users.serializers.NameRegistrationSerializer',
-}
-
-# JWT settings
-
-REST_USE_JWT = True
-JWT_AUTH_COOKIE = 'my-app-auth'
-JWT_AUTH_REFRESH_COOKIE = 'my-refresh-token'
-JWT_AUTH_HTTPONLY = False
 
 # allauth
 
