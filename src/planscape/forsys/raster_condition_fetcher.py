@@ -94,7 +94,7 @@ class RasterConditionFetcher:
         self.topleft_coords = self._get_topleft_coords(
             self.raster_values)
         self.data, self.x_to_y_to_index = self._reformat_to_dataframe(
-            self.raster_values, priorities, land_attributes)
+            self.raster_values, self.topleft_coords, priorities, land_attributes)
         self.width, self.height = self._get_width_and_height(
             self.x_to_y_to_index)
 
@@ -185,7 +185,7 @@ class RasterConditionFetcher:
     # and their condition values.
     def _reformat_to_dataframe(
         self,
-        raster_values: dict[str, RasterPixelValues],
+        raster_values: dict[str, RasterPixelValues], topleft_coords: tuple[float, float],
         priorities: list[str], land_attributes: list[str]
     ) -> tuple[dict[str, list],
                dict[int, dict[int, int]]]:
@@ -197,21 +197,26 @@ class RasterConditionFetcher:
         x_to_y_to_index = {}
 
         self._reformat_condition_raster_values(
-            raster_values, priorities, land_attributes, data, x_to_y_to_index)
+            raster_values, topleft_coords, priorities, land_attributes, data,
+            x_to_y_to_index)
         self._reformat_attribute_raster_values(
-            raster_values, priorities, land_attributes, data, x_to_y_to_index)
+            raster_values, topleft_coords, priorities, land_attributes, data,
+            x_to_y_to_index)
         return data, x_to_y_to_index
 
     def _reformat_condition_raster_values(
             self, raster_values: dict[str, RasterPixelValues],
+            topleft_coords: tuple[float, float],
             priorities: list[str], land_attributes: list[str],
             data: dict[str, list],
             x_to_y_to_index: dict[int, dict[int, int]]):
         for condition in priorities:
             rv = raster_values[condition]
             for i in range(len(rv["pixel_dist_x"])):
-                x = rv["pixel_dist_x"][i]
-                y = rv["pixel_dist_y"][i]
+                x = rv["pixel_dist_x"][i] + self._get_pixel_dif(
+                    rv['upper_left_coord_x'], topleft_coords[0])
+                y = rv["pixel_dist_y"][i] + self._get_pixel_dif(
+                    rv['upper_left_coord_y'], topleft_coords[1])
                 # TODO: using normalized conditions, impact is 1.0 - condition
                 # score. This needs to be updated once we move to AP scores.
                 value = 1.0 - rv["values"][i]
@@ -236,14 +241,17 @@ class RasterConditionFetcher:
 
     def _reformat_attribute_raster_values(
             self, raster_values: dict[str, RasterPixelValues],
+            topleft_coords: tuple[float, float],
             priorities: list[str], land_attributes: list[str],
             data: dict[str, list],
             x_to_y_to_index: dict[int, dict[int, int]]):
         for attribute in land_attributes:
             rv = raster_values[attribute]
             for i in range(len(rv["pixel_dist_x"])):
-                x = rv["pixel_dist_x"][i]
-                y = rv["pixel_dist_y"][i]
+                x = rv["pixel_dist_x"][i] + self._get_pixel_dif(
+                    rv['upper_left_coord_x'], topleft_coords[0])
+                y = rv["pixel_dist_y"][i] + self._get_pixel_dif(
+                    rv['upper_left_coord_y'], topleft_coords[1])
                 value = rv["values"][i]
 
                 if x not in x_to_y_to_index.keys():
@@ -263,6 +271,10 @@ class RasterConditionFetcher:
                             data[a].append(np.nan)
                     for p in priorities:
                         data[p].append(np.nan)
+
+    def _get_pixel_dif(self, upper_left_coord, target_upper_left_coord) -> int:
+        return int((upper_left_coord - target_upper_left_coord) /
+                   settings.CRS_9822_SCALE[0])
 
     # Returns the width and height of the raster image represented by self.data.
     def _get_width_and_height(
