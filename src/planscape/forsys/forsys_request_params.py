@@ -333,15 +333,14 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PLANNING_AREA = 'planning_area'
+    _URL_MAX_AREA_PER_PROJECT = 'max_area_per_project'
+    _URL_MAX_COST_PER_PROJECT = 'max_cost_per_project'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
     _DEFAULT_PRIORITIES = ['fire_dynamics',
                            'forest_resilience', 'species_diversity']
 
-    # Constants for constraining projects
-    _URL_MAX_AREA_PER_PROJECT = 'max_area_per_project'
-    _URL_MAX_COST_PER_PROJECT = 'max_cost_per_project'
     
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
