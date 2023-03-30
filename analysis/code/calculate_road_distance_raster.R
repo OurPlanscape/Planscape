@@ -66,3 +66,7 @@ writeRaster(
   x = roads_distance,
   filename = 'analysis/output/roads_distance.tif',
   overwrite = TRUE)
+
+# # Code like below can be used to mask the raster to a specific region
+# fire_mask <- raster('analysis/data/ACCEL RRK - all layers/fireDynamics/functional/BurnProbability_2022_300m.tif')
+# roads_distance_sierra <- raster::mask(x = roads_distance, mask = fire_mask)
