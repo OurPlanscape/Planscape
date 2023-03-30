@@ -113,8 +113,8 @@ class DbRequestParams():
     # This is typically an HttpRequest attribute.
     # If settings.DEBUG is true, however, this may also be set via url
     # parameter, debug_user_id.
-    # This informs Scenario retrieval (since only scenarios visible to the user 
-    # may be retrieved) and is a field value when saving Forsys output data to 
+    # This informs Scenario retrieval (since only scenarios visible to the user
+    # may be retrieved) and is a field value when saving Forsys output data to
     # the DB.
     user: User
 
@@ -135,8 +135,8 @@ class DbRequestParams():
         return None
 
 
-# When Forsys parameters are read from url parameters with default values 
-# (for the sake of e2e tests), no scenario needs to be retrieved and, by 
+# When Forsys parameters are read from url parameters with default values
+# (for the sake of e2e tests), no scenario needs to be retrieved and, by
 # default, write_to_db is false.
 class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
     def __init__(self, request: HttpRequest):
@@ -147,7 +147,7 @@ class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
         self.scenario = None
 
 
-# When Forsys parameters are gleaned from DB table values (for production), a 
+# When Forsys parameters are gleaned from DB table values (for production), a
 # scenario is retrieved, and, by default, write_to_db is true.
 class DbRequestParamsForGenerationFromDb(DbRequestParams):
     def __init__(self, request: HttpRequest):
@@ -157,6 +157,36 @@ class DbRequestParamsForGenerationFromDb(DbRequestParams):
             DbRequestParams._URL_WRITE_TO_DB, True)
         self.scenario = get_scenario_by_id(
             self.user, self._URL_SCENARIO_ID, params)
+
+
+# Parameters for deciding whether a stand is eligible for treatment.
+# TODO: make it possible to parse these parameters from URL and/or read them
+# from the DB.
+class StandEligibilityParams:
+    # If true, stands occupied by buildings are deemed ineligible for treatment.
+    filter_by_buildings: bool
+
+    # If true, stands with slope greater than max_slope_in_percent_rise are 
+    # deemed ineligible for treatment.
+    filter_by_slope: bool
+    max_slope_in_percent_rise: float
+
+    # If true, stands occupied by roads (proximity=0) are deemed ineligible for 
+    # treatment while stands with road proximity greater than 
+    # max_distance_from_road_in_meters are filtered.
+    filter_by_road_proximity: bool
+    max_distance_from_road_in_meters: float
+
+    def __init__(self):
+        self.filter_by_buildings = False
+        self.filter_by_slope = False
+        # This corresponds with 35 degrees.
+        self.max_slope_in_percent_rise = 70.0
+        self.filter_by_road_proximity = False
+        # Advised to set this to ~60 meters, but that's not testable for 300m
+        # data.
+        # TODO: after switching to 30m data, change the default value.
+        self.max_distance_from_road_in_meters = 1200.0
 
 
 # Reads url parameters common to both
@@ -300,6 +330,8 @@ class ForsysGenerationRequestParams(CommonParams):
     cluster_params: ClusterAlgorithmRequestParams
     # Parameters informing whether Planscape will read and write to the DB.
     db_params: DbRequestParams
+    # Parameters informing whether a stand can be included in a project area.
+    stand_eligibility_params: StandEligibilityParams
 
     # Per-project constraints
     max_area_per_project_in_km2: float
@@ -317,6 +349,7 @@ class ForsysGenerationRequestParams(CommonParams):
         self.db_params = None
         self.max_area_per_project_in_km2 = self._DEFAULT_MAX_AREA
         self.max_cost_per_project_in_usd = None
+        self.stand_eligibility_params = None
 
     # Returns a dictionary mapping priorities to priority weights.
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -346,13 +379,15 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
-        
+
         self.cluster_params = ClusterAlgorithmRequestParams(params)
 
         request = HttpRequest()
         request.GET = params
         self.db_params = DbRequestParamsForGenerationFromUrlWithDefaults(
             request)
+        # TODO: add logic for parsing stand eligibility params from url params.
+        self.stand_eligibility_params = StandEligibilityParams()
 
         self._read_url_params_with_defaults(params)
 
@@ -381,8 +416,12 @@ class ForsysGenerationRequestParamsFromDb(
         self.cluster_params = ClusterAlgorithmRequestParams(request.GET)
 
         self.db_params = DbRequestParamsForGenerationFromDb(request)
+
+        # TODO: pass stand eligibility params via DB.
+        self.stand_eligibility_params = StandEligibilityParams()
+
         self._validate_scenario(self.db_params.scenario)
-        
+
         self._read_db_params()
 
     def _validate_scenario(self, scenario: Scenario):
