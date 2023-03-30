@@ -268,7 +268,8 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
         self.assertFalse(params.db_params.write_to_db)
         self.assertIsNone(params.db_params.user)
         self.assertIsNone(params.max_cost_per_project_in_usd)
-        self.assertIsNone(params.max_area_per_project_in_km2)
+        self.assertEqual(params.max_area_per_project_in_km2,
+                         params._DEFAULT_MAX_AREA)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
