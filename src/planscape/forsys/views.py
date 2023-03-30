@@ -218,7 +218,7 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         "" if output_scenario_tag is None else output_scenario_tag,
         enable_kmeans_clustering,
         "" if max_cost_per_project_in_usd is None else max_cost_per_project_in_usd,
-        "" if max_area_per_project_in_km2 is None else max_area_per_project_in_km2)
+        max_area_per_project_in_km2)
 
     priority_weights_dict = {
         headers.priority_headers[i]: forsys_priority_weights[i]

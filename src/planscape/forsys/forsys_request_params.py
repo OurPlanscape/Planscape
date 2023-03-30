@@ -302,8 +302,11 @@ class ForsysGenerationRequestParams(CommonParams):
     db_params: DbRequestParams
 
     # Per-project constraints
-    max_area_per_project_in_km2: float | None
+    max_area_per_project_in_km2: float
     max_cost_per_project_in_usd: float | None
+
+    # default values for these params, regardless of how params were generated
+    _DEFAULT_MAX_AREA = 20
     
     def __init__(self):
         self.region = None
@@ -312,7 +315,7 @@ class ForsysGenerationRequestParams(CommonParams):
         self.planning_area = None
         self.cluster_params = None
         self.db_params = None
-        self.max_area_per_project_in_km2 = None
+        self.max_area_per_project_in_km2 = self._DEFAULT_MAX_AREA
         self.max_cost_per_project_in_usd = None
 
     # Returns a dictionary mapping priorities to priority weights.
@@ -341,7 +344,6 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     _DEFAULT_PRIORITIES = ['fire_dynamics',
                            'forest_resilience', 'species_diversity']
 
-    
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
         
@@ -360,8 +362,9 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         self.planning_area = get_default_planning_area()
-        self.max_area_per_project_in_km2 = self._read_positive_float(params,
-                                                                     self._URL_MAX_AREA_PER_PROJECT)
+        km2 = self._read_positive_float(params, self._URL_MAX_AREA_PER_PROJECT)
+        if km2 is not None:
+          self.max_area_per_project_in_km2 = km2
         self.max_cost_per_project_in_usd = self._read_positive_float(params,
                                                                      self._URL_MAX_COST_PER_PROJECT)
 
@@ -413,7 +416,10 @@ class ForsysGenerationRequestParamsFromDb(
             scenario)
 
         self.max_cost_per_project_in_usd = project.max_cost_per_project_in_usd
-        self.max_area_per_project_in_km2 = project.max_area_per_project_in_km2
+        # for backwards compatibility, don't assume this was defined in old projects
+        km2 = project.max_area_per_project_in_km2
+        if km2 is not None:
+          self.max_area_per_project_in_km2 = km2
 
     def _get_weighted_priorities(
         self, scenario: Scenario
