@@ -1,5 +1,6 @@
 import cProfile
 import io
+import json
 import logging
 import os
 import pstats
@@ -9,9 +10,11 @@ from pstats import SortKey
 import numpy as np
 import pandas as pd
 import rpy2
+from base.condition_types import ConditionScoreType
 from django.conf import settings
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse)
+                         JsonResponse, QueryDict)
+from django.views.decorators.csrf import csrf_exempt
 from forsys.forsys_request_params import (ClusterAlgorithmType,
                                           get_generation_request_params,
                                           get_ranking_request_params)
@@ -24,6 +27,7 @@ from forsys.parse_forsys_output import (
 from forsys.write_forsys_output_to_db import (create_plan_and_scenario,
                                               save_generation_output_to_db)
 from memory_profiler import profile
+from plan.models import Condition, Scenario, ScenarioWeightedPriority
 from planscape import settings
 from pytz import timezone
 
@@ -79,6 +83,20 @@ def convert_dictionary_of_lists_to_rdf(
     return rdf
 
 
+def convert_r_listvector_to_python_dict(raw_forsys_output: "rpy2.robjects.vectors.ListVector") -> dict:
+    stand_output_rdf = raw_forsys_output[0]
+    project_output_rdf = raw_forsys_output[1]
+    forsys_project_output_df: dict[str, list] = {
+        key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
+    forsys_stand_output_df: dict[str, list] = {
+        key: (np.asarray(stand_output_rdf.rx2(key)).tolist()) for key in stand_output_rdf.names}
+
+    return {
+        'stand': forsys_stand_output_df,
+        'project': forsys_project_output_df
+    }
+
+
 def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_input_dict: dict[str, list],
         max_area_in_km2: float | None, max_cost_in_usd: float | None,
@@ -100,7 +118,8 @@ def run_forsys_rank_project_areas_for_multiple_scenarios(
         forsys_cost_header)
 
     parsed_output = ForsysRankingOutputForMultipleScenarios(
-        forsys_output, forsys_priority_headers, max_area_in_km2,
+        convert_r_listvector_to_python_dict(
+            forsys_output), forsys_priority_headers, max_area_in_km2,
         max_cost_in_usd, forsys_proj_id_header, forsys_area_header,
         forsys_cost_header)
 
@@ -220,13 +239,13 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.priority_headers[i]: forsys_priority_weights[i]
         for i in range(len(headers.priority_headers))}
     parsed_output = ForsysGenerationOutputForASingleScenario(
-        forsys_output, priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
+        convert_r_listvector_to_python_dict(
+            forsys_output), priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
         headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
         headers.FORSYS_GEO_WKT_HEADER)
     return parsed_output
 
-    # TODO: Create test endpoint that instantiates ForsysGenerationOutputForASingleScenario 
-    # with stand and project output files 
+
 def generate_project_areas_for_a_single_scenario(
         request: HttpRequest) -> HttpResponse:
     try:
@@ -266,6 +285,50 @@ def generate_project_areas_for_a_single_scenario(
             _tear_down_cprofiler(pr, 'output/cprofiler.log')
 
         return JsonResponse(response)
+    except Exception as e:
+        logger.error('project area generation error: ' + str(e))
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@csrf_exempt
+def generate_project_areas_from_lambda_output_prototype(
+        request: HttpRequest) -> HttpResponse:
+    try:
+        body = json.loads(request.body)
+        if not 'stand' in body or not 'project' in body:
+            raise ValueError(
+                "Either the forsys stand or project dictionary is missing")
+        forsys_output_json = {
+            'stand': body['stand'],
+            'project': body['project']
+        }
+
+        scenario_id = body.get('scenario_id', None)
+        if not (isinstance(scenario_id, int)):
+            raise ValueError("Must specify scenario_id as an integer")
+        scenario = Scenario.objects.get(id=scenario_id)
+
+        temp_request = HttpRequest()
+        temp_request.GET = QueryDict(
+            'request_type=0' +
+            '&debug_user_id=' + str(scenario.owner.pk) +
+            '&scenario_id=' + str(scenario_id))
+        params = get_generation_request_params(temp_request) # returns ForsysGenerationRequestParamsFromDb
+        headers = ForsysInputHeaders(params.priorities)
+
+        priority_weights_dict = {
+            headers.priority_headers[i]: params.priority_weights[i]
+            for i in range(len(headers.priority_headers))}
+
+        parsed_output = ForsysGenerationOutputForASingleScenario(
+            forsys_output_json, priority_weights_dict, headers.FORSYS_PROJECT_ID_HEADER,
+            headers.FORSYS_AREA_HEADER, headers.FORSYS_COST_HEADER,
+            headers.FORSYS_GEO_WKT_HEADER)
+
+        save_generation_output_to_db(
+            params.db_params.scenario, parsed_output.scenario)
+
+        return JsonResponse(parsed_output.scenario, safe=False)
     except Exception as e:
         logger.error('project area generation error: ' + str(e))
         return HttpResponseBadRequest("Ill-formed request: " + str(e))

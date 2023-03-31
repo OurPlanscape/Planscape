@@ -8,6 +8,7 @@ from forsys.parse_forsys_output import (
     ForsysGenerationOutputForASingleScenario,
     ForsysRankingOutputForASingleScenario,
     ForsysRankingOutputForMultipleScenarios)
+from forsys.views import convert_r_listvector_to_python_dict
 from planscape import settings
 
 
@@ -31,7 +32,7 @@ def _convert_dictionary_of_lists_to_rdf(
 
 class TestForsysRankingOutputForMultipleScenarios(TestCase):
     def test_parses_output(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, None, "proj_id", "area", "cost")
@@ -87,7 +88,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_fails_if_priority_ordering_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # priority order is ["p2", "p1"] instead of ["p1", "p2"]
@@ -99,7 +100,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                          'header, Pr_1_p2, is not a forsys output header')
 
     def test_fails_if_proj_id_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
@@ -111,7 +112,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                          'header, project_id, is not a forsys output header')
 
     def test_fails_if_area_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
@@ -124,7 +125,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             'header, ETrt_area_ha, is not a forsys output header')
 
     def test_fails_if_cost_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
 
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
@@ -137,7 +138,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             'header, ETrt_c, is not a forsys output header')
 
     def test_limits_area(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             25, None, "proj_id", "area", "cost")
@@ -183,7 +184,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_limits_area_by_skipping_top_project(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             10, None, "proj_id", "area", "cost")
@@ -219,7 +220,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_limits_cost(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, 1200, "proj_id", "area", "cost")
@@ -265,7 +266,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                              })
 
     def test_limits_cost_by_skipping_top_project(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
+        raw_forsys_output = self._get_parsed_forsys_output()
         parsed_output = ForsysRankingOutputForMultipleScenarios(
             raw_forsys_output, ["p1", "p2"],
             None, 550, "proj_id", "area", "cost")
@@ -300,7 +301,7 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
                                  }
                              })
 
-    def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
+    def _get_parsed_forsys_output(self) -> dict:
         data = {
             "proj_id": [1, 2, 3, 2, 1, 3],
             "Pr_1_p1": [1, 1, 1, 1, 1, 1],
@@ -315,14 +316,13 @@ class TestForsysRankingOutputForMultipleScenarios(TestCase):
             {"stand_output": _convert_dictionary_of_lists_to_rdf(self, {}),
              "project_output": _convert_dictionary_of_lists_to_rdf(self, data),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return raw_forsys_output
+        return convert_r_listvector_to_python_dict(raw_forsys_output)
 
 
 class TestForsysRankingOutputForASingleScenario(TestCase):
     def test_parses_output(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysRankingOutputForASingleScenario(
-            raw_forsys_output, {"p1": 1, "p2": 2},
+            self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
             None, None, "proj_id", "area", "cost")
 
         scenario = parsed_output.scenario
@@ -352,36 +352,30 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
                              })
 
     def test_fails_given_irrelevant_priority_weights(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # priority weights are specified for "p1" and "p3" - missing "p2"
             ForsysRankingOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p3": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p3": 2},
                 None, None, "proj_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, ETrt_p3, is not a forsys output header')
 
     def test_fails_if_proj_id_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
             ForsysRankingOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 None, None, "project_id", "area", "cost")
 
         self.assertEqual(str(context.exception),
                          'header, project_id, is not a forsys output header')
 
     def test_fails_if_area_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
             ForsysRankingOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 None, None, "proj_id", "area_ha", "cost")
 
         self.assertEqual(
@@ -389,12 +383,10 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
             'header, ETrt_area_ha, is not a forsys output header')
 
     def test_fails_if_cost_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
             ForsysRankingOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 None, None, "proj_id", "area", "c")
 
         self.assertEqual(
@@ -402,9 +394,8 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
             'header, ETrt_c, is not a forsys output header')
 
     def test_limits_area(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysRankingOutputForASingleScenario(
-            raw_forsys_output,  {"p1": 1, "p2": 2},
+            self._get_parsed_forsys_output(),  {"p1": 1, "p2": 2},
             25, None, "proj_id", "area", "cost")
 
         scenario = parsed_output.scenario
@@ -429,9 +420,8 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
                              })
 
     def test_limits_area_by_skipping_top_project(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysRankingOutputForASingleScenario(
-            raw_forsys_output, {"p1": 1, "p2": 2},
+            self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
             10, None, "proj_id", "area", "cost")
 
         scenario = parsed_output.scenario
@@ -451,9 +441,8 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
                              })
 
     def test_limits_cost(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysRankingOutputForASingleScenario(
-            raw_forsys_output, {"p1": 1, "p2": 2},
+            self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
             None, 1200, "proj_id", "area", "cost")
 
         scenario = parsed_output.scenario
@@ -478,9 +467,8 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
                              })
 
     def test_limits_cost_by_skipping_top_project(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysRankingOutputForASingleScenario(
-            raw_forsys_output, {"p1": 1, "p2": 2},
+            self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
             None, 550, "proj_id", "area", "cost")
 
         scenario = parsed_output.scenario
@@ -499,7 +487,7 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
                                  'cumulative_ranked_project_cost': [500],
                              })
 
-    def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
+    def _get_parsed_forsys_output(self) -> dict:
         data = {
             "proj_id": [2, 1, 3],
             "ETrt_p1": [0.1, 0.5, 0.3],
@@ -512,14 +500,13 @@ class TestForsysRankingOutputForASingleScenario(TestCase):
             {"stand_output": _convert_dictionary_of_lists_to_rdf(self, {}),
              "project_output": _convert_dictionary_of_lists_to_rdf(self, data),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return raw_forsys_output
+        return convert_r_listvector_to_python_dict(raw_forsys_output)
 
 
 class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
     def test_parses_output(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
         parsed_output = ForsysGenerationOutputForASingleScenario(
-            raw_forsys_output, {"p1": 1, "p2": 2},
+            self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
             "proj_id", "area", "cost", "geo_wkt")
 
         scenario = parsed_output.scenario
@@ -548,41 +535,35 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
                                                                (0, -1),
                                                                (1, -1),
                                                                (1, 0),
-                                                               (0, 0))).wkt},],
+                                                               (0, 0))).wkt}, ],
              'cumulative_ranked_project_area': [11, 21, 33],
              'cumulative_ranked_project_cost': [600, 1100, 1900], })
 
     def test_fails_given_irrelevant_priority_weights(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # priority weights are specified for "p1" and "p3" - missing "p2"
             ForsysGenerationOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p3": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p3": 2},
                 "proj_id", "area", "cost", "geo_wkt")
 
         self.assertEqual(str(context.exception),
                          'header, ETrt_p3, is not a forsys output header')
 
     def test_fails_if_proj_id_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # project id is "project_id" instead of "proj_id"
             ForsysGenerationOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 "project_id", "area", "cost", "geo_wkt")
 
         self.assertEqual(str(context.exception),
                          'header, project_id, is not a forsys output header')
 
     def test_fails_if_area_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # area header is "area_ha" instead of "area"
             ForsysGenerationOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 "proj_id", "area_ha", "cost", "geo_wkt")
 
         self.assertEqual(
@@ -590,12 +571,10 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
             'header, ETrt_area_ha, is not a forsys output header')
 
     def test_fails_if_cost_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # cost header is "c" instead of "cost"
             ForsysGenerationOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 "proj_id", "area", "c", "geo_wkt")
 
         self.assertEqual(
@@ -603,12 +582,10 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
             'header, ETrt_c, is not a forsys output header')
 
     def test_fails_if_geo_wkt_header_is_wrong(self) -> None:
-        raw_forsys_output = self._get_raw_forsys_output()
-
         with self.assertRaises(Exception) as context:
             # geo_wkt header is "geometry" instead of "geo_wkt"
             ForsysGenerationOutputForASingleScenario(
-                raw_forsys_output, {"p1": 1, "p2": 2},
+                self._get_parsed_forsys_output(), {"p1": 1, "p2": 2},
                 "proj_id", "area", "cost", "geometry")
 
         self.assertEqual(
@@ -625,7 +602,7 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
         geo.srid = settings.DEFAULT_CRS
         return geo
 
-    def _get_raw_forsys_output(self) -> ro.vectors.ListVector:
+    def _get_parsed_forsys_output(self) -> dict:
         stand_output = {
             "stand_id": [5, 7, 9, 1],
             "proj_id": [2, 2, 1, 3],
@@ -661,4 +638,4 @@ class TestForsysGenerationOutputForASingleScenario(MergePolygonsTest):
                 self,
                 project_output),
              "subset_output": _convert_dictionary_of_lists_to_rdf(self, {})})
-        return raw_forsys_output
+        return convert_r_listvector_to_python_dict(raw_forsys_output)
