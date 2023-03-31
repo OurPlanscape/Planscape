@@ -207,9 +207,25 @@ def _read_common_url_params(self, params: QueryDict) -> None:
             (len(self.priorities),
                 len(self.priority_weights)))
 
+class CommonParams():
+    # If field is present, returns field value but raises an exception if the
+    # field value isn't positive.
+    # IF field isn't present, returns None.
+    def _read_positive_float(
+            self, params: QueryDict, query_param: str) -> float | None:
+        v = params.get(query_param, None)
+        if v is None:
+            return None
+        v = float(v)
+        if v <= 0:
+            raise Exception(
+                "expected param, %s, to have a positive value" % query_param)
+        return v
+
+    
 
 # A class containing forsys ranking input parameters.
-class ForsysRankingRequestParams():
+class ForsysRankingRequestParams(CommonParams):
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and stand-level constraints.
     # The planning region.
@@ -293,23 +309,9 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
         self.max_cost_in_usd = self._read_positive_float(params,
                                                          self._URL_MAX_COST)
 
-    # If field is present, returns field value but raises an exception if the
-    # field value isn't positive.
-    # IF field isn't present, returns None.
-    def _read_positive_float(
-            self, params: QueryDict, query_param: str) -> float | None:
-        v = params.get(query_param, None)
-        if v is None:
-            return None
-        v = float(v)
-        if v <= 0:
-            raise Exception(
-                "expected param, %s, to have a positive value" % query_param)
-        return v
-
 
 # A class containing forsys generation input parameters.
-class ForsysGenerationRequestParams():
+class ForsysGenerationRequestParams(CommonParams):
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and global, project-level, and
     # stand-level constraints.
@@ -331,6 +333,13 @@ class ForsysGenerationRequestParams():
     # Parameters informing whether a stand can be included in a project area.
     stand_eligibility_params: StandEligibilityParams
 
+    # Per-project constraints
+    max_area_per_project_in_km2: float
+    max_cost_per_project_in_usd: float | None
+
+    # default values for these params, regardless of how params were generated
+    _DEFAULT_MAX_AREA = 20
+    
     def __init__(self):
         self.region = None
         self.priorities = None
@@ -338,6 +347,8 @@ class ForsysGenerationRequestParams():
         self.planning_area = None
         self.cluster_params = None
         self.db_params = None
+        self.max_area_per_project_in_km2 = self._DEFAULT_MAX_AREA
+        self.max_cost_per_project_in_usd = None
         self.stand_eligibility_params = None
 
     # Returns a dictionary mapping priorities to priority weights.
@@ -358,6 +369,8 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PLANNING_AREA = 'planning_area'
+    _URL_MAX_AREA_PER_PROJECT = 'max_area_per_project'
+    _URL_MAX_COST_PER_PROJECT = 'max_cost_per_project'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -384,7 +397,11 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         self.planning_area = get_default_planning_area()
-
+        km2 = self._read_positive_float(params, self._URL_MAX_AREA_PER_PROJECT)
+        if km2 is not None:
+          self.max_area_per_project_in_km2 = km2
+        self.max_cost_per_project_in_usd = self._read_positive_float(params,
+                                                                     self._URL_MAX_COST_PER_PROJECT)
 
 # Looks up forsys generation parameters from DB.
 # This is intended for production.
@@ -436,6 +453,12 @@ class ForsysGenerationRequestParamsFromDb(
 
         self.priorities, self.priority_weights = self._get_weighted_priorities(
             scenario)
+
+        self.max_cost_per_project_in_usd = project.max_cost_per_project_in_usd
+        # for backwards compatibility, don't assume this was defined in old projects
+        km2 = project.max_area_per_project_in_km2
+        if km2 is not None:
+          self.max_area_per_project_in_km2 = km2
 
     def _get_weighted_priorities(
         self, scenario: Scenario
