@@ -213,7 +213,9 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         forsys_priority_weights: list[float],
         enable_kmeans_clustering: bool,
         output_scenario_name: str | None,
-        output_scenario_tag: str | None
+        output_scenario_tag: str | None,
+        max_cost_per_project_in_usd: float | None,
+        max_area_per_project_in_km2: float | None
 ) -> ForsysGenerationOutputForASingleScenario:
     import rpy2.robjects as robjects
     robjects.r.source(os.path.join(
@@ -233,7 +235,9 @@ def run_forsys_generate_project_areas_for_a_single_scenario(
         headers.FORSYS_TREATMENT_ELIGIBILITY_HEADER,
         "" if output_scenario_name is None else output_scenario_name,
         "" if output_scenario_tag is None else output_scenario_tag,
-        enable_kmeans_clustering)
+        enable_kmeans_clustering,
+        "" if max_cost_per_project_in_usd is None else max_cost_per_project_in_usd,
+        max_area_per_project_in_km2)
 
     priority_weights_dict = {
         headers.priority_headers[i]: forsys_priority_weights[i]
@@ -264,7 +268,9 @@ def generate_project_areas_for_a_single_scenario(
             "test_scenario" if settings.DEBUG else None,
             datetime.now().astimezone(
                 timezone('US/Pacific')
-            ).strftime("%Y%m%d-%H-%M") if settings.DEBUG else None)
+            ).strftime("%Y%m%d-%H-%M") if settings.DEBUG else None,
+            params.max_cost_per_project_in_usd,
+            params.max_area_per_project_in_km2)
 
         response = {}
         response['forsys'] = {}

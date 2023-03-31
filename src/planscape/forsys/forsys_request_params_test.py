@@ -267,6 +267,9 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
         self.assertIsNone(params.db_params.scenario)
         self.assertFalse(params.db_params.write_to_db)
         self.assertIsNone(params.db_params.user)
+        self.assertIsNone(params.max_cost_per_project_in_usd)
+        self.assertEqual(params.max_area_per_project_in_km2,
+                         params._DEFAULT_MAX_AREA)
 
     def test_reads_region_from_url_params(self):
         request = HttpRequest()
@@ -348,6 +351,37 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             str(context.exception),
             'User matching query does not exist.')
 
+    def test_reads_per_project_constraints_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&max_area_per_project=100&max_cost_per_project=5000')
+        params = get_generation_request_params(request)
+        self.assertEqual(params.max_area_per_project_in_km2, 100)
+        self.assertEqual(params.max_cost_per_project_in_usd, 5000)
+
+    def test_raises_error_on_bad_max_cost_per_project_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&max_cost_per_project=0')
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_cost_per_project, to have a positive value')
+
+    def test_raises_error_on_bad_max_area_per_project_from_url_params(self):
+        request = HttpRequest()
+        request.GET = QueryDict(
+            'request_type=1' +
+            '&max_area_per_project=0')
+        with self.assertRaises(Exception) as context:
+            get_generation_request_params(request)
+        self.assertEqual(
+            str(context.exception),
+            'expected param, max_area_per_project, to have a positive value')
+
 
 class TestForsysGenerationRequestParamsFromDb(TestCase):
     def setUp(self) -> None:
@@ -366,7 +400,9 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
             geometry=self.stored_geometry)
 
         self.project_with_user = Project.objects.create(
-            owner=self.user, plan=self.plan_with_user)
+            owner=self.user, plan=self.plan_with_user,
+            max_cost_per_project_in_usd=1000,
+            max_area_per_project_in_km2=500)
 
         self.scenario_with_user = Scenario.objects.create(
             owner=self.user, plan=self.plan_with_user,
@@ -407,6 +443,8 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         self.assertEqual(params.db_params.scenario.pk,
                          self.scenario_with_user.pk)
         self.assertEqual(params.db_params.user.pk, self.user.pk)
+        self.assertEqual(params.max_cost_per_project_in_usd, 1000)
+        self.assertEqual(params.max_area_per_project_in_km2, 500)
 
     def test_read_ok_for_debug_user(self):
         request = HttpRequest()
