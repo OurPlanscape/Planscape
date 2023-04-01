@@ -40,23 +40,20 @@ def lambda_handler(event, context):
             key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
 
         forsys_outputs = {
+            'scenario_id' : scenario_id,
             'stand' : forsys_stand_output_df,
             'project' : forsys_project_output_df
         }
-        json_outputs = json.dumps(forsys_outputs)
-
-        # TODO: re-enable when PR to add generate_project_areas_from_lambda_output_prototype endpoint is submitted.
-        # Endpoint expects body containing: stand, project, user_id, scenario_id 
         
-        # resp = requests.post(
-        #     "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/create_scenario/",
-        #     json=forsys_outputs)
-        # scenario_id = resp.json()
+        resp = requests.post(
+            "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/generate_project_areas_from_lambda_output_prototype/",
+            json=forsys_outputs)
 
         return {
             'success': event['Records'][0]['messageId']
         }
     except Exception as e:
+        # TODO: add more robust error handling, potentially using dead letter queue
         response = client.send_message(
             QueueUrl=QUEUE_URL,
             MessageBody=FAILED_STATUS,
