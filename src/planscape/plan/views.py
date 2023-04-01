@@ -828,6 +828,13 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 # NOTE: To send a queue message from your local machine, populate AWS credentials.
 # TODO: Add tests that mock SQS calls
+# Example POST body (the specific priorities below are required as input, weights can be modified):
+# {
+# 	"plan_id": 200,
+# 	"project_id" : 127,
+# 	"priorities" : ["california_spotted_owl", "storage", "functional_fire", "forest_structure", "max_sdi"],
+# 	"weights" : [1, 2, 3, 4, 5]
+# }
 @csrf_exempt
 def queue_forsys_lambda_prototype(request: HttpRequest) -> HttpResponse:
     try:
