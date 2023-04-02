@@ -42,7 +42,7 @@ def lambda_handler(event, context):
         
         resp = requests.post(
             "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/generate_project_areas_from_lambda_output_prototype/",
-            json=json.dumps(forsys_outputs))
+            json=forsys_outputs)
         print(forsys_outputs)
         print(resp.content)
         
