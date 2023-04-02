@@ -35,14 +35,17 @@ def lambda_handler(event, context):
             key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
 
         forsys_outputs = {
-            'scenario_id' : scenario_id,
+            'scenario_id' : int(scenario_id),
             'stand' : forsys_stand_output_df,
             'project' : forsys_project_output_df
         }
         
         resp = requests.post(
             "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/generate_project_areas_from_lambda_output_prototype/",
-            json=forsys_outputs)
+            json=json.dumps(forsys_outputs))
+        print(forsys_outputs)
+        print(resp.content)
+        
 
         return {
             'success': event['Records'][0]['messageId']
