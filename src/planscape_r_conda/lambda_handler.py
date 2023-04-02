@@ -53,7 +53,7 @@ def lambda_handler(event, context):
     except Exception as e:
         # TODO: add more robust error handling, potentially using dead letter queue
         failed = {
-            'id': scenario_id,
+            'id': int(scenario_id),
             'status': FAILED_STATUS
         }
         resp = requests.patch(PLANSCAPE_URL, json=failed)
