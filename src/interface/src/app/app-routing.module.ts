@@ -66,7 +66,7 @@ const routes: Routes = [
         component: ScenarioConfirmationComponent,
         canActivate: [AuthGuard],
       },
-      { path: '**', redirectTo: '' },
+      { path: '**', redirectTo: 'home' },
     ],
   },
 ];

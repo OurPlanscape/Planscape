@@ -28,34 +28,41 @@
       </div>
 
       <!-- Draw a planning area -->
+      <div matTooltip="This item is disabled as you are not logged in." [matTooltipDisabled]="login_enabled">
       <button mat-button
+      [disabled]="!login_enabled"
         class="draw-area-button"
         [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.DRAW,
           deselected: selectedAreaCreationAction === AreaCreationAction.UPLOAD}"
         (click)="onAreaCreationActionChange(AreaCreationAction.DRAW)">
         <mat-icon>draw</mat-icon> DRAW AREA
       </button>
+    </div>
 
       <!-- Upload a planning area -->
       <div class="upload-wrapper">
-        <button mat-button
-          class="upload-area-button"
-          [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.UPLOAD,
-            deselected: selectedAreaCreationAction === AreaCreationAction.DRAW}"
-          (click)="onAreaCreationActionChange(AreaCreationAction.UPLOAD)">
-          <mat-icon>upload_file</mat-icon> UPLOAD AREA
-        </button>
-        <file-uploader *ngIf="showUploader"
-          class="file-uploader"
-          requiredFileType="application/zip"
-          (fileEvent)="loadArea($event)"
-          ></file-uploader>
+        <div matTooltip="This item is disabled as you are not logged in." [matTooltipDisabled]="login_enabled">
+          <button mat-button
+          [disabled]="!login_enabled"
+            class="upload-area-button"
+            [ngClass]="{selected: selectedAreaCreationAction === AreaCreationAction.UPLOAD,
+              deselected: selectedAreaCreationAction === AreaCreationAction.DRAW}"
+            (click)="onAreaCreationActionChange(AreaCreationAction.UPLOAD)">
+            <mat-icon>upload_file</mat-icon> UPLOAD AREA
+          </button>
+          <file-uploader *ngIf="showUploader"
+            class="file-uploader"
+            requiredFileType="application/zip"
+            (fileEvent)="loadArea($event)"
+            ></file-uploader>
+         </div>
       </div>
 
       <!-- Cancel button -->
       <button *ngIf="selectedAreaCreationAction === AreaCreationAction.DRAW ||
         selectedAreaCreationAction === AreaCreationAction.UPLOAD"
         mat-button type="button"
+        [disabled]="!login_enabled"
         class="cancel-button"
         (click)="cancelAreaCreationAction()">
         CANCEL
@@ -66,7 +73,7 @@
         selectedAreaCreationAction === AreaCreationAction.UPLOAD"
         mat-button type="button"
         class="done-button"
-        [disabled]="!(showConfirmAreaButton$ | async)"
+        [disabled]="!(showConfirmAreaButton$ | async) || !login_enabled"
         (click)="openCreatePlanDialog()">
         DONE
       </button>
