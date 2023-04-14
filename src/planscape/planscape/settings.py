@@ -78,10 +78,12 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
 ] + planscape_apps
 
+# Middleware order matters because of layering dependencies
+# https://docs.djangoproject.com/en/4.2/topics/http/middleware/#activating-middleware
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
