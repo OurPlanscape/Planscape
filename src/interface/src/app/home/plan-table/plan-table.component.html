@@ -5,117 +5,122 @@
 
   <div class="plans-container">
     <h2>My Plans</h2>
+    <div *ngIf="login_enabled; else notimplemented">
+      <div *ngIf="datasource.data.length && (loggedIn$ | async); else noplans">
+        <mat-table [dataSource]="datasource" matSort>
+          <!-- Select Column -->
+          <ng-container matColumnDef="select">
+            <mat-header-cell *matHeaderCellDef>
+              <mat-checkbox (change)="toggleAll($event.checked)"></mat-checkbox>
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <mat-checkbox name="${element.id}-selected" [(ngModel)]="element.selected"></mat-checkbox>
+            </mat-cell>
+          </ng-container>
 
-    <div *ngIf="datasource.data.length && (loggedIn$ | async); else noplans">
-      <mat-table [dataSource]="datasource" matSort>
-        <!-- Select Column -->
-        <ng-container matColumnDef="select">
-          <mat-header-cell *matHeaderCellDef>
-            <mat-checkbox (change)="toggleAll($event.checked)"></mat-checkbox>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <mat-checkbox name="${element.id}-selected" [(ngModel)]="element.selected"></mat-checkbox>
-          </mat-cell>
-        </ng-container>
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              Name
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <a href="/plan/{{element.id}}">{{element.name}}</a>
+            </mat-cell>
+          </ng-container>
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Name
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <a href="/plan/{{element.id}}">{{element.name}}</a>
-          </mat-cell>
-        </ng-container>
+          <!-- Timestamp Column -->
+          <ng-container matColumnDef="createdTimestamp">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              Date Created
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              {{element.createdTimestamp | date:'medium' }}
+            </mat-cell>
+          </ng-container>
 
-        <!-- Timestamp Column -->
-        <ng-container matColumnDef="createdTimestamp">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Date Created
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            {{element.createdTimestamp | date:'medium' }}
-          </mat-cell>
-        </ng-container>
+          <!-- Region Column -->
+          <ng-container matColumnDef="region">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              Region
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              {{element.region}}
+            </mat-cell>
+          </ng-container>
 
-        <!-- Region Column -->
-        <ng-container matColumnDef="region">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Region
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            {{element.region}}
-          </mat-cell>
-        </ng-container>
+          <!-- Saved Scenarios Column -->
+          <ng-container matColumnDef="savedScenarios">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              Saved Scenarios
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              {{element.savedScenarios}}
+            </mat-cell>
+          </ng-container>
 
-        <!-- Saved Scenarios Column -->
-        <ng-container matColumnDef="savedScenarios">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Saved Scenarios
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            {{element.savedScenarios}}
-          </mat-cell>
-        </ng-container>
+          <!-- Configurations Column -->
+          <ng-container matColumnDef="configurations">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              Configurations
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              {{element.configurations}}
+            </mat-cell>
+          </ng-container>
 
-        <!-- Configurations Column -->
-        <ng-container matColumnDef="configurations">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Configurations
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            {{element.configurations}}
-          </mat-cell>
-        </ng-container>
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>
+              Status
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              {{element.status}}
+            </mat-cell>
+          </ng-container>
 
-        <!-- Status Column -->
-        <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>
-            Status
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            {{element.status}}
-          </mat-cell>
-        </ng-container>
-
-        <!-- Options Column -->
-        <ng-container matColumnDef="options">
-          <mat-header-cell *matHeaderCellDef>
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More options">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu">
-              <button mat-menu-item (click)="delete(element.id)">
-                <mat-icon>delete</mat-icon>
-                Delete
+          <!-- Options Column -->
+          <ng-container matColumnDef="options">
+            <mat-header-cell *matHeaderCellDef>
+            </mat-header-cell>
+            <mat-cell *matCellDef="let element">
+              <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="More options">
+                <mat-icon>more_vert</mat-icon>
               </button>
-            </mat-menu>
-          </mat-cell>
-        </ng-container>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="delete(element.id)">
+                  <mat-icon>delete</mat-icon>
+                  Delete
+                </button>
+              </mat-menu>
+            </mat-cell>
+          </ng-container>
 
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
-      </mat-table>
+          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
 
-      <mat-paginator [pageSizeOptions]="[10, 20, 30]"
-                    showFirstLastButtons
-                    aria-label="Select page of plans">
-      </mat-paginator>
+        <mat-paginator [pageSizeOptions]="[10, 20, 30]"
+                      showFirstLastButtons
+                      aria-label="Select page of plans">
+        </mat-paginator>
 
-      <div class="button-row">
-        <button mat-button color="primary" (click)="delete()" [disabled]="!showDelete()">
-          <mat-icon>delete</mat-icon>
-          DELETE
-        </button>
-        <button mat-button color="primary" (click)="refresh()">
-          <mat-icon>refresh</mat-icon>
-          REFRESH
-        </button>
+        <div class="button-row">
+          <button mat-button color="primary" (click)="delete()" [disabled]="!showDelete()">
+            <mat-icon>delete</mat-icon>
+            DELETE
+          </button>
+          <button mat-button color="primary" (click)="refresh()">
+            <mat-icon>refresh</mat-icon>
+            REFRESH
+          </button>
+        </div>
       </div>
     </div>
+    <ng-template #notimplemented class="plans-not-implemented">
 
+      <div class="plans-not-implemented">
+      <p >This is an early release of Planscape. There is no login so it is not possible to create or save any plans. The goal of this early release is to allow you to experiment with Planscape and give feedback.<br><br/>Any buttons or menu items that look grey are not yet implemented and will not work in this version.</p></div>
+    </ng-template>
     <ng-template #noplans class="no-saved-plans">
       <p *ngIf="(loggedIn$ | async); else signedout">There are no saved plans.</p>
       <ng-template #signedout>
