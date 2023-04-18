@@ -32,7 +32,8 @@ class PillarConfig:
                    'display'}.union(COMMON_METADATA)
     ELEMENT_KEYS = {'element_name',
                     'metrics',
-                    'operation'}.union(COMMON_METADATA)
+                    'operation',
+                    'display'}.union(COMMON_METADATA)
     METRIC_KEYS = {'metric_name',
                    'current_conditions_only',
                    'ignore',
