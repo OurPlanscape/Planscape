@@ -1,5 +1,6 @@
 {
   "login": true,
+  "unlaunched_layers": true,
   "testFalseFeature": false,
   "testTrueFeature": true
 }

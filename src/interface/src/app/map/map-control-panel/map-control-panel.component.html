@@ -172,52 +172,60 @@
         </app-condition-tree>
 
         <!-- Disturbances controls -->
-        <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header class="layer-panel-header">
-            <mat-panel-title>
-              Disturbances
-            </mat-panel-title>
-            <mat-panel-description>
-              Coming soon!
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-        </mat-expansion-panel>
+        <ng-container *featureFlag="'unlaunched_layers'">
+          <mat-expansion-panel disabled="true">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                Disturbances
+              </mat-panel-title>
+              <mat-panel-description>
+                Coming soon!
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+        </ng-container>
 
         <!-- HVRAs controls -->
-        <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header class="layer-panel-header">
-            <mat-panel-title>
-              HVRAs
-            </mat-panel-title>
-            <mat-panel-description>
-              Coming soon!
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-        </mat-expansion-panel>
+        <ng-container *featureFlag="'unlaunched_layers'">
+          <mat-expansion-panel disabled="true">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                HVRAs
+              </mat-panel-title>
+              <mat-panel-description>
+                Coming soon!
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+      </ng-container>
 
         <!-- Land types controls -->
-        <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header class="layer-panel-header">
-            <mat-panel-title>
-              Land types
-            </mat-panel-title>
-            <mat-panel-description>
-              Coming soon!
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-        </mat-expansion-panel>
+        <ng-container *featureFlag="'unlaunched_layers'">
+          <mat-expansion-panel disabled="true">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                Land types
+              </mat-panel-title>
+              <mat-panel-description>
+                Coming soon!
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+      </ng-container>
 
         <!-- Operability controls -->
-        <mat-expansion-panel disabled="true">
-          <mat-expansion-panel-header class="layer-panel-header">
-            <mat-panel-title>
-              Operability
-            </mat-panel-title>
-            <mat-panel-description>
-              Coming soon!
-            </mat-panel-description>
-          </mat-expansion-panel-header>
-        </mat-expansion-panel>
+        <ng-container *featureFlag="'unlaunched_layers'">
+          <mat-expansion-panel disabled="true">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                Operability
+              </mat-panel-title>
+              <mat-panel-description>
+                Coming soon!
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+      </ng-container>
 
       </mat-accordion>
     </mat-tab>

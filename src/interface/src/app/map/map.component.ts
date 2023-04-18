@@ -49,12 +49,14 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
+import features from '../features/features.json'
 
 export enum AreaCreationAction {
   NONE = 0,
   DRAW = 1,
   UPLOAD = 2,
 }
+
 
 @Component({
   selector: 'app-map',
@@ -114,6 +116,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   showConfirmAreaButton$ = new BehaviorSubject(false);
 
   private readonly destroy$ = new Subject<void>();
+  login_enabled = features.login;
 
   constructor(
     public applicationRef: ApplicationRef,
