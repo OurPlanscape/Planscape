@@ -97,8 +97,8 @@ export class MapLayersComponent implements OnInit {
         };
         data.push(pillarRow);
         pillar.elements
-	  ?.filter((element) => element.display)
-	  .forEach((element) => {
+          ?.filter((element) => element.display)
+          .forEach((element) => {
             let elementRow: PriorityRow = {
               conditionName: element.element_name!,
               displayName: 'foo', //element.display_name,
