@@ -126,13 +126,15 @@ export class MapControlPanelComponent implements OnInit {
             return {
               ...pillar,
               disableSelect: true,
-              children: pillar.elements?.map((element): ConditionsNode => {
-                return {
-                  ...element,
-                  disableSelect: true,
-                  children: element.metrics,
-                };
-              }),
+              children: pillar.elements
+                ?.filter((element) => element.display)
+                .map((element): ConditionsNode => {
+                  return {
+                    ...element,
+                    disableSelect: true,
+                    children: element.metrics,
+                  };
+                }),
             };
           })
       : [];

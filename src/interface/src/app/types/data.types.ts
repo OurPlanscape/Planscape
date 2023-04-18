@@ -30,6 +30,7 @@ export interface DataLayerConfig extends ConditionsMetadata {
 }
 
 export interface ElementConfig extends DataLayerConfig {
+  display?: boolean;
   element_name?: string;
   metrics?: MetricConfig[];
 }
