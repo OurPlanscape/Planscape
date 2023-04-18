@@ -32,6 +32,7 @@ describe('MapLayersComponent', () => {
               display: true,
               elements: [
                 {
+		  display: true,
                   element_name: 'test_element_1',
                   filepath: 'test_element_1',
                   metrics: [

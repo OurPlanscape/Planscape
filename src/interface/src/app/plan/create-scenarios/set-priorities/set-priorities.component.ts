@@ -112,31 +112,33 @@ export class SetPrioritiesComponent implements OnInit {
           expanded: false,
         };
         data.push(pillarRow);
-        pillar.elements?.forEach((element) => {
-          let elementRow: PriorityRow = {
-            conditionName: element.element_name!,
-            displayName: element.display_name,
-            filepath: element.filepath!.concat('_normalized'),
-            children: [],
-            level: 1,
-            expanded: false,
-            hidden: true,
-          };
-          data.push(elementRow);
-          pillarRow.children.push(elementRow);
-          element.metrics?.forEach((metric) => {
-            let metricRow: PriorityRow = {
-              conditionName: metric.metric_name!,
-              displayName: metric.display_name,
-              filepath: metric.filepath!.concat('_normalized'),
+        pillar.elements
+          ?.filter((element) => element.display)
+          .forEach((element) => {
+            let elementRow: PriorityRow = {
+              conditionName: element.element_name!,
+              displayName: element.display_name,
+              filepath: element.filepath!.concat('_normalized'),
               children: [],
-              level: 2,
+              level: 1,
+              expanded: false,
               hidden: true,
             };
-            data.push(metricRow);
-            elementRow.children.push(metricRow);
+            data.push(elementRow);
+            pillarRow.children.push(elementRow);
+            element.metrics?.forEach((metric) => {
+              let metricRow: PriorityRow = {
+                conditionName: metric.metric_name!,
+                displayName: metric.display_name,
+                filepath: metric.filepath!.concat('_normalized'),
+                children: [],
+                level: 2,
+                hidden: true,
+              };
+              data.push(metricRow);
+              elementRow.children.push(metricRow);
+            });
           });
-        });
       });
     return data;
   }

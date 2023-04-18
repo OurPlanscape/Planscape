@@ -104,6 +104,7 @@ describe('MapComponent', () => {
               display: true,
               elements: [
                 {
+		  display: true,
                   metrics: [
                     {
                       metric_name: 'test_metric_1',
