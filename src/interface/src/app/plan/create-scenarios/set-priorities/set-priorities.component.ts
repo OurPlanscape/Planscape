@@ -112,7 +112,8 @@ export class SetPrioritiesComponent implements OnInit {
           expanded: false,
         };
         data.push(pillarRow);
-        pillar.elements?.forEach((element) => {
+        pillar.elements?.filter((element) => element.display)
+	.forEach((element) => {
           let elementRow: PriorityRow = {
             conditionName: element.element_name!,
             displayName: element.display_name,
