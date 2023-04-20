@@ -26,20 +26,22 @@
     </div>
 
     <!-- Project area % -->
-    <div>
-      <h2>Project areas</h2>
-      <div class="flex-row space-between">
-        <h3>Show top % of project areas</h3>
-        <div class="flex-row">
-          <div class="slider-label">10%</div>
-          <mat-slider [min]="10" [max]="40" [thumbLabel]="true" [value]="formGroup?.get('areaPercent')?.value"
-            (input)="updateFormWithSliderValue($event, formGroup?.get('areaPercent'))" color="primary">
-            <input matSliderThumb>
-          </mat-slider>
-          <div class="slider-label">40%</div>
+    <ng-container *featureFlag="'top_percent'">
+      <div>
+        <h2>Project areas</h2>
+        <div class="flex-row space-between">
+          <h3>Show top % of project areas</h3>
+          <div class="flex-row">
+            <div class="slider-label">10%</div>
+            <mat-slider [min]="10" [max]="40" [thumbLabel]="true" [value]="formGroup?.get('areaPercent')?.value"
+              (input)="updateFormWithSliderValue($event, formGroup?.get('areaPercent'))" color="primary">
+              <input matSliderThumb>
+            </mat-slider>
+            <div class="slider-label">40%</div>
+          </div>
         </div>
       </div>
-    </div>
+    </ng-container>
 
 </form>
 
