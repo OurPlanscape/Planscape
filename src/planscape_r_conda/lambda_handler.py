@@ -1,4 +1,3 @@
-import boto3
 import requests
 import numpy as np
 import json
@@ -6,12 +5,8 @@ import rpy2
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 
-client = boto3.client('sqs', region_name='us-west-1')
-QUEUE_URL = 'https://sqs.us-west-1.amazonaws.com/705618310400/forsys_output.fifo'
 PLANSCAPE_URL = 'http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/plan/update_scenario/'
-PROCESSING_STATUS = 2
-SUCCESS_STATUS = "3"
-FAILED_STATUS = "4"
+FAILED_STATUS = 4
 
 
 def lambda_handler(event, context):
@@ -40,28 +35,29 @@ def lambda_handler(event, context):
             key: (np.asarray(project_output_rdf.rx2(key)).tolist()) for key in project_output_rdf.names}
 
         forsys_outputs = {
+            'scenario_id' : int(scenario_id),
             'stand' : forsys_stand_output_df,
             'project' : forsys_project_output_df
         }
-        json_outputs = json.dumps(forsys_outputs)
-
-        # TODO: re-enable when PR to add generate_project_areas_from_lambda_output_prototype endpoint is submitted.
-        # Endpoint expects body containing: stand, project, user_id, scenario_id 
         
-        # resp = requests.post(
-        #     "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/create_scenario/",
-        #     json=forsys_outputs)
-        # scenario_id = resp.json()
+        resp = requests.post(
+            "http://planscapedevload-1541713932.us-west-1.elb.amazonaws.com/planscape-backend/forsys/generate_project_areas_from_lambda_output_prototype/",
+            json=forsys_outputs)
+        print(forsys_outputs)
+        print(resp.content)
+        
 
         return {
             'success': event['Records'][0]['messageId']
         }
     except Exception as e:
-        response = client.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=FAILED_STATUS,
-            MessageGroupId=user_id
-        )
+        # TODO: add more robust error handling, potentially using dead letter queue
+        failed = {
+            'id': int(scenario_id),
+            'status': FAILED_STATUS
+        }
+        resp = requests.patch(PLANSCAPE_URL, json=failed)
+
         return {
-            'message': str(e)
+            'failed': str(e)
         }

@@ -555,62 +555,66 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
 
+
+def _create_scenario(request: HttpRequest):
+    # Check that the user is logged in.
+    owner = get_user(request)
+
+    body = json.loads(request.body)
+
+    # TODO: remove plan_id as required field in request. can be derived from project_id
+    plan_id = body.get('plan_id', None)
+    if plan_id is None or not (isinstance(plan_id, int)):
+        raise ValueError("Must specify plan_id as an integer")
+
+    # Get the plan, and if the user is logged in, make sure either
+    # 1. the plan owner and the owner are both None, or
+    # 2. the plan owner and the owner are both not None, and are equal.
+    plan = Plan.objects.get(pk=int(plan_id))
+    if not ((owner is None and plan.owner is None) or
+            (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
+        raise ValueError(
+            "Cannot create scenario; plan is not owned by user")
+
+    project_id = body.get('project_id', None)
+    if project_id is None or not (isinstance(project_id, int)):
+        raise ValueError("Must specify project_id as an integer")
+
+    # Get the project, and if the user is logged in, make sure either
+    # 1. the project owner and the owner are both None, or
+    # 2. the project owner and the owner are both not None, and are equal.
+    project = Project.objects.get(pk=int(project_id))
+    if not ((owner is None and project.owner is None) or
+            (owner is not None and project.owner is not None and owner.pk == project.owner.pk)):
+        raise ValueError(
+            "Cannot create scenario; project is not owned by user")
+
+    priorities = body.get('priorities', None)
+    weights = body.get('weights', None)
+    notes = body.get('notes', None)
+
+    if priorities is None:
+        raise ValueError(
+            "At least one priority must be selected.")
+    if weights is None:
+        raise ValueError(
+            "Scenario must have weights for priorites")
+    if (len(priorities) != len(weights)):
+        raise ValueError(
+            "Each priority must have a single assigned weight")
+
+    scenario = Scenario.objects.create(
+        owner=owner, plan=plan, project=project)
+    _set_scenario_metadata(priorities, weights, notes, scenario)
+    scenario.save()
+    return scenario
+
+
 # TODO: create scenario for project instead of plan
-
-
 @csrf_exempt
 def create_scenario(request: HttpRequest) -> HttpResponse:
     try:
-        # Check that the user is logged in.
-        owner = get_user(request)
-
-        body = json.loads(request.body)
-
-        # TODO: remove plan_id as required field in request. can be derived from project_id
-        plan_id = body.get('plan_id', None)
-        if plan_id is None or not (isinstance(plan_id, int)):
-            raise ValueError("Must specify plan_id as an integer")
-
-        # Get the plan, and if the user is logged in, make sure either
-        # 1. the plan owner and the owner are both None, or
-        # 2. the plan owner and the owner are both not None, and are equal.
-        plan = Plan.objects.get(pk=int(plan_id))
-        if not ((owner is None and plan.owner is None) or
-                (owner is not None and plan.owner is not None and owner.pk == plan.owner.pk)):
-            raise ValueError(
-                "Cannot create scenario; plan is not owned by user")
-
-        project_id = body.get('project_id', None)
-        if project_id is None or not (isinstance(project_id, int)):
-            raise ValueError("Must specify project_id as an integer")
-
-        # Get the project, and if the user is logged in, make sure either
-        # 1. the project owner and the owner are both None, or
-        # 2. the project owner and the owner are both not None, and are equal.
-        project = Project.objects.get(pk=int(project_id))
-        if not ((owner is None and project.owner is None) or
-                (owner is not None and project.owner is not None and owner.pk == project.owner.pk)):
-            raise ValueError(
-                "Cannot create scenario; project is not owned by user")
-
-        priorities = body.get('priorities', None)
-        weights = body.get('weights', None)
-        notes = body.get('notes', None)
-
-        if priorities is None:
-            raise ValueError(
-                "At least one priority must be selected.")
-        if weights is None:
-            raise ValueError(
-                "Scenario must have weights for priorites")
-        if (len(priorities) != len(weights)):
-            raise ValueError(
-                "Each priority must have a single assigned weight")
-
-        scenario = Scenario.objects.create(
-            owner=owner, plan=plan, project=project)
-        _set_scenario_metadata(priorities, weights, notes, scenario)
-        scenario.save()
+        scenario = _create_scenario(request)
         return HttpResponse(str(scenario.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -824,12 +828,20 @@ def get_scores(request: HttpRequest) -> HttpResponse:
 
 # NOTE: To send a queue message from your local machine, populate AWS credentials.
 # TODO: Add tests that mock SQS calls
+# Example POST body (the specific priorities below are required as input, weights can be modified):
+# {
+# 	"plan_id": 200,
+# 	"project_id" : 127,
+# 	"priorities" : ["california_spotted_owl", "storage", "functional_fire", "forest_structure", "max_sdi"],
+# 	"weights" : [1, 2, 3, 4, 5]
+# }
+@csrf_exempt
 def queue_forsys_lambda_prototype(request: HttpRequest) -> HttpResponse:
     try:
         user = get_user(request)
-        scenario_id = create_scenario(request)
+        scenario_id = _create_scenario(request)
         user_id = "Guest" if user is None else str(user.pk)
-        
+
         update_scenario = {
             'user_id': user_id,
             'scenario_id': str(scenario_id),

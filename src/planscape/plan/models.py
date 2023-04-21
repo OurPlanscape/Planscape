@@ -70,6 +70,12 @@ class Project(models.Model):
     # Ratio of elevation to distance
     max_slope: models.FloatField = models.FloatField(null=True)
 
+    # Maximum cost per project in USD
+    max_cost_per_project_in_usd: models.FloatField = models.FloatField(null=True)
+
+    # Maximum area per project in km2
+    max_area_per_project_in_km2: models.FloatField = models.FloatField(null=True)
+
 
 class ConfigPriority(models.Model):
     # TODO: migrate to Config

@@ -16,4 +16,8 @@ urlpatterns = [
         'generate_project_areas/single_scenario/',
         views.generate_project_areas_for_a_single_scenario,
         name='generate_project_areas_for_a_single_scenario'),
+    path(
+        'generate_project_areas_from_lambda_output_prototype/',
+        views.generate_project_areas_from_lambda_output_prototype,
+        name='generate_project_areas_from_lambda_output_prototype'),
 ]
