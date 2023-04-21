@@ -34,10 +34,19 @@
   justify-content: center;
   padding: 20px 0 5px;
   text-decoration: none;
+  
+}
 
-  &:last-child {
-    margin-top: auto;
-  }
+.save-nav-link {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  justify-content: center;
+  padding: 20px 0 5px;
+  text-decoration: none;
+  margin-top: auto;  
 }
 
 .selected {

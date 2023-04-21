@@ -1,4 +1,6 @@
 {
+  "__comment1": "TODO: reorder lines (first by name, then alphabetically)",
+  "__comment2": "TODO: update metrics and element entries to reflect 30m when available",
   "regions": [
     {
       "region_name": "sierra_cascade_inyo",
@@ -9,17 +11,18 @@
           "pillar_name": "air_quality",
           "filepath": "sierra_nevada/air_quality",
           "display_name": "Air Quality",
-          "display": false,
+          "display": true,
           "elements": [
             {
-              "element_name": "particulate_matter",
+	      "element_name": "particulate_matter",
+	      "display": true,
               "filepath": "sierra_nevada/air_quality/particulate_matter",
               "display_name": "Particulate Matter",
               "metrics": [
                 {
-                  "metric_name": "high_severity_potential_smoke_emissions",
-                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
-                  "display_name": "High Severity Potential Smoke Emissions",
+                  "metric_name": "moderate_severity_potential_smoke_emissions",
+                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
+                  "display_name": "Potential Smoke Emissions (moderate severity fire)",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "USDA Forest Service, Region 5",
@@ -32,9 +35,9 @@
                   "data_units": "short tons of PM2.5"
                 },
                 {
-                  "metric_name": "moderate_severity_potential_smoke_emissions",
-                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
-                  "display_name": "Moderate Severity Potential Smoke Emissions",
+                  "metric_name": "high_severity_potential_smoke_emissions",
+                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
+                  "display_name": "Potential Smoke Emissions (high severity fire)",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "USDA Forest Service, Region 5",
@@ -50,7 +53,7 @@
             }
           ]
         },
-        {
+	{
           "pillar_name": "biodiversity",
           "filepath": "sierra_nevada/biodiversity",
           "display_name": "Biodiversity",
@@ -59,7 +62,8 @@
           "elements": [
             {
               "element_name": "community_integrity",
-              "filepath": "sierra_nevada/biodiversity/community_integrity",
+	      "display": true,
+	      "filepath": "sierra_nevada/biodiversity/community_integrity",
               "display_name": "Community Integrity",
               "operation": "MEAN",
               "metrics": [
@@ -81,7 +85,8 @@
             },
             {
               "element_name": "focal_species",
-              "filepath": "sierra_nevada/biodiversity/focal_species",
+	      "display": true,
+	      "filepath": "sierra_nevada/biodiversity/focal_species",
               "display_name": "Focal Species",
               "operation": "MEAN",
               "metrics": [
@@ -146,7 +151,8 @@
             },
             {
               "element_name": "species_diversity",
-              "filepath": "sierra_nevada/biodiversity/species_diversity",
+	      "display": true,
+	      "filepath": "sierra_nevada/biodiversity/species_diversity",
               "display_name": "Species Diversity",
               "operation": "MEAN",
               "metrics": [
@@ -177,7 +183,8 @@
           "elements": [
             {
               "element_name": "stability",
-              "display_name": "Stability",
+	      "display": true,
+	      "display_name": "Stability",
               "filepath": "sierra_nevada/carbon_sequestration/stability",
               "operation": "MEAN",
               "metrics": [
@@ -199,7 +206,8 @@
             },
             {
               "element_name": "storage",
-              "display_name": "Storage",
+	      "display": true,
+	      "display_name": "Storage",
               "filepath": "sierra_nevada/carbon_sequestration/storage",
               "operation": "MEAN",
               "metrics": [
@@ -225,11 +233,49 @@
           "pillar_name": "economic_diversity",
           "filepath": "sierra_nevada/economic_diversity",
           "display_name": "Economic Diversity",
-          "display": false,
+          "display": true,
           "elements": [
             {
+	      "element_name": "wood_product_industry",
+              "display": true,
+	      "display_name": "Wood Product Industry",
+              "filepath": "/dev/null",
+	      "operation": "TBD",
+              "metrics": [
+	        {
+	          "metric_name": "costs_of_potential_treatments",
+		  "filepath": "/dev/null",
+		  "display_name": "Costs of Potential Treatments",
+		  "source": "TBD",
+		  "source_link": "TBD",
+		  "data_provider": "TBD",
+		  "data_download_link": "TBD",
+		  "data_year": "TBD",
+		  "reference_link": "TBD",
+		  "min_value": 0,
+		  "max_value": 100,
+		  "data_units": "USD"
+	        },
+	        {
+	          "metric_name": "available_standing_biomass",
+		  "filepath": "/dev/null",
+		  "display_name": "Available Standing Biomass",
+		  "source": "TBD",
+		  "source_link": "TBD",
+		  "data_provider": "TBD",
+		  "data_download_link": "TBD",
+		  "data_year": "TBD",
+		  "reference_link": "TBD",
+		  "min_value": 0,
+		  "max_value": 100,
+		  "data_units": "USD"
+	        }		  
+	      ]
+            },
+            {
               "element_name": "wood",
-              "display_name": "Wood",
+	      "display": false,
+	      "display_name": "Wood",
               "metrics": [
                 {
                   "metric_name": "skidder_bio_cost",
@@ -286,7 +332,8 @@
           "elements": [
             {
               "element_name": "hazard",
-              "display_name": "Hazard",
+		"display": true,
+		"display_name": "Hazard",
               "filepath": "sierra_nevada/fire_adapted_communities/hazard",
               "operation": "MEAN",
               "metrics": [
@@ -333,7 +380,8 @@
           "elements": [
             {
               "element_name": "functional_fire",
-              "filepath": "sierra_nevada/fire_dynamics/functional_fire",
+		"display": true,
+		"filepath": "sierra_nevada/fire_dynamics/functional_fire",
               "display_name": "Functional Fire",
               "operation": "MEAN",
               "metrics": [
@@ -393,7 +441,8 @@
           "elements": [
             {
               "element_name": "forest_structure",
-              "filepath": "sierra_nevada/forest_resilience/forest_structure",
+		"display": true,
+		"filepath": "sierra_nevada/forest_resilience/forest_structure",
               "display_name": "Forest Structure",
               "operation": "MEAN",
               "metrics": [
@@ -459,7 +508,8 @@
             },
             {
               "element_name": "forest_composition",
-              "filepath": "sierra_nevada/forest_resilience/forest_composition",
+		"display": true,
+		"filepath": "sierra_nevada/forest_resilience/forest_composition",
               "display_name": "Forest Composition",
               "operation": "MEAN",
               "metrics": [
@@ -495,7 +545,8 @@
             },
             {
               "element_name": "disturbance",
-              "filepath": "sierra_nevada/forest_resilience/disturbance",
+		"display": true,
+		"filepath": "sierra_nevada/forest_resilience/disturbance",
               "display_name": "Disturbance",
               "operation": "MEAN",
               "metrics": [
@@ -522,15 +573,17 @@
           "pillar_name": "social_cultural_wellbeing",
           "filepath": "sierra_nevada/social_cultural_wellbeing",
           "display_name": "Social and Cultural Wellbeing",
-          "display": false,
+          "display": true,
           "elements": [
             {
               "element_name": "environmental_justice",
-              "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
+	      "display": true,
+	      "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
               "display_name": "Environmental Justice",
               "metrics": [
                 {
                   "metric_name": "housing_burden",
+		  "display_name": "Housing Burden",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -544,6 +597,7 @@
                 },
                 {
                   "metric_name": "unemployment",
+		  "display_name": "Unemployment",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/UnemploymentPctl_2021_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -557,6 +611,7 @@
                 },
                 {
                   "metric_name": "low_income",
+		  "display_name": "Low Income",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/LowIncome_CCI_2021_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -576,15 +631,17 @@
           "pillar_name": "water_security",
           "filepath": "sierra_nevada/water_security",
           "display_name": "Water Security",
-          "display": false,
+          "display": true,
           "elements": [
             {
               "element_name": "quantity",
-              "filepath": "sierra_nevada/water_security/quantity",
+	      "display": true,
+	      "filepath": "sierra_nevada/water_security/quantity",
               "display_name": "Quantity",
               "metrics": [
                 {
                   "metric_name": "evapotranspiration_precipitation",
+                  "display_name": "Actual Evapotranspiration/precipitation",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_AETFrac_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -598,6 +655,7 @@
                 },
                 {
                   "metric_name": "runoff",
+		  "display_name": "Average Runoff",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_RunoffMean_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -617,15 +675,17 @@
           "pillar_name": "wetland_integrity",
           "filepath": "sierra_nevada/wetland_integrity",
           "display_name": "Wetland Integrity",
-          "display": false,
+          "display": true,
           "elements": [
             {
               "element_name": "hydrologic",
+              "display": true,
               "filepath": "sierra_nevada/wetland_integrity/hydrologic",
               "display_name": "Hydrologic Function",
               "metrics": [
                 {
                   "metric_name": "meadow_sensitivity_index",
+		  "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",

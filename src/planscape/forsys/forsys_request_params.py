@@ -113,8 +113,8 @@ class DbRequestParams():
     # This is typically an HttpRequest attribute.
     # If settings.DEBUG is true, however, this may also be set via url
     # parameter, debug_user_id.
-    # This informs Scenario retrieval (since only scenarios visible to the user 
-    # may be retrieved) and is a field value when saving Forsys output data to 
+    # This informs Scenario retrieval (since only scenarios visible to the user
+    # may be retrieved) and is a field value when saving Forsys output data to
     # the DB.
     user: User
 
@@ -135,8 +135,8 @@ class DbRequestParams():
         return None
 
 
-# When Forsys parameters are read from url parameters with default values 
-# (for the sake of e2e tests), no scenario needs to be retrieved and, by 
+# When Forsys parameters are read from url parameters with default values
+# (for the sake of e2e tests), no scenario needs to be retrieved and, by
 # default, write_to_db is false.
 class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
     def __init__(self, request: HttpRequest):
@@ -147,7 +147,7 @@ class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
         self.scenario = None
 
 
-# When Forsys parameters are gleaned from DB table values (for production), a 
+# When Forsys parameters are gleaned from DB table values (for production), a
 # scenario is retrieved, and, by default, write_to_db is true.
 class DbRequestParamsForGenerationFromDb(DbRequestParams):
     def __init__(self, request: HttpRequest):
@@ -157,6 +157,36 @@ class DbRequestParamsForGenerationFromDb(DbRequestParams):
             DbRequestParams._URL_WRITE_TO_DB, True)
         self.scenario = get_scenario_by_id(
             self.user, self._URL_SCENARIO_ID, params)
+
+
+# Parameters for deciding whether a stand is eligible for treatment.
+# TODO: make it possible to parse these parameters from URL and/or read them
+# from the DB.
+class StandEligibilityParams:
+    # If true, stands occupied by buildings are deemed ineligible for treatment.
+    filter_by_buildings: bool
+
+    # If true, stands with slope greater than max_slope_in_percent_rise are 
+    # deemed ineligible for treatment.
+    filter_by_slope: bool
+    max_slope_in_percent_rise: float
+
+    # If true, stands occupied by roads (proximity=0) are deemed ineligible for 
+    # treatment while stands with road proximity greater than 
+    # max_distance_from_road_in_meters are filtered.
+    filter_by_road_proximity: bool
+    max_distance_from_road_in_meters: float
+
+    def __init__(self):
+        self.filter_by_buildings = False
+        self.filter_by_slope = False
+        # This corresponds with 35 degrees.
+        self.max_slope_in_percent_rise = 70.0
+        self.filter_by_road_proximity = False
+        # Advised to set this to ~60 meters, but that's not testable for 300m
+        # data.
+        # TODO: after switching to 30m data, change the default value.
+        self.max_distance_from_road_in_meters = 1200.0
 
 
 # Reads url parameters common to both
@@ -177,9 +207,25 @@ def _read_common_url_params(self, params: QueryDict) -> None:
             (len(self.priorities),
                 len(self.priority_weights)))
 
+class CommonParams():
+    # If field is present, returns field value but raises an exception if the
+    # field value isn't positive.
+    # IF field isn't present, returns None.
+    def _read_positive_float(
+            self, params: QueryDict, query_param: str) -> float | None:
+        v = params.get(query_param, None)
+        if v is None:
+            return None
+        v = float(v)
+        if v <= 0:
+            raise Exception(
+                "expected param, %s, to have a positive value" % query_param)
+        return v
+
+    
 
 # A class containing forsys ranking input parameters.
-class ForsysRankingRequestParams():
+class ForsysRankingRequestParams(CommonParams):
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and stand-level constraints.
     # The planning region.
@@ -263,23 +309,9 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
         self.max_cost_in_usd = self._read_positive_float(params,
                                                          self._URL_MAX_COST)
 
-    # If field is present, returns field value but raises an exception if the
-    # field value isn't positive.
-    # IF field isn't present, returns None.
-    def _read_positive_float(
-            self, params: QueryDict, query_param: str) -> float | None:
-        v = params.get(query_param, None)
-        if v is None:
-            return None
-        v = float(v)
-        if v <= 0:
-            raise Exception(
-                "expected param, %s, to have a positive value" % query_param)
-        return v
-
 
 # A class containing forsys generation input parameters.
-class ForsysGenerationRequestParams():
+class ForsysGenerationRequestParams(CommonParams):
     # TODO: make regions and priorities enums to make error checking easier.
     # TODO: add fields for costs, treatments, and global, project-level, and
     # stand-level constraints.
@@ -298,7 +330,16 @@ class ForsysGenerationRequestParams():
     cluster_params: ClusterAlgorithmRequestParams
     # Parameters informing whether Planscape will read and write to the DB.
     db_params: DbRequestParams
+    # Parameters informing whether a stand can be included in a project area.
+    stand_eligibility_params: StandEligibilityParams
 
+    # Per-project constraints
+    max_area_per_project_in_km2: float
+    max_cost_per_project_in_usd: float | None
+
+    # default values for these params, regardless of how params were generated
+    _DEFAULT_MAX_AREA = 20
+    
     def __init__(self):
         self.region = None
         self.priorities = None
@@ -306,6 +347,9 @@ class ForsysGenerationRequestParams():
         self.planning_area = None
         self.cluster_params = None
         self.db_params = None
+        self.max_area_per_project_in_km2 = self._DEFAULT_MAX_AREA
+        self.max_cost_per_project_in_usd = None
+        self.stand_eligibility_params = None
 
     # Returns a dictionary mapping priorities to priority weights.
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -325,6 +369,8 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     _URL_PRIORITIES = 'priorities'
     _URL_PRIORITY_WEIGHTS = 'priority_weights'
     _URL_PLANNING_AREA = 'planning_area'
+    _URL_MAX_AREA_PER_PROJECT = 'max_area_per_project'
+    _URL_MAX_COST_PER_PROJECT = 'max_cost_per_project'
 
     # Constants that act as default values when parsing url parameters.
     _DEFAULT_REGION = 'sierra_cascade_inyo'
@@ -333,13 +379,15 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
-        
+
         self.cluster_params = ClusterAlgorithmRequestParams(params)
 
         request = HttpRequest()
         request.GET = params
         self.db_params = DbRequestParamsForGenerationFromUrlWithDefaults(
             request)
+        # TODO: add logic for parsing stand eligibility params from url params.
+        self.stand_eligibility_params = StandEligibilityParams()
 
         self._read_url_params_with_defaults(params)
 
@@ -349,7 +397,11 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         self.planning_area = get_default_planning_area()
-
+        km2 = self._read_positive_float(params, self._URL_MAX_AREA_PER_PROJECT)
+        if km2 is not None:
+          self.max_area_per_project_in_km2 = km2
+        self.max_cost_per_project_in_usd = self._read_positive_float(params,
+                                                                     self._URL_MAX_COST_PER_PROJECT)
 
 # Looks up forsys generation parameters from DB.
 # This is intended for production.
@@ -364,8 +416,12 @@ class ForsysGenerationRequestParamsFromDb(
         self.cluster_params = ClusterAlgorithmRequestParams(request.GET)
 
         self.db_params = DbRequestParamsForGenerationFromDb(request)
+
+        # TODO: pass stand eligibility params via DB.
+        self.stand_eligibility_params = StandEligibilityParams()
+
         self._validate_scenario(self.db_params.scenario)
-        
+
         self._read_db_params()
 
     def _validate_scenario(self, scenario: Scenario):
@@ -397,6 +453,12 @@ class ForsysGenerationRequestParamsFromDb(
 
         self.priorities, self.priority_weights = self._get_weighted_priorities(
             scenario)
+
+        self.max_cost_per_project_in_usd = project.max_cost_per_project_in_usd
+        # for backwards compatibility, don't assume this was defined in old projects
+        km2 = project.max_area_per_project_in_km2
+        if km2 is not None:
+          self.max_area_per_project_in_km2 = km2
 
     def _get_weighted_priorities(
         self, scenario: Scenario

@@ -19,7 +19,7 @@
       <ng-container *featureFlag="'login'">
         <a
           *ngIf="isLoggedIn$ | async; else showLogin"
-          class="nav-link"
+          class="save-nav-link"
           (click)="logout()">
           <mat-icon>logout</mat-icon>
           <div class="nav-text">
@@ -28,7 +28,7 @@
         </a>
         <ng-template #showLogin>
           <a routerLink="/login"
-            class="nav-link"
+            class="save-nav-link"
             [ngClass]="{'selected': isSelected('/login')}">
             <mat-icon class="material-symbols-outlined">account_circle</mat-icon>
             <div class="nav-text">

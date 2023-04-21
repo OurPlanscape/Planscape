@@ -18,7 +18,9 @@ generate_projects_for_a_single_scenario <- function(
   eligibility_field,
   output_scenario_name,
   output_scenario_tag,
-  enable_kmeans_clustering = FALSE
+  enable_kmeans_clustering = FALSE,
+  max_cost_per_project_in_usd,
+  max_area_per_project_in_km2
 ) {
   wp_str <- "weighted_priorities"
 
@@ -71,6 +73,19 @@ generate_projects_for_a_single_scenario <- function(
       mutate({{geo_wkt_field}} := st_as_text(geometry))
   }
 
+  # These are used for setting per-project constraints for cost.
+  proj_target_field = NULL
+  proj_target_value = NULL
+  proj_fixed_target = FALSE
+
+  # Add cost-per-project params only if needed
+  if (!identical(max_cost_per_project_in_usd, "")) {
+    proj_target_field = stand_cost_field
+    proj_target_value = as.double(max_cost_per_project_in_usd)
+    proj_fixed_target = TRUE
+  }
+
+
   # TODO: optimize project area generation parameters, SDW, EPW, sample_frac.
   suppressMessages(
     run_outputs <- forsys::run(
@@ -90,7 +105,7 @@ generate_projects_for_a_single_scenario <- function(
       run_with_patchmax = TRUE,
       # target area per project? TODO: clarify what this does, and clarify
       # whether there's also a target cost per project.
-      patchmax_proj_size = 20,
+      patchmax_proj_size = max_area_per_project_in_km2,
       # number of projects - TODO: clarify whether this should be a user input.
       patchmax_proj_number = 3,
       patchmax_SDW = 1,
@@ -99,7 +114,9 @@ generate_projects_for_a_single_scenario <- function(
       stand_threshold = paste0(eligibility_field, ">0"),
       patchmax_exclusion_limit = 0.1,
       # TODO: clarify how to set global constraints.
-      proj_fixed_target = FALSE
+      proj_fixed_target = proj_fixed_target,
+      proj_target_field = proj_target_field,
+      proj_target_value = proj_target_value
     )
   )
 
