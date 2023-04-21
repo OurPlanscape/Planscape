@@ -30,6 +30,7 @@ import { SignInDialogComponent } from './map/sign-in-dialog/sign-in-dialog.compo
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
+import { RedirectGuard } from './redirect.guard';
 import {
   AuthGuard,
   AuthService,
@@ -94,6 +95,7 @@ import { DeleteAccountDialogComponent } from './account-dialog/delete-account-di
     PlanService,
     CookieService,
     SessionService,
+    RedirectGuard,
   ],
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],

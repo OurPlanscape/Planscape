@@ -30,7 +30,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
     },
     {
       text: "Feedback",
-      href: "/map", //Replace with feedback url 
+      href: "/feedback", 
       icon: "feedback",
     }
   ]
