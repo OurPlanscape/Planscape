@@ -17,6 +17,7 @@ import { ScenarioConfirmationComponent } from './plan/scenario-confirmation/scen
 import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
 import { AuthGuard } from './services';
 import { SignupComponent } from './signup/signup.component';
+import { RedirectGuard } from './redirect.guard';
 
 const routes: Routes = [
   {
@@ -41,7 +42,20 @@ const routes: Routes = [
         component: SignupComponent,
         canActivate: [createFeatureGuard('login')],
       },
-      { path: 'map', title: 'Explore', component: MapComponent },
+      { 
+        path: 'map', 
+        title: 'Explore', 
+        component: MapComponent 
+      },
+      {
+        path: 'feedback',
+        canActivate: [RedirectGuard],
+        component: RedirectGuard,
+        data: {
+          externalUrl: 'https://forms.gle/THUZZfe7LRpewEh17'
+        }
+     },
+
       {
         path: 'plan/:id',
         title: 'Plan Details',
@@ -84,6 +98,8 @@ export class PlanscapeTitleStrategy extends TitleStrategy {
     }
   }
 }
+
+
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],
