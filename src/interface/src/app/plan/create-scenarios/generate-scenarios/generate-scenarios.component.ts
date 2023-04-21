@@ -3,7 +3,7 @@ import { AbstractControl, FormGroup } from '@angular/forms';
 import { MatSliderChange } from '@angular/material/slider';
 import { filter } from 'rxjs/operators';
 import { MapService, PlanService } from 'src/app/services';
-
+import features from '../../../features/features.json'
 @Component({
   selector: 'app-generate-scenarios',
   templateUrl: './generate-scenarios.component.html',
@@ -15,6 +15,7 @@ export class GenerateScenariosComponent implements OnInit {
   @Output() createScenarioEvent = new EventEmitter<void>();
 
   generatingScenario: boolean = false;
+  slider_enabled: boolean = features.top_percent_slider;
 
   private priorityNameMap?: Map<string, string>;
   priorityWeightControls: {
