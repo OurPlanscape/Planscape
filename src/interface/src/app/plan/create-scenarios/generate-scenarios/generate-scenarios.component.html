@@ -26,7 +26,7 @@
     </div>
 
     <!-- Project area % -->
-    <ng-container *featureFlag="'top_percent'">
+    <div *ngIf="slider_enabled">
       <div>
         <h2>Project areas</h2>
         <div class="flex-row space-between">
@@ -41,7 +41,7 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </div>
 
 </form>
 

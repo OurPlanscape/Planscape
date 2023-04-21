@@ -1,7 +1,7 @@
 {
   "login": true,
   "unlaunched_layers": true,
-  "top_percent":true,
+  "top_percent_slider":false,
   "testFalseFeature": false,
   "testTrueFeature": true
 }
