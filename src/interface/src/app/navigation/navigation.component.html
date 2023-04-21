@@ -5,6 +5,7 @@
     [opened]="sidebarOpen">
     <mat-nav-list class="nav-list">
       <ng-container *ngFor="let link of sidenavLinks">
+
         <a routerLink="{{link.href}}"
           class="nav-link"
           [ngClass]="{'selected': isSelected(link.href)}">
@@ -15,7 +16,22 @@
               {{link.text}}
             </div>
           </a>
+
       </ng-container>
+      <a 
+      onclick='window.open("https://forms.gle/THUZZfe7LRpewEh17");return false;'
+      href="#"
+      class="nav-link"
+      target="_blank" 
+      rel="noopener noreferrer">
+        <mat-icon class="material-symbols-outlined">
+          {{"feedback"}}
+        </mat-icon>
+        <div class="nav-text">
+          {{"feedback"}}
+        </div>
+        
+      </a>
       <ng-container *featureFlag="'login'">
         <a
           *ngIf="isLoggedIn$ | async; else showLogin"

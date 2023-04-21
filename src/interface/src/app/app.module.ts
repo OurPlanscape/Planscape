@@ -44,6 +44,7 @@ import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
+import { FeedbackComponent } from './feedback/feedback.component';
 
 @NgModule({
   declarations: [
@@ -66,6 +67,7 @@ import { DeleteAccountDialogComponent } from './account-dialog/delete-account-di
     PlanTableComponent,
     SignInDialogComponent,
     DeleteAccountDialogComponent,
+    FeedbackComponent,
   ],
   imports: [
     AppRoutingModule,
