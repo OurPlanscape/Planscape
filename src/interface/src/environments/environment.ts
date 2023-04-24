@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
   backend_endpoint: 'http://localhost:8000/planscape-backend',
-  google_analytics_id: 'G-4XVSK5FG2M' // This is a just a dev-only GA ID
+  google_analytics_id: '' // Replace with actual ID.
 };
 
 /*
