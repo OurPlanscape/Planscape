@@ -1,3 +1,6 @@
 __pycache__/
 .mypy_cache/
 .env
+./interface/src/environments/environment.ts
+./interface/src/environments/environment.prod.ts
+./interface/src/app/features/features.json
