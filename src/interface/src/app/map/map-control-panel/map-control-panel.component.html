@@ -135,23 +135,25 @@
         </mat-expansion-panel>
 
         <!-- Ecosystem scores controls -->
-        <mat-expansion-panel expanded="false">
-          <mat-expansion-panel-header class="layer-panel-header">
-            <mat-panel-title>
-              Ecosystem scores
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-          <div class="layer-control-container flex-center">
-            <mat-radio-group class="layer-radio-group" color="primary" [(ngModel)]="map.config.dataLayerConfig">
-              <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff();
-                conditionTreeNormalized.toggleAllLayersOff()"
-                color="primary"
-                [value]="noneDataLayerConfig">
-                All Layers Off
-              </mat-radio-button>
-            </mat-radio-group>
-          </div>
-        </mat-expansion-panel>
+        <ng-container *featureFlag="'unlaunched_layers'">
+          <mat-expansion-panel expanded="false">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                Ecosystem scores
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="layer-control-container flex-center">
+              <mat-radio-group class="layer-radio-group" color="primary" [(ngModel)]="map.config.dataLayerConfig">
+                <mat-radio-button (change)="conditionTreeRaw.toggleAllLayersOff();
+                  conditionTreeNormalized.toggleAllLayersOff()"
+                  color="primary"
+                  [value]="noneDataLayerConfig">
+                  All Layers Off
+                </mat-radio-button>
+              </mat-radio-group>
+            </div>
+          </mat-expansion-panel>
+        </ng-container>
 
         <!-- Current condition controls -->
         <app-condition-tree
