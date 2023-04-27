@@ -135,6 +135,7 @@
         </mat-expansion-panel>
 
         <!-- Ecosystem scores controls -->
+        <ng-container *featureFlag="'unlaunched_layers'">
         <mat-expansion-panel expanded="false">
           <mat-expansion-panel-header class="layer-panel-header">
             <mat-panel-title>
@@ -152,6 +153,7 @@
             </mat-radio-group>
           </div>
         </mat-expansion-panel>
+      </ng-container>
 
         <!-- Current condition controls -->
         <app-condition-tree
