@@ -52,7 +52,7 @@ const routes: Routes = [
         canActivate: [RedirectGuard],
         component: RedirectGuard,
         data: {
-          externalUrl: 'https://forms.gle/THUZZfe7LRpewEh17'
+          externalUrl: 'https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAANAAfjhbitUNENORTEyVzQzT0VaTDA3NzIzUk1OVlpaWS4u'
         }
      },
 
