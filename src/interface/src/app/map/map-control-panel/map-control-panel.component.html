@@ -173,6 +173,15 @@
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
         </app-condition-tree>
 
+        <!-- Future condition controls -->
+        <app-condition-tree
+          #conditionTreeNormalized
+          [conditionsData$]="conditionDataFuture$"
+          [header]="'Future Climate Stability'"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
+        </app-condition-tree>
+
         <!-- Disturbances controls -->
         <ng-container *featureFlag="'unlaunched_layers'">
           <mat-expansion-panel disabled="true">
