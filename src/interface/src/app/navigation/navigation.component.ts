@@ -41,6 +41,9 @@ export class NavigationComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.isLoggedInSubscription = this.authService.isLoggedIn$.subscribe();
   }
+  // ngAfterViewInit(){
+  //   this.sidebarOpen = !this.sidebarOpen;
+  // }
 
   ngOnDestroy(): void {
     this.isLoggedInSubscription.unsubscribe();

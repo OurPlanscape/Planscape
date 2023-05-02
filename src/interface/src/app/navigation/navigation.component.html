@@ -2,7 +2,8 @@
   <mat-sidenav #drawer class="sidenav"
     [attr.role]="'navigation'"
     [mode]="'side'"
-    [opened]="sidebarOpen">
+    [opened]="!sidebarOpen"
+    [disableClose]>
     <mat-nav-list class="nav-list">
       <ng-container *ngFor="let link of sidenavLinks">
 
