@@ -680,6 +680,7 @@ export class MapManager {
     map.dataLayerRef?.remove();
 
     let filepath = map.config.dataLayerConfig.filepath;
+    let layer = map.config.dataLayerConfig.layer;
     if (filepath?.length === 0 || !filepath) return;
 
     let colormap = map.config.dataLayerConfig.colormap;
@@ -687,9 +688,10 @@ export class MapManager {
       colormap = DEFAULT_COLORMAP;
     }
 
-    map.dataLayerRef = L.tileLayer(
-      BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
+    map.dataLayerRef = L.tileLayer.wms(
+      BackendConstants.TILES_END_POINT,
       {
+        layers: layer,
         minZoom: 7,
         maxZoom: 13,
         opacity:

@@ -24,7 +24,7 @@ class PillarConfig:
 
     # Keys in the dictionaries.
     COMMON_METADATA = {'filepath', 'display_name',
-                       'colormap', 'max_value', 'min_value'}
+                       'colormap', 'max_value', 'min_value', 'layer'}
     REGION_KEYS = {'region_name', 'pillars'}.union(COMMON_METADATA)
     PILLAR_KEYS = {'pillar_name',
                    'elements',
@@ -53,7 +53,7 @@ class PillarConfig:
         """
         metadata = dict()
 
-        def update_metadata(name, filepath, min_value, max_value, data_units):
+        def update_metadata(name, filepath, layer, min_value, max_value, data_units):
             if filepath is not None:
                 key = filepath.split('/')[-1]
                 metadata[key + '.tif'] = {'name': name,
@@ -61,20 +61,22 @@ class PillarConfig:
                                           'max_value': max_value}
                 if data_units is not None:
                     metadata[key + '.tif']['data_units'] = data_units
+                if layer is not None:
+                    metadata[key+'.tif']['layer'] = layer
 
         for region in config:
             for pillar in region['pillars']:
                 update_metadata(pillar['pillar_name'],
-                                pillar.get('filepath', None), -1, 1, None)
+                                pillar.get('filepath', None),pillar.get('layer',None), -1, 1, None)
                 for element in pillar['elements']:
                     update_metadata(element['element_name'], element.get(
-                        'filepath', None), -1, 1, None)
+                        'filepath', None), pillar.get('layer', None), -1, 1, None)
                     for metric in element['metrics']:
                         min = metric.get('min_value', -1)
                         max = metric.get('max_value', 1)
                         data_units = metric.get('data_units', None)
                         update_metadata(metric['metric_name'], metric.get(
-                            'filepath', None), min, max, data_units)
+                            'filepath', None), pillar.get('layer', None), min, max, data_units)
         return metadata
 
     def __init__(self, filename: str):
