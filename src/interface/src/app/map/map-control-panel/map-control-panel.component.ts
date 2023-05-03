@@ -132,13 +132,36 @@ export class MapControlPanelComponent implements OnInit {
                   return {
                     ...element,
                     disableSelect: true,
-                    children: element.metrics,
+                    children: element.metrics?.map((metric): ConditionsNode=> {
+                      return {
+                        ...metric,
+                        layer:metric.raw_layer
+                      };
+                    }),
                   };
                 }),
             };
           })
       : [];
   }
+  
+  private conditionsConfigToDataFuture(
+    config: ConditionsConfig
+    ): ConditionsNode[] {
+      return config.pillars
+        ? config.pillars
+            ?.filter((pillar) => pillar.display)
+            .map((pillar): ConditionsNode => {
+              return {
+                ...pillar,
+                disableSelect: true,
+                layer: pillar.future_layer,
+                children: pillar.elements,
+              };
+            })
+        : [];
+    }
+
 
   private conditionsConfigToDataNormalized(
     config: ConditionsConfig
@@ -150,16 +173,19 @@ export class MapControlPanelComponent implements OnInit {
             return {
               ...pillar,
               filepath: pillar.filepath?.concat('_normalized'),
+              layer: pillar.normalized_layer,
               normalized: true,
               children: pillar.elements?.map((element): ConditionsNode => {
                 return {
                   ...element,
                   filepath: element.filepath?.concat('_normalized'),
+                  layer: element.normalized_layer,
                   normalized: true,
                   children: element.metrics?.map((metric): ConditionsNode => {
                     return {
                       ...metric,
                       filepath: metric.filepath?.concat('_normalized'),
+                      layer: metric.normalized_layer,
                       normalized: true,
                       min_value: undefined,
                       max_value: undefined,
