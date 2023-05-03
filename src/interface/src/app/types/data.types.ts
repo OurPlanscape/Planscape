@@ -19,13 +19,15 @@ export interface ConditionsMetadata {
   source_link?: string;
   min_value?: number;
   max_value?: number;
-  
 }
 
 export interface DataLayerConfig extends ConditionsMetadata {
   display_name?: string;
   filepath?: string;
   layer?: string;
+  raw_layer?: string;
+  normalized_layer?: string;
+  future_layer?: string;
   colormap?: string;
   normalized?: boolean;
   opacity?: number;
