@@ -24,6 +24,10 @@ export interface ConditionsMetadata {
 export interface DataLayerConfig extends ConditionsMetadata {
   display_name?: string;
   filepath?: string;
+  layer?: string;
+  raw_layer?: string;
+  normalized_layer?: string;
+  future_layer?: string;
   colormap?: string;
   normalized?: boolean;
   opacity?: number;
