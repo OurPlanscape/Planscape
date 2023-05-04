@@ -455,7 +455,7 @@
                 {
                   "metric_name": "probability_high_fire_severity",
                   "filepath": "sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
-                  "raw_layer": "NEED TO CONFIRM WITH GEORGE IF THS ISN'T AVAILABLE",
+                  "raw_layer": "TODO: Confirm if we can find this",
                   "normalized_layer": "sierra-nevada:fireDynamicsTranslate_Tier1_probHighSevFire_2022_scored",
                   "display_name": "Probability High Fire Severity",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -528,7 +528,7 @@
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m",
                   "raw_layer": "sierra-nevada:forestShrubResil_Tier2_TPA_30in_up_2021_30m",
                   "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_TPA_30in_up_2021_scored",
-                  "display_name": "Tree Density < 30",
+                  "display_name": "Tree Density > 30",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "USDA Forest Service, Region 5",
@@ -585,7 +585,7 @@
                 {
                   "metric_name": "seral_stage",
                   "filepath": "sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
-                  "raw_layer": "NEED TO CONFIRM IF USE LATE OR EARLY",
+                  "raw_layer": "TODO: Confirm if we use late or early",
                   "display_name": "Seral Stage",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
