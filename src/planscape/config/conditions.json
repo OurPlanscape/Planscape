@@ -60,7 +60,7 @@
             }
           ]
         },
-	{
+        {
           "pillar_name": "biodiversity",
           "normalized_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv",
           "future_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv030_future",
@@ -212,7 +212,7 @@
 	            "display": true,
 	            "display_name": "Stability",
               "filepath": "sierra_nevada/carbon_sequestration/stability",
-              "normalized_layer": "NEED TO GET",
+              "normalized_layer": "carbonSeqTranslate/Tier2/F3_AbovegroundLiveTreeCarbon_2021_scored.tif",
               "operation": "MEAN",
               "metrics": [
                 {
@@ -275,7 +275,6 @@
 	            "display_name": "Wood Product Industry",
               "filepath": "/dev/null",
               "normalized_layer": "sierra-nevada:econDiversityTranslate_woodProdInd",
-              "layer": "NEED TO FIGURE OUT OPERATION AND ETC or if this is just wood element?",
 	            "operation": "TBD",
               "metrics": [
                 {
@@ -313,7 +312,6 @@
               "display": false,
               "display_name": "Wood",
               "filepath": "econDiversityTranslate/woodProdInd",
-              "": "Check if I can just put in file path here",
               "normalized_layer": "sierra-nevada:econDiversityTranslate_woodProdInd",
               "metrics": [
                 {
@@ -494,6 +492,8 @@
         {
           "pillar_name": "forest_resilience",
           "filepath": "sierra_nevada/forest_resilience",
+          "normalized_layer": "sierra-nevada:forestShrubResilTranslate_forestShrubResil",
+          "future_layer": "sierra-nevada:forestShrubResilTranslate_forestResil030_future",
           "display_name": "Forest Resilience",
           "operation": "MEAN",
           "display": true,
@@ -502,12 +502,15 @@
               "element_name": "forest_structure",
               "display": true,
               "filepath": "sierra_nevada/forest_resilience/forest_structure",
+              "normalized_layer": "sierra-nevada:forestShrubResilTranslate_structure",
               "display_name": "Forest Structure",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "tree_density_gt1",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_TPA_2021_30m",
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_TPA_2021_scored",
                   "display_name": "Tree Density > 1",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -523,6 +526,8 @@
                 {
                   "metric_name": "large_tree_density_gt30",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_TPA_30in_up_2021_30m",
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_TPA_30in_up_2021_scored",
                   "display_name": "Tree Density < 30",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -537,6 +542,8 @@
                 {
                   "metric_name": "basal_area",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/BASATOT_2021_300m",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_BASATOT_2021_30m",
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_BASATOT_2021_scored",
                   "display_name": "Basal Area",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -551,6 +558,8 @@
                 {
                   "metric_name": "max_sdi",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_proportion_of_SDI_33_Max_30m", 
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_proportion_of_SDI_33_Max_scored",
                   "display_name": "Max SDI",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -567,14 +576,16 @@
             },
             {
               "element_name": "forest_composition",
-		"display": true,
-		"filepath": "sierra_nevada/forest_resilience/forest_composition",
+              "display": true,
+              "filepath": "sierra_nevada/forest_resilience/forest_composition",
+              "normalized_layer": "sierra-nevada:forestShrubResilTranslate_composition",
               "display_name": "Forest Composition",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "seral_stage",
                   "filepath": "sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
+                  "raw_layer": "NEED TO CONFIRM IF USE LATE OR EARLY",
                   "display_name": "Seral Stage",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -589,6 +600,8 @@
                 {
                   "metric_name": "tree_to_shrub_cover_ratio",
                   "filepath": "sierra_nevada/forest_resilience/forest_composition/CECS_TreeToShrubRatio_300m",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier1_CECS_TreeToShrubRatio_Pct_30m",
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier1_CECS_TreeToShrubRatio_Pct_scored",
                   "display_name": "Tree:Shrub Cover",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -604,14 +617,17 @@
             },
             {
               "element_name": "disturbance",
-		"display": true,
-		"filepath": "sierra_nevada/forest_resilience/disturbance",
+              "display": true,
+              "filepath": "sierra_nevada/forest_resilience/disturbance",
+              "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_Mortality_MMI_2017_2021_scored",
               "display_name": "Disturbance",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "tree_mortality",
                   "filepath": "sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_Mortality_MMI_2017_2021",
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_Mortality_MMI_2017_2021_scored",
                   "display_name": "Tree Mortality",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
@@ -631,19 +647,24 @@
         {
           "pillar_name": "social_cultural_wellbeing",
           "filepath": "sierra_nevada/social_cultural_wellbeing",
+          "normalized_layer": "sierra-nevada:socialCulturalTranslate_socialCultural",
+          "future_layer": "sierra-nevada:socialCulturalTranslate_socialCultural030_future",
           "display_name": "Social and Cultural Wellbeing",
           "display": true,
           "elements": [
             {
               "element_name": "environmental_justice",
-	      "display": true,
-	      "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
+              "display": true,
+              "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
+              "normalized_layer": "sierra-nevada:socialCulturalTranslate_envJustice",
               "display_name": "Environmental Justice",
               "metrics": [
                 {
                   "metric_name": "housing_burden",
-		  "display_name": "Housing Burden",
+		              "display_name": "Housing Burden",   
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
+                  "raw_layer": "sierra-nevada:socialCultural_Tier1_HousingBurdenPctl_2021_30m",
+                  "normalized_layer": "sierra-nevada:socialCulturalTranslate_Tier1_HousingBurdenPctl_2021_scored",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "Office of Environmental Health Hazard Assessment, CAL EPA",
@@ -656,8 +677,10 @@
                 },
                 {
                   "metric_name": "unemployment",
-		  "display_name": "Unemployment",
+		              "display_name": "Unemployment",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/UnemploymentPctl_2021_300m",
+                  "raw_layer": "sierra-nevada:socialCultural_Tier1_UnemploymentPctl_2021_30m",
+                  "normalized_layer": "sierra-nevada:socialCulturalTranslate_Tier1_UnemploymentPctl_2021_scored",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "Office of Environmental Health Hazard Assessment, CAL EPA",
@@ -670,8 +693,10 @@
                 },
                 {
                   "metric_name": "low_income",
-		  "display_name": "Low Income",
+		              "display_name": "Low Income",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/LowIncome_CCI_2021_300m",
+                  "raw_layer": "sierra-nevada:socialCultural_Tier2_LowIncome200pctPov_2020",
+                  "normalized_layer": "sierra-nevada:socialCulturalTranslate_Tier2_LowIncome200pctPov_2020_scored",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "Office of Environmental Health Hazard Assessment, CAL EPA",
@@ -689,19 +714,24 @@
         {
           "pillar_name": "water_security",
           "filepath": "sierra_nevada/water_security",
+          "normalized_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity",
+          "future_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity030_future",
           "display_name": "Water Security",
           "display": true,
           "elements": [
             {
               "element_name": "quantity",
-	      "display": true,
-	      "filepath": "sierra_nevada/water_security/quantity",
+              "display": true,
+              "filepath": "sierra_nevada/water_security/quantity",
+              "normalized_layer": "sierra-nevada:waterSecurityTranslate_quantity",
               "display_name": "Quantity",
               "metrics": [
                 {
                   "metric_name": "evapotranspiration_precipitation",
                   "display_name": "Actual Evapotranspiration/precipitation",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_AETFrac_300m",
+                  "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_AETFrac_Pct_30m",
+                  "normalized_layer": "sierra-nevada:waterSecurityTranslate_Tier1_CECS_AETFrac_Pct_scored",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
@@ -714,8 +744,10 @@
                 },
                 {
                   "metric_name": "runoff",
-		  "display_name": "Average Runoff",
+		              "display_name": "Average Runoff",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_RunoffMean_300m",
+                  "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_RunoffMean_30m",
+                  "normalized_layer": "sierra-nevada:waterSecurityTranslate_Tier1_CECS_RunoffMean_scored",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "Center for Ecosystem Climate Solutions (CECS), UC Irvine",
@@ -733,6 +765,8 @@
         {
           "pillar_name": "wetland_integrity",
           "filepath": "sierra_nevada/wetland_integrity",
+          "normalized_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg",
+          "future_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg030_future",
           "display_name": "Wetland Integrity",
           "display": true,
           "elements": [
@@ -740,12 +774,15 @@
               "element_name": "hydrologic",
               "display": true,
               "filepath": "sierra_nevada/wetland_integrity/hydrologic",
+              "normalized_layer": "sierra-nevada:wetlandIntegTranslate_hydroFunction",
               "display_name": "Hydrologic Function",
               "metrics": [
                 {
                   "metric_name": "meadow_sensitivity_index",
-		  "display_name": "Meadow Sensitivity Index",
+		              "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
+                  "raw_layer": "sierra-nevada:wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
+                  "normalized_layer": "sierra-nevada:wetlandIntegTranslate_Tier2_Meadow_SensNDWI_2019_scored",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "UC Davis",
