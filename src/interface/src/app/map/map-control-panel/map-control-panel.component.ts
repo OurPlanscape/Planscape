@@ -156,23 +156,6 @@ export class MapControlPanelComponent implements OnInit {
       : [];
   }
   
-  private conditionsConfigToDataFuture(
-    config: ConditionsConfig
-    ): ConditionsNode[] {
-      return config.pillars
-        ? config.pillars
-            ?.filter((pillar) => pillar.display)
-            .map((pillar): ConditionsNode => {
-              return {
-                ...pillar,
-                disableSelect: true,
-                layer: pillar.future_layer,
-                children: pillar.elements,
-              };
-            })
-        : [];
-    }
-
 
   /** Normalized configs are selectable at every level (pillar, element, metric).
    */
@@ -222,7 +205,7 @@ export class MapControlPanelComponent implements OnInit {
 	.map((pillar): ConditionsNode => {
           return {
  	    ...pillar,
-              filepath: pillar.filepath?.concat('_normalized'),
+        layer: pillar.future_layer,
 	      children: []
 	  };
         })
