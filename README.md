@@ -27,7 +27,7 @@ for how to download, build, and test Planscape.
 - [Django REST framework](https://www.django-rest-framework.org/) - backend framework
 - [Angular](https://angular.io/) - frontend framework
 - [Leaflet](https://leafletjs.com/) - used to display maps and layers
-- [ForSYS](https://www.fs.usda.gov/rmrs/projects/forsys-scenario-planning-model-multi-objective-restoration-and-fuel-management-planning) - linear optimization software package for choosing the best project area for treatment
+- [ForSys](https://github.com/forsys-sp/forsysr) - greedy heuristic optimization software package for land management planning and prioritization
 - [PROMOTe](https://www.fs.usda.gov/psw/topics/restoration/tcsi/publications/TCSI-Blueprint.pdf) - used to compute conditions from basic data, and find new optimal areas for treatment
 
 ## Contributing
