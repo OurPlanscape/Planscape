@@ -61,6 +61,7 @@ export class MapControlPanelComponent implements OnInit {
 
   conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
+  conditionDataFuture$ = new BehaviorSubject<ConditionsNode[]>([]);
 
   constructor() {}
 
@@ -80,6 +81,14 @@ export class MapControlPanelComponent implements OnInit {
       )
       .subscribe((data) => {
         this.conditionDataNormalized$.next(data);
+      });
+    this.conditionsConfig$
+      .pipe(
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataFuture(config!))
+      )
+      .subscribe((data) => {
+        this.conditionDataFuture$.next(data);
       });
   }
 
@@ -116,6 +125,8 @@ export class MapControlPanelComponent implements OnInit {
     this.conditionTrees?.get(index)?.unstyleAndDeselectAllNodes();
   }
 
+  /** Raw data is selectable only at the metric level.
+   */
   private conditionsConfigToDataRaw(
     config: ConditionsConfig
   ): ConditionsNode[] {
@@ -163,6 +174,8 @@ export class MapControlPanelComponent implements OnInit {
     }
 
 
+  /** Normalized configs are selectable at every level (pillar, element, metric).
+   */
   private conditionsConfigToDataNormalized(
     config: ConditionsConfig
   ): ConditionsNode[] {
@@ -197,4 +210,23 @@ export class MapControlPanelComponent implements OnInit {
           })
       : [];
   }
+
+  /** Future configs are selectable and viewable only at the pillar level.
+   */
+  private conditionsConfigToDataFuture(
+    config: ConditionsConfig
+  ): ConditionsNode[] {
+    return config.pillars
+      ? config.pillars
+        ?.filter((pillar) => pillar.display)
+	.map((pillar): ConditionsNode => {
+          return {
+ 	    ...pillar,
+              filepath: pillar.filepath?.concat('_normalized'),
+	      children: []
+	  };
+        })
+    : [];
+  }
+
 }
