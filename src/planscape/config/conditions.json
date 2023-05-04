@@ -273,53 +273,15 @@
 	            "element_name": "wood_product_industry",
               "display": true,
 	            "display_name": "Wood Product Industry",
-              "filepath": "/dev/null",
-              "normalized_layer": "sierra-nevada:econDiversityTranslate_woodProdInd",
-	            "operation": "TBD",
-              "metrics": [
-                {
-                  "metric_name": "costs_of_potential_treatments",
-                  "filepath": "/dev/null",
-                  "display_name": "Costs of Potential Treatments",
-                  "source": "TBD",
-                  "source_link": "TBD",
-                  "data_provider": "TBD",
-                  "data_download_link": "TBD",
-                  "data_year": "TBD",
-                  "reference_link": "TBD",
-                  "min_value": 0,
-                  "max_value": 100,
-                  "data_units": "USD"
-                },
-                {
-                  "metric_name": "available_standing_biomass",
-                  "filepath": "/dev/null",
-                  "display_name": "Available Standing Biomass",
-                  "source": "TBD",
-                  "source_link": "TBD",
-                  "data_provider": "TBD",
-                  "data_download_link": "TBD",
-                  "data_year": "TBD",
-                  "reference_link": "TBD",
-                  "min_value": 0,
-                  "max_value": 100,
-                  "data_units": "USD"
-                }		  
-              ]
-            },
-            {
-              "element_name": "wood",
-              "display": false,
-              "display_name": "Wood",
               "filepath": "econDiversityTranslate/woodProdInd",
               "normalized_layer": "sierra-nevada:econDiversityTranslate_woodProdInd",
               "metrics": [
                 {
-                  "metric_name": "skidder_bio_cost",
+                  "metric_name": "costs_of_potential_treatments",
                   "filepath": "sierra_nevada/economic_diversity/wood/skidder_bio_cost_proj_clip_300m",
                   "raw_layer": "sierra-nevada:econDiversity_Tier2_skidder_bio_cost_proj_clip",
                   "normalized_layer": "sierra-nevada:econDiversityTranslate_Tier2_skidder_bio_cost_scored",
-                  "display_name": "Skidder Bio Cost",
+                  "display_name": "Costs of Potential Treatments",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "USDA Forest Service, Rocky Mountain Research Station",
@@ -328,28 +290,14 @@
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
                   "min_value": 0,
                   "max_value": 4200,
-                  "data_units": "dollars"
+                  "data_units": "USD"
                 },
                 {
-                  "metric_name": "skidder_saw_cost",
-                  "filepath": "sierra_nevada/economic_diversity/wood/skidder_saw_cost_proj_clip2_300m",
-                  "display_name": "Skidder Saw Cost",
-                  "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
-                  "data_provider": "USDA Forest Service, Rocky Mountain Research Station",
-                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/econDiver.zip",
-                  "data_year": "2021",
-                  "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=30",
-                  "min_value": 0,
-                  "max_value": 4200,
-                  "data_units": "dollars"
-                },
-                {
-                  "metric_name": "available_biomass",
+                  "metric_name": "available_standing_biomass",
                   "filepath": "sierra_nevada/economic_diversity/wood/AvailableBiomass_2021_300m",
                   "raw_layer": "sierra-nevada:econDiversity_Tier2_AvailableBiomass_2021",
                   "normalized_layer": "sierra-nevada:econDiversityTranslate_Tier2_AvailableBiomass_2021_scored",
-                  "display_name": "Available Biomass",
+                  "display_name": "Available Standing Biomass",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
                   "data_provider": "USDA Forest Service, Region 5",
@@ -359,7 +307,7 @@
                   "min_value": 0,
                   "max_value": 120,
                   "data_units": "dry weight tons/acre"
-                }
+                }		  
               ]
             }
           ]
@@ -585,7 +533,8 @@
                 {
                   "metric_name": "seral_stage",
                   "filepath": "sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
-                  "raw_layer": "TODO: Confirm if we use late or early",
+                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_late_SeralStage_prop",
+                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_late_SeralStage_prop_scored",
                   "display_name": "Seral Stage",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php",
