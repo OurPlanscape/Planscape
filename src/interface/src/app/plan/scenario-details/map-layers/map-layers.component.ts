@@ -101,7 +101,7 @@ export class MapLayersComponent implements OnInit {
           .forEach((element) => {
             let elementRow: PriorityRow = {
               conditionName: element.element_name!,
-              displayName: 'foo', //element.display_name,
+              displayName: element.display_name,
               filepath: element.filepath!.concat('_normalized'),
               children: [],
               level: 1,
