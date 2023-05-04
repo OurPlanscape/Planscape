@@ -212,7 +212,7 @@
 	            "display": true,
 	            "display_name": "Stability",
               "filepath": "sierra_nevada/carbon_sequestration/stability",
-              "normalized_layer": "carbonSeqTranslate/Tier2/F3_AbovegroundLiveTreeCarbon_2021_scored.tif",
+              "normalized_layer": "sierra-nevada:carbonSeqTranslate_Tier2_F3_AbovegroundLiveTreeCarbon_2021_scored",
               "operation": "MEAN",
               "metrics": [
                 {
