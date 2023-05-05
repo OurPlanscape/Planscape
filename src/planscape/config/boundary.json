@@ -4,7 +4,7 @@
             "boundary_name": "task_force_regions",
             "display_name": "Wildfire Task Force Regions",
             "region_name": "none",
-            "filepath": "boundary/RFFC_Regions_2022/tier1_rffc_areas_jan2022.shp",
+            "filepath": "tier1_rffc_areas_jan2022.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
@@ -15,7 +15,7 @@
             "boundary_name": "counties",
             "display_name": "Counties",
             "region_name": "none",
-            "filepath": "boundary/California_County_Boundaries/cnty19_1.shp",
+            "filepath": "cnty19_1.shp",
             "source_srs": 3857,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
@@ -26,7 +26,7 @@
             "boundary_name": "huc12",
             "display_name": "HUC-12",
             "region_name": "none",
-            "filepath": "boundary/Watersheds_HUC12/ACE_HUC12s_WebMerc_1mXY.shp",
+            "filepath": "ACE_HUC12s_WebMerc_1mXY.shp",
             "source_srs": 4326,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
@@ -37,7 +37,7 @@
             "boundary_name": "huc10",
             "display_name": "HUC-10",
             "region_name": "none",
-            "filepath": "boundary/watersheds_HUC10_CA/WBD_USGS_HUC10_CA.shp",
+            "filepath": "WBD_USGS_HUC10_CA.shp",
             "source_srs": 6414,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
@@ -49,36 +49,36 @@
             "boundary_name": "USFS",
             "display_name": "US Forests",
             "region_name": "none",
-            "filepath": "boundary/California_USFS/California_USFS.shp",
+            "filepath": "California_USFS.shp",
             "source_srs": 4269,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
                 "shape_name": "FORESTNAME"
             }
         },
-        { 
+        {
             "boundary_name": "RecentFires",
             "display_name": "Fires (through 2021)",
             "region_name": "none",
-            "filepath": "boundary/fire21_2.gdb/a000000af.gdbtable",
+            "filepath": "recent-fires.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
                 "shape_name": "FIRE_NAME",
                 "acres": "GIS_ACRES"
-            }           
+            }
         },
-        { 
+        {
             "boundary_name": "PrescribedBurns",
             "display_name": "Prescribed Burns (through 2021)",
             "region_name": "none",
-            "filepath": "boundary/fire21_2.gdb/a000000b6.gdbtable",
+            "filepath": "prescribed-burns.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
             "shapefile_field_mapping": {
-                "shape_name": "TREATMENT_NAME",
+                "shape_name": "TREATMENT_",
                 "acres": "TREATED_AC"
-            }          
+            }
         }
     ]
 }
