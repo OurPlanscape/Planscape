@@ -48,14 +48,7 @@ class Command(BaseCommand):
             type=bool,
             default=True,
             action=argparse.BooleanOptionalAction,
-            help="Show the commands to be run but do not run them.",
-        )
-        parser.add_argument(
-            "--strict",
-            type=bool,
-            default=True,
-            action=argparse.BooleanOptionalAction,
-            help="If false, ignore errors if a polygon cannot be converted and uploaded.",
+            help="Determines if the output of the LayerMapping utility should be pushed to stdout",
         )
 
     def handle(self, *args, **options):
@@ -68,7 +61,6 @@ class Command(BaseCommand):
         boundary_to_load = options["boundary"]
         force = options["force"]
         verbose = options["verbose"]
-        strict = options["strict"]
 
         def presave_callback_generator(fkey):
             def cb(sender, instance, *args, **kwargs):
@@ -123,10 +115,11 @@ class Command(BaseCommand):
                     shapefile_field_mapping,
                     source_srs=srs,
                     transform=True,
+                    transaction_mode="commit_on_success",
                 )
                 presave_callback = presave_callback_generator(boundary_obj)
                 pre_save.connect(presave_callback, sender=BoundaryDetails)
-                lm.save(strict=strict, verbose=verbose)
+                lm.save(strict=True, verbose=verbose)
                 pre_save.disconnect(presave_callback, sender=BoundaryDetails)
             except Exception as ex:
                 self.stdout.write(f"Error: {ex}\n Boundary {boundary_name} failed.")
