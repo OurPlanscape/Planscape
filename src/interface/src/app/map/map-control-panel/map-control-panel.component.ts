@@ -23,6 +23,8 @@ import {
   ConditionTreeComponent,
 } from './condition-tree/condition-tree.component';
 
+import { BackendConstants } from './../../backend-constants';
+
 @Component({
   selector: 'app-map-control-panel',
   templateUrl: './map-control-panel.component.html',
@@ -205,8 +207,13 @@ export class MapControlPanelComponent implements OnInit {
 	.map((pillar): ConditionsNode => {
           return {
  	    ...pillar,
-        layer: pillar.future_layer,
-	      children: []
+            data_download_link: pillar.future_data_download_path ?
+	      BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.future_data_download_path :
+              pillar.data_download_link,
+            layer: pillar.future_layer,
+            min_value: -1,
+            max_value: 1,
+            children: []
 	  };
         })
     : [];

@@ -23,12 +23,14 @@ class PillarConfig:
     """
 
     # Keys in the dictionaries.
-    COMMON_METADATA = {'filepath', 'display_name',
-                       'colormap', 'max_value', 'min_value','layer', 'raw_layer', 'normalized_layer', 'future_layer'}
+    COMMON_METADATA = {'filepath', 'display_name', 'data_provider',
+                       'colormap', 'max_value', 'min_value','layer', 'raw_layer', 'normalized_layer'}
     REGION_KEYS = {'region_name', 'pillars'}.union(COMMON_METADATA)
     PILLAR_KEYS = {'pillar_name',
                    'elements',
                    'operation',
+                   'future_layer',
+                   'future_data_download_path',
                    'display'}.union(COMMON_METADATA)
     ELEMENT_KEYS = {'element_name',
                     'metrics',
@@ -39,7 +41,6 @@ class PillarConfig:
                    'ignore',
                    'source',
                    'source_link',
-                   'data_provider',
                    'data_download_link',
                    'data_year',
                    'reference_link',

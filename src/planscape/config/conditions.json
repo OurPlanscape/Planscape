@@ -12,6 +12,8 @@
           "filepath": "sierra_nevada/air_quality",
           "normalized_layer":  "sierra-nevada:airQualityTranslate_airQuality",
           "future_layer": "sierra-nevada:airQualityTranslate_airQuality030_future",
+          "future_data_download_path": "sierra-nevada/airQualityTranslate/airQuality030_future.tif",
+          "data_provider": "USDA Forest Service, Region 5",
           "display_name": "Air Quality",
           "display": true,
           "elements": [
