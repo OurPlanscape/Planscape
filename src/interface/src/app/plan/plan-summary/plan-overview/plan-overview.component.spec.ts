@@ -32,7 +32,7 @@ describe('PlanOverviewComponent', () => {
           currentPlanId: '1',
           currentConfigId: null,
           currentScenarioId: null,
-          mapConditionFilepath: null,
+          mapConditionLayer: null,
           mapShapes: null,
         }),
       }

@@ -104,8 +104,8 @@ export class ScenarioDetailsComponent implements OnInit {
     );
   }
 
-  changeCondition(filepath: string): void {
-    this.planService.updateStateWithConditionFilepath(filepath);
+  changeCondition(layer: string): void {
+    this.planService.updateStateWithConditionLayer(layer);
   }
 
   togglePanelExpand(): void {

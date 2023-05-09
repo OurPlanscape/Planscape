@@ -24,6 +24,7 @@ export interface ConditionsMetadata {
 export interface DataLayerConfig extends ConditionsMetadata {
   display_name?: string;
   filepath?: string;
+  normalized_data_download_path?: string;
   layer?: string;
   raw_layer?: string;
   normalized_layer?: string;
@@ -41,6 +42,7 @@ export interface ElementConfig extends DataLayerConfig {
 export interface MetricConfig extends DataLayerConfig {
   metric_name: string;
   data_units?: string;
+  raw_data_download_path?: string;
 }
 
 export interface PillarConfig extends DataLayerConfig {
