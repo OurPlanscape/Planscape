@@ -58,14 +58,14 @@
             </span>
           </div>
           <button mat-icon-button
-          class="info-button"
-          [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
-          (menuClosed)="node.infoMenuOpen = false">
-          <mat-icon color="primary">info_outline</mat-icon>
-          <mat-menu #popoverMenu="matMenu">
-            <app-layer-info-card [dataLayerConfig]="node.condition"></app-layer-info-card>
-          </mat-menu>
-        </button>
+            class="info-button"
+            [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
+            (menuClosed)="node.infoMenuOpen = false">
+            <mat-icon color="primary">info_outline</mat-icon>
+            <mat-menu #popoverMenu="matMenu">
+              <app-layer-info-card [dataLayerConfig]="node.condition"></app-layer-info-card>
+            </mat-menu>
+          </button>
           <button
             mat-icon-button
             matTreeNodeToggle
