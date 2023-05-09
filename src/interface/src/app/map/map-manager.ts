@@ -679,9 +679,9 @@ export class MapManager {
 
     map.dataLayerRef?.remove();
 
-    let filepath = map.config.dataLayerConfig.filepath;
+    //let filepath = map.config.dataLayerConfig.filepath;
     let layer = map.config.dataLayerConfig.layer;
-    if (filepath?.length === 0 || !filepath) return;
+    if (layer?.length === 0 || !layer) return;
 
     let colormap = map.config.dataLayerConfig.colormap;
     if (colormap?.length === 0 || !colormap) {
