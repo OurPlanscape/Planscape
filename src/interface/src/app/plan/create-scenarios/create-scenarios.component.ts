@@ -332,8 +332,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     return geometries;
   }
 
-  changeCondition(filepath: string): void {
-    this.planService.updateStateWithConditionFilepath(filepath);
+  changeCondition(layer: string): void {
+    this.planService.updateStateWithConditionLayer(layer);
   }
 
   private drawShapes(shapes: any | null): void {

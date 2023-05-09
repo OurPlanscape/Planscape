@@ -108,7 +108,7 @@ describe('MapComponent', () => {
                   metrics: [
                     {
                       metric_name: 'test_metric_1',
-                      filepath: 'test_metric_1',
+                      layer: 'test_metric_1',
                     },
                   ],
                 },
@@ -127,7 +127,7 @@ describe('MapComponent', () => {
           currentPlanId: 'temp',
           currentScenarioId: null,
           currentConfigId: null,
-          mapConditionFilepath: null,
+          mapConditionLayer: null,
           mapShapes: null,
         }),
       }
@@ -417,7 +417,7 @@ describe('MapComponent', () => {
           let map = component.maps[testCase];
 
           // Act: select test metric 1
-          map.config.dataLayerConfig.filepath = 'test_metric_1';
+          map.config.dataLayerConfig.layer = 'test_metric_1';
           component.changeConditionsLayer(map);
 
           // Assert: expect that the map contains test metric 1
@@ -814,7 +814,7 @@ describe('MapComponent', () => {
     });
 
     it('mapHasDataLayer returns true if map has data layer', () => {
-      component.maps[0].config.dataLayerConfig.filepath = 'test_metric_1';
+      component.maps[0].config.dataLayerConfig.layer = 'test_metric_1';
 
       component.mapHasDataLayer().subscribe((result) => {
         expect(result).toBeTrue();
@@ -822,7 +822,7 @@ describe('MapComponent', () => {
     });
 
     it('mapHasDataLayer returns false if map does not have data layer', () => {
-      component.maps[0].config.dataLayerConfig.filepath = '';
+      component.maps[0].config.dataLayerConfig.layer = '';
 
       component.mapHasDataLayer().subscribe((result) => {
         expect(result).toBeFalse();
