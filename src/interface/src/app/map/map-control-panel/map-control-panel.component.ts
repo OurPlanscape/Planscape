@@ -148,7 +148,10 @@ export class MapControlPanelComponent implements OnInit {
                     children: element.metrics?.map((metric): ConditionsNode=> {
                       return {
                         ...metric,
-                        layer:metric.raw_layer
+                        layer:metric.raw_layer,
+                        data_download_link: metric.raw_data_download_path ?
+	                      BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
+                        metric.data_download_link,
                       };
                     }),
                   };
@@ -170,20 +173,28 @@ export class MapControlPanelComponent implements OnInit {
           .map((pillar): ConditionsNode => {
             return {
               ...pillar,
-              filepath: pillar.filepath?.concat('_normalized'),
               layer: pillar.normalized_layer,
+              data_download_link: pillar.normalized_data_download_path ?
+	              BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.normalized_data_download_path :
+                undefined,
               normalized: true,
               children: pillar.elements?.map((element): ConditionsNode => {
                 return {
                   ...element,
-                  filepath: element.filepath?.concat('_normalized'),
                   layer: element.normalized_layer,
+                  data_download_link: element.normalized_data_download_path ?
+                  BackendConstants.DOWNLOAD_END_POINT + '/' + element.normalized_data_download_path :
+                  undefined,
                   normalized: true,
+                  min_value: undefined,
+                  max_value: undefined,
                   children: element.metrics?.map((metric): ConditionsNode => {
                     return {
                       ...metric,
-                      filepath: metric.filepath?.concat('_normalized'),
                       layer: metric.normalized_layer,
+                      data_download_link: metric.normalized_data_download_path ?
+	                    BackendConstants.DOWNLOAD_END_POINT + '/' + metric.normalized_data_download_path :
+                      metric.data_download_link,
                       normalized: true,
                       min_value: undefined,
                       max_value: undefined,
