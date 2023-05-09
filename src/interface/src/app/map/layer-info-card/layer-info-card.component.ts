@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { TitleStrategy } from '@angular/router';
 import { DataLayerConfig, MetricConfig } from 'src/app/types';
 
 @Component({
@@ -13,7 +12,7 @@ export class LayerInfoCardComponent {
   hasDataProvider(): boolean {
     return (
       !!this.dataLayerConfig?.data_provider &&
-      !!this.dataLayerConfig.data_download_link 
+      !!this.dataLayerConfig.data_download_link
     );
   }
 
