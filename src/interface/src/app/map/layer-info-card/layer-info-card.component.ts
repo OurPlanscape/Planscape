@@ -12,8 +12,8 @@ export class LayerInfoCardComponent {
 
   hasDataProvider(): boolean {
     return (
-      (!!this.dataLayerConfig?.data_provider &&
-      !!this.dataLayerConfig.data_download_link) 
+      !!this.dataLayerConfig?.data_provider &&
+      !!this.dataLayerConfig.data_download_link 
     );
   }
 
