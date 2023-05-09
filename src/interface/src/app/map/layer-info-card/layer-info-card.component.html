@@ -18,9 +18,12 @@
     </span>
   </p>
 
-  <div *ngIf="hasDataProvider()">
+  <div *ngIf="hasDownloadLink()">
+    <div *ngIf="hasDataProvider()">
     <p>
       PROVIDER: {{dataLayerConfig?.data_provider}}
+    </p>
+    </div>
     <p>
       DATA: <a [href]="dataLayerConfig?.data_download_link" target="_blank">Download</a>
     </p>
