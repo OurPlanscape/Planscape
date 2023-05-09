@@ -28,7 +28,7 @@ export interface PlanState {
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
   currentConfigId: ProjectConfig['id'] | null;
-  mapConditionFilepath: string | null;
+  mapConditionLayer: string | null;
   mapShapes: any | null;
   panelExpanded?: boolean;
 }
@@ -64,7 +64,7 @@ export class PlanService {
     currentPlanId: null,
     currentScenarioId: null,
     currentConfigId: null,
-    mapConditionFilepath: null,
+    mapConditionLayer: null,
     mapShapes: null,
     panelExpanded: true,
   });
@@ -556,14 +556,14 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-  updateStateWithConditionFilepath(filepath: string | null) {
+  updateStateWithConditionLayer(layer: string | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
       ...currentState,
       all: {
         ...currentState.all,
       },
-      mapConditionFilepath: filepath,
+      mapConditionLayer: layer,
     });
     this.planState$.next(updatedState);
   }

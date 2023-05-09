@@ -574,7 +574,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Whether the currently selected map has a data layer active. */
   mapHasDataLayer(): Observable<boolean> {
     return this.selectedMap$.pipe(
-      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.filepath)
+      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
     );
   }
 

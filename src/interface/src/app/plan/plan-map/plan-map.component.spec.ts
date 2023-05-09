@@ -25,7 +25,7 @@ describe('PlanMapComponent', () => {
     currentPlanId: null,
     currentConfigId: null,
     currentScenarioId: null,
-    mapConditionFilepath: null,
+    mapConditionLayer: null,
     mapShapes: null,
     panelExpanded: true,
   };
@@ -103,7 +103,7 @@ describe('PlanMapComponent', () => {
 
     fakePlanState$.next({
       ...emptyPlanState,
-      mapConditionFilepath: 'filepath',
+      mapConditionLayer: 'layer',
     });
 
     expect(component.tileLayer).toBeDefined();
