@@ -679,7 +679,6 @@ export class MapManager {
 
     map.dataLayerRef?.remove();
 
-    //let filepath = map.config.dataLayerConfig.filepath;
     let layer = map.config.dataLayerConfig.layer;
     if (layer?.length === 0 || !layer) return;
 

@@ -12,7 +12,6 @@ export interface ConditionsConfig extends DataLayerConfig {
 
 export interface ConditionsMetadata {
   data_download_link?: string;
-  
   data_provider?: string;
   data_year?: string;
   reference_link?: string;
