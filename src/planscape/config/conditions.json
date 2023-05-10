@@ -9,17 +9,17 @@
       "pillars": [
         {
           "pillar_name": "air_quality",
-          "filepath": "sierra_nevada/air_quality",
-          "normalized_layer":  "sierra-nevada:airQualityTranslate_airQuality",
-          "normalized_data_download_path": "sierra-nevada/airQualityTranslate/airQuality.tif",
-          "future_layer": "sierra-nevada:airQualityTranslate_airQuality030_future",
-          "future_data_download_path": "sierra-nevada/airQualityTranslate/airQuality030_future.tif",
-          "display_name": "Air Quality",
           "display": true,
+          "display_name": "Air Quality",
+          "filepath": "sierra_nevada/air_quality",
+          "future_data_download_path": "sierra-nevada/airQualityTranslate/airQuality030_future.tif",
+          "future_layer": "sierra-nevada:airQualityTranslate_airQuality030_future",
+          "normalized_data_download_path": "sierra-nevada/airQualityTranslate/airQuality.tif",
+          "normalized_layer":  "sierra-nevada:airQualityTranslate_airQuality",
           "elements": [
             {
-	      "element_name": "particulate_matter",
-	      "display": true,
+              "element_name": "particulate_matter",
+              "display": true,
               "filepath": "sierra_nevada/air_quality/particulate_matter",
               "normalized_layer": "sierra-nevada:airQualityTranslate_partMatter",
               "normalized_data_download_path": "sierra-nevada/airQualityTranslate/partMatter.tif",
@@ -69,18 +69,19 @@
         },
         {
           "pillar_name": "biodiversity",
-          "normalized_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv",
-          "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/bioDiverConserv.tif",
-          "future_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv030_future",
-          "filepath": "sierra_nevada/biodiversity",
-          "display_name": "Biodiversity",
-          "operation": "MEAN",
           "display": true,
+          "display_name": "Biodiversity",
+          "filepath": "sierra_nevada/biodiversity",
+          "future_data_download_path": "sierra-nevada/bioDiverConservTranslate/bioDiverConserv030_future.tif",
+          "future_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv030_future",
+          "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/bioDiverConserv.tif",
+          "normalized_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv",
+          "operation": "MEAN",
           "elements": [
             {
               "element_name": "community_integrity",
-	            "display": true,
-	            "filepath": "sierra_nevada/biodiversity/community_integrity",
+              "display": true,
+              "filepath": "sierra_nevada/biodiversity/community_integrity",
               "normalized_layer": "sierra-nevada:bioDiverConservTranslate_commIntegrity",
               "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/commIntegrity.tif",
               "display_name": "Community Integrity",
@@ -108,8 +109,8 @@
             },
             {
               "element_name": "focal_species",
-	            "display": true,
-	            "filepath": "sierra_nevada/biodiversity/focal_species",
+              "display": true,
+              "filepath": "sierra_nevada/biodiversity/focal_species",
               "normalized_layer": "sierra-nevada:bioDiverConservTranslate_focalSpecies",
               "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/focalSpecies.tif",
               "display_name": "Focal Species",
@@ -174,8 +175,8 @@
             },
             {
               "element_name": "species_diversity",
-	            "display": true,
-	            "filepath": "sierra_nevada/biodiversity/species_diversity",
+              "display": true,
+              "filepath": "sierra_nevada/biodiversity/species_diversity",
               "normalized_layer": "sierra-nevada:bioDiverConservTranslate_speciesDiversity",
               "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/speciesDiversity.tif",
               "display_name": "Species Diversity",
@@ -224,18 +225,19 @@
         },
         {
           "pillar_name": "carbon_sequestration",
-          "filepath": "sierra_nevada/carbon_sequestration",
-          "normalized_layer": "sierra-nevada:carbonSeqTranslate_carbonSeq",
-          "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/carbonSeq.tif",
-          "future_layer": "sierra-nevada:carbonSeqTranslate_carbon030_future",
-          "display_name": "Carbon Sequestration",
-          "operation": "MEAN",
           "display": true,
+          "display_name": "Carbon Sequestration",
+          "filepath": "sierra_nevada/carbon_sequestration",
+          "future_data_download_path": "sierra-nevada/carbonSeqTranslate/carbon030_future.tif",
+          "future_layer": "sierra-nevada:carbonSeqTranslate_carbon030_future",
+          "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/carbonSeq.tif",
+          "normalized_layer": "sierra-nevada:carbonSeqTranslate_carbonSeq",
+          "operation": "MEAN",
           "elements": [
             {
               "element_name": "stability",
-	            "display": true,
-	            "display_name": "Stability",
+              "display": true,
+              "display_name": "Stability",
               "filepath": "sierra_nevada/carbon_sequestration/stability",
               "normalized_layer": "sierra-nevada:carbonSeqTranslate_Tier2_F3_AbovegroundLiveTreeCarbon_2021_scored",
               "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/Tier2/F3_AbovegroundLiveTreeCarbon_2021_scored.tif",
@@ -263,8 +265,8 @@
             },
             {
               "element_name": "storage",
-	            "display": true,
-	            "display_name": "Storage",
+              "display": true,
+              "display_name": "Storage",
               "filepath": "sierra_nevada/carbon_sequestration/storage",
               "normalized_layer": "sierra-nevada:carbonSeqTranslate_storage",
               "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/storage.tif",
@@ -294,17 +296,18 @@
         },
         {
           "pillar_name": "economic_diversity",
-          "filepath": "sierra_nevada/economic_diversity",
-          "normalized_layer": "sierra-nevada:econDiversityTranslate_econDiver",
-          "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/econDiver.tif",
-          "future_layer": "sierra-nevada:econDiversityTranslate_econDiversity030_future",
-          "display_name": "Economic Diversity",
           "display": true,
+          "display_name": "Economic Diversity",
+          "filepath": "sierra_nevada/economic_diversity",
+          "future_layer": "sierra-nevada:econDiversityTranslate_econDiversity030_future",
+          "future_data_download_path": "sierra-nevada/econDiversityTranslate/econDiversity030_future.tif",
+          "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/econDiver.tif",
+          "normalized_layer": "sierra-nevada:econDiversityTranslate_econDiver",
           "elements": [
             {
-	            "element_name": "wood_product_industry",
+              "element_name": "wood_product_industry",
               "display": true,
-	            "display_name": "Wood Product Industry",
+              "display_name": "Wood Product Industry",
               "filepath": "econDiversityTranslate/woodProdInd",
               "normalized_layer": "sierra-nevada:econDiversityTranslate_woodProdInd",
               "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/woodProdInd.tif",
@@ -344,19 +347,20 @@
                   "min_value": 0,
                   "max_value": 120,
                   "data_units": "dry weight tons/acre"
-                }		  
+                }  
               ]
             }
           ]
         },
         {
           "pillar_name": "fire_adapted_communities",
-          "filepath": "sierra_nevada/fire_adapted_communities",
-          "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm",
-          "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm.tif",
-          "future_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm030_future",
-          "display_name": "Fire-Adapted Communities",
           "display": true,
+          "display_name": "Fire-Adapted Communities",
+          "filepath": "sierra_nevada/fire_adapted_communities",
+          "future_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm030_future.tif",
+          "future_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm030_future",
+          "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm.tif", 
+          "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm",
           "operation": "MEAN",
           "elements": [
             {
@@ -412,13 +416,14 @@
         },
         {
           "pillar_name": "fire_dynamics",
-          "filepath": "sierra_nevada/fire_dynamics",
-          "normalized_layer": "sierra-nevada:fireDynamicsTranslate_fireDynamics",
-          "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/fireDynamics.tif",
-          "future_layer": "sierra-nevada:fireDynamicsTranslate_fireDynamics030_future",
-          "display_name": "Fire Dynamics",
-          "operation": "MEAN",
           "display": true,
+          "display_name": "Fire Dynamics",
+          "filepath": "sierra_nevada/fire_dynamics",
+          "future_data_download_path": "sierra-nevada/fireDynamicsTranslate/fireDynamics030_future.tif",
+          "future_layer": "sierra-nevada:fireDynamicsTranslate_fireDynamics030_future",
+          "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/fireDynamics.tif",
+          "normalized_layer": "sierra-nevada:fireDynamicsTranslate_fireDynamics",
+          "operation": "MEAN",
           "elements": [
             {
               "element_name": "functional_fire",
@@ -490,13 +495,14 @@
         },
         {
           "pillar_name": "forest_resilience",
-          "filepath": "sierra_nevada/forest_resilience",
-          "normalized_layer": "sierra-nevada:forestShrubResilTranslate_forestShrubResil",
-          "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/forestShrubResil.tif",
-          "future_layer": "sierra-nevada:forestShrubResilTranslate_forestResil030_future",
-          "display_name": "Forest Resilience",
-          "operation": "MEAN",
           "display": true,
+          "display_name": "Forest Resilience",
+          "filepath": "sierra_nevada/forest_resilience",
+          "future_data_download_path": "sierra-nevada/forestShrubResilTranslate/forestResil030_future.tif",
+          "future_layer": "sierra-nevada:forestShrubResilTranslate_forestResil030_future",
+          "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/forestShrubResil.tif",
+          "normalized_layer": "sierra-nevada:forestShrubResilTranslate_forestShrubResil",
+          "operation": "MEAN",
           "elements": [
             {
               "element_name": "forest_structure",
@@ -664,12 +670,13 @@
         },
         {
           "pillar_name": "social_cultural_wellbeing",
-          "filepath": "sierra_nevada/social_cultural_wellbeing",
-          "normalized_layer": "sierra-nevada:socialCulturalTranslate_socialCultural",
-          "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/socialCultural.tif",
-          "future_layer": "sierra-nevada:socialCulturalTranslate_socialCultural030_future",
-          "display_name": "Social and Cultural Wellbeing",
           "display": true,
+          "display_name": "Social and Cultural Wellbeing",
+          "filepath": "sierra_nevada/social_cultural_wellbeing",
+          "future_data_download_path": "sierra-nevada/socialCulturalTranslate/socialCultural030_future.tif",
+          "future_layer": "sierra-nevada:socialCulturalTranslate_socialCultural030_future",
+          "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/socialCultural.tif",
+          "normalized_layer": "sierra-nevada:socialCulturalTranslate_socialCultural",
           "elements": [
             {
               "element_name": "environmental_justice",
@@ -681,7 +688,7 @@
               "metrics": [
                 {
                   "metric_name": "housing_burden",
-		              "display_name": "Housing Burden",   
+                  "display_name": "Housing Burden",   
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
                   "raw_layer": "sierra-nevada:socialCultural_Tier1_HousingBurdenPctl_2021_30m",
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier1/HousingBurdenPctl_2021_30m.tif",
@@ -699,7 +706,7 @@
                 },
                 {
                   "metric_name": "unemployment",
-		              "display_name": "Unemployment",
+                  "display_name": "Unemployment",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/UnemploymentPctl_2021_300m",
                   "raw_layer": "sierra-nevada:socialCultural_Tier1_UnemploymentPctl_2021_30m",
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier1/UnemploymentPctl_2021_30m.tif",
@@ -717,7 +724,7 @@
                 },
                 {
                   "metric_name": "low_income",
-		              "display_name": "Low Income",
+                  "display_name": "Low Income",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/LowIncome_CCI_2021_300m",
                   "raw_layer": "sierra-nevada:socialCultural_Tier2_LowIncome200pctPov_2020",
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier2/LowIncome200pctPov_2020.tif",
@@ -739,12 +746,13 @@
         },
         {
           "pillar_name": "water_security",
-          "filepath": "sierra_nevada/water_security",
-          "normalized_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity",
-          "normalized_data_download_path": "sierra-nevada/waterSecurityTranslate/waterSecurity.tif",
-          "future_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity030_future",
-          "display_name": "Water Security",
           "display": true,
+          "display_name": "Water Security",
+          "filepath": "sierra_nevada/water_security",
+          "future_data_download_path": "sierra-nevada/waterSecurityTranslate/waterSecurity030_future.tif",
+          "future_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity030_future",
+          "normalized_data_download_path": "sierra-nevada/waterSecurityTranslate/waterSecurity.tif",
+          "normalized_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity",
           "elements": [
             {
               "element_name": "quantity",
@@ -774,7 +782,7 @@
                 },
                 {
                   "metric_name": "runoff",
-		              "display_name": "Average Runoff",
+                  "display_name": "Average Runoff",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_RunoffMean_300m",
                   "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_RunoffMean_30m",
                   "raw_data_download_path": "sierra-nevada/waterSecurity/Tier1/CECS_RunoffMean_30m.tif",
@@ -796,12 +804,13 @@
         },
         {
           "pillar_name": "wetland_integrity",
-          "filepath": "sierra_nevada/wetland_integrity",
-          "normalized_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg",
-          "normalized_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg.tif", 
-          "future_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg030_future",
-          "display_name": "Wetland Integrity",
           "display": true,
+          "display_name": "Wetland Integrity",
+          "filepath": "sierra_nevada/wetland_integrity",
+          "normalized_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg.tif", 
+          "normalized_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg",
+          "future_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg030_future",
+          "future_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg030_future.tif",
           "elements": [
             {
               "element_name": "hydrologic",
@@ -813,7 +822,7 @@
               "metrics": [
                 {
                   "metric_name": "meadow_sensitivity_index",
-		              "display_name": "Meadow Sensitivity Index",
+                  "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
                   "raw_layer": "sierra-nevada:wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
                   "raw_data_download_path": "sierra-nevada/wetlangInteg/Tier2/MeadowSensNDWI_2019_30m.tif", 
