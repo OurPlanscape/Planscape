@@ -222,8 +222,7 @@ export class MapControlPanelComponent implements OnInit {
 	      BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.future_data_download_path :
               pillar.data_download_link,
             layer: pillar.future_layer,
-            min_value: -1,
-            max_value: 1,
+            normalized: true,
             children: []
 	  };
         })
