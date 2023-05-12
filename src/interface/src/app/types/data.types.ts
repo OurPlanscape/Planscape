@@ -24,10 +24,10 @@ export interface ConditionsMetadata {
 export interface DataLayerConfig extends ConditionsMetadata {
   display_name?: string;
   filepath?: string;
+  normalized_data_download_path?: string;
   layer?: string;
   raw_layer?: string;
   normalized_layer?: string;
-  future_layer?: string;
   colormap?: string;
   normalized?: boolean;
   opacity?: number;
@@ -42,13 +42,17 @@ export interface ElementConfig extends DataLayerConfig {
 export interface MetricConfig extends DataLayerConfig {
   metric_name: string;
   data_units?: string;
+  raw_data_download_path?: string;
 }
 
 export interface PillarConfig extends DataLayerConfig {
   display?: boolean;
   pillar_name?: string;
   elements?: ElementConfig[];
+  future_layer?: string;
+  future_data_download_path?: string;
 }
+
 
 export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
   boundary_name: '',

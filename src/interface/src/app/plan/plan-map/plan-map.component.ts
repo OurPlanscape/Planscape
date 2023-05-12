@@ -43,7 +43,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     takeUntil(this.destroy$)
   );
 
-  private filepath: string = '';
+  private layer: string = '';
   private shapes: any | null = null;
 
   constructor(private planService: PlanService, private router: Router) {}
@@ -52,9 +52,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        if (state.mapConditionFilepath !== this.filepath) {
-          this.filepath = state.mapConditionFilepath ?? '';
-          this.setCondition(state.mapConditionFilepath ?? '');
+        if (state.mapConditionLayer !== this.layer) {
+          this.layer = state.mapConditionLayer ?? '';
+          this.setCondition(state.mapConditionLayer ?? '');
         }
         if (state.mapShapes !== this.shapes) {
           this.shapes = state.mapShapes;

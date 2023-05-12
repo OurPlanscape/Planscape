@@ -10,12 +10,13 @@ export class LayerInfoCardComponent {
   @Input() dataLayerConfig?: DataLayerConfig | null;
 
   hasDataProvider(): boolean {
-    return (
-      !!this.dataLayerConfig?.data_provider &&
-      !!this.dataLayerConfig.data_download_link
-    );
+    return !!this.dataLayerConfig?.data_provider;
   }
 
+  hasDownloadLink(): boolean {
+    return !!this.dataLayerConfig?.data_download_link;
+  }
+  
   hasMinMax(): boolean {
     return (
       this.dataLayerConfig?.min_value != undefined &&

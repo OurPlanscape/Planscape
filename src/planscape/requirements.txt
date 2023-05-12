@@ -21,3 +21,4 @@ scikit-learn
 boto3
 pytz
 scipy
+sentry-sdk
