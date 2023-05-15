@@ -30,7 +30,18 @@
   <span class="spacer"></span>
 
   <!-- Account Name & Button -->
+  <a
+    mat-icon-button
+    routerLink="/help"
+    class="nav-link"
+    target="_blank" 
+    rel="noopener noreferrer">
+    <mat-icon class="material-symbols-outlined">
+      {{"help_outline"}}
+    </mat-icon>
+  </a>
   <span class="username">{{ displayName }}</span>
+  
   <button
     mat-icon-button
     data-testid="account-button"
