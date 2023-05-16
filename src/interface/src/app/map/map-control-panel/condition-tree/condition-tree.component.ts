@@ -10,6 +10,7 @@ import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG } from 'src/app/types';
 export interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
   disableSelect?: boolean; // Node should not include a radio button
+  disableInfoCard?: boolean; // Node should not have an info button
 }
 
 interface ConditionFlatNode {

@@ -159,7 +159,7 @@
         <app-condition-tree
           #conditionTreeRaw
           [conditionsData$]="conditionDataRaw$"
-          [header]="'Current Condition'"
+          [header]="'Current Condition (Raw)'"
           [map]="map"
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
         </app-condition-tree>
@@ -168,7 +168,7 @@
         <app-condition-tree
           #conditionTreeNormalized
           [conditionsData$]="conditionDataNormalized$"
-          [header]="'Current Condition (Normalized)'"
+          [header]="'Current Condition'"
           [map]="map"
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
         </app-condition-tree>
