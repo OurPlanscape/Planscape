@@ -23,6 +23,7 @@ export interface ConditionsMetadata {
 
 export interface DataLayerConfig extends ConditionsMetadata {
   display_name?: string;
+  legend_name?: string;
   filepath?: string;
   normalized_data_download_path?: string;
   layer?: string;
