@@ -53,9 +53,16 @@ const routes: Routes = [
         component: RedirectGuard,
         data: {
           externalUrl: 'https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAANAAfjhbitUNENORTEyVzQzT0VaTDA3NzIzUk1OVlpaWS4u'
-        }
-     },
-
+        },
+      },
+      {
+        path: 'help',
+        canActivate: [RedirectGuard],
+        component: RedirectGuard,
+        data: {
+          externalUrl: 'https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide'
+        },
+      },
       {
         path: 'plan/:id',
         title: 'Plan Details',
