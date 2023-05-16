@@ -29,6 +29,7 @@
             </span>
           </div>
           <button mat-icon-button
+            *ngIf="!node.condition.disableInfoCard"
             class="info-button"
             [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
             (menuClosed)="node.infoMenuOpen = false">
@@ -57,7 +58,9 @@
               {{node.condition.display_name}}
             </span>
           </div>
+          <!-- TODO: remove disableInfoCard if it is no longer needed -->
           <button mat-icon-button
+            *ngIf="!node.condition.disableInfoCard"
             class="info-button"
             [matMenuTriggerFor]="popoverMenu" (menuOpened)="node.infoMenuOpen = true"
             (menuClosed)="node.infoMenuOpen = false">
