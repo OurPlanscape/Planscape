@@ -56,7 +56,6 @@ export class MapControlPanelComponent implements OnInit {
   @Output() selectMap = new EventEmitter<number>();
   @Output() toggleExistingProjectsLayer = new EventEmitter<Map>();
 
-
   readonly baseLayerTypes: number[] = [
     BaseLayerType.Road,
     BaseLayerType.Terrain,
@@ -146,7 +145,7 @@ export class MapControlPanelComponent implements OnInit {
               ...pillar,
               disableSelect: true,
               disableInfoCard: true,
-	      legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+              legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
               children: pillar.elements
                 ?.filter((element) => element.display)
                 .map((element): ConditionsNode => {
@@ -159,7 +158,7 @@ export class MapControlPanelComponent implements OnInit {
                       return {
                         ...metric,
                         layer:metric.raw_layer,
-			legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                        legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
                         data_download_link: metric.raw_data_download_path ?
 	                      BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
                         metric.data_download_link,
