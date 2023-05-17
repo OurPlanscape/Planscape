@@ -4,7 +4,8 @@
     <h1><b>Map {{selectedMap?.name}}</b> Legend</h1>
 
     <div class="legend-box">
-      <h3>Current Condition {{selectedMap?.config?.dataLayerConfig?.normalized ? '(Normalized)' : ''}}</h3>
+      <!-- Name of the kind of data -->
+      <h3>{{selectedMap?.config?.dataLayerConfig?.legend_name}}</h3>
 
       <div class="legend-title">
         <h2>{{selectedMap?.config?.dataLayerConfig?.display_name}}</h2>
