@@ -22,7 +22,8 @@
       <app-legend [legend]="getSelectedLegend()"></app-legend>
 
       <!-- Opacity controls for the currently shown data layer -->
-      <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity">
+      <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity"
+			  label="Transparency">
       </app-opacity-slider>
     </div>
 
