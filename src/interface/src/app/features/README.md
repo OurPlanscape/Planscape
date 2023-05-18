@@ -2,7 +2,7 @@ Feature flags are set in features.json and will hide certain features if the cor
 
 features.json should be gitignored in the future once prod build is rolled out.
 
-By default, set the values of new fields to match what prod should be so that we do not risk releasing something unexpected.
+By default, set the values of new fields to match what prod should be so that we do not risk releasing something unexpected.  The exception is "login", which is left on so that automated tests run properly.
 
 login: This flag will hide the login/account signup buttons and will disable any features that require login to use (e.g planning) when set to false. When login is disabled it also replaces the plans on the homepage with a message explaining that some buttons and features are disabled.  
 

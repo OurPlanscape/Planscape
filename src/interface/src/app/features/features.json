@@ -1,5 +1,5 @@
 {
-  "login": false,
+  "login": true,
   "show_socal": false,
   "testFalseFeature": false,
   "testTrueFeature": true,
