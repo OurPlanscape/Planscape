@@ -198,7 +198,7 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 1,
-                  "max_value": 7,
+                  "max_value": 93,
                   "data_units": "Number of species"
                 },
                 {
