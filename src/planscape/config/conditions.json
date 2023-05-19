@@ -5,6 +5,7 @@
     {
       "region_name": "sierra_cascade_inyo",
       "filepath": "sierra_nevada",
+      "region_geoserver_name": "sierra-nevada",
       "display_name": "Sierra Nevada",
       "pillars": [
         {

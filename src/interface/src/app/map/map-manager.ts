@@ -688,7 +688,7 @@ export class MapManager {
     }
 
     map.dataLayerRef = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT,
+      BackendConstants.TILES_END_POINT + map.config.dataLayerConfig.region_geoserver_name + "/wms?" ,
       {
         layers: layer,
         minZoom: 7,
