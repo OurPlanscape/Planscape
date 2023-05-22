@@ -199,7 +199,7 @@
                   "data_year": "2021",
                   "reference_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/RRK_Metric_Dictionary_v2.pdf#page=25",
                   "min_value": 1,
-                  "max_value": 7,
+                  "max_value": 93,
                   "data_units": "Number of species"
                 },
                 {
@@ -573,7 +573,7 @@
                   "metric_name": "max_sdi",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
                   "raw_layer": "sierra-nevada:forestShrubResil_Tier2_proportion_of_SDI_33_Max_30m", 
-                  "raw_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/BASATOT_2021_scored.tif",
+                  "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/proportion_of_SDI_33_Max_30m.tif",
                   "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_proportion_of_SDI_33_Max_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/proportion_of_SDI_33_Max_scored.tif",
                   "display_name": "Max SDI",
