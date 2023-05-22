@@ -23,7 +23,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   toggleEvent = new EventEmitter<Event>();
 
   displayName: string = '';
-  
+
   readonly color = 'primary';
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
