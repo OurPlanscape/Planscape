@@ -1,3 +1,5 @@
+import features from '../features/features.json'
+
 export enum Region {
   SIERRA_NEVADA = 'Sierra Nevada',
   SOUTHERN_CALIFORNIA = 'Southern California',
@@ -26,6 +28,7 @@ export const regionOptions = regions.map((region) => {
   return {
     type: region,
     name: region,
-    available: availableRegions.has(region),
+    available: new Set([...availableRegions,
+      features.show_socal ? Region.SOUTHERN_CALIFORNIA : null]).has(region),
   }
 });
