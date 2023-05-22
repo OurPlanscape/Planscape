@@ -20,7 +20,7 @@ export class RegionSelectionComponent implements OnInit {
   hasPlans: boolean = false;
   loggedIn$ = this.authService.isLoggedIn$;
   readonly regionOptions: RegionOption[] = regionOptions;
-  login_enabled = features.login;
+  socal_enabled = features.show_socal;
   constructor(
     private authService: AuthService,
     private planService: PlanService,
