@@ -4,6 +4,8 @@ import { take } from 'rxjs';
 
 import { AuthService, PlanService, SessionService } from '../../services';
 import { RegionOption, regionOptions } from '../../types';
+import features from '../../features/features.json'
+
 
 /**
  * The main region selection view component.
@@ -18,7 +20,7 @@ export class RegionSelectionComponent implements OnInit {
   hasPlans: boolean = false;
   loggedIn$ = this.authService.isLoggedIn$;
   readonly regionOptions: RegionOption[] = regionOptions;
-
+  login_enabled = features.login;
   constructor(
     private authService: AuthService,
     private planService: PlanService,

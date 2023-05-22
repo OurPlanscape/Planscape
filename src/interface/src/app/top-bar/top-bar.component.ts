@@ -12,6 +12,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService, SessionService } from '../services';
 import { Region, RegionOption, regionOptions } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
+import features from '../features/features.json'
+
 
 @Component({
   selector: 'top-bar',
@@ -23,7 +25,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   toggleEvent = new EventEmitter<Event>();
 
   displayName: string = '';
-
+  login_enabled = features.login;
   readonly color = 'primary';
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
