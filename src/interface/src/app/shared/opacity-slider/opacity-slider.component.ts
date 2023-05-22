@@ -10,6 +10,7 @@ import { filter } from 'rxjs/operators';
 })
 export class OpacitySliderComponent implements OnInit, OnChanges {
   @Input() opacity: number | null | undefined = FrontendConstants.MAP_DATA_LAYER_OPACITY;
+  @Input() label: string | null = "";
   @Output() change = new EventEmitter<number>();
 
   opacityPercentage: number = FrontendConstants.MAP_DATA_LAYER_OPACITY * 100;
