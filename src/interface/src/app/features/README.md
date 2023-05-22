@@ -1,5 +1,5 @@
 # Features.json
-The features.json flag is needed to enable or disable certain features that are
+The features.json file is needed to enable or disable certain features that are
 under development or newly released.  You should add a features.json file (see
 below) in this directory before running angular.  The file is listed in the
 toplevel .gitignore so that it does not get overwritten with pulls.
