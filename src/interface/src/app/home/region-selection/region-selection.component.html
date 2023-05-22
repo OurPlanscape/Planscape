@@ -1,8 +1,8 @@
 <div class="center-block">
   <!-- Content text -->
   <section class="content-section">
-    <span *ngIf="!hasPlans || !(loggedIn$ | async)">Welcome to Planscape!</span>
-    Choose a region to explore
+    <span *ngIf="(!hasPlans || !(loggedIn$ | async)) && login_enabled">Welcome to Planscape! <br>  Choose a region to explore</span>
+    <span *ngIf="!login_enabled">Welcome to Planscape early preview! <br> Click Sierra Nevada to explore</span>
   </section>
 
   <!-- The region buttons -->
