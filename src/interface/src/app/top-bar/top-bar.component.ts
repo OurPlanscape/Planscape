@@ -13,7 +13,6 @@ import { AuthService, SessionService } from '../services';
 import { Region, RegionOption, regionOptions } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 
-
 @Component({
   selector: 'top-bar',
   templateUrl: './top-bar.component.html',
@@ -24,6 +23,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   toggleEvent = new EventEmitter<Event>();
 
   displayName: string = '';
+  
   readonly color = 'primary';
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
