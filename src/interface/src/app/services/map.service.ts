@@ -1,14 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, map, Observable, take } from 'rxjs';
+import { BehaviorSubject, Subject, EMPTY, map, switchMap, Observable, take, takeUntil } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
+import {SessionService} from '../services';
 import {
   BoundaryConfig,
   ColormapConfig,
   ConditionsConfig,
   Region,
 } from '../types';
+
 
 /** A map of Region to static assets for that region. */
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {
@@ -35,8 +37,16 @@ export class MapService {
     null
   );
   readonly conditionNameToDisplayNameMap$ = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
-
-  constructor(private http: HttpClient) {
+  readonly selectedRegion$ = new BehaviorSubject<Region | null>(null);
+  private readonly destroy$ = new Subject<void>();
+  constructor(private http: HttpClient, private sessionService: SessionService) {
+    
+    this.sessionService
+    .region$
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((region: Region | null) => {
+      this.selectedRegion$.next(region);
+    });
     this.http
       .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/boundary')
       .pipe(take(1))
@@ -46,7 +56,7 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         BackendConstants.END_POINT +
-          '/conditions/config/?region_name=sierra_cascade_inyo'
+          '/conditions/config/?region_name=' + `${this.regionToString(this.selectedRegion$.getValue())}`// `${this.regionToString(this.selectedRegion$.subscribe(region: Region => this.selectedRegion$.next(region);))}`//`${this.selectedRegion$.pipe(switchMap((region) => this.regionToString(region)))}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -78,7 +88,7 @@ export class MapService {
   }
 
   /* Note: these are the names used by the configurations and backend */
-  regionToString(region: Region): string {
+  regionToString(region: Region | null): string {
     switch (region) {
       case Region.SIERRA_NEVADA:
         return 'sierra_cascade_inyo';
@@ -88,6 +98,8 @@ export class MapService {
         return 'north_coast_inland';
       case Region.SOUTHERN_CALIFORNIA:
         return 'southern_california';
+      case null:
+        return '';
     }
   }
 
