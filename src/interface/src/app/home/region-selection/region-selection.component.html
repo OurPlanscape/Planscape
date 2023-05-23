@@ -1,8 +1,11 @@
 <div class="center-block">
   <!-- Content text -->
   <section class="content-section">
-    <span *ngIf="!hasPlans || !(loggedIn$ | async)">Welcome to Planscape!</span>
-    Choose a region to explore
+    <span *ngIf="!hasPlans || !(loggedIn$ | async)">Welcome to Planscape preview! </span>
+    <span *ngIf="socal_enabled; else socalNotEnabled" >Choose a region to explore </span>
+    <ng-template #socalNotEnabled>
+      Click Sierra Nevada to explore 
+    </ng-template>
   </section>
 
   <!-- The region buttons -->
