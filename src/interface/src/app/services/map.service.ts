@@ -56,7 +56,7 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         BackendConstants.END_POINT +
-          '/conditions/config/?region_name=' + `${this.regionToString(this.selectedRegion$.getValue())}`// `${this.regionToString(this.selectedRegion$.subscribe(region: Region => this.selectedRegion$.next(region);))}`//`${this.selectedRegion$.pipe(switchMap((region) => this.regionToString(region)))}`
+          '/conditions/config/?region_name=' + `${this.regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
