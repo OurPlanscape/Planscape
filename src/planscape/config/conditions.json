@@ -3,6 +3,34 @@
   "__comment2": "TODO: update metrics and element entries to reflect 30m when available",
   "regions": [
     {
+      "region_name": "southern_california",
+      "display_name": "Southern California",
+      "pillars": [
+        {
+          "pillar_name": "fire_adapted_communities",
+	  "display": true,
+	  "display_name": "Fire Adapted Communities",
+	  "elements": [
+	    {
+	      "element_name": "hazard",
+	      "display": true,
+	      "display_name": "Hazard",
+              "metrics": [
+	        {
+		  "metric_name": "structure_exposure_score",
+		  "raw_layer": "southern-california:StructureExposureScore_WUI_2022",
+		  "raw_data_download_path": "southern-california/fireAdaptedCommunities/Tier2/StructureExposureScore_WUI_2022.tif",
+		  "display_name": "Structure Exposure Score",
+		  "source": "Southern California Resource Kit",
+		  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php"
+		}
+	      ]
+	    }
+	  ]
+	}
+      ]
+    },
+    {
       "region_name": "sierra_cascade_inyo",
       "filepath": "sierra_nevada",
       "display_name": "Sierra Nevada",

@@ -1,6 +1,6 @@
 {
   "login": true,
-  "show_socal": false,
+  "show_socal": true,
   "testFalseFeature": false,
   "testTrueFeature": true,
   "top_percent_slider": true,
