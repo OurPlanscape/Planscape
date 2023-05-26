@@ -47,7 +47,7 @@
         },
         {
             "boundary_name": "USFS",
-            "display_name": "US Forests",
+            "display_name": "National Forests",
             "region_name": "none",
             "filepath": "California_USFS.shp",
             "source_srs": 4269,
