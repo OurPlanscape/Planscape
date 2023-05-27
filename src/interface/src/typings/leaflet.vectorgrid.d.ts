@@ -4,6 +4,8 @@ declare module "leaflet" {
   namespace vectorGrid {
       export function slicer(data: any, options?: any): L.Layer;
       export function protobuf(data: string, VectorTileOptions?: any): L.Layer;
+      export function  setFeatureStyle(id: Number, layerStyle: L.PathOptions): any;
+      export function resetFeatureStyle(id: Number): any;
   }
 }
 

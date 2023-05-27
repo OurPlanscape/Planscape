@@ -19,7 +19,7 @@ import {
   take,
   takeUntil,
 } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { filter} from 'rxjs/operators';
 import * as shp from 'shpjs';
 
 import {
@@ -326,13 +326,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private getBoundaryLayerGeoJson(
-    boundaryName: string
-  ): Observable<GeoJSON.GeoJSON> {
-    return this.selectedRegion$.pipe(
-      switchMap((region) =>
-        this.mapService.getBoundaryShapes(boundaryName, region)
-      )
-    );
+    vectorName: string, shapeName: string
+  ): Observable<L.Layer> {
+    return this.mapService.getBoundaryShapes(vectorName, shapeName);
   }
 
   /** If the user is signed in, configures and opens the Create Plan dialog.

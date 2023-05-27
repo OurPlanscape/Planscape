@@ -108,11 +108,13 @@
               </mat-radio-button>
             </div>
             <div *ngFor="let boundary of boundaryConfig" class="layer-control-container">
-              <mat-radio-button [value]="boundary">
+              <ng-container *ngIf="boundary.display_name!='Wildfire Task Force Regions'">
+              <mat-radio-button [value]="boundary" >
                 {{ boundary.display_name ? boundary.display_name : boundary.boundary_name }}
               </mat-radio-button>
               <mat-spinner [diameter]="24" *ngIf="loadingIndicators[boundary.boundary_name]">
               </mat-spinner>
+            </ng-container>
             </div>
           </mat-radio-group>
         </mat-expansion-panel>

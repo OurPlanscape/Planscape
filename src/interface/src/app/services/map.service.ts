@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, map, Observable, take } from 'rxjs';
+import { BehaviorSubject, EMPTY, map, Observable, take, of } from 'rxjs';
+import * as L from 'leaflet';
+import "leaflet.vectorgrid";
 
 import { BackendConstants } from '../backend-constants';
 import {
@@ -38,7 +40,7 @@ export class MapService {
 
   constructor(private http: HttpClient) {
     this.http
-      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/boundary')
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundarys/config/?region_name=sierra_cascade_inyo')
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
         this.boundaryConfig$.next(config);
@@ -65,18 +67,6 @@ export class MapService {
     return this.http.get<GeoJSON.GeoJSON>(path['boundary']);
   }
 
-  /**
-   * (For reference, currently unused)
-   * Gets boundaries for four regions: Sierra Nevada, Southern California,
-   * Central Coast, Northern California.
-   * */
-  getRegionBoundaries(): Observable<GeoJSON.GeoJSON> {
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT +
-        '/boundary/boundary_details/?boundary_name=task_force_regions'
-    );
-  }
-
   /* Note: these are the names used by the configurations and backend */
   regionToString(region: Region): string {
     switch (region) {
@@ -94,21 +84,32 @@ export class MapService {
   /** Get shapes for a boundary from assets, if possible.  Fall back to the
    *  REST server, clipping the shapes to the region if the region is non-null. */
   getBoundaryShapes(
-    boundaryName: string,
-    region: Region | null
-  ): Observable<GeoJSON.GeoJSON> {
-    if (region != null) {
-      // Try to get the shapes from the assets.
-      const regionAssets = regionToGeojsonMap[region];
-      if (regionAssets && regionAssets[boundaryName]) {
-        return this.http.get<GeoJSON.GeoJSON>(regionAssets[boundaryName]);
-      }
-    }
-    // Get the shapes from the REST server.
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT +
-        `/boundary/boundary_details/?boundary_name=${boundaryName}` +
-        (region == null ? '' : `&region_name=${this.regionToString(region)}`));
+    vectorName: string,
+    shapeName: string,
+    ):Observable<L.Layer> {
+      
+   var vector: Observable<L.Layer> = of(L.vectorGrid.protobuf(
+      "https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/" + `${vectorName}` + "@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
+      { vectorTileLayerStyles: {
+        [`${vectorName.split(":")[1]}`]: { // To set style value for every layer name (which is the value after '<region>:' in vectorName)
+          weight: 1,
+          fillOpacity: 0,
+          color: '#0000ff',
+          fill: true,
+        }
+      },
+        interactive: true,
+        zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
+        getFeatureId: function(f:any) {
+          return f.properties.OBJECTID;
+        },
+        maxZoom: 13,
+        }            
+      ))
+
+    return vector;
+
+
   }
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
