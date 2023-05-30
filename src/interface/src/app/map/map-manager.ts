@@ -93,7 +93,7 @@ export class MapManager {
       preferCanvas: false,
       zoomSnap: 0.8,
       zoomDelta: 1,
-      wheelPxPerZoomLevel: 50,
+      wheelPxPerZoomLevel: 200,
       zoomControl: false,
       pmIgnore: false,
     });
