@@ -16,6 +16,7 @@ import {
 import * as L from 'leaflet';
 import "leaflet.vectorgrid";
 
+// TODO Make more robust for new boundary vector tile 
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
   let service: MapService;
@@ -93,7 +94,7 @@ describe('MapService', () => {
       //   })
       //   });
       service
-        .getBoundaryShapes("sierra-nevada:vector_huc12", "Name")
+        .getBoundaryShapes("sierra-nevada:vector_huc12")
         .subscribe((res) => { 
           expect(res).toBeTruthy();
         })
