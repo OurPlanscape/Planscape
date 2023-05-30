@@ -28,11 +28,6 @@ def get_config(params: QueryDict):
         settings.BASE_DIR, 'config/boundary.json')
     boundary_config = json.load(open(config_path, 'r'))
 
-    # Extract specific region data from JSON
-    # for boundary in boundary_config['boundaries']:
-    #     if boundary_name == boundary['boundary_name']:
-    #         return boundary
-
     for region in boundary_config['regions']:
         if region_name == region['region_name']:
             return region['boundaries']

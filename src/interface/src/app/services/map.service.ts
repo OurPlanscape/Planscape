@@ -112,7 +112,6 @@ export class MapService {
    *  REST server, clipping the shapes to the region if the region is non-null. */
   getBoundaryShapes(
     vectorName: string,
-    shapeName: string,
     ):Observable<L.Layer> {
       
    var vector: Observable<L.Layer> = of(L.vectorGrid.protobuf(
