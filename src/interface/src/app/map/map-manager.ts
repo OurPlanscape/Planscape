@@ -91,9 +91,9 @@ export class MapManager {
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],
       preferCanvas: false,
-      zoomSnap: 0.75,
+      zoomSnap: 0.8,
       zoomDelta: 1,
-      wheelPxPerZoomLevel: 60,
+      wheelPxPerZoomLevel: 50,
       zoomControl: false,
       pmIgnore: false,
     });
@@ -655,6 +655,8 @@ export class MapManager {
         (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, hoverStyle);
       }).on('mouseout', function(e){
         (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, normalStyle);        
+      }).on('click', function(e){
+        console.log(e);
       });
   }
 
