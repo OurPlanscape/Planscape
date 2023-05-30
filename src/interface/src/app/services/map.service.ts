@@ -40,7 +40,7 @@ export class MapService {
 
   constructor(private http: HttpClient) {
     this.http
-      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundarys/config/?region_name=sierra_cascade_inyo')
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo')
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
         this.boundaryConfig$.next(config);
@@ -101,7 +101,7 @@ export class MapService {
         interactive: true,
         zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
         getFeatureId: function(f:any) {
-          return f.properties.OBJECTID;
+          return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
         },
         maxZoom: 13,
         }            
