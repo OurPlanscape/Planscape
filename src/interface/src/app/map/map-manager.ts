@@ -92,8 +92,10 @@ export class MapManager {
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],
       preferCanvas: false, // This needs to be set to false for boundary Tooltip to function
-      zoomSnap: 0.8,
-      zoomDelta: 1,
+      zoomSnap: 0.5,
+      bounceAtZoomLimits: false,
+      zoomDelta: 0.5,
+      zoomAnimation: true,
       wheelPxPerZoomLevel: 200,
       zoomControl: false,
       pmIgnore: false,
@@ -617,7 +619,6 @@ export class MapManager {
     const boundaryShapeName = map.config.boundaryLayerConfig.shape_name;
     
     if (boundaryLayerName !== '') {
-
       this.startLoadingLayerCallback(boundaryLayerName);
       getBoundaryLayerVectorCallback(boundaryVectorName)
         .pipe(take(1))
@@ -628,12 +629,10 @@ export class MapManager {
           map.boundaryLayerRef.addTo(map.instance!);
           }
         )
-      
     }
   }
 
   private boundaryLayer(boundary: L.Layer, shapeName: string, map: L.Map):  L.Layer {
-    
     const normalStyle: L.PathOptions = {
       weight: 1,
       color: '#0000ff',
