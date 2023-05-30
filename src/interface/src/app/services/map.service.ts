@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, EMPTY, map, Observable, take, of } from 'rxjs';
 import * as L from 'leaflet';
 import "leaflet.vectorgrid";
+import { BehaviorSubject, Subject, EMPTY, map, Observable, take, takeUntil, of } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
+import { SessionService } from '../services';
 import {
   BoundaryConfig,
   ColormapConfig,
@@ -38,9 +39,21 @@ export class MapService {
   );
   readonly conditionNameToDisplayNameMap$ = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
 
-  constructor(private http: HttpClient) {
+  readonly selectedRegion$ = new BehaviorSubject<Region | null>(null);
+
+  private readonly destroy$ = new Subject<void>();
+
+  constructor(private http: HttpClient, private sessionService: SessionService) {
+
+    this.sessionService
+      .region$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((region: Region | null) => {
+        this.selectedRegion$.next(region);
+      });
+
     this.http
-      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo')
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name='+ `${this.regionToString(this.selectedRegion$.getValue())}`)
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
         this.boundaryConfig$.next(config);
@@ -48,7 +61,7 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         BackendConstants.END_POINT +
-          '/conditions/config/?region_name=sierra_cascade_inyo'
+          '/conditions/config/?region_name=' + `${this.regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -67,8 +80,21 @@ export class MapService {
     return this.http.get<GeoJSON.GeoJSON>(path['boundary']);
   }
 
-  /* Note: these are the names used by the configurations and backend */
-  regionToString(region: Region): string {
+  /**
+   * (For reference, currently unused)
+   * Gets boundaries for four regions: Sierra Nevada, Southern California,
+   * Central Coast, Northern California.
+   * */
+  getRegionBoundaries(): Observable<GeoJSON.GeoJSON> {
+    return this.http.get<GeoJSON.GeoJSON>(
+      BackendConstants.END_POINT +
+        '/boundary/boundary_details/?boundary_name=task_force_regions'
+    );
+  }
+
+    /* Note: these are the names used by the configurations and backend
+   * Defaults to Sierra Nevada. */
+  regionToString(region: Region | null): string {
     switch (region) {
       case Region.SIERRA_NEVADA:
         return 'sierra_cascade_inyo';
@@ -79,6 +105,7 @@ export class MapService {
       case Region.SOUTHERN_CALIFORNIA:
         return 'southern_california';
     }
+    return 'sierra_cascade_inyo';
   }
 
   /** Get shapes for a boundary from assets, if possible.  Fall back to the

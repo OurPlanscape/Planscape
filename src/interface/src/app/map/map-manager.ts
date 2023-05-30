@@ -655,8 +655,6 @@ export class MapManager {
         (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, hoverStyle);
       }).on('mouseout', function(e){
         (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, normalStyle);        
-      }).on('click', function(e){
-        console.log(e);
       });
   }
 
