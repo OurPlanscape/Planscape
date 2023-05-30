@@ -12,7 +12,7 @@ import {
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet.sync';
-import { BehaviorSubject, Observable, take} from 'rxjs';
+import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
@@ -34,7 +34,7 @@ L.PM.setOptIn(true);
  * of in map.component.ts.
  */
 export class MapManager {
-  boundaryGeoJsonCache = new Map<string, L.Layer>();
+  boundaryVectorCache = new Map<string, L.Layer>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
@@ -72,7 +72,7 @@ export class MapManager {
       onInitialized: () => void
     ) => any,
     getBoundaryLayerVectorCallback: (
-      vectorName: string, shapeName: string
+      vectorName: string
     ) => Observable<L.Layer>
   ) {
     if (map.instance != undefined) map.instance.remove();
@@ -91,7 +91,7 @@ export class MapManager {
       minZoom: FrontendConstants.MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],
-      preferCanvas: false,
+      preferCanvas: false, // This needs to be set to false for boundary Tooltip to function
       zoomSnap: 0.8,
       zoomDelta: 1,
       wheelPxPerZoomLevel: 200,
@@ -605,7 +605,7 @@ export class MapManager {
   toggleBoundaryLayer(
     map: Map,
     getBoundaryLayerVectorCallback: (
-      vectorName: string, shapeName: string
+      vectorName: string
     ) => Observable<L.Layer>
   ) {
     if (map.instance === undefined) return;
@@ -617,20 +617,23 @@ export class MapManager {
     const boundaryShapeName = map.config.boundaryLayerConfig.shape_name;
     
     if (boundaryLayerName !== '') {
-        this.startLoadingLayerCallback(boundaryLayerName);
-        getBoundaryLayerVectorCallback(boundaryVectorName, boundaryShapeName)
-          .pipe(take(1))
-          .subscribe((vector) => {
-            this.doneLoadingLayerCallback(boundaryLayerName);
-            this.boundaryGeoJsonCache.set(boundaryLayerName, vector);
-            map.boundaryLayerRef = this.boundaryLayer(vector, boundaryShapeName, map.instance!);
-            map.boundaryLayerRef.addTo(map.instance!);
-           }
-          )
+
+      this.startLoadingLayerCallback(boundaryLayerName);
+      getBoundaryLayerVectorCallback(boundaryVectorName)
+        .pipe(take(1))
+        .subscribe((vector) => {
+          this.doneLoadingLayerCallback(boundaryLayerName);
+          this.boundaryVectorCache.set(boundaryLayerName, vector);
+          map.boundaryLayerRef = this.boundaryLayer(vector, boundaryShapeName, map.instance!);
+          map.boundaryLayerRef.addTo(map.instance!);
+          }
+        )
+      
     }
   }
 
   private boundaryLayer(boundary: L.Layer, shapeName: string, map: L.Map):  L.Layer {
+    
     const normalStyle: L.PathOptions = {
       weight: 1,
       color: '#0000ff',
