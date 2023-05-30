@@ -70,7 +70,7 @@ export class MapManager {
       features: Feature<Geometry, any>[],
       onInitialized: () => void
     ) => any,
-    getBoundaryLayerGeoJsonCallback: (
+    getBoundaryLayerVectorCallback: (
       vectorName: string, shapeName: string
     ) => Observable<L.Layer>
   ) {
@@ -105,7 +105,7 @@ export class MapManager {
     zoomControl.addTo(map.instance);
 
     // Init layers, but only add them to the map instance if specified in the map config.
-    this.toggleBoundaryLayer(map, getBoundaryLayerGeoJsonCallback);
+    this.toggleBoundaryLayer(map, getBoundaryLayerVectorCallback);
     existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
       if (projects) {
         this.initCalMapperLayer(map, projects);
@@ -603,7 +603,7 @@ export class MapManager {
   /** Toggles which boundary layer is shown. */
   toggleBoundaryLayer(
     map: Map,
-    getBoundaryLayerGeoJsonCallback: (
+    getBoundaryLayerVectorCallback: (
       vectorName: string, shapeName: string
     ) => Observable<L.Layer>
   ) {
@@ -617,12 +617,12 @@ export class MapManager {
     
     if (boundaryLayerName !== '') {
         this.startLoadingLayerCallback(boundaryLayerName);
-        getBoundaryLayerGeoJsonCallback(boundaryVectorName, boundaryShapeName)
+        getBoundaryLayerVectorCallback(boundaryVectorName, boundaryShapeName)
           .pipe(take(1))
-          .subscribe((geojson) => {
+          .subscribe((vector) => {
             this.doneLoadingLayerCallback(boundaryLayerName);
-            this.boundaryGeoJsonCache.set(boundaryLayerName, geojson);
-            map.boundaryLayerRef = this.boundaryLayer(geojson, boundaryShapeName, map.instance!);
+            this.boundaryGeoJsonCache.set(boundaryLayerName, vector);
+            map.boundaryLayerRef = this.boundaryLayer(vector, boundaryShapeName, map.instance!);
             map.boundaryLayerRef.addTo(map.instance!);
            }
           )

@@ -247,7 +247,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       id,
       this.existingProjectsGeoJson$,
       this.createDetailCardCallback.bind(this),
-      this.getBoundaryLayerGeoJson.bind(this)
+      this.getBoundaryLayerVector.bind(this)
     );
 
     // Renders the selected region on the map.
@@ -325,7 +325,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     return component.location.nativeElement;
   }
 
-  private getBoundaryLayerGeoJson(
+  private getBoundaryLayerVector(
     vectorName: string, shapeName: string
   ): Observable<L.Layer> {
     return this.mapService.getBoundaryShapes(vectorName, shapeName);
@@ -510,7 +510,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   toggleBoundaryLayer(map: Map) {
     this.mapManager.toggleBoundaryLayer(
       map,
-      this.getBoundaryLayerGeoJson.bind(this)
+      this.getBoundaryLayerVector.bind(this)
     );
   }
 
