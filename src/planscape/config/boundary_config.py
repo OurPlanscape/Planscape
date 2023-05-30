@@ -66,20 +66,3 @@ class BoundaryConfig:
 
 
         return 'regions' in self._config and check_regions(self._config['regions'])
-
-    def get_boundaries(self) -> List[Boundary]:
-        return self._config['boundaries']
-
-    def get_boundary(self, boundary_name: str) -> Optional[Boundary]:
-        """Gets the named boundary from the configuration.
-
-        Args:
-          boundary_name: name of the boundary
-
-        Returns:
-          The boundary or None if no such boundary exists.
-        """
-        for boundary in self._config['boundaries']:
-            if boundary['boundary_name'] == boundary_name:
-                return boundary
-        return None
