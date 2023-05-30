@@ -326,9 +326,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   }
 
   private getBoundaryLayerVector(
-    vectorName: string, shapeName: string
+    vectorName: string
   ): Observable<L.Layer> {
-    return this.mapService.getBoundaryShapes(vectorName, shapeName);
+    return this.mapService.getBoundaryShapes(vectorName);
   }
 
   /** If the user is signed in, configures and opens the Create Plan dialog.
