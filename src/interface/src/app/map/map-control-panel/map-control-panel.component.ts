@@ -25,6 +25,11 @@ import {
 
 import { BackendConstants } from './../../backend-constants';
 
+/** Map Legend Display Strings */
+  const CURRENT_CONDITIONS_RAW_LEGEND = "Current Condition (Raw)";
+  const CURRENT_CONDITIONS_NORMALIZED_LEGEND = "Current Condition (Normalized)";
+  const FUTURE_CONDITIONS_LEGEND = "Future Climate Stability (Normalized)";
+
 @Component({
   selector: 'app-map-control-panel',
   templateUrl: './map-control-panel.component.html',
@@ -140,6 +145,7 @@ export class MapControlPanelComponent implements OnInit {
               ...pillar,
               disableSelect: true,
               disableInfoCard: true,
+              legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
               children: pillar.elements
                 ?.filter((element) => element.display)
                 .map((element): ConditionsNode => {
@@ -147,10 +153,12 @@ export class MapControlPanelComponent implements OnInit {
                     ...element,
                     disableSelect: true,
                     disableInfoCard: true,
+                    legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
                     children: element.metrics?.map((metric): ConditionsNode=> {
                       return {
                         ...metric,
                         layer:metric.raw_layer,
+                        legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
                         data_download_link: metric.raw_data_download_path ?
 	                      BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
                         metric.data_download_link,
@@ -179,6 +187,7 @@ export class MapControlPanelComponent implements OnInit {
               data_download_link: pillar.normalized_data_download_path ?
 	              BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.normalized_data_download_path :
                 undefined,
+              legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
               normalized: true,
               children: pillar.elements?.map((element): ConditionsNode => {
                 return {
@@ -187,6 +196,7 @@ export class MapControlPanelComponent implements OnInit {
                   data_download_link: element.normalized_data_download_path ?
                   BackendConstants.DOWNLOAD_END_POINT + '/' + element.normalized_data_download_path :
                   undefined,
+                  legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
                   normalized: true,
                   min_value: undefined,
                   max_value: undefined,
@@ -197,6 +207,7 @@ export class MapControlPanelComponent implements OnInit {
                       data_download_link: metric.normalized_data_download_path ?
 	                    BackendConstants.DOWNLOAD_END_POINT + '/' + metric.normalized_data_download_path :
                       metric.data_download_link,
+                      legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
                       normalized: true,
                       min_value: undefined,
                       max_value: undefined,
@@ -224,6 +235,7 @@ export class MapControlPanelComponent implements OnInit {
 	      BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.future_data_download_path :
               pillar.data_download_link,
             layer: pillar.future_layer,
+            legend_name: FUTURE_CONDITIONS_LEGEND,
             normalized: true,
             children: []
 	  };

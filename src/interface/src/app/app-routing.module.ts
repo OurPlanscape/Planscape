@@ -52,7 +52,7 @@ const routes: Routes = [
         canActivate: [RedirectGuard],
         component: RedirectGuard,
         data: {
-          externalUrl: 'https://forms.office.com/Pages/ResponsePage.aspx?id=DQSIkWdsW0yxEjajBLZtrQAAAAAAAAAAAANAAfjhbitUNENORTEyVzQzT0VaTDA3NzIzUk1OVlpaWS4u'
+          externalUrl: 'https://share.hsforms.com/1xXehW6VrR0WskbHhqxsrrw3atqe'
         },
       },
       {
