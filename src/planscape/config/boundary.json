@@ -4,16 +4,7 @@
         "region_name": "sierra_cascade_inyo",
         "display_name": "Sierra Nevada",
         "boundaries": [
-        {
-            "boundary_name": "task_force_regions",
-            "display_name": "Wildfire Task Force Regions",
-            "vector_name": "sierra-nevada:vector_rffc",
-            "region_name": "none",
-            "filepath": "tier1_rffc_areas_jan2022.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "RFFC_tier1"
-        },
+        
         {
             "boundary_name": "counties",
             "display_name": "Counties",

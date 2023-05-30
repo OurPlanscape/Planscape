@@ -18,8 +18,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('planscape-backend/admin/', admin.site.urls),
-    path('planscape-backend/boundary/', include('boundary.api')),
-    path('planscape-backend/boundarys/', include('boundary.urls')),
+    path('planscape-backend/boundary/', include('boundary.urls')),
     path('planscape-backend/conditions/', include('conditions.urls')),
     path('planscape-backend/forsys/', include('forsys.urls')),
     path('planscape-backend/plan/', include('plan.urls')),
