@@ -25,6 +25,8 @@ describe('StringifyMapConfigPipe', () => {
         boundaryLayerConfig: {
           display_name: 'HUC-12',
           boundary_name: 'huc12',
+          vector_name: 'sierra-nevada:vector_huc12',
+          shape_name: 'Name",'
         },
         dataLayerConfig: {
           display_name: 'Habitat Connectivity',

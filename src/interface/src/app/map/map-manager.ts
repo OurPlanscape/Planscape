@@ -18,6 +18,7 @@ import { BackendConstants } from '../backend-constants';
 import { PopupService } from '../services';
 import {
   BaseLayerType,
+  BoundaryConfig,
   DEFAULT_COLORMAP,
   FrontendConstants,
   Map,
@@ -33,7 +34,7 @@ L.PM.setOptIn(true);
  * of in map.component.ts.
  */
 export class MapManager {
-  boundaryGeoJsonCache = new Map<string, GeoJSON.GeoJSON>();
+  boundaryVectorCache = new Map<string, L.Layer>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
@@ -70,9 +71,9 @@ export class MapManager {
       features: Feature<Geometry, any>[],
       onInitialized: () => void
     ) => any,
-    getBoundaryLayerGeoJsonCallback: (
-      boundaryName: string
-    ) => Observable<GeoJSON.GeoJSON>
+    getBoundaryLayerVectorCallback: (
+      vectorName: string
+    ) => Observable<L.Layer>
   ) {
     if (map.instance != undefined) map.instance.remove();
 
@@ -90,6 +91,12 @@ export class MapManager {
       minZoom: FrontendConstants.MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],
+      preferCanvas: false, // This needs to be set to false for boundary Tooltip to function
+      zoomSnap: 0.5,
+      bounceAtZoomLimits: false,
+      zoomDelta: 0.5,
+      zoomAnimation: true,
+      wheelPxPerZoomLevel: 200,
       zoomControl: false,
       pmIgnore: false,
     });
@@ -101,7 +108,7 @@ export class MapManager {
     zoomControl.addTo(map.instance);
 
     // Init layers, but only add them to the map instance if specified in the map config.
-    this.toggleBoundaryLayer(map, getBoundaryLayerGeoJsonCallback);
+    this.toggleBoundaryLayer(map, getBoundaryLayerVectorCallback);
     existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
       if (projects) {
         this.initCalMapperLayer(map, projects);
@@ -599,67 +606,59 @@ export class MapManager {
   /** Toggles which boundary layer is shown. */
   toggleBoundaryLayer(
     map: Map,
-    getBoundaryLayerGeoJsonCallback: (
-      boundaryName: string
-    ) => Observable<GeoJSON.GeoJSON>
+    getBoundaryLayerVectorCallback: (
+      vectorName: string
+    ) => Observable<L.Layer>
   ) {
     if (map.instance === undefined) return;
 
     map.boundaryLayerRef?.remove();
 
     const boundaryLayerName = map.config.boundaryLayerConfig.boundary_name;
-
+    const boundaryVectorName = map.config.boundaryLayerConfig.vector_name;
+    const boundaryShapeName = map.config.boundaryLayerConfig.shape_name;
+    
     if (boundaryLayerName !== '') {
-      if (this.boundaryGeoJsonCache.has(boundaryLayerName)) {
-        map.boundaryLayerRef = this.boundaryLayer(
-          this.boundaryGeoJsonCache.get(boundaryLayerName)!
-        );
-        map.boundaryLayerRef.addTo(map.instance);
-      } else {
-        this.startLoadingLayerCallback(boundaryLayerName);
-        getBoundaryLayerGeoJsonCallback(boundaryLayerName)
-          .pipe(take(1))
-          .subscribe((geojson) => {
-            this.doneLoadingLayerCallback(boundaryLayerName);
-            this.boundaryGeoJsonCache.set(boundaryLayerName, geojson);
-            map.boundaryLayerRef = this.boundaryLayer(geojson);
-            map.boundaryLayerRef.addTo(map.instance!);
-          });
-      }
+      this.startLoadingLayerCallback(boundaryLayerName);
+      getBoundaryLayerVectorCallback(boundaryVectorName)
+        .pipe(take(1))
+        .subscribe((vector) => {
+          this.doneLoadingLayerCallback(boundaryLayerName);
+          this.boundaryVectorCache.set(boundaryLayerName, vector);
+          map.boundaryLayerRef = this.boundaryLayer(vector, boundaryShapeName, map.instance!);
+          map.boundaryLayerRef.addTo(map.instance!);
+          }
+        )
     }
   }
 
-  private boundaryLayer(boundary: GeoJSON.GeoJSON): L.Layer {
+  private boundaryLayer(boundary: L.Layer, shapeName: string, map: L.Map):  L.Layer {
     const normalStyle: L.PathOptions = {
       weight: 1,
       color: '#0000ff',
       fillOpacity: 0,
+      fill: true,
     };
     const hoverStyle: L.PathOptions = {
       weight: 5,
       color: '#0000ff',
-      fillOpacity: 0,
+      fillOpacity: 0.5,
+      fill: true,
     };
-    return L.geoJSON(boundary, {
-      style: normalStyle,
-      onEachFeature: (feature, layer) => {
-        layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.shape_name),
-          {
-            sticky: true,
-          }
-        );
-        // Exact type of layer (polygon or line) is not known
-        if ((layer as any).setStyle) {
-          layer.addEventListener('mouseover', (_) =>
-            (layer as L.Polygon).setStyle(hoverStyle)
-          );
-          layer.addEventListener('mouseout', (_) =>
-            (layer as L.Polygon).setStyle(normalStyle)
-          );
+      return boundary.on('mouseover', function(e) {
+        var featureName = e.propagatedFrom.properties[shapeName];
+        if (featureName==''){
+          featureName= 'UNKNOWN';
         }
-      },
-    });
+        const pops = L.tooltip()
+          .setContent(`<div>Name: ${featureName}</div>`)
+          .setLatLng(e.latlng)
+          .openOn(map);
+        e.propagatedFrom.bindTooltip(pops);
+        (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, hoverStyle);
+      }).on('mouseout', function(e){
+        (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, normalStyle);        
+      });
   }
 
   /** Toggles whether existing projects from CalMapper are shown. */
