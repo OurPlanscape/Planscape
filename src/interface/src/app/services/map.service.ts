@@ -115,7 +115,7 @@ export class MapService {
     ):Observable<L.Layer> {
       
    var vector: Observable<L.Layer> = of(L.vectorGrid.protobuf(
-      "https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/" + `${vectorName}` + "@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
+    BackendConstants.TILES_END_POINT + "gwc/service/tms/1.0.0/" + `${vectorName}` + "@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
       { vectorTileLayerStyles: {
         [`${vectorName.split(":")[1]}`]: { // To set style value for every layer name (which is the value after '<region>:' in vectorName)
           weight: 1,

@@ -5,6 +5,7 @@
     {
       "region_name": "southern_california",
       "display_name": "Southern California",
+      "region_geoserver_name": "southern-california",
       "pillars": [
         {
           "pillar_name": "fire_adapted_communities",
@@ -32,6 +33,7 @@
     },
     {
       "region_name": "sierra_cascade_inyo",
+      "region_geoserver_name": "sierra-nevada",
       "filepath": "sierra_nevada",
       "display_name": "Sierra Nevada",
       "pillars": [
