@@ -159,6 +159,7 @@ export class MapControlPanelComponent implements OnInit {
                         ...metric,
                         layer:metric.raw_layer,
                         legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                        region_geoserver_name: config.region_geoserver_name,
                         data_download_link: metric.raw_data_download_path ?
 	                      BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
                         metric.data_download_link,
@@ -184,6 +185,7 @@ export class MapControlPanelComponent implements OnInit {
             return {
               ...pillar,
               layer: pillar.normalized_layer,
+              region_geoserver_name: config.region_geoserver_name,
               data_download_link: pillar.normalized_data_download_path ?
 	              BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.normalized_data_download_path :
                 undefined,
@@ -193,6 +195,7 @@ export class MapControlPanelComponent implements OnInit {
                 return {
                   ...element,
                   layer: element.normalized_layer,
+                  region_geoserver_name: config.region_geoserver_name,
                   data_download_link: element.normalized_data_download_path ?
                   BackendConstants.DOWNLOAD_END_POINT + '/' + element.normalized_data_download_path :
                   undefined,
@@ -204,6 +207,7 @@ export class MapControlPanelComponent implements OnInit {
                     return {
                       ...metric,
                       layer: metric.normalized_layer,
+                      region_geoserver_name: config.region_geoserver_name,
                       data_download_link: metric.normalized_data_download_path ?
 	                    BackendConstants.DOWNLOAD_END_POINT + '/' + metric.normalized_data_download_path :
                       metric.data_download_link,
@@ -236,6 +240,7 @@ export class MapControlPanelComponent implements OnInit {
               pillar.data_download_link,
             layer: pillar.future_layer,
             legend_name: FUTURE_CONDITIONS_LEGEND,
+            region_geoserver_name: config.region_geoserver_name,
             normalized: true,
             children: []
 	  };
