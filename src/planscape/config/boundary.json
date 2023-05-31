@@ -1,84 +1,82 @@
 {
-    "boundaries": [
-        {
-            "boundary_name": "task_force_regions",
-            "display_name": "Wildfire Task Force Regions",
-            "region_name": "none",
-            "filepath": "tier1_rffc_areas_jan2022.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "RFFC_tier1"
-            }
-        },
+    "regions": [
+      {
+        "region_name": "sierra_cascade_inyo",
+        "display_name": "Sierra Nevada",
+        "boundaries": [
+        
         {
             "boundary_name": "counties",
             "display_name": "Counties",
+            "vector_name": "sierra-nevada:vector_county",
             "region_name": "none",
             "filepath": "cnty19_1.shp",
             "source_srs": 3857,
             "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "COUNTY_NAM"
-            }
+            "shape_name": "COUNTY_NAM"
+            
         },
         {
             "boundary_name": "huc12",
             "display_name": "HUC-12",
+            "vector_name": "sierra-nevada:vector_huc12",
             "region_name": "none",
             "filepath": "ACE_HUC12s_WebMerc_1mXY.shp",
             "source_srs": 4326,
             "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "Name"
-            }
+            "shape_name": "Name"
+            
         },
         {
             "boundary_name": "huc10",
             "display_name": "HUC-10",
+            "vector_name": "sierra-nevada:vector_huc10",
             "region_name": "none",
             "filepath": "WBD_USGS_HUC10_CA.shp",
             "source_srs": 6414,
             "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "Name",
-                "acres": "AreaAcres"
-            }
+            "shape_name": "Name"
+            
         },
         {
             "boundary_name": "USFS",
-            "display_name": "US Forests",
+            "display_name": "National Forests",
+            "vector_name": "sierra-nevada:vector_forests",
             "region_name": "none",
             "filepath": "California_USFS.shp",
             "source_srs": 4269,
             "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "FORESTNAME"
-            }
+            "shape_name": "FORESTNAME"
+            
         },
         {
             "boundary_name": "RecentFires",
             "display_name": "Fires (through 2021)",
+            "vector_name": "sierra-nevada:vector_recent-fires", 
             "region_name": "none",
             "filepath": "recent-fires.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "FIRE_NAME",
-                "acres": "GIS_ACRES"
-            }
+            
+            "shape_name": "FIRE_NAME"
+            
+            
         },
         {
             "boundary_name": "PrescribedBurns",
             "display_name": "Prescribed Burns (through 2021)",
+            "vector_name": "sierra-nevada:vector_prescribed-burns",
             "region_name": "none",
             "filepath": "prescribed-burns.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
-            "shapefile_field_mapping": {
-                "shape_name": "TREATMENT_",
-                "acres": "TREATED_AC"
-            }
+            "shape_name": "TREATMEN_1"
+           
+            
         }
     ]
+    }
+]
+
 }
+

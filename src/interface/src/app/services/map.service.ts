@@ -1,9 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject, EMPTY, map, switchMap, Observable, take, takeUntil } from 'rxjs';
+import * as L from 'leaflet';
+import "leaflet.vectorgrid";
+import { BehaviorSubject, Subject, EMPTY, map, Observable, take, takeUntil, of } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import {SessionService} from '../services';
+import { SessionService } from '../services';
 import {
   BoundaryConfig,
   ColormapConfig,
@@ -37,18 +39,22 @@ export class MapService {
     null
   );
   readonly conditionNameToDisplayNameMap$ = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
+
   readonly selectedRegion$ = new BehaviorSubject<Region | null>(null);
+
   private readonly destroy$ = new Subject<void>();
+
   constructor(private http: HttpClient, private sessionService: SessionService) {
-    
+
     this.sessionService
-    .region$
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((region: Region | null) => {
-      this.selectedRegion$.next(region);
-    });
+      .region$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((region: Region | null) => {
+        this.selectedRegion$.next(region);
+      });
+
     this.http
-      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/boundary')
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name='+ `${this.regionToString(this.selectedRegion$.getValue())}`)
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
         this.boundaryConfig$.next(config);
@@ -87,7 +93,8 @@ export class MapService {
     );
   }
 
-  /* Note: these are the names used by the configurations and backend */
+    /* Note: these are the names used by the configurations and backend
+   * Defaults to Sierra Nevada. */
   regionToString(region: Region | null): string {
     switch (region) {
       case Region.SIERRA_NEVADA:
@@ -101,26 +108,37 @@ export class MapService {
       case null:
         return '';
     }
+    return 'sierra_cascade_inyo';
   }
 
   /** Get shapes for a boundary from assets, if possible.  Fall back to the
    *  REST server, clipping the shapes to the region if the region is non-null. */
   getBoundaryShapes(
-    boundaryName: string,
-    region: Region | null
-  ): Observable<GeoJSON.GeoJSON> {
-    if (region != null) {
-      // Try to get the shapes from the assets.
-      const regionAssets = regionToGeojsonMap[region];
-      if (regionAssets && regionAssets[boundaryName]) {
-        return this.http.get<GeoJSON.GeoJSON>(regionAssets[boundaryName]);
-      }
-    }
-    // Get the shapes from the REST server.
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT +
-        `/boundary/boundary_details/?boundary_name=${boundaryName}` +
-        (region == null ? '' : `&region_name=${this.regionToString(region)}`));
+    vectorName: string,
+    ):Observable<L.Layer> {
+      
+   var vector: Observable<L.Layer> = of(L.vectorGrid.protobuf(
+      "https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/" + `${vectorName}` + "@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
+      { vectorTileLayerStyles: {
+        [`${vectorName.split(":")[1]}`]: { // To set style value for every layer name (which is the value after '<region>:' in vectorName)
+          weight: 1,
+          fillOpacity: 0,
+          color: '#0000ff',
+          fill: true,
+        }
+      },
+        interactive: true,
+        zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
+        getFeatureId: function(f:any) {
+          return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
+        },
+        maxZoom: 13,
+        }            
+      ))
+
+    return vector;
+
+
   }
 
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.

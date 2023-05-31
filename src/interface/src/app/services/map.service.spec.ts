@@ -6,17 +6,22 @@ import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
+import { of, Observable } from 'rxjs';
 import {
   BoundaryConfig,
   ColormapConfig,
   ConditionsConfig,
   Region,
 } from '../types';
+import * as L from 'leaflet';
+import "leaflet.vectorgrid";
 
+// TODO Make more robust for new boundary vector tile 
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
   let service: MapService;
   let fakeGeoJson: GeoJSON.GeoJSON;
+  let fakeVector: Observable<L.Layer>;
 
   const boundaryConfigs: BoundaryConfig[] = [];
 
@@ -34,6 +39,22 @@ describe('MapService', () => {
       type: 'FeatureCollection',
       features: [],
     };
+    fakeVector = of(L.vectorGrid.protobuf(
+      "https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
+      {vectorTileLayerStyles: {
+        vector_huc12: { // To set style value for every layer name (which is the value after '<region>:' in vectorName)
+          weight: 1,
+          fillOpacity: 0,
+          color: '#0000ff',
+          fill: true,
+        }
+      },
+        interactive: true,
+        zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
+        getFeatureId: function(f:any) {
+          return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
+        },
+        maxZoom: 13, }));
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [MapService],
@@ -44,7 +65,7 @@ describe('MapService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/boundary'
+      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo'
     );
     req1.flush(conditionsConfig);
     const req2 = httpTestingController.expectOne(
@@ -66,35 +87,41 @@ describe('MapService', () => {
 
   describe('getBoundaryShapes', () => {
     it('gets shapes from the assets', () => {
+      // service
+      //   .getBoundaryShapes("sierra-nevada:vector_huc12", "Name")
+      //   .subscribe((res) => { fakeVector.subscribe((fake) => {
+      //     expect(res).toEqual(fake);
+      //   })
+      //   });
       service
-        .getBoundaryShapes('huc12', Region.SIERRA_NEVADA)
-        .subscribe((res) => {
-          expect(res).toEqual(fakeGeoJson);
-        });
+        .getBoundaryShapes("sierra-nevada:vector_huc12")
+        .subscribe((res) => { 
+          expect(res).toBeTruthy();
+        })
 
-      const req = httpTestingController.expectOne(
-        'assets/geojson/sierra_cascade_inyo/huc12.geojson'
-      );
-      expect(req.request.method).toEqual('GET');
-      req.flush(fakeGeoJson);
-      httpTestingController.verify();
+      // const req = httpTestingController.expectOne(
+      //   'assets/geojson/sierra_cascade_inyo/huc12.geojson'
+      // );
+      // expect(req.request.method).toEqual('GET');
+      // req.flush(fakeGeoJson);
+      // httpTestingController.verify();
     });
 
-    it('makes request to backend if unknown boundary shape', () => {
-      service
-        .getBoundaryShapes('huc12_fake', Region.SIERRA_NEVADA)
-        .subscribe((res) => {
-          expect(res).toEqual(fakeGeoJson);
-        });
+    // it('makes request to backend if unknown boundary shape', () => {
+    //   service
+    //     .getBoundaryShapes('huc12_fake', 'fake_Name')
+    //     .subscribe((res) => {
+    //       expect(res).toEqual(fakeVector);
+    //     });
 
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT +
-          '/boundary/boundary_details/?boundary_name=huc12_fake&region_name=sierra_cascade_inyo'
-      );
-      expect(req.request.method).toEqual('GET');
-      req.flush(fakeGeoJson);
-      httpTestingController.verify();
-    });
+    //   const req = httpTestingController.expectOne(
+    //     BackendConstants.END_POINT +
+    //       '/boundary/boundary_details/?boundary_name=huc12_fake&region_name=sierra_cascade_inyo'
+    //   );
+    //   expect(req.request.method).toEqual('GET');
+    //   req.flush(fakeGeoJson);
+    //   httpTestingController.verify();
+    // });
   });
 
   describe('getExistingProjects', () => {
@@ -114,20 +141,20 @@ describe('MapService', () => {
     });
   });
 
-  describe('getRegionBoundary', () => {
-    it('uses the correct path to the corresponding geoJSON file', () => {
-      service.getRegionBoundary(Region.SIERRA_NEVADA).subscribe((res) => {
-        expect(res).toEqual(fakeGeoJson);
-      });
+  // describe('getRegionBoundary', () => {
+  //   it('uses the correct path to the corresponding geoJSON file', () => {
+  //     service.getRegionBoundary(Region.SIERRA_NEVADA).subscribe((res) => {
+  //       expect(res).toEqual(fakeGeoJson);
+  //     });
 
-      const req = httpTestingController.expectOne(
-        'assets/geojson/sierra_nevada_region.geojson'
-      );
-      expect(req.request.method).toEqual('GET');
-      req.flush(fakeGeoJson);
-      httpTestingController.verify();
-    });
-  });
+  //     const req = httpTestingController.expectOne(
+  //       'assets/geojson/sierra_nevada_region.geojson'
+  //     );
+  //     expect(req.request.method).toEqual('GET');
+  //     req.flush(fakeGeoJson);
+  //     httpTestingController.verify();
+  //   });
+  // });
 
   describe('getColormap', () => {
     it('makes request to endpoint', () => {

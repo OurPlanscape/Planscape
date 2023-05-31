@@ -3,6 +3,8 @@ import { NONE_COLORMAP } from './legend.types';
 export interface BoundaryConfig {
   display_name?: string;
   boundary_name: string;
+  vector_name: string;
+  shape_name: string;
 }
 
 export interface ConditionsConfig extends DataLayerConfig {
@@ -60,6 +62,8 @@ export interface PillarConfig extends DataLayerConfig {
 export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
   boundary_name: '',
   display_name: 'None',
+  vector_name: '',
+  shape_name: 'None',
 };
 
 export const NONE_DATA_LAYER_CONFIG: DataLayerConfig = {
