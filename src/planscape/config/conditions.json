@@ -33,7 +33,6 @@
     },
     {
       "region_name": "sierra_cascade_inyo",
-      "region_geoserver_name": "sierra-nevada",
       "filepath": "sierra_nevada",
       "region_geoserver_name": "sierra-nevada",
       "display_name": "Sierra Nevada",
