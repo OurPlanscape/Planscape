@@ -69,8 +69,6 @@ export class TopBarComponent implements OnInit, OnDestroy {
     // The built-in type for event is generic, so it needs to be cast
     const region = (event.target as HTMLSelectElement).value as Region;
     this.sessionService.setRegion(region);
-    this.router.navigateByUrl('/', {skipLocationChange: true}).then(() => {
-      this.router.navigate(['/map']);
-  });
+    this.router.navigateByUrl('/map');
   }
 }
