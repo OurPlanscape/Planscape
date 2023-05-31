@@ -105,8 +105,6 @@ export class MapService {
         return 'north_coast_inland';
       case Region.SOUTHERN_CALIFORNIA:
         return 'southern_california';
-      case null:
-        return '';
     }
     return 'sierra_cascade_inyo';
   }
