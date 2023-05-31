@@ -10,7 +10,8 @@
   </button>
 
   <!-- Title -->
-  <a class="site-link" routerLink="/home">Planscape</a>
+  <a class="site-link" routerLink="/home">Planscape preview</a>
+
 
   <!-- Dropdown Icon -->
   <img class="region-dropdown-icon" src="assets/svg/region-dropdown-icon.svg" />
@@ -33,13 +34,15 @@
   <a
     mat-icon-button
     routerLink="/help"
-    class="nav-link"
     target="_blank" 
+
+    aria-label="help button"
     rel="noopener noreferrer">
     <mat-icon class="material-symbols-outlined">
       {{"help_outline"}}
     </mat-icon>
   </a>
+
   <span class="username">{{ displayName }}</span>
   
   <button

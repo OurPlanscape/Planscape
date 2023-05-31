@@ -35,6 +35,7 @@ class ShapefileFieldMapping(TypedDict):
 class Boundary(TypedDict):
     boundary_name: str
     display_name: NotRequired[str]
+    vector_name: str
     region_name: RegionName
     filepath: str
     source_srs: int  # Spatial Reference System code; see https://en.wikipedia.org/wiki/Spatial_reference_system
