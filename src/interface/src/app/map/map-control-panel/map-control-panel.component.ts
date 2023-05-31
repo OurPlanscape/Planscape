@@ -160,7 +160,6 @@ export class MapControlPanelComponent implements OnInit {
                         layer:metric.raw_layer,
                         region_geoserver_name: config.region_geoserver_name,
                         legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
-                        region_geoserver_name: config.region_geoserver_name,
                         data_download_link: metric.raw_data_download_path ?
 	                      BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
                         metric.data_download_link,
@@ -242,7 +241,6 @@ export class MapControlPanelComponent implements OnInit {
             layer: pillar.future_layer,
             region_geoserver_name: config.region_geoserver_name,
             legend_name: FUTURE_CONDITIONS_LEGEND,
-            region_geoserver_name: config.region_geoserver_name,
             normalized: true,
             children: []
 	  };
