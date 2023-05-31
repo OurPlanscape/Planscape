@@ -38,6 +38,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
     this.authService.loggedInUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
@@ -69,6 +70,15 @@ export class TopBarComponent implements OnInit, OnDestroy {
     // The built-in type for event is generic, so it needs to be cast
     const region = (event.target as HTMLSelectElement).value as Region;
     this.sessionService.setRegion(region);
-    this.router.navigateByUrl('/map');
+    
+    if(this.router.url == '/home'){
+      this.router.navigateByUrl('/map');
+    }
+    else{
+      window.location.reload();
+    }
+    
+
+    
   }
 }
