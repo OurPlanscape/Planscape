@@ -15,7 +15,9 @@
       *ngFor="let region of regionOptions"
       color="primary"
       [disabled]="!region.available"
-      (click)="setRegion(region)">
+      (click)="setRegion(region)"
+      routerLink="/map">
+      
       {{ region.name | uppercase }}
     </button>
   </section>

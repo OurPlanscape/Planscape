@@ -69,16 +69,13 @@ export class TopBarComponent implements OnInit, OnDestroy {
   setRegion(event: Event) {
     // The built-in type for event is generic, so it needs to be cast
     const region = (event.target as HTMLSelectElement).value as Region;
-    this.sessionService.setRegion(region);
-    
+    this.sessionService.setRegion(region);  
     if(this.router.url == '/home'){
-      this.router.navigateByUrl('/map');
+      window.location.assign('/map');
+      // this.router.navigateByUrl or navigate does not call the map component ngOnInit
     }
     else{
       window.location.reload();
     }
-    
-
-    
   }
 }
