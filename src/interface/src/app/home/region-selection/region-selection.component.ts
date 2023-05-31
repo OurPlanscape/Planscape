@@ -42,6 +42,7 @@ export class RegionSelectionComponent implements OnInit {
       return;
     }
     this.sessionService.setRegion(regionOption.type);
-    this.router.navigateByUrl('/map');
+    window.location.assign('/map');
+    // this.router.navigateByUrl or navigate does not re-initialize map
   }
 }
