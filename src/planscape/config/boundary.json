@@ -40,7 +40,7 @@
         },
         {
             "boundary_name": "USFS",
-            "display_name": "US Forests",
+            "display_name": "National Forests",
             "vector_name": "sierra-nevada:vector_forests",
             "region_name": "none",
             "filepath": "California_USFS.shp",
@@ -79,3 +79,4 @@
 ]
 
 }
+
