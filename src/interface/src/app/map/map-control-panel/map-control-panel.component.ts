@@ -8,6 +8,7 @@ import {
   ViewChildren,
 } from '@angular/core';
 import { BehaviorSubject, filter, map, Observable } from 'rxjs';
+import { noDataRegions  } from '../../types';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -16,6 +17,8 @@ import {
   NONE_BOUNDARY_CONFIG,
 } from 'src/app/types';
 
+
+import { SessionService } from '../../services';
 import { NONE_DATA_LAYER_CONFIG } from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
 import {
@@ -62,6 +65,8 @@ export class MapControlPanelComponent implements OnInit {
     BaseLayerType.Satellite,
   ];
   readonly BaseLayerType = BaseLayerType;
+  readonly selectedRegion$ = this.sessionService.region$;
+  readonly noDataRegions = noDataRegions;
 
   readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
   readonly noneDataLayerConfig = NONE_DATA_LAYER_CONFIG;
@@ -70,7 +75,9 @@ export class MapControlPanelComponent implements OnInit {
   conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataFuture$ = new BehaviorSubject<ConditionsNode[]>([]);
 
-  constructor() {}
+  constructor(
+    private sessionService: SessionService
+  ) {}
 
   ngOnInit(): void {
     this.conditionsConfig$
