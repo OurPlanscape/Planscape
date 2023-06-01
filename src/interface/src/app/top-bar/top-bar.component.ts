@@ -64,6 +64,16 @@ export class TopBarComponent implements OnInit, OnDestroy {
   sendToggle(event: Event) {
     this.toggleEvent.emit(event);
   }
+  
+  /** Loads map page */
+  loadMap() {
+    window.location.assign('/map');
+  }
+
+  /** Reloads page */
+  reloadPage(){
+    window.location.reload();
+  }
 
   /** Sets the region from the dropdown and goes to the map. */
   setRegion(event: Event) {
@@ -71,11 +81,11 @@ export class TopBarComponent implements OnInit, OnDestroy {
     const region = (event.target as HTMLSelectElement).value as Region;
     this.sessionService.setRegion(region);  
     if(this.router.url == '/home'){
-      window.location.assign('/map');
-      // this.router.navigateByUrl or navigate does not call the map component ngOnInit
+      this.loadMap();
+      // this.router.navigateByUrl or navigate does not re-initialize map
     }
     else{
-      window.location.reload();
+      this.reloadPage();
     }
   }
 }

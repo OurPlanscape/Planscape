@@ -15,6 +15,7 @@ describe('RegionSelectionComponent', () => {
   let fixture: ComponentFixture<RegionSelectionComponent>;
   let loader: HarnessLoader;
   let mockSessionService: Partial<SessionService>;
+  
 
   beforeEach(async () => {
     mockSessionService = {
@@ -39,6 +40,7 @@ describe('RegionSelectionComponent', () => {
   });
 
   it('should set available region', async () => {
+    component.loadMap = function(){};
     const setRegionSpy = spyOn<any>(mockSessionService, 'setRegion');
     const sierraNevadaButton: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /SIERRA NEVADA/ })
@@ -50,6 +52,7 @@ describe('RegionSelectionComponent', () => {
   });
 
   it('should disable unavailable regions', async () => {
+    component.loadMap = function(){};
     const regionButtons: MatButtonHarness[] = await loader.getAllHarnesses(
       MatButtonHarness
     );
