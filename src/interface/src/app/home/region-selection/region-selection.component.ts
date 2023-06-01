@@ -36,13 +36,18 @@ export class RegionSelectionComponent implements OnInit {
       .subscribe((plans) => (this.hasPlans = plans.length !== 0));
   }
 
+  /** Loads map page. */
+  loadMap(){
+    window.location.assign('/map');
+  }
+
   /** Sets the region and navigates to the map. */
   setRegion(regionOption: RegionOption) {
     if (!regionOption.available) {
       return;
     }
     this.sessionService.setRegion(regionOption.type);
-    window.location.assign('/map');
+    this.loadMap();
     // this.router.navigateByUrl or navigate does not re-initialize map
   }
 }
