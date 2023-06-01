@@ -20,15 +20,16 @@ const regions: Region[] = [
   Region.NORTHERN_CALIFORNIA,
 ]
 
-const availableRegions = new Set([
-  Region.SIERRA_NEVADA,
-])
+const availableRegions = new 
+Set([Region.SIERRA_NEVADA,
+  features.show_socal ? Region.SOUTHERN_CALIFORNIA : null])
+
+export const noDataRegions = new Set([Region.SOUTHERN_CALIFORNIA])
 
 export const regionOptions = regions.map((region) => {
   return {
     type: region,
     name: region,
-    available: new Set([...availableRegions,
-      features.show_socal ? Region.SOUTHERN_CALIFORNIA : null]).has(region),
+    available: availableRegions.has(region),
   }
 });
