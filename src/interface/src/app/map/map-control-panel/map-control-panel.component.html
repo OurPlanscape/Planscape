@@ -136,7 +136,7 @@
           </div>
         </mat-expansion-panel>
 
-        <div *ngIf="selectedRegionOption?.rawData!">
+        <div *ngIf="rawDataEnabled">
          <!-- Current condition controls -->
          <app-condition-tree
          #conditionTreeRaw
@@ -147,8 +147,52 @@
        </app-condition-tree>
       </div>
 
-        <div *ngIf="selectedRegionOption?.translatedData!">
-        <!-- Ecosystem scores controls -->
+        <div *ngIf="translatedDataEnabled">
+
+        <!-- Normalized current condition controls -->
+        <app-condition-tree
+          #conditionTreeNormalized
+          [conditionsData$]="conditionDataNormalized$"
+          [header]="'Current Condition'"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
+        </app-condition-tree>
+        </div>
+
+      <div *ngIf="futureDataEnabled">
+        <!-- Future condition controls -->
+        <app-condition-tree
+          #conditionTreeNormalized
+          [conditionsData$]="conditionDataFuture$"
+          [header]="'Future Climate Stability'"
+          [map]="map"
+          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
+        </app-condition-tree>
+      </div>
+
+        <!-- No Data Region controls -->
+        <div *ngIf="!translatedDataEnabled">
+          <mat-expansion-panel disabled="true">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                Current Conditions (coming soon)
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+        </div>
+          
+        <div *ngIf="!futureDataEnabled">
+          <mat-expansion-panel disabled="true">
+            <mat-expansion-panel-header class="layer-panel-header">
+              <mat-panel-title>
+                Future Climate Stability (coming soon)
+              </mat-panel-title>
+            </mat-expansion-panel-header>
+          </mat-expansion-panel>
+        </div>
+
+
+                <!-- Ecosystem scores controls -->
         <!-- <ng-container *featureFlag="'unlaunched_layers'">
           <mat-expansion-panel expanded="false">
             <mat-expansion-panel-header class="layer-panel-header">
@@ -168,51 +212,7 @@
             </div>
           </mat-expansion-panel>
         </ng-container> -->
-
-       
-
-        <!-- Normalized current condition controls -->
-        <app-condition-tree
-          #conditionTreeNormalized
-          [conditionsData$]="conditionDataNormalized$"
-          [header]="'Current Condition'"
-          [map]="map"
-          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
-        </app-condition-tree>
-        </div>
-
-      <div *ngIf="selectedRegionOption?.futureData!">
-        <!-- Future condition controls -->
-        <app-condition-tree
-          #conditionTreeNormalized
-          [conditionsData$]="conditionDataFuture$"
-          [header]="'Future Climate Stability'"
-          [map]="map"
-          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
-        </app-condition-tree>
-      </div>
-
-        <!-- No Data Region controls -->
-        <div *ngIf="!(selectedRegionOption?.translatedData!)">
-          <mat-expansion-panel disabled="true">
-            <mat-expansion-panel-header class="layer-panel-header">
-              <mat-panel-title>
-                Current Conditions (coming soon)
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-          </mat-expansion-panel>
-        </div>
-          
-        <div *ngIf="!(selectedRegionOption?.futureData!)">
-          <mat-expansion-panel disabled="true">
-            <mat-expansion-panel-header class="layer-panel-header">
-              <mat-panel-title>
-                Future Climate Stability (coming soon)
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-          </mat-expansion-panel>
-        </div>
-
+        
         <!-- Disturbances controls -->
         <ng-container *featureFlag="'unlaunched_layers'">
           <mat-expansion-panel disabled="true">

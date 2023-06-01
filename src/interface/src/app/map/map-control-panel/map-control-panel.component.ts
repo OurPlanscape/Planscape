@@ -7,8 +7,7 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { BehaviorSubject, filter, map, Observable } from 'rxjs';
-import { regionOptions, RegionOption  } from '../../types';
+import { BehaviorSubject, Subject, filter, map, Observable, takeUntil } from 'rxjs';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -18,7 +17,6 @@ import {
 } from 'src/app/types';
 
 
-import { SessionService } from '../../services';
 import { NONE_DATA_LAYER_CONFIG } from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
 import {
@@ -65,26 +63,30 @@ export class MapControlPanelComponent implements OnInit {
     BaseLayerType.Satellite,
   ];
   readonly BaseLayerType = BaseLayerType;
-  readonly selectedRegion$ = this.sessionService.region$;
-  readonly selectedRegionOption: RegionOption | null = null;
 
   readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
   readonly noneDataLayerConfig = NONE_DATA_LAYER_CONFIG;
+
+  private readonly destroy$ = new Subject<void>();
+  rawDataEnabled: boolean | null = null;
+  translatedDataEnabled: boolean | null = null;
+  futureDataEnabled: boolean | null = null;
 
   conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataFuture$ = new BehaviorSubject<ConditionsNode[]>([]);
 
-  constructor(
-    private sessionService: SessionService
-  ) {
-    for (let region of regionOptions){
-      if( region.name == this.selectedRegion$.getValue()){
-        this.selectedRegionOption = region;
-    }
-  }}
+  constructor() {}
 
   ngOnInit(): void {
+
+    this.conditionsConfig$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((config: ConditionsConfig | null) => {
+        this.rawDataEnabled = config?.raw_data!;
+        this.translatedDataEnabled = config?.translated_data!;
+        this.futureDataEnabled = config?.future_data!;
+      });
     this.conditionsConfig$
       .pipe(
         filter((config) => !!config),
