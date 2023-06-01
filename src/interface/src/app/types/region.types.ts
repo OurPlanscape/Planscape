@@ -11,6 +11,9 @@ export interface RegionOption {
   type: Region;
   name: string;
   available: boolean;
+  rawData: boolean;
+  translatedData: boolean;
+  futureData: boolean;
 }
 
 const regions: Region[] = [
@@ -24,12 +27,18 @@ const availableRegions = new
 Set([Region.SIERRA_NEVADA,
   features.show_socal ? Region.SOUTHERN_CALIFORNIA : null])
 
-export const noDataRegions = new Set([Region.SOUTHERN_CALIFORNIA])
+const rawConditionRegions = new Set([Region.SIERRA_NEVADA, Region.SOUTHERN_CALIFORNIA]);
+const translatedConditionRegions = new Set([Region.SIERRA_NEVADA]);
+const futureConditionRegions = new Set([Region.SIERRA_NEVADA]);
+
 
 export const regionOptions = regions.map((region) => {
   return {
     type: region,
     name: region,
     available: availableRegions.has(region),
+    rawData: rawConditionRegions.has(region),
+    translatedData: translatedConditionRegions.has(region),
+    futureData: futureConditionRegions.has(region),
   }
 });
