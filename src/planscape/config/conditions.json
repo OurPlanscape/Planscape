@@ -1,6 +1,6 @@
 {
   "__comment1": "TODO: reorder lines (first by name, then alphabetically)",
-  "__comment2": "TODO: update metrics and element entries to reflect 30m when available",
+  "__comment_socal_source": "https://docs.google.com/spreadsheets/d/1Fvx8DBUq-hrU6yd7Q4iP9g4f7s7TGVl6/edit#gid=283454101",
   "regions": [
     {
       "region_name": "southern_california",
@@ -9,26 +9,66 @@
       "pillars": [
         {
           "pillar_name": "fire_adapted_communities",
-	  "display": true,
-	  "display_name": "Fire Adapted Communities",
-	  "elements": [
-	    {
-	      "element_name": "hazard",
-	      "display": true,
-	      "display_name": "Hazard",
+     	    "display": true,
+	        "display_name": "Fire Adapted Communities",
+	        "elements": [
+	          {
+	            "element_name": "hazard",
+	            "display": true,
+              "display_name": "Hazard",
               "metrics": [
-	        {
-		  "metric_name": "structure_exposure_score",
-		  "raw_layer": "southern-california:StructureExposureScore_WUI_2022",
-		  "raw_data_download_path": "southern-california/fireAdaptedCommunities/Tier2/StructureExposureScore_WUI_2022.tif",
-		  "display_name": "Structure Exposure Score",
-		  "source": "Southern California Resource Kit",
-		  "source_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/index.php"
-		}
-	      ]
-	    }
-	  ]
-	}
+                {
+                  "metric_name": "structure_exposure_score",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022.tif",
+                  "display_name": "Structure Exposure Score",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit/"
+                },
+                {
+                  "metric_name": "damage_potential",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_DamagePotential_WUI_2022",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/DamagePotential_WUI_2022.tif",
+                  "display_name": "Damage Potential",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit/"
+                },
+                {
+                  "metric_name": "ember_load_index",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_EmberLoadIndex_2022",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/EmberLoadIndex_2022.tif",
+                  "display_name": "Ember Load Index",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit/"
+                },
+                {
+                  "metric_name": "housing_unit_density",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_HUden_2020",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/HUden_2020.tif",
+                  "display_name": "Housing Unit Density",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit/"
+                },
+                {
+                  "metric_name": "ignition_cause",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
+                  "display_name": "Ignition Cause",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit/"
+                },
+                {
+                    "metric_name": "wildland_urban_interface",
+                    "raw_layer": "southern-california:fireAdaptComm_Tier1_MSB_WUI_CA_100m",
+                    "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/MSB_WUI_CA_100m.tif",
+                    "display_name": "Wildland Urban Interface",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit/"
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
