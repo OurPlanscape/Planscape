@@ -6,15 +6,16 @@
       "region_name": "southern_california",
       "display_name": "Southern California",
       "__comment_source": "https://docs.google.com/spreadsheets/d/1Fvx8DBUq-hrU6yd7Q4iP9g4f7s7TGVl6/edit#gid=283454101",
+      "region_geoserver_name": "southern-california",
       "pillars": [
         {
           "pillar_name": "fire_adapted_communities",
-	  "display": true,
-	  "display_name": "Fire Adapted Communities",
-	  "elements": [
-	    {
-	      "element_name": "hazard",
-	      "display": true,
+     	    "display": true,
+	        "display_name": "Fire Adapted Communities",
+	        "elements": [
+	          {
+	            "element_name": "hazard",
+	            "display": true,
               "display_name": "Hazard",
               "metrics": [
                 {
@@ -74,6 +75,7 @@
     {
       "region_name": "sierra_cascade_inyo",
       "filepath": "sierra_nevada",
+      "region_geoserver_name": "sierra-nevada",
       "display_name": "Sierra Nevada",
       "pillars": [
         {

@@ -4,7 +4,7 @@
 @mixin arrow {
   content: '';
   $arrow-size: 5px;
-  position: absolute;
+  position: relative;
   right: 12px;
   top: 15px;
   width: 0;
@@ -63,11 +63,15 @@ select.region-dropdown {
   background: none;
   border: none;
   outline: none;
+  width: fit-content;
+  margin-right: 15px;
 
   cursor: pointer;
   color: #ffffff;
   font-size: 14px;
   font-weight: 200;
+  text-align: center;
+
 }
 
 // The space between left and right elements on the top-bar
