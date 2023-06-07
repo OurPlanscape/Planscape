@@ -39,9 +39,9 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("PLANSCAPE_DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS: list[str] = ["*"]#str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).split(
-#     ","
-# )
+ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).split(
+    ","
+)
 
 
 # Application definition
