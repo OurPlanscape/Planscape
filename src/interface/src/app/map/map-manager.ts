@@ -686,8 +686,12 @@ export class MapManager {
       colormap = DEFAULT_COLORMAP;
     }
 
+    var region = map.config.dataLayerConfig.region_geoserver_name;
+    if(region == null){
+      region = 'sierra-nevada';
+    }
     map.dataLayerRef = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT,
+      BackendConstants.TILES_END_POINT + region + "/wms?" ,
       {
         layers: layer,
         minZoom: 7,
