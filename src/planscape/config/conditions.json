@@ -1,11 +1,10 @@
 {
   "__comment1": "TODO: reorder lines (first by name, then alphabetically)",
-  "__comment2": "TODO: update metrics and element entries to reflect 30m when available",
+  "__comment_socal_source": "https://docs.google.com/spreadsheets/d/1Fvx8DBUq-hrU6yd7Q4iP9g4f7s7TGVl6/edit#gid=283454101",
   "regions": [
     {
       "region_name": "southern_california",
       "display_name": "Southern California",
-      "__comment_source": "https://docs.google.com/spreadsheets/d/1Fvx8DBUq-hrU6yd7Q4iP9g4f7s7TGVl6/edit#gid=283454101",
       "region_geoserver_name": "southern-california",
       "pillars": [
         {
