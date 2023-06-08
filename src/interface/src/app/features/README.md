@@ -31,6 +31,10 @@ This flag will hide map layers that are not currently launched or implemented
 when set to false. Once layers are launched in prod, they should be changed in
 map-control-panel.component.html so they are no longer affected by this flag.
 
+### use_its
+This flag will enable use of ITS data for past resilience projects rather than
+Calmapper.
+
 ### Other flags
 There are two other flags, testFalseFeature and testTrueFeature created just for
 automated testing.  Their values should be kept to "false" and "true" for
@@ -46,6 +50,7 @@ for angular tests to pass.  You can start with this, but later enable settings.
   "testFalseFeature": false,
   "testTrueFeature": true,
   "top_percent_slider": true,
-  "unlaunched_layers": false
+  "unlaunched_layers": false,
+  "use_its": false
 }
 ```
