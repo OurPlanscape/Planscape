@@ -29,7 +29,8 @@ class MillionAcres_ITS(APIView):
         }
         # URL for treatment polygons
         # TODO: include line and points
-        url_final = "https://gsal.sig-gis.com/server/rest/services/Hosted/Million_Acres_Flat_File_2020_2021/FeatureServer/645/query?" + \
+        # TODO: get a stable URL without a version number
+        url_final = "https://gsal.sig-gis.com/server/rest/services/Hosted/Million_Acres_Flat_File_2020_2021/FeatureServer/736/query?" + \
             urllib.parse.urlencode(params)
         response = requests.get(url=url_final)
         return Response(response.text)
