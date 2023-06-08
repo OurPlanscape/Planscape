@@ -4,5 +4,6 @@
   "testFalseFeature": false,
   "testTrueFeature": true,
   "top_percent_slider": true,
-  "unlaunched_layers": false
+  "unlaunched_layers": false,
+  "use_its": false
 }
