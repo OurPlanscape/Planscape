@@ -6,6 +6,9 @@
       "region_name": "southern_california",
       "display_name": "Southern California",
       "region_geoserver_name": "southern-california",
+      "raw_data": true,
+      "translated_data": false,
+      "future_data": false,
       "pillars": [
         {
           "pillar_name": "fire_adapted_communities",
@@ -76,6 +79,9 @@
       "filepath": "sierra_nevada",
       "region_geoserver_name": "sierra-nevada",
       "display_name": "Sierra Nevada",
+      "raw_data": true,
+      "translated_data": true,
+      "future_data": true,
       "pillars": [
         {
           "pillar_name": "air_quality",
