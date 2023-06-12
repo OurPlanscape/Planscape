@@ -7,7 +7,7 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { BehaviorSubject, filter, map, Observable } from 'rxjs';
+import { BehaviorSubject, Subject, filter, map, Observable, takeUntil } from 'rxjs';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -66,6 +66,12 @@ export class MapControlPanelComponent implements OnInit {
   readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
   readonly noneDataLayerConfig = NONE_DATA_LAYER_CONFIG;
 
+
+  private readonly destroy$ = new Subject<void>();
+  rawDataEnabled: boolean | null = null;
+  translatedDataEnabled: boolean | null = null;
+  futureDataEnabled: boolean | null = null;
+
   conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataFuture$ = new BehaviorSubject<ConditionsNode[]>([]);
@@ -73,6 +79,13 @@ export class MapControlPanelComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
+    this.conditionsConfig$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((config: ConditionsConfig | null) => {
+        this.rawDataEnabled = config?.raw_data!;
+        this.translatedDataEnabled = config?.translated_data!;
+        this.futureDataEnabled = config?.future_data!;
+      });
     this.conditionsConfig$
       .pipe(
         filter((config) => !!config),
