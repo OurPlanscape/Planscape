@@ -11,6 +11,9 @@ export interface ConditionsConfig extends DataLayerConfig {
   region_name?: string;
   region_geoserver_name?: string;
   pillars?: PillarConfig[];
+  raw_data?: boolean;
+  translated_data?: boolean;
+  future_data?: boolean;
 }
 
 export interface ConditionsMetadata {

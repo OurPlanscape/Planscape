@@ -25,7 +25,7 @@ class PillarConfig:
     # Keys in the dictionaries.
     COMMON_METADATA = {'filepath', 'display_name', 'data_provider', 
                        'colormap', 'max_value', 'min_value','layer', 'normalized_layer', 'normalized_data_download_path'}
-    REGION_KEYS = {'region_name', 'pillars', 'region_geoserver_name'}.union(COMMON_METADATA)
+    REGION_KEYS = {'region_name', 'pillars', 'region_geoserver_name', 'raw_data', 'translated_data', 'future_data'}.union(COMMON_METADATA)
     PILLAR_KEYS = {'pillar_name',
                    'elements',
                    'operation',
@@ -112,6 +112,9 @@ class PillarConfig:
                     region.keys() <= PillarConfig.REGION_KEYS and
                     isinstance(RegionName(region['region_name']), RegionName) and
                     isinstance(region['pillars'], list) and
+                    isinstance(region['raw_data'], bool) and
+                    isinstance(region['translated_data'], bool) and
+                    isinstance(region['future_data'], bool) and
                     isinstance(region['region_geoserver_name'], str) and 
                     all([check_pillar(pillar) for pillar in region['pillars']]))
 
