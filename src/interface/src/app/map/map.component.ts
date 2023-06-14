@@ -216,12 +216,19 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       });
     this.sessionService.mapConfigs$
       .pipe(take(1))
-      .subscribe((mapConfigs: MapConfig[] | null) => {
-        if (mapConfigs) {
-          mapConfigs.forEach((mapConfig, index) => {
+      .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
+        this.selectedRegion$
+        .pipe(take(1))
+        .subscribe((region: Region | null) => {
+        if (mapConfigs && region) {
+          var regionMaps = mapConfigs[region]
+          if(regionMaps){
+          regionMaps.forEach((mapConfig, index) => {
             this.maps[index].config = mapConfig;
           });
         }
+        }
+        });
         this.boundaryConfig$
           .pipe(filter((config) => !!config))
           .subscribe((config) => {

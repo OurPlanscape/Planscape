@@ -25,7 +25,15 @@ export class SessionService {
     SESSION_SAVE_INTERVAL
   );
 
-  readonly mapConfigs$ = new BehaviorSubject<MapConfig[] | null>(null);
+  readonly record =  {
+    [Region.SIERRA_NEVADA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.SOUTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.NORTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.CENTRAL_COAST] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+  }
+  
+
+  readonly mapConfigs$ = new BehaviorSubject<Record<Region, MapConfig[]> | null>(this.record);
   readonly mapViewOptions$ = new BehaviorSubject<MapViewOptions | null>(null);
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
@@ -50,9 +58,18 @@ export class SessionService {
   }
 
   /** Emits the map configs and saves them in local storage. */
+  //TODO make map config region based dictionary 
   setMapConfigs(value: MapConfig[]) {
-    localStorage.setItem('mapConfigs', JSON.stringify(value));
-    this.mapConfigs$.next(value);
+    var regionIndex: Region | null = this.region$.getValue();
+    if(!regionIndex){
+      regionIndex = Region.SIERRA_NEVADA;
+    }
+    var mapConf: Record<Region, MapConfig[]> | null= this.mapConfigs$.getValue();
+    if(mapConf && regionIndex){
+      mapConf![regionIndex] = value;
+      
+    }
+    this.mapConfigs$.next(mapConf);
   }
 
   /** Emits the map view options and saves them in local storage. */
@@ -79,7 +96,14 @@ export class SessionService {
    *  are present. */
   private validateSavedMapConfigs(data: string): boolean {
     const configs: any[] = JSON.parse(data);
-    return configs.every((val) => this.instanceOfMapConfig(val));
+    for( var regionConfig of Object.values(configs)){
+      if(!this.instanceOfMapConfig(regionConfig[0])){
+        console.log('not valid config ' + JSON.stringify(regionConfig[0]));
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private instanceOfMapConfig(data: any): boolean {

@@ -81,8 +81,6 @@ describe('TopBarComponent', () => {
 
   describe('Region selection dropdown', () => {
     it('should set the region', () => {
-      component.loadMap = function(){};
-      component.reloadPage = function(){};
       const setRegionSpy = spyOn<any>(mockSessionService, 'setRegion');
       const regionDropdown = fixture.debugElement.query(
         By.css('[class="region-dropdown"]')

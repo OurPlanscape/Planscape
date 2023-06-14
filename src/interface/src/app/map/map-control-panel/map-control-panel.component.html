@@ -140,9 +140,10 @@
          <!-- Current condition controls -->
          <app-condition-tree
          #conditionTreeRaw
-         [conditionsData$]="conditionDataRaw$"
+         [conditionsConfig$]="conditionsConfig$"
          [header]="'Current Condition (Raw)'"
          [map]="map"
+         [dataType]="'raw'"
          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
        </app-condition-tree>
       </div>
@@ -152,9 +153,10 @@
         <!-- Normalized current condition controls -->
         <app-condition-tree
           #conditionTreeNormalized
-          [conditionsData$]="conditionDataNormalized$"
+          [conditionsConfig$]="conditionsConfig$"
           [header]="'Current Condition'"
           [map]="map"
+          [dataType]="'translated'"
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
         </app-condition-tree>
         </div>
@@ -163,9 +165,10 @@
         <!-- Future condition controls -->
         <app-condition-tree
           #conditionTreeNormalized
-          [conditionsData$]="conditionDataFuture$"
+          [conditionsConfig$]="conditionsConfig$"
           [header]="'Future Climate Stability'"
           [map]="map"
+          [dataType]="'future'"
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
         </app-condition-tree>
       </div>
