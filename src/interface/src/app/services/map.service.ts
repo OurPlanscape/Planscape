@@ -40,18 +40,10 @@ export class MapService {
   );
   readonly conditionNameToDisplayNameMap$ = new BehaviorSubject<Map<string, string>>(new Map<string, string>());
 
-  readonly selectedRegion$ = new BehaviorSubject<Region | null>(null);
+  readonly selectedRegion$ = this.sessionService.region$;
 
-  private readonly destroy$ = new Subject<void>();
 
   constructor(private http: HttpClient, private sessionService: SessionService) {
-
-    this.sessionService
-      .region$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((region: Region | null) => {
-        this.selectedRegion$.next(region);
-      });
 
     this.http
       .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name='+ `${this.regionToString(this.selectedRegion$.getValue())}`)
@@ -93,6 +85,27 @@ export class MapService {
     );
   }
 
+
+  setConfigs(){
+    var geh: ConditionsConfig | null = null;
+    this.http
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name='+ `${this.regionToString(this.selectedRegion$.getValue())}`)
+      .pipe(take(1))
+      .subscribe((config: BoundaryConfig[]) => {
+        this.boundaryConfig$.next(config);
+      });
+    this.http
+      .get<ConditionsConfig>(
+        BackendConstants.END_POINT +
+          '/conditions/config/?region_name=' + `${this.regionToString(this.selectedRegion$.getValue())}`
+      )
+      .pipe(take(1))
+      .subscribe((config: ConditionsConfig) => {
+        this.conditionsConfig$.next(config);
+        this.populateConditionNameMap(config);
+      });
+
+  }
     /* Note: these are the names used by the configurations and backend
    * Defaults to Sierra Nevada. */
   regionToString(region: Region | null): string {
@@ -135,10 +148,7 @@ export class MapService {
       ))
 
     return vector;
-
-
-  }
-
+    }
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
   getExistingProjects(): Observable<GeoJSON.GeoJSON> {
     return this.http.get<string>(BackendConstants.END_POINT + '/projects/calmapper').pipe(
