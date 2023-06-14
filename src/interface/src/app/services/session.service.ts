@@ -102,6 +102,12 @@ export class SessionService {
         return false;
       }
     }
+    for(var region of Object.keys(configs)){
+      if(!Object.values(Region).includes(region as unknown as Region)){
+        console.log('Config key not valid Region ' + region);
+        return false;
+      }
+    }
 
     return true;
   }
