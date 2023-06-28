@@ -87,7 +87,6 @@ export class MapService {
 
 
   setConfigs(){
-    var geh: ConditionsConfig | null = null;
     this.http
       .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name='+ `${this.regionToString(this.selectedRegion$.getValue())}`)
       .pipe(take(1))

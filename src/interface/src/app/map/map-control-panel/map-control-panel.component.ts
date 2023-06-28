@@ -6,7 +6,6 @@ import {
   Output,
   QueryList,
   ViewChildren,
-  ViewChild
 } from '@angular/core';
 import { BehaviorSubject, Subject, Observable, takeUntil } from 'rxjs';
 import {
@@ -24,7 +23,6 @@ import {
   ConditionsNode,
   ConditionTreeComponent,
 } from './condition-tree/condition-tree.component';
-import { SessionService } from '../../services';
 
 
 /** Map Legend Display Strings */
