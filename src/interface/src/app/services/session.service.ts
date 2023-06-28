@@ -70,6 +70,7 @@ export class SessionService {
       
     }
     this.mapConfigs$.next(mapConf);
+    localStorage.setItem('mapConfigs', JSON.stringify(mapConf));
   }
 
   /** Emits the map view options and saves them in local storage. */
@@ -97,9 +98,11 @@ export class SessionService {
   private validateSavedMapConfigs(data: string): boolean {
     const configs: any[] = JSON.parse(data);
     for( var regionConfig of Object.values(configs)){
-      if(!this.instanceOfMapConfig(regionConfig[0])){
-        console.log('not valid config ' + JSON.stringify(regionConfig[0]));
-        return false;
+      for (var mapConfig of Object.values(regionConfig)){
+        if(!this.instanceOfMapConfig(mapConfig)){
+          console.log('not valid config ' + JSON.stringify(mapConfig));
+          return false;
+        }
       }
     }
     for(var region of Object.keys(configs)){
