@@ -64,7 +64,7 @@ class PillarConfigTest(unittest.TestCase):
         self.assertEqual(self._config.get_data_units(
             'functional_fire.tif'), None)
         self.assertEqual(self._config.get_data_units(
-            'TPA_30in_up_2021_300m.tif'), "Live trees/acre")
+            'TPA_30in_up_2021_300m.tif'), "Live Trees/Acre")
         self.assertEqual(self._config.get_data_units(
             'TPA_30in_up_2021_300m_normalized.tif'), None)
 
