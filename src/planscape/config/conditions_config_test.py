@@ -54,7 +54,7 @@ class PillarConfigTest(unittest.TestCase):
         self.assertEqual(self._config.get_min_max_values(
             'functional_fire.tif'), (-1, 1))
         self.assertEqual(self._config.get_min_max_values(
-            'TPA_30in_up_2021_300m.tif'), (0, 26))
+            'TPA_30in_up_2021_300m.tif'), (0, 35))
         self.assertEqual(self._config.get_min_max_values(
             'TPA_30in_up_2021_300m_normalized.tif'), (-1, 1))
     
