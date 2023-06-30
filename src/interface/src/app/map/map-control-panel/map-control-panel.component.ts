@@ -216,7 +216,9 @@ export class MapControlPanelComponent implements OnInit {
                   normalized: true,
                   min_value: undefined,
                   max_value: undefined,
-                  children: element.metrics?.map((metric): ConditionsNode => {
+                  children: element.metrics
+		    ?.filter((metric) => metric.normalized_layer)
+		    .map((metric): ConditionsNode => {
                     return {
                       ...metric,
                       layer: metric.normalized_layer,
