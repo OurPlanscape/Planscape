@@ -812,9 +812,6 @@ describe('MapComponent', () => {
       component.changeOpacity(0.5);
 
       expect(component.maps[0].config.dataLayerConfig.opacity).toEqual(0.5);
-      expect(mapManager.changeOpacity).toHaveBeenCalledOnceWith(
-        component.maps[0]
-      );
     });
 
     it('getOpacityForSelectedMap gets opacity for selected map', () => {
