@@ -1,4 +1,5 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import booleanIntersects from '@turf/boolean-intersects';
 import booleanWithin from '@turf/boolean-within';
 import { point } from '@turf/helpers';
@@ -45,7 +46,8 @@ export class MapManager {
     private readonly mapViewOptions$: BehaviorSubject<MapViewOptions>,
     private popupService: PopupService,
     private startLoadingLayerCallback: (layerName: string) => void,
-    private doneLoadingLayerCallback: (layerName: string) => void
+    private doneLoadingLayerCallback: (layerName: string) => void,
+    private http: HttpClient
   ) {}
 
   getGeomanDrawOptions(): L.PM.ToolbarOptions {
@@ -672,6 +674,13 @@ export class MapManager {
     }
   }
 
+  getColor(d:any) {
+    return d === 'beh'  ? "#de2d26" :
+           d === 'what'  ? "#377eb8" :
+           d === 'hm' ? "#4daf4a" :
+           d === 'Roadside Hazards' ? "#984ea3" :
+                        "#ff7f00";
+}
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     if (map.instance === undefined) return;
@@ -704,6 +713,152 @@ export class MapManager {
     );
 
     map.dataLayerRef.addTo(map.instance);
+
+    //TODO UNHARDCODE LEGEND JSON CALL
+    // https://dev-geo.planscape.org/geoserver/wms?service=WMS&version=1.1.0&request=GetLegendGraphic&layer=sierra-nevada:airQualityTranslate_airQuality&format=application/json
+     const url = BackendConstants.TILES_END_POINT + 'wms';
+ 
+    let queryParams = new HttpParams();
+   // queryParams = queryParams.append("service","WMS&version=1.1.0");
+    queryParams = queryParams.append("request", "GetLegendGraphic");
+    queryParams = queryParams.append("layer", "sierra-nevada:airQualityTranslate_airQuality");
+    queryParams = queryParams.append("format", "application/json");
+    var json = this.http.get(url,{params:queryParams});
+    json
+      .pipe(take(1))
+      .subscribe((value) => {
+        console.log('json');
+        console.log(typeof(value));
+        console.log(value);
+      });
+
+      var hardcodejson = {"Legend": [{"layerName": "airQualityTranslate_airQuality","title": "airQuality", "rules": [{"symbolizers": [{ "Raster": {"colormap": {"entries": [{ "label": "NA", "quantity": "-99999", "color": "#000000",  "opacity": "0.0" },{"label": "OK!","quantity": "-0.4286","color": "#FE992C","opacity": "1.0"},{"label": ":)","quantity": "0.7143","color": "#4777EF","opacity": "1.0"},],"type": "ramp"}, "opacity": "1.0","contrast-enhancement": {"gamma-value": "1.0"}} }]} ]}]};
+      var hardcodejson1 = {"Legend": [{"layerName": "airQualityTranslate_airQuality","title": "airQuality", "rules": [{"symbolizers": [{ "Raster": {"colormap": {"entries": [{ "label": "nodata", "quantity": "-99999", "color": "#000000",  "opacity": "0.0" },{"label": "okay!","quantity": "-0.4286","color": "#FE992C","opacity": "1.0"},{"label": "nice!","quantity": "0.7143","color": "#4777EF","opacity": "1.0"},],"type": "ramp"}, "opacity": "1.0","contrast-enhancement": {"gamma-value": "1.0"}} }]} ]}]};
+     
+      // console.log(stringjson);
+      // var hardcodejson = JSON.parse(stringjson);
+      console.log('hardcode');
+      console.log(hardcodejson);
+    const legend = new (L.Control.extend({
+      options: { position: 'topleft' }
+    }));
+    const vm = this;
+    var labels1: string[] = [];
+    var colorDict1= new Map<string, string>();
+    var entries1 = hardcodejson1['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap']['entries']
+    entries1.forEach((entry:any) => {
+      labels1.push(entry['label']);
+      colorDict1.set(entry['label'], entry['color']);
+    })
+    var labels: string[] = [];
+    var colorDict= new Map<string, string>();
+    var entries = hardcodejson['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap']['entries']
+    entries.forEach((entry:any) => {
+      labels.push(entry['label']);
+      colorDict.set(entry['label'], entry['color']);
+    })
+    console.log(labels);
+    console.log(colorDict);
+    legend.onAdd = function (map) {
+      
+      const div = L.DomUtil.create('div', 'legend');
+      
+      div.innerHTML = '<div><b>Legend</b></div>';
+      for (let i = 0; i < labels.length; i++) {
+        div.innerHTML += '<i style="background:' + colorDict.get(labels[i]) + '"> &nbsp; &nbsp;</i> &nbsp;'
+      + labels[i] + '<br/>';
+      }
+      L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
+      // FOR CHANGING LABELS FROM LONG TO SHORT MAYBE
+
+      // div.addEventListener("mouseover", function (event) {
+      //   map.removeControl(legend);
+      //   div.innerHTML = '';
+      //   for (let i = 0; i < grades.length; i++) {
+      //     div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
+      //   + labels2[i] + '<br/>';
+      //   }
+      // });
+      // div.addEventListener("mouseout", function (event) {
+      //   map.removeControl(legend);
+      //   div.innerHTML = '';
+      //   for (let i = 0; i < grades.length; i++) {
+      //     div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
+      //   + labels[i] + '<br/>';
+      //   }
+      // });
+
+      div.addEventListener("mouseover", function (event) {
+        // map.removeControl(legend);
+        div.innerHTML = '<div><b>Legend</b></div>';
+        for (let i = 0; i < labels1.length; i++) {
+          div.innerHTML += '<i style="background:' + colorDict1.get(labels1[i]) + '"> &nbsp; &nbsp;</i>  &nbsp;'
+        + labels1[i] + '<br/>';
+        }
+      })
+      div.addEventListener("mouseout", function (event) {
+        // map.removeControl(legend);
+        div.innerHTML = '<div><b>Legend</b></div>';
+      for (let i = 0; i < labels.length; i++) {
+        div.innerHTML += '<i style="background:' + colorDict.get(labels[i]) + '"> &nbsp; &nbsp;</i>  &nbsp;'
+      + labels[i] + '<br/>';
+      }
+    })
+      return div;
+    };
+    legend.addTo(map.instance);
+    
+    // map.instance.removeControl(legend);
+   
+  //  map.instance.removeControl(legend);
+  //   const legend1 = new (L.Control.extend({
+  //     options: { position: 'topleft' }
+  //   }));
+  //   const vm1 = this;
+  //   legend1.onAdd = function (map) {
+  //     const div = L.DomUtil.create('div', 'legend');
+  //     const labels2 = [
+  //       'Sales  than ' ,
+  //       'Sales ad than ',
+  //       'Sales eqasdfual or less than '
+  //     ];
+  //     const grades = ['beh', 'what', 'hm' ];
+  //     div.innerHTML = '<div><b>Legend</b></div>';
+  //     for (let i = 0; i < labels.length; i++) {
+  //       div.innerHTML += '<i style="background:' + colorDict.get(labels[i]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
+  //     + labels[i] + '<br/>';
+  //     }
+  //     div.addEventListener("mouseover", function (event) {
+  //       map.removeControl(legend);
+  //       div.innerHTML = '';
+  //       for (let i = 0; i < grades.length; i++) {
+  //         div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
+  //       + labels2[i] + '<br/>';
+  //       }
+  //     });
+  //     div.addEventListener("mouseout", function (event) {
+  //       map.removeControl(legend);
+  //       div.innerHTML = '';
+  //       for (let i = 0; i < grades.length; i++) {
+  //         div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
+  //       + labels[i] + '<br/>';
+  //       }
+  //     });
+  //     return div;
+  //   };
+
+//     var imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
+// var errorOverlayUrl = 'https://cdn-icons-png.flaticon.com/512/110/110686.png';
+// var altText = 'Image of Newark, N.J. in 1922. Source: The University of Texas at Austin, UT Libraries Map Collection.';
+// var latLngBounds = L.latLngBounds([[37.097634,-122.736866], [37.097634,-122.736866]]);
+
+// var imageOverlay = L.imageOverlay(imageUrl, latLngBounds, {
+//     opacity: 1.0,
+//     errorOverlayUrl: errorOverlayUrl,
+//     alt: altText,
+//     interactive: true,
+//     zIndex: 999,
+// }).addTo(map.instance);
   }
 
   /** Change the opacity of a map's data layer. */
@@ -711,3 +866,4 @@ export class MapManager {
     map.dataLayerRef?.setOpacity(map.config.dataLayerConfig.opacity!);
   }
 }
+
