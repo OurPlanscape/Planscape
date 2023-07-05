@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -128,7 +129,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
     private popupService: PopupService,
     private sessionService: SessionService,
     private planService: PlanService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient,
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
       takeUntil(this.destroy$)
@@ -172,7 +174,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       this.mapViewOptions$,
       popupService,
       this.startLoadingLayerCallback.bind(this),
-      this.doneLoadingLayerCallback.bind(this)
+      this.doneLoadingLayerCallback.bind(this),
+      this.http
     );
     this.mapManager.polygonsCreated$
       .pipe(takeUntil(this.destroy$))

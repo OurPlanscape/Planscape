@@ -5,7 +5,7 @@
 
     <div class="legend-box">
       <!-- Name of the kind of data -->
-      <h3>{{selectedMap?.config?.dataLayerConfig?.legend_name}}</h3>
+      <!-- <h3>{{selectedMap?.config?.dataLayerConfig?.legend_name}}</h3>
 
       <div class="legend-title">
         <h2>{{selectedMap?.config?.dataLayerConfig?.display_name}}</h2>
@@ -16,10 +16,10 @@
         <mat-menu #popoverMenu="matMenu">
           <app-layer-info-card [dataLayerConfig]="selectedMap?.config?.dataLayerConfig"></app-layer-info-card>
         </mat-menu>
-      </div>
+      </div> -->
 
       <!-- Legend for the currently shown map -->
-      <app-legend [legend]="getSelectedLegend()"></app-legend>
+      <!-- <app-legend [legend]="getSelectedLegend()"></app-legend> -->
 
       <!-- Opacity controls for the currently shown data layer -->
       <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity"
