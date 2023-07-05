@@ -18,6 +18,7 @@ import {
   Subject,
   take,
   takeUntil,
+  of
 } from 'rxjs';
 import { filter} from 'rxjs/operators';
 import * as shp from 'shpjs';
@@ -555,6 +556,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   /** Change the opacity of the currently shown data layer on all maps (if any). */
   changeOpacity(opacity: number) {
+    this.mapManager.defaultOpacity = opacity;
     this.maps.forEach((map: Map) => {
       map.config.dataLayerConfig.opacity = opacity;
       this.mapManager.changeOpacity(map);
@@ -563,9 +565,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
 
   /** Return the selected map's data layer opacity. */
   getOpacityForSelectedMap(): Observable<number | undefined> {
+    var dataLayerConfigOpacityDefined = true;
+    this.selectedMap$?.pipe(
+      take(1)
+    ).subscribe((selectedMap: any) => {
+      if(selectedMap?.config.dataLayerConfig.opacity == null){
+        dataLayerConfigOpacityDefined = false;
+      }
+    })
+    if(dataLayerConfigOpacityDefined){
     return this.selectedMap$.pipe(
       map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
     );
+    }
+    else{
+      return of(this.mapManager.defaultOpacity);
+    }
   }
 
   /** Whether the currently selected map has a data layer active. */
