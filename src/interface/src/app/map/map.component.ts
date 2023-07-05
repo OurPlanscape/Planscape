@@ -553,11 +553,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       });
   }
 
-  /** Change the opacity of the currently shown data layer (if any). */
+  /** Change the opacity of the currently shown data layer on all maps (if any). */
   changeOpacity(opacity: number) {
-    const selectedMap = this.maps[this.mapViewOptions$.value.selectedMapIndex];
-    selectedMap.config.dataLayerConfig.opacity = opacity;
-    this.mapManager.changeOpacity(selectedMap);
+    this.maps.forEach((map: Map) => {
+      map.config.dataLayerConfig.opacity = opacity;
+      this.mapManager.changeOpacity(map);
+    })
   }
 
   /** Return the selected map's data layer opacity. */
