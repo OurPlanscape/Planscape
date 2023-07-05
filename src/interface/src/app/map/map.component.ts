@@ -566,9 +566,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
   /** Return the selected map's data layer opacity. */
   getOpacityForSelectedMap(): Observable<number | undefined> {
     var dataLayerConfigOpacityDefined = true;
-    this.selectedMap$?.pipe(
-      take(1)
-    ).subscribe((selectedMap: any) => {
+    this.selectedMap$
+    .pipe(take(1))
+    .subscribe((selectedMap: any) => {
       if(selectedMap?.config.dataLayerConfig.opacity == null){
         dataLayerConfigOpacityDefined = false;
       }
