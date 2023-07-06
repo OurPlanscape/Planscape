@@ -19,15 +19,15 @@ describe('StringifyMapConfigPipe', () => {
       expect(transformedStr).toEqual('');
     });
 
-    it('should still return empty string due to lack of a display name and boundary name', () => {
+    it('should still return empty string due to lack of a dataLayerConfig's display_name and the lack of a boundary's boundary_name', () => {
       let mapConfig: MapConfig = {
         baseLayerType: BaseLayerType.Road,
-	boundaryLayerConfig: {
+        boundaryLayerConfig: {
           display_name: 'HUC-12',
           boundary_name: '',
           vector_name: 'sierra-nevada:vector_huc12',
           shape_name: 'Name",'
-	},
+        },
         dataLayerConfig: {
         },
         showExistingProjectsLayer: false,
@@ -41,12 +41,12 @@ describe('StringifyMapConfigPipe', () => {
     it('should return just the boundary name', () => {
       let mapConfig: MapConfig = {
         baseLayerType: BaseLayerType.Road,
-	boundaryLayerConfig: {
+        boundaryLayerConfig: {
           display_name: 'HUC-12',
           boundary_name: 'huc12',
           vector_name: 'sierra-nevada:vector_huc12',
           shape_name: 'Name",'
-	},
+        },
         dataLayerConfig: {
         },
         showExistingProjectsLayer: false,
@@ -61,12 +61,12 @@ describe('StringifyMapConfigPipe', () => {
     it('should return just the existing projects', () => {
       let mapConfig: MapConfig = {
         baseLayerType: BaseLayerType.Road,
-	boundaryLayerConfig: {
+        boundaryLayerConfig: {
           display_name: 'HUC-12',
           boundary_name: '',
           vector_name: 'sierra-nevada:vector_huc12',
           shape_name: 'Name",'
-	},
+        },
         dataLayerConfig: {
         },
         showExistingProjectsLayer: true,
