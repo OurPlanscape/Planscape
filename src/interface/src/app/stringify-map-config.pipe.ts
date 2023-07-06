@@ -18,13 +18,11 @@ export class StringifyMapConfigPipe implements PipeTransform {
 
     let str: string = '';
     let labels: string[] = [];
-    if (
-      !!mapConfig.dataLayerConfig.filepath &&
-      mapConfig.dataLayerConfig.filepath.length > 0
-    ) {
-      let dataLabel = mapConfig.dataLayerConfig.display_name
-        ? mapConfig.dataLayerConfig.display_name
-        : mapConfig.dataLayerConfig.filepath;
+
+    if (!!mapConfig.dataLayerConfig.display_name &&
+      mapConfig.dataLayerConfig.display_name.length > 0 &&
+      mapConfig.dataLayerConfig.display_name != "None") {
+      let dataLabel = mapConfig.dataLayerConfig.display_name;
       if (mapConfig.dataLayerConfig.normalized) {
         dataLabel = dataLabel.concat(' (Normalized)');
       }
