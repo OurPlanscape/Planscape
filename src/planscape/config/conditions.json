@@ -1,5 +1,5 @@
 {
-  "__comment1": "TODO: reorder lines (first by name, then alphabetically)",
+  "__comment1": "TODO: add validation that each layer type has minimally-viable data, e.g. a display_name",
   "__comment_socal_source": "https://docs.google.com/spreadsheets/d/1Fvx8DBUq-hrU6yd7Q4iP9g4f7s7TGVl6/edit#gid=283454101",
   "regions": [
     {
