@@ -19,7 +19,7 @@ describe('StringifyMapConfigPipe', () => {
       expect(transformedStr).toEqual('');
     });
 
-    it('should still return empty string due to lack of a dataLayerConfig's display_name and the lack of a boundary's boundary_name', () => {
+    it('should still return empty string due to lack of dataLayerConfig::display_name and the lack of boundary::boundary_name', () => {
       let mapConfig: MapConfig = {
         baseLayerType: BaseLayerType.Road,
         boundaryLayerConfig: {
