@@ -13,9 +13,6 @@
     <span *ngIf="hasSource()">
       SOURCE: <a [href]="dataLayerConfig?.source_link" target="_blank">{{dataLayerConfig?.source}}</a>
     </span>
-    <span *ngIf="hasYear()">
-      ({{dataLayerConfig?.data_year}})
-    </span>
   </p>
 
   <div *ngIf="hasDownloadLink()">
