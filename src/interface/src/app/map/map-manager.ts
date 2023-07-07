@@ -710,27 +710,27 @@ export class MapManager {
       div.innerHTML = '<div><b>Legend</b></div>';
         for (let i = 0; i < entries.length; i++) {
         var entry = entries[i]
-        var nextColor = i+1 < entries.length ? entries[i+1]['color'] : entry['color'];
+        // var nextColor = i+1 < entries.length ? entries[i+1]['color'] : entry['color'];
         var lastChild = "";
         if(i == entries.length -1){
-          lastChild = "margin-bottom: 5px;";
+          lastChild = "margin-bottom: 6px;";
         }
-        if(entryType == 'ramp'){
-        if(entry['label']){
-          var label = entry['label'];
-          if(label == 'nodata'){
-            div.innerHTML += '<nodata style>&#x2327 N/D<br/></nodata>';
-          }
-          else{
-              div.innerHTML += '<i style="background-image: linear-gradient(' + entry['color'] + ', ' + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp;<label>'
-            + label + '<br/></label>';
-          }
-        }
-        else{
-          div.innerHTML += '<i style=" background-image: linear-gradient(' + entry['color'] + ", " + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp; <br/>';
-        }
-      }
-      else{
+      //   if(entryType == 'ramp'){
+      //   if(entry['label']){
+      //     var label = entry['label'];
+      //     if(label == 'nodata'){
+      //       div.innerHTML += '<nodata style>&#x2327 N/D<br/></nodata>';
+      //     }
+      //     else{
+      //         div.innerHTML += '<i style="background-image: linear-gradient(' + entry['color'] + ', ' + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp;<label>'
+      //       + label + '<br/></label>';
+      //     }
+      //   }
+      //   else{
+      //     div.innerHTML += '<i style=" background-image: linear-gradient(' + entry['color'] + ", " + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp; <br/>';
+      //   }
+      // }
+      // else{
         if(entry['label']){
           var label = entry['label'];
           if(label == 'nodata'){
@@ -738,14 +738,14 @@ export class MapManager {
             
           }
           else{
-              div.innerHTML += '<i style="background:'+ entry['color'] +'; height: 10px;' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp;<label>'
-            + label + '<br/></label>';
+              div.innerHTML += '<div id="legendline" style="'+ lastChild+ '"><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
+            + label + '<br/></label></div>';
           }
         }
         else{
-          div.innerHTML += '<i style="background:'+ entry['color'] +';height: 10px;' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp; <br/>';
+          div.innerHTML += '<div id="legendline" style="'+ lastChild+ '"><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
         }
-      }
+      // }
       }
 
       L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
