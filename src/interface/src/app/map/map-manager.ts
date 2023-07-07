@@ -711,6 +711,10 @@ export class MapManager {
         for (let i = 0; i < entries.length; i++) {
         var entry = entries[i]
         var nextColor = i+1 < entries.length ? entries[i+1]['color'] : entry['color'];
+        var lastChild = "";
+        if(i == entries.length -1){
+          lastChild = "margin-bottom: 5px;";
+        }
         if(entryType == 'ramp'){
         if(entry['label']){
           var label = entry['label'];
@@ -718,12 +722,12 @@ export class MapManager {
             div.innerHTML += '<nodata style>&#x2327 N/D<br/></nodata>';
           }
           else{
-              div.innerHTML += '<i style="background-image: linear-gradient(' + entry['color'] + ", " + nextColor + ')"> &nbsp; &nbsp;</i> &nbsp;<label>'
+              div.innerHTML += '<i style="background-image: linear-gradient(' + entry['color'] + ', ' + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp;<label>'
             + label + '<br/></label>';
           }
         }
         else{
-          div.innerHTML += '<i style=" background-image: linear-gradient(' + entry['color'] + ", " + nextColor + ')"> &nbsp; &nbsp;</i> &nbsp; <br/>';
+          div.innerHTML += '<i style=" background-image: linear-gradient(' + entry['color'] + ", " + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp; <br/>';
         }
       }
       else{
@@ -734,12 +738,12 @@ export class MapManager {
             
           }
           else{
-              div.innerHTML += '<i style="background:'+ entry['color'] +'"> &nbsp; &nbsp;</i> &nbsp;<label>'
+              div.innerHTML += '<i style="background:'+ entry['color'] +'; height: 10px;' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp;<label>'
             + label + '<br/></label>';
           }
         }
         else{
-          div.innerHTML += '<i style="background:'+ entry['color'] +'"> &nbsp; &nbsp;</i> &nbsp; <br/>';
+          div.innerHTML += '<i style="background:'+ entry['color'] +';height: 10px;' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp; <br/>';
         }
       }
       }
