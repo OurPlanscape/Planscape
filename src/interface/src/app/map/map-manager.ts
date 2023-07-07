@@ -748,9 +748,6 @@ export class MapManager {
       }
       }
 
-    
-        
-      
       L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
       // FOR CHANGING LABELS FROM LONG TO SHORT MAYBE
 
@@ -827,17 +824,14 @@ export class MapManager {
 
     map.dataLayerRef.addTo(map.instance);
 
-    //TODO UNHARDCODE LEGEND JSON CALL
-    // https://dev-geo.planscape.org/geoserver/wms?service=WMS&version=1.1.0&request=GetLegendGraphic&layer=sierra-nevada:airQualityTranslate_airQuality&format=application/json
-     const url = BackendConstants.TILES_END_POINT + 'wms';
+    const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
  
     let queryParams = new HttpParams();
-   // queryParams = queryParams.append("service","WMS&version=1.1.0");
     queryParams = queryParams.append("request", "GetLegendGraphic");
     queryParams = queryParams.append("layer", layer);
     queryParams = queryParams.append("format", "application/json");
-    var json = this.http.get<string>(url,{params:queryParams});
-    json
+    var legendJson = this.http.get<string>(legendUrl,{params:queryParams});
+    legendJson
       .pipe(take(1))
       .subscribe((value:any) => {
         var colorMap = value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
