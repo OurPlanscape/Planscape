@@ -543,17 +543,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit {
       return;
     }
 
-    this.mapService
-      .getColormap(colormap)
-      .pipe(take(1))
-      .subscribe((colormapConfig) => {
-        map.legend = colormapConfigToLegend(
-          colormapConfig,
-          minMaxValues?.every((val) => val !== undefined)
-            ? (minMaxValues as number[])
-            : undefined
-        );
-      });
   }
 
   /** Change the opacity of the currently shown data layer (if any). */

@@ -51,46 +51,38 @@
   z-index: 2;
 }
 
-
-
+// Styling for legend on mousehover
 ::ng-deep .legend:hover {
 width: 100%;
 overflow: auto;
-height: 5%;
-max-height: 50px;
+overflow-y:scroll;
+height: auto;
 max-width: 100%;
+opacity: 1;
+transition-duration: 0.8s;
 }
-  
-//   .legend i {
-//     width: 10px;
-//     height: 10px;
-//     float: left;
-//     margin-right: 8px;
-//     opacity: 0.7;
-//     display: flex;
-// flex-direction: row;
-// /* width: 100%; */
-//   }
+
+// Default styling for legend
 ::ng-deep .legend {
   top: 40px;
-  margin: 5px;
+  bottom: 40px;
+  margin: 10px;
   font-weight: bold;
   color: solid #2491FF;
   text-align: left;
-  // width: 250px;
-  // height: 240px;
-  height: 50px;
-  width:60px;
-  // overflow-x: clip;
-  overflow-y: auto;
+  height: auto;
+  max-height: 300px;
+  width:65px;
+  text-overflow: ellipsis;
+  overflow-y: hidden;
   line-height: 18px;
   background: white;
+  
   opacity: 0.7;
   display: inline-block;
   border: 2px #AAA solid;
   border-radius: 5px;
-  max-width: 70px;
-  transition: max-width 500ms;
+  transition: width 0.8s;
 }
 
 ::-webkit-scrollbar {
@@ -103,25 +95,45 @@ max-width: 100%;
   -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 ::ng-deep .legend i {
-  // width: 50px;
-  // height: 50px;
   float: left;
-  margin: 4px;
-  margin-right: 8px;
+  margin-left: 8px;
   opacity: 0.7;
-  width: 10px;
-  // text-overflow: ellipsis;
+  height: 10px;
+}
+
+::ng-deep .legend nodata {
+  opacity: 0.7;
+  margin-left: 8px;
+  text-overflow: ellipsis;
+  overflow-x:hidden;
+  white-space: nowrap; 
+  height: 10px;
+  max-width: 65px;
+}
+
+::ng-deep .legend label {
+  opacity: 0.7;
+  
+  text-overflow: ellipsis;
+  overflow-x:hidden;
+  white-space: nowrap; 
+  height: 10px;
+  max-width: 65px;
+
+}
+
+::ng-deep .legend b {
+
+  text-align: center;
+  font-size: small;
+  margin: 4px;
+  margin-left: 10px;
+  margin-bottom: 10px;
+  width: auto;
   height: 10px;
   display: flex;
   flex-direction: row;
 }
-
-// ::ng-deep .legend .square2 {
-//   border-radius: 50%;
-//   width: 50px;
-//   height: 50px;
-//   margin-top: 8px;
-// }
 
 .actions-bar-text {
   align-items: center;
