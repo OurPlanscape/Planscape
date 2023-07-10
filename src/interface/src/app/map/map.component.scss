@@ -55,6 +55,7 @@
 ::ng-deep .legend:hover {
 width: 100%;
 overflow-y:scroll;
+text-overflow: ellipsis;
 height: auto;
 max-width: auto;
 opacity: 1;
@@ -70,7 +71,9 @@ transition-duration: 0.8s;
   color: solid #2491FF;
   text-align: left;
   height: auto;
-  max-height: 300px;
+  // height: 100%;
+  // max-height: 300px;
+  max-height:50%;
   width:65px;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -104,6 +107,8 @@ transition-duration: 0.8s;
   
   left: 3px;
   float: left; 
+  text-overflow: ellipsis;
+  overflow: hidden;
   margin-left: 8px;
   width: auto;
 }
@@ -111,7 +116,6 @@ transition-duration: 0.8s;
 // // Legend color entry
 ::ng-deep .legend i {
   margin-left: 8px;
-  margin-bottom: 8px;
 }
 
 // Legend nodata entry
