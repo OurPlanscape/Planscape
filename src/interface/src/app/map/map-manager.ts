@@ -674,13 +674,6 @@ export class MapManager {
     }
   }
 
-  getColor(d:any) {
-    return d === 'beh'  ? "#de2d26" :
-           d === 'what'  ? "#377eb8" :
-           d === 'hm' ? "#4daf4a" :
-           d === 'Roadside Hazards' ? "#984ea3" :
-                        "#ff7f00";
-}
   addLegend(colormap: any, map: Map){
     var entries = colormap['entries'];
     var entryType = colormap['type'];
@@ -706,14 +699,16 @@ export class MapManager {
       }
       
       const div = L.DomUtil.create('div', 'legend');
-      
-      div.innerHTML = '<div><b>Legend</b></div>';
+      var htmlContent = '';
+      htmlContent += '<div class=parentlegend>';
+      // htmlContent += '<div class=legendbox>';
+      htmlContent += '<div><b>Legend</b></div>';
         for (let i = 0; i < entries.length; i++) {
         var entry = entries[i]
         // var nextColor = i+1 < entries.length ? entries[i+1]['color'] : entry['color'];
         var lastChild = "";
         if(i == entries.length -1){
-          lastChild = "margin-bottom: 6px;";
+          lastChild = 'style="margin-bottom: 6px;"';
         }
       //   if(entryType == 'ramp'){
       //   if(entry['label']){
@@ -734,20 +729,22 @@ export class MapManager {
         if(entry['label']){
           var label = entry['label'];
           if(label == 'nodata'){
-            div.innerHTML += '<nodata>&#x2327 N/D<br/></nodata>';
+            htmlContent += '<nodata>&#x2327 N/D<br/></nodata>';
             
           }
           else{
-              div.innerHTML += '<div id="legendline" style="'+ lastChild+ '"><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
+            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
             + label + '<br/></label></div>';
           }
         }
         else{
-          div.innerHTML += '<div id="legendline" style="'+ lastChild+ '"><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
+          htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
         }
       // }
       }
-
+      htmlContent += '</div>';
+      div.innerHTML = htmlContent;
+      console.log(div.innerHTML);
       L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
       // FOR CHANGING LABELS FROM LONG TO SHORT MAYBE
 

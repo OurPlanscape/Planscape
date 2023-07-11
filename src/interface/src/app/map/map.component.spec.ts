@@ -1,6 +1,7 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ApplicationRef, NO_ERRORS_SCHEMA } from '@angular/core';
+import { HttpClientTestingModule,} from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
@@ -165,7 +166,7 @@ describe('MapComponent', () => {
     });
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
-      imports: [FormsModule, MaterialModule, BrowserAnimationsModule],
+      imports: [FormsModule, MaterialModule, BrowserAnimationsModule, HttpClientTestingModule],
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         MapComponent,
