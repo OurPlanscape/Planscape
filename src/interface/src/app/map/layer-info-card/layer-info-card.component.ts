@@ -32,10 +32,6 @@ export class LayerInfoCardComponent {
     return !!this.dataLayerConfig?.source && !!this.dataLayerConfig.source_link;
   }
 
-  hasYear(): boolean {
-    return !!this.dataLayerConfig?.data_year;
-  }
-
   computeMinMax(): number[] {
     if (this.dataLayerConfig?.normalized) {
       return [-1, 1];
