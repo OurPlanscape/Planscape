@@ -4,7 +4,7 @@ import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { colormapConfigToLegend, Legend, Plan } from 'src/app/types';
+import { Plan } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
@@ -54,7 +54,7 @@ export class SetPrioritiesComponent implements OnInit {
   conditionScores = new Map<string, ScoreColumn>();
   displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
-  legend: Legend | undefined;
+  // legend: Legend | undefined;
 
   constructor(
     private mapService: MapService,
@@ -64,9 +64,9 @@ export class SetPrioritiesComponent implements OnInit {
       .getColormap('turbo')
       .pipe(take(1))
       .subscribe((colormapConfig) => {
-        this.legend = colormapConfigToLegend(colormapConfig);
-        this.legend!.labels = ['Poor', 'OK', 'Excellent'];
-        this.legend!.secondaryLabels = ['-1', '0', '1'];
+        // this.legend = colormapConfigToLegend(colormapConfig);
+        // this.legend!.labels = ['Poor', 'OK', 'Excellent'];
+        // this.legend!.secondaryLabels = ['-1', '0', '1'];
       });
   }
 
