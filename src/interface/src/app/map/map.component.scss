@@ -63,11 +63,12 @@ opacity: 1;
 transition-duration: 0.8s;
 }
 
+// Setting heights for built-in leaflet styles to be able to configure relative max-height 
 ::ng-deep .leaflet-left  .leaflet-control{
   height:auto;
   max-height:80%;
 }
-
+// Setting heights for built-in leaflet styles to be able to configure relative max-height 
 ::ng-deep .leaflet-top{
   height:100%;
 }
@@ -99,16 +100,6 @@ transition-duration: 0.8s;
   display: flex;
   flex-direction: column;
   height:100%;
-}
-
-::-webkit-scrollbar {
-  -webkit-appearance: none;
-  width: 7px;
-}
-::-webkit-scrollbar-thumb {
-  border-radius: 4px;
-  background-color: rgba(0,0,0,.5);
-  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
 }
 
 // Legend line

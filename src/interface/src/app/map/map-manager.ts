@@ -676,24 +676,12 @@ export class MapManager {
 
   addLegend(colormap: any, map: Map){
     var entries = colormap['entries'];
-    var entryType = colormap['type'];
     const legend = new (L.Control.extend({
       options: { position: 'topleft' }
     }));
-    const vm = this;
     const mapRef = map;
-
-    // var entries1 = json['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap']['entries']
-    // var labels: string[] = [];
-    // var colorDict= new Map<string, string>();
-    // var entries = hardcodejson['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap']['entries']
-    // entries.forEach((entry:any) => {
-    //   labels.push(entry['label']);
-    //   colorDict.set(entry['label'], entry['color']);
-    // })
-    // console.log(labels);
-    // console.log(colorDict);
     legend.onAdd = function (map) {
+      // Remove any pre-existing legend on map
       if(mapRef.legend){
         L.DomUtil.remove(mapRef.legend);
       }
@@ -701,31 +689,15 @@ export class MapManager {
       const div = L.DomUtil.create('div', 'legend');
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
-      // htmlContent += '<div class=legendbox>';
       htmlContent += '<div><b>Legend</b></div>';
         for (let i = 0; i < entries.length; i++) {
         var entry = entries[i]
-        // var nextColor = i+1 < entries.length ? entries[i+1]['color'] : entry['color'];
+
+        // Add a margin-bottom to only the last entry in the legend
         var lastChild = "";
         if(i == entries.length -1){
           lastChild = 'style="margin-bottom: 6px;"';
         }
-      //   if(entryType == 'ramp'){
-      //   if(entry['label']){
-      //     var label = entry['label'];
-      //     if(label == 'nodata'){
-      //       div.innerHTML += '<nodata style>&#x2327 N/D<br/></nodata>';
-      //     }
-      //     else{
-      //         div.innerHTML += '<i style="background-image: linear-gradient(' + entry['color'] + ', ' + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp;<label>'
-      //       + label + '<br/></label>';
-      //     }
-      //   }
-      //   else{
-      //     div.innerHTML += '<i style=" background-image: linear-gradient(' + entry['color'] + ", " + nextColor + '); ' + lastChild + '"> &nbsp; &nbsp;</i> &nbsp; <br/>';
-      //   }
-      // }
-      // else{
         if(entry['label']){
           var label = entry['label'];
           if(label == 'nodata'){
@@ -740,51 +712,15 @@ export class MapManager {
         else{
           htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
         }
-      // }
       }
       htmlContent += '</div>';
       div.innerHTML = htmlContent;
-      console.log(div.innerHTML);
+      // Needed to allow for scrolling on the legend 
       L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
-      // FOR CHANGING LABELS FROM LONG TO SHORT MAYBE
-
-      // div.addEventListener("mouseover", function (event) {
-      //   map.removeControl(legend);
-      //   div.innerHTML = '';
-      //   for (let i = 0; i < grades.length; i++) {
-      //     div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-      //   + labels2[i] + '<br/>';
-      //   }
-      // });
-      // div.addEventListener("mouseout", function (event) {
-      //   map.removeControl(legend);
-      //   div.innerHTML = '';
-      //   for (let i = 0; i < grades.length; i++) {
-      //     div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-      //   + labels[i] + '<br/>';
-      //   }
-      // });
-
-    //   div.addEventListener("mouseover", function (event) {
-    //     // map.removeControl(legend);
-    //     div.innerHTML = '<div><b>Legend</b></div>';
-    //     for (let i = 0; i < labels1.length; i++) {
-    //       div.innerHTML += '<i style="background:' + colorDict1.get(labels1[i]) + '"> &nbsp; &nbsp;</i>  &nbsp;'
-    //     + labels1[i] + '<br/>';
-    //     }
-    //   })
-    //   div.addEventListener("mouseout", function (event) {
-    //     // map.removeControl(legend);
-    //     div.innerHTML = '<div><b>Legend</b></div>';
-    //   for (let i = 0; i < labels.length; i++) {
-    //     div.innerHTML += '<i style="background:' + colorDict.get(labels[i]) + '"> &nbsp; &nbsp;</i>  &nbsp;'
-    //   + labels[i] + '<br/>';
-    //   }
-    // })
+      // Set reference to legend for later deletion
       mapRef.legend = div;
       return div;
     };
-    
     legend.addTo(map.instance!);
   }
 
@@ -820,9 +756,9 @@ export class MapManager {
     );
 
     map.dataLayerRef.addTo(map.instance);
-
+    
+    // Map legend request
     const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
- 
     let queryParams = new HttpParams();
     queryParams = queryParams.append("request", "GetLegendGraphic");
     queryParams = queryParams.append("layer", layer);
@@ -834,135 +770,6 @@ export class MapManager {
         var colorMap = value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
         this.addLegend(colorMap, map);
       });
-
-      // var hardcodejson = {"Legend": [{"layerName": "airQualityTranslate_airQuality","title": "airQuality", "rules": [{"symbolizers": [{ "Raster": {"colormap": {"entries": [{ "label": "NA", "quantity": "-99999", "color": "#000000",  "opacity": "0.0" },{"label": "OK!","quantity": "-0.4286","color": "#FE992C","opacity": "1.0"},{"label": ":)","quantity": "0.7143","color": "#4777EF","opacity": "1.0"},],"type": "ramp"}, "opacity": "1.0","contrast-enhancement": {"gamma-value": "1.0"}} }]} ]}]};
-      // var hardcodejson1 = {"Legend": [{"layerName": "airQualityTranslate_airQuality","title": "airQuality", "rules": [{"symbolizers": [{ "Raster": {"colormap": {"entries": [{ "label": "nodata", "quantity": "-99999", "color": "#000000",  "opacity": "0.0" },{"label": "okay!","quantity": "-0.4286","color": "#FE992C","opacity": "1.0"},{"label": "nice!","quantity": "0.7143","color": "#4777EF","opacity": "1.0"},],"type": "ramp"}, "opacity": "1.0","contrast-enhancement": {"gamma-value": "1.0"}} }]} ]}]};
-     
-      // console.log('actual json');
-      // var hardcodejson = JSON.parse(stringjson);
-    //   console.log('actual json');
-    //   console.log(entries1);
-    //   console.log(gwah);
-    // const legend = new (L.Control.extend({
-    //   options: { position: 'topleft' }
-    // }));
-    // const vm = this;
-    // var labels1: string[] = [];
-    // var colorDict1= new Map<string, string>();
-    // // var entries1 = json['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap']['entries']
-    // entries1.forEach((entry:any) => {
-    //   labels1.push(entry['label']);
-    //   colorDict1.set(entry['label'], entry['color']);
-    // })
-    // var labels: string[] = [];
-    // var colorDict= new Map<string, string>();
-    // var entries = hardcodejson['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap']['entries']
-    // entries.forEach((entry:any) => {
-    //   labels.push(entry['label']);
-    //   colorDict.set(entry['label'], entry['color']);
-    // })
-    // console.log(labels);
-    // console.log(colorDict);
-    // legend.onAdd = function (map) {
-      
-    //   const div = L.DomUtil.create('div', 'legend');
-      
-    //   div.innerHTML = '<div><b>Legend</b></div>';
-    //   for (let i = 0; i < labels1.length; i++) {
-    //     div.innerHTML += '<i style="background:' + colorDict.get(labels1[i]) + '"> &nbsp; &nbsp;</i> &nbsp;'
-    //   + labels1[i] + '<br/>';
-    //   }
-    //   L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
-    //   // FOR CHANGING LABELS FROM LONG TO SHORT MAYBE
-
-    //   // div.addEventListener("mouseover", function (event) {
-    //   //   map.removeControl(legend);
-    //   //   div.innerHTML = '';
-    //   //   for (let i = 0; i < grades.length; i++) {
-    //   //     div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-    //   //   + labels2[i] + '<br/>';
-    //   //   }
-    //   // });
-    //   // div.addEventListener("mouseout", function (event) {
-    //   //   map.removeControl(legend);
-    //   //   div.innerHTML = '';
-    //   //   for (let i = 0; i < grades.length; i++) {
-    //   //     div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-    //   //   + labels[i] + '<br/>';
-    //   //   }
-    //   // });
-
-    // //   div.addEventListener("mouseover", function (event) {
-    // //     // map.removeControl(legend);
-    // //     div.innerHTML = '<div><b>Legend</b></div>';
-    // //     for (let i = 0; i < labels1.length; i++) {
-    // //       div.innerHTML += '<i style="background:' + colorDict1.get(labels1[i]) + '"> &nbsp; &nbsp;</i>  &nbsp;'
-    // //     + labels1[i] + '<br/>';
-    // //     }
-    // //   })
-    // //   div.addEventListener("mouseout", function (event) {
-    // //     // map.removeControl(legend);
-    // //     div.innerHTML = '<div><b>Legend</b></div>';
-    // //   for (let i = 0; i < labels.length; i++) {
-    // //     div.innerHTML += '<i style="background:' + colorDict.get(labels[i]) + '"> &nbsp; &nbsp;</i>  &nbsp;'
-    // //   + labels[i] + '<br/>';
-    // //   }
-    // // })
-    //   return div;
-    // };
-    // legend.addTo(map.instance);
-    
-    // map.instance.removeControl(legend);
-   
-  //  map.instance.removeControl(legend);
-  //   const legend1 = new (L.Control.extend({
-  //     options: { position: 'topleft' }
-  //   }));
-  //   const vm1 = this;
-  //   legend1.onAdd = function (map) {
-  //     const div = L.DomUtil.create('div', 'legend');
-  //     const labels2 = [
-  //       'Sales  than ' ,
-  //       'Sales ad than ',
-  //       'Sales eqasdfual or less than '
-  //     ];
-  //     const grades = ['beh', 'what', 'hm' ];
-  //     div.innerHTML = '<div><b>Legend</b></div>';
-  //     for (let i = 0; i < labels.length; i++) {
-  //       div.innerHTML += '<i style="background:' + colorDict.get(labels[i]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-  //     + labels[i] + '<br/>';
-  //     }
-  //     div.addEventListener("mouseover", function (event) {
-  //       map.removeControl(legend);
-  //       div.innerHTML = '';
-  //       for (let i = 0; i < grades.length; i++) {
-  //         div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-  //       + labels2[i] + '<br/>';
-  //       }
-  //     });
-  //     div.addEventListener("mouseout", function (event) {
-  //       map.removeControl(legend);
-  //       div.innerHTML = '';
-  //       for (let i = 0; i < grades.length; i++) {
-  //         div.innerHTML += '<i style="background:' + vm1.getColor(grades[ i ]) + '"> &nbsp; &nbsp;</i> &nbsp; &nbsp;'
-  //       + labels[i] + '<br/>';
-  //       }
-  //     });
-  //     return div;
-  //   };
-
-//     var imageUrl = 'https://maps.lib.utexas.edu/maps/historical/newark_nj_1922.jpg';
-// var errorOverlayUrl = 'https://cdn-icons-png.flaticon.com/512/110/110686.png';
-// var altText = 'Image of Newark, N.J. in 1922. Source: The University of Texas at Austin, UT Libraries Map Collection.';
-// var latLngBounds = L.latLngBounds([[37.097634,-122.736866], [37.097634,-122.736866]]);
-
-// var imageOverlay = L.imageOverlay(imageUrl, latLngBounds, {
-//     opacity: 1.0,
-//     errorOverlayUrl: errorOverlayUrl,
-//     alt: altText,
-//     interactive: true,
-//     zIndex: 999,
-// }).addTo(map.instance);
   }
 
   /** Change the opacity of a map's data layer. */
