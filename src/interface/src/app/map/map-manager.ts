@@ -39,6 +39,7 @@ export class MapManager {
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
+  defaultOpacity: number = FrontendConstants.MAP_DATA_LAYER_OPACITY;
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -751,7 +752,7 @@ export class MapManager {
         opacity:
           map.config.dataLayerConfig.opacity !== undefined
             ? map.config.dataLayerConfig.opacity
-            : FrontendConstants.MAP_DATA_LAYER_OPACITY,
+            : this.defaultOpacity,
       }
     );
 
