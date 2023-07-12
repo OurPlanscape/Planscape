@@ -64,12 +64,12 @@
 }
 
 // Setting heights for built-in leaflet styles to be able to configure relative max-height 
-::ng-deep .leaflet-left  .leaflet-control{
+::ng-deep .leaflet-left  .leaflet-control {
   height:auto;
   max-height:75%;
 }
 // Setting heights for built-in leaflet styles to be able to configure relative max-height 
-::ng-deep .leaflet-top{
+::ng-deep .leaflet-top {
   height:100%;
 }
 
@@ -138,7 +138,6 @@
 
 // Legend header
 ::ng-deep .legend b {
-
   text-align: center;
   font-size: small;
   margin: 10px;
