@@ -54,21 +54,11 @@ export class SetPrioritiesComponent implements OnInit {
   conditionScores = new Map<string, ScoreColumn>();
   displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
-  // legend: Legend | undefined;
 
   constructor(
     private mapService: MapService,
     private planService: PlanService
-  ) {
-    this.mapService
-      .getColormap('turbo')
-      .pipe(take(1))
-      .subscribe((colormapConfig) => {
-        // this.legend = colormapConfigToLegend(colormapConfig);
-        // this.legend!.labels = ['Poor', 'OK', 'Excellent'];
-        // this.legend!.secondaryLabels = ['-1', '0', '1'];
-      });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.mapService.conditionsConfig$

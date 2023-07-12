@@ -675,7 +675,7 @@ export class MapManager {
     }
   }
 
-  addLegend(colormap: any, map: Map){
+  addLegend(colormap: any, map: Map) {
     var entries = colormap['entries'];
     const legend = new (L.Control.extend({
       options: { position: 'topleft' }
