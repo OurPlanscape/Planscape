@@ -307,6 +307,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
             });
           });
       });
+      this.cdr.detectChanges();
+      this.cdr.detectChanges;
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
