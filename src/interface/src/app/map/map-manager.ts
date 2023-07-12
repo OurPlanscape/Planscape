@@ -683,36 +683,33 @@ export class MapManager {
     const mapRef = map;
     legend.onAdd = function (map) {
       // Remove any pre-existing legend on map
-      if(mapRef.legend){
+      if (mapRef.legend) {
         L.DomUtil.remove(mapRef.legend);
       }
-      
+
       const div = L.DomUtil.create('div', 'legend');
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
       htmlContent += '<div><b>Legend</b></div>';
         for (let i = 0; i < entries.length; i++) {
-        var entry = entries[i]
-
-        // Add a margin-bottom to only the last entry in the legend
-        var lastChild = "";
-        if(i == entries.length -1){
-          lastChild = 'style="margin-bottom: 6px;"';
-        }
-        if(entry['label']){
-          var label = entry['label'];
-          if(label == 'nodata'){
-            htmlContent += '<nodata>&#x2327 N/D<br/></nodata>';
-            
+          var entry = entries[i]
+          // Add a margin-bottom to only the last entry in the legend
+          var lastChild = "";
+          if (i == entries.length -1) {
+            lastChild = 'style="margin-bottom: 6px;"';
           }
-          else{
-            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
-            + label + '<br/></label></div>';
+          if (entry['label']) {
+            var label = entry['label'];
+            if (label == 'nodata') {
+              htmlContent += '<nodata>&#x2327 N/D<br/></nodata>';
+              
+            } else {
+              htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
+              + label + '<br/></label></div>';
+            }
+          } else {
+            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
           }
-        }
-        else{
-          htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
-        }
       }
       htmlContent += '</div>';
       div.innerHTML = htmlContent;
@@ -740,7 +737,7 @@ export class MapManager {
     }
 
     var region = map.config.dataLayerConfig.region_geoserver_name;
-    if(region == null){
+    if (region == null) {
       region = 'sierra-nevada';
     }
     map.dataLayerRef = L.tileLayer.wms(
