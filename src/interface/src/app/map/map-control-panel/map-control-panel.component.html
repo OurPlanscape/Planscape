@@ -1,12 +1,10 @@
 <div class="controls-container">
-
+  <h1><b>Map Control Panel</b></h1>
   <div *ngIf="mapHasDataLayer" class="title-container">
-    <h1><b>Map {{selectedMap?.name}}: </b></h1>
-
     <div class="transparency-box">
       <!-- Opacity controls for the currently shown data layer -->
       <app-opacity-slider (change)="changeOpacity.emit($event)" [opacity]="selectedMapOpacity"
-			  label="Transparency">
+			  label="Data Transparency: ">
       </app-opacity-slider>
     </div>
 
