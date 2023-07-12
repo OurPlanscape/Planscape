@@ -9,6 +9,7 @@ import {
   ChangeDetectorRef, 
   DoCheck
 } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -20,7 +21,7 @@ import {
   Subject,
   take,
   takeUntil,
-  of,
+  of
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
@@ -133,6 +134,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private sessionService: SessionService,
     private planService: PlanService,
     private router: Router,
+    private http: HttpClient,
     private cdr: ChangeDetectorRef,
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
@@ -185,7 +187,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.mapViewOptions$,
       popupService,
       this.startLoadingLayerCallback.bind(this),
-      this.doneLoadingLayerCallback.bind(this)
+      this.doneLoadingLayerCallback.bind(this),
+      this.http
     );
     this.mapManager.polygonsCreated$
       .pipe(takeUntil(this.destroy$))
@@ -252,6 +255,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
       }
     });
+    this.cdr.detectChanges();
   }
 
   ngAfterViewInit(): void {
@@ -308,7 +312,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           });
       });
       this.cdr.detectChanges();
-      this.cdr.detectChanges;
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -611,31 +614,35 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       return;
     }
 
-    this.mapService
-      .getColormap(colormap)
-      .pipe(take(1))
-      .subscribe((colormapConfig) => {
-        map.legend = colormapConfigToLegend(
-          colormapConfig,
-          minMaxValues?.every((val) => val !== undefined)
-            ? (minMaxValues as number[])
-            : undefined
-        );
-      });
   }
 
-  /** Change the opacity of the currently shown data layer (if any). */
+  /** Change the opacity of the currently shown data layer on all maps (if any). */
   changeOpacity(opacity: number) {
-    const selectedMap = this.maps[this.mapViewOptions$.value.selectedMapIndex];
-    selectedMap.config.dataLayerConfig.opacity = opacity;
-    this.mapManager.changeOpacity(selectedMap);
+    this.mapManager.defaultOpacity = opacity;
+    this.maps.forEach((map: Map) => {
+      map.config.dataLayerConfig.opacity = opacity;
+      this.mapManager.changeOpacity(map);
+    })
   }
 
   /** Return the selected map's data layer opacity. */
   getOpacityForSelectedMap(): Observable<number | undefined> {
+    var dataLayerConfigOpacityDefined = true;
+    this.selectedMap$
+    .pipe(take(1))
+    .subscribe((selectedMap: any) => {
+      if(selectedMap?.config.dataLayerConfig.opacity == null){
+        dataLayerConfigOpacityDefined = false;
+      }
+    })
+    if(dataLayerConfigOpacityDefined){
     return this.selectedMap$.pipe(
       map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
     );
+    }
+    else{
+      return of(this.mapManager.defaultOpacity);
+    }
   }
 
   /** Whether the currently selected map has a data layer active. */
