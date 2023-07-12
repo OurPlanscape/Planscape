@@ -74,7 +74,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
     this.mapService.setConfigs();
     if(this.router.url == '/home'){
       this.router.navigateByUrl('/map');
-      // this.router.navigateByUrl or navigate does not re-initialize map
     }
+    // window.location.reload();
   }
 }
