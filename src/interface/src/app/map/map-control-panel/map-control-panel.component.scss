@@ -16,7 +16,7 @@ $primary-palette: map.get($color-config, 'primary');
   width: 400px;
 }
 
-.legend-container {
+.title-container {
   margin-bottom: 24px;
   padding: 0px 24px 0px 24px;
 }
@@ -43,16 +43,10 @@ h3 {
   text-align: center;
 }
 
-.legend-box {
+.transparency-box {
   border: 1px solid #B3B3B3;
   border-radius: 8px;
   padding: 12px 16px;
-}
-
-.legend-title {
-  align-items: center;
-  display: flex;
-  justify-content: center;
 }
 
 // Styling for the buttons to switch between 1, 2, and 4 maps

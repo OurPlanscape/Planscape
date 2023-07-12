@@ -19,7 +19,7 @@ export interface Map {
   dataLayerRef?: L.TileLayer | undefined;
   clonedDrawingRef?: L.FeatureGroup | undefined;
   drawnPolygonLookup?: { [key: string]: L.Layer };
-  legend?: Legend;
+  legend?: HTMLElement | undefined;
   regionLayerRef?: L.Layer | undefined;
 }
 

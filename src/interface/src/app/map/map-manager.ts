@@ -1,4 +1,5 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import booleanIntersects from '@turf/boolean-intersects';
 import booleanWithin from '@turf/boolean-within';
 import { point } from '@turf/helpers';
@@ -38,6 +39,7 @@ export class MapManager {
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
+  defaultOpacity: number = FrontendConstants.MAP_DATA_LAYER_OPACITY;
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -45,7 +47,8 @@ export class MapManager {
     private readonly mapViewOptions$: BehaviorSubject<MapViewOptions>,
     private popupService: PopupService,
     private startLoadingLayerCallback: (layerName: string) => void,
-    private doneLoadingLayerCallback: (layerName: string) => void
+    private doneLoadingLayerCallback: (layerName: string) => void,
+    private http: HttpClient
   ) {}
 
   getGeomanDrawOptions(): L.PM.ToolbarOptions {
@@ -672,6 +675,53 @@ export class MapManager {
     }
   }
 
+  addLegend(colormap: any, map: Map) {
+    var entries = colormap['entries'];
+    const legend = new (L.Control.extend({
+      options: { position: 'topleft' }
+    }));
+    const mapRef = map;
+    legend.onAdd = function (map) {
+      // Remove any pre-existing legend on map
+      if (mapRef.legend) {
+        L.DomUtil.remove(mapRef.legend);
+      }
+
+      const div = L.DomUtil.create('div', 'legend');
+      var htmlContent = '';
+      htmlContent += '<div class=parentlegend>';
+      htmlContent += '<div><b>Legend</b></div>';
+        for (let i = 0; i < entries.length; i++) {
+          var entry = entries[i]
+          // Add a margin-bottom to only the last entry in the legend
+          var lastChild = "";
+          if (i == entries.length -1) {
+            lastChild = 'style="margin-bottom: 6px;"';
+          }
+          if (entry['label']) {
+            var label = entry['label'];
+            if (label == 'nodata') {
+              htmlContent += '<nodata>&#x2327 N/D<br/></nodata>';
+              
+            } else {
+              htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
+              + label + '<br/></label></div>';
+            }
+          } else {
+            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
+          }
+      }
+      htmlContent += '</div>';
+      div.innerHTML = htmlContent;
+      // Needed to allow for scrolling on the legend 
+      L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
+      // Set reference to legend for later deletion
+      mapRef.legend = div;
+      return div;
+    };
+    legend.addTo(map.instance!);
+  }
+
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     if (map.instance === undefined) return;
@@ -686,8 +736,12 @@ export class MapManager {
       colormap = DEFAULT_COLORMAP;
     }
 
+    var region = map.config.dataLayerConfig.region_geoserver_name;
+    if (region == null) {
+      region = 'sierra-nevada';
+    }
     map.dataLayerRef = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT + map.config.dataLayerConfig.region_geoserver_name + "/wms?" ,
+      BackendConstants.TILES_END_POINT + region + "/wms?" ,
       {
         layers: layer,
         minZoom: 7,
@@ -695,11 +749,25 @@ export class MapManager {
         opacity:
           map.config.dataLayerConfig.opacity !== undefined
             ? map.config.dataLayerConfig.opacity
-            : FrontendConstants.MAP_DATA_LAYER_OPACITY,
+            : this.defaultOpacity,
       }
     );
 
     map.dataLayerRef.addTo(map.instance);
+    
+    // Map legend request
+    const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append("request", "GetLegendGraphic");
+    queryParams = queryParams.append("layer", layer);
+    queryParams = queryParams.append("format", "application/json");
+    var legendJson = this.http.get<string>(legendUrl,{params:queryParams});
+    legendJson
+      .pipe(take(1))
+      .subscribe((value:any) => {
+        var colorMap = value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
+        this.addLegend(colorMap, map);
+      });
   }
 
   /** Change the opacity of a map's data layer. */
@@ -707,3 +775,4 @@ export class MapManager {
     map.dataLayerRef?.setOpacity(map.config.dataLayerConfig.opacity!);
   }
 }
+

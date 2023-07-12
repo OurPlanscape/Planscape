@@ -20,40 +20,6 @@
     </mat-radio-group>
   </form>
 
-  <div class="flex-row gap-32">
-    <h4>{{ text2 }}</h4>
-    <div class="legend-wrapper">
-      <div class="legend-title-wrapper">
-        <h5>Current Condition (normalized)</h5>
-        <button mat-icon-button [matMenuTriggerFor]="menu">
-          <mat-icon class="material-symbols-outlined" color="primary">info</mat-icon>
-        </button>
-      </div>
-      <mat-menu #menu="matMenu">
-        <div class="legend-info">
-          <h4>Condition score ranges</h4>
-          <div class="flex-row">
-            <div class="legend-info-labels">
-              <p>Poor</p>
-              <p>Fair</p>
-              <p>OK</p>
-              <p>Good</p>
-              <p>Excellent</p>
-            </div>
-            <div class="legend-info-scores">
-              <p>-1.0 to -0.7</p>
-              <p>-0.6 to -0.3</p>
-              <p>-0.2 to 0.2</p>
-              <p>0.3 to 0.6</p>
-              <p>0.7 to 1.0</p>
-            </div>
-          </div>
-        </div>
-      </mat-menu>
-      <app-legend [legend]="legend"></app-legend>
-    </div>
-  </div>
-
   <mat-table [dataSource]="datasource" class="priority-table">
     <ng-container matColumnDef="selected">
       <mat-header-cell *matHeaderCellDef>

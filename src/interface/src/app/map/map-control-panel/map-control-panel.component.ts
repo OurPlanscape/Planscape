@@ -63,6 +63,7 @@ export class MapControlPanelComponent implements OnInit {
   readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
   readonly noneDataLayerConfig = NONE_DATA_LAYER_CONFIG;
 
+
   private readonly destroy$ = new Subject<void>();
   rawDataEnabled: boolean | null = null;
   translatedDataEnabled: boolean | null = null;
@@ -85,17 +86,6 @@ export class MapControlPanelComponent implements OnInit {
       });
   }
 
-  /** Gets the legend that should be shown in the sidebar.
-   *
-   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
-   */
-  getSelectedLegend(): Legend | undefined {
-    if (this.mapViewOptions) {
-      return this.maps[this.mapViewOptions.selectedMapIndex].legend;
-    } else {
-      return undefined;
-    }
-  }
 
   enableClearAllButton(map: Map): boolean {
     return (

@@ -12,7 +12,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { colormapConfigToLegend, Plan, Region } from 'src/app/types';
+import { Plan, Region } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
@@ -131,15 +131,6 @@ describe('SetPrioritiesComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should fetch colormap from service to create legend', () => {
-    let legend = colormapConfigToLegend(fakeColormapConfig);
-    legend!.labels = ['Poor', 'OK', 'Excellent'];
-    legend!.secondaryLabels = ['-1', '0', '1'];
-
-    expect(fakeMapService.getColormap).toHaveBeenCalledOnceWith('turbo');
-    expect(component.legend).toEqual(legend);
   });
 
   it('should populate datasource', () => {
