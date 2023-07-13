@@ -15,7 +15,6 @@ describe('RegionSelectionComponent', () => {
   let fixture: ComponentFixture<RegionSelectionComponent>;
   let loader: HarnessLoader;
   let mockSessionService: Partial<SessionService>;
-  
 
   beforeEach(async () => {
     mockSessionService = {

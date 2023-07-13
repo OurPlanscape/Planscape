@@ -12,12 +12,10 @@ import {
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
-  Legend,
   NONE_BOUNDARY_CONFIG,
 } from 'src/app/types';
 
-
-import { NONE_DATA_LAYER_CONFIG } from './../../types/data.types';
+import { NONE_DATA_LAYER_CONFIG, ConditionTreeType } from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
 import {
   ConditionsNode,
@@ -68,6 +66,8 @@ export class MapControlPanelComponent implements OnInit {
   rawDataEnabled: boolean | null = null;
   translatedDataEnabled: boolean | null = null;
   futureDataEnabled: boolean | null = null;
+  
+  public dataTypeEnum = ConditionTreeType;
 
   conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
@@ -76,7 +76,6 @@ export class MapControlPanelComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-
     this.conditionsConfig$
       .pipe(takeUntil(this.destroy$))
       .subscribe((config: ConditionsConfig | null) => {
@@ -108,4 +107,3 @@ export class MapControlPanelComponent implements OnInit {
     this.conditionTrees?.get(index)?.unstyleAndDeselectAllNodes();
   }
 }
-

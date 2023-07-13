@@ -65,7 +65,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   sendToggle(event: Event) {
     this.toggleEvent.emit(event);
   }
-  
+
   /** Sets the region from the dropdown and goes to the map. */
   setRegion(event: Event) {
     // The built-in type for event is generic, so it needs to be cast
