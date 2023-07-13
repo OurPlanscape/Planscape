@@ -21,9 +21,7 @@ describe('ConditionTreeComponent', () => {
     fixture = TestBed.createComponent(ConditionTreeComponent);
     component = fixture.componentInstance;
 
-    component.conditionsConfig$ = of(
-      {
-      });
+    component.conditionsConfig$ = of({});
     component.map = {
       id: 'map1',
       name: 'Map 1',

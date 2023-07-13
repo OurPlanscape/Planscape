@@ -116,7 +116,6 @@
           </div>
         </mat-expansion-panel>
 
-      
         <div *ngIf="rawDataEnabled">
           <!-- Current condition controls -->
           <app-condition-tree
@@ -124,7 +123,7 @@
           [conditionsConfig$]="conditionsConfig$"
           [header]="'Current Condition (Raw)'"
           [map]="map"
-          [dataType]="'raw'"
+          [dataType]="dataTypeEnum.RAW"
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
         </app-condition-tree>
        </div>
@@ -137,7 +136,7 @@
            [conditionsConfig$]="conditionsConfig$"
            [header]="'Current Condition'"
            [map]="map"
-           [dataType]="'translated'"
+           [dataType]="dataTypeEnum.TRANSLATED"
            (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
          </app-condition-tree>
          </div> 
@@ -150,7 +149,7 @@
             [conditionsConfig$]="conditionsConfig$"
             [header]="'Future Climate Stability'"
             [map]="map"
-            [dataType]="'future'"
+            [dataType]="dataTypeEnum.FUTURE"
             (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
           </app-condition-tree>
         </div>
@@ -184,7 +183,6 @@
             </mat-expansion-panel-header>
           </mat-expansion-panel>
         </div>
-   
 
         <!-- Ecosystem scores controls -->
         <!-- <ng-container *featureFlag="'unlaunched_layers'">
@@ -206,7 +204,6 @@
             </div>
           </mat-expansion-panel>
         </ng-container> -->
-        
         
         <!-- Disturbances controls -->
         <ng-container *featureFlag="'unlaunched_layers'">

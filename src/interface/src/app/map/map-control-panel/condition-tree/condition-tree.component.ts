@@ -5,8 +5,9 @@ import {
   MatTreeFlattener,
 } from '@angular/material/tree';
 import { filter, Observable, map } from 'rxjs';
-import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG, ConditionsConfig,  } from 'src/app/types';
+import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG, ConditionsConfig, ConditionTreeType } from 'src/app/types';
 import { BackendConstants } from './../../../backend-constants';
+import { ConditionName } from 'src/app/plan/plan-summary/summary-panel/summary-panel.component';
 
 export interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
@@ -36,12 +37,10 @@ interface ConditionFlatNode {
 export class ConditionTreeComponent implements OnInit {
   @Input() conditionsConfig$!: Observable<ConditionsConfig | null>;
   @Input() header: string = '';
-  @Input() dataType!: string; // TODO replace with enum
+  @Input() dataType!: ConditionTreeType; 
   @Input() map!: Map; 
 
-  
   @Output() changeConditionLayer = new EventEmitter<Map>();
-
   
   private _transformer = (node: ConditionsNode , level: number) => {
     return {
@@ -64,8 +63,7 @@ export class ConditionTreeComponent implements OnInit {
   );
   conditionDataSource = new MatTreeFlatDataSource(
     this.treeControl,
-    this.treeFlattener,
-
+    this.treeFlattener
   );
 
   public refreshTree() {
@@ -93,7 +91,7 @@ export class ConditionTreeComponent implements OnInit {
   constructor(private cdr: ChangeDetectorRef) {}
   
   ngOnInit(): void {
-    if(this.dataType == 'raw'){
+    if(this.dataType == ConditionTreeType.RAW){
     this.conditionsConfig$
     .pipe(
       filter((config) => !!config),
@@ -105,7 +103,7 @@ export class ConditionTreeComponent implements OnInit {
           this.map.config.dataLayerConfig
         );
     });
-  } else if(this.dataType == 'translated'){
+  } else if(this.dataType == ConditionTreeType.TRANSLATED){
   this.conditionsConfig$
     .pipe(
       filter((config) => !!config),
@@ -117,7 +115,7 @@ export class ConditionTreeComponent implements OnInit {
         this.map.config.dataLayerConfig
       );
     });
-  } else if(this.dataType == 'future'){
+  } else if(this.dataType == ConditionTreeType.FUTURE){
   this.conditionsConfig$
     .pipe(
       filter((config) => !!config),
