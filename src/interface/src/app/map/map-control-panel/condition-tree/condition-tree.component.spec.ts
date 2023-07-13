@@ -69,23 +69,24 @@ describe('ConditionTreeComponent', () => {
         expect(node.styleDisabled).toBeFalse();
       });
     });
+    it('styles ancestors of a selected node and unstyles all other nodes', () => {
+      const childNode = component.treeControl.dataNodes[1];
+      const parentNode = component.treeControl.dataNodes[0];
+  
+      component.onSelect(childNode);
+  
+      expect(parentNode.styleDescendantSelected).toBeTrue();
+  
+      component.treeControl.dataNodes
+        .filter((node) => {
+          return node !== childNode && node !== parentNode;
+        })
+        .forEach((node) => {
+          expect(node.styleDisabled).toBeFalse();
+          expect(node.styleDescendantSelected).toBeFalse();
+        });
+    });
   });
 
-  it('styles ancestors of a selected node and unstyles all other nodes', () => {
-    const childNode = component.treeControl.dataNodes[1];
-    const parentNode = component.treeControl.dataNodes[0];
 
-    component.onSelect(childNode);
-
-    expect(parentNode.styleDescendantSelected).toBeTrue();
-
-    component.treeControl.dataNodes
-      .filter((node) => {
-        return node !== childNode && node !== parentNode;
-      })
-      .forEach((node) => {
-        expect(node.styleDisabled).toBeFalse();
-        expect(node.styleDescendantSelected).toBeFalse();
-      });
-  });
 });

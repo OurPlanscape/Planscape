@@ -6,6 +6,7 @@ import {
   MapConfig,
   MapViewOptions,
   Region,
+  defaultMapConfigsDictionary,
 } from '../types';
 
 /** How often the user's session should be saved to local storage (in ms). */
@@ -25,15 +26,7 @@ export class SessionService {
     SESSION_SAVE_INTERVAL
   );
 
-  readonly record =  {
-    [Region.SIERRA_NEVADA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-    [Region.SOUTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-    [Region.NORTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-    [Region.CENTRAL_COAST] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-  }
-  
-
-  readonly mapConfigs$ = new BehaviorSubject<Record<Region, MapConfig[]> | null>(this.record);
+  readonly mapConfigs$ = new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary());
   readonly mapViewOptions$ = new BehaviorSubject<MapViewOptions | null>(null);
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
@@ -58,7 +51,6 @@ export class SessionService {
   }
 
   /** Emits the map configs and saves them in local storage. */
-  //TODO make map config region based dictionary 
   setMapConfigs(value: MapConfig[]) {
     var regionIndex: Region | null = this.region$.getValue();
     if(!regionIndex){
