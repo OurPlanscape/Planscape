@@ -71,7 +71,6 @@ export class ConditionTreeComponent implements OnInit {
   public refreshTree() {
 
     var _data = this.conditionDataSource.data;
-    console.log(_data);
     this.treeFlattener = new MatTreeFlattener(
       this._transformer,
       (node) => node.level,
@@ -88,7 +87,6 @@ export class ConditionTreeComponent implements OnInit {
       this.treeFlattener,
     );
     this.conditionDataSource.data = _data;
-    console.log(this.conditionDataSource.data);
     this.cdr.detectChanges();
   }
 
@@ -260,8 +258,6 @@ export class ConditionTreeComponent implements OnInit {
     private conditionsConfigToDataNormalized(
       config: ConditionsConfig
     ): ConditionsNode[] {
-      console.log('in contorl panel');
-      console.log(config.pillars);
       return config.pillars
         ? config.pillars
             ?.filter((pillar) => pillar.display)
