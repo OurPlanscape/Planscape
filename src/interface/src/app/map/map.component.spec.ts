@@ -145,7 +145,7 @@ describe('MapComponent', () => {
       ['setMapConfigs', 'setMapViewOptions'],
       {
         mapViewOptions$: new BehaviorSubject<MapViewOptions | null>(null),
-        mapConfigs$:  new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary()),
+        mapConfigs$: new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary()),
         region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
         sessionInterval$: sessionInterval,
       }
@@ -615,9 +615,6 @@ describe('MapComponent', () => {
   });
 
   describe('Create plan', () => {
-    beforeEach(() => {
-      jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-    })
     it('if user is signed out, opens sign in dialog', async () => {
       userSignedIn$.next(false);
       const fakeMatDialog: MatDialog =
