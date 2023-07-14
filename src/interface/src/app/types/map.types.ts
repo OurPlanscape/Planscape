@@ -1,4 +1,5 @@
 import * as L from 'leaflet';
+
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -65,9 +66,25 @@ export function defaultMapConfigsDictionary(): Record<Region, MapConfig[]> {
 }
 
 export const FrontendConstants = {
-  MAP_CENTER: [38.646, -120.548],
   MAP_INITIAL_ZOOM: 9,
   MAP_MIN_ZOOM: 7,
   MAP_MAX_ZOOM: 13,
   MAP_DATA_LAYER_OPACITY: 0.7,
 } as const;
+
+export function regionMapCenters(region: Region): L.LatLngTuple {
+  // TODO Confirm center coordinates for new regions (northern, central, southern)
+  switch (region) {
+    case Region.SIERRA_NEVADA:
+        return [38.646, -120.548];
+    case Region.NORTHERN_CALIFORNIA:
+      return [39.703, -123.313];
+    case Region.CENTRAL_COAST:
+      return [36.598, -121.896];
+    case Region.SOUTHERN_CALIFORNIA:
+      return [34.0522, -118.243];
+    default:
+      // Defaults to Sierra Nevada center
+      return [38.646, -120.548];
+  };
+}

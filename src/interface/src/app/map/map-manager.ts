@@ -16,13 +16,15 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { PopupService } from '../services';
+import { PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
   BoundaryConfig,
   DEFAULT_COLORMAP,
   FrontendConstants,
+  regionMapCenters,
   Map,
+  Region,
   MapViewOptions,
 } from '../types';
 
@@ -40,6 +42,7 @@ export class MapManager {
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
   defaultOpacity: number = FrontendConstants.MAP_DATA_LAYER_OPACITY;
+  selectedRegion$= new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -48,8 +51,11 @@ export class MapManager {
     private popupService: PopupService,
     private startLoadingLayerCallback: (layerName: string) => void,
     private doneLoadingLayerCallback: (layerName: string) => void,
-    private http: HttpClient
-  ) {}
+    private http: HttpClient,
+    private session: SessionService,
+    ) {
+      this.selectedRegion$ = this.session.region$;
+    }
 
   getGeomanDrawOptions(): L.PM.ToolbarOptions {
     return {
@@ -89,7 +95,7 @@ export class MapManager {
     }
 
     map.instance = L.map(mapId, {
-      center: [...FrontendConstants.MAP_CENTER],
+      center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
       zoom: FrontendConstants.MAP_INITIAL_ZOOM,
       minZoom: FrontendConstants.MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
