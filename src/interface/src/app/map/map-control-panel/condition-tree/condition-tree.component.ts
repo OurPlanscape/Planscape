@@ -4,14 +4,20 @@ import {
   MatTreeFlatDataSource,
   MatTreeFlattener,
 } from '@angular/material/tree';
-import { filter, Observable, take } from 'rxjs';
-import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG } from 'src/app/types';
+import { filter, Observable, map } from 'rxjs';
+import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG, ConditionsConfig, ConditionTreeType } from 'src/app/types';
+import { BackendConstants } from './../../../backend-constants';
 
 export interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
   disableSelect?: boolean; // Node should not include a radio button
   disableInfoCard?: boolean; // Node should not have an info button
 }
+
+/** Map Legend Display Strings */
+const CURRENT_CONDITIONS_RAW_LEGEND = "Current Condition (Raw)";
+const CURRENT_CONDITIONS_NORMALIZED_LEGEND = "Current Condition (Normalized)";
+const FUTURE_CONDITIONS_LEGEND = "Future Climate Stability (Normalized)";
 
 interface ConditionFlatNode {
   expandable: boolean;
@@ -28,15 +34,16 @@ interface ConditionFlatNode {
   styleUrls: ['./condition-tree.component.scss'],
 })
 export class ConditionTreeComponent implements OnInit {
-  @Input() conditionsData$!: Observable<ConditionsNode[]>;
+  @Input() conditionsConfig$!: Observable<ConditionsConfig | null>;
   @Input() header: string = '';
-  @Input() map!: Map;
+  @Input() dataType!: ConditionTreeType; 
+  @Input() map!: Map; 
 
   @Output() changeConditionLayer = new EventEmitter<Map>();
-
-  private _transformer = (node: ConditionsNode, level: number) => {
+  
+  private _transformer = (node: ConditionsNode , level: number) => {
     return {
-      expandable: !!node.children && node.children.length > 0,
+      expandable: !!node!.children && node!.children.length > 0,
       level: level,
       condition: node,
     };
@@ -50,8 +57,8 @@ export class ConditionTreeComponent implements OnInit {
   );
 
   treeControl = new FlatTreeControl<ConditionFlatNode>(
-    (node) => node.level,
-    (node) => node.expandable
+    (node) => node!.level,
+    (node) => node!.expandable
   );
   conditionDataSource = new MatTreeFlatDataSource(
     this.treeControl,
@@ -59,20 +66,45 @@ export class ConditionTreeComponent implements OnInit {
   );
 
   constructor() {}
-
+  
   ngOnInit(): void {
-    this.conditionsData$
+    if (this.dataType == ConditionTreeType.RAW) {
+      this.conditionsConfig$
       .pipe(
-        filter((data) => data.length > 0),
-        take(1)
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataRaw(config!))
       )
       .subscribe((data) => {
         this.conditionDataSource.data = data;
-        // Ensure the radio button corresponding to the saved selection is selected.
+        this.map.config.dataLayerConfig = this.findAndRevealNode(
+            this.map.config.dataLayerConfig
+        );
+      });
+    } else if (this.dataType == ConditionTreeType.TRANSLATED) {
+      this.conditionsConfig$
+      .pipe(
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataNormalized(config!))
+      )
+      .subscribe((data) => {
+        this.conditionDataSource.data = data;
         this.map.config.dataLayerConfig = this.findAndRevealNode(
           this.map.config.dataLayerConfig
         );
       });
+    } else if(this.dataType == ConditionTreeType.FUTURE) {
+      this.conditionsConfig$
+      .pipe(
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataFuture(config!))
+      )
+      .subscribe((data) => {
+        this.conditionDataSource.data = data;
+        this.map.config.dataLayerConfig = this.findAndRevealNode(
+          this.map.config.dataLayerConfig
+        );
+      });
+    }
   }
 
   toggleAllLayersOff(): void {
@@ -154,4 +186,120 @@ export class ConditionTreeComponent implements OnInit {
       }
     }
   }
+
+    /** Raw data is selectable only at the metric level.
+   */
+    private conditionsConfigToDataRaw(
+      config: ConditionsConfig
+    ): ConditionsNode[] {
+      return config.pillars
+        ? config.pillars
+            ?.filter((pillar) => pillar.display)
+            .map((pillar): ConditionsNode => {
+              return {
+                ...pillar,
+                disableSelect: true,
+                disableInfoCard: true,
+                legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                children: pillar.elements
+                  ?.filter((element) => element.display)
+                  .map((element): ConditionsNode => {
+                    return {
+                      ...element,
+                      disableSelect: true,
+                      disableInfoCard: true,
+                      legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                      children: element.metrics?.map((metric): ConditionsNode=> {
+                        return {
+                          ...metric,
+                          layer:metric.raw_layer,
+                          region_geoserver_name: config.region_geoserver_name,
+                          legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                          data_download_link: metric.raw_data_download_path ?
+                          BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
+                          metric.data_download_link,
+                        };
+                      }),
+                    };
+                  }),
+              };
+            })
+        : [];
+    }
+    
+  
+    /** Normalized configs are selectable at every level (pillar, element, metric).
+     */
+    private conditionsConfigToDataNormalized(
+      config: ConditionsConfig
+    ): ConditionsNode[] {
+      return config.pillars
+        ? config.pillars
+            ?.filter((pillar) => pillar.display)
+            .map((pillar): ConditionsNode => {
+              return {
+                ...pillar,
+                layer: pillar.normalized_layer,
+                region_geoserver_name: config.region_geoserver_name,
+                data_download_link: pillar.normalized_data_download_path ?
+                  BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.normalized_data_download_path :
+                  undefined,
+                legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
+                normalized: true,
+                children: pillar.elements?.map((element): ConditionsNode => {
+                  return {
+                    ...element,
+                    layer: element.normalized_layer,
+                    region_geoserver_name: config.region_geoserver_name,
+                    data_download_link: element.normalized_data_download_path ?
+                    BackendConstants.DOWNLOAD_END_POINT + '/' + element.normalized_data_download_path :
+                    undefined,
+                    legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
+                    normalized: true,
+                    min_value: undefined,
+                    max_value: undefined,
+                    children: element.metrics?.map((metric): ConditionsNode => {
+                      return {
+                        ...metric,
+                        layer: metric.normalized_layer,
+                        region_geoserver_name: config.region_geoserver_name,
+                        data_download_link: metric.normalized_data_download_path ?
+                        BackendConstants.DOWNLOAD_END_POINT + '/' + metric.normalized_data_download_path :
+                          metric.data_download_link,
+                        legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
+                        normalized: true,
+                        min_value: undefined,
+                        max_value: undefined,
+                      };
+                    }),
+                  };
+                }),
+              };
+            })
+        : [];
+    }
+  
+    /** Future configs are selectable and viewable only at the pillar level.
+     */
+    private conditionsConfigToDataFuture(
+      config: ConditionsConfig
+    ): ConditionsNode[] {
+      return config.pillars
+        ? config.pillars
+          ?.filter((pillar) => pillar.display)
+          .map((pillar): ConditionsNode => {
+            return {
+              ...pillar,
+              data_download_link: pillar.future_data_download_path ?
+              BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.future_data_download_path :
+                pillar.data_download_link,
+              layer: pillar.future_layer,
+              region_geoserver_name: config.region_geoserver_name,
+              legend_name: FUTURE_CONDITIONS_LEGEND,
+              normalized: true,
+              children: []
+            };
+          }) 
+      : [];
+    }
 }

@@ -117,38 +117,42 @@
         </mat-expansion-panel>
 
         <div *ngIf="rawDataEnabled">
-         <!-- Current condition controls -->
+          <!-- Current condition controls -->
+          <app-condition-tree
+          #conditionTreeRaw
+          [conditionsConfig$]="conditionsConfig$"
+          [header]="'Current Condition (Raw)'"
+          [map]="map"
+          [dataType]="dataTypeEnum.RAW"
+          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
+        </app-condition-tree>
+       </div>
+ 
+         <div *ngIf="translatedDataEnabled">
+ 
+         <!-- Normalized current condition controls -->
          <app-condition-tree
-         #conditionTreeRaw
-         [conditionsData$]="conditionDataRaw$"
-         [header]="'Current Condition (Raw)'"
-         [map]="map"
-         (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
-       </app-condition-tree>
-      </div>
+           #conditionTreeNormalized
+           [conditionsConfig$]="conditionsConfig$"
+           [header]="'Current Condition'"
+           [map]="map"
+           [dataType]="dataTypeEnum.TRANSLATED"
+           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
+         </app-condition-tree>
+         </div> 
 
-        <div *ngIf="translatedDataEnabled">
 
-        <!-- Normalized current condition controls -->
-        <app-condition-tree
-          #conditionTreeNormalized
-          [conditionsData$]="conditionDataNormalized$"
-          [header]="'Current Condition'"
-          [map]="map"
-          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
-        </app-condition-tree>
+         <div *ngIf="futureDataEnabled">
+          <!-- Future condition controls -->
+          <app-condition-tree
+            #conditionTreeNormalized
+            [conditionsConfig$]="conditionsConfig$"
+            [header]="'Future Climate Stability'"
+            [map]="map"
+            [dataType]="dataTypeEnum.FUTURE"
+            (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
+          </app-condition-tree>
         </div>
-
-      <div *ngIf="futureDataEnabled">
-        <!-- Future condition controls -->
-        <app-condition-tree
-          #conditionTreeNormalized
-          [conditionsData$]="conditionDataFuture$"
-          [header]="'Future Climate Stability'"
-          [map]="map"
-          (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
-        </app-condition-tree>
-      </div>
 
         <!-- No Data Region controls -->
         <div *ngIf="!rawDataEnabled">
@@ -180,8 +184,7 @@
           </mat-expansion-panel>
         </div>
 
-
-                <!-- Ecosystem scores controls -->
+        <!-- Ecosystem scores controls -->
         <!-- <ng-container *featureFlag="'unlaunched_layers'">
           <mat-expansion-panel expanded="false">
             <mat-expansion-panel-header class="layer-panel-header">

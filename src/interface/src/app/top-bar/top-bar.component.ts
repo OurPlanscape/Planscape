@@ -9,7 +9,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
-import { AuthService, SessionService } from '../services';
+import { AuthService, SessionService, MapService } from '../services';
 import { Region, RegionOption, regionOptions } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 
@@ -34,10 +34,12 @@ export class TopBarComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private dialog: MatDialog,
     private router: Router,
-    private sessionService: SessionService
+    private sessionService: SessionService,
+    private mapService: MapService,
   ) {}
 
   ngOnInit(): void {
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
     this.authService.loggedInUser$
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
@@ -68,7 +70,10 @@ export class TopBarComponent implements OnInit, OnDestroy {
   setRegion(event: Event) {
     // The built-in type for event is generic, so it needs to be cast
     const region = (event.target as HTMLSelectElement).value as Region;
-    this.sessionService.setRegion(region);
-    this.router.navigateByUrl('/map');
+    this.sessionService.setRegion(region);  
+    this.mapService.setConfigs();
+    if(this.router.url == '/home'){
+      this.router.navigateByUrl('/map');
+    }
   }
 }

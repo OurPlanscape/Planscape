@@ -3,9 +3,9 @@ import { TestBed } from '@angular/core/testing';
 
 import { SessionService } from './session.service';
 import {
-  defaultMapConfig,
   defaultMapViewOptions,
   MapViewOptions,
+  defaultMapConfigsDictionary,
 } from '../types';
 
 class LocalStorageMock {
@@ -79,16 +79,16 @@ describe('SessionService', () => {
     });
 
     it('should save map configs', () => {
-      const testMapConfigs = Array(4).fill(defaultMapConfig());
+      const testMapConfigs = defaultMapConfigsDictionary();
       const spyStorage = spyOn(localStorage, 'setItem');
 
-      service.setMapConfigs(testMapConfigs);
+      service.setMapConfigs(testMapConfigs['Sierra Nevada']);
 
       expect(spyStorage).toHaveBeenCalledOnceWith(
         'mapConfigs',
         JSON.stringify(testMapConfigs)
       );
-      expect(service.mapConfigs$.value).toBe(testMapConfigs);
+      expect(service.mapConfigs$.value!['Sierra Nevada']).toBe(testMapConfigs['Sierra Nevada']);
     });
 
     it('should save map view options', () => {
