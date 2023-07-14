@@ -38,7 +38,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
   panelExpanded: boolean = true;
-  region$= new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
+  selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
     map(({ currentScenarioId }) => currentScenarioId),
     distinctUntilChanged(),
@@ -49,7 +49,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private shapes: any | null = null;
 
   constructor(private planService: PlanService, private session: SessionService, private router: Router) {
-    this.region$ = this.session.region$;
+    this.selectedRegion$ = this.session.region$;
   }
 
   ngOnInit(): void {
@@ -74,7 +74,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.map != undefined) this.map.remove();
 
     this.map = L.map(this.mapId ? this.mapId : 'map', {
-      center: [...regionMapCenters(this.region$.getValue()!)],
+      center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
       zoom: FrontendConstants.MAP_INITIAL_ZOOM,
       minZoom: FrontendConstants.MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
