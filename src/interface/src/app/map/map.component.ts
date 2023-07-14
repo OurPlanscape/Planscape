@@ -188,10 +188,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.maps,
       this.mapViewOptions$,
       popupService,
+      sessionService,
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this),
-      this.http,
-      sessionService
+      this.http
     );
     this.mapManager.polygonsCreated$
       .pipe(takeUntil(this.destroy$))

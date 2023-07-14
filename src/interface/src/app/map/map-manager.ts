@@ -42,17 +42,17 @@ export class MapManager {
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
   defaultOpacity: number = FrontendConstants.MAP_DATA_LAYER_OPACITY;
-  selectedRegion$= new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
+  selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
 
   constructor(
     private matSnackBar: MatSnackBar,
     private maps: Map[],
     private readonly mapViewOptions$: BehaviorSubject<MapViewOptions>,
     private popupService: PopupService,
+    private session: SessionService,
     private startLoadingLayerCallback: (layerName: string) => void,
     private doneLoadingLayerCallback: (layerName: string) => void,
-    private http: HttpClient,
-    private session: SessionService,
+    private http: HttpClient
     ) {
       this.selectedRegion$ = this.session.region$;
     }
