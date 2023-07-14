@@ -14,9 +14,10 @@ import {
   Subject,
   takeUntil,
 } from 'rxjs';
+import { SessionService } from 'src/app/services';
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
-import { FrontendConstants, Plan } from 'src/app/types';
+import { FrontendConstants, regionMapCenters, Plan, Region } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
 
@@ -37,6 +38,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
   panelExpanded: boolean = true;
+  selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
     map(({ currentScenarioId }) => currentScenarioId),
     distinctUntilChanged(),
@@ -46,7 +48,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private layer: string = '';
   private shapes: any | null = null;
 
-  constructor(private planService: PlanService, private router: Router) {}
+  constructor(private planService: PlanService, private session: SessionService, private router: Router) {
+    this.selectedRegion$ = this.session.region$;
+  }
 
   ngOnInit(): void {
     this.planService.planState$
@@ -70,7 +74,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.map != undefined) this.map.remove();
 
     this.map = L.map(this.mapId ? this.mapId : 'map', {
-      center: [...FrontendConstants.MAP_CENTER],
+      center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
       zoom: FrontendConstants.MAP_INITIAL_ZOOM,
       minZoom: FrontendConstants.MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
