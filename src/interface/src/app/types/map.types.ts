@@ -76,7 +76,7 @@ export function regionMapCenters(region: Region): L.LatLngTuple {
   // TODO Confirm center coordinates for new regions (northern, central, southern)
   switch (region) {
     case Region.SIERRA_NEVADA:
-        return [38.646, -120.548];
+      return [38.646, -120.548];
     case Region.NORTHERN_CALIFORNIA:
       return [39.703, -123.313];
     case Region.CENTRAL_COAST:
