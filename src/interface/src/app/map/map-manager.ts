@@ -700,15 +700,14 @@ export class MapManager {
           }
           if (entry['label']) {
             var label = entry['label'];
-            if (label == 'nodata') {
-              htmlContent += '<nodata>&#x2327 N/D<br/></nodata>';
-              
-            } else {
-              htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
+            var color = entry['color'];
+            // Filter out 'nodata' entries
+            if (color != '#000000') {
+              htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ color + '"> &emsp; &hairsp;</i> &nbsp;<label>'
               + label + '<br/></label></div>';
-            }
+            } 
           } else {
-            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
+            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ color + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
           }
       }
       htmlContent += '</div>';
