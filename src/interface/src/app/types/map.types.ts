@@ -3,7 +3,7 @@ import {
   BaseLayerType,
   BoundaryConfig,
   DataLayerConfig,
-  Legend,
+  Region,
   NONE_BOUNDARY_CONFIG,
   NONE_DATA_LAYER_CONFIG,
 } from '../types';
@@ -52,6 +52,15 @@ export function defaultMapViewOptions(): MapViewOptions {
     numVisibleMaps: 4,
     zoom: 9,
     center: [38.646, -120.548],
+  };
+}
+
+export function defaultMapConfigsDictionary(): Record<Region, MapConfig[]> { 
+  return {
+    [Region.SIERRA_NEVADA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.SOUTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.NORTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.CENTRAL_COAST] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
   };
 }
 

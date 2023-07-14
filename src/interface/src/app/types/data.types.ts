@@ -61,6 +61,11 @@ export interface PillarConfig extends DataLayerConfig {
   future_data_download_path?: string;
 }
 
+export enum ConditionTreeType {
+  RAW = 'Raw',
+  TRANSLATED = 'Translated',
+  FUTURE = "Future",
+}
 
 export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
   boundary_name: '',

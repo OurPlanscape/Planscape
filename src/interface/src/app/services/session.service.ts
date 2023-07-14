@@ -6,6 +6,7 @@ import {
   MapConfig,
   MapViewOptions,
   Region,
+  defaultMapConfigsDictionary,
 } from '../types';
 
 /** How often the user's session should be saved to local storage (in ms). */
@@ -25,7 +26,7 @@ export class SessionService {
     SESSION_SAVE_INTERVAL
   );
 
-  readonly mapConfigs$ = new BehaviorSubject<MapConfig[] | null>(null);
+  readonly mapConfigs$ = new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary());
   readonly mapViewOptions$ = new BehaviorSubject<MapViewOptions | null>(null);
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
@@ -51,8 +52,17 @@ export class SessionService {
 
   /** Emits the map configs and saves them in local storage. */
   setMapConfigs(value: MapConfig[]) {
-    localStorage.setItem('mapConfigs', JSON.stringify(value));
-    this.mapConfigs$.next(value);
+    var regionIndex: Region | null = this.region$.getValue();
+    if(!regionIndex){
+      regionIndex = Region.SIERRA_NEVADA;
+    }
+    var mapConf: Record<Region, MapConfig[]> | null= this.mapConfigs$.getValue();
+    if(mapConf && regionIndex){
+      mapConf![regionIndex] = value;
+      
+    }
+    this.mapConfigs$.next(mapConf);
+    localStorage.setItem('mapConfigs', JSON.stringify(mapConf));
   }
 
   /** Emits the map view options and saves them in local storage. */
@@ -79,7 +89,22 @@ export class SessionService {
    *  are present. */
   private validateSavedMapConfigs(data: string): boolean {
     const configs: any[] = JSON.parse(data);
-    return configs.every((val) => this.instanceOfMapConfig(val));
+    for( var regionConfig of Object.values(configs)){
+      for (var mapConfig of Object.values(regionConfig)){
+        if(!this.instanceOfMapConfig(mapConfig)){
+          console.log('not valid config ' + JSON.stringify(mapConfig));
+          return false;
+        }
+      }
+    }
+    for(var region of Object.keys(configs)){
+      if(!Object.values(Region).includes(region as unknown as Region)){
+        console.log('Config key not valid Region ' + region);
+        return false;
+      }
+    }
+
+    return true;
   }
 
   private instanceOfMapConfig(data: any): boolean {

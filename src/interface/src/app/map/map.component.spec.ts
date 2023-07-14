@@ -29,6 +29,7 @@ import {
   ConditionsConfig,
   defaultMapConfig,
   defaultMapViewOptions,
+  defaultMapConfigsDictionary,
   Map,
   MapConfig,
   MapViewOptions,
@@ -144,7 +145,7 @@ describe('MapComponent', () => {
       ['setMapConfigs', 'setMapViewOptions'],
       {
         mapViewOptions$: new BehaviorSubject<MapViewOptions | null>(null),
-        mapConfigs$: new BehaviorSubject<MapConfig[] | null>(null),
+        mapConfigs$: new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary()),
         region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
         sessionInterval$: sessionInterval,
       }
@@ -161,9 +162,6 @@ describe('MapComponent', () => {
       },
       {}
     );
-    const popupServiceStub = () => ({
-      makeDetailsPopup: (shape_name: any) => ({}),
-    });
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
       imports: [FormsModule, MaterialModule, BrowserAnimationsModule, HttpClientTestingModule],
@@ -178,7 +176,6 @@ describe('MapComponent', () => {
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
         { provide: PlanService, useValue: fakePlanService },
-        { provide: PopupService, useFactory: popupServiceStub },
         { provide: SessionService, useValue: fakeSessionService },
         { provide: Router, useFactory: routerStub },
       ],
@@ -710,12 +707,12 @@ describe('MapComponent', () => {
         shape_name: "Name",
 
       };
-      const savedMapConfigs: MapConfig[] = Array(4).fill(mapConfig);
+      const savedMapConfigs: Record<Region, MapConfig[]> = defaultMapConfigsDictionary();
 
       sessionServiceStub.mapConfigs$.next(savedMapConfigs);
       component.ngOnInit();
 
-      expect(component.maps.map((map) => map.config)).toEqual(savedMapConfigs);
+      expect(component.maps.map((map) => map.config)).toEqual(savedMapConfigs['Sierra Nevada']);
     });
 
     it('restores map view options from session', () => {

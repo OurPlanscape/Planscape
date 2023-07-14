@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
-import { AuthService, PlanService, SessionService } from '../../services';
+import { AuthService, PlanService, SessionService, MapService } from '../../services';
 import { RegionOption, regionOptions } from '../../types';
 import features from '../../features/features.json'
 
@@ -25,7 +25,8 @@ export class RegionSelectionComponent implements OnInit {
     private authService: AuthService,
     private planService: PlanService,
     private sessionService: SessionService,
-    private router: Router
+    private mapService: MapService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -42,6 +43,7 @@ export class RegionSelectionComponent implements OnInit {
       return;
     }
     this.sessionService.setRegion(regionOption.type);
-    this.router.navigateByUrl('/map');
+    this.mapService.setConfigs();
+    this.router.navigateByUrl('/map');  
   }
 }
