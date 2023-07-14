@@ -1,3 +1,4 @@
+import * as L from 'leaflet';
 import {
   AfterViewInit,
   ApplicationRef,
@@ -48,6 +49,7 @@ import {
   NONE_BOUNDARY_CONFIG,
   NONE_COLORMAP,
   Region,
+  regionMapCenters
 } from '../types';
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
@@ -186,6 +188,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.maps,
       this.mapViewOptions$,
       popupService,
+      sessionService,
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this),
       this.http
@@ -327,6 +330,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
       this.displayRegionBoundary(map, selectedRegion);
+      var centerCoords = regionMapCenters(selectedRegion!);
+      map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
     });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
