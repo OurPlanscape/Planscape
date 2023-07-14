@@ -1,5 +1,5 @@
 import { FlatTreeControl } from '@angular/cdk/tree';
-import { Component, EventEmitter, Input, OnInit, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   MatTreeFlatDataSource,
   MatTreeFlattener,
@@ -7,7 +7,6 @@ import {
 import { filter, Observable, map } from 'rxjs';
 import { DataLayerConfig, Map, NONE_DATA_LAYER_CONFIG, ConditionsConfig, ConditionTreeType } from 'src/app/types';
 import { BackendConstants } from './../../../backend-constants';
-import { ConditionName } from 'src/app/plan/plan-summary/summary-panel/summary-panel.component';
 
 export interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
@@ -66,67 +65,45 @@ export class ConditionTreeComponent implements OnInit {
     this.treeFlattener
   );
 
-  public refreshTree() {
-
-    var _data = this.conditionDataSource.data;
-    this.treeFlattener = new MatTreeFlattener(
-      this._transformer,
-      (node) => node.level,
-      (node) => node.expandable,
-      (node) => node!.children
-    );
-  
-    this.treeControl = new FlatTreeControl<ConditionFlatNode>(
-      (node) => node!.level,
-      (node) => node!.expandable
-    );
-    this.conditionDataSource = new MatTreeFlatDataSource(
-      this.treeControl,
-      this.treeFlattener,
-    );
-    this.conditionDataSource.data = _data;
-    this.cdr.detectChanges();
-  }
-
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor() {}
   
   ngOnInit(): void {
-    if(this.dataType == ConditionTreeType.RAW){
-    this.conditionsConfig$
-    .pipe(
-      filter((config) => !!config),
-      map((config) => this.conditionsConfigToDataRaw(config!))
-    )
-    .subscribe((data) => {
-      this.conditionDataSource.data = data;
-      this.map.config.dataLayerConfig = this.findAndRevealNode(
+    if (this.dataType == ConditionTreeType.RAW) {
+      this.conditionsConfig$
+      .pipe(
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataRaw(config!))
+      )
+      .subscribe((data) => {
+        this.conditionDataSource.data = data;
+        this.map.config.dataLayerConfig = this.findAndRevealNode(
+            this.map.config.dataLayerConfig
+        );
+      });
+    } else if (this.dataType == ConditionTreeType.TRANSLATED) {
+      this.conditionsConfig$
+      .pipe(
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataNormalized(config!))
+      )
+      .subscribe((data) => {
+        this.conditionDataSource.data = data;
+        this.map.config.dataLayerConfig = this.findAndRevealNode(
           this.map.config.dataLayerConfig
         );
-    });
-  } else if(this.dataType == ConditionTreeType.TRANSLATED){
-  this.conditionsConfig$
-    .pipe(
-      filter((config) => !!config),
-      map((config) => this.conditionsConfigToDataNormalized(config!))
-    )
-    .subscribe((data) => {
-      this.conditionDataSource.data = data;
-      this.map.config.dataLayerConfig = this.findAndRevealNode(
-        this.map.config.dataLayerConfig
-      );
-    });
-  } else if(this.dataType == ConditionTreeType.FUTURE){
-  this.conditionsConfig$
-    .pipe(
-      filter((config) => !!config),
-      map((config) => this.conditionsConfigToDataFuture(config!))
-    )
-    .subscribe((data) => {
-      this.conditionDataSource.data = data;
-      this.map.config.dataLayerConfig = this.findAndRevealNode(
-        this.map.config.dataLayerConfig
-      );
-    });
+      });
+    } else if(this.dataType == ConditionTreeType.FUTURE) {
+      this.conditionsConfig$
+      .pipe(
+        filter((config) => !!config),
+        map((config) => this.conditionsConfigToDataFuture(config!))
+      )
+      .subscribe((data) => {
+        this.conditionDataSource.data = data;
+        this.map.config.dataLayerConfig = this.findAndRevealNode(
+          this.map.config.dataLayerConfig
+        );
+      });
     }
   }
 
@@ -288,7 +265,7 @@ export class ConditionTreeComponent implements OnInit {
                         region_geoserver_name: config.region_geoserver_name,
                         data_download_link: metric.normalized_data_download_path ?
                         BackendConstants.DOWNLOAD_END_POINT + '/' + metric.normalized_data_download_path :
-                        metric.data_download_link,
+                          metric.data_download_link,
                         legend_name: CURRENT_CONDITIONS_NORMALIZED_LEGEND,
                         normalized: true,
                         min_value: undefined,
@@ -310,19 +287,19 @@ export class ConditionTreeComponent implements OnInit {
       return config.pillars
         ? config.pillars
           ?.filter((pillar) => pillar.display)
-    .map((pillar): ConditionsNode => {
+          .map((pillar): ConditionsNode => {
             return {
-         ...pillar,
+              ...pillar,
               data_download_link: pillar.future_data_download_path ?
-          BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.future_data_download_path :
+              BackendConstants.DOWNLOAD_END_POINT + '/' + pillar.future_data_download_path :
                 pillar.data_download_link,
               layer: pillar.future_layer,
               region_geoserver_name: config.region_geoserver_name,
               legend_name: FUTURE_CONDITIONS_LEGEND,
               normalized: true,
               children: []
-      };
-          })
+            };
+          }) 
       : [];
     }
 }
