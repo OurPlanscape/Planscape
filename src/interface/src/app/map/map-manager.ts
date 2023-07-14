@@ -22,10 +22,10 @@ import {
   BoundaryConfig,
   DEFAULT_COLORMAP,
   FrontendConstants,
-  regionMapCenters,
   Map,
-  Region,
   MapViewOptions,
+  Region,
+  regionMapCenters
 } from '../types';
 
 // Set to true so that layers are not editable by default
