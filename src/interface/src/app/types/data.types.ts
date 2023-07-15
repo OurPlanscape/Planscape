@@ -77,5 +77,6 @@ export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
 export const NONE_DATA_LAYER_CONFIG: DataLayerConfig = {
   display_name: 'None',
   filepath: '',
+  layer: '',
   colormap: NONE_COLORMAP,
 };
