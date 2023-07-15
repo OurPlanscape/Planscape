@@ -705,14 +705,11 @@ export class MapManager {
             lastChild = 'style="margin-bottom: 6px;"';
           }
           if (entry['label']) {
-            var label = entry['label'];
-            if (label == 'nodata') {
-              htmlContent += '<nodata>&#x2327 N/D<br/></nodata>';
-              
-            } else {
+            // Filter out 'nodata' entries
+            if (entry['color'] != '#000000') {
               htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
-              + label + '<br/></label></div>';
-            }
+              + entry['label'] + '<br/></label></div>';
+            } 
           } else {
             htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
           }
