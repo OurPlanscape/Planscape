@@ -159,10 +159,10 @@ export class ConditionTreeComponent implements OnInit {
    *  so it becomes visible.
    */
   private findAndRevealNode(config: DataLayerConfig): ConditionsNode {
-    if (!config.filepath || config.filepath === NONE_DATA_LAYER_CONFIG.filepath)
+    if (!config.layer || config.layer === NONE_DATA_LAYER_CONFIG.layer)
       return NONE_DATA_LAYER_CONFIG;
     for (let node of this.treeControl.dataNodes) {
-      if (node.condition.filepath === config.filepath) {
+      if (node.condition.layer === config.layer) {
         this.expandAncestors(node);
         this.onSelect(node);
         return node.condition;
@@ -201,6 +201,7 @@ export class ConditionTreeComponent implements OnInit {
                 disableSelect: true,
                 disableInfoCard: true,
                 legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                normalized: false,
                 children: pillar.elements
                   ?.filter((element) => element.display)
                   .map((element): ConditionsNode => {
@@ -209,12 +210,14 @@ export class ConditionTreeComponent implements OnInit {
                       disableSelect: true,
                       disableInfoCard: true,
                       legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                      normalized: false,
                       children: element.metrics?.map((metric): ConditionsNode=> {
                         return {
                           ...metric,
                           layer:metric.raw_layer,
                           region_geoserver_name: config.region_geoserver_name,
                           legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
+                          normalized: false,
                           data_download_link: metric.raw_data_download_path ?
                           BackendConstants.DOWNLOAD_END_POINT + '/' + metric.raw_data_download_path :
                           metric.data_download_link,
