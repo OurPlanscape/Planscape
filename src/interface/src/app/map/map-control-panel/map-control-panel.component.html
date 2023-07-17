@@ -153,17 +153,6 @@
             (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
           </app-condition-tree>
         </div>
-
-        <!-- No Data Region controls -->
-        <div *ngIf="!rawDataEnabled">
-          <mat-expansion-panel disabled="true">
-            <mat-expansion-panel-header class="layer-panel-header">
-              <mat-panel-title>
-                Current Conditions (coming soon)
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-          </mat-expansion-panel>
-        </div>
   
         <!-- Ecosystem scores controls -->
         <!-- <ng-container *featureFlag="'unlaunched_layers'">
