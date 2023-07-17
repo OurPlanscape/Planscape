@@ -572,7 +572,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.mapService
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.mapManager.maskOutsideRegion(map.instance!, boundary);
+        this.mapManager.maskOutsideRegion(map, boundary);
       });
   }
 
