@@ -203,9 +203,11 @@ describe('MapComponent', () => {
       const mapServiceStub: MapService =
         fixture.debugElement.injector.get(MapService);
 
-      expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(
-        Region.SIERRA_NEVADA
-      );
+
+      // Region highlighting temporarily disabled. 
+      // expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(
+      //   Region.SIERRA_NEVADA
+      // );
       expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
   });
