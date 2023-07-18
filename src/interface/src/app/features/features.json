@@ -1,12 +1,12 @@
 {
   "login": true,
   "show_centralcoast": false,
+  "show_future_control_panel": false,
   "show_socal": true,
+  "show_translated_control_panel": false,
   "testFalseFeature": false,
   "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
-  "use_its": false,
-  "show_future_control_panel": false,
-  "show_translated_control_panel": false
+  "use_its": false
 }
