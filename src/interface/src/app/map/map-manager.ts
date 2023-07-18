@@ -749,6 +749,8 @@ export class MapManager {
         layers: layer,
         minZoom: 7,
         maxZoom: 13,
+        format:'image/png',
+        transparent: true,
         opacity:
           map.config.dataLayerConfig.opacity !== undefined
             ? map.config.dataLayerConfig.opacity
