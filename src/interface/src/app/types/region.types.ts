@@ -22,7 +22,8 @@ const regions: Region[] = [
 
 const availableRegions = new Set([
   Region.SIERRA_NEVADA,
-  features.show_socal ? Region.SOUTHERN_CALIFORNIA : null
+  features.show_socal ? Region.SOUTHERN_CALIFORNIA : null,
+  features.show_centralcoast ? Region.CENTRAL_COAST : null
 ])
 
 export const regionOptions = regions.map((region) => {

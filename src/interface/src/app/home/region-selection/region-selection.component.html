@@ -2,8 +2,8 @@
   <!-- Content text -->
   <section class="content-section">
     <span *ngIf="!hasPlans || !(loggedIn$ | async)">Welcome to Planscape preview! </span>
-    <span *ngIf="socal_enabled; else socalNotEnabled" >Choose a region to explore </span>
-    <ng-template #socalNotEnabled>
+    <span *ngIf="multiple_regions_enabled; else singleRegionEnabled">Choose a region to explore </span>
+    <ng-template #singleRegionEnabled>
       Click Sierra Nevada to explore 
     </ng-template>
   </section>
