@@ -565,6 +565,7 @@ export class MapManager {
   /**
    * Darkens everything outside of the region boundary.
    * Type 'any' is used in order to access coordinates.
+   * Currently unused.
    */
   maskOutsideRegion(map: Map, boundary: any) {
     // Add corners of the map to invert the polygon
@@ -753,6 +754,8 @@ export class MapManager {
         layers: layer,
         minZoom: 7,
         maxZoom: 13,
+        format: 'image/png',
+        transparent: true,
         opacity:
           map.config.dataLayerConfig.opacity !== undefined
             ? map.config.dataLayerConfig.opacity
