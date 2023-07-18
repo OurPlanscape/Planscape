@@ -19,6 +19,10 @@ features that require login to use (e.g planning) when set to false. When login
 is disabled it also replaces the plans on the homepage with a message
 explaining that some buttons and features are disabled.  
 
+### show_centralcoast
+This flag will display the option to switch to the Central Coast region,
+and therefore allow for the display of Central Coast data.
+
 ### show_socal
 This flag will display the option to switch to the Southern California region,
 and therefore allow for the display of Southern California data.
