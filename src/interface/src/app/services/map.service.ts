@@ -19,16 +19,16 @@ import features from '../features/features.json'
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {
   [Region.SIERRA_NEVADA]: {
     boundary: 'assets/geojson/sierra_nevada_region.geojson',
-    counties: 'assets/geojson/sierra_cascade_inyo/counties.geojson',
-    huc10: 'assets/geojson/sierra_cascade_inyo/huc10.geojson',
-    huc12: 'assets/geojson/sierra_cascade_inyo/huc12.geojson',
-    USFS: 'assets/geojson/sierra_cascade_inyo/USFS.geojson',
-    RecentFires: 'assets/geojson/sierra_cascade_inyo/recent_fires.geojson',
-    PrescribedBurns: 'assets/geojson/sierra_cascade_inyo/prescribed_burns.geojson'
   },
-  [Region.CENTRAL_COAST]: {},
-  [Region.NORTHERN_CALIFORNIA]: {},
-  [Region.SOUTHERN_CALIFORNIA]: {},
+  [Region.CENTRAL_COAST]: {
+    boundary: 'assets/geojson/central_california_region.geojson'
+  },
+  [Region.NORTHERN_CALIFORNIA]: {
+    boundary: 'assets/geojson/northern_california_region.geojson'
+  },
+  [Region.SOUTHERN_CALIFORNIA]: {
+    boundary: 'assets/geojson/southern_california_region.geojson'
+  }
 };
 
 @Injectable({
