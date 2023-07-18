@@ -220,7 +220,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.selectedRegion$
     .pipe(take(1))
     .subscribe((region) => {
-      if (this.regionRecord$ != region){
+      if (this.regionRecord$ != region) {
         this.regionRecord$ = region!;
         this.sessionService.mapConfigs$
         .pipe(take(1))
