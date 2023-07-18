@@ -5,5 +5,7 @@
   "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
-  "use_its": false
+  "use_its": false,
+  "show_future_control_panel": false,
+  "show_translated_control_panel": false
 }
