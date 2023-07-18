@@ -35,6 +35,12 @@ map-control-panel.component.html so they are no longer affected by this flag.
 This flag will enable use of ITS data for past resilience projects rather than
 Calmapper.
 
+### show_future_control_panel
+This flag will enable future condition options in the map control panel for all regions. A region-specific flag, "future_data", can be found for each region in Planscape/src/planscape/config/conditions.json. When "show_future_control_panel" is set to true and "future_data" is set to true for a region, the future condition layers will appear in the map control panel. When "show_future_control_panel" is set to true and "future_data" is set to false for a region, "Future Climate Stability (coming soon)" will appear in the map control panel. 
+
+### show_translated_control_panel
+This flag will enable translated condition options in the map control panel for all regions. A region-specific flag, "translated_data", can be found for each region in Planscape/src/planscape/config/conditions.json. When "show_translated_control_panel" is set to true and "translated_data" is set to true for a region, the translated condition layers will appear in the map control panel. When "show_translated_control_panel" is set to true and "translated_data" is set to false for a region, "Current Conditions (coming soon)" will appear in the map control panel. 
+
 ### Other flags
 There are two other flags, testFalseFeature and testTrueFeature created just for
 automated testing.  Their values should be kept to "false" and "true" for
@@ -51,6 +57,8 @@ for angular tests to pass.  You can start with this, but later enable settings.
   "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
-  "use_its": false
+  "use_its": false,
+  "show_future_control_panel": false,
+  "show_translated_control_panel": false
 }
 ```
