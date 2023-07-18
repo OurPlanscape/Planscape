@@ -225,7 +225,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.sessionService.mapConfigs$
         .pipe(take(1))
         .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
-          
           if (mapConfigs && region) {
             var regionMaps = mapConfigs[region]
             if (regionMaps) {
@@ -234,7 +233,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
               });
             }
           }
-          
           this.boundaryConfig$
           .pipe(filter((config) => !!config))
           .subscribe((config) => {
@@ -255,7 +253,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           this.initMap(map, map.id);
         });
         this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
-        
       }
     });
     this.cdr.detectChanges();
