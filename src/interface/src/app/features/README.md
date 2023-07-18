@@ -56,6 +56,7 @@ for angular tests to pass.  You can start with this, but later enable settings.
 ```
 {
   "login": true,
+  "show_centralcoast": false,
   "show_socal": false,
   "testFalseFeature": false,
   "testTrueFeature": true,

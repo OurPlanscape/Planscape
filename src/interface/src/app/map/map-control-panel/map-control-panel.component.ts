@@ -64,18 +64,20 @@ export class MapControlPanelComponent implements OnInit {
 
 
   private readonly destroy$ = new Subject<void>();
+  // Region-specific data flags
   rawDataEnabled: boolean | null = null;
   translatedDataEnabled: boolean | null = null;
   futureDataEnabled: boolean | null = null;
+
+  // General data flags
+  future_control_panel_enabled = features.show_future_control_panel;
+  translated_control_panel_enabled = features.show_translated_control_panel;
   
   public dataTypeEnum = ConditionTreeType;
 
   conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
   conditionDataFuture$ = new BehaviorSubject<ConditionsNode[]>([]);
-
-  future_control_panel_enabled = features.show_future_control_panel;
-  translated_control_panel_enabled = features.show_translated_control_panel;
 
   constructor() {}
 
