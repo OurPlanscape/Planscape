@@ -565,16 +565,20 @@ export class MapManager {
   /**
    * Darkens everything outside of the region boundary.
    * Type 'any' is used in order to access coordinates.
+   * Currently unused.
    */
-  maskOutsideRegion(map: L.Map, boundary: any) {
+  maskOutsideRegion(map: Map, boundary: any) {
     // Add corners of the map to invert the polygon
+    if (map.regionLayerRef) {
+      map.regionLayerRef?.remove();
+    }
     boundary.features[0].geometry.coordinates[0].unshift([
       [180, -90],
       [180, 90],
       [-180, 90],
       [-180, -90],
     ]);
-    L.geoJSON(boundary, {
+    map.regionLayerRef = L.geoJSON(boundary, {
       style: (_) => ({
         color: '#ffffff',
         weight: 2,
@@ -582,7 +586,8 @@ export class MapManager {
         fillColor: '#000000',
         fillOpacity: 0.4,
       }),
-    }).addTo(map);
+    })
+    map.regionLayerRef.addTo(map.instance!);
   }
 
   /** Sync pan, zoom, etc. between all maps visible onscreen. */
