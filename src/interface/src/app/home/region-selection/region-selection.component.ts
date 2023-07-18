@@ -20,7 +20,9 @@ export class RegionSelectionComponent implements OnInit {
   hasPlans: boolean = false;
   loggedIn$ = this.authService.isLoggedIn$;
   readonly regionOptions: RegionOption[] = regionOptions;
-  socal_enabled = features.show_socal;
+
+  /** We assume that Sierra Nevada is always enabled.  */
+  multiple_regions_enabled = features.show_socal || features.show_centralcoast;
   constructor(
     private authService: AuthService,
     private planService: PlanService,
