@@ -226,7 +226,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         .pipe(take(1))
         .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
           if (mapConfigs && region) {
-            var regionMaps = mapConfigs[region]
+            var regionMaps = mapConfigs[region];
             if (regionMaps) {
               regionMaps.forEach((mapConfig, index) => {
                 this.maps[index].config = mapConfig;
