@@ -23,9 +23,15 @@ explaining that some buttons and features are disabled.
 This flag will display the option to switch to the Central Coast region,
 and therefore allow for the display of Central Coast data.
 
+### show_future_control_panel
+This flag will enable future condition options in the map control panel for all regions. A region-specific flag, "future_data", can be found for each region in Planscape/src/planscape/config/conditions.json. When "show_future_control_panel" is set to true and "future_data" is set to true for a region, the future condition layers will appear in the map control panel. When "show_future_control_panel" is set to true and "future_data" is set to false for a region, "Future Climate Stability (coming soon)" will appear in the map control panel. 
+
 ### show_socal
 This flag will display the option to switch to the Southern California region,
 and therefore allow for the display of Southern California data.
+
+### show_translated_control_panel
+This flag will enable translated condition options in the map control panel for all regions. A region-specific flag, "translated_data", can be found for each region in Planscape/src/planscape/config/conditions.json. When "show_translated_control_panel" is set to true and "translated_data" is set to true for a region, the translated condition layers will appear in the map control panel. When "show_translated_control_panel" is set to true and "translated_data" is set to false for a region, "Current Conditions (coming soon)" will appear in the map control panel. 
 
 ### top_percent_slider
 This flag shows the slider displayed in the scenario generator UI (plan phase).
@@ -50,7 +56,10 @@ for angular tests to pass.  You can start with this, but later enable settings.
 ```
 {
   "login": true,
+  "show_centralcoast": false,
+  "show_future_control_panel": false,
   "show_socal": false,
+  "show_translated_control_panel": false
   "testFalseFeature": false,
   "testTrueFeature": true,
   "top_percent_slider": true,
