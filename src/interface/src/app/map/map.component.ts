@@ -329,9 +329,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
-      this.displayRegionBoundary(map, selectedRegion);
       var centerCoords = regionMapCenters(selectedRegion!);
       map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
+      // Region highlighting disabled for now
+      // this.displayRegionBoundary(map, selectedRegion);
     });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
@@ -565,7 +566,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  /** Gets the selected region geojson and renders it on the map. */
+  /** Gets the selected region geojson and renders it on the map. 
+   * Currently unused. 
+   * */
   private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
     if (!selectedRegion) return;
     if (!map.instance) return;
