@@ -220,42 +220,39 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.selectedRegion$
     .pipe(take(1))
     .subscribe((region) => {
-      if (this.regionRecord$ != region){
+      if (this.regionRecord$ != region) {
         this.regionRecord$ = region!;
         this.sessionService.mapConfigs$
-    .pipe(take(1))
-    .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
-      this.selectedRegion$
-      .pipe(take(1))
-      .subscribe((region: Region | null) => {
-      if (mapConfigs && region) {
-        var regionMaps = mapConfigs[region]
-        if(regionMaps){
-        regionMaps.forEach((mapConfig, index) => {
-          this.maps[index].config = mapConfig;
-        });
-      }
-      }
-      });
-      this.boundaryConfig$
-        .pipe(filter((config) => !!config))
-        .subscribe((config) => {
-          // Ensure the radio button corresponding to the saved selection is selected.
-          this.maps.forEach((map) => {
-            const boundaryConfig = config?.find(
-              (boundary) =>
-                boundary.boundary_name ===
-                map.config.boundaryLayerConfig.boundary_name
-            );
-            map.config.boundaryLayerConfig = boundaryConfig
-              ? boundaryConfig
-              : NONE_BOUNDARY_CONFIG;
+        .pipe(take(1))
+        .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
+          if (mapConfigs && region) {
+            var regionMaps = mapConfigs[region];
+            if (regionMaps) {
+              regionMaps.forEach((mapConfig, index) => {
+                this.maps[index].config = mapConfig;
+              });
+            }
+          }
+          this.boundaryConfig$
+          .pipe(filter((config) => !!config))
+          .subscribe((config) => {
+            // Ensure the radio button corresponding to the saved selection is selected.
+            this.maps.forEach((map) => {
+              const boundaryConfig = config?.find(
+                (boundary) =>
+                  boundary.boundary_name ===
+                  map.config.boundaryLayerConfig.boundary_name
+              );
+              map.config.boundaryLayerConfig = boundaryConfig
+                ? boundaryConfig
+                : NONE_BOUNDARY_CONFIG;
+            });
           });
         });
-    });
-    this.maps.forEach((map: Map) => {
-      this.initMap(map, map.id);
-    });
+        this.maps.forEach((map: Map) => {
+          this.initMap(map, map.id);
+        });
+        this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
       }
     });
     this.cdr.detectChanges();
