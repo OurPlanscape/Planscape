@@ -117,8 +117,8 @@ export class SetPrioritiesComponent implements OnInit {
             data.push(elementRow);
             pillarRow.children.push(elementRow);
             element.metrics
-	      ?.filter((metric) => !!metric.filepath)
-	      .forEach((metric) => {
+              ?.filter((metric) => !!metric.filepath)
+              .forEach((metric) => {
               let metricRow: PriorityRow = {
                 conditionName: metric.metric_name!,
                 displayName: metric.display_name,
