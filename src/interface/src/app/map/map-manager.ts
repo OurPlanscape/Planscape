@@ -702,11 +702,12 @@ export class MapManager {
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
       htmlContent += '<div><b>Legend</b></div>';
-        for (let i = 0; i < entries.length; i++) {
+        // Reversing order to present legend values from high to low (default is low to high)
+        for (let i = entries.length-1; i >= 0; i--) {
           var entry = entries[i]
           // Add a margin-bottom to only the last entry in the legend
           var lastChild = "";
-          if (i == entries.length -1) {
+          if (i ==0) {
             lastChild = 'style="margin-bottom: 6px;"';
           }
           if (entry['label']) {
