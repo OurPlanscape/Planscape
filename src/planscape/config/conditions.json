@@ -1,7 +1,84 @@
 {
   "__comment1": "TODO: add validation that each layer type has minimally-viable data, e.g. a display_name",
-  "__comment_socal_source": "https://docs.google.com/spreadsheets/d/1Y4zsvrPtq5e6lxI8r04P-_CfWgmms4Ef9IlFGDEqm7I/edit#gid=1790708570",
+  "__comment_planning_sheet": "https://docs.google.com/spreadsheets/d/1Y4zsvrPtq5e6lxI8r04P-_CfWgmms4Ef9IlFGDEqm7I",  
   "regions": [
+    {
+      "region_name": "central_coast",
+      "display_name": "Central Coast",
+      "region_geoserver_name": "central-coast",
+      "raw_data": true,
+      "translated_data": false,
+      "future_data": false,
+      "pillars": [
+        {
+          "pillar_name": "air_quality",
+          "display": true,
+          "display_name": "Air Quality",
+          "elements": [
+            {
+              "element_name": "particulate_matter",
+              "display": true,
+              "display_name": "Particulate Matter",
+              "metrics": [
+                {
+                  "display_name": "Potential Smoke Emissions - High Severity Fire",
+                  "data_provider": "San Diego State University, Rocky Mountain Research Station",
+                  "data_units": "pounds PM2.5/acre",
+                  "max_value": 9000,
+                  "metric_name": "potential_smoke_emissions_high_severity_fire",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/airQuality/Tier1/Vulner_PM25_Severe_2022.tif",
+                  "raw_layer": "central-coast:airQuality_Tier1_Vulner_PM25_Severe_2022",
+                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page57",
+                  "source": "Central Coast Regional Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
+		}
+	      ]
+	    }
+	  ]
+	},
+	{
+          "pillar_name": "biodiversity_conservation",
+          "display": true,
+          "display_name": "Biodiversity Conservation",
+          "elements": [
+            {
+	      "element_name": "community_integrity",
+              "display": true,
+              "display_name": "Community Integrity",
+              "metrics": [
+                {
+                  "display_name": "Habitat Connectivity",
+                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_units": "Categorical",
+                  "max_value": 5,
+                  "metric_name": "habitat_connectivity",
+                  "min_value": 1,
+                  "raw_data_download_path": "central-coast/bioDiverConserv/Tier1/HabitatConnectivity_2019.tif",
+                  "raw_layer": "central-coast:bioDiverConserv_Tier1_HabitatConnectivity_2019",
+                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page50",
+                  "source": "Central Coast Regional Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
+		},
+		{
+                  "display_name": "Species Richness: Cavity Nesters/Excavators",
+                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_units": "Number of Species",
+                  "max_value": 16,
+                  "metric_name": "species_richness_cavity_nesters_excavators",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness.tif",
+                  "raw_layer": "central-coast:bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
+                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page49",
+                  "source": "Central Coast Regional Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
+		}
+	      ]
+	    }
+	  ]
+	}
+      ]
+    },
     {
       "region_name": "southern_california",
       "display_name": "Southern California",
