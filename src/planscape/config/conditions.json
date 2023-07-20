@@ -1,6 +1,6 @@
 {
   "__comment1": "TODO: add validation that each layer type has minimally-viable data, e.g. a display_name",
-  "__comment_planning_sheet": "https://docs.google.com/spreadsheets/d/1Y4zsvrPtq5e6lxI8r04P-_CfWgmms4Ef9IlFGDEqm7I",  
+  "__comment_planning_sheet": "https://docs.google.com/spreadsheets/d/1Y4zsvrPtq5e6lxI8r04P-_CfWgmms4Ef9IlFGDEqm7I",
   "regions": [
     {
       "region_name": "central_coast",
@@ -32,18 +32,18 @@
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page57",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-		}
-	      ]
-	    }
-	  ]
-	},
-	{
+                }
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "biodiversity_conservation",
           "display": true,
           "display_name": "Biodiversity Conservation",
           "elements": [
             {
-	      "element_name": "community_integrity",
+              "element_name": "community_integrity",
               "display": true,
               "display_name": "Community Integrity",
               "metrics": [
@@ -59,8 +59,8 @@
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page50",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-		},
-		{
+                },
+                {
                   "display_name": "Species Richness: Cavity Nesters/Excavators",
                   "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
@@ -72,11 +72,11 @@
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-		}
-	      ]
-	    }
-	  ]
-	}
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -466,8 +466,8 @@
                   "max_value": 20,
                   "metric_name": "structure_exposure_score",
                   "min_value": 1,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022_reclass.tif",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page9",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -479,8 +479,8 @@
                   "max_value": 12,
                   "metric_name": "wui_damage_potential",
                   "min_value": 1,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/DamagePotential_WUI_2022.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_DamagePotential_WUI_2022",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/DamagePotential_WUI_2022_reclass.tif",
+                  "raw_layer": "southern-california:fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page11",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -605,7 +605,7 @@
                 },
                 {
                   "display_name": "Mean % FRI Departure since 1908",
-                    "data_provider": "CAL FIRE, USDA Forest Service Region 5",
+                  "data_provider": "CAL FIRE, USDA Forest Service Region 5",
                   "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "mean_fri_departure_since_1908",
@@ -1158,7 +1158,7 @@
           "future_data_download_path": "sierra-nevada/airQualityTranslate/airQuality030_future.tif",
           "future_layer": "sierra-nevada:airQualityTranslate_airQuality030_future",
           "normalized_data_download_path": "sierra-nevada/airQualityTranslate/airQuality.tif",
-          "normalized_layer":  "sierra-nevada:airQualityTranslate_airQuality",
+          "normalized_layer": "sierra-nevada:airQualityTranslate_airQuality",
           "elements": [
             {
               "element_name": "particulate_matter",
@@ -1446,7 +1446,7 @@
                 {
                   "metric_name": "california_spotted_owl_habitat",
                   "filepath": "sierra_nevada/biodiversity/focal_species/CSO_suitablehabitat_combined_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_CSO_suitablehabitat_combined", 
+                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_CSO_suitablehabitat_combined",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CSO_suitablehabitat_combined.tif",
                   "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_CSO_suitablehabitat_combined_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier2/CSO_suitablehabitat_combined_scored.tif",
@@ -1774,7 +1774,7 @@
           "filepath": "sierra_nevada/fire_adapted_communities",
           "future_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm030_future.tif",
           "future_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm030_future",
-          "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm.tif", 
+          "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm.tif",
           "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm",
           "operation": "MEAN",
           "elements": [
@@ -1790,10 +1790,10 @@
                 {
                   "metric_name": "structure_exposure",
                   "filepath": "sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
-                  "raw_layer": "sierra-nevada:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
-                  "raw_data_download_path": "sierra-nevada/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022.tif",
+                  "raw_layer": "sierra-nevada:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
+                  "raw_data_download_path": "sierra-nevada/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022_reclass.tif",
                   "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_Tier1_StructureExposureScore_WUI_2022_scored",
-                  "normalized_data_download_path" : "sierra-nevada/fireAdaptCommTranslate/Tier1/StructureExposureScore_WUI_2022_scored.tif",
+                  "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/Tier1/StructureExposureScore_WUI_2022_scored.tif",
                   "display_name": "Structure Exposure Score",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -1809,8 +1809,8 @@
                 {
                   "metric_name": "damage_potential_wui",
                   "filepath": "sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m",
-                  "raw_layer": "sierra-nevada:fireAdaptComm_Tier1_DamagePotential_WUI_2022",
-                  "raw_data_download_path": "sierra-nevada/fireAdaptComm/Tier1/DamagePotential_WUI_2022.tif",
+                  "raw_layer": "sierra-nevada:fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
+                  "raw_data_download_path": "sierra-nevada/fireAdaptComm/Tier1/DamagePotential_WUI_2022_reclass.tif",
                   "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_Tier1_DamagePotential_WUI_2022_scored",
                   "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/Tier1/DamagePotential_WUI_2022_scored.tif",
                   "display_name": "WUI Damage Potential",
@@ -2692,7 +2692,7 @@
           "display": true,
           "display_name": "Wetland Integrity",
           "filepath": "sierra_nevada/wetland_integrity",
-          "normalized_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg.tif", 
+          "normalized_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg.tif",
           "normalized_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg",
           "future_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg030_future",
           "future_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg030_future.tif",
@@ -2702,7 +2702,7 @@
               "display": true,
               "filepath": "sierra_nevada/wetland_integrity/hydrologic",
               "normalized_layer": "sierra-nevada:wetlandIntegTranslate_hydroFunction",
-              "normalized_data_download_path": "sierra-nevada/wtlandIntegTranslate/hydroFunction.tif", 
+              "normalized_data_download_path": "sierra-nevada/wtlandIntegTranslate/hydroFunction.tif",
               "display_name": "Hydrologic Function",
               "metrics": [
                 {
@@ -2710,7 +2710,7 @@
                   "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
                   "raw_layer": "sierra-nevada:wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
-                  "raw_data_download_path": "sierra-nevada/wetlangInteg/Tier2/MeadowSensNDWI_2019_30m.tif", 
+                  "raw_data_download_path": "sierra-nevada/wetlangInteg/Tier2/MeadowSensNDWI_2019_30m.tif",
                   "normalized_layer": "sierra-nevada:wetlandIntegTranslate_Tier2_Meadow_SensNDWI_2019_scored",
                   "normalized_data_download_path": "sierra-nevada/wetlandIntegrityTranslate/Tier2/Meadow_SensNDWI_2019_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
