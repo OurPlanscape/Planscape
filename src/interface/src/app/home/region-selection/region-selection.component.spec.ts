@@ -55,7 +55,7 @@ describe('RegionSelectionComponent', () => {
     );
 
     for (let regionButton of regionButtons) {
-      if ((await regionButton.getText()).match(/(SIERRA NEVADA)|(SOUTHERN CALIFORNIA)/)) {
+      if ((await regionButton.getText()).match(/(SIERRA NEVADA)|(SOUTHERN CALIFORNIA)|(CENTRAL COAST)/)) {
         expect(await regionButton.isDisabled()).toBeFalse();
       } else {
         expect(await regionButton.isDisabled()).toBeTrue();
