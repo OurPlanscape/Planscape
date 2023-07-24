@@ -13,7 +13,7 @@ import {
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet.sync';
-import { BehaviorSubject, Observable, take } from 'rxjs';
+import { BehaviorSubject, Observable, last, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService, SessionService } from '../services';
@@ -686,7 +686,7 @@ export class MapManager {
     }
   }
 
-  addLegend(colormap: any, map: Map) {
+  addLegend(colormap: any, dataUnit: string | undefined, map: Map) {
     var entries = colormap['entries'];
     const legend = new (L.Control.extend({
       options: { position: 'topleft' }
@@ -701,7 +701,11 @@ export class MapManager {
       const div = L.DomUtil.create('div', 'legend');
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
-      htmlContent += '<div><b>Legend</b></div>';
+      if (dataUnit) {
+        htmlContent += '<div><b>' + dataUnit + '</b></div>';
+      } else {
+        htmlContent += '<div><b>Legend</b></div>';
+      }
         // Reversing order to present legend values from high to low (default is low to high)
         for (let i = entries.length-1; i >= 0; i--) {
           var entry = entries[i]
@@ -716,6 +720,9 @@ export class MapManager {
               htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
               + entry['label'] + '<br/></label></div>';
             } 
+            else if (lastChild != "") {
+              htmlContent += '<div class="legendline"' + lastChild + '></div>';
+            }
           } else {
             htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
           }
@@ -767,6 +774,7 @@ export class MapManager {
     map.dataLayerRef.addTo(map.instance);
     
     // Map legend request
+    var dataUnit = map.config.dataLayerConfig.data_units;
     const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
     let queryParams = new HttpParams();
     queryParams = queryParams.append("request", "GetLegendGraphic");
@@ -777,7 +785,7 @@ export class MapManager {
       .pipe(take(1))
       .subscribe((value:any) => {
         var colorMap = value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
-        this.addLegend(colorMap, map);
+        this.addLegend(colorMap, dataUnit, map);
       });
   }
 
