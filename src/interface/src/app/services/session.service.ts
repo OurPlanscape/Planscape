@@ -120,7 +120,7 @@ export class SessionService {
   private validateSavedMapViewOptions(data: string): boolean {
     const mapViewOptions: MapViewOptions = JSON.parse(data);
     return (
-      Object.keys(data).sort().join(',') ===
+      Object.keys(mapViewOptions).sort().join(',') ===
       Object.keys(defaultMapViewOptions()).sort().join(',')
     );
   }
