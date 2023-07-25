@@ -14,6 +14,7 @@ import {
   ConditionsConfig,
   NONE_BOUNDARY_CONFIG,
 } from 'src/app/types';
+import * as L from 'leaflet';
 
 import { NONE_DATA_LAYER_CONFIG, ConditionTreeType } from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
@@ -106,6 +107,9 @@ export class MapControlPanelComponent implements OnInit {
     map.config.showExistingProjectsLayer = false;
     this.toggleExistingProjectsLayer.emit(map);
     map.config.dataLayerConfig = NONE_DATA_LAYER_CONFIG;
+    if(map.legend){
+      L.DomUtil.remove(map.legend);
+    }
     this.changeConditionLayer.emit(map);
   }
 
