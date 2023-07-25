@@ -467,6 +467,8 @@ export class MapManager {
   private setUpPanHandler(map: L.Map) {
     if (!this.mapViewOptions$.getValue().center) return;
 
+    // Temporarily disabling to patch region-switch centering bug
+    // TODO: Either get rid of locally stored center or change to region-based dictionary
     // map.panTo(this.mapViewOptions$.getValue().center);
 
     map.addEventListener('moveend', (e) => {
