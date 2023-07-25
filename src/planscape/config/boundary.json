@@ -6,7 +6,7 @@
         "display_name": "Southern California",
         "boundaries": [
         {
-            "boundary_name": "counties",
+            "boundary_name": "southern_california-counties",
             "display_name": "Counties",
             "vector_name": "southern-california:vector_county",
             "region_name": "none",
@@ -16,7 +16,7 @@
             "shape_name": "COUNTY_NAM"
         },
         {
-            "boundary_name": "huc12",
+            "boundary_name": "southern_california-huc12",
             "display_name": "HUC-12",
             "vector_name": "southern-california:vector_huc12",
             "region_name": "none",
@@ -36,7 +36,7 @@
             "shape_name": "Name"
         },
         {
-            "boundary_name": "USFS",
+            "boundary_name": "southern_california-USFS",
             "display_name": "National Forests",
             "vector_name": "southern-california:vector_forests",
             "region_name": "none",
@@ -46,7 +46,7 @@
             "shape_name": "FORESTNAME"
         },
         {
-            "boundary_name": "RecentFires",
+            "boundary_name": "southern_california-RecentFires",
             "display_name": "Fires (through 2021)",
             "vector_name": "southern-california:vector_recent-fires",
             "region_name": "none",
@@ -56,7 +56,7 @@
             "shape_name": "FIRE_NAME"
         },
         {
-            "boundary_name": "PrescribedBurns",
+            "boundary_name": "southern_california-PrescribedBurns",
             "display_name": "Prescribed Burns (through 2021)",
             "vector_name": "southern-california:vector_prescribed-burns",
             "region_name": "none",
@@ -72,7 +72,7 @@
         "display_name": "Sierra Nevada",
         "boundaries": [
         {
-            "boundary_name": "counties",
+            "boundary_name": "sierra-nevada-counties",
             "display_name": "Counties",
             "vector_name": "sierra-nevada:vector_county",
             "region_name": "none",
@@ -82,7 +82,7 @@
             "shape_name": "COUNTY_NAM"
         },
         {
-            "boundary_name": "huc12",
+            "boundary_name": "sierra-nevada-huc12",
             "display_name": "HUC-12",
             "vector_name": "sierra-nevada:vector_huc12",
             "region_name": "none",
@@ -92,7 +92,7 @@
             "shape_name": "Name"
         },
         {
-            "boundary_name": "huc10",
+            "boundary_name": "sierra-nevada-huc10",
             "display_name": "HUC-10",
             "vector_name": "sierra-nevada:vector_huc10",
             "region_name": "none",
@@ -102,7 +102,7 @@
             "shape_name": "Name"
         },
         {
-            "boundary_name": "USFS",
+            "boundary_name": "sierra-nevada-USFS",
             "display_name": "National Forests",
             "vector_name": "sierra-nevada:vector_forests",
             "region_name": "none",
@@ -112,7 +112,7 @@
             "shape_name": "FORESTNAME"
         },
         {
-            "boundary_name": "RecentFires",
+            "boundary_name": "sierra-nevada-RecentFires",
             "display_name": "Fires (through 2021)",
             "vector_name": "sierra-nevada:vector_recent-fires",
             "region_name": "none",
@@ -122,7 +122,7 @@
             "shape_name": "FIRE_NAME"
         },
         {
-            "boundary_name": "PrescribedBurns",
+            "boundary_name": "sierra-nevada-PrescribedBurns",
             "display_name": "Prescribed Burns (through 2021)",
             "vector_name": "sierra-nevada:vector_prescribed-burns",
             "region_name": "none",
