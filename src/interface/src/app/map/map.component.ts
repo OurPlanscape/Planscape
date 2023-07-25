@@ -230,24 +230,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
             if (regionMaps) {
               regionMaps.forEach((mapConfig, index) => {
                 this.maps[index].config = mapConfig;
+                this.boundaryConfig$
+                .pipe(filter((config) => !!config))
+                .subscribe((config) => {
+                // Ensure the radio button corresponding to the saved selection is selected.
+                  const boundaryConfig = config?.find(
+                  (boundary) =>
+                    boundary.boundary_name ===
+                    mapConfig.boundaryLayerConfig.boundary_name
+                  );
+                  this.maps[index].config.boundaryLayerConfig = boundaryConfig
+                  ? boundaryConfig
+                  : NONE_BOUNDARY_CONFIG;
+                });
               });
             }
           }
-          this.boundaryConfig$
-          .pipe(filter((config) => !!config))
-          .subscribe((config) => {
-            // Ensure the radio button corresponding to the saved selection is selected.
-            this.maps.forEach((map) => {
-              const boundaryConfig = config?.find(
-                (boundary) =>
-                  boundary.boundary_name ===
-                  map.config.boundaryLayerConfig.boundary_name
-              );
-              map.config.boundaryLayerConfig = boundaryConfig
-                ? boundaryConfig
-                : NONE_BOUNDARY_CONFIG;
-            });
-          });
         });
         this.maps.forEach((map: Map) => {
           this.initMap(map, map.id);

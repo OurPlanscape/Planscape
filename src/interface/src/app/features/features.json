@@ -1,6 +1,6 @@
 {
   "login": true,
-  "show_centralcoast": false,
+  "show_centralcoast": true,
   "show_future_control_panel": false,
   "show_socal": true,
   "show_translated_control_panel": false,
