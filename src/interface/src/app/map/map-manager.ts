@@ -13,13 +13,12 @@ import {
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet.sync';
-import { BehaviorSubject, Observable, last, take } from 'rxjs';
+import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
-  BoundaryConfig,
   DEFAULT_COLORMAP,
   FrontendConstants,
   Map,
@@ -725,9 +724,6 @@ export class MapManager {
               htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
               + entry['label'] + '<br/></label></div>';
             } 
-            else if (lastChild != "") {
-              htmlContent += '<div class="legendline"' + lastChild + '></div>';
-            }
           } else {
             htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
           }
