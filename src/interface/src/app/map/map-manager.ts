@@ -19,7 +19,6 @@ import { BackendConstants } from '../backend-constants';
 import { PopupService, SessionService } from '../services';
 import {
   BaseLayerType,
-  BoundaryConfig,
   DEFAULT_COLORMAP,
   FrontendConstants,
   Map,
@@ -467,7 +466,9 @@ export class MapManager {
   private setUpPanHandler(map: L.Map) {
     if (!this.mapViewOptions$.getValue().center) return;
 
-    map.panTo(this.mapViewOptions$.getValue().center);
+    // Temporarily disabling to patch region-switch centering bug
+    // TODO: Either get rid of locally stored center or change to region-based dictionary
+    // map.panTo(this.mapViewOptions$.getValue().center);
 
     map.addEventListener('moveend', (e) => {
       const mapViewOptions = this.mapViewOptions$.getValue();
@@ -686,7 +687,7 @@ export class MapManager {
     }
   }
 
-  addLegend(colormap: any, map: Map) {
+  addLegend(colormap: any, dataUnit: string | undefined, map: Map) {
     var entries = colormap['entries'];
     const legend = new (L.Control.extend({
       options: { position: 'topleft' }
@@ -699,9 +700,18 @@ export class MapManager {
       }
 
       const div = L.DomUtil.create('div', 'legend');
+      // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
+      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation 
+      // (otherwise div tags are automatically closed before they should be)
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
-      htmlContent += '<div><b>Legend</b></div>';
+      if (dataUnit && colormap['type'] == 'ramp') {
+        // For legends with numerical labels make header the corresponding data units
+        htmlContent += '<div><b>' + dataUnit + '</b></div>';
+      } else {
+        // For legends with categorical labels make header 'Legend'
+        htmlContent += '<div><b>Legend</b></div>';
+      }
         // Reversing order to present legend values from high to low (default is low to high)
         for (let i = entries.length-1; i >= 0; i--) {
           var entry = entries[i]
@@ -770,6 +780,7 @@ export class MapManager {
     map.dataLayerRef.addTo(map.instance);
     
     // Map legend request
+    var dataUnit = map.config.dataLayerConfig.data_units;
     const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
     let queryParams = new HttpParams();
     queryParams = queryParams.append("request", "GetLegendGraphic");
@@ -780,7 +791,7 @@ export class MapManager {
       .pipe(take(1))
       .subscribe((value:any) => {
         var colorMap = value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
-        this.addLegend(colorMap, map);
+        this.addLegend(colorMap, dataUnit, map);
       });
   }
 
