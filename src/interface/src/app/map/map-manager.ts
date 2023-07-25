@@ -467,7 +467,7 @@ export class MapManager {
   private setUpPanHandler(map: L.Map) {
     if (!this.mapViewOptions$.getValue().center) return;
 
-    map.panTo(this.mapViewOptions$.getValue().center);
+    // map.panTo(this.mapViewOptions$.getValue().center);
 
     map.addEventListener('moveend', (e) => {
       const mapViewOptions = this.mapViewOptions$.getValue();
