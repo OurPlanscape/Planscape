@@ -699,11 +699,16 @@ export class MapManager {
       }
 
       const div = L.DomUtil.create('div', 'legend');
+      // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
+      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation 
+      // (otherwise div tags are automatically closed before they should be)
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
-      if (dataUnit) {
+      if (dataUnit && colormap['type'] == 'ramp') {
+        // For legends with numerical labels make header the corresponding data units
         htmlContent += '<div><b>' + dataUnit + '</b></div>';
       } else {
+        // For legends with categorical labels make header 'Legend'
         htmlContent += '<div><b>Legend</b></div>';
       }
         // Reversing order to present legend values from high to low (default is low to high)
