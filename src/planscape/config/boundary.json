@@ -131,9 +131,74 @@
             "geometry_type": "MULTIPOLYGON",
             "shape_name": "TREATMEN_1"
         }
+	]
+      },
+      {
+        "region_name": "central_coast",
+        "display_name": "Central Coast",
+        "boundaries": [
+        {
+            "boundary_name": "central-coast-counties",
+            "display_name": "Counties",
+            "vector_name": "central-coast:vector_county",
+            "region_name": "none",
+            "filepath": "cnty19_1.shp",
+            "source_srs": 3857,
+            "geometry_type": "MULTIPOLYGON",
+            "shape_name": "COUNTY_NAM"
+        },
+        {
+            "boundary_name": "central-coast-huc12",
+            "display_name": "HUC-12",
+            "vector_name": "central-coast:vector_huc12",
+            "region_name": "none",
+            "filepath": "ACE_HUC12s_WebMerc_1mXY.shp",
+            "source_srs": 4326,
+            "geometry_type": "MULTIPOLYGON",
+            "shape_name": "Name"
+        },
+        {
+            "boundary_name": "central-coast-huc10",
+            "display_name": "HUC-10",
+            "vector_name": "central-coast:vector_huc10",
+            "region_name": "none",
+            "filepath": "WBD_USGS_HUC10_CA.shp",
+            "source_srs": 6414,
+            "geometry_type": "MULTIPOLYGON",
+            "shape_name": "Name"
+        },
+        {
+            "boundary_name": "central-coast-USFS",
+            "display_name": "National Forests",
+            "vector_name": "central-coast:vector_forests",
+            "region_name": "none",
+            "filepath": "California_USFS.shp",
+            "source_srs": 4269,
+            "geometry_type": "MULTIPOLYGON",
+            "shape_name": "FORESTNAME"
+        },
+        {
+            "boundary_name": "central-coast-RecentFires",
+            "display_name": "Fires (through 2021)",
+            "vector_name": "central-coast:vector_recent-fires",
+            "region_name": "none",
+            "filepath": "recent-fires.shp",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shape_name": "FIRE_NAME"
+        },
+        {
+            "boundary_name": "central-coast-PrescribedBurns",
+            "display_name": "Prescribed Burns (through 2021)",
+            "vector_name": "central-coast:vector_prescribed-burns",
+            "region_name": "none",
+            "filepath": "prescribed-burns.shp",
+            "source_srs": 3310,
+            "geometry_type": "MULTIPOLYGON",
+            "shape_name": "TREATMEN_1"
+        }
+	]
+      }
     ]
-    }
-]
-
 }
 
