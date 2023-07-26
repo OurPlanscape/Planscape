@@ -726,6 +726,9 @@ export class MapManager {
               htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
               + entry['label'] + '<br/></label></div>';
             } 
+            else if (lastChild != "") {
+              htmlContent += '<div class="legendline"' + lastChild + '></div>';
+            }
           } else {
             htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
           }
