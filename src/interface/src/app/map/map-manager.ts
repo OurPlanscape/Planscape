@@ -765,7 +765,7 @@ export class MapManager {
     map.dataLayerRef = L.tileLayer.wms(
       BackendConstants.TILES_END_POINT + region + "/wms?" ,
       {
-        layers: layer,
+        layers: region + layer,
         minZoom: 7,
         maxZoom: 13,
         format:'image/png',
