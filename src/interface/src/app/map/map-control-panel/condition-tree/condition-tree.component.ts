@@ -162,7 +162,11 @@ export class ConditionTreeComponent implements OnInit {
     if (!config.layer || config.layer === NONE_DATA_LAYER_CONFIG.layer)
       return NONE_DATA_LAYER_CONFIG;
     for (let node of this.treeControl.dataNodes) {
-      if (node.condition.layer === config.layer) {
+      var node_layer = '';
+      if (node.condition.region_geoserver_name) {
+        node_layer = node.condition.region_geoserver_name + node.condition.layer;
+      } 
+      if (node_layer === config.layer) {
         this.expandAncestors(node);
         this.onSelect(node);
         return node.condition;

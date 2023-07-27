@@ -28,7 +28,7 @@
                   "metric_name": "potential_smoke_emissions_high_severity_fire",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/airQuality/Tier1/Vulner_PM25_Severe_2022.tif",
-                  "raw_layer": "central-coast:airQuality_Tier1_Vulner_PM25_Severe_2022",
+                  "raw_layer": ":airQuality_Tier1_Vulner_PM25_Severe_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=57",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -55,7 +55,7 @@
                   "metric_name": "habitat_connectivity",
                   "min_value": 1,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier1/HabitatConnectivity_2019.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier1_HabitatConnectivity_2019",
+                  "raw_layer": ":bioDiverConserv_Tier1_HabitatConnectivity_2019",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=50",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -68,7 +68,7 @@
                   "metric_name": "species_richness_cavity_nesters_excavators",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -81,7 +81,7 @@
                   "metric_name": "species_richness_herbivores",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/herbivores_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_herbivores_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_herbivores_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -94,7 +94,7 @@
                   "metric_name": "species_richness_insectivores",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/insectivores_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_insectivores_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_insectivores_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -107,7 +107,7 @@
                   "metric_name": "species_richness_predators",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/predators_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_predators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_predators_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -120,7 +120,7 @@
                   "metric_name": "species_richness_seed_spore_dispersers",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/seed_spore_dispersers_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -133,7 +133,7 @@
                   "metric_name": "species_richness_soil_aerators",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/soil_aerators_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_soil_aerators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_soil_aerators_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=49",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -153,7 +153,7 @@
                   "metric_name": "wildlife_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/wildlife_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_wildlife_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=40",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -166,7 +166,7 @@
                   "metric_name": "threatened_endangered_vertebrate_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/t_e_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_t_e_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=41",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -179,7 +179,7 @@
                   "metric_name": "forest_raptors_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/forest_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_forest_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_forest_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=42",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -192,7 +192,7 @@
                   "metric_name": "open_habitat_raptors_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/open_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_open_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_open_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=42",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -205,7 +205,7 @@
                   "metric_name": "hummingbirds_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/hummingbirds_species_richness.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_hummingbirds_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_hummingbirds_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=43",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -225,7 +225,7 @@
                   "metric_name": "california_spotted_owl",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/California_Spotted_Owl_suitable_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_California_Spotted_Owl_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_California_Spotted_Owl_suitable_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=44",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -238,7 +238,7 @@
                   "metric_name": "mountain_lion",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/Mountain_Lion_suitable_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_Mountain_Lion_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Mountain_Lion_suitable_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=45",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -251,7 +251,7 @@
                   "metric_name": "california_red-legged_frog",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier1/california_red_legged_frog_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier1_california_red_legged_frog_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=46",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -264,7 +264,7 @@
                   "metric_name": "loggerhead_shrike_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/Loggerhead_Shrike_suitable_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_Loggerhead_Shrike_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Loggerhead_Shrike_suitable_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=47",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -277,7 +277,7 @@
                   "metric_name": "nuttails_woodpecker_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/Nuttalls_Woodpecker_suitable_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_Nuttalls_Woodpecker_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Nuttalls_Woodpecker_suitable_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=47",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -290,7 +290,7 @@
                   "metric_name": "ringtail_cat_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/Ringtail_Cat_suitable_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_Ringtail_Cat_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Ringtail_Cat_suitable_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=25",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -303,7 +303,7 @@
                   "metric_name": "least_bells_virio_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/Least_Bells_Vireo_suitable_habitat.tif",
-                  "raw_layer": "central-coast:bioDiverConserv_Tier2_Least_Bells_Vireo_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Least_Bells_Vireo_suitable_habitat",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=48",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -330,7 +330,7 @@
                   "metric_name": "total_aboveground_carbon",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/carbonSeq/Tier1/CStocks_Total_Above_2021.tif",
-                  "raw_layer": "central-coast:carbonSeq_Tier1_CStocks_Total_Above_2021",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -350,7 +350,7 @@
                   "metric_name": "aboveground_carbon_turnover_time",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/carbonSeq/Tier1/CStocks_Turnovertime_2021.tif",
-                  "raw_layer": "central-coast:carbonSeq_Tier1_CStocks_Turnovertime_2021",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=54",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -377,7 +377,7 @@
                   "metric_name": "cost_of_potential_treatments",
                   "min_value": 1,
                   "raw_data_download_path": "central-coast/econDiversity/Tier2/cost_per_acre_vegtype.tif",
-                  "raw_layer": "central-coast:econDiversity_Tier2_cost_per_acre_vegtype",
+                  "raw_layer": ":econDiversity_Tier2_cost_per_acre_vegtype",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=51",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -404,7 +404,7 @@
                   "metric_name": "structure_exposure_score",
                   "min_value": 1,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
+                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=10",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -417,7 +417,7 @@
                   "metric_name": "wui_damage_potential",
                   "min_value": 1,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/DamagePotential_WUI_2022.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_DamagePotential_WUI_2022",
+                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=25",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -430,7 +430,7 @@
                   "metric_name": "ember_load_index",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/EmberLoadIndex_2022.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_EmberLoadIndex_2022",
+                  "raw_layer": ":fireAdaptComm_Tier1_EmberLoadIndex_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=14",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -443,7 +443,7 @@
                   "metric_name": "wildfire_ignitions",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=14",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -456,7 +456,7 @@
                   "metric_name": "wildfire_ignitions_human_caused",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=27",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -469,7 +469,7 @@
                   "metric_name": "wildfire_ignitions_nonhuman_caused)",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=14",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -482,7 +482,7 @@
                   "metric_name": "ember_load_to_buildings",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/SourceEmberLoadToBuildings.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_SourceEmberLoadToBuildings",
+                  "raw_layer": ":fireAdaptComm_Tier1_SourceEmberLoadToBuildings",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=15",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -495,7 +495,7 @@
                   "metric_name": "wildfire_hazard_potential",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/WildfireHazardPotential_2022.tif",
-                  "raw_layer": "central-coast:fireAdaptComm_Tier1_WildfireHazardPotential_2022",
+                  "raw_layer": ":fireAdaptComm_Tier1_WildfireHazardPotential_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=16",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -522,7 +522,7 @@
                   "metric_name": "predicted_ignition_probability_human_caused",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier3/PredictedHumanIgnitionProb_1km.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
+                  "raw_layer": ":fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=17",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -535,7 +535,7 @@
                   "metric_name": "predicted_ignition_probability_lightening_caused",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier3/PredictedLightningIgnitionProb_1km.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
+                  "raw_layer": ":fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=17",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -555,7 +555,7 @@
                   "metric_name": "mean_percentage_fri_departure_since_1908",
                   "min_value": -100,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier3/CenCst_meanPFRID.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier3_CenCst_meanPFRID",
+                  "raw_layer": ":fireDynamics_Tier3_CenCst_meanPFRID",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=22",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -568,7 +568,7 @@
                   "metric_name": "mean_percentage_fri_departure_since_1970",
                   "min_value": -100,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier2/CenCst_meanPFRID_1970.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier2_CenCst_meanPFRID_1970",
+                  "raw_layer": ":fireDynamics_Tier2_CenCst_meanPFRID_1970",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=23",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -581,7 +581,7 @@
                   "metric_name": "mean_fri_departure_condition_class",
                   "min_value": -3,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier3/CenCst_meanCC_FRI.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier3_CenCst_meanCC_FRI",
+                  "raw_layer": ":fireDynamics_Tier3_CenCst_meanCC_FRI",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page09",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -594,7 +594,7 @@
                   "metric_name": "time_since_last_fire",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier2/CenCst_TSLF.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier2_CenCst_TSLF",
+                  "raw_layer": ":fireDynamics_Tier2_CenCst_TSLF",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=24",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -607,7 +607,7 @@
                   "metric_name": "fri_departure_since_1908",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier3/CenCst_currentFRI.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier3_CenCst_currentFRI",
+                  "raw_layer": ":fireDynamics_Tier3_CenCst_currentFRI",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=25",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -620,7 +620,7 @@
                   "metric_name": "fri_departure_since_1970",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier2/CenCst_currentFRI_1970.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier2_CenCst_currentFRI_1970",
+                  "raw_layer": ":fireDynamics_Tier2_CenCst_currentFRI_1970",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=25",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -640,7 +640,7 @@
                   "metric_name": "annual_burn_probability",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier1/AnnualBurnProbability2022.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier1_AnnualBurnProbability2022",
+                  "raw_layer": ":fireDynamics_Tier1_AnnualBurnProbability2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=26",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -653,7 +653,7 @@
                   "metric_name": "probability_of_fire_severity_high",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireDynamics/Tier1/ProbabilityHighFireSev_2022.tif",
-                  "raw_layer": "central-coast:fireDynamics_Tier1_ProbabilityHighFireSev_2022",
+                  "raw_layer": ":fireDynamics_Tier1_ProbabilityHighFireSev_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=27",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -680,7 +680,7 @@
                   "metric_name": "live_tree_density_>30in_dbh",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier2/LargeTreeDensity_2022.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier2_LargeTreeDensity_2022",
+                  "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_2022",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=28",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -693,7 +693,7 @@
                   "metric_name": "canopy_layers",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=29",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -706,7 +706,7 @@
                   "metric_name": "canopy_height",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=29",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -719,7 +719,7 @@
                   "metric_name": "canopy_cover",
                   "min_value": 1,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=30",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -739,7 +739,7 @@
                   "metric_name": "tree_cover",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/VegCover_Tree_2021.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_VegCover_Tree_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Tree_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=31",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -752,7 +752,7 @@
                   "metric_name": "shrub_cover",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/VegCover_Shrub_2021.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_VegCover_Shrub_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Shrub_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=31",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -765,7 +765,7 @@
                   "metric_name": "herbaceous_cover",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/VegCover_Herb_2021.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_VegCover_Herb_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Herb_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=32",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -778,7 +778,7 @@
                   "metric_name": "seral_stage",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier2/SeralStage_EML.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier2_SeralStage_EML",
+                  "raw_layer": ":forestShrubResil_Tier2_SeralStage_EML",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=32",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -791,7 +791,7 @@
                   "metric_name": "seral_stage_early",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier2/early_SeralStage_prop.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier2_early_SeralStage_prop",
+                  "raw_layer": ":forestShrubResil_Tier2_early_SeralStage_prop",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=32",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -804,7 +804,7 @@
                   "metric_name": "seral_stage_late",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier2/late_SeralStage_prop.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier2_late_SeralStage_prop",
+                  "raw_layer": ":forestShrubResil_Tier2_late_SeralStage_prop",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=32",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -824,7 +824,7 @@
                   "metric_name": "cumulative_tree_cover_loss",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/DistHist_Severe_Tree_19922021.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_DistHist_Severe_Tree_19922021",
+                  "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Tree_19922021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=33",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -837,7 +837,7 @@
                   "metric_name": "cumulative_shrub_cover_lost",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/DistHist_Severe_Shrub_19922021.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_DistHist_Severe_Shrub_19922021",
+                  "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Shrub_19922021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=34",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -850,7 +850,7 @@
                   "metric_name": "risk_of_tree_dieoff_during_drought",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier1/Vulner_TreeDieoff_SPI-2_2021.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier1_Vulner_TreeDieoff_SPI-2_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_Vulner_TreeDieoff_SPI-2_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=34",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -863,7 +863,7 @@
                   "metric_name": "potential_climate_refugia_baseline",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier3/hst8110.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier3_hst8110",
+                  "raw_layer": ":forestShrubResil_Tier3_hst8110",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=35",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -876,7 +876,7 @@
                   "metric_name": "potential_climate_refugia_early_century",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier3/miroc_85_1039.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier3_miroc_85_1039",
+                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_1039",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=36",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -889,7 +889,7 @@
                   "metric_name": "potential_climate_refugia_mid-century",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier3/miroc_85_4069.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier3_miroc_85_4069",
+                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_4069",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=36",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -902,7 +902,7 @@
                   "metric_name": "potential_climate_refugia_late_century",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier3/miroc_85_7099.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier3_miroc_85_7099",
+                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_7099",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=36",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -915,7 +915,7 @@
                   "metric_name": "potential_climate_refugia_miroc_and_cnrm-cm5",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier3/combine85_all7.tif",
-                  "raw_layer": "central-coast:forestShrubResil_Tier3_combine85_all7",
+                  "raw_layer": ":forestShrubResil_Tier3_combine85_all7",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=38",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -942,7 +942,7 @@
                   "metric_name": "poverty_percentile",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/socialCultural/Tier1/Poverty_Pctl.tif",
-                  "raw_layer": "central-coast:socialCultural_Tier1_Poverty_Pctl",
+                  "raw_layer": ":socialCultural_Tier1_Poverty_Pctl",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=61",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -955,7 +955,7 @@
                   "metric_name": "housing_burden_percentile",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/socialCultural/Tier1/HousingBurdenPctl.tif",
-                  "raw_layer": "central-coast:socialCultural_Tier1_HousingBurdenPctl",
+                  "raw_layer": ":socialCultural_Tier1_HousingBurdenPctl",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=62",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -968,7 +968,7 @@
                   "metric_name": "unemployment_percentile",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/socialCultural/Tier1/Unemployment_Pctl.tif",
-                  "raw_layer": "central-coast:socialCultural_Tier1_Unemployment_Pctl",
+                  "raw_layer": ":socialCultural_Tier1_Unemployment_Pctl",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=63",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -995,7 +995,7 @@
                   "metric_name": "actual_evapotranspiration_fraction_drought_conditions",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/waterSecurity/Tier1/WaterFlux_AETFrac_SPI-2_2021.tif",
-                  "raw_layer": "central-coast:waterSecurity_Tier1_WaterFlux_AETFrac_SPI-2_2021",
+                  "raw_layer": ":waterSecurity_Tier1_WaterFlux_AETFrac_SPI-2_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=55",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1008,7 +1008,7 @@
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
                   "min_value": -2000,
                   "raw_data_download_path": "central-coast/waterSecurity/Tier1/WaterFlux_Runoff_SPI0_2021.tif",
-                  "raw_layer": "central-coast:waterSecurity_Tier1_WaterFlux_Runoff_SPI0_2021",
+                  "raw_layer": ":waterSecurity_Tier1_WaterFlux_Runoff_SPI0_2021",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=55",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1028,7 +1028,7 @@
                   "metric_name": "percent_impervious_surface",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/waterSecurity/Tier1/nlcd_2019_imperviousPercent_CA.tif",
-                  "raw_layer": "central-coast:waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
+                  "raw_layer": ":waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=56",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1055,7 +1055,7 @@
                   "metric_name": "aquatic_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/wetlandInteg/Tier1/aquatic_species_richness.tif",
-                  "raw_layer": "central-coast:wetlandInteg_Tier1_aquatic_species_richness",
+                  "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=59",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1068,7 +1068,7 @@
                   "metric_name": "wetland_diversity",
                   "min_value": 1,
                   "raw_data_download_path": "central-coast/wetlandInteg/Tier1/NWI_WetlandsType_2018_30m.tif",
-                  "raw_layer": "central-coast:wetlandInteg_Tier1_NWI_WetlandsType_2018_30m",
+                  "raw_layer": ":wetlandInteg_Tier1_NWI_WetlandsType_2018_30m",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=59",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1081,7 +1081,7 @@
                   "metric_name": "riparian_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/wetlandInteg/Tier1/RiparianAreas10m_2019.tif",
-                  "raw_layer": "central-coast:wetlandInteg_Tier1_RiparianAreas10m_2019",
+                  "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=60",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1118,7 +1118,7 @@
                   "metric_name": "habitat_connectivity",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier1/HabitatConnectivity_2019.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier1_HabitatConnectivity_2019",
+                  "raw_layer": ":bioDiverConserv_Tier1_HabitatConnectivity_2019",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=44",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1131,7 +1131,7 @@
                   "metric_name": "species_richness_cavity_nesters_excavators",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=43",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1144,7 +1144,7 @@
                   "metric_name": "species_richness_herbivores",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/herbivores_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_herbivores_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_herbivores_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=43",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1157,7 +1157,7 @@
                   "metric_name": "species_richness_insectivores",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/insectivores_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_insectivores_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_insectivores_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=43",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1170,7 +1170,7 @@
                   "metric_name": "species_richness_predators",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/predators_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_predators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_predators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=43",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1183,7 +1183,7 @@
                   "metric_name": "species_richness_seed_spore_dispersers",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/seed_spore_dispersers_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=43",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1196,7 +1196,7 @@
                   "metric_name": "species_richness_soil_aerators",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/soil_aerators_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_soil_aerators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_soil_aerators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=43",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1216,7 +1216,7 @@
                   "metric_name": "wildlife_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/wildlife_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_wildlife_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=32",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1229,7 +1229,7 @@
                   "metric_name": "threatened_endangered_vertebrate_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/t_e_species_richness.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_t_e_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=33",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1249,7 +1249,7 @@
                   "metric_name": "wildlife_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/CSO_suitable_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_CSO_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_CSO_suitable_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=34",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1262,7 +1262,7 @@
                   "metric_name": "coastal_california_gnatcatcher",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/Gnatcatcher_Habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_Gnatcatcher_Habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Gnatcatcher_Habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=35",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1275,7 +1275,7 @@
                   "metric_name": "mountain_lion",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/Mountain_lion_suitable_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_Mountain_lion_suitable_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_Mountain_lion_suitable_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=36",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1288,7 +1288,7 @@
                   "metric_name": "mountain_yellow_legged_frog",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier1/mountain_yellow_legged_frog_potential_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier1_mountain_yellow_legged_frog_potential_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier1_mountain_yellow_legged_frog_potential_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=36",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1301,7 +1301,7 @@
                   "metric_name": "unarmored_threespine_stickleback",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier3/unarmored_threespine_stickleback_current_range.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier3_unarmored_threespine_stickleback_current_range",
+                  "raw_layer": ":bioDiverConserv_Tier3_unarmored_threespine_stickleback_current_range",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=38",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1314,7 +1314,7 @@
                   "metric_name": "peninsular_bighorn_sheep",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/penisular_bighorn_sheep_critical_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_penisular_bighorn_sheep_critical_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_penisular_bighorn_sheep_critical_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=38",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1327,7 +1327,7 @@
                   "metric_name": "california_red_legged_frog",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier1/california_red_legged_frog_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier1_california_red_legged_frog_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=39",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1340,7 +1340,7 @@
                   "metric_name": "joshua_tree",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/joshua_tree_range.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_joshua_tree_range",
+                  "raw_layer": ":bioDiverConserv_Tier2_joshua_tree_range",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=40",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1353,7 +1353,7 @@
                   "metric_name": "hermes_copper_butterfly",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/hermes_copper_current_range.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_hermes_copper_current_range",
+                  "raw_layer": ":bioDiverConserv_Tier2_hermes_copper_current_range",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=41",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1366,7 +1366,7 @@
                   "metric_name": "laguna_mountains_skipper",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/laguna_mountains_skipper_current_range_and_critical_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier2_laguna_mountains_skipper_current_range_and_critical_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_laguna_mountains_skipper_current_range_and_critical_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=41",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1379,7 +1379,7 @@
                   "metric_name": "quino_checkerspot_butterfly",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier3/quino_checkeredspot_butterfly_critical_habitat.tif",
-                  "raw_layer": "southern-california:bioDiverConserv_Tier3_quino_checkeredspot_butterfly_critical_habitat",
+                  "raw_layer": ":bioDiverConserv_Tier3_quino_checkeredspot_butterfly_critical_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=42",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1406,7 +1406,7 @@
                   "metric_name": "total_aboveground_carbon",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/carbonSeq/Tier1/CStocks_Total_Above_2021.tif",
-                  "raw_layer": "southern-california:carbonSeq_Tier1_CStocks_Total_Above_2021",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=48",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1426,7 +1426,7 @@
                   "metric_name": "aboveground_carbon_turnover_time",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/carbonSeq/Tier1/CStocks_Turnovertime_2021.tif",
-                  "raw_layer": "southern-california:carbonSeq_Tier1_CStocks_Turnovertime_2021",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=49",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1453,7 +1453,7 @@
                   "metric_name": "cost_of_potential_treatments",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/econDiversity/Tier2/cost_per_acre_vegtype.tif",
-                  "raw_layer": "southern-california:econDiversity_Tier2_cost_per_acre_vegtype",
+                  "raw_layer": ":econDiversity_Tier2_cost_per_acre_vegtype",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=46",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1480,7 +1480,7 @@
                   "metric_name": "structure_exposure_score",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022_reclass.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
+                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=09",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1493,7 +1493,7 @@
                   "metric_name": "wui_damage_potential",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/DamagePotential_WUI_2022_reclass.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
+                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=11",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1506,7 +1506,7 @@
                   "metric_name": "ember_load_index",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/EmberLoadIndex_2022.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_EmberLoadIndex_2022",
+                  "raw_layer": ":fireAdaptComm_Tier1_EmberLoadIndex_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=13",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1519,7 +1519,7 @@
                   "metric_name": "housing_unit_density",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/HUden_2020.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_HUden_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_HUden_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1531,7 +1531,7 @@
                   "max_value": 105,
                   "metric_name": "wildfire_ignitions",
                   "min_value": 0,
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
                   "source": "Southern California Resource Kit",
@@ -1545,7 +1545,7 @@
                   "metric_name": "wildfire_ignitions_human_caused",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1558,7 +1558,7 @@
                   "metric_name": "wildfire_ignitions_nonhuman_caused",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1571,7 +1571,7 @@
                   "metric_name": "wildland_urban_interface",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/MSB_WUI_CA_100m.tif",
-                  "raw_layer": "southern-california:fireAdaptComm_Tier1_MSB_WUI_CA_100m",
+                  "raw_layer": ":fireAdaptComm_Tier1_MSB_WUI_CA_100m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1598,7 +1598,7 @@
                   "metric_name": "predicted_ignition_probability_human_caused",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier3/PredictedHumanIgnitionProb_1km.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
+                  "raw_layer": ":fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1611,7 +1611,7 @@
                   "metric_name": "predicted_ignition_probability_lightning_caused",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier3/PredictedLightningIgnitionProb_1km.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
+                  "raw_layer": ":fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1624,7 +1624,7 @@
                   "metric_name": "mean_fri_departure_since_1908",
                   "min_value": -100,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier3/SoCal_meanPFRID.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier3_SoCal_meanPFRID",
+                  "raw_layer": ":fireDynamics_Tier3_SoCal_meanPFRID",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=17",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1637,7 +1637,7 @@
                   "metric_name": "mean_fri_departure_since_1908",
                   "min_value": -100,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier2/SoCal_meanPFRID_1970.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier2_SoCal_meanPFRID_1970",
+                  "raw_layer": ":fireDynamics_Tier2_SoCal_meanPFRID_1970",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=18",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1650,7 +1650,7 @@
                   "metric_name": "mean_fri_departure_condition_class",
                   "min_value": -3,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier3/SoCal_meanCC_FRID.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier3_SoCal_meanCC_FRID",
+                  "raw_layer": ":fireDynamics_Tier3_SoCal_meanCC_FRID",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=18",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1663,7 +1663,7 @@
                   "metric_name": "time_since_last_fire",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier2/SoCal_TSLF.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier2_SoCal_TSLF",
+                  "raw_layer": ":fireDynamics_Tier2_SoCal_TSLF",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=19",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1676,7 +1676,7 @@
                   "metric_name": "fri_departure_since_1908",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier3/SoCal_currentFRI.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier3_SoCal_currentFRI",
+                  "raw_layer": ":fireDynamics_Tier3_SoCal_currentFRI",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=19",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1689,7 +1689,7 @@
                   "metric_name": "fri_departure_since_1970",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier2/SoCal_currentFRI_1970.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier2_SoCal_currentFRI_1970",
+                  "raw_layer": ":fireDynamics_Tier2_SoCal_currentFRI_1970",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=20",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1709,7 +1709,7 @@
                   "metric_name": "annual_burn_probability",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier1/AnnualBurnProbability2022.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier1_AnnualBurnProbability2022",
+                  "raw_layer": ":fireDynamics_Tier1_AnnualBurnProbability2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=21",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1722,7 +1722,7 @@
                   "metric_name": "probability_of_fire_severity_high",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier1/ProbabilityHighFireSev_2022.tif",
-                  "raw_layer": "southern-california:fireDynamics_Tier1_ProbabilityHighFireSev_2022",
+                  "raw_layer": ":fireDynamics_Tier1_ProbabilityHighFireSev_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=21",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1749,7 +1749,7 @@
                   "metric_name": "live_tree_density_30in_dbh",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier2/LargeTreeDensity_2022.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier2_LargeTreeDensity_2022",
+                  "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=23",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1762,7 +1762,7 @@
                   "metric_name": "canopy_layers",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=23",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1775,7 +1775,7 @@
                   "metric_name": "canopy_height",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=24",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1788,7 +1788,7 @@
                   "metric_name": "canopy_cover",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=25",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1808,7 +1808,7 @@
                   "metric_name": "percent_tree_cover",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Tree_2021.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_VegCover_Tree_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Tree_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1821,7 +1821,7 @@
                   "metric_name": "percent_shrub_cover",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Shrub_2021.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_VegCover_Shrub_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Shrub_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1834,7 +1834,7 @@
                   "metric_name": "percent_herbaceous_cover",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Herb_2021.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_VegCover_Herb_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Herb_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1847,7 +1847,7 @@
                   "metric_name": "herbaceous_cover_change_1986_2020",
                   "min_value": -100,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier3/AbsChgeInHerbCover1986_90To2016_20.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier3_AbsChgeInHerbCover1986_90To2016_20",
+                  "raw_layer": ":forestShrubResil_Tier3_AbsChgeInHerbCover1986_90To2016_20",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=27",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1860,7 +1860,7 @@
                   "metric_name": "change_in_average_annual_climatic_water_deficit",
                   "min_value": -80,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier3/ChangeInAverageAnnualCWD-NearFutureDrier.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier3_ChangeInAverageAnnualCWD-NearFutureDrier",
+                  "raw_layer": ":forestShrubResil_Tier3_ChangeInAverageAnnualCWD-NearFutureDrier",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=28",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1873,7 +1873,7 @@
                   "metric_name": "cumulative_tree_cover_loss",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/DistHist_Severe_Tree_19922021.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_DistHist_Severe_Tree_19922021",
+                  "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Tree_19922021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=28",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1886,7 +1886,7 @@
                   "metric_name": "cumulative_shrub_cover_lost",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/DistHist_Severe_Shrub_19922021.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_DistHist_Severe_Shrub_19922021",
+                  "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Shrub_19922021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=29",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1899,7 +1899,7 @@
                   "metric_name": "risk_of_tree_dieoff_during_drought",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier1/Vulner_TreeDieoff_SPI_2_2021.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier1_Vulner_TreeDieoff_SPI_2_2021",
+                  "raw_layer": ":forestShrubResil_Tier1_Vulner_TreeDieoff_SPI_2_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=29",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1912,7 +1912,7 @@
                   "metric_name": "goldspotted_oak_borer_mortality",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier2/goldspotOakBorer_mortality.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier2_goldspotOakBorer_mortality",
+                  "raw_layer": ":forestShrubResil_Tier2_goldspotOakBorer_mortality",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=30",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1925,7 +1925,7 @@
                   "metric_name": "multistressor_refugia",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier3/refugia_capacity_4domains_sum.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier3_refugia_capacity_4domains_sum",
+                  "raw_layer": ":forestShrubResil_Tier3_refugia_capacity_4domains_sum",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=31",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1938,7 +1938,7 @@
                   "metric_name": "shrub_resiliency",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier2/fireswithin15years_1950-2019_2ormorefires.tif",
-                  "raw_layer": "southern-california:forestShrubResil_Tier2_fireswithin15years_1950-2019_2ormorefires",
+                  "raw_layer": ":forestShrubResil_Tier2_fireswithin15years_1950-2019_2ormorefires",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=31",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1965,7 +1965,7 @@
                   "metric_name": "poverty_percentile",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/socialCultural/Tier1/Poverty_Pctl.tif",
-                  "raw_layer": "southern-california:socialCultural_Tier1_Poverty_Pctl",
+                  "raw_layer": ":socialCultural_Tier1_Poverty_Pctl",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=56",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1978,7 +1978,7 @@
                   "metric_name": "housing_burden_percentile",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/socialCultural/Tier1/HousingBurdenPctl.tif",
-                  "raw_layer": "southern-california:socialCultural_Tier1_HousingBurdenPctl",
+                  "raw_layer": ":socialCultural_Tier1_HousingBurdenPctl",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=57",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -1991,7 +1991,7 @@
                   "metric_name": "unemployment_percentile",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/socialCultural/Tier1/Unemployment_Pctl.tif",
-                  "raw_layer": "southern-california:socialCultural_Tier1_Unemployment_Pctl",
+                  "raw_layer": ":socialCultural_Tier1_Unemployment_Pctl",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=58",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2004,7 +2004,7 @@
                   "metric_name": "tribal_land_designations",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/socialCultural/Tier1/SB535tribalboundaries2022.tif",
-                  "raw_layer": "southern-california:socialCultural_Tier1_SB535tribalboundaries2022",
+                  "raw_layer": ":socialCultural_Tier1_SB535tribalboundaries2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=59",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2017,7 +2017,7 @@
                   "metric_name": "trail_density",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/socialCultural/Tier2/Trail_Density.tif",
-                  "raw_layer": "southern-california:socialCultural_Tier2_Trail_Density",
+                  "raw_layer": ":socialCultural_Tier2_Trail_Density",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=61",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2044,7 +2044,7 @@
                   "metric_name": "actual_evapotranspiration_fraction_drought_conditions",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/waterSecurity/Tier1/WaterFlux_AETFrac_SPI-2_2021.tif",
-                  "raw_layer": "southern-california:waterSecurity_Tier1_WaterFlux_AETFrac_SPI-2_2021",
+                  "raw_layer": ":waterSecurity_Tier1_WaterFlux_AETFrac_SPI-2_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=50",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2057,7 +2057,7 @@
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
                   "min_value": -2000,
                   "raw_data_download_path": "southern-california/waterSecurity/Tier1/WaterFlux_Runoff_SPI0_2021.tif",
-                  "raw_layer": "southern-california:waterSecurity_Tier1_WaterFlux_Runoff_SPI0_2021",
+                  "raw_layer": ":waterSecurity_Tier1_WaterFlux_Runoff_SPI0_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=51",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2070,7 +2070,7 @@
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/waterSecurity/Tier3/Drought_Sensitivity.tif",
-                  "raw_layer": "southern-california:waterSecurity_Tier3_Drought_Sensitivity",
+                  "raw_layer": ":waterSecurity_Tier3_Drought_Sensitivity",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=51",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2090,7 +2090,7 @@
                   "metric_name": "percent_impervious_surface",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/waterSecurity/Tier1/nlcd_2019_imperviousPercent_CA.tif",
-                  "raw_layer": "southern-california:waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
+                  "raw_layer": ":waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=52",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2117,7 +2117,7 @@
                   "metric_name": "aquatic_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/wetlandInteg/Tier1/aquatic_species_richness_CA_2018.tif",
-                  "raw_layer": "southern-california:wetlandInteg_Tier1_aquatic_species_richness_CA_2018",
+                  "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness_CA_2018",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=54",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2130,7 +2130,7 @@
                   "metric_name": "wetland_type_composition",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/wetlandInteg/Tier1/NWI_WetlandsType_2018_30m.tif",
-                  "raw_layer": "southern-california:wetlandInteg_Tier1_NWI_WetlandsType_2018_30m",
+                  "raw_layer": ":wetlandInteg_Tier1_NWI_WetlandsType_2018_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=55",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2143,7 +2143,7 @@
                   "metric_name": "riparian_areas",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/wetlandInteg/Tier1/RiparianAreas10m_2019.tif",
-                  "raw_layer": "southern-california:wetlandInteg_Tier1_RiparianAreas10m_2019",
+                  "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=55",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
@@ -2169,24 +2169,24 @@
           "display_name": "Air Quality",
           "filepath": "sierra_nevada/air_quality",
           "future_data_download_path": "sierra-nevada/airQualityTranslate/airQuality030_future.tif",
-          "future_layer": "sierra-nevada:airQualityTranslate_airQuality030_future",
+          "future_layer": ":airQualityTranslate_airQuality030_future",
           "normalized_data_download_path": "sierra-nevada/airQualityTranslate/airQuality.tif",
-          "normalized_layer": "sierra-nevada:airQualityTranslate_airQuality",
+          "normalized_layer": ":airQualityTranslate_airQuality",
           "elements": [
             {
               "element_name": "particulate_matter",
               "display": true,
               "filepath": "sierra_nevada/air_quality/particulate_matter",
-              "normalized_layer": "sierra-nevada:airQualityTranslate_partMatter",
+              "normalized_layer": ":airQualityTranslate_partMatter",
               "normalized_data_download_path": "sierra-nevada/airQualityTranslate/partMatter.tif",
               "display_name": "Particulate Matter",
               "metrics": [
                 {
                   "metric_name": "moderate_severity_potential_smoke_emissions",
                   "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
-                  "raw_layer": "sierra-nevada:airQuality_Tier2_PotentialSmokeModerateSeverity_2021",
+                  "raw_layer": "airQuality_Tier2_PotentialSmokeModerateSeverity_2021",
                   "raw_data_download_path": "sierra-nevada/airQuality/Tier2/PotentialSmokeModerateSeverity_2021.tif",
-                  "normalized_layer": "sierra-nevada:airQualityTranslate_Tier2_PotentialSmokeModerateSeverity_2021_scored",
+                  "normalized_layer": ":airQualityTranslate_Tier2_PotentialSmokeModerateSeverity_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/airQualityTranslate/Tier2/PotentialSmokeModerateSeverity_2021_scored.tif",
                   "display_name": "Potential Smoke Emissions - Moderate Severity Fire",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2203,9 +2203,9 @@
                 {
                   "metric_name": "high_severity_potential_smoke_emissions",
                   "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
-                  "raw_layer": "sierra-nevada:airQuality_Tier2_PotentialSmokeHighSeverity_2021",
+                  "raw_layer": ":airQuality_Tier2_PotentialSmokeHighSeverity_2021",
                   "raw_data_download_path": "sierra-nevada/airQuality/Tier2/PotentialSmokeHighSeverity_2021.tif",
-                  "normalized_layer": "sierra-nevada:airQualityTranslate_Tier2_PotentialSmokeHighSeverity_2021_scored",
+                  "normalized_layer": ":airQualityTranslate_Tier2_PotentialSmokeHighSeverity_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/airQualityTranslate/Tier2/PotentialSmokeHighSeverity_2021_scored.tif",
                   "display_name": "Potential Smoke Emissions - High Severity Fire",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2230,7 +2230,7 @@
                   "metric_name": "heavy_fuel_load",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/airQuality/Tier2/HeavyFuels_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:airQuality_Tier2_HeavyFuels_2021_30m",
+                  "raw_layer": ":airQuality_Tier2_HeavyFuels_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=62",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2246,7 +2246,7 @@
                   "metric_name": "total_fuel_exposed_to_fire",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/TotFuelExpFire_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_TotFuelExpFire_2021_30m",
+                  "raw_layer": ":fireDynamics_Tier2_TotFuelExpFire_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=36",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2261,16 +2261,16 @@
           "display_name": "Biodiversity Conservation",
           "filepath": "sierra_nevada/biodiversity",
           "future_data_download_path": "sierra-nevada/bioDiverConservTranslate/bioDiverConserv030_future.tif",
-          "future_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv030_future",
+          "future_layer": ":bioDiverConservTranslate_bioDiverConserv030_future",
           "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/bioDiverConserv.tif",
-          "normalized_layer": "sierra-nevada:bioDiverConservTranslate_bioDiverConserv",
+          "normalized_layer": ":bioDiverConservTranslate_bioDiverConserv",
           "operation": "MEAN",
           "elements": [
             {
               "element_name": "community_integrity",
               "display": true,
               "filepath": "sierra_nevada/biodiversity/community_integrity",
-              "normalized_layer": "sierra-nevada:bioDiverConservTranslate_commIntegrity",
+              "normalized_layer": ":bioDiverConservTranslate_commIntegrity",
               "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/commIntegrity.tif",
               "display_name": "Community Integrity",
               "operation": "MEAN",
@@ -2278,9 +2278,9 @@
                 {
                   "metric_name": "habitat_connectivity",
                   "filepath": "sierra_nevada/biodiversity/community_integrity/ACCEL_habitatConnectivity_values_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier1_ACCEL_habitatConnectivity_valuesInt",
+                  "raw_layer": ":bioDiverConserv_Tier1_ACCEL_habitatConnectivity_valuesInt",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier1/ACCEL_habitatConnectivity_valuesInt.tif",
-                  "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier1_ACCEL_habitatConnectivity_values_scored",
+                  "normalized_layer": ":bioDiverConservTranslate_Tier1_ACCEL_habitatConnectivity_values_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier1/ACCEL_habitatConnectivity_values_scored.tif",
                   "display_name": "Habitat Connectivity",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2303,7 +2303,7 @@
                   "metric_name": "cavity_nesters_excavators_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2318,7 +2318,7 @@
                   "metric_name": "herbivores_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/herbivores_species_richness.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_herbivores_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_herbivores_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2333,7 +2333,7 @@
                   "metric_name": "insectivores_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/insectivores_species_richness.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_insectivores_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_insectivores_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2348,7 +2348,7 @@
                   "metric_name": "predators_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/predators_species_richness.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_predators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_predators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2363,7 +2363,7 @@
                   "metric_name": "seed_spore_dispersers_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/seed_spore_dispersers_species_richness.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2378,7 +2378,7 @@
                   "metric_name": "soil_aerators_species_richness",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/soil_aerators_species_richness.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_soil_aerators_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_soil_aerators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2389,7 +2389,7 @@
               "element_name": "species_diversity",
               "display": true,
               "filepath": "sierra_nevada/biodiversity/species_diversity",
-              "normalized_layer": "sierra-nevada:bioDiverConservTranslate_speciesDiversity",
+              "normalized_layer": ":bioDiverConservTranslate_speciesDiversity",
               "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/speciesDiversity.tif",
               "display_name": "Species Diversity",
               "operation": "MEAN",
@@ -2397,9 +2397,9 @@
                 {
                   "metric_name": "wildlife_species_richness",
                   "filepath": "sierra_nevada/biodiversity/species_diversity/wildlife_species_richness_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_wildlife_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/wildlife_species_richness.tif",
-                  "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_wildlife_species_richness_scored",
+                  "normalized_layer": ":bioDiverConservTranslate_Tier2_wildlife_species_richness_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier2/wildlife_species_richness_scored.tif",
                   "display_name": "Wildlife Species Richness",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2415,9 +2415,9 @@
                 {
                   "metric_name": "endangered_vertebrate",
                   "filepath": "sierra_nevada/biodiversity/focal_species/t_e_species_richness_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_t_e_species_richness",
+                  "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/t_e_species_richness.tif",
-                  "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_t_e_species_richness_scored",
+                  "normalized_layer": ":bioDiverConservTranslate_Tier2_t_e_species_richness_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier2/t_e_species_richness_scored.tif",
                   "display_name": "Threatened/Endangered Vertebrate Species Richness",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2440,7 +2440,7 @@
                   "metric_name": "beta_diversity",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/beta_diversity_30m.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_beta_diversity_30m",
+                  "raw_layer": ":bioDiverConserv_Tier2_beta_diversity_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=45",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2451,7 +2451,7 @@
               "element_name": "focal_species",
               "display": true,
               "filepath": "sierra_nevada/biodiversity/focal_species",
-              "normalized_layer": "sierra-nevada:bioDiverConservTranslate_focalSpecies",
+              "normalized_layer": ":bioDiverConservTranslate_focalSpecies",
               "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/focalSpecies.tif",
               "display_name": "Focal Species",
               "operation": "MEAN",
@@ -2459,9 +2459,9 @@
                 {
                   "metric_name": "california_spotted_owl_habitat",
                   "filepath": "sierra_nevada/biodiversity/focal_species/CSO_suitablehabitat_combined_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_CSO_suitablehabitat_combined",
+                  "raw_layer": ":bioDiverConserv_Tier2_CSO_suitablehabitat_combined",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CSO_suitablehabitat_combined.tif",
-                  "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_CSO_suitablehabitat_combined_scored",
+                  "normalized_layer": ":bioDiverConservTranslate_Tier2_CSO_suitablehabitat_combined_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier2/CSO_suitablehabitat_combined_scored.tif",
                   "display_name": "California Spotted Owl Habitat",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2480,7 +2480,7 @@
                   "data_year": "2021",
                   "metric_name": "california_spotted_owl_territory",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CSO_territory.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_CSO_territory_scored",
+                  "raw_layer": ":bioDiverConservTranslate_Tier2_CSO_territory_scored",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=39",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2488,9 +2488,9 @@
                 {
                   "metric_name": "pacific_fisher",
                   "filepath": "sierra_nevada/biodiversity/focal_species/fisher_suitablehabitat_combined_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_fisher_suitablehabitat_combined",
+                  "raw_layer": ":bioDiverConserv_Tier2_fisher_suitablehabitat_combined",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/fisher_suitablehabitat_combined.tif",
-                  "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_fisher_suitablehabitat_combined_scored",
+                  "normalized_layer": ":bioDiverConservTranslate_Tier2_fisher_suitablehabitat_combined_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier2/fisher_suitablehabitat_combined_scored.tif",
                   "display_name": "Pacific Fisher",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2504,9 +2504,9 @@
                 {
                   "metric_name": "black_oak_stands",
                   "filepath": "sierra_nevada/biodiversity/focal_species/CA_Black_Oak_Stand_Distribution_2016to2020_300m",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_CA_Black_Oak_Stand_Distribution_2016to2020_30m",
+                  "raw_layer": ":bioDiverConserv_Tier2_CA_Black_Oak_Stand_Distribution_2016to2020_30m",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CA_Black_Oak_Stand_Distribution_2016to2020_30m.tif",
-                  "normalized_layer": "sierra-nevada:bioDiverConservTranslate_Tier2_CA_Black_Oak_Stand_Distribution_2016to2020_scored",
+                  "normalized_layer": ":bioDiverConservTranslate_Tier2_CA_Black_Oak_Stand_Distribution_2016to2020_scored",
                   "normalized_data_download_path": "sierra-nevada/bioDiverConservTranslate/Tier2/CA_Black_Oak_Stand_Distribution_2016to2020_scored.tif",
                   "display_name": "California Black Oak Stands",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2525,7 +2525,7 @@
                   "data_year": "2021",
                   "metric_name": "northern_goshawk_habitat",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/ng_suitablehabitat_combined.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_ng_suitablehabitat_combined",
+                  "raw_layer": ":bioDiverConserv_Tier2_ng_suitablehabitat_combined",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=41",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2538,7 +2538,7 @@
                   "data_year": "2021",
                   "metric_name": "giant_sequoia_stands",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/SEGI_MU_2022_92_1.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_SEGI_MU_2022_92_1",
+                  "raw_layer": ":bioDiverConserv_Tier2_SEGI_MU_2022_92_1",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=40",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2551,7 +2551,7 @@
                   "data_year": "2021",
                   "metric_name": "band_tailed_pigeon_habitat",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/band_tailed_pigeon_250ac_binary.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_band_tailed_pigeon_250ac_binary",
+                  "raw_layer": ":bioDiverConserv_Tier2_band_tailed_pigeon_250ac_binary",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=37",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2564,7 +2564,7 @@
                   "data_year": "2021",
                   "metric_name": "american_pacific_marten_habitat",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/marten_suitablehabitat.tif",
-                  "raw_layer": "sierra-nevada:bioDiverConserv_Tier2_marten_suitablehabitat",
+                  "raw_layer": ":bioDiverConserv_Tier2_marten_suitablehabitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=36",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2579,9 +2579,9 @@
           "display_name": "Carbon Sequestration",
           "filepath": "sierra_nevada/carbon_sequestration",
           "future_data_download_path": "sierra-nevada/carbonSeqTranslate/carbon030_future.tif",
-          "future_layer": "sierra-nevada:carbonSeqTranslate_carbon030_future",
+          "future_layer": ":carbonSeqTranslate_carbon030_future",
           "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/carbonSeq.tif",
-          "normalized_layer": "sierra-nevada:carbonSeqTranslate_carbonSeq",
+          "normalized_layer": ":carbonSeqTranslate_carbonSeq",
           "operation": "MEAN",
           "elements": [
             {
@@ -2589,16 +2589,16 @@
               "display": true,
               "display_name": "Carbon Stability",
               "filepath": "sierra_nevada/carbon_sequestration/stability",
-              "normalized_layer": "sierra-nevada:carbonSeqTranslate_Tier2_LargeTreeCarbon_2021_scored",
+              "normalized_layer": ":carbonSeqTranslate_Tier2_LargeTreeCarbon_2021_scored",
               "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/Tier2/LargeTreeCarbon_2021_scored.tif",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "large_tree_carbon",
                   "filepath": "sierra_nevada/carbon_sequestration/stability/LargeTreeCarbon_2021_300m",
-                  "raw_layer": "sierra-nevada:carbonSeq_Tier2_LargeTreeCarbon_2021",
+                  "raw_layer": ":carbonSeq_Tier2_LargeTreeCarbon_2021",
                   "raw_data_download_path": "sierra-nevada/carbonSeq/Tier2/LargeTreeCarbon_2021.tif",
-                  "normalized_layer": "sierra-nevada:carbonSeqTranslate_Tier2_LargeTreeCarbon_2021_scored",
+                  "normalized_layer": ":carbonSeqTranslate_Tier2_LargeTreeCarbon_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/Tier2/LargeTreeCarbon_2021_scored.tif",
                   "display_name": "Large Tree Carbon",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2621,7 +2621,7 @@
                   "metric_name": "dead_and_down_carbon",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/carbonSeq/Tier2/DeadCarbon_2021.tif",
-                  "raw_layer": "sierra-nevada:carbonSeq_Tier2_DeadCarbon_2021",
+                  "raw_layer": ":carbonSeq_Tier2_DeadCarbon_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=55",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2633,16 +2633,16 @@
               "display": true,
               "display_name": "Carbon Storage",
               "filepath": "sierra_nevada/carbon_sequestration/storage",
-              "normalized_layer": "sierra-nevada:carbonSeqTranslate_storage",
+              "normalized_layer": ":carbonSeqTranslate_storage",
               "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/storage.tif",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "total_carbon_cecs",
                   "filepath": "sierra_nevada/carbon_sequestration/storage/CECS_TotalCarbon_300m",
-                  "raw_layer": "sierra-nevada:carbonSeq_Tier1_CECS_TotalCarbon_30m",
+                  "raw_layer": ":carbonSeq_Tier1_CECS_TotalCarbon_30m",
                   "raw_data_download_path": "sierra-nevada/carbonSeq/Tier1/CECS_TotalCarbon_30m.tif",
-                  "normalized_layer": "sierra-nevada:carbonSeqTranslate_Tier2_F3_TotalCarbon_2021_scored",
+                  "normalized_layer": ":carbonSeqTranslate_Tier2_F3_TotalCarbon_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/carbonSeqTranslate/Tier1/CECS_TotalCarbon_scored.tif",
                   "display_name": "Total Carbon (CECS)",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2665,7 +2665,7 @@
                   "metric_name": "total_carbon_f3",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/carbonSeq/Tier2/F3_TotalCarbon_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:carbonSeq_Tier2_F3_TotalCarbon_2021_30m",
+                  "raw_layer": ":carbonSeq_Tier2_F3_TotalCarbon_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=52",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2680,7 +2680,7 @@
                   "metric_name": "aboveground_live_tree_carbon",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/carbonSeq/Tier2/F3_AbovegroundLiveTreeCarbon_2021.tif",
-                  "raw_layer": "sierra-nevada:carbonSeq_Tier2_F3_AbovegroundLiveTreeCarbon_2021",
+                  "raw_layer": ":carbonSeq_Tier2_F3_AbovegroundLiveTreeCarbon_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=54",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2694,25 +2694,25 @@
           "display": true,
           "display_name": "Economic Diversity",
           "filepath": "sierra_nevada/economic_diversity",
-          "future_layer": "sierra-nevada:econDiversityTranslate_econDiversity030_future",
+          "future_layer": ":econDiversityTranslate_econDiversity030_future",
           "future_data_download_path": "sierra-nevada/econDiversityTranslate/econDiversity030_future.tif",
           "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/econDiver.tif",
-          "normalized_layer": "sierra-nevada:econDiversityTranslate_econDiver",
+          "normalized_layer": ":econDiversityTranslate_econDiver",
           "elements": [
             {
               "element_name": "wood_product_industry",
               "display": true,
               "display_name": "Wood Product Industry",
               "filepath": "econDiversityTranslate/woodProdInd",
-              "normalized_layer": "sierra-nevada:econDiversityTranslate_woodProdInd",
+              "normalized_layer": ":econDiversityTranslate_woodProdInd",
               "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/woodProdInd.tif",
               "metrics": [
                 {
                   "metric_name": "available_standing_biomass",
                   "filepath": "sierra_nevada/economic_diversity/wood/AvailableBiomass_2021_300m",
-                  "raw_layer": "sierra-nevada:econDiversity_Tier2_AvailableBiomass_2021",
+                  "raw_layer": ":econDiversity_Tier2_AvailableBiomass_2021",
                   "raw_data_download_path": "sierra-nevada/econDiversity/Tier2/AvailableBiomass_2021.tif",
-                  "normalized_layer": "sierra-nevada:econDiversityTranslate_Tier2_AvailableBiomass_2021_scored",
+                  "normalized_layer": ":econDiversityTranslate_Tier2_AvailableBiomass_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/econDiversity/Tier2/AvailableBiomass_2021_scored.tif",
                   "display_name": "Available Live Tree Biomass",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2735,7 +2735,7 @@
                   "metric_name": "sawtimber_biomass",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/econDiversity/Tier2/ABGDLVSM_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:econDiversity_Tier2_ABGDLVSM_2021_30m",
+                  "raw_layer": ":econDiversity_Tier2_ABGDLVSM_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=48",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2743,9 +2743,9 @@
                 {
                   "metric_name": "costs_of_potential_treatment_moving_biomass",
                   "filepath": "sierra_nevada/economic_diversity/wood/skidder_bio_cost_proj_clip_300m",
-                  "raw_layer": "sierra-nevada:econDiversity_Tier2_skidder_bio_cost_proj_clip",
+                  "raw_layer": ":econDiversity_Tier2_skidder_bio_cost_proj_clip",
                   "raw_data_download_path": "sierra-nevada/econDiversity/Tier2/skidder_bio_cost_proj_clip.tif",
-                  "normalized_layer": "sierra-nevada:econDiversityTranslate_Tier2_skidder_bio_cost_scored",
+                  "normalized_layer": ":econDiversityTranslate_Tier2_skidder_bio_cost_scored",
                   "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/Tier2/skidder_bio_cost_scored.tif",
                   "display_name": "Costs of Potential Treatments: Moving Biomass",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2761,9 +2761,9 @@
                 {
                   "metric_name": "costs_of_potential_treatment_moving_sawlogs",
                   "filepath": "sierra_nevada/economic_diversity/wood/skidder_saw_cost_proj_clip_300m",
-                  "raw_layer": "sierra-nevada:econDiversity_Tier2_skidder_saw_cost_proj_clip2",
+                  "raw_layer": ":econDiversity_Tier2_skidder_saw_cost_proj_clip2",
                   "raw_data_download_path": "sierra-nevada/econDiversity/Tier2/skidder_saw_cost_proj_clip2.tif",
-                  "normalized_layer": "sierra-nevada:econDiversityTranslate_Tier2_skidder_saw_cost_scored",
+                  "normalized_layer": ":econDiversityTranslate_Tier2_skidder_saw_cost_scored",
                   "normalized_data_download_path": "sierra-nevada/econDiversityTranslate/Tier2/skidder_saw_cost_scored.tif",
                   "display_name": "Costs of Potential Treatments: Moving Sawlogs",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2786,9 +2786,9 @@
           "display_name": "Fire-Adapted Communities",
           "filepath": "sierra_nevada/fire_adapted_communities",
           "future_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm030_future.tif",
-          "future_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm030_future",
+          "future_layer": ":fireAdaptCommTranslate_fireAdaptComm030_future",
           "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/fireAdaptComm.tif",
-          "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_fireAdaptComm",
+          "normalized_layer": ":fireAdaptCommTranslate_fireAdaptComm",
           "operation": "MEAN",
           "elements": [
             {
@@ -2796,16 +2796,16 @@
               "display": true,
               "display_name": "Hazard",
               "filepath": "sierra_nevada/fire_adapted_communities/hazard",
-              "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_hazard",
+              "normalized_layer": ":fireAdaptCommTranslate_hazard",
               "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/hazard.tif",
               "operation": "MEAN",
               "metrics": [
                 {
                   "metric_name": "structure_exposure",
                   "filepath": "sierra_nevada/fire_adapted_communities/hazard/StructureExposureScore_WUI_2022_300m",
-                  "raw_layer": "sierra-nevada:fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
+                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
                   "raw_data_download_path": "sierra-nevada/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022_reclass.tif",
-                  "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_Tier1_StructureExposureScore_WUI_2022_scored",
+                  "normalized_layer": ":fireAdaptCommTranslate_Tier1_StructureExposureScore_WUI_2022_scored",
                   "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/Tier1/StructureExposureScore_WUI_2022_scored.tif",
                   "display_name": "Structure Exposure Score",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2822,9 +2822,9 @@
                 {
                   "metric_name": "damage_potential_wui",
                   "filepath": "sierra_nevada/fire_adapted_communities/hazard/DamagePotential_WUI_2022_300m",
-                  "raw_layer": "sierra-nevada:fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
+                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
                   "raw_data_download_path": "sierra-nevada/fireAdaptComm/Tier1/DamagePotential_WUI_2022_reclass.tif",
-                  "normalized_layer": "sierra-nevada:fireAdaptCommTranslate_Tier1_DamagePotential_WUI_2022_scored",
+                  "normalized_layer": ":fireAdaptCommTranslate_Tier1_DamagePotential_WUI_2022_scored",
                   "normalized_data_download_path": "sierra-nevada/fireAdaptCommTranslate/Tier1/DamagePotential_WUI_2022_scored.tif",
                   "display_name": "WUI Damage Potential",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2848,16 +2848,16 @@
           "display_name": "Fire Dynamics",
           "filepath": "sierra_nevada/fire_dynamics",
           "future_data_download_path": "sierra-nevada/fireDynamicsTranslate/fireDynamics030_future.tif",
-          "future_layer": "sierra-nevada:fireDynamicsTranslate_fireDynamics030_future",
+          "future_layer": ":fireDynamicsTranslate_fireDynamics030_future",
           "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/fireDynamics.tif",
-          "normalized_layer": "sierra-nevada:fireDynamicsTranslate_fireDynamics",
+          "normalized_layer": ":fireDynamicsTranslate_fireDynamics",
           "operation": "MEAN",
           "elements": [
             {
               "element_name": "functional_fire",
               "display": true,
               "filepath": "sierra_nevada/fire_dynamics/functional_fire",
-              "normalized_layer": "sierra-nevada:fireDynamicsTranslate_funcFire",
+              "normalized_layer": ":fireDynamicsTranslate_funcFire",
               "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/funcFire.tif",
               "display_name": "Functional Fire",
               "operation": "MEAN",
@@ -2865,9 +2865,9 @@
                 {
                   "metric_name": "mean_percent_fire_return_interval_departure_since_1908",
                   "filepath": "sierra_nevada/fire_dynamics/functional_fire/meanPFRID_300m",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_meanPFRID",
+                  "raw_layer": ":fireDynamics_Tier2_meanPFRID",
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/meanPFRID.tif",
-                  "normalized_layer": "sierra-nevada:fireDynamicsTranslate_Tier2_meanPFRID_freq_scored",
+                  "normalized_layer": ":fireDynamicsTranslate_Tier2_meanPFRID_freq_scored",
                   "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/Tier2/meanPFRID_freq_scored.tif",
                   "display_name": "Mean % FRI Departure since 1908",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2890,7 +2890,7 @@
                   "metric_name": "mean_percent_fire_return_interval_departure_since_1970",
                   "min_value": -100,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/meanPFRID_1970.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_meanPFRID_1970",
+                  "raw_layer": ":fireDynamics_Tier2_meanPFRID_1970",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=17",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2905,7 +2905,7 @@
                   "metric_name": "mean_percent_fire_return_interval_departure_condition_class",
                   "min_value": -3,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/meanCC_FRI.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_meanCC_FRI",
+                  "raw_layer": ":fireDynamics_Tier2_meanCC_FRI",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=17",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2920,7 +2920,7 @@
                   "metric_name": "time_since_last_fire",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/TSLF.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_TSLF",
+                  "raw_layer": ":fireDynamics_Tier2_TSLF",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=18",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2935,7 +2935,7 @@
                   "metric_name": "recent_fire_severity",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/fire_severity_class_max_2012to2021.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_fire_severity_class_max_2012to2021",
+                  "raw_layer": ":fireDynamics_Tier2_fire_severity_class_max_2012to2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=19",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2943,9 +2943,9 @@
                 {
                   "metric_name": "annual_burn_probability",
                   "filepath": "sierra_nevada/fire_dynamics/functional_fire/BurnProbability_2022_300m",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier1_BurnProbability_2022",
+                  "raw_layer": ":fireDynamics_Tier1_BurnProbability_2022",
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier1/BurnProbability_2022.tif",
-                  "normalized_layer": "sierra-nevada:fireDynamicsTranslate_Tier1_BurnProbability_2022_scored",
+                  "normalized_layer": ":fireDynamicsTranslate_Tier1_BurnProbability_2022_scored",
                   "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/Tier1/BurnProbability_2022_scored.tif",
                   "display_name": "Annual Burn Probability",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2961,9 +2961,9 @@
                 {
                   "metric_name": "probability_of_fire_severity_high",
                   "filepath": "sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier1_xmechctrl_8_2022_30m",
+                  "raw_layer": ":fireDynamics_Tier1_xmechctrl_8_2022_30m",
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier1/xmechctrl_8_2022_30m.tif",
-                  "normalized_layer": "sierra-nevada:fireDynamicsTranslate_Tier1_probHighSevFire_2022_scored",
+                  "normalized_layer": ":fireDynamicsTranslate_Tier1_probHighSevFire_2022_scored",
                   "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/Tier1/probHighSevFire_2022_scored.tif",
                   "display_name": "Probability of Fire Severity (High)",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -2988,7 +2988,7 @@
                   "metric_name": "probability_of_fire_severity_moderate",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier1/probModSevFire_2022.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier1_probModSevFire_2022",
+                  "raw_layer": ":fireDynamics_Tier1_probModSevFire_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=20",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -2996,9 +2996,9 @@
                 {
                   "metric_name": "probability_of_fire_severity_low",
                   "filepath": "sierra_nevada/fire_dynamics/functional_fire/xmechctrl_8_2022_300m",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier1_probLowSevFire_2022",
+                  "raw_layer": ":fireDynamics_Tier1_probLowSevFire_2022",
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier1/probLowSevFire_2022.tif",
-                  "normalized_layer": "sierra-nevada:fireDynamicsTranslate_Tier1_probLowSevFire_2022_scored",
+                  "normalized_layer": ":fireDynamicsTranslate_Tier1_probLowSevFire_2022_scored",
                   "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/Tier1/probLowSevFire_2022_scored.tif",
                   "display_name": "Probability of Fire Severity (Low)",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3018,7 +3018,7 @@
               "element_name": "severity",
               "display": true,
               "filepath": "sierra_nevada/fire_dynamics/severity",
-              "normalized_layer": "sierra-nevada:fireDynamicsTranslate_severity",
+              "normalized_layer": ":fireDynamicsTranslate_severity",
               "normalized_data_download_path": "sierra-nevada/fireDynamicsTranslate/severity.tif",
               "display_name": "Severity",
               "operation": "MEAN",
@@ -3033,7 +3033,7 @@
                   "metric_name": "dead_and_down_fuels",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/TotalFuelLoad_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_TotalFuelLoad_2021_30m",
+                  "raw_layer": ":fireDynamics_Tier2_TotalFuelLoad_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=21",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3048,7 +3048,7 @@
                   "metric_name": "standing_dead_and_ladder_fuels",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/StdDeadLadFuels_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_StdDeadLadFuels_2021_30m",
+                  "raw_layer": ":fireDynamics_Tier2_StdDeadLadFuels_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=22",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3063,7 +3063,7 @@
                   "metric_name": "total_fuel_exposed_to_fire",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/TotFuelExpFire_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:fireDynamics_Tier2_TotFuelExpFire_2021_30m",
+                  "raw_layer": ":fireDynamics_Tier2_TotFuelExpFire_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=23",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3078,16 +3078,16 @@
           "display_name": "Forest Resilience",
           "filepath": "sierra_nevada/forest_resilience",
           "future_data_download_path": "sierra-nevada/forestShrubResilTranslate/forestResil030_future.tif",
-          "future_layer": "sierra-nevada:forestShrubResilTranslate_forestResil030_future",
+          "future_layer": ":forestShrubResilTranslate_forestResil030_future",
           "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/forestShrubResil.tif",
-          "normalized_layer": "sierra-nevada:forestShrubResilTranslate_forestShrubResil",
+          "normalized_layer": ":forestShrubResilTranslate_forestShrubResil",
           "operation": "MEAN",
           "elements": [
             {
               "element_name": "forest_structure",
               "display": true,
               "filepath": "sierra_nevada/forest_resilience/forest_structure",
-              "normalized_layer": "sierra-nevada:forestShrubResilTranslate_structure",
+              "normalized_layer": ":forestShrubResilTranslate_structure",
               "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/structure.tif",
               "display_name": "Structure",
               "operation": "MEAN",
@@ -3102,7 +3102,7 @@
                   "metric_name": "snag_density_25in_dbh",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/SNG_25_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_SNG_25_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_SNG_25_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=27",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3117,7 +3117,7 @@
                   "metric_name": "snag_density_35in_dbh",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/SNG_35_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_SNG_35_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_SNG_35_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=27",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3132,7 +3132,7 @@
                   "metric_name": "snag_density_40in_dbh",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/SNG_40_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_SNG_40_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_SNG_40_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=27",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3140,9 +3140,9 @@
                 {
                   "metric_name": "live_tree_density_30in_dbh",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_30in_up_2021_300m",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_TPA_30in_up_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_TPA_30in_up_2021_30m",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/TPA_30in_up_2021_30m.tif",
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_TPA_30in_up_2021_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier2_TPA_30in_up_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/TPA_30in_up_2021_scored.tif",
                   "display_name": "Live Tree Density >30in DBH",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3158,9 +3158,9 @@
                 {
                   "metric_name": "basal_area",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/BASATOT_2021_300m",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_BASATOT_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_BASATOT_2021_30m",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/BASATOT_2021_30m.tif",
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_BASATOT_2021_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier2_BASATOT_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/BASATOT_2021_scored.tif",
                   "display_name": "Basal Area",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3176,9 +3176,9 @@
                 {
                   "metric_name": "stand_density_index_reineke",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/proportion_of_SDI_83_Max_300m",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_SDI_33_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_SDI_33_2021_30m",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/SDI_33_2021_30m.tif",
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_proportion_of_SDI_33_Max_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier2_proportion_of_SDI_33_Max_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/proportion_of_SDI_33_Max_scored.tif",
                   "display_name": "Stand Density Index (Reineke)",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3200,7 +3200,7 @@
                   "max_value": 1600,
                   "metric_name": "stand_density_index_zeide",
                   "min_value": 1,
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_SDI_83_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_SDI_83_2021_30m",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/SDI_83_2021_30m.tif",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=28",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3217,7 +3217,7 @@
                   "metric_name": "quadratic_mean_diameter",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/QMD_TOT_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_QMD_TOT_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_QMD_TOT_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=30",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3233,7 +3233,7 @@
                   "metric_name": "proportion_of_maximum_stand_density_reineke",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/proportion_of_SDI_33_Max_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_proportion_of_SDI_33_Max_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_proportion_of_SDI_33_Max_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=29",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3249,7 +3249,7 @@
                   "metric_name": "proportion_of_maximum_stand_density_zeide",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/proportion_of_SDI_83_Max_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_proportion_of_SDI_83_Max_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_proportion_of_SDI_83_Max_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=29",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3264,7 +3264,7 @@
                   "metric_name": "natural_conifer_regeneration_probability",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/most_recent_postfire_conifer_regen_prob_2012to2021.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_most_recent_postfire_conifer_regen_prob_2012to2021",
+                  "raw_layer": ":forestShrubResil_Tier2_most_recent_postfire_conifer_regen_prob_2012to2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=24",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3272,9 +3272,9 @@
                 {
                   "metric_name": "density_live_trees",
                   "filepath": "sierra_nevada/forest_resilience/forest_structure/TPA_2021_300m",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_TPA_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_TPA_2021_30m",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/TPA_2021_30m.tif",
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_TPA_2021_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier2_TPA_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/TPA_2021_scored.tif",
                   "display_name": "Density Live Trees",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3298,7 +3298,7 @@
                   "metric_name": "fine_scale_heterogeneity_index",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/fractal_dim_spring_2020_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_fractal_dim_spring_2020_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_fractal_dim_spring_2020_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=32",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3313,7 +3313,7 @@
                   "metric_name": "canopy_cover_2021_f3",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/CPYCOVR_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_CPYCOVR_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_CPYCOVR_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=31",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3328,7 +3328,7 @@
                   "metric_name": "canopy_cover_2021_crown_overlap_corrected_f3",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/STANDCC_2021_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_STANDCC_2021_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_STANDCC_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=31",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3343,7 +3343,7 @@
                   "metric_name": "canopy_cover_2020_salo",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/perc_canopy_cover_spring_2020_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_perc_canopy_cover_spring_2020_30m",
+                  "raw_layer": ":forestShrubResil_Tier2_perc_canopy_cover_spring_2020_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=33",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3354,7 +3354,7 @@
               "element_name": "forest_composition",
               "display": true,
               "filepath": "sierra_nevada/forest_resilience/forest_composition",
-              "normalized_layer": "sierra-nevada:forestShrubResilTranslate_composition",
+              "normalized_layer": ":forestShrubResilTranslate_composition",
               "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/composition.tif",
               "display_name": "Composition",
               "operation": "MEAN",
@@ -3362,9 +3362,9 @@
                 {
                   "metric_name": "seral_stage",
                   "filepath": "sierra_nevada/forest_resilience/forest_composition/late_SeralStage_prop_300m",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_SeralStage_EML_2021",
+                  "raw_layer": ":forestShrubResil_Tier2_SeralStage_EML_2021",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/SeralStage_EML_2021.tif",
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_late_SeralStage_prop_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier2_late_SeralStage_prop_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier2/late_SeralStage_prop_scored.tif",
                   "display_name": "Seral Stage",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3387,7 +3387,7 @@
                   "metric_name": "seral_stage_early",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/early_SeralStage_prop.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_early_SeralStage_prop",
+                  "raw_layer": ":forestShrubResil_Tier2_early_SeralStage_prop",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=34",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3402,7 +3402,7 @@
                   "metric_name": "seral_stage_late",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/late_SeralStage_prop.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_late_SeralStage_prop",
+                  "raw_layer": ":forestShrubResil_Tier2_late_SeralStage_prop",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=34",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3417,10 +3417,10 @@
                   "filepath": "sierra_nevada/forest_resilience/forest_composition/CECS_TreeToShrubRatio_300m",
                   "max_value": 100,
                   "min_value": 0,
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier1_CECS_TreeToShrubRatio_Pct_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier1_CECS_TreeToShrubRatio_Pct_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResilTranslate/Tier1/CECS_TreeToShrubRatio_Pct_scored.tif",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier1/CECS_TreeToShrubRatio_Pct_30m.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier1_CECS_TreeToShrubRatio_Pct_30m",
+                  "raw_layer": ":forestShrubResil_Tier1_CECS_TreeToShrubRatio_Pct_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=33",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3431,7 +3431,7 @@
               "element_name": "disturbance",
               "display": true,
               "filepath": "sierra_nevada/forest_resilience/disturbance",
-              "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_Mortality_MMI_2017_2021_scored",
+              "normalized_layer": ":forestShrubResilTranslate_Tier2_Mortality_MMI_2017_2021_scored",
               "normalized_data_download_path": "sierra-nevada/forestShrubResiltTranslate/Tier2/Mortality_MMI_2017_2021_scored.tif",
               "display_name": "Disturbance",
               "operation": "MEAN",
@@ -3439,9 +3439,9 @@
                 {
                   "metric_name": "tree_mortality_2017_2021",
                   "filepath": "sierra_nevada/forest_resilience/disturbance/Mortality_MMI_2017_2021_300m",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_Mortality_MMI_2017_2021",
+                  "raw_layer": ":forestShrubResil_Tier2_Mortality_MMI_2017_2021",
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/Mortality_MMI_2017_2021.tif",
-                  "normalized_layer": "sierra-nevada:forestShrubResilTranslate_Tier2_Mortality_MMI_2017_2021_scored",
+                  "normalized_layer": ":forestShrubResilTranslate_Tier2_Mortality_MMI_2017_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/forestShrubResiltTranslate/Tier2/Mortality_MMI_2017_2021_scored.tif",
                   "display_name": "Tree Mortality (2017-2021)",
                   "source": "Sierra Nevada Regional Resource Kit",
@@ -3466,7 +3466,7 @@
                   "metric_name": "tree_mortality_2021",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/Mortality_MMI_2021.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_Mortality_MMI_2021",
+                  "raw_layer": ":forestShrubResil_Tier2_Mortality_MMI_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=35",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3482,7 +3482,7 @@
                   "metric_name": "time_since_last_disturbance",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/forestShrubResil/Tier2/TSD_2021.tif",
-                  "raw_layer": "sierra-nevada:forestShrubResil_Tier2_TSD_2021",
+                  "raw_layer": ":forestShrubResil_Tier2_TSD_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=35",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3497,15 +3497,15 @@
           "display_name": "Social and Cultural Wellbeing",
           "filepath": "sierra_nevada/social_cultural_wellbeing",
           "future_data_download_path": "sierra-nevada/socialCulturalTranslate/socialCultural030_future.tif",
-          "future_layer": "sierra-nevada:socialCulturalTranslate_socialCultural030_future",
+          "future_layer": ":socialCulturalTranslate_socialCultural030_future",
           "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/socialCultural.tif",
-          "normalized_layer": "sierra-nevada:socialCulturalTranslate_socialCultural",
+          "normalized_layer": ":socialCulturalTranslate_socialCultural",
           "elements": [
             {
               "element_name": "environmental_justice",
               "display": true,
               "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice",
-              "normalized_layer": "sierra-nevada:socialCulturalTranslate_envJustice",
+              "normalized_layer": ":socialCulturalTranslate_envJustice",
               "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/envJustice.tif",
               "display_name": "Environmental Justice",
               "metrics": [
@@ -3513,9 +3513,9 @@
                   "metric_name": "housing_burden_percentile",
                   "display_name": "Housing Burden Percentile",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/HousingBurdenPctl_2021_300m",
-                  "raw_layer": "sierra-nevada:socialCultural_Tier1_HousingBurdenPctl_2021_30m",
+                  "raw_layer": ":socialCultural_Tier1_HousingBurdenPctl_2021_30m",
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier1/HousingBurdenPctl_2021_30m.tif",
-                  "normalized_layer": "sierra-nevada:socialCulturalTranslate_Tier1_HousingBurdenPctl_2021_scored",
+                  "normalized_layer": ":socialCulturalTranslate_Tier1_HousingBurdenPctl_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/Tier1/HousingBurdenPctl_2021_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -3531,9 +3531,9 @@
                   "metric_name": "unemployment_percentile",
                   "display_name": "Unemployment Percentile",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/UnemploymentPctl_2021_300m",
-                  "raw_layer": "sierra-nevada:socialCultural_Tier1_UnemploymentPctl_2021_30m",
+                  "raw_layer": ":socialCultural_Tier1_UnemploymentPctl_2021_30m",
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier1/UnemploymentPctl_2021_30m.tif",
-                  "normalized_layer": "sierra-nevada:socialCulturalTranslate_Tier1_UnemploymentPctl_2021_scored",
+                  "normalized_layer": ":socialCulturalTranslate_Tier1_UnemploymentPctl_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/Tier1/UnemploymentPctl_2021_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -3549,9 +3549,9 @@
                   "metric_name": "low_income_populations",
                   "display_name": "Low Income Populations",
                   "filepath": "sierra_nevada/social_cultural_wellbeing/environmental_justice/LowIncome_CCI_2021_300m",
-                  "raw_layer": "sierra-nevada:socialCultural_Tier1_LowIncome_CCI_2021",
+                  "raw_layer": ":socialCultural_Tier1_LowIncome_CCI_2021",
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier1/LowIncome_CCI_2021.tif",
-                  "normalized_layer": "sierra-nevada:socialCulturalTranslate_Tier2_LowIncome200pctPov_2020_scored",
+                  "normalized_layer": ":socialCulturalTranslate_Tier2_LowIncome200pctPov_2020_scored",
                   "normalized_data_download_path": "sierra-nevada/socialCulturalTranslate/Tier2/LowIncome200pctPov_2020_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -3573,7 +3573,7 @@
                   "metric_name": "race_ethnicity_native_american_population",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier2/RaceEthnicity_NonHispNatAmerican_2020.tif",
-                  "raw_layer": "sierra-nevada:socialCultural_Tier2_RaceEthnicity_NonHispNatAmerican_2020",
+                  "raw_layer": ":socialCultural_Tier2_RaceEthnicity_NonHispNatAmerican_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=65",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3588,7 +3588,7 @@
                   "metric_name": "race_ethnicity_hispanic_populations",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier2/RaceEthnicity_HispanicPOC_2020.tif",
-                  "raw_layer": "sierra-nevada:socialCultural_Tier2_RaceEthnicity_HispanicPOC_2020",
+                  "raw_layer": ":socialCultural_Tier2_RaceEthnicity_HispanicPOC_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=66",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3603,7 +3603,7 @@
                   "metric_name": "low_income_populations_proportional",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/socialCultural/Tier2/LowIncome200pctPov_2020.tif",
-                  "raw_layer": "sierra-nevada:socialCultural_Tier2_LowIncome200pctPov_2020",
+                  "raw_layer": ":socialCultural_Tier2_LowIncome200pctPov_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=67",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3618,15 +3618,15 @@
           "display_name": "Water Security",
           "filepath": "sierra_nevada/water_security",
           "future_data_download_path": "sierra-nevada/waterSecurityTranslate/waterSecurity030_future.tif",
-          "future_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity030_future",
+          "future_layer": ":waterSecurityTranslate_waterSecurity030_future",
           "normalized_data_download_path": "sierra-nevada/waterSecurityTranslate/waterSecurity.tif",
-          "normalized_layer": "sierra-nevada:waterSecurityTranslate_waterSecurity",
+          "normalized_layer": ":waterSecurityTranslate_waterSecurity",
           "elements": [
             {
               "element_name": "quantity",
               "display": true,
               "filepath": "sierra_nevada/water_security/quantity",
-              "normalized_layer": "sierra-nevada:waterSecurityTranslate_quantity",
+              "normalized_layer": ":waterSecurityTranslate_quantity",
               "normalized_data_download_path": "sierra-nevada/waterSecurityTranslate/quantity.tif",
               "display_name": "Quantity",
               "metrics": [
@@ -3634,9 +3634,9 @@
                   "metric_name": "actual_evapotranspiration_fraction",
                   "display_name": "Actual Evapotranspiration Fraction",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_AETFrac_300m",
-                  "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_AETFrac_Pct_30m",
+                  "raw_layer": ":waterSecurity_Tier1_CECS_AETFrac_Pct_30m",
                   "raw_data_download_path": "sierra-nevada/waterSecurity/Tier1/CECS_AETFrac_Pct_30m.tif",
-                  "normalized_layer": "sierra-nevada:waterSecurityTranslate_Tier1_CECS_AETFrac_Pct_scored",
+                  "normalized_layer": ":waterSecurityTranslate_Tier1_CECS_AETFrac_Pct_scored",
                   "normalized_data_download_path": "sierra-nevada/waterSecurityTranslate/Tier1/CECS_AETFrac_Pct_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -3652,9 +3652,9 @@
                   "metric_name": "average_mean_runoff",
                   "display_name": "Average Mean Runoff",
                   "filepath": "sierra_nevada/water_security/quantity/CECS_RunoffMean_300m",
-                  "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_RunoffMean_30m",
+                  "raw_layer": ":waterSecurity_Tier1_CECS_RunoffMean_30m",
                   "raw_data_download_path": "sierra-nevada/waterSecurity/Tier1/CECS_RunoffMean_30m.tif",
-                  "normalized_layer": "sierra-nevada:waterSecurityTranslate_Tier1_CECS_RunoffMean_scored",
+                  "normalized_layer": ":waterSecurityTranslate_Tier1_CECS_RunoffMean_scored",
                   "normalized_data_download_path": "sierra-nevada/waterSecurityTranslate/Tier1/CECS_RunoffMean_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -3676,7 +3676,7 @@
                   "metric_name": "reduction_in_runoff_during_extreme_drought",
                   "min_value": 1,
                   "raw_data_download_path": "sierra-nevada/waterSecurity/Tier1/CECS_ReductionRunoffDrought_30m.tif",
-                  "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_ReductionRunoffDrought_30m",
+                  "raw_layer": ":waterSecurity_Tier1_CECS_ReductionRunoffDrought_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=59",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3691,7 +3691,7 @@
                   "metric_name": "reduction_in_runoff_during_extreme_drought",
                   "min_value": -2500,
                   "raw_data_download_path": "sierra-nevada/waterSecurity/Tier1/CECS_VegStressDrought_30m.tif",
-                  "raw_layer": "sierra-nevada:waterSecurity_Tier1_CECS_VegStressDrought_30m",
+                  "raw_layer": ":waterSecurity_Tier1_CECS_VegStressDrought_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=59",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -3706,15 +3706,15 @@
           "display_name": "Wetland Integrity",
           "filepath": "sierra_nevada/wetland_integrity",
           "normalized_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg.tif",
-          "normalized_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg",
-          "future_layer": "sierra-nevada:wetlandIntegTranslate_wetlandInteg030_future",
+          "normalized_layer": ":wetlandIntegTranslate_wetlandInteg",
+          "future_layer": ":wetlandIntegTranslate_wetlandInteg030_future",
           "future_data_download_path": "sierra-nevada/wetlandIntegTranslate/wetlandInteg030_future.tif",
           "elements": [
             {
               "element_name": "hydrologic",
               "display": true,
               "filepath": "sierra_nevada/wetland_integrity/hydrologic",
-              "normalized_layer": "sierra-nevada:wetlandIntegTranslate_hydroFunction",
+              "normalized_layer": ":wetlandIntegTranslate_hydroFunction",
               "normalized_data_download_path": "sierra-nevada/wtlandIntegTranslate/hydroFunction.tif",
               "display_name": "Hydrologic Function",
               "metrics": [
@@ -3722,9 +3722,9 @@
                   "metric_name": "meadow_sensitivity_index",
                   "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
-                  "raw_layer": "sierra-nevada:wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
+                  "raw_layer": ":wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
                   "raw_data_download_path": "sierra-nevada/wetlangInteg/Tier2/MeadowSensNDWI_2019_30m.tif",
-                  "normalized_layer": "sierra-nevada:wetlandIntegTranslate_Tier2_Meadow_SensNDWI_2019_scored",
+                  "normalized_layer": ":wetlandIntegTranslate_Tier2_Meadow_SensNDWI_2019_scored",
                   "normalized_data_download_path": "sierra-nevada/wetlandIntegrityTranslate/Tier2/Meadow_SensNDWI_2019_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
@@ -3746,7 +3746,7 @@
                   "metric_name": "aquatic_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/wetlandInteg/Tier1/aquatic_species_richness.tif",
-                  "raw_layer": "sierra-nevada:wetlandInteg_Tier1_aquatic_species_richness",
+                  "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=63",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
