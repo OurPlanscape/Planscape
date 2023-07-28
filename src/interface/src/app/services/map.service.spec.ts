@@ -65,7 +65,7 @@ describe('MapService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT + '/boundary/config/'
     );
     req1.flush(conditionsConfig);
     const req2 = httpTestingController.expectOne(
@@ -94,7 +94,7 @@ describe('MapService', () => {
       //   })
       //   });
       service
-        .getBoundaryShapes("sierra-nevada:vector_huc12")
+        .getBoundaryShapes(":vector_huc12")
         .subscribe((res) => { 
           expect(res).toBeTruthy();
         })
