@@ -18,6 +18,12 @@ checkout:
 	git pull origin main; \
 	git checkout $(TAG)
 
+taggit:
+	git checkout main; \
+	git pull origin main; \
+	git tag -a $(VERSION); \
+	git push origin --tags
+
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
 
