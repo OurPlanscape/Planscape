@@ -1,72 +1,80 @@
-<div class="create-scenarios-panel mat-elevation-z2"
-  [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
-  <div class="create-scenarios-panel-content"
-    [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
+<div class="create-scenarios-panel mat-elevation-z2" [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
+  <div class="create-scenarios-panel-content" [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
 
-    <mat-stepper #stepper orientation="vertical" class="stepper" [linear]="true"
-      (selectionChange)="selectedStepChanged($event)">
+    <mat-tab-group>
+      <mat-tab label="Configuration">
 
-      <!-- Step 1: Select priorities -->
-      <mat-step>
-        <ng-template matStepLabel>
-          <div class="step-label-header">Select priorities</div>
-          <div class="step-label-description" *ngIf="stepStates[0].complete">
-            XX priorities selected
-          </div>
-        </ng-template>
-        <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[0]"
-          (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()"
-          (changeConditionEvent)="changeCondition($event)">
-        </app-set-priorities>
-      </mat-step>
+        <mat-stepper #stepper orientation="vertical" class="stepper" [linear]="true"
+          (selectionChange)="selectedStepChanged($event)">
 
-      <!-- Step 2: Set constraints -->
-      <mat-step #step2 [stepControl]="formGroups[1]">
-        <ng-template matStepLabel>
-          <div class="step-label-header">Set constraints</div>
-          <div class="step-label-description" *ngIf="!stepStates[1].opened">
-            Constraints will be used to inform project areas and scenario options.
-          </div>
-        </ng-template>
-        <app-constraints-panel [constraintsForm]="formGroups[1]" (formNextEvent)="stepper.next()" (formBackEvent)="stepper.previous()">
-        </app-constraints-panel>
-      </mat-step>
+          <!-- Step 1: Select priorities -->
+          <mat-step>
+            <ng-template matStepLabel>
+              <div class="step-label-header">Select priorities</div>
+              <div class="step-label-description" *ngIf="stepStates[0].complete">
+                XX priorities selected
+              </div>
+            </ng-template>
+            <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[0]" (formNextEvent)="stepper.next()"
+              (formBackEvent)="stepper.previous()" (changeConditionEvent)="changeCondition($event)">
+            </app-set-priorities>
+          </mat-step>
 
-      <!-- Step 3: Identify project areas -->
-      <mat-step>
-        <ng-template matStepLabel>
-          <div class="step-label-header">Identify project areas</div>
-          <div class="step-label-description" *ngIf="!stepStates[2].opened">
-            Identify project areas and prioritize treatments for optimized outcomes.
-          </div>
-        </ng-template>
-        <app-identify-project-areas [formGroup]="formGroups[2]" (formNextEvent)="stepper.next()"
-          (formBackEvent)="stepper.previous()">
-        </app-identify-project-areas>
-      </mat-step>
+          <!-- Step 2: Set constraints -->
+          <mat-step #step2 [stepControl]="formGroups[1]">
+            <ng-template matStepLabel>
+              <div class="step-label-header">Set constraints</div>
+              <div class="step-label-description" *ngIf="!stepStates[1].opened">
+                Constraints will be used to inform project areas and scenario options.
+              </div>
+            </ng-template>
+            <app-constraints-panel [constraintsForm]="formGroups[1]" (formNextEvent)="stepper.next()"
+              (formBackEvent)="stepper.previous()">
+            </app-constraints-panel>
+          </mat-step>
 
-      <!-- Step 4: Generate scenarios -->
-      <mat-step>
-        <ng-template matStepLabel>
-          <div class="step-label-header">Generate scenarios</div>
-          <div class="step-label-description" *ngIf="!stepStates[3].opened">
-            Weigh priorities to determine acreage of treatment and estimated impact on priorities.
-          </div>
-        </ng-template>
-        <app-generate-scenarios
-          [formGroup]="formGroups[3]"
-          (formBackEvent)="stepper.previous()"
-          (createScenarioEvent)="createScenarioAndProjectAreas()">
-        </app-generate-scenarios>
-      </mat-step>
-    </mat-stepper>
-  </div>
+          <!-- Step 3: Identify project areas -->
+          <mat-step>
+            <ng-template matStepLabel>
+              <div class="step-label-header">Identify project areas</div>
+              <div class="step-label-description" *ngIf="!stepStates[2].opened">
+                Identify project areas and prioritize treatments for optimized outcomes.
+              </div>
+            </ng-template>
+            <app-identify-project-areas [formGroup]="formGroups[2]" (formNextEvent)="stepper.next()"
+              (formBackEvent)="stepper.previous()">
+            </app-identify-project-areas>
+          </mat-step>
 
-  <!-- Expand/collapse button -->
-  <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded"
-    [@expandCollapseButton]="panelExpanded ? 'colorA': 'colorB'">
-    <button mat-icon-button (click)="togglePanelExpand()">
-      <mat-icon>chevron_left</mat-icon>
-    </button>
+          <!-- Step 4: Generate scenarios -->
+          <mat-step>
+            <ng-template matStepLabel>
+              <div class="step-label-header">Generate scenarios</div>
+              <div class="step-label-description" *ngIf="!stepStates[3].opened">
+                Weigh priorities to determine acreage of treatment and estimated impact on priorities.
+              </div>
+            </ng-template>
+            <app-generate-scenarios [formGroup]="formGroups[3]" (formBackEvent)="stepper.previous()"
+              (createScenarioEvent)="createScenarioAndProjectAreas()">
+            </app-generate-scenarios>
+          </mat-step>
+        </mat-stepper>
+
+      </mat-tab>
+      <mat-tab label="Outcome">
+        Scenario Results
+      </mat-tab>
+    </mat-tab-group>
+
+
+
+
+    <!-- Expand/collapse button -->
+    <div class="create-scenarios-panel-expand-button" [class.collapsed]="!panelExpanded"
+      [@expandCollapseButton]="panelExpanded ? 'colorA': 'colorB'">
+      <button mat-icon-button (click)="togglePanelExpand()">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+    </div>
   </div>
 </div>
