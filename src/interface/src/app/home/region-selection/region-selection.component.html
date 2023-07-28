@@ -2,7 +2,7 @@
   <!-- Content text -->
   <section class="content-section">
     <span *ngIf="!hasPlans || !(loggedIn$ | async)">Welcome to Planscape preview! </span>
-    <span *ngIf="multiple_regions_enabled; else singleRegionEnabled">Choose a region to explore </span>
+    <span *ngIf="multiple_regions_enabled; else singleRegionEnabled">Choose one of the regions to explore </span>
     <ng-template #singleRegionEnabled>
       Click Sierra Nevada to explore 
     </ng-template>
