@@ -1,25 +1,19 @@
 {
     "__comment1": "TODO: replace filename for SoCal's HUC10 when it loses its dash.",
-    "regions": [
-      {
-        "region_name": "southern_california",
-        "display_name": "Southern California",
-        "boundaries": [
+    "boundaries": [
         {
-            "boundary_name": "southern_california-counties",
+            "boundary_name": "counties",
             "display_name": "Counties",
-            "vector_name": "southern-california:vector_county",
-            "region_name": "none",
+            "vector_name": ":vector_county",
             "filepath": "cnty19_1.shp",
             "source_srs": 3857,
             "geometry_type": "MULTIPOLYGON",
             "shape_name": "COUNTY_NAM"
         },
         {
-            "boundary_name": "southern_california-huc12",
+            "boundary_name": "huc12",
             "display_name": "HUC-12",
-            "vector_name": "southern-california:vector_huc12",
-            "region_name": "none",
+            "vector_name": ":vector_huc12",
             "filepath": "ACE_HUC12s_WebMerc_1mXY.shp",
             "source_srs": 4326,
             "geometry_type": "MULTIPOLYGON",
@@ -28,177 +22,38 @@
         {
             "boundary_name": "huc10",
             "display_name": "HUC-10",
-            "vector_name": "southern-california:vector_huc-10",
-            "region_name": "none",
+            "vector_name": ":vector_huc10",
             "filepath": "WBD_USGS_HUC10_CA.shp",
             "source_srs": 6414,
             "geometry_type": "MULTIPOLYGON",
             "shape_name": "Name"
         },
         {
-            "boundary_name": "southern_california-USFS",
+            "boundary_name": "USFS",
             "display_name": "National Forests",
-            "vector_name": "southern-california:vector_forests",
-            "region_name": "none",
+            "vector_name": ":vector_forests",
             "filepath": "California_USFS.shp",
             "source_srs": 4269,
             "geometry_type": "MULTIPOLYGON",
             "shape_name": "FORESTNAME"
         },
         {
-            "boundary_name": "southern_california-RecentFires",
-            "display_name": "Fires (through 2021)",
-            "vector_name": "southern-california:vector_recent-fires",
-            "region_name": "none",
+            "boundary_name": "RecentFires",
+            "display_name": "Fires (1990 through 2021)",
+            "vector_name": ":vector_recent-fires",
             "filepath": "recent-fires.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
             "shape_name": "FIRE_NAME"
         },
         {
-            "boundary_name": "southern_california-PrescribedBurns",
+            "boundary_name": "PrescribedBurns",
             "display_name": "Prescribed Burns (through 2021)",
-            "vector_name": "southern-california:vector_prescribed-burns",
-            "region_name": "none",
+            "vector_name": ":vector_prescribed-burns",
             "filepath": "prescribed-burns.shp",
             "source_srs": 3310,
             "geometry_type": "MULTIPOLYGON",
             "shape_name": "TREATMEN_1"
         }
-        ]
-      },
-      {
-        "region_name": "sierra_cascade_inyo",
-        "display_name": "Sierra Nevada",
-        "boundaries": [
-        {
-            "boundary_name": "sierra-nevada-counties",
-            "display_name": "Counties",
-            "vector_name": "sierra-nevada:vector_county",
-            "region_name": "none",
-            "filepath": "cnty19_1.shp",
-            "source_srs": 3857,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "COUNTY_NAM"
-        },
-        {
-            "boundary_name": "sierra-nevada-huc12",
-            "display_name": "HUC-12",
-            "vector_name": "sierra-nevada:vector_huc12",
-            "region_name": "none",
-            "filepath": "ACE_HUC12s_WebMerc_1mXY.shp",
-            "source_srs": 4326,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "Name"
-        },
-        {
-            "boundary_name": "sierra-nevada-huc10",
-            "display_name": "HUC-10",
-            "vector_name": "sierra-nevada:vector_huc10",
-            "region_name": "none",
-            "filepath": "WBD_USGS_HUC10_CA.shp",
-            "source_srs": 6414,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "Name"
-        },
-        {
-            "boundary_name": "sierra-nevada-USFS",
-            "display_name": "National Forests",
-            "vector_name": "sierra-nevada:vector_forests",
-            "region_name": "none",
-            "filepath": "California_USFS.shp",
-            "source_srs": 4269,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "FORESTNAME"
-        },
-        {
-            "boundary_name": "sierra-nevada-RecentFires",
-            "display_name": "Fires (through 2021)",
-            "vector_name": "sierra-nevada:vector_recent-fires",
-            "region_name": "none",
-            "filepath": "recent-fires.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "FIRE_NAME"
-        },
-        {
-            "boundary_name": "sierra-nevada-PrescribedBurns",
-            "display_name": "Prescribed Burns (through 2021)",
-            "vector_name": "sierra-nevada:vector_prescribed-burns",
-            "region_name": "none",
-            "filepath": "prescribed-burns.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "TREATMEN_1"
-        }
-	]
-      },
-      {
-        "region_name": "central_coast",
-        "display_name": "Central Coast",
-        "boundaries": [
-        {
-            "boundary_name": "central-coast-counties",
-            "display_name": "Counties",
-            "vector_name": "central-coast:vector_county",
-            "region_name": "none",
-            "filepath": "cnty19_1.shp",
-            "source_srs": 3857,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "COUNTY_NAM"
-        },
-        {
-            "boundary_name": "central-coast-huc12",
-            "display_name": "HUC-12",
-            "vector_name": "central-coast:vector_huc12",
-            "region_name": "none",
-            "filepath": "ACE_HUC12s_WebMerc_1mXY.shp",
-            "source_srs": 4326,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "Name"
-        },
-        {
-            "boundary_name": "central-coast-huc10",
-            "display_name": "HUC-10",
-            "vector_name": "central-coast:vector_huc10",
-            "region_name": "none",
-            "filepath": "WBD_USGS_HUC10_CA.shp",
-            "source_srs": 6414,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "Name"
-        },
-        {
-            "boundary_name": "central-coast-USFS",
-            "display_name": "National Forests",
-            "vector_name": "central-coast:vector_forests",
-            "region_name": "none",
-            "filepath": "California_USFS.shp",
-            "source_srs": 4269,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "FORESTNAME"
-        },
-        {
-            "boundary_name": "central-coast-RecentFires",
-            "display_name": "Fires (through 2021)",
-            "vector_name": "central-coast:vector_recent-fires",
-            "region_name": "none",
-            "filepath": "recent-fires.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "FIRE_NAME"
-        },
-        {
-            "boundary_name": "central-coast-PrescribedBurns",
-            "display_name": "Prescribed Burns (through 2021)",
-            "vector_name": "central-coast:vector_prescribed-burns",
-            "region_name": "none",
-            "filepath": "prescribed-burns.shp",
-            "source_srs": 3310,
-            "geometry_type": "MULTIPOLYGON",
-            "shape_name": "TREATMEN_1"
-        }
-	]
-      }
     ]
 }
-
