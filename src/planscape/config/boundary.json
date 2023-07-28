@@ -47,7 +47,7 @@
         },
         {
             "boundary_name": "southern_california-RecentFires",
-            "display_name": "Fires (through 2021)",
+            "display_name": "Fires (1990 through 2021)",
             "vector_name": "southern-california:vector_recent-fires",
             "region_name": "none",
             "filepath": "recent-fires.shp",
@@ -113,7 +113,7 @@
         },
         {
             "boundary_name": "sierra-nevada-RecentFires",
-            "display_name": "Fires (through 2021)",
+            "display_name": "Fires (1990 through 2021)",
             "vector_name": "sierra-nevada:vector_recent-fires",
             "region_name": "none",
             "filepath": "recent-fires.shp",
@@ -179,7 +179,7 @@
         },
         {
             "boundary_name": "central-coast-RecentFires",
-            "display_name": "Fires (through 2021)",
+            "display_name": "Fires (1990 through 2021)",
             "vector_name": "central-coast:vector_recent-fires",
             "region_name": "none",
             "filepath": "recent-fires.shp",
