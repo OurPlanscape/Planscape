@@ -372,7 +372,7 @@
                 {
                   "display_name": "Cost of Potential Treatments",
                   "data_provider": "CALFIRE",
-                  "data_units": "Dollars/Acre",
+                  "data_units": "Dollars/Acre Index",
                   "max_value": 13,
                   "metric_name": "cost_of_potential_treatments",
                   "min_value": 1,
@@ -1448,7 +1448,7 @@
                 {
                   "display_name": "Cost of Potential Treatments",
                   "data_provider": "CAL FIRE, USDA Forest Service",
-                  "data_units": "Dollars/Acre",
+                  "data_units": "Dollars/Acre Index",
                   "max_value": 15,
                   "metric_name": "cost_of_potential_treatments",
                   "min_value": 0,
