@@ -403,8 +403,8 @@
                   "max_value": 19,
                   "metric_name": "structure_exposure_score",
                   "min_value": 1,
-                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
+                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022_reclass.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=10",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -416,8 +416,8 @@
                   "max_value": 12,
                   "metric_name": "wui_damage_potential",
                   "min_value": 1,
-                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/DamagePotential_WUI_2022.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022",
+                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/DamagePotential_WUI_2022_reclass.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=25",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
