@@ -629,7 +629,7 @@ export class MapManager {
 
     map.boundaryLayerRef?.remove();
 
-    const boundaryLayerName = map.config.dataLayerConfig.region_geoserver_name + '_' + map.config.boundaryLayerConfig.boundary_name;
+    const boundaryLayerName = map.config.boundaryLayerConfig.boundary_name;
     const boundaryVectorName = map.config.dataLayerConfig.region_geoserver_name + map.config.boundaryLayerConfig.vector_name;
     const boundaryShapeName = map.config.boundaryLayerConfig.shape_name;
     
