@@ -20,17 +20,12 @@ boundary_config = BoundaryConfig(
 
 def get_config(params: QueryDict):
 
-    assert isinstance(params['region_name'], str)
-    region_name = params['region_name']
-
     # Read from boundary config
     config_path = os.path.join(
         settings.BASE_DIR, 'config/boundary.json')
     boundary_config = json.load(open(config_path, 'r'))
 
-    for region in boundary_config['regions']:
-        if region_name == region['region_name']:
-            return region['boundaries']
+    return boundary_config['boundaries']
         
 
     return None
