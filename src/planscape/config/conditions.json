@@ -372,7 +372,7 @@
                 {
                   "display_name": "Cost of Potential Treatments",
                   "data_provider": "CALFIRE",
-                  "data_units": "Dollars/Acre",
+                  "data_units": "Dollars/Acre Index",
                   "max_value": 13,
                   "metric_name": "cost_of_potential_treatments",
                   "min_value": 1,
@@ -403,8 +403,8 @@
                   "max_value": 19,
                   "metric_name": "structure_exposure_score",
                   "min_value": 1,
-                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022",
+                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/StructureExposureScore_WUI_2022_reclass.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2022_reclass",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=10",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -416,8 +416,8 @@
                   "max_value": 12,
                   "metric_name": "wui_damage_potential",
                   "min_value": 1,
-                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/DamagePotential_WUI_2022.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022",
+                  "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/DamagePotential_WUI_2022_reclass.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2022_reclass",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=25",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -914,8 +914,8 @@
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_miroc_and_cnrm-cm5",
                   "min_value": 0,
-                  "raw_data_download_path": "central-coast/forestShrubResil/Tier3/combine85_all7.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_combine85_all7",
+                  "raw_data_download_path": "central-coast/forestShrubResil/Tier3/combine85_all7_reclass.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_combine85_all7_reclass",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=38",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -1448,7 +1448,7 @@
                 {
                   "display_name": "Cost of Potential Treatments",
                   "data_provider": "CAL FIRE, USDA Forest Service",
-                  "data_units": "Dollars/Acre",
+                  "data_units": "Dollars/Acre Index",
                   "max_value": 15,
                   "metric_name": "cost_of_potential_treatments",
                   "min_value": 0,
