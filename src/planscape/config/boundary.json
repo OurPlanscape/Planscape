@@ -1,5 +1,4 @@
 {
-    "__comment1": "TODO: replace filename for SoCal's HUC10 when it loses its dash.",
     "boundaries": [
         {
             "boundary_name": "counties",
