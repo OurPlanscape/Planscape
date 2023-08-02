@@ -27,6 +27,17 @@ class TreatmentGoalsConfig:
         """
 
 
+        def check_regions(regionlist) -> bool:
+            return (isinstance(regionlist, list) and
+                        all([check_region(region) for region in regionlist]))
+        
+        def check_region(region) -> bool:
+            return (isinstance(region, dict) and
+                    region.keys() <= set(['region_name', 'treatment_goals']) and
+                    isinstance(region['region_name'], str) and
+                    isinstance(region['treatment_goals'], list) and
+                    check_treatment_goals(region['treatment_goals']))
+        
         def check_treatment_goals(treatment_goals_list) -> bool:
             return (isinstance(treatment_goals_list, list) and
                     all([check_treatment_goal(treatment_goal) for treatment_goal in treatment_goals_list]))
@@ -47,4 +58,4 @@ class TreatmentGoalsConfig:
                     isinstance(treatment_question['weights'], list))
 
 
-        return 'treatment_goals' in self._config and check_treatment_goals(self._config['treatment_goals'])
+        return 'regions' in self._config and check_regions(self._config['regions'])
