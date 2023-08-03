@@ -9,7 +9,7 @@
                         {
                             "question_text": "Which areas within my planning area have the highest probability of high severity fire? ",
                             "priorities": [
-                                "probabiity of high severity fire"
+                                "probability_of_fire_severity_high"
                             ],
                             "weights": [
                                 5
