@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "forsys",
     "leaflet",
     "rest_framework",
     "rest_framework_gis",
