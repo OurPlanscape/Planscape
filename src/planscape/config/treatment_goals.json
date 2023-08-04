@@ -1,0 +1,23 @@
+{
+    "regions": [
+        {
+            "region_name": "sierra_nevada",
+            "treatment_goals": [
+                {
+                    "category_name": "Fire Dynamics",
+                    "questions": [
+                        {
+                            "question_text": "Which areas within my planning area have the highest probability of high severity fire? ",
+                            "priorities": [
+                                "probability_of_fire_severity_high"
+                            ],
+                            "weights": [
+                                5
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}
