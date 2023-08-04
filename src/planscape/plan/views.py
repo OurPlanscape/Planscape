@@ -1,13 +1,18 @@
 import datetime
 import json
+import logging
+import os
 
 import boto3
 from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
+from config.treatment_goals_config import TreatmentGoalsConfig
+from django.conf import settings as djangoSettings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import connection
 from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
@@ -29,6 +34,12 @@ MAX_ROAD_DIST = 'max_road_distance'
 MAX_SLOPE = 'max_slope'
 PRIORITIES = 'priorities'
 
+# Configure global logging.
+logger = logging.getLogger(__name__)
+
+# Global variable for the BoundaryConfig, so that the configuration file is read once.
+treatment_goals_config = TreatmentGoalsConfig(
+    os.path.join(djangoSettings.BASE_DIR, 'config/treatment_goals.json'))
 
 def get_user(request: HttpRequest) -> User:
     user = None
@@ -555,6 +566,19 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
         weighted_pri = ScenarioWeightedPriority.objects.create(
             scenario=scenario, priority=condition, weight=weight)
 
+
+def get_treatment_goals_config(params: QueryDict):
+
+    # Read from treatment_goals config
+    config_path = os.path.join(
+        djangoSettings.BASE_DIR, 'config/treatment_goals.json')
+    treatment_goals = json.load(open(config_path, 'r'))
+
+    return treatment_goals['treatment_goals']
+
+def treatment_goals_config(request: HttpRequest) -> HttpResponse:
+    treatment_goals = get_treatment_goals_config(request.GET)
+    return JsonResponse(treatment_goals, safe = False)
 
 def _create_scenario(request: HttpRequest):
     # Check that the user is logged in.
