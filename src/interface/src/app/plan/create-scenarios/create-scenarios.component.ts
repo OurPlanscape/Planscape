@@ -139,7 +139,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         this.loadConfig();
         this.panelExpanded = planState.panelExpanded ?? false;
       });
-      console.log(this.planService.treatmentGoalsConfig$);
 
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
