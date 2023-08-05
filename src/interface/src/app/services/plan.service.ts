@@ -19,7 +19,9 @@ import {
   ProjectArea,
   ProjectConfig,
   Scenario,
+  TreatmentGoalConfig,
 } from './../types/plan.types';
+import { SessionService, MapService } from '../services';
 
 export interface PlanState {
   all: {
@@ -68,8 +70,17 @@ export class PlanService {
     mapShapes: null,
     panelExpanded: true,
   });
+  readonly treatmentGoalsConfig$ = new BehaviorSubject<TreatmentGoalConfig[] | null>(null);
+  readonly selectedRegion$ = this.sessionService.region$;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private sessionService: SessionService, private mapService: MapService) {
+    this.http
+      .get<TreatmentGoalConfig[]>(BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=' + `${this.mapService.regionToString(this.selectedRegion$.getValue())}`)
+      .pipe(take(1))
+      .subscribe((config: TreatmentGoalConfig[]) => {
+        this.treatmentGoalsConfig$.next(config);
+      });
+  }
 
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(

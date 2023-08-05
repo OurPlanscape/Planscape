@@ -17,6 +17,7 @@ import {
   concatMap,
   of,
   throwError,
+  Observable
 } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
@@ -26,7 +27,7 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, ProjectArea, ProjectConfig } from 'src/app/types';
+import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig } from 'src/app/types';
 
 interface StepState {
   complete?: boolean;
@@ -62,6 +63,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   formGroups: FormGroup[];
   panelExpanded: boolean = true;
   stepStates: StepState[];
+  treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -71,6 +73,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     private planService: PlanService,
     private router: Router
   ) {
+    this.treatmentGoals = this.planService.treatmentGoalsConfig$.pipe(
+      takeUntil(this.destroy$)
+    );
     // Initialize empty form
     this.formGroups = [
       // Step 1: Select priorities
@@ -134,6 +139,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         this.loadConfig();
         this.panelExpanded = planState.panelExpanded ?? false;
       });
+      console.log(this.planService.treatmentGoalsConfig$);
 
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
