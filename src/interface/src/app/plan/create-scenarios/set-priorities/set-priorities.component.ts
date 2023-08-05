@@ -9,7 +9,7 @@ import { Plan } from 'src/app/types';
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
-import { PlanConditionScores } from './../../../types/plan.types';
+import { PlanConditionScores, TreatmentQuestionConfig, TreatmentGoalConfig } from './../../../types/plan.types';
 
 export interface ScoreColumn {
   label: string;
@@ -37,6 +37,7 @@ interface PriorityRow {
 export class SetPrioritiesComponent implements OnInit {
   @Input() formGroup: FormGroup | undefined;
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
+  @Input() treatmentGoals$: TreatmentGoalConfig[] | null = null;
   @Output() changeConditionEvent = new EventEmitter<string>();
   @Output() formNextEvent = new EventEmitter<void>();
   @Output() formBackEvent = new EventEmitter<void>();
@@ -54,6 +55,7 @@ export class SetPrioritiesComponent implements OnInit {
   conditionScores = new Map<string, ScoreColumn>();
   displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
+  selectedGoal: TreatmentQuestionConfig | null = null;
 
   constructor(
     private mapService: MapService,
