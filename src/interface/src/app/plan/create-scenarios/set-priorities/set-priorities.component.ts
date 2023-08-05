@@ -55,7 +55,6 @@ export class SetPrioritiesComponent implements OnInit {
   conditionScores = new Map<string, ScoreColumn>();
   displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
-  selectedGoal: TreatmentQuestionConfig | null = null;
 
   constructor(
     private mapService: MapService,
