@@ -43,6 +43,17 @@ export interface Scenario {
   favorited?: boolean;
 }
 
+export interface TreatmentGoalConfig {
+  category_name?: string;
+  questions: TreatmentQuestionConfig[];
+}
+
+export interface TreatmentQuestionConfig {
+  question_text?: string;
+  priorities?: string[];
+  weighs?: number[];
+}
+
 export interface Priority {
   id: string;
   name: string;
