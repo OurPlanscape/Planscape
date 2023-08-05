@@ -5,14 +5,17 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region } from '../types';
+import { BasePlan, Plan, Region, BoundaryConfig, ConditionsConfig } from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
   ProjectConfig,
   Scenario,
+  TreatmentGoalConfig,
+
 } from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
+import { MapService } from './map.service';
 
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
@@ -20,6 +23,18 @@ describe('PlanService', () => {
   let mockPlan: BasePlan;
   let fakeGeoJson: GeoJSON.GeoJSON;
 
+  const treatmentGoalConfigs: TreatmentGoalConfig[] = [];
+
+  const boundaryConfigs: BoundaryConfig[] = [];
+
+  const conditionsConfig: ConditionsConfig = {
+    pillars: [
+      {
+        pillar_name: 'pillar',
+        display_name: 'pillar_display',
+      },
+    ],
+  };
   beforeEach(() => {
     fakeGeoJson = {
       type: 'FeatureCollection',
@@ -33,10 +48,25 @@ describe('PlanService', () => {
     };
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      providers: [PlanService],
+      providers: [PlanService, MapService],
     });
     service = TestBed.inject(PlanService);
     httpTestingController = TestBed.inject(HttpTestingController);
+    // Must flush the requests in the constructor for httpTestingController.verify()
+    // to pass in other tests.
+    const req1 = httpTestingController.expectOne(
+      BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=sierra_cascade_inyo'
+    );
+    req1.flush(treatmentGoalConfigs);
+    const req2 = httpTestingController.expectOne(
+      BackendConstants.END_POINT + '/boundary/config/'
+    );
+    req2.flush(boundaryConfigs);
+    const req3 = httpTestingController.expectOne(
+      BackendConstants.END_POINT +
+        '/conditions/config/?region_name=sierra_cascade_inyo'
+    );
+    req3.flush(conditionsConfig);
   });
 
   describe('createPlan', () => {
