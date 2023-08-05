@@ -51,7 +51,7 @@ export interface TreatmentGoalConfig {
 export interface TreatmentQuestionConfig {
   question_text?: string;
   priorities?: string[];
-  weighs?: number[];
+  weights?: number[];
 }
 
 export interface Priority {
