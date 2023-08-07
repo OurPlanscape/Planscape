@@ -567,7 +567,7 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
             scenario=scenario, priority=condition, weight=weight)
 
 
-def get_treatment_goals_config(params: QueryDict):
+def get_treatment_goals_config_for_region(params: QueryDict):
     # Get region name
     assert isinstance(params['region_name'], str)
     region_name = params['region_name']
@@ -585,7 +585,7 @@ def get_treatment_goals_config(params: QueryDict):
     return None
 
 def treatment_goals_config(request: HttpRequest) -> HttpResponse:
-    treatment_goals = get_treatment_goals_config(request.GET)
+    treatment_goals = get_treatment_goals_config_for_region(request.GET)
     return JsonResponse(treatment_goals, safe = False)
 
 def _create_scenario(request: HttpRequest):
