@@ -8,7 +8,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("scenario_id", type=int)
         parser.add_argument('--dry_run',
-                            type=bool, default=True, action=argparse.BooleanOptionalAction,
+                            type=bool, default=False, action=argparse.BooleanOptionalAction,
                             help='Show the commands to be run but do not run them.')
 
     def handle(self, *args, **options):
