@@ -47,7 +47,7 @@ export class MapService {
   constructor(private http: HttpClient, private sessionService: SessionService) {
 
     this.http
-      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/')
+      .get<BoundaryConfig[]>(BackendConstants.END_POINT + '/boundary/config/?region_name='+ `${this.regionToString(this.selectedRegion$.getValue())}`)
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
         this.boundaryConfig$.next(config);

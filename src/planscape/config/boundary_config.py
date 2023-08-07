@@ -35,15 +35,14 @@ class BoundaryConfig:
         """
 
 
-        def check_boundaries(boundarylist) -> bool:
-            return (isinstance(boundarylist, list) and
-                    all([check_boundary(boundary) for boundary in boundarylist]))
+        def check_regions(regionlist) -> bool:
+            return (isinstance(regionlist, list) and
+                    all([check_region(region) for region in regionlist]))
 
         def check_region(region) -> bool:
             return (isinstance(region, dict) and
                     region.keys() <= set(['region_name', 'display_name', 'boundaries']) and
                     isinstance(RegionName(region['region_name']), RegionName) and
-                    isinstance(region['display_name'], str) and
                     isinstance(region['display_name'], str) and
                     isinstance(region['boundaries'], list) and
                     all([check_boundary(boundary) for boundary in region['boundaries']]))
@@ -64,4 +63,4 @@ class BoundaryConfig:
                     isinstance(boundary['shape_name'], str))
 
 
-        return 'boundaries' in self._config and check_boundaries(self._config['boundaries'])
+        return 'regions' in self._config and check_regions(self._config['regions'])
