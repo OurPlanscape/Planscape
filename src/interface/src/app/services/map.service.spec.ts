@@ -65,9 +65,9 @@ describe('MapService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/'
+      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo'
     );
-    req1.flush(conditionsConfig);
+    req1.flush(boundaryConfigs);
     const req2 = httpTestingController.expectOne(
       BackendConstants.END_POINT +
         '/conditions/config/?region_name=sierra_cascade_inyo'
