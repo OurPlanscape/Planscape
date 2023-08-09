@@ -6,8 +6,12 @@ User = get_user_model()
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
-    # TODO: remove null=True if we can't have anonymoys plans
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(
+        User,
+        related_name="planning_areas",
+        on_delete=models.CASCADE,
+        null=True,
+    )
 
     region_name: models.CharField = models.CharField(max_length=120)
 
@@ -38,7 +42,11 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
-    planning_area = models.ForeignKey(PlanningArea, on_delete=models.CASCADE)
+    planning_area = models.ForeignKey(
+        PlanningArea,
+        related_name="scenarios",
+        on_delete=models.CASCADE,
+    )
 
     name = models.CharField(max_length=120)
 
