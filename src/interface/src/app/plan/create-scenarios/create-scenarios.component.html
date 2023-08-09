@@ -15,7 +15,7 @@
                 XX priorities selected
               </div>
             </ng-template>
-            <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[0]" (formNextEvent)="stepper.next()"
+            <app-set-priorities [plan$]="plan$" [treatmentGoals$] = "treatmentGoals | async" [formGroup]="formGroups[0]" (formNextEvent)="stepper.next()"
               (formBackEvent)="stepper.previous()" (changeConditionEvent)="changeCondition($event)">
             </app-set-priorities>
           </mat-step>

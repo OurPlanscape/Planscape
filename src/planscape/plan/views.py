@@ -567,17 +567,25 @@ def _set_scenario_metadata(priorities, weights, notes, scenario: Scenario):
             scenario=scenario, priority=condition, weight=weight)
 
 
-def get_treatment_goals_config(params: QueryDict):
-
+def get_treatment_goals_config_for_region(params: QueryDict):
+    # Get region name
+    assert isinstance(params['region_name'], str)
+    region_name = params['region_name']
+    
     # Read from treatment_goals config
     config_path = os.path.join(
         djangoSettings.BASE_DIR, 'config/treatment_goals.json')
-    treatment_goals = json.load(open(config_path, 'r'))
+    treatment_goals_config = json.load(open(config_path, 'r'))
 
-    return treatment_goals['treatment_goals']
+
+    for region in treatment_goals_config['regions']:
+        if region_name == region['region_name']:
+            return region['treatment_goals']
+        
+    return None
 
 def treatment_goals_config(request: HttpRequest) -> HttpResponse:
-    treatment_goals = get_treatment_goals_config(request.GET)
+    treatment_goals = get_treatment_goals_config_for_region(request.GET)
     return JsonResponse(treatment_goals, safe = False)
 
 def _create_scenario(request: HttpRequest):

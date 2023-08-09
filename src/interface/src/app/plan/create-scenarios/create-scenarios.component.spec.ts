@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { PlanService, PlanState } from 'src/app/services';
-import { Region } from 'src/app/types';
+import { Region, TreatmentGoalConfig } from 'src/app/types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
@@ -52,6 +52,21 @@ describe('CreateScenariosComponent', () => {
           mapShapes: null,
           panelExpanded: true,
         }),
+        treatmentGoalsConfig$: new BehaviorSubject<TreatmentGoalConfig[] | null > ([
+          {
+            category_name: "test_category",
+            questions: [{
+              question_text: "test_question",
+              priorities: [ 
+                "test_priority"
+              ],
+              weights: [
+                1
+              ]
+            }
+           ]
+          }
+        ])
       }
     );
 
