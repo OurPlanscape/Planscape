@@ -59,7 +59,7 @@ describe('PlanService', () => {
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/'
+      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo'
     );
     req2.flush(boundaryConfigs);
     const req3 = httpTestingController.expectOne(
