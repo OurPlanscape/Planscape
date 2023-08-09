@@ -58,7 +58,7 @@ This file configures the options that populate the Conditions menu in the map co
     }
 
 ### treatment_goals
-This file configures the treatment goal options which populate the Scenario configurations page. Each region has its own set of treatment goals. Each treatment goal has its own set of categories, which in turn have their own set of questions. Each question has a text, priorities, and weights. The priorities are metrics and each weight in a list for a question corresponds to the priority with the same index. (e.g for priority: ['priority_1', 'priority_2'], weight: [1,2], 'priority_1' has weight 1 and 'priority_2' has weight 2). Each entry has the following structure:
+This file configures the treatment goal options which populate the Scenario configurations page. Each region has its own set of treatment goals. Each treatment goal has its own set of categories, which in turn have their own set of questions. Each question has a text, priorities, and weights. The priorities are metrics and each weight in a list for a question corresponds to the priority with the same index. (e.g for priority: ['priority_1', 'priority_2'], weight: [1,2], 'priority_1' has weight 1 and 'priority_2' has weight 2). The name for each metric must be unique, as there is no pillar/element information stored here. Each entry has the following structure:
 
     {
     "regions": [
