@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 
-from planscape.core.models import CreatedAtMixin
+from core.models import CreatedAtMixin
+from conditions.models import Condition
 
 
 class StandSizeChoices(models.TextChoices):
@@ -12,6 +13,7 @@ class StandSizeChoices(models.TextChoices):
 class Stand(CreatedAtMixin, models.Model):
     size = models.CharField(
         choices=StandSizeChoices.choices,
+        max_length=16,
     )
 
     geometry = models.PolygonField(srid=4269, spatial_index=True)
@@ -34,7 +36,9 @@ class Stand(CreatedAtMixin, models.Model):
 class StandMetric(CreatedAtMixin, models.Model):
     stand = models.ForeignKey(Stand, related_name="metrics", on_delete=models.CASCADE)
 
-    # missing a FK to the condition these metrics refer to
+    condition = models.ForeignKey(
+        Condition, related_name="metrics", on_delete=models.CASCADE
+    )
 
     min = models.FloatField(null=True)
 
