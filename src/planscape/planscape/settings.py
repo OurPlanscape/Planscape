@@ -50,9 +50,9 @@ planscape_apps = [
     "boundary",
     "conditions",
     "existing_projects",
-    # old models
+    # deprecated app
     "plan",
-    # new models
+    # new app
     "planning",
     "users",
 ]
