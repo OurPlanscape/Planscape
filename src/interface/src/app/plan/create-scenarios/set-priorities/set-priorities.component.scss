@@ -3,6 +3,7 @@
   flex-direction: column;
   gap: 12px;
   height: 100%;
+  width: 100%;
 }
 
 .flex-row {
@@ -29,6 +30,63 @@ h4 {
 
 .legend-wrapper {
   flex: 2 0 224px;
+}
+
+.config-group {
+  border: 1px #a4aae0 solid;
+  border-radius: 10px;
+  display: inline-block;
+  margin-top: 10px;
+  height: auto;
+  width: auto;
+  box-shadow: 0px 3px 0px 0px #aeb0b8;
+  background-color: white;
+
+}
+
+.goal-radio-group {
+  align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0;
+  width: auto;
+}
+
+.goal-single-radio-button {
+  margin: 15px 0;
+}
+
+.goal-category {
+  font-size: 15px;
+  font-weight:bolder;
+  margin-bottom: 2px;
+  margin-top: 5px;
+ 
+}
+
+.goal-control-container {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  margin: 5px;
+  background: white;
+}
+
+.goal-panel-header {
+  font-size: 14px;
+  font-weight: bold;
+  height: 40px !important;
+  line-height: 20px;
+  margin-top: 2px;
+}
+
+.mat-expansion-panel:not([class*='mat-elevation-z']) {
+  box-shadow: none;
+}
+
+.mat-radio-group{
+  gap: 1px;
+  margin-left: 10px;
 }
 
 .legend-title-wrapper {
