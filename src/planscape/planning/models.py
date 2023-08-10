@@ -20,7 +20,6 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
     geometry = models.MultiPolygonField(srid=4269, null=True)
 
     class Meta:
-        # should we have an unique index on user, name and region?
         indexes = [
             models.Index(
                 fields=[
@@ -86,6 +85,8 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
 
     result = models.JSONField(null=True)
+
+    run_details = models.JSONField(null=True)
 
     class Meta:
         ordering = ["scenario", "-created_at"]
