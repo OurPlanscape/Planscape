@@ -1,89 +1,24 @@
 <div class="panel-container">
-  <p class="secondary-text">{{ text1 }}</p>
-
-  <h4>First, choose a score to inform prioritization calculations:</h4>
   <form [formGroup]="formGroup!">
-    <mat-radio-group formControlName="scoreType" color="primary">
-      <mat-radio-button [value]="0">
-        <b>Current Conditions score</b>
-        <p>
-          Uses the current condition of the defined planning area. Future modeling is not considered.
-        </p>
-      </mat-radio-button>
+    <div class="config-group">
 
-      <mat-radio-button [value]="1" [disabled]="true">
-        <b>Management Opportunity score</b>
-        <p>
-          Uses both current and future conditions of the defined planning area.
-        </p>
-      </mat-radio-button>
-    </mat-radio-group>
+      <mat-radio-group name="test" aria-label="Select an option" class="layer-radio-group" color="primary"
+        formControlName="selectedQuestion">
+        <!-- [(ngModel)]="selectedQuestion"> -->
+        <div class="goal-category">TREATMENT GOALS</div>
+        <div *ngFor="let treatmentGoal of treatmentGoals$" class="goal-control-container">
+          <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+            <mat-expansion-panel-header class="goal-panel-header">
+              {{treatmentGoal['category_name']}}
+            </mat-expansion-panel-header>
+            <div *ngFor="let treatmentQuestion of treatmentGoal['questions']" class="layer-control-container">
+              <mat-radio-button [value]="treatmentQuestion">
+                {{ treatmentQuestion.question_text}}
+              </mat-radio-button>
+            </div>
+          </mat-expansion-panel>
+        </div>
+      </mat-radio-group>
+    </div>
   </form>
-
-  <mat-table [dataSource]="datasource" class="priority-table">
-    <ng-container matColumnDef="selected">
-      <mat-header-cell *matHeaderCellDef>
-        Select
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <mat-checkbox
-          name="${element.conditionName}-selected"
-          [disabled]="element.disabled"
-          [(ngModel)]="element.selected"
-          (change)="updatePrioritiesFormControl(element, $event)">
-        </mat-checkbox>
-      </mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="displayName">
-      <mat-header-cell *matHeaderCellDef>
-        Priorities
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element" class="level-{{ element.level }}">
-        <span class="indent-level-{{ element.level }}"></span>
-        <button mat-icon-button *ngIf="element.children.length" class="expand-button"
-          (click)="toggleExpand(element)">
-          <mat-icon>{{ element.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
-        </button>
-        {{ element.displayName ? element.displayName : element.conditionName }}
-      </mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="score">
-      <mat-header-cell *matHeaderCellDef>
-        Condition score
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <mat-spinner [diameter]="24" *ngIf="!conditionScores.has(element.conditionName)"></mat-spinner>
-        <ng-container *ngIf="conditionScores.has(element.conditionName)">
-          <div>
-            <div>{{ getScoreLabel(element.conditionName) }}</div>
-            <div class="score">{{  getScore(element.conditionName) | number: '1.1-1' }}</div>
-          </div>
-        </ng-container>
-      </mat-cell>
-    </ng-container>
-
-    <ng-container matColumnDef="visible">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <button mat-icon-button>
-          <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)"
-            [class.grey-icon]="!element.visible">
-            {{ element.visible ? 'image' : 'hide_image' }}
-          </mat-icon>
-        </button>
-      </mat-cell>
-    </ng-container>
-
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hide-row]="row.hidden"></mat-row>
-  </mat-table>
-
-  <mat-error *ngIf="formGroup?.invalid">Select at least one</mat-error>
-
-  <div class="flex-row">
-    <button mat-flat-button [disabled]="formGroup?.invalid" (click)="formNextEvent.emit()">NEXT</button>
-    <button mat-flat-button (click)="formBackEvent.emit()">BACK</button>
-  </div>
 </div>
