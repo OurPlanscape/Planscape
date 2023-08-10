@@ -27,7 +27,7 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig } from 'src/app/types';
+import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig} from 'src/app/types';
 
 interface StepState {
   complete?: boolean;
@@ -64,7 +64,11 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   panelExpanded: boolean = true;
   stepStates: StepState[];
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
-
+  defaultQ: TreatmentQuestionConfig = {
+    question_text: "",
+    priorities: [''],
+    weights: [0]
+  }
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -80,8 +84,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.formGroups = [
       // Step 1: Select priorities
       this.fb.group({
-        scoreType: [0, Validators.required],
-        priorities: [[], [Validators.required, Validators.minLength(1)]],
+        selectedQuestion: [this.defaultQ],
       }),
       // Step 2: Set constraints
       this.fb.group(
