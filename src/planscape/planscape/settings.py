@@ -21,11 +21,10 @@ These settings are
 import os
 from pathlib import Path
 
+import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
-import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -50,12 +49,10 @@ planscape_apps = [
     "boundary",
     "conditions",
     "existing_projects",
-    # deprecated app
     "plan",
-    # new app
     "planning",
-    "users",
     "stands",
+    "users",
 ]
 INSTALLED_APPS = [
     "allauth",

@@ -5,7 +5,7 @@ from conditions.models import Condition
 
 
 class StandSizeChoices(models.TextChoices):
-    SMALL = "FINE", "Fine"
+    SMALL = "SMALL", "Small"
     MEDIUM = "MEDIUM", "Medium"
     LARGE = "LARGE", "Large"
 
@@ -19,8 +19,6 @@ class Stand(CreatedAtMixin, models.Model):
     geometry = models.PolygonField(srid=4269, spatial_index=True)
 
     area_m2 = models.FloatField()
-
-    area_ha = models.FloatField()
 
     class Meta:
         indexes = [
