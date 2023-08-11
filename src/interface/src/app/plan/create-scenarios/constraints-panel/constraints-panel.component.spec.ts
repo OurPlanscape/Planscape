@@ -47,6 +47,12 @@ describe('ConstraintsPanelComponent', () => {
         // Max cost of treatment for entire planning area
         maxCost: ['', Validators.min(0)],
       }),
+      physicalConstraintForm: fb.group({
+        // Maximum slope allowed for planning area
+        maxSlope: ['', Validators.min(0)],
+        // Maximum road distance
+        maxRoadDistance: ['', Validators.min(0)],
+      }),
       excludeAreasByDegrees: [false],
       excludeAreasByDistance: [false],
       excludeSlope: [''],
@@ -91,49 +97,6 @@ describe('ConstraintsPanelComponent', () => {
   //   expect(component.formNextEvent.emit).toHaveBeenCalledTimes(0);
   // });
 
-  // it('should emit event when previous button is clicked', async () => {
-  //   spyOn(component.formBackEvent, 'emit');
-  //   const backButton: MatButtonHarness = (
-  //     await loader.getAllHarnesses(MatButtonHarness)
-  //   )[1];
 
-  //   // Click back button
-  //   await backButton.click();
 
-  //   expect(component.formBackEvent.emit).toHaveBeenCalledOnceWith();
-  // });
-
-  it('should toggle whether max distance is required', async () => {
-    const maxDistanceInput = component.constraintsForm?.get('excludeDistance');
-    const maxDistanceCheckbox = (
-      await loader.getAllHarnesses(MatCheckboxHarness)
-    )[0];
-
-    // Check the "Exclude areas off a road by" checkbox
-    await maxDistanceCheckbox.check();
-
-    expect(maxDistanceInput?.validator).toBeTruthy();
-
-    // Uncheck the box
-    await maxDistanceCheckbox.uncheck();
-
-    expect(maxDistanceInput?.validator).toBeNull();
-  });
-
-  it('should toggle whether max slope is required', async () => {
-    const maxSlopeInput = component.constraintsForm?.get('excludeSlope');
-    const maxSlopeCheckbox = (
-      await loader.getAllHarnesses(MatCheckboxHarness)
-    )[1];
-
-    // Check the "Exclude areas off a road by" checkbox
-    await maxSlopeCheckbox.check();
-
-    expect(maxSlopeInput?.validator).toBeTruthy();
-
-    // Uncheck the box
-    await maxSlopeCheckbox.uncheck();
-
-    expect(maxSlopeInput?.validator).toBeNull();
-  });
 });

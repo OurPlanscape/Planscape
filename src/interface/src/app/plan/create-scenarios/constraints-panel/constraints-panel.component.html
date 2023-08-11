@@ -1,100 +1,56 @@
 <div class="constraints-panel">
   <!-- Form -->
-  <div class="constraints-content">
-    <form class="constraints-form" [formGroup]="constraintsForm!">
-      <!-- Treatment of total planning area -->
-      <div formGroupName="treatmentForm">
-        <label class="form-label required">
-          Treatment of total planning area
-        </label>
 
-        <div class="flex-row">
-          <div>
-            <!-- Max percentage of planning area -->
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-              <mat-label>Max</mat-label>
-              <input formControlName="maxArea" matInput type="number">
-              <span matSuffix>% &nbsp;</span>
-              <mat-hint class="subtext">Cannot exceed 90%</mat-hint>
-            </mat-form-field>
-          </div>
+  <form class="constraints-form" [formGroup]="constraintsForm!">
+    <div class="constraints-content">
+      <div formGroupName="budgetForm" class="flex-column">
+        <div class="top-label">
+          <label class="form-label">ESTIMATED COSTS</label>
+          <label class="optional">(optional)</label>
         </div>
-      </div>
-
-      <!-- Cost input -->
-      <div formGroupName="budgetForm">
-        <label class="form-label required">
-          Cost input
-        </label>
-
         <div class="flex-row">
           <div>
-            <!-- Estimated cost in $ per acre -->
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-              <mat-label>Est. treatment cost</mat-label>
-              <input
-                class="right-align"
-                formControlName="estimatedCost"
-                matInput
-                type="number">
-                <span matPrefix>$&nbsp;</span>
-                <span matSuffix>per acre</span>
+              <mat-label>Treatment cost</mat-label>
+              <input class="right-align" formControlName="estimatedCost" matInput type="number">
+              <span matPrefix>$&nbsp;</span>
+              <span matSuffix> /acre</span>
             </mat-form-field>
           </div>
-
           <div>
-            <!-- Max cost of treatment -->
-            <mat-form-field class="input-field" [class.disabled]="!enableMaxCost()" appearance="outline" floatLabel="always">
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Max total cost</mat-label>
-              <input formControlName="maxCost" matInput type="number" [readonly]="!enableMaxCost()">
+              <input class="right-align" formControlName="maxCost" matInput type="number">
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
           </div>
         </div>
       </div>
-
-      <!-- Other Constraints-->
-      <div>
-        <label class="form-label">Other Constraints</label>
+    </div>
+    <div class="constraints-content">
+      <div formGroupName="physicalConstraintForm" class="flex-column">
+        <!-- TODO Add stand size segmented button selection -->
+        <div class="top-label">
+          <label class="form-label">PHYSICAL CONSTRAINTS</label>
+        </div>
         <div class="flex-row">
           <div>
-            <mat-checkbox
-              formControlName="excludeAreasByDistance"
-              (change)="toggleRequiredExcludeDistance()">
-              Exclude areas off a road by
-            </mat-checkbox>
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-              <mat-label>Distance</mat-label>
-              <input formControlName="excludeDistance" matInput type="number">
-              <span matSuffix>ft.</span>
+              <mat-label>Max slope</mat-label>
+              <input class="right-align" formControlName="maxSlope" matInput type="number">
+              <span matSuffix> %</span>
             </mat-form-field>
           </div>
           <div>
-            <mat-checkbox
-              formControlName="excludeAreasByDegrees"
-              (change)="toggleRequiredExcludeSlope()">
-              Exclude areas that are over
-            </mat-checkbox>
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-              <mat-label>Slope</mat-label>
-              <input formControlName="excludeSlope" matInput type="number">
-              <span matSuffix>degrees</span>
+              <mat-label>Distance from roads </mat-label>
+              <input class="right-align" formControlName="maxRoadDistance" matInput type="number">
+              <span matSuffix> yds</span>
             </mat-form-field>
           </div>
         </div>
       </div>
+    </div>
+  </form>
 
-      <mat-hint>
-        <mat-icon class="material-symbols-outlined">info</mat-icon>
-        <span>Total estimated costs are shown only when cost per acre is provided above</span>
-      </mat-hint>
-      <mat-error>*At least one required</mat-error>
-
-      <!-- Next and Back -->
-      <div>
-        <button mat-flat-button [disabled]="constraintsForm?.invalid" (click)="formNextEvent.emit()">NEXT</button>
-        <button mat-flat-button (click)="formBackEvent.emit()">BACK</button>
-      </div>
-    </form>
-  </div>
 </div>
