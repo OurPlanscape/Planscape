@@ -13,17 +13,10 @@ from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.views.decorators.csrf import csrf_exempt
-from planning.models import (PlanningArea, Scenario)
-from planning.serializers import (PlanningAreaSerializer,ScenarioSerializer)
+from planning.models import (PlanningArea)
+from planning.serializers import (PlanningAreaSerializer)
 from planscape import settings
 
-# TODO: disallow calls if not logged in as user
-
-MAX_BUDGET = 'max_budget'
-MAX_TREATMENT_AREA_RATIO = 'max_treatment_area_ratio'
-MAX_ROAD_DIST = 'max_road_distance'
-MAX_SLOPE = 'max_slope'
-PRIORITIES = 'priorities'
 
 # Retrieve the logged in user from the HTTP request.
 def _get_user(request: HttpRequest) -> User:
