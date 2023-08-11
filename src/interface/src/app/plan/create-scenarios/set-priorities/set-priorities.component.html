@@ -2,9 +2,8 @@
   <form [formGroup]="formGroup!">
     <div class="config-group">
 
-      <mat-radio-group name="test" aria-label="Select an option" class="layer-radio-group" color="primary"
+      <mat-radio-group name="treatmentGoalSelect" aria-label="Select an option" class="layer-radio-group" color="primary"
         formControlName="selectedQuestion">
-        <!-- [(ngModel)]="selectedQuestion"> -->
         <div class="goal-category">TREATMENT GOALS</div>
         <div *ngFor="let treatmentGoal of treatmentGoals$" class="goal-control-container">
           <mat-expansion-panel expanded="true" [togglePosition]="'before'">
