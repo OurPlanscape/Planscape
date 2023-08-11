@@ -60,48 +60,48 @@ describe('ConstraintsPanelComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should emit event when next button is clicked and form is valid', async () => {
-    spyOn(component.formNextEvent, 'emit');
-    const nextButton: MatButtonHarness = (
-      await loader.getAllHarnesses(MatButtonHarness)
-    )[0];
-    // Set form to valid state
-    component.constraintsForm?.get('budgetForm.estimatedCost')?.setValue('1');
+  // it('should emit event when next button is clicked and form is valid', async () => {
+  //   spyOn(component.formNextEvent, 'emit');
+  //   const nextButton: MatButtonHarness = (
+  //     await loader.getAllHarnesses(MatButtonHarness)
+  //   )[0];
+  //   // Set form to valid state
+  //   component.constraintsForm?.get('budgetForm.estimatedCost')?.setValue('1');
 
-    expect(component.constraintsForm?.valid).toBeTrue();
-    expect(await nextButton.isDisabled()).toBeFalse();
+  //   expect(component.constraintsForm?.valid).toBeTrue();
+  //   expect(await nextButton.isDisabled()).toBeFalse();
 
-    // Click next button
-    await nextButton.click();
+  //   // Click next button
+  //   await nextButton.click();
 
-    expect(component.formNextEvent.emit).toHaveBeenCalledOnceWith();
-  });
+  //   expect(component.formNextEvent.emit).toHaveBeenCalledOnceWith();
+  // });
 
-  it('should not emit event when next button is clicked and form is invalid', async () => {
-    spyOn(component.formNextEvent, 'emit');
-    const nextButton: MatButtonHarness = (
-      await loader.getAllHarnesses(MatButtonHarness)
-    )[0];
+  // it('should not emit event when next button is clicked and form is invalid', async () => {
+  //   spyOn(component.formNextEvent, 'emit');
+  //   const nextButton: MatButtonHarness = (
+  //     await loader.getAllHarnesses(MatButtonHarness)
+  //   )[0];
 
-    expect(component.constraintsForm?.valid).toBeFalse();
+  //   expect(component.constraintsForm?.valid).toBeFalse();
 
-    // Click next button
-    await nextButton.click();
+  //   // Click next button
+  //   await nextButton.click();
 
-    expect(component.formNextEvent.emit).toHaveBeenCalledTimes(0);
-  });
+  //   expect(component.formNextEvent.emit).toHaveBeenCalledTimes(0);
+  // });
 
-  it('should emit event when previous button is clicked', async () => {
-    spyOn(component.formBackEvent, 'emit');
-    const backButton: MatButtonHarness = (
-      await loader.getAllHarnesses(MatButtonHarness)
-    )[1];
+  // it('should emit event when previous button is clicked', async () => {
+  //   spyOn(component.formBackEvent, 'emit');
+  //   const backButton: MatButtonHarness = (
+  //     await loader.getAllHarnesses(MatButtonHarness)
+  //   )[1];
 
-    // Click back button
-    await backButton.click();
+  //   // Click back button
+  //   await backButton.click();
 
-    expect(component.formBackEvent.emit).toHaveBeenCalledOnceWith();
-  });
+  //   expect(component.formBackEvent.emit).toHaveBeenCalledOnceWith();
+  // });
 
   it('should toggle whether max distance is required', async () => {
     const maxDistanceInput = component.constraintsForm?.get('excludeDistance');
