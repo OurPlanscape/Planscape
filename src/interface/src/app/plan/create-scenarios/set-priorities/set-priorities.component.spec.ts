@@ -7,12 +7,12 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
+import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { Plan, Region } from 'src/app/types';
+import { Plan, Region, TreatmentQuestionConfig, TreatmentGoalConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
@@ -23,6 +23,8 @@ import {
   SetPrioritiesComponent,
 } from './set-priorities.component';
 
+// TODO Update commented tests once all new configs are in 
+
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
   let fixture: ComponentFixture<SetPrioritiesComponent>;
@@ -30,6 +32,17 @@ describe('SetPrioritiesComponent', () => {
 
   let fakeMapService: MapService;
   let fakePlanService: PlanService;
+
+  const defaultSelectedQuestion: TreatmentQuestionConfig = {
+    question_text: '',
+    priorities: [''],
+    weights: [0]
+  }
+  const testQuestion: TreatmentQuestionConfig = {
+    question_text: 'test_question',
+    priorities: ['test_priority'],
+    weights: [1]
+  }
 
   const fakeColormapConfig: ColormapConfig = {
     name: 'fakecolormap',
@@ -56,7 +69,7 @@ describe('SetPrioritiesComponent', () => {
               display: true,
               elements: [
                 {
-		  display: true,
+                  display: true,
                   element_name: 'test_element_1',
                   filepath: 'test_element_1',
                   metrics: [
@@ -92,7 +105,19 @@ describe('SetPrioritiesComponent', () => {
           ],
         }),
       },
-      {}
+      {
+        treatmentGoalsConfig$: new BehaviorSubject<TreatmentGoalConfig[] | null>(
+          [
+            {
+              category_name: 'test_category',
+              questions: [
+                testQuestion,
+              ]
+            }
+          ]
+        )
+
+      }
     );
     await TestBed.configureTestingModule({
       imports: [
@@ -122,9 +147,16 @@ describe('SetPrioritiesComponent', () => {
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.formGroup = fb.group({
-      scoreType: [0, Validators.required],
-      priorities: ['', Validators.required],
+      selectedQuestion: [defaultSelectedQuestion],
     });
+    component.treatmentGoals$ = [
+      {
+        category_name: 'test_category',
+        questions: [
+          testQuestion,
+        ]
+      }
+    ]
 
     fixture.detectChanges();
   });
@@ -162,131 +194,49 @@ describe('SetPrioritiesComponent', () => {
     expect(component.datasource.data).toEqual([pillar, element, metric]);
   });
 
-  it('should populate condition score map', () => {
-    const fakePlan: Plan = {
-      id: '1',
-      name: 'fakeplan',
-      ownerId: '1',
-      region: Region.SIERRA_NEVADA,
-    };
-    const expectedMap = new Map<string, ScoreColumn>([
-      [
-        'test_pillar_1',
-        {
-          label: 'Medium',
-          score: 0.1,
-        },
-      ],
-      [
-        'test_element_1',
-        {
-          label: 'Lowest',
-          score: -0.7,
-        },
-      ],
-      [
-        'test_metric_1',
-        {
-          label: 'High',
-          score: 0.4,
-        },
-      ],
-    ]);
+  // it('should populate condition score map', () => {
+  //   const fakePlan: Plan = {
+  //     id: '1',
+  //     name: 'fakeplan',
+  //     ownerId: '1',
+  //     region: Region.SIERRA_NEVADA,
+  //   };
+  //   const expectedMap = new Map<string, ScoreColumn>([
+  //     [
+  //       'test_pillar_1',
+  //       {
+  //         label: 'Medium',
+  //         score: 0.1,
+  //       },
+  //     ],
+  //     [
+  //       'test_element_1',
+  //       {
+  //         label: 'Lowest',
+  //         score: -0.7,
+  //       },
+  //     ],
+  //     [
+  //       'test_metric_1',
+  //       {
+  //         label: 'High',
+  //         score: 0.4,
+  //       },
+  //     ],
+  //   ]);
 
-    component.plan$.next(fakePlan);
+  //   component.plan$.next(fakePlan);
 
-    expect(component.conditionScores).toEqual(expectedMap);
-  });
-
-  it('should only have 1 condition visible at a time', () => {
-    expect(
-      component.datasource.data.find((element) => element.visible)
-    ).toBeUndefined();
-
-    component.toggleVisibility(component.datasource.data[1]);
-
-    expect(component.datasource.data[1].visible).toBeTrue();
-    expect(
-      component.datasource.data.filter((element) => element.visible).length
-    ).toEqual(1);
-
-    component.toggleVisibility(component.datasource.data[2]);
-
-    expect(component.datasource.data[2].visible).toBeTrue();
-    expect(
-      component.datasource.data.filter((element) => element.visible).length
-    ).toEqual(1);
-  });
-
-  it('only pillars should be visible at first', () => {
-    expect(
-      component.datasource.data.filter((element) => element.hidden).length
-    ).toEqual(2);
-  });
-
-  it('collapsing a row should hide all of its descendants', () => {
-    component.toggleExpand(component.datasource.data[0]);
-    component.toggleExpand(component.datasource.data[0]);
-
-    expect(component.datasource.data[0].expanded).toBeFalse();
-    component.datasource.data[0].children.forEach((child) => {
-      expect(child.hidden).toBeTrue();
-      child.children.forEach((grandchild) => {
-        expect(grandchild.hidden).toBeTrue();
-      });
-    });
-  });
-
-  it('expanding a row should unhide its immediate children', () => {
-    component.toggleExpand(component.datasource.data[0]);
-
-    expect(component.datasource.data[0].expanded).toBeTrue();
-    component.datasource.data[0].children.forEach((child) => {
-      expect(child.hidden).toBeFalse();
-      child.children.forEach((grandchild) => {
-        expect(grandchild.hidden).toBeTrue();
-      });
-    });
-  });
+  //   expect(component.conditionScores).toEqual(expectedMap);
+  // });
 
   it('selecting a priority should update the form value', async () => {
-    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
+    const radioButtonGroup = await loader.getHarness(
+      MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' }));
 
-    // Check the first priority (should be 'test_pillar_1')
-    await checkboxHarnesses[0].check();
+    // Act: select the test treatment question
+    await radioButtonGroup.checkRadioButton({ label: testQuestion['question_text'] });
 
-    expect(component.formGroup?.get('priorities')?.value).toEqual([
-      'test_pillar_1',
-    ]);
-  });
-
-  it('updateSelectedPriorities should update checkboxes', async () => {
-    component.formGroup?.get('priorities')?.setValue([]);
-    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
-    const conditionCheckbox1 = checkboxHarnesses[0];
-
-    expect(component.datasource.data[0].selected).toBeFalsy();
-    expect(await conditionCheckbox1.isChecked()).toBeFalse();
-
-    component.formGroup?.get('priorities')?.setValue(['test_pillar_1']);
-    component.updateSelectedPriorities();
-
-    expect(component.datasource.data[0].selected).toBeTrue();
-    expect(await conditionCheckbox1.isChecked()).toBeTrue();
-  });
-
-  it('selecting a priority should disable its descendants', async () => {
-    const checkboxHarnesses = await loader.getAllHarnesses(MatCheckboxHarness);
-
-    // Check the first priority (should be 'test_pillar_1')
-    await checkboxHarnesses[0].check();
-
-    expect(await checkboxHarnesses[1].isDisabled()).toBeTrue();
-    expect(await checkboxHarnesses[2].isDisabled()).toBeTrue();
-
-    await checkboxHarnesses[0].uncheck();
-
-    expect(await checkboxHarnesses[1].isDisabled()).toBeFalse();
-    expect(await checkboxHarnesses[2].isDisabled()).toBeFalse();
+    expect(component.formGroup?.get('selectedQuestion')?.value).toEqual(testQuestion);
   });
 });
