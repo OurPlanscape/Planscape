@@ -144,7 +144,7 @@ def delete_plan(request: HttpRequest) -> HttpResponse:
         elif isinstance(plan_id, list):
             plan_ids = plan_id
         else:
-            raise ValueError("Bad plan id: " + plan_id)
+            raise ValueError("Plan ID must be an int or a list of ints.")
 
         # Get the plan; reject if the plan id is not found or if
         # the plan's user doesn't match the logged in user.
