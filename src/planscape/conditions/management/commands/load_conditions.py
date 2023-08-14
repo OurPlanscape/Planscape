@@ -29,6 +29,7 @@ class Command(BaseCommand):
         path = Path(conditions_file)
         if not path.exists():
             self.stderr.write(f"Conditions file {conditions_file} does not exist")
+            return
 
         with open(conditions_file) as f:
             conditions = json.load(f)
