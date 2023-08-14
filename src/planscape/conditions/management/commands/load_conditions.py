@@ -56,24 +56,6 @@ class Command(BaseCommand):
             for child in children:
                 yield {**parent, **child}
 
-    def get_pillars_from_regions(self, regions):
-        for region in regions:
-            pillars = region.pop("pillars")
-            for pillar in pillars:
-                yield {**region, **pillar}
-
-    def get_elements_from_pillars(self, pillars):
-        for pillar in pillars:
-            elements = pillar.pop("elements")
-            for element in elements:
-                yield {**pillar, **element}
-
-    def get_metrics_from_elements(self, elements):
-        for element in elements:
-            metrics = element.pop("metrics")
-            for metric in metrics:
-                yield {**element, **metric}
-
     def process_metric(self, metric):
         base_condition, _created = BaseCondition.objects.update_or_create(
             condition_name=metric["metric_name"],
