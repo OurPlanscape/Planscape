@@ -12,6 +12,7 @@ from django.db.models import Count
 from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
+from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from planning.models import (PlanningArea)
 from planning.serializers import (PlanningAreaSerializer)
@@ -24,23 +25,6 @@ def _get_user(request: HttpRequest) -> User:
     if hasattr(request, 'user') and request.user.is_authenticated:
         user = request.user
     return user
-
-
-# Retrieve a plan by its ID from a QueryDict.
-def _get_plan_by_id_from_query(user, params: QueryDict):
-    assert isinstance(params['id'], str)
-    plan_id = params.get('id')
-
-    if plan_id is None:
-        raise ValueError("No plan ID provided.")
-
-    plan = PlanningArea.objects.get(id=int(plan_id))
-    if plan is None:
-        raise ValueError("No plan found for this id.")
-
-    if plan.user != user:
-        raise ValueError("You do not have permission to view this plan.")
-    return plan
 
 
 # We always need to store multipolygons, so coerce a single polygon to
@@ -59,7 +43,8 @@ def _convert_polygon_to_multipolygon(geometry: dict):
         raise ValueError("Could not parse geometry")
     return actual_geometry
 
-
+# TODO: Along with PlanningAreaSerializer, refactor this a bit more to
+# make it more maintainable.
 def _serialize_plan(plan: PlanningArea, add_geometry: bool) -> dict:
     """
     Serializes a Plan into a dictionary.
@@ -123,8 +108,8 @@ def create_plan(request: HttpRequest) -> HttpResponse:
 
 
 # Supports deleting a whole list of plans.
-# Plans are deleteable only by their owners.  A list that only partially
-# matches the logged in user will result in no plans being deleted.
+# Plans are deleteable only by their owners.
+# PlanIDs not belonging to the user are silently not deleted.
 def delete_plan(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
@@ -146,15 +131,15 @@ def delete_plan(request: HttpRequest) -> HttpResponse:
         else:
             raise ValueError("Plan ID must be an int or a list of ints.")
 
-        # Get the plan; reject if the plan id is not found or if
-        # the plan's user doesn't match the logged in user.
-        plans = PlanningArea.objects.filter(pk__in=plan_ids)
-        for plan in plans:
-            if user_id != plan.user.pk:
-                raise ValueError(
-                    "Cannot delete plan " + str(plan.pk) + "; plan is not owned by user")
-        for plan in plans:
-            plan.delete()
+        # Get the plan(s) for just the logged in user.
+        plans = user.planning_areas.filter(pk__in=plan_ids)
+
+        plans.delete()
+
+        # We still report that the full set of plan IDs requested were deleted,
+        # since from the user's perspective, there are no plans with that ID.
+        # no plan, with the end result is that those plans don't exist as far
+        # as the user is concerned.
         response_data = {'id': plan_ids}
 
         return HttpResponse(
@@ -174,7 +159,7 @@ def get_plan_by_id(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             _serialize_plan(
-                _get_plan_by_id_from_query(user, request.GET),
+                get_object_or_404(user.planning_areas, id=request.GET['id']),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -187,6 +172,9 @@ def list_plans(request: HttpRequest) -> HttpResponse:
         if user is None:
             raise ValueError("User must be logged in.")
         user_id = user.pk
+
+# TODO: This could be really slow; consider paging or perhaps
+# fetching everything but geometries (since they're huge) for performance gains.
         plans = PlanningArea.objects.filter(user=user_id)
         return JsonResponse(
             [_serialize_plan(plan, False) for plan in plans],
