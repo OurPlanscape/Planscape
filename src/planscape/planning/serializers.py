@@ -5,7 +5,7 @@ from rest_framework_gis import serializers as gis_serializers
 
 from .models import (PlanningArea)
 
-
+# TODO: flesh this out more for better maintainability.
 class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:
         fields = ("id", "user", "name", "region_name")
