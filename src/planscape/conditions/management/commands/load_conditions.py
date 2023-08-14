@@ -36,7 +36,6 @@ class Command(BaseCommand):
 
             with transaction.atomic():
                 metrics = self.get_metrics(conditions["regions"])
-                self.stdout.write(f"Found {len(metrics)} metrics")
 
                 for metric in metrics:
                     self.process_metric(metric)
@@ -46,10 +45,16 @@ class Command(BaseCommand):
 
     def get_metrics(self, regions):
         regions = (region for region in regions)
-        pillars = self.get_pillars_from_regions(regions)
-        elements = self.get_elements_from_pillars(pillars)
-        metrics = list(self.get_metrics_from_elements(elements))
+        pillars = self.flatten_inner(regions, "pillars")
+        elements = self.flatten_inner(pillars, "elements")
+        metrics = self.flatten_inner(elements, "metrics")
         return metrics
+
+    def flatten_inner(self, parents, key):
+        for parent in parents:
+            children = parent.pop(key)
+            for child in children:
+                yield {**parent, **child}
 
     def get_pillars_from_regions(self, regions):
         for region in regions:
@@ -86,5 +91,7 @@ class Command(BaseCommand):
 
         # we are skipping registering raster datasources for now
         self.stdout.write(
-            f"Processed {metric['region_name']}:{metric['metric_name']} - created base ?{bc_created} - created cond? {c_created}"
+            f"{metric['region_name']}:{metric['metric_name']}\n"
+            f"Base Condition ID: {base_condition.id}\n"
+            f"Condition ID: {condition.id}\n"
         )
