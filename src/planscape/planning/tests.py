@@ -10,7 +10,7 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 from planscape import settings
 
-from .models import (PlanningArea, Scenario)
+from planning.models import (PlanningArea, Scenario)
 
 
 # Create test plans.  These are going straight to the test DB without
@@ -156,13 +156,14 @@ class DeletePlanningAreaTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(PlanningArea.objects.count(), 3)
 
+    # Deleteing someone else's plan silently performs nothing.
     def test_delete_wrong_user(self):
         self.client.force_login(self.user)
 
         response = self.client.post(
             reverse('planning:delete_plan'), {'id': self.plan3.pk},
             content_type='application/json')
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(PlanningArea.objects.count(), 3)
 
     def test_delete(self):
@@ -176,15 +177,16 @@ class DeletePlanningAreaTest(TransactionTestCase):
             {"id": [self.plan2.pk]}).encode())
         self.assertEqual(PlanningArea.objects.count(), 2)
 
-    def test_delete_multiple_plans_fails_if_owner_mismatch(self):
+    # Only the user's own plans are deleted.
+    def test_delete_multiple_plans_if_owner_mismatch(self):
         self.client.force_login(self.user)
         self.assertEqual(PlanningArea.objects.count(), 3)
-        plan_ids = [self.plan1.pk, self.plan3.pk]
+        plan_ids = [self.plan1.pk, self.plan2.pk, self.plan3.pk]
         response = self.client.post(
             reverse('planning:delete_plan'), {'id': plan_ids},
             content_type='application/json')
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(PlanningArea.objects.count(), 3)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(PlanningArea.objects.count(), 1)
 
     def test_delete_multiple_plans(self):
         self.client.force_login(self.user)
