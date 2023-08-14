@@ -57,6 +57,9 @@ class Command(BaseCommand):
                 yield {**parent, **child}
 
     def process_metric(self, metric):
+        # if we start to use normalized metrics again
+        # we will need to change this code to stop
+        # using hardcoded level, score type and is_raw
         base_condition, _created = BaseCondition.objects.update_or_create(
             condition_name=metric["metric_name"],
             display_name=metric["display_name"],
