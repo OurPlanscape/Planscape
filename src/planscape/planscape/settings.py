@@ -293,3 +293,5 @@ if SENTRY_DSN is not None:
         send_default_pii=True,
         environment=ENV,
     )
+
+DEFAULT_CONDITIONS_FILE = BASE_DIR / "config" / "conditions.json"
