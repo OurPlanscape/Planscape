@@ -75,14 +75,14 @@ class Command(BaseCommand):
                 yield {**element, **metric}
 
     def process_metric(self, metric):
-        base_condition, bc_created = BaseCondition.objects.update_or_create(
+        base_condition, _created = BaseCondition.objects.update_or_create(
             condition_name=metric["metric_name"],
             display_name=metric["display_name"],
             region_name=metric["region_name"],
             condition_level=ConditionLevel.METRIC,
         )
 
-        condition, c_created = Condition.objects.update_or_create(
+        condition, _created = Condition.objects.update_or_create(
             condition_dataset=base_condition,
             raster_name=metric["raw_data_download_path"],
             condition_score_type=ConditionScoreType.CURRENT,
