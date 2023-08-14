@@ -90,8 +90,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       this.fb.group(
         {
           treatmentForm: this.fb.group({
-            // Max area treated as a % of planning area
-            maxArea: ['', [Validators.min(0), Validators.max(90)]],
           }),
           budgetForm: this.fb.group({
             // Estimated cost in $ per acre
@@ -99,10 +97,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             // Max cost of treatment for entire planning area
             maxCost: ['', Validators.min(0)],
           }),
-          excludeAreasByDegrees: [false],
-          excludeAreasByDistance: [false],
-          excludeSlope: ['', Validators.min(0)],
-          excludeDistance: ['', Validators.min(0)],
+          physicalConstraintForm: this.fb.group({
+            // Maximum slope allowed for planning area
+            maxSlope: ['', Validators.min(0)],
+            // Maximum road distance
+            maxRoadDistance: ['', Validators.min(0)],
+          }),
+          excludeAreasByDegrees: [true],
+          excludeAreasByDistance: [true],
         },
         { validators: this.constraintsFormValidator }
       ),
@@ -183,10 +185,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
       const excludeDistance = this.formGroups[1].get('excludeDistance');
       const excludeSlope = this.formGroups[1].get('excludeSlope');
-      const priorities = this.formGroups[0].get('priorities');
-      const weights = this.formGroups[3].get(
-        'priorityWeightsForm'
-      ) as FormGroup;
+      const selectedQuestion = this.formGroups[0].get('selectedQuestion');
 
       if (config.est_cost) {
         estimatedCost?.setValue(config.est_cost);
@@ -203,14 +202,19 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       if (config.max_slope) {
         excludeSlope?.setValue(config.max_slope);
       }
-      if (config.priorities) {
-        priorities?.setValue(config.priorities);
-      }
-      if (config.weights) {
-        config.priorities?.forEach((priority, index) => {
-          weights.controls[priority].setValue(config.weights![index]);
-        });
-      }
+      // Check if scenario config priorities and weights match those of a question.
+      // If so, assume this was the selected treatment question. 
+      this.treatmentGoals.subscribe((goals) => {
+        goals!.forEach((goal) => {
+          goal.questions.forEach((question) => {
+            if ((question['priorities']?.toString() == config.priorities?.toString()) &&
+              question['weights']?.toString() == config.weights?.toString()) {
+              selectedQuestion?.setValue(question);
+            }
+          })
+        })
+      });
+
     });
   }
 
@@ -233,10 +237,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
     const maxCost = this.formGroups[1].get('budgetForm.maxCost');
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
-    const excludeDistance = this.formGroups[1].get('excludeDistance');
-    const excludeSlope = this.formGroups[1].get('excludeSlope');
-    const priorities = this.formGroups[0].get('priorities');
-    const weights = this.formGroups[3].get('priorityWeightsForm') as FormGroup;
+    const maxRoadDistance = this.formGroups[1].get('physicalConstraintForm.maxRoadDistance');
+    const maxSlope = this.formGroups[1].get('physicalConstraintForm.maxSlope');
+    const selectedQuestion = this.formGroups[0].get('selectedQuestion');
 
     let projectConfig: ProjectConfig = {
       id: this.scenarioConfigId!,
@@ -247,15 +250,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     if (maxCost?.valid) projectConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid)
       projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
-    if (excludeDistance?.valid)
-      projectConfig.max_road_distance = parseFloat(excludeDistance.value);
-    if (excludeSlope?.valid)
-      projectConfig.max_slope = parseFloat(excludeSlope.value);
-    if (priorities?.valid) projectConfig.priorities = priorities.value;
-    projectConfig.weights = Object.values(weights.controls).map(
-      (control) => control.value
-    );
-
+    if (maxRoadDistance?.valid)
+      projectConfig.max_road_distance = parseFloat(maxRoadDistance.value);
+    if (maxSlope?.valid)
+      projectConfig.max_slope = parseFloat(maxSlope.value);
+    if (selectedQuestion?.valid) {
+      projectConfig.priorities = selectedQuestion.value['priorities'];
+      projectConfig.weights = selectedQuestion!.value['weights'];
+    }
     return projectConfig;
   }
 

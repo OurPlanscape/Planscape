@@ -7,6 +7,7 @@
           <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[0]" [treatmentGoals$]="treatmentGoals | async"
             (changeConditionEvent)="changeCondition($event)">
           </app-set-priorities>
+          <app-constraints-panel [constraintsForm]="formGroups[1]"> </app-constraints-panel>
         </div>
       </mat-tab>
       <mat-tab label="Outcome">
