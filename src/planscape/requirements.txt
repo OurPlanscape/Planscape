@@ -7,6 +7,7 @@ django-leaflet
 djangorestframework~=3.13.1
 djangorestframework-gis~=0.18.0
 djangorestframework-simplejwt~=5.2.2
+dumper
 numpy
 pandas
 psycopg2>=2.9.3
