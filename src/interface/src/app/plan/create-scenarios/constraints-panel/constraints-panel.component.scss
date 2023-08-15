@@ -154,6 +154,7 @@
 
 .mat-button-toggle-group {
   width: fit-content;
+  margin-right:60px;
 
 }
 
@@ -166,4 +167,5 @@
 ::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
   line-height: 20px;
   top: 5px;
+  width:60px;
 }
