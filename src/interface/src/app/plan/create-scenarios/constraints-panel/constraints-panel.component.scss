@@ -5,7 +5,6 @@
   gap: 24px;
   height: 100%;
   width: auto;
-  width: auto;
 }
 
 .constraints-content {
@@ -56,7 +55,6 @@
   border: black;
   padding-top: 4px;
   width: 180px;
-  border: black;
 
   &.disabled {
     opacity: .60;
@@ -105,7 +103,6 @@
   font-weight: 400;
   width: fit-content;
 }
-
 
 .mat-hint {
   align-items: center;

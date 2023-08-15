@@ -102,7 +102,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             maxSlope: ['', Validators.min(0)],
             // Maximum road distance
             maxRoadDistance: ['', Validators.min(0)],
-            // TODO validate to make sure standSize is only 'small', 'medium', or 'large'
+            // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
           excludeAreasByDegrees: [true],
