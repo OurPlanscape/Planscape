@@ -144,7 +144,8 @@
 .mat-button-toggle {
   align-items: center;
   vertical-align: center;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .mat-button-toggle-checked {
@@ -161,7 +162,7 @@
 .mat-button-toggle-group-appearance-standard {
   border-radius: 16px;
   height: 30px;
-
+  border: #cccfd8 solid 2px;
 }
 
 ::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
