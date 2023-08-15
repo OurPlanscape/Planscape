@@ -22,6 +22,7 @@ urlpatterns = [
     path('planscape-backend/conditions/', include('conditions.urls')),
     path('planscape-backend/forsys/', include('forsys.urls')),
     path('planscape-backend/plan/', include('plan.urls')),
+    path('planscape-backend/planning/', include('planning.urls')),
     path('planscape-backend/projects/', include('existing_projects.urls')),
     # Auth URLs
     path('planscape-backend/users/', include('users.urls')),
