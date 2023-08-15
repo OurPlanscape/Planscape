@@ -49,8 +49,14 @@
             </mat-form-field>
           </div>
         </div>
+        <div class="button-wrapper">
+          <div class="small-label">Stand Size</div>
+          <mat-button-toggle-group formControlName="standSize" name="standSize" aria-label="Stand Size">
+            <mat-button-toggle *ngFor="let item of standSizeOptions;" [value]="item"
+              checked>{{item}}</mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
       </div>
     </div>
   </form>
-
 </div>
