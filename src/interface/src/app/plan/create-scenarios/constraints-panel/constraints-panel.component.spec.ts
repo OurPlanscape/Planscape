@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
@@ -26,6 +27,7 @@ describe('ConstraintsPanelComponent', () => {
         ReactiveFormsModule,
         MaterialModule,
         NoopAnimationsModule,
+        MatButtonToggleModule,
       ],
       declarations: [ConstraintsPanelComponent],
       providers: [FormBuilder],
@@ -52,6 +54,7 @@ describe('ConstraintsPanelComponent', () => {
         maxSlope: ['', Validators.min(0)],
         // Maximum road distance
         maxRoadDistance: ['', Validators.min(0)],
+        standSize: ['Large', Validators.required],
       }),
       excludeAreasByDegrees: [false],
       excludeAreasByDistance: [false],
