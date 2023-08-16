@@ -1,5 +1,5 @@
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -38,6 +38,7 @@ interface StepState {
   selector: 'app-create-scenarios',
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   animations: [
     expandCollapsePanelTrigger,
     colorTransitionTrigger({
@@ -102,6 +103,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             maxSlope: ['', Validators.min(0)],
             // Maximum road distance
             maxRoadDistance: ['', Validators.min(0)],
+            // Stand Size selection 
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
