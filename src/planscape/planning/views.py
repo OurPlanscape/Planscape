@@ -1,5 +1,6 @@
 import datetime
 import json
+from dumper import dump
 
 import boto3
 from base.condition_types import ConditionScoreType
@@ -14,8 +15,8 @@ from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
-from planning.models import (PlanningArea)
-from planning.serializers import (PlanningAreaSerializer)
+from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus)
+from planning.serializers import (PlanningAreaSerializer, ScenarioSerializer, ScenarioResultSerializer)
 from planscape import settings
 
 
@@ -116,9 +117,8 @@ def delete_plan(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
         if user is None:
             raise ValueError("User must be logged in.")
-        user_id = user.pk
 
-        # Get the plans                                                                                                                                 
+        # Get the plan IDs
         body = json.loads(request.body)
         plan_id = body.get('id', None)
         plan_ids = []
@@ -157,6 +157,8 @@ def get_plan_by_id(request: HttpRequest) -> HttpResponse:
             raise ValueError("User must be logged in.")
         user_id = user.pk
 
+        plan = get_object_or_404(user.planning_areas, id=request.GET['id'])
+        
         return JsonResponse(
             _serialize_plan(
                 get_object_or_404(user.planning_areas, id=request.GET['id']),
@@ -182,3 +184,196 @@ def list_plans(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+
+
+#### SCENARIO Handlers ####
+
+def _serialize_scenario(scenario: Scenario, scenario_result: ScenarioResult | None) -> dict:
+    """
+    Serializes a Scenario into a dictionary.
+    # TODO: Add more logic here as our Scenario model expands beyond just the
+    #       JSON "configuration" field.
+    """
+    data = ScenarioSerializer(scenario).data
+    if scenario_result:
+        data['result'] = ScenarioResultSerializer(scenario_result).data
+
+    return data
+
+
+# Scenario can be retrieved by a user's plan.
+# This also can return the result as well, optionally.
+def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
+    try:
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        show_results = request.GET.get('show_results', False)
+
+        scenario = Scenario.objects.select_related('planning_area__user').get(id=request.GET['id'])
+        if (scenario.planning_area.user.pk != user.pk):
+            raise ValueError("Scenario not found.")
+
+        scenario_result = None
+        if show_results:
+            scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+
+        return JsonResponse(
+            _serialize_scenario(scenario, scenario_result),
+            safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+# Requires a logged in user, a plan_id, and a configuration for the new scenario.
+# This creates both the scenario and a corresponding ScenarioResult entry for that scenario.
+# Note that tehe ScenarioResult is by design the default one; you cannot insert a new ScenarioResult with
+# custom values.
+def create_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        body = json.loads(request.body)
+    
+        plan = get_object_or_404(user.planning_areas, id=body['plan_id'])
+        
+        configuration = body.get('configuration')
+        name = body.get('name')
+        if name is None:
+            raise ValueError('Must specify a scenario name.')
+
+        if configuration is None:
+            raiseValueErrors('Must provide a configuration')
+
+        # TODO: Parse configuration field into further components.
+
+        scenario = Scenario.objects.create(
+            planning_area=plan, name=name, configuration=configuration)
+        scenario.save()
+
+        # Create a default scenario result.
+        # Note that if this fails, we will have still written the Scenario without
+        # a corresponding ScenarioResult.
+        scenario_result = ScenarioResult.objects.create(
+            scenario=scenario)
+        scenario_result.save()
+
+        return HttpResponse(str(scenario.pk))
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+#TODO
+#def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
+
+# TODO: add more things to update other than state
+# Can update a state only such that pending -> running | failure, and running -> success | failure
+# Throws an error if no scenario owned by the user can be found with the desired ID.
+def update_scenario_result(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        body = json.loads(request.body)        
+        scenario_id = body.get('scenario_id')
+
+        # Check scenario ownership first.  This automatically throws an exception if the user
+        # match fails.
+        scenario = Scenario.objects.filter(planning_area__user_id=user.pk).get(id=scenario_id)
+        if scenario is None:
+            raise ValueError("Could not find scenario with id " + scenario_id)
+
+        scenario_result = ScenarioResult.objects.get(scenario__id=scenario_id)
+        
+        new_status = body.get('status')
+        old_status = scenario_result.status
+        
+        if new_status is not None:
+            match new_status:
+                case ScenarioResultStatus.RUNNING:
+                    if old_status != ScenarioResultStatus.PENDING:
+                        raise ValueError("Invalid new state.")
+                case ScenarioResultStatus.SUCCESS:
+                    if old_status != ScenarioResultStatus.RUNNING:
+                        raise ValueError("Invalid new state.")
+                case _:
+                    if new_status != ScenarioResultStatus.FAILURE:
+                        raise ValueError("Invalid new state.")
+            scenario_result.status = new_status
+            
+        if (run_details := body.get('run_details')) is not None:
+            scenario_result.run_details = run_details
+ 
+        if (result := body.get('result')) is not None:
+            scenario_result.result = result
+            
+        scenario_result.save()
+
+        return HttpResponse(str(scenario_id))
+    except Exception as e:
+        return HttpResponseBadRequest("Update Scenario error: " + str(e))
+
+
+# This returns the empty set if given a plan that has no scenarios,
+# a plan that isn't owned by the user, or a planID that doesn't exist.
+def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        plan_id = request.GET['plan_id']
+        if plan_id is None:
+            raise ValueError("Missing plan_id")
+
+        scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(planning_area__pk=plan_id)
+        
+        return JsonResponse(
+            [_serialize_scenario(scenario, None) for scenario in scenarios],
+            safe=False)
+    except Exception as e:
+        return HttpResponseBadRequest("List Scenario error: " + str(e))
+
+# Can delete multiple scenarios at once.
+# Deletion attempts for someone else's scenario will silently do nothing with those scenarios.
+def delete_scenario(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+        
+        body = json.loads(request.body)
+        scenario_id_str = body.get('scenario_id', None)
+        if scenario_id_str is None:
+            raise ValueError("Must specify scenario id(s)")
+
+        scenario_ids = []
+        if isinstance(scenario_id_str, int):
+            scenario_ids = [scenario_id_str]
+        elif isinstance(scenario_ids, list):
+            scenario_ids = scenario_id_str
+        else:
+            raise ValueError("scenario_id must be an int or a list of ints.")
+
+        # Get the scenarios matching the provided IDs and the logged-in user.
+        scenarios = Scenario.objects.filter(pk__in=scenario_ids).filter(planning_area__user=user.pk)
+        # This automatically deletes ScenarioResult entries for the deleted Scenarios.
+        scenarios.delete()
+
+        # We still report that the full set of plan IDs requested were deleted,
+        # since from the user's perspective, there are no plans with that ID.
+        # no plan, with the end result is that those plans don't exist as far
+        # as the user is concerned.
+        response_data = {'id': scenario_ids}
+
+        return HttpResponse(
+            json.dumps(response_data),
+            content_type="application/json")
+    except Exception as e:
+        return HttpResponseBadRequest("Error in delete: " + str(e))

@@ -1,5 +1,6 @@
 import datetime
 import json
+from dumper import dump
 
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
@@ -10,14 +11,14 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 from planscape import settings
 
-from planning.models import (PlanningArea, Scenario)
+from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus)
 
 
 # Create test plans.  These are going straight to the test DB without
 # normal parameter checking (e.g. if is there a real geometry).
 # Always use a Sierra Nevada region.
 def _create_plan(
-        user: User | None, name: str, geometry: GEOSGeometry | None):
+        user: User | None, name: str, geometry: GEOSGeometry | None) -> PlanningArea:
     """
     Creates a plan with the given user, name, geometry.  All regions
     are in Sierra Nevada.
@@ -363,3 +364,383 @@ class EndtoEndPlanningAreaTest(TransactionTestCase):
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
+
+
+#### SCENARIO Tests ####
+
+# Blindly create a scenario and a scenario result in its default (pending) state.
+# Note that this does no deduplication, which our APIs may eventually do.
+def _create_scenario(plan: PlanningArea, scenario_name: str, configuration: str) -> Scenario:
+    scenario = Scenario.objects.create(
+        planning_area=plan, name=scenario_name, configuration=configuration)
+    scenario.save()
+
+    scenario_result = ScenarioResult.objects.create(
+        scenario=scenario)
+    scenario_result.save()
+
+    return scenario
+
+
+class CreateScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan = _create_plan(self.user, 'test plan', self.stored_geometry)
+
+        self.user2 = User.objects.create(username='testuser2')
+        self.user2.set_password('12345')
+        self.user2.save()
+        self.plan2 = _create_plan(self.user2, 'test plan 2', self.stored_geometry)
+        
+    def test_create_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:create_scenario'),
+            {'plan_id': self.plan.pk,
+             'configuration': '{}',
+             'name': 'test scenario'},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(ScenarioResult.objects.count(), 1)
+
+    def test_create_scenario_not_logged_in(self):
+        response = self.client.post(
+            reverse('planning:create_scenario'),
+            {'plan_id': self.plan.pk,
+             'configuration': '{}',
+             'name': 'test scenario'},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_for_nonexistent_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:create_scenario'),
+            {'plan_id': 999999,
+             'configuration': '{}',
+             'name': 'test scenario'},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_create_scenario_for_not_owned_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:create_scenario'),
+            {'plan_id': self.plan2.pk,
+             'configuration': '{}',
+             'name': 'test scenario'},
+            content_type="application/json")
+       self.assertEqual(response.status_code, 400)
+
+    #TODO: add more tests reflecting configurations.
+
+
+class UpdateScenarioResultTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan = _create_plan(self.user, 'test plan', self.storable_geometry)
+        self.scenario = _create_scenario(self.plan, 'test scenario', '{}')
+        self.scenario2 = _create_scenario(self.plan, 'test scenario2', '{}')
+        self.scenario3 = _create_scenario(self.plan, 'test scenario3', '{}')
+        self.emptyplan = _create_plan(self.user, 'empty test plan', self.storable_geometry)
+
+        self.user2 = User.objects.create(username='testuser2')
+        self.user2.set_password('12345')
+        self.user2.save()
+        self.plan2 = _create_plan(self.user2, 'test plan2', self.storable_geometry)
+        self.user2scenario = _create_scenario(self.plan2, 'test user2scenario', '{}')
+
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_update_scenario_result(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:update_scenario_result'),
+            {'scenario_id': self.scenario.pk,
+             'result': json.dumps({'result1' : 'test result'}),
+             'run_details': json.dumps({'details': 'super duper details'}),
+             'status': ScenarioResultStatus.RUNNING},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
+        self.assertEqual(scenario_result.status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(scenario_result.result, json.dumps({'result1' : 'test result'}))
+        self.assertEqual(scenario_result.run_details, json.dumps({'details': 'super duper details'}))
+
+    def test_update_scenario_result_not_logged_in(self):
+        response = self.client.post(
+            reverse('planning:update_scenario_result'),
+            {'scenario_id': self.scenario.pk,
+             'result': json.dumps({'result1' : 'test result'}),
+             'run_details': json.dumps({'details': 'super duper details'}),
+             'status': ScenarioResultStatus.RUNNING},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_update_scenario_result_wrong_user(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:update_scenario_result'),
+            {'scenario_id': self.user2scenario.pk,
+             'result': json.dumps({'result1' : 'test result'}),
+             'run_details': json.dumps({'details': 'super duper details'}),
+             'status': ScenarioResultStatus.RUNNING},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r'does not exist')
+
+    def test_update_scenario_result_nonexistent_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:update_scenario_result'),
+            {'scenario_id': 99999,
+             'result': json.dumps({'result1' : 'test result'}),
+             'run_details': json.dumps({'details': 'super duper details'}),
+             'status': ScenarioResultStatus.RUNNING},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r'does not exist')
+        
+
+class ListScenariosTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan = _create_plan(self.user, 'test plan', self.storable_geometry)
+        self.scenario = _create_scenario(self.plan, 'test scenario', '{}')
+        self.scenario2 = _create_scenario(self.plan, 'test scenario2', '{}')
+        self.scenario3 = _create_scenario(self.plan, 'test scenario3', '{}')
+        self.emptyplan = _create_plan(self.user, 'empty test plan', self.storable_geometry)
+
+        self.user2 = User.objects.create(username='testuser2')
+        self.user2.set_password('12345')
+        self.user2.save()
+        self.plan2 = _create_plan(self.user2, 'test plan2', self.storable_geometry)
+        self.user2scenario = _create_scenario(self.plan2, 'test user2scenario', '{}')
+
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_list_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('planning:list_scenarios_for_plan'),
+            {'plan_id': self.plan.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(len(scenarios), 3)
+
+    def test_list_scenario_not_logged_in(self):
+        response = self.client.get(
+            reverse('planning:list_scenarios_for_plan'),
+            {'plan_id': self.plan.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r'User must be logged in')
+
+    def test_list_scenario_wrong_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('planning:list_scenarios_for_plan'),
+            {'plan_id': self.plan2.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(len(scenarios), 0)
+        
+    def test_list_scenario_empty_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('planning:list_scenarios_for_plan'),
+            {'plan_id': self.emptyplan.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(len(scenarios), 0)
+
+    def test_list_scenario_nonexistent_plan(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('planning:list_scenarios_for_plan'),
+            {'plan_id': 99999},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(len(scenarios), 0)
+
+
+class GetScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan = _create_plan(self.user, 'test plan', self.storable_geometry)
+        self.scenario = _create_scenario(self.plan, 'test scenario', '{}')
+
+        self.user2 = User.objects.create(username='testuser2')
+        self.user2.set_password('12345')
+        self.user2.save()
+        self.plan2 = _create_plan(self.user2, 'test plan2', self.storable_geometry)
+        self.scenario2 = _create_scenario(self.plan2, 'test scenario2', '{}')
+
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    def test_get_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('planning:get_scenario_by_id'),
+            {'id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_scenario_not_logged_in(self):
+        response = self.client.get(
+            reverse('planning:get_scenario_by_id'),
+            {'id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        
+    def test_get_scenario_wrong_user(self):
+        response = self.client.get(
+            reverse('planning:get_scenario_by_id'),
+            {'id': self.scenario2.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_scenario_nonexistent_scenario(self):
+        response = self.client.get(
+            reverse('planning:get_scenario_by_id'),
+            {'id': 99999},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_get_scenario_with_results(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse('planning:get_scenario_by_id'),
+            {'id': self.scenario.pk,
+             'show_results': True},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result['name'],'test scenario')
+        self.assertEqual(result['result']['status'],ScenarioResultStatus.PENDING)
+
+
+class DeleteScenarioTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username='testuser')
+        self.user.set_password('12345')
+        self.user.save()
+        self.geometry = {'type': 'MultiPolygon',
+                         'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.plan = _create_plan(self.user, 'test plan', self.storable_geometry)
+        self.scenario = _create_scenario(self.plan, 'test scenario', '{}')
+        self.scenario2 = _create_scenario(self.plan, 'test scenario2', '{}')
+        self.scenario3 = _create_scenario(self.plan, 'test scenario3', '{}')
+
+        self.user2 = User.objects.create(username='testuser2')
+        self.user2.set_password('12345')
+        self.user2.save()
+        self.plan2 = _create_plan(self.user2, 'test plan2', self.storable_geometry)
+        self.user2scenario = _create_scenario(self.plan2, 'test user2scenario', '{}')
+        
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {'scenario_id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 3)
+        self.assertEqual(ScenarioResult.objects.count(), 3)
+
+    def test_delete_scenario_multiple_owned(self):
+        self.client.force_login(self.user)
+        scenario_ids = [self.scenario.pk, self.scenario2.pk]
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {'scenario_id': scenario_ids},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    # Silently does nothing for the non-owned scenario.
+    def test_delete_scenario_multiple_partially_owned(self):
+        self.client.force_login(self.user)
+        scenario_ids = [self.scenario.pk, self.scenario2.pk, self.user2scenario.pk]
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {'scenario_id': scenario_ids},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    def test_delete_scenario_not_logged_in(self):
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {'scenario_id': self.scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    # Silently does nothing.
+    def test_delete_scenario_wrong_user(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {'scenario_id': self.user2scenario.pk},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    # Silently does nothing.
+    def test_delete_scenario_nonexistent_id(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {'scenario_id': 99999},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario_missing_id(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('planning:delete_scenario'),
+            {},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
