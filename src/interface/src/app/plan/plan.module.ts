@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatButtonToggleModule} from '@angular/material/button-toggle';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { RouterModule } from '@angular/router';
@@ -51,6 +52,7 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
+    MatButtonToggleModule,
     MaterialModule,
     ReactiveFormsModule,
     RouterModule,

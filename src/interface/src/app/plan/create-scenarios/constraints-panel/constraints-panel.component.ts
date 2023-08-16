@@ -8,4 +8,5 @@ import { FormGroup, Validators } from '@angular/forms';
 })
 export class ConstraintsPanelComponent {
   @Input() constraintsForm: FormGroup | undefined;
+  standSizeOptions: Array<String> = ["Small", "Medium", "Large"];
 }

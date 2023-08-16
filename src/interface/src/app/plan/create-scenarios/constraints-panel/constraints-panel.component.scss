@@ -17,32 +17,44 @@
   width: auto;
   box-shadow: 0px 3px 0px 0px #aeb0b8;
   background-color: white;
+  margin-top: 10px;
+  border: 1px #a4aae0 solid;
+  border-radius: 10px;
+  display: inline-block;
+  height: auto;
+  width: auto;
+  box-shadow: 0px 3px 0px 0px #aeb0b8;
+  background-color: white;
 }
 
 .constraints-form {
   display: flex;
   flex-direction: column;
-  width: auto; 
+  width: auto;
 }
 
 .form-label {
   display: block;
   font-size: 15px;
-  font-weight:500;
+  font-weight: 500;
   margin-bottom: 5px;
-  margin-top: 5px;
+  margin-top: 10px;
   margin-right: 10px;
 }
 
-label.required:after {
-  content: '*';
-  color: red;
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 40px;
 }
 
 .input-field {
   padding-top: 4px;
   width: 180px;
-  border:black;
+  border: black;
+  padding-top: 4px;
+  width: 180px;
 
   &.disabled {
     opacity: .60;
@@ -74,25 +86,22 @@ label.required:after {
 }
 
 ::-webkit-scrollbar-thumb {
-  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
-  background-color: rgba(0,0,0,.5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+  background-color: rgba(0, 0, 0, .5);
   border-radius: 4px;
 }
 
 .flex-column {
   display: flex;
   margin-left: 20px;
-  flex-direction:column;
-
-  div {
-    flex-grow: 1;
-  }
+  flex-direction: column;
 }
 
-.flex-row {
-  display:flex;
-  flex-direction: row;
-  margin-left: 20px;
+.small-label {
+  margin-right: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  width: fit-content;
 }
 
 .mat-hint {
@@ -108,12 +117,53 @@ label.required:after {
     width: 16px;
   }
 }
+
 .optional {
   color: grey;
   margin-top: 5px;
   font-size: 10px;
 }
+
 .top-label {
   flex-direction: row;
-  display: inline-flex
+  display: inline-flex;
+  align-items: center;
+}
+
+.button-wrapper {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: center;
+}
+
+.mat-button-toggle {
+  align-items: center;
+  vertical-align: center;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.mat-button-toggle-checked {
+  background-color: #E6e9f4;
+
+}
+
+.mat-button-toggle-group {
+  width: fit-content;
+  margin-right:60px;
+
+}
+
+.mat-button-toggle-group-appearance-standard {
+  border-radius: 16px;
+  height: 30px;
+  border: #cccfd8 solid 2px;
+}
+
+::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+  line-height: 20px;
+  top: 5px;
+  width:60px;
 }
