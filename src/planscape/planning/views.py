@@ -253,7 +253,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             scenario=scenario)
         scenario_result.save()
 
-        return HttpResponse(ScenarioSerializer(instance=scenario).data)
+        return HttpResponse(str(scenario.pk))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -361,4 +361,4 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
             json.dumps(response_data),
             content_type="application/json")
     except Exception as e:
-        return HttpResponseBadRequest("Error in delete: " + str(e))
+        return HttpResponseBadRequest("Delete Scenario error: " + str(e))

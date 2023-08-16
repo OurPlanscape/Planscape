@@ -1,5 +1,6 @@
 import datetime
 import json
+from dumper import dump
 
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
@@ -380,7 +381,7 @@ def _create_scenario(plan: PlanningArea, scenario_name: str, configuration: str)
 
     return scenario
 
-
+#TODO: add more tests when we start parsing configurations.
 class CreateScenarioTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
@@ -396,24 +397,39 @@ class CreateScenarioTest(TransactionTestCase):
         self.user2.set_password('12345')
         self.user2.save()
         self.plan2 = _create_plan(self.user2, 'test plan 2', self.stored_geometry)
+
+        self.configuration = {
+            'est_cost': 0,
+            'max_budget': 0,
+            'max_road_distance': 0,
+            'max_slope': 0,
+            'priorities': ['priority1'],
+            'weights': [0],
+            'stand_size': 'Large',
+            'excluded_areas': []
+        }
         
     def test_create_scenario(self):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('planning:create_scenario'),
             {'planning_area': self.plan.pk,
-             'configuration': '{}',
+             'configuration': json.dumps(self.configuration),
              'name': 'test scenario'},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
+        scenario_id = response.content.decode()
         self.assertEqual(Scenario.objects.count(), 1)
         self.assertEqual(ScenarioResult.objects.count(), 1)
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertEqual(scenario.planning_area.pk, self.plan.pk)
+        self.assertEqual(scenario.configuration, json.dumps(self.configuration))
 
     def test_create_scenario_not_logged_in(self):
         response = self.client.post(
             reverse('planning:create_scenario'),
             {'planning_area': self.plan.pk,
-             'configuration': '{}',
+             'configuration': json.dumps(self.configuration),
              'name': 'test scenario'},
             content_type="application/json")
         self.assertEqual(response.status_code, 400)
@@ -423,7 +439,7 @@ class CreateScenarioTest(TransactionTestCase):
         response = self.client.post(
             reverse('planning:create_scenario'),
             {'planning_area': 999999,
-             'configuration': '{}',
+             'configuration': json.dumps(self.configuration),
              'name': 'test scenario'},
             content_type="application/json")
         self.assertEqual(response.status_code, 400)
@@ -433,12 +449,11 @@ class CreateScenarioTest(TransactionTestCase):
         response = self.client.post(
             reverse('planning:create_scenario'),
             {'planning_area': self.plan2.pk,
-             'configuration': '{}',
+             'configuration': json.dumps(self.configuration),
              'name': 'test scenario'},
             content_type="application/json")
         self.assertEqual(response.status_code, 400)
 
-    #TODO: add more tests reflecting configurations.
 
 
 class UpdateScenarioResultTest(TransactionTestCase):
