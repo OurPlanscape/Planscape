@@ -401,7 +401,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('planning:create_scenario'),
-            {'plan_id': self.plan.pk,
+            {'planning_area': self.plan.pk,
              'configuration': '{}',
              'name': 'test scenario'},
             content_type="application/json")
@@ -412,7 +412,7 @@ class CreateScenarioTest(TransactionTestCase):
     def test_create_scenario_not_logged_in(self):
         response = self.client.post(
             reverse('planning:create_scenario'),
-            {'plan_id': self.plan.pk,
+            {'planning_area': self.plan.pk,
              'configuration': '{}',
              'name': 'test scenario'},
             content_type="application/json")
@@ -422,7 +422,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('planning:create_scenario'),
-            {'plan_id': 999999,
+            {'planning_area': 999999,
              'configuration': '{}',
              'name': 'test scenario'},
             content_type="application/json")
@@ -432,7 +432,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse('planning:create_scenario'),
-            {'plan_id': self.plan2.pk,
+            {'planning_area': self.plan2.pk,
              'configuration': '{}',
              'name': 'test scenario'},
             content_type="application/json")
@@ -479,6 +479,8 @@ class UpdateScenarioResultTest(TransactionTestCase):
         self.assertEqual(scenario_result.result, json.dumps({'result1' : 'test result'}))
         self.assertEqual(scenario_result.run_details, json.dumps({'details': 'super duper details'}))
 
+    # This still works
+    # TODO: Update when we have EPs sending a credential over.
     def test_update_scenario_result_not_logged_in(self):
         response = self.client.post(
             reverse('planning:update_scenario_result'),
@@ -487,8 +489,14 @@ class UpdateScenarioResultTest(TransactionTestCase):
              'run_details': json.dumps({'details': 'super duper details'}),
              'status': ScenarioResultStatus.RUNNING},
             content_type="application/json")
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 200)
+        scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
+        self.assertEqual(scenario_result.status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(scenario_result.result, json.dumps({'result1' : 'test result'}))
+        self.assertEqual(scenario_result.run_details, json.dumps({'details': 'super duper details'}))
 
+    # This still works
+    # TODO: Update when we have EPs sending a credential over.
     def test_update_scenario_result_wrong_user(self):
         self.client.force_login(self.user)
         response = self.client.post(
@@ -498,8 +506,11 @@ class UpdateScenarioResultTest(TransactionTestCase):
              'run_details': json.dumps({'details': 'super duper details'}),
              'status': ScenarioResultStatus.RUNNING},
             content_type="application/json")
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r'does not exist')
+        self.assertEqual(response.status_code, 200)
+        scenario_result = ScenarioResult.objects.get(scenario__id=self.user2scenario.pk)
+        self.assertEqual(scenario_result.status, ScenarioResultStatus.RUNNING)
+        self.assertEqual(scenario_result.result, json.dumps({'result1' : 'test result'}))
+        self.assertEqual(scenario_result.run_details, json.dumps({'details': 'super duper details'}))
 
     def test_update_scenario_result_nonexistent_scenario(self):
         self.client.force_login(self.user)
@@ -514,7 +525,7 @@ class UpdateScenarioResultTest(TransactionTestCase):
         self.assertRegex(str(response.content), r'does not exist')
         
 
-class ListScenariosTest(TransactionTestCase):
+class ListScenariosForPlanTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -541,7 +552,7 @@ class ListScenariosTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse('planning:list_scenarios_for_plan'),
-            {'plan_id': self.plan.pk},
+            {'planning_area': self.plan.pk},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
@@ -550,7 +561,7 @@ class ListScenariosTest(TransactionTestCase):
     def test_list_scenario_not_logged_in(self):
         response = self.client.get(
             reverse('planning:list_scenarios_for_plan'),
-            {'plan_id': self.plan.pk},
+            {'planning_area': self.plan.pk},
             content_type="application/json")
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r'User must be logged in')
@@ -559,7 +570,7 @@ class ListScenariosTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse('planning:list_scenarios_for_plan'),
-            {'plan_id': self.plan2.pk},
+            {'planning_area': self.plan2.pk},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
@@ -569,7 +580,7 @@ class ListScenariosTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse('planning:list_scenarios_for_plan'),
-            {'plan_id': self.emptyplan.pk},
+            {'planning_area': self.emptyplan.pk},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
@@ -579,7 +590,7 @@ class ListScenariosTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse('planning:list_scenarios_for_plan'),
-            {'plan_id': 99999},
+            {'planning_area': 99999},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
