@@ -27,7 +27,7 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig} from 'src/app/types';
+import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
 interface StepState {
   complete?: boolean;
@@ -102,6 +102,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             maxSlope: ['', Validators.min(0)],
             // Maximum road distance
             maxRoadDistance: ['', Validators.min(0)],
+            // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
+            standSize: ['Large', Validators.required],
           }),
           excludeAreasByDegrees: [true],
           excludeAreasByDistance: [true],
