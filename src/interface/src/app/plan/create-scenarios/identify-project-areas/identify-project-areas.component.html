@@ -1,15 +1,20 @@
 <div>
   <form [formGroup]="formGroup!" class="form">
-    Select one:
-    <mat-radio-group formControlName="generateAreas" (change)="validateFormRequirements()">
+    <div class="form-content">
+    
+    
+    <mat-radio-group formControlName="generateAreas" (change)="validateFormRequirements()" class="flex-column">
+      <div class="top-label">
+        <label class="form-label">PROJECT AREAS</label>
+      </div>
       <mat-radio-button [value]="true">
-        I need project areas defined for me
+        Define them for me
       </mat-radio-button>
       <mat-radio-button [value]="false">
-        I need to upload shape files for my project areas
+        Upload exising areas
         <button mat-stroked-button color="primary" (click)="showUploader = true">
           <mat-icon color="primary">upload</mat-icon>
-          UPLOAD
+          UPLOAD SHAPE FILES
         </button>
       </mat-radio-button>
     </mat-radio-group>
@@ -23,12 +28,6 @@
       <mat-icon class="success-icon">check_circle</mat-icon>
       {{ filename }} uploaded
     </div>
-  </form>
-
-  <div class="flex-row">
-    <button mat-flat-button (click)="formNextEvent.emit()" [disabled]="formGroup?.invalid">
-      NEXT
-    </button>
-    <button mat-flat-button (click)="formBackEvent.emit()">BACK</button>
   </div>
+  </form>
 </div>
