@@ -1,6 +1,5 @@
 import datetime
 import json
-from dumper import dump
 
 import boto3
 from base.condition_types import ConditionScoreType
@@ -157,8 +156,6 @@ def get_plan_by_id(request: HttpRequest) -> HttpResponse:
             raise ValueError("User must be logged in.")
         user_id = user.pk
 
-        plan = get_object_or_404(user.planning_areas, id=request.GET['id'])
-        
         return JsonResponse(
             _serialize_plan(
                 get_object_or_404(user.planning_areas, id=request.GET['id']),
