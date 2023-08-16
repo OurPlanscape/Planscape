@@ -1,6 +1,6 @@
 from conditions.models import BaseCondition, Condition
 from rest_framework import serializers
-from rest_framework.serializers import IntegerField
+from rest_framework.serializers import (IntegerField, JSONField)
 from rest_framework_gis import serializers as gis_serializers
 
 from planning.models import (PlanningArea, Scenario, ScenarioResult)
@@ -15,6 +15,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
+    configuration = JSONField()
     class Meta:
         fields = ("id", "planning_area", "name", "configuration")
         model = Scenario
