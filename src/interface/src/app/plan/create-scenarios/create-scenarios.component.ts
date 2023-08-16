@@ -28,6 +28,7 @@ import {
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
+import features from '../../features/features.json'
 
 interface StepState {
   complete?: boolean;
@@ -71,7 +72,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     weights: [0]
   }
   private readonly destroy$ = new Subject<void>();
-
+  project_area_upload_enabled = features.upload_project_area;
+  
   constructor(
     private fb: FormBuilder,
     private matSnackBar: MatSnackBar,

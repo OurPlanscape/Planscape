@@ -41,6 +41,9 @@ This flag will hide map layers that are not currently launched or implemented
 when set to false. Once layers are launched in prod, they should be changed in
 map-control-panel.component.html so they are no longer affected by this flag.
 
+###  upload_project_area
+This flag will enable the Project Area control panel in the Scenario Configuration page. That will allow users to choose between having their Project Areas determined for them, or uploading their own zipped shapefiles. 
+
 ### use_its
 This flag will enable use of ITS data for past resilience projects rather than
 Calmapper.
@@ -64,6 +67,7 @@ for angular tests to pass.  You can start with this, but later enable settings.
   "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
+  "upload_project_area": false,
   "use_its": false
 }
 ```
