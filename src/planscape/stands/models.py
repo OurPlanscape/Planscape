@@ -8,7 +8,7 @@ class StandSizeChoices(models.TextChoices):
     MEDIUM = "MEDIUM", "Medium"
     LARGE = "LARGE", "Large"
 
-HEX_LENGHT = {
+HEX_LENGTH = {
     StandSizeChoices.LARGE: 877.38267558,
     # FIXME: still need to calculate these below!
     StandSizeChoices.MEDIUM: 500,
