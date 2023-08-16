@@ -1,6 +1,5 @@
 import datetime
 import json
-from dumper import dump
 
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
@@ -437,7 +436,7 @@ class CreateScenarioTest(TransactionTestCase):
              'configuration': '{}',
              'name': 'test scenario'},
             content_type="application/json")
-       self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 400)
 
     #TODO: add more tests reflecting configurations.
 
