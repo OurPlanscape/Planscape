@@ -8,5 +8,6 @@
   "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
+  "upload_project_area": false,
   "use_its": false
 }
