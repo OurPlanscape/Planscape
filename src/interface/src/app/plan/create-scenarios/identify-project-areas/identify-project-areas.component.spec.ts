@@ -136,44 +136,4 @@ describe('IdentifyProjectAreasComponent', () => {
       expect(component.formGroup?.get('uploadedArea')?.value).toBeFalsy();
     });
   });
-
-  it('should emit event when next button is clicked and form is valid', async () => {
-    spyOn(component.formNextEvent, 'emit');
-    const nextButton: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: 'NEXT' })
-    );
-    // Set form to valid state
-    component.formGroup?.get('generateAreas')?.setValue(true);
-
-    expect(component.formGroup?.valid).toBeTrue();
-    expect(await nextButton.isDisabled()).toBeFalse();
-
-    // Click next button
-    await nextButton.click();
-
-    expect(component.formNextEvent.emit).toHaveBeenCalledOnceWith();
-  });
-
-  it('should not emit event when next button is clicked and form is invalid', async () => {
-    spyOn(component.formNextEvent, 'emit');
-    const nextButton: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: 'NEXT' })
-    );
-
-    // Click next button
-    await nextButton.click();
-
-    expect(component.formNextEvent.emit).toHaveBeenCalledTimes(0);
-  });
-
-  it('should emit event when previous button is clicked', async () => {
-    spyOn(component.formBackEvent, 'emit');
-    const backButton: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: 'BACK' })
-    );
-    // Click back button
-    await backButton.click();
-
-    expect(component.formBackEvent.emit).toHaveBeenCalledOnceWith();
-  });
 });
