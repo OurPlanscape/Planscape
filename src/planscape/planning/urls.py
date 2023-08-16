@@ -5,6 +5,8 @@ from planning.views import (create_plan, delete_plan, get_plan_by_id, list_plans
 
 app_name = 'planning'
 
+#TODO: Change these to more standardized id-driven APIs, e.g. scenarios/[id]
+
 urlpatterns = [
     # Plans / Planning Areas
     path('create_plan/', create_plan, name='create_plan'),
