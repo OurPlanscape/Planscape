@@ -1,4 +1,4 @@
-SELECT * FROM 
+SELECT * FROM
 create_stands(
 	ST_MakeEnvelope(
 		-2356881.4306262177415192,

@@ -246,8 +246,6 @@ RASTER_PIXEL_AREA = 0.300 * 0.300
 
 # This is the default CRS used when a geometry is missing one.
 DEFAULT_CRS = 4269
-# used for calculations in continental us
-CALCULATION_CRS = 5070
 
 # Caching; this improves loading times especially for the boundary app.
 CACHES = {
@@ -297,4 +295,3 @@ if SENTRY_DSN is not None:
     )
 
 DEFAULT_CONDITIONS_FILE = BASE_DIR / "config" / "conditions.json"
-HEX_LENGTH_200HA = 877.38267558
