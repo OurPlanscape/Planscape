@@ -34,8 +34,6 @@ class Condition(models.Model):
     # stored in the ConditionRaster table.
     raster_name: models.TextField = models.TextField(null=True)
 
-    table_name: models.CharField = models.CharField(null=True, max_length=120)
-
     # The type of condition, drawn from the ConditionScoreType enum defined in
     # base/condition_types.py (CURRENT, FUTURE, ADAPT, etc).
     condition_score_type: models.IntegerField = models.IntegerField(null=True)
@@ -44,6 +42,7 @@ class Condition(models.Model):
     # when condition_score_type = CURRENT and condition_level = METRIC, and is ignored
     # otherwise.
     is_raw: models.BooleanField = models.BooleanField(null=True)
+        
 
 
 class ConditionRaster(models.Model):
