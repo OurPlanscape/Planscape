@@ -352,8 +352,8 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
         # This automatically deletes ScenarioResult entries for the deleted Scenarios.
         scenarios.delete()
 
-        # We still report that the full set of plan IDs requested were deleted,
-        # since from the user's perspective, there are no plans with that ID after this
+        # We still report that the full set of scenario IDs requested were deleted,
+        # since from the user's perspective, there are no scenarios with that ID after this
         # call completes.
         response_data = {'id': scenario_ids}
 
