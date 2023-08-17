@@ -45,6 +45,4 @@ def register_condition_raster(
         
         return (False, "failed, unknow cause.")
     except Exception as ex:
-        print(ex)
-        breakpoint()
         return (False, f"failed {str(ex)}")
