@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  margin-bottom: 32px;
+  width: auto;
 
   mat-radio-group mat-radio-button {
     margin-bottom: 28px;
@@ -15,6 +15,41 @@
   mat-radio-group mat-radio-button:last-child {
     margin-bottom: 0px;
   }
+}
+
+.form-content {
+  margin-top: 10px;
+  border: 1px #a4aae0 solid;
+  border-radius: 10px;
+  display: inline-block;
+  height: auto;
+  width: auto;
+  box-shadow: 0px 3px 0px 0px #aeb0b8;
+  background-color: white;
+  margin-top: 10px;
+  border: 1px #a4aae0 solid;
+  border-radius: 10px;
+  display: inline-block;
+  height: auto;
+  width: auto;
+  padding-bottom: 5px;
+  box-shadow: 0px 3px 0px 0px #aeb0b8;
+  background-color: white;
+}
+
+.form-label {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  margin-bottom: 5px;
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+.top-label {
+  flex-direction: row;
+  display: inline-flex;
+  align-items: center;
 }
 
 .success-text {
@@ -32,4 +67,30 @@
 
 .flex-row {
   display: flex;
+}
+
+.flex-column {
+  display: flex;
+  margin-left: 20px;
+  flex-direction: column;
+}
+
+.form .mat-radio-group .mat-radio-button {
+  margin-bottom: 1px;
+}
+
+// Makes radio button blue (default is pink)
+::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
+  border-color: #3f51b5;
+}
+
+::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle,
+.mat-radio-button.mat-accent .mat-radio-ripple .mat-ripple-element:not(.mat-radio-persistent-ripple),
+.mat-radio-button.mat-accent.mat-radio-checked .mat-radio-persistent-ripple,
+.mat-radio-button.mat-accent:active .mat-radio-persistent-ripple {
+  background-color: #3f51b5;
+}
+
+::ng-deep .mat-radio-label {
+  width: fit-content;
 }
