@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from planscape.settings import CRS_FOR_RASTERS
+from django.conf import settings
 
 
 class BaseCondition(models.Model):
@@ -33,6 +33,8 @@ class Condition(models.Model):
     # The name of the raster, used for accessing the tiles of the raster data
     # stored in the ConditionRaster table.
     raster_name: models.TextField = models.TextField(null=True)
+
+    table_name: models.CharField = models.CharField(null=True, max_length=120)
 
     # The type of condition, drawn from the ConditionScoreType enum defined in
     # base/condition_types.py (CURRENT, FUTURE, ADAPT, etc).
@@ -69,4 +71,4 @@ class ConditionRaster(models.Model):
     name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.
-    raster = models.RasterField(null=True, srid=CRS_FOR_RASTERS)
+    raster = models.RasterField(null=True, srid=settings.CRS_FOR_RASTERS)
