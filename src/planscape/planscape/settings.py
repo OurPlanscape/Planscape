@@ -108,20 +108,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "planscape.wsgi.application"
 
-
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 PLANSCAPE_DATABASE_HOST = config("PLANSCAPE_DATABASE_HOST", default="localhost")
 PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pass")
-PLANSCAPE_PORT = config("PLANSCAPE_PORT", default=5432)
+PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
+PLANSCAPE_DATABASE_NAME = config("PLANSCAPE_DATABASE_NAME", default="planscape")
+PLANSCAPE_DATABASE_PORT = config("PLANSCAPE_PORT", default=5432)
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
         "HOST": PLANSCAPE_DATABASE_HOST,
-        "NAME": config("PLANSCAPE_DATABASE_NAME", default="planscape"),
-        "USER": config("PLANSCAPE_DATABASE_USER", default="planscape"),
+        "NAME": PLANSCAPE_DATABASE_NAME,
+        "USER": PLANSCAPE_DATABASE_USER,
         "PASSWORD": PLANSCAPE_DATABASE_PASSWORD,
-        "PORT": PLANSCAPE_PORT,
+        "PORT": PLANSCAPE_DATABASE_PORT,
         "TEST": {
             "NAME": "auto_test",
         },
@@ -294,4 +293,6 @@ if SENTRY_DSN is not None:
         environment=ENV,
     )
 
-DEFAULT_CONDITIONS_FILE = BASE_DIR / "config" / "conditions.json"
+DEFAULT_CONDITIONS_FILE = config("DEFAULT_CONDITIONS_FILE", BASE_DIR / "config" / "conditions.json")
+RASTER_ROOT = config("RASTER_ROOT", "/srv/gis/planscape")
+RASTER_TILE = config("RASTER_TILE", "32x32")
