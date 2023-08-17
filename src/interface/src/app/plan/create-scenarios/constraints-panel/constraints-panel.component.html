@@ -58,5 +58,18 @@
         </div>
       </div>
     </div>
+    <div class="constraints-content">
+      <div formGroupName="excludedAreasForm" class="flex-column">
+        <div class="top-label">
+          <label class="form-label">EXCLUDE AREAS</label>
+        </div>
+        <section class="area-selection">
+          <div class="checkbox-column">
+            <mat-checkbox [color]="'primary'" *ngFor="let item of excludedAreasOptions;" [formControlName]="item"
+              [value]="item">{{item}}</mat-checkbox>
+          </div>
+        </section>
+      </div>
+    </div>
   </form>
 </div>

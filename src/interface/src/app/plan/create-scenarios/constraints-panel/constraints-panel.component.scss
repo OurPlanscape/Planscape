@@ -1,3 +1,22 @@
+.area-selection {
+  columns: 2;
+  -webkit-columns: 2;
+  overflow: hidden;
+  margin-top: 10px;
+  gap: 10px;
+  margin-bottom: 20px;
+  margin-left: 30px;
+}
+
+.area-column {
+  display: inline-block;
+  flex-direction: column;
+}
+
+.checkbox-column {
+  max-width: 50%;
+}
+
 .constraints-panel {
   display: flex;
   flex-direction: column;
@@ -152,7 +171,7 @@
 
 .mat-button-toggle-group {
   width: fit-content;
-  margin-right:60px;
+  margin-right: 60px;
 
 }
 
@@ -165,5 +184,9 @@
 ::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
   line-height: 20px;
   top: 5px;
-  width:60px;
+  width: 60px;
+}
+
+.mat-grid-tile-content {
+  width: fit-content;
 }
