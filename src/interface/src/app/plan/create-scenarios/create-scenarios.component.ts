@@ -1,5 +1,5 @@
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -28,6 +28,7 @@ import {
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
 import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
+import features from '../../features/features.json'
 
 interface StepState {
   complete?: boolean;
@@ -38,6 +39,7 @@ interface StepState {
   selector: 'app-create-scenarios',
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
+  encapsulation: ViewEncapsulation.None,
   animations: [
     expandCollapsePanelTrigger,
     colorTransitionTrigger({
@@ -70,7 +72,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     weights: [0]
   }
   private readonly destroy$ = new Subject<void>();
-
+  project_area_upload_enabled = features.upload_project_area;
+  
   constructor(
     private fb: FormBuilder,
     private matSnackBar: MatSnackBar,
@@ -102,6 +105,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             maxSlope: ['', Validators.min(0)],
             // Maximum road distance
             maxRoadDistance: ['', Validators.min(0)],
+            // Stand Size selection 
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),

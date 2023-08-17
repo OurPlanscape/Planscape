@@ -7,6 +7,8 @@
           <app-set-priorities [plan$]="plan$" [formGroup]="formGroups[0]" [treatmentGoals$]="treatmentGoals | async"
             (changeConditionEvent)="changeCondition($event)">
           </app-set-priorities>
+          <app-identify-project-areas *ngIf="project_area_upload_enabled" [formGroup]="formGroups[2]">
+          </app-identify-project-areas>
           <app-constraints-panel [constraintsForm]="formGroups[1]"> </app-constraints-panel>
         </div>
       </mat-tab>
