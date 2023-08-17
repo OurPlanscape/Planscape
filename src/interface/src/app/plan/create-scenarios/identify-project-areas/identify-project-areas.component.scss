@@ -79,18 +79,6 @@
   margin-bottom: 1px;
 }
 
-// Makes radio button blue (default is pink)
-::ng-deep .mat-radio-button.mat-accent.mat-radio-checked .mat-radio-outer-circle {
-  border-color: #3f51b5;
-}
-
-::ng-deep .mat-radio-button.mat-accent .mat-radio-inner-circle,
-.mat-radio-button.mat-accent .mat-radio-ripple .mat-ripple-element:not(.mat-radio-persistent-ripple),
-.mat-radio-button.mat-accent.mat-radio-checked .mat-radio-persistent-ripple,
-.mat-radio-button.mat-accent:active .mat-radio-persistent-ripple {
-  background-color: #3f51b5;
-}
-
 ::ng-deep .mat-radio-label {
   width: fit-content;
 }
