@@ -17,7 +17,7 @@ class Command(BaseCommand):
             "--clear",
             default=True,
             action="store_true",
-            help="If set to false, the command will not remove previous raster data from each condition from the raster table."
+            help="If set to false, the command will not remove previous raster data from each condition from the raster table.",
         )
 
     def handle(self, *args, **options):
@@ -28,18 +28,24 @@ class Command(BaseCommand):
         else:
             conditions = Condition.objects.all()
 
-        results = list([self.handle_condition(condition, clear) for condition in conditions])
+        results = list(
+            [self.handle_condition(condition, clear) for condition in conditions]
+        )
         total = len(results)
         success = len([result for result in results if result[0]])
         failure = total - success
 
-        self.stdout.write(f"Condition Rasters Loaded: {success}.\n"
-                          f"Condition Rasters Failed: {failure}")
-        
+        self.stdout.write(
+            f"Condition Rasters Loaded: {success}.\n"
+            f"Condition Rasters Failed: {failure}"
+        )
+
     def handle_condition(self, condition, clear=True):
         result = register_condition_raster(condition, clear=clear)
-        message = f"[OK] Condition Raster Loaded: {condition.pk}.\n" if result[0] else f"[FAIL] Condition Raster Failed: {result[1]}"
+        message = (
+            f"[OK] Condition Raster Loaded: {condition.pk}.\n"
+            if result[0]
+            else f"[FAIL] Condition Raster Failed: {result[1]}"
+        )
         self.stdout.write(message)
         return result
-        
-
