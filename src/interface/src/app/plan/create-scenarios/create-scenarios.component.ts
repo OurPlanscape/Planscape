@@ -71,9 +71,12 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     priorities: [''],
     weights: [0]
   }
+  excludedAreasOptions: Array<string> = ["Private Land", "National Forests and Parks",
+    "Wilderness Area", "Tribal Lands"];
+
   private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
-  
+
   constructor(
     private fb: FormBuilder,
     private matSnackBar: MatSnackBar,
@@ -83,6 +86,11 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.treatmentGoals = this.planService.treatmentGoalsConfig$.pipe(
       takeUntil(this.destroy$)
     );
+
+    var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
+    this.excludedAreasOptions.forEach((area: string) => {
+      excludedAreasChosen[area] = [false, Validators.required];
+    });
     // Initialize empty form
     this.formGroups = [
       // Step 1: Select priorities
@@ -109,6 +117,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
+          excludedAreasForm: this.fb.group(excludedAreasChosen),
           excludeAreasByDegrees: [true],
           excludeAreasByDistance: [true],
         },

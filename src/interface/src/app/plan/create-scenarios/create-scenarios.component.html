@@ -9,7 +9,7 @@
           </app-set-priorities>
           <app-identify-project-areas *ngIf="project_area_upload_enabled" [formGroup]="formGroups[2]">
           </app-identify-project-areas>
-          <app-constraints-panel [constraintsForm]="formGroups[1]"> </app-constraints-panel>
+          <app-constraints-panel [constraintsForm]="formGroups[1]" [excludedAreasOptions]="excludedAreasOptions"> </app-constraints-panel>
         </div>
       </mat-tab>
       <mat-tab label="Outcome">
