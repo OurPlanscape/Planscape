@@ -37,6 +37,12 @@ describe('ConstraintsPanelComponent', () => {
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
 
+    var excludedAreasOptions = ["Private Land", "National Forests and Parks",
+      "Wilderness Area", "Tribal Lands"];
+    var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
+    excludedAreasOptions.forEach((area: string) => {
+      excludedAreasChosen[area] = [false, Validators.required];
+    });
     const fb = fixture.componentRef.injector.get(FormBuilder);
     component.constraintsForm = fb.group({
       treatmentForm: fb.group({
@@ -56,6 +62,7 @@ describe('ConstraintsPanelComponent', () => {
         maxRoadDistance: ['', Validators.min(0)],
         standSize: ['Large', Validators.required],
       }),
+      excludedAreasForm: fb.group(excludedAreasChosen),
       excludeAreasByDegrees: [false],
       excludeAreasByDistance: [false],
       excludeSlope: [''],
