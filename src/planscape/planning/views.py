@@ -66,8 +66,18 @@ def _serialize_plan(plan: PlanningArea, add_geometry: bool) -> dict:
 
 #### PLAN(NING AREA) Handlers ####
 
-# Requires a logged in user (from the session), a plan name, a region name, and a geometry.
 def create_plan(request: HttpRequest) -> HttpResponse:
+    """
+    Creates a planning area (aka plan), given a name, region, and an optional geometry.
+    Requires a logged in user.
+
+    Returns: the newly inserted planning area's primary key (int).
+
+    Required params:
+      name (str): User-provided name of the planning area.
+      region_name (str): The region name, in user-facing form, e.g. "Sierra Nevada"
+      geometry (JSON str): The planning area shape, in GEOGeometry-compatible JSON.
+    """
     try:
         # Check that the user is logged in.
         user = _get_user(request)
@@ -107,10 +117,18 @@ def create_plan(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in create: " + str(e))
 
 
-# Supports deleting a whole list of plans.
-# Plans are deleteable only by their owners.
-# PlanIDs not belonging to the user are silently not deleted.
 def delete_plan(request: HttpRequest) -> HttpResponse:
+    """
+    Deletes a planning area or areas.
+    Requires a logged in user.  Users can delete only their owned plans.
+    Deletion of a plans not owned by the user will not generate an error but will not delete anything.
+    Deletion attempts of nonexistent plans will not generate an error but will also not delete anything.
+
+    Returns: The list of IDs entered, including those IDs that failed to matched a user-owned plan.
+
+    Required params:
+      id (int): ID of the planning area to delete, or a list of IDs to delete.
+    """
     try:
         # Check that the user is logged in.
         user = _get_user(request)
@@ -150,6 +168,15 @@ def delete_plan(request: HttpRequest) -> HttpResponse:
 
 # User can see only their own plans.
 def get_plan_by_id(request: HttpRequest) -> HttpResponse:
+    """
+    Retrieves a planning area by ID.
+    Requires a logged in user.  Users can see only their owned plans.
+
+    Returns: The planning area in JSON form.
+
+    Required params:
+      id (int): ID of the planning area to retrieve.
+    """
     try:
         user = _get_user(request)
         if user is None:
@@ -166,6 +193,14 @@ def get_plan_by_id(request: HttpRequest) -> HttpResponse:
 
 # No Params expected, since we're always using the logged in user.
 def list_plans(request: HttpRequest) -> HttpResponse:
+    """
+    Retrieves all planning areas for a user.
+    Requires a logged in user.  Users can see only their owned plans.
+
+    Returns: A list of planning areas in JSON form.
+
+    Required params: none
+    """
     try:
         user = _get_user(request)
         if user is None:
@@ -201,6 +236,15 @@ def _serialize_scenario(scenario: Scenario, scenario_result: ScenarioResult | No
 # Scenario can be retrieved by a user's plan.
 # This also can return the result as well, optionally.
 def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
+    """
+    Retrieves a scenario by its ID.
+    Requires a logged in user.  Users can see only scenarios belonging to their own plans.
+
+    Returns: A scenario in JSON form.
+
+    Required params:
+      id (int): The scenario ID to be retrieved.
+    """
     try:
         user = _get_user(request)
         if user is None:
@@ -210,7 +254,8 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
 
         scenario = Scenario.objects.select_related('planning_area__user').get(id=request.GET['id'])
         if (scenario.planning_area.user.pk != user.pk):
-            raise ValueError("Scenario not found.")
+            # This matches the same error string if the planning area doesn't exist in the DB for any user.
+            raise ValueError("Scenario matching query does not exist.")
 
         scenario_result = None
         if show_results:
@@ -222,11 +267,18 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-# Requires a logged in user, a plan_id, and a configuration for the new scenario.
-# This creates both the scenario and a corresponding ScenarioResult entry for that scenario.
-# Note that the ScenarioResult is by design the default one; you cannot insert a new ScenarioResult with
-# custom values.
 def create_scenario(request: HttpRequest) -> HttpResponse:
+    """
+    Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
+    Requires a logged in user, as a scenario must be associated with a user's planning area.
+
+    Returns: the ID of the newly inserted Scenario.
+
+    Required params:
+      name (str): The user-provided name of the Scenario.
+      planning_area (int): The ID of the planning area that will recieve the new Scenario.
+      configuration (str): A JSON string representing the scenario configuration (e.g. query parameters, weights).
+    """
     try:
         # Check that the user is logged in.
         user = _get_user(request)
@@ -239,7 +291,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         serializer = ScenarioSerializer(data=body)
         serializer.is_valid(raise_exception=True)
 
-        # Ensure that we have a viable plan owned by the user.
+        # Ensure that we have a viable plan owned by the user.  Note that this gives a slightly different
+        # error response for a nonowned plan vs. when given a nonexistent plan.
         plan = get_object_or_404(user.planning_areas, id=body['planning_area'])
 
         # TODO: Parse configuration field into further components.
@@ -257,17 +310,35 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-#TODO
+#TODO - when we want to support multiple scenario results for the same scenario:
+#def create_result_for_scenario(request: HttpRequest) -> HttpResponse:
 #def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
 
 # TODO: add more things to update other than state
 # Unlike other routines, this does not require a user login context, as it is expected to be called
 # by the EP.
-# Can update a state only such that pending -> running | failure, and running -> success | failure
-# Throws an error if no scenario owned by the user can be found with the desired ID.
 #
 # TODO: require credential from EP so that random people cannot call this endpoint.
 def update_scenario_result(request: HttpRequest) -> HttpResponse:
+    """
+    Updates a ScenarioResult.
+    Requires a logged in user, as a scenario must be associated with a user's planning area.
+    Throws an error if no scenario/ScenarioResult owned by the user can be found with the desired ID.
+    This does not modify the Scenario object itself.
+    A ScenarioResult's status can be updated only in the following directions:
+       PENDING -> RUNNING | FAILURE
+       RUNNING -> SUCCESS | FAILURE
+
+    Returns: the ID of the Scenario whose ScenarioResult was updated.
+
+    Required params:
+      scenario_id (int): The scenario ID whose ScenarioResult is meant to be updated.
+
+    Optional params:
+      status (ScenarioResultStatus): The new status of the ScenarioResult.
+      result (JSON str): Details of the run.
+      run_details (JSON str): Even more verbose details of the run.
+    """
     try:
         body = json.loads(request.body)
         scenario_id = body.get('scenario_id')
@@ -306,6 +377,16 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
 # This returns the empty set if given a plan that has no scenarios,
 # a plan that isn't owned by the user, or a planID that doesn't exist.
 def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
+    """
+    Lists all Scenarios for a Plan.
+    Requires a logged in user, as a scenario must be associated with a user's planning area.
+
+    Returns: a list of the scenarios for the user.  Can return the empty list.  Will return an empty list
+      if given a plan that has no scenarios, a plan that isn't owned by the user, or a plan ID that doesn't exist.
+
+    Required params:
+      planning_area (int): The planning area ID whose scenarios to retrieve.
+    """
     try:
         # Check that the user is logged in.
         user = _get_user(request)
@@ -328,6 +409,16 @@ def list_scenarios_for_plan(request: HttpRequest) -> HttpResponse:
 # Deletion attempts for someone else's scenario will silently do nothing with those scenarios.
 # Deletion attempts for a nonexistent scenario silently does nothing.
 def delete_scenario(request: HttpRequest) -> HttpResponse:
+    """
+    Deletes a scenario or list of scenarios for a plan owned by the user.
+    Requires a logged in user, as a scenario must be associated with a user's planning area.
+
+    Returns: the list of IDs to be deleted.  Scenarios that do not exist or do not belong to a plan that
+      is owned by the user will appear in the returned list.
+
+    Required params:
+      scenario_id (int): The ID of the scenario (or list of IDs) to delete.
+    """
     try:
         # Check that the user is logged in.
         user = _get_user(request)
