@@ -71,3 +71,5 @@ class ConditionRaster(models.Model):
 
     # A tile in the raster.
     raster = models.RasterField(null=True, srid=settings.CRS_FOR_RASTERS)
+
+    condition = models.ForeignKey(Condition, null=True, on_delete=models.CASCADE, related_name="raster_tiles",)
