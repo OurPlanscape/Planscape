@@ -4,7 +4,7 @@ from conditions.registry import register_condition_raster
 
 
 class Command(BaseCommand):
-    help = "Loads conditions from 'conditions.json' into the database."
+    help = "Loads rasters based on conditions existing in the database."
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -17,7 +17,7 @@ class Command(BaseCommand):
             "--clear",
             default=True,
             action="store_true",
-            help="If set, it will remove the previous raster data from the raster table before loading the new ones."
+            help="If set to false, the command will not remove previous raster data from each condition from the raster table."
         )
 
     def handle(self, *args, **options):
