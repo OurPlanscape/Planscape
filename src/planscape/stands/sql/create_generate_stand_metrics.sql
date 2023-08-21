@@ -23,32 +23,35 @@ BEGIN
     );
 
     FOR stand IN
-        SELECT * FROM stands_stand
+        SELECT * FROM stands_stand ss
         WHERE
             ss.geometry && raster_geometry AND
             ST_Intersects(ss.geometry, raster_geometry)
     LOOP
         stats := compute_stand_stats(stand.id, _condition_id);
 
-        insert into stands_standmetric (
-            created_at,
-            min,
-            avg,
-            max,
-            sum,
-            count,
-            condition_id,
-            stand_id
-        ) values (
-            my_timestamp,
-            stats.min,
-            stats.avg,
-            stats.max,
-            stats.sum,
-            stats.count,
-            stats.condition_id,
-            stats.stand_id
-        );
+        IF stats.count > 0 THEN
+            insert into stands_standmetric (
+                created_at,
+                min,
+                avg,
+                max,
+                sum,
+                count,
+                condition_id,
+                stand_id
+            ) values (
+                my_timestamp,
+                stats.min,
+                stats.avg,
+                stats.max,
+                stats.sum,
+                stats.count,
+                stats.condition_id,
+                stats.stand_id
+            );
+        END IF;
     END LOOP;
 END
-$$ LANGUAGE plpgsql;
+$$
+LANGUAGE plpgsql;
