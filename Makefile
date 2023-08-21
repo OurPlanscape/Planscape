@@ -36,8 +36,11 @@ migrate:
 load-conditions:
 	cd src/planscape && python3 manage.py load_conditions
 
+load-metrics:
+	cd src/planscape && python3 manage.py load_metrics
+
 load-rasters:
-	cd src/planscape && python manage.py load_rasters
+	cd src/planscape && python3 manage.py load_rasters
 
 deploy-backend: migrate load-conditions restart
 
