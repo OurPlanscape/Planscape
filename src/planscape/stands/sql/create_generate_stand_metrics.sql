@@ -22,14 +22,12 @@ BEGIN
 	
 
 	FOR stand IN
-		SELECT
-            *
-        FROM stands_stand
+		SELECT * FROM stands_stand
         WHERE 
             ss.geometry && raster_geometry AND
             ST_Intersects(ss.geometry, raster_geometry)
 	LOOP
-		stats := compute_stand_stats(stand.id, _condition_id);
+        stats := compute_stand_stats(stand.id, _condition_id);
 
         insert into stands_standmetric (
             created_at,
@@ -50,6 +48,6 @@ BEGIN
             stats.condition_id,
             stats.stand_id
         );
-	end loop;
-end
+	END LOOP;
+END
 $$ language plpgsql;
