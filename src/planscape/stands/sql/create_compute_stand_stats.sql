@@ -12,7 +12,7 @@ CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id INT, condition_id INT)
   RETURNS stand_stats AS $$
 
     WITH stand AS (
-      SELECT 
+      SELECT
         id,
         ST_Transform(ss.geometry, 3857) AS geometry
       FROM stands_stand ss
@@ -21,12 +21,12 @@ CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id INT, condition_id INT)
     ),
 
     stats AS (
-      SELECT 
+      SELECT
         row_number() OVER (ORDER BY s.id) AS id,
         s.id AS "stand_id",
         (ST_SummaryStats(ST_Clip(cc.raster, s.geometry))).*
       FROM conditions_conditionraster cc, stand s
-      WHERE 
+      WHERE
         cc.condition_id = condition_id AND
         s.geometry && cc.raster AND
         ST_Intersects(s.geometry, cc.raster)
@@ -39,7 +39,7 @@ CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id INT, condition_id INT)
       sum(ss.mean * ss.count)/sum(ss.count) AS avg,
       sum(ss.sum) AS sum,
       sum(ss.count) AS count
-    FROM 
+    FROM
       stats ss
     GROUP BY
       stand_id
