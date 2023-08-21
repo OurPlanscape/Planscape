@@ -17,7 +17,7 @@ class Command(BaseCommand):
             "--clear",
             default=True,
             action="store_true",
-            help="If set to false, the command will not remove previous raster data from each condition from the raster table.",
+            help="If set to false, the command will not remove previous metrics data from each condition from the raster table.",
         )
 
     def handle(self, *args, **options):
@@ -46,10 +46,10 @@ class Command(BaseCommand):
                     "SELECT * FROM generate_stand_metrics(%s, %s)",
                     [condition.pk, clear],
                 )
-                self.stdout.write(f"Generated metrics for {condition.pk}")
+                self.stdout.write(f"[OK] Generated metrics for {condition.pk}")
                 return (True, condition)
         except Exception as ex:
             self.stderr.write(
-                f"Something went wrong while generating stand metrics {str(ex)}."
+                f"[FAIL] Something went wrong while generating stand metrics {str(ex)}."
             )
             return (False, condition)
