@@ -8,7 +8,7 @@ CREATE TYPE stand_stats AS (
     count        BIGINT
 );
 
-CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id INT, condition_id INT)
+CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id BIGINT, condition_id INT)
   RETURNS stand_stats AS $$
 
     WITH stand AS (
