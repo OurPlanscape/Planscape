@@ -1,10 +1,10 @@
 CREATE TYPE stand_stats AS (
     stand_id     BIGINT,
     condition_id BIGINT,
-    min          DOUBLE precision,
-    avg          DOUBLE precision,
-    max          DOUBLE precision,
-    SUM          double precision,
+    min          DOUBLE PRECISION,
+    avg          DOUBLE PRECISION,
+    max          DOUBLE PRECISION,
+    SUM          DOUBLE PRECISION,
     count        BIGINT
 );
 
