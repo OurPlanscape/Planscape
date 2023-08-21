@@ -466,7 +466,7 @@
                   "data_provider": "Rocky Mountain Research Station,",
                   "data_units": "Count of Fires",
                   "max_value": 3,
-                  "metric_name": "wildfire_ignitions_nonhuman_caused)",
+                  "metric_name": "wildfire_ignitions_nonhuman_caused",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",

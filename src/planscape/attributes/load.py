@@ -19,6 +19,7 @@ from planscape import settings
 # Warning: it's possible for multiple rasters with the same name to be loaded 
 # to the DB: before re-loading a raster, remember to delete the previous 
 # version.
+# DEPRECATED
 def _load_raster(raster_path):
     cmds = 'export PGPASSWORD=' + settings.PLANSCAPE_DATABASE_PASSWORD + \
         '; raster2pgsql -s ' + str(settings.CRS_FOR_RASTERS) + \
@@ -26,7 +27,7 @@ def _load_raster(raster_path):
         raster_path + \
         ' public.attributes_attributeraster | psql -U planscape -d planscape -h ' \
         + settings.PLANSCAPE_DATABASE_HOST + \
-        ' -p ' + str(settings.PLANSCAPE_PORT)
+        ' -p ' + str(settings.PLANSCAPE_DATABASE_PORT)
 
     subprocess.call(cmds, shell=True)
 
