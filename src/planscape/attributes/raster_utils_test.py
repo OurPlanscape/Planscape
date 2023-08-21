@@ -68,7 +68,7 @@ class AttributePixelsTest(RasterRetrievalTestCase):
         with self.assertRaises(Exception) as context:
             get_attribute_values_from_raster(geo, "foo")
         self.assertEqual(
-            str(context.exception), "geometry SRID is 4269 (expected 9822)")
+            str(context.exception), "geometry SRID is 4269 (expected 3857)")
 
     def test_returns_pixel_values_for_no_intersection(self):
         geo = RasterRetrievalTestCase._create_geo(self, 7, 10, 0, 1)

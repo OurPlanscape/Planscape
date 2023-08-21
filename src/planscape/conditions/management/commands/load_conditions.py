@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import transaction
 from base.condition_types import ConditionLevel, ConditionScoreType
-from conditions.models import BaseCondition, Condition, ConditionRaster
+from conditions.models import BaseCondition, Condition
 
 
 class Command(BaseCommand):
@@ -37,8 +37,14 @@ class Command(BaseCommand):
             with transaction.atomic():
                 metrics = self.get_metrics(conditions["regions"])
 
-                for metric in metrics:
-                    self.process_metric(metric)
+                conditions = list([self.process_metric(metric) for metric in metrics])
+                total = len(conditions)
+                success = len([condition for condition in conditions if condition])
+                failure = total - success
+
+                self.stdout.write(
+                    f"Conditions Loaded: {success}.\n" f"Conditions Failed: {failure}"
+                )
 
                 if options["dry_run"]:
                     transaction.set_rollback(True)
@@ -66,17 +72,20 @@ class Command(BaseCommand):
             region_name=metric["region_name"],
             condition_level=ConditionLevel.METRIC,
         )
+        # TODO: if we ever start using normalized metrics again we need to change this
+        # to read from the conditions.json file
+        score_type = ConditionScoreType.CURRENT
+        raw = True
+
+        raster_name = metric["raw_data_download_path"]
 
         condition, _created = Condition.objects.update_or_create(
             condition_dataset=base_condition,
-            raster_name=metric["raw_data_download_path"],
-            condition_score_type=ConditionScoreType.CURRENT,
-            is_raw=True,
+            raster_name=raster_name,
+            condition_score_type=score_type,
+            is_raw=raw,
         )
 
-        # we are skipping registering raster datasources for now
-        self.stdout.write(
-            f"{metric['region_name']}:{metric['metric_name']}\n"
-            f"Base Condition ID: {base_condition.id}\n"
-            f"Condition ID: {condition.id}\n"
-        )
+        self.stdout.write(f"[OK] {metric['region_name']}:{metric['metric_name']}")
+
+        return condition
