@@ -5,19 +5,11 @@ CREATE TYPE stand_stats AS (
     avg          DOUBLE precision,
     max          DOUBLE precision,
     SUM          double precision,
-    count        double precision
+    count        BIGINT
 );
 
 CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id INT, condition_id INT)
-  RETURNS TABLE (
-  	stand_id 	     integer,
-  	condition_id   integer,
-    min            float,
-    avg            float,
-    max            float,
-    sum            float,
-    count          integer
-  ) AS $$
+  RETURNS stand_stats AS $$
 
     WITH stand AS (
       SELECT 

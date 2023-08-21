@@ -5,8 +5,12 @@ from django.db import migrations
 from utils.file_utils import read_file
 
 
-UP_MIGRATION = read_file("stands/sql/create_compute_stand_stats.sql")
-DOWN_MIGRATION = "DROP FUNCTION compute_stand_stats;"
+CREATE_COMPUTE_STANDS = read_file("stands/sql/create_compute_stand_stats.sql")
+CREATE_GENERATE_STAND_METRICS = read_file(
+    "stands/sql/create_generate_stand_metrics.sql"
+)
+DROP_COMPUTE_STANDS = "DROP FUNCTION compute_stand_stats;"
+DROP_GENERATE_STAND_METRICS = "DROP FUNCTION generate_stand_metrics;"
 
 
 class Migration(migrations.Migration):
@@ -14,4 +18,7 @@ class Migration(migrations.Migration):
         ("stands", "0003_create_200ha_stands"),
     ]
 
-    operations = [migrations.RunSQL(UP_MIGRATION, DOWN_MIGRATION)]
+    operations = [
+        migrations.RunSQL(CREATE_COMPUTE_STANDS, DROP_COMPUTE_STANDS),
+        migrations.RunSQL(CREATE_GENERATE_STAND_METRICS, DROP_GENERATE_STAND_METRICS),
+    ]
