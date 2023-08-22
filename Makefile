@@ -33,7 +33,16 @@ deploy-frontend: compile-angular
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
 
-deploy-backend: migrate restart
+load-conditions:
+	cd src/planscape && python3 manage.py load_conditions
+
+load-metrics:
+	cd src/planscape && python3 manage.py load_metrics
+
+load-rasters:
+	cd src/planscape && python3 manage.py load_rasters
+
+deploy-backend: migrate load-conditions restart
 
 deploy-all: deploy-backend deploy-frontend
 
