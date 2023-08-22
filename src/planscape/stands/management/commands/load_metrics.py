@@ -46,10 +46,12 @@ class Command(BaseCommand):
                     "SELECT * FROM generate_stand_metrics(%s, %s)",
                     [condition.pk, clear],
                 )
-                self.stdout.write(f"[OK] Generated metrics for {condition.pk}")
+                self.stdout.write(
+                    f"[OK] Generated metrics for {condition.pk} {condition.raster_name}"
+                )
                 return (True, condition)
         except Exception as ex:
             self.stderr.write(
-                f"[FAIL] Something went wrong while generating stand metrics {str(ex)}."
+                f"[FAIL] Something went wrong while generating stand metrics for {condition.pk} {condition.raster_name}\n{str(ex)}."
             )
             return (False, condition)
