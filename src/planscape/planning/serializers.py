@@ -1,6 +1,6 @@
 from conditions.models import BaseCondition, Condition
 from rest_framework import serializers
-from rest_framework.serializers import (IntegerField, JSONField)
+from rest_framework.serializers import (CharField, IntegerField, JSONField)
 from rest_framework_gis import serializers as gis_serializers
 
 from planning.models import (PlanningArea, Scenario, ScenarioResult)
@@ -9,15 +9,16 @@ from planning.models import (PlanningArea, Scenario, ScenarioResult)
 
 class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     class Meta:
-        fields = ("id", "user", "name", "region_name")
+        fields = ("id", "user", "name", "notes", "region_name")
         model = PlanningArea
         geo_field = "geometry"
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
     configuration = JSONField()
+    notes = CharField(required = False)
     class Meta:
-        fields = ("id", "planning_area", "name", "configuration")
+        fields = ("id", "planning_area", "name", "notes", "configuration")
         model = Scenario
 
 class ScenarioResultSerializer(serializers.ModelSerializer):
