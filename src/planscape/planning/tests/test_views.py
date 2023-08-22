@@ -1,6 +1,5 @@
 import datetime
 import json
-from dumper import dump
 
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
