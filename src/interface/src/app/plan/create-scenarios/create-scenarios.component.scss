@@ -69,3 +69,13 @@
 ::ng-deep .mat-tab-body-content {
   overflow-x: hidden;
 }
+
+.flex-row {
+  align-items: center;
+  display: flex;
+}
+
+.gap-12 {
+  gap: 12px;
+  margin-top:30px;
+}

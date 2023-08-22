@@ -1,14 +1,17 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { PlanService, PlanState } from 'src/app/services';
-import { Region, TreatmentGoalConfig } from 'src/app/types';
+import { Region, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
 
 // TODO Update commented tests once all new configs are in 
 
@@ -17,6 +20,12 @@ describe('CreateScenariosComponent', () => {
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanService: PlanService;
   let fakeGeoJson: GeoJSON.GeoJSON;
+  let loader: HarnessLoader;
+  let defaultSelectedQuestion: TreatmentQuestionConfig = {
+    question_text: "",
+    priorities: [''],
+    weights: [0]
+  }
 
   beforeEach(async () => {
     fakeGeoJson = {
@@ -80,7 +89,7 @@ describe('CreateScenariosComponent', () => {
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
-
+    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
@@ -98,15 +107,51 @@ describe('CreateScenariosComponent', () => {
     });
   });
 
-  // it('should not update project if form is invalid', () => {
-  //   expect(fakePlanService.updateProject).toHaveBeenCalledTimes(0);
 
-  //   component.formGroups[0].markAsDirty();
-  //   component.formGroups[0].get('priorities')?.setValue(['test']);
-  //   component.stepper?.next();
+  it('should emit create scenario event', async () => {
+    spyOn(component, 'createScenarioAndProjectAreas');
+    component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
+    component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
+    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
+    fixture.detectChanges();
 
-  //   expect(fakePlanService.updateProject).toHaveBeenCalledTimes(1);
-  // });
+    const buttonHarness: MatButtonHarness = await loader.getHarness(
+      MatButtonHarness.with({ text: /GENERATE/ })
+    );
+
+    // Click on "GENERATE SCENARIO" button
+    await buttonHarness.click();
+
+    expect(component.createScenarioAndProjectAreas).toHaveBeenCalled();
+
+  });
+
+  it('should disable Generate button if form is invalid', async () => {
+    const buttonHarness: MatButtonHarness = await loader.getHarness(
+      MatButtonHarness.with({ text: /GENERATE/ })
+    );
+    component.formGroups[0].markAsDirty();
+    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(-1);
+    fixture.detectChanges();
+
+    // Click on "GENERATE SCENARIO" button
+    await buttonHarness.click();
+
+    expect(await buttonHarness.isDisabled()).toBeTrue();
+  });
+
+  it('should enable Generate button if form is valid', async () => {
+    const buttonHarness: MatButtonHarness = await loader.getHarness(
+      MatButtonHarness.with({ text: /GENERATE/ })
+    );
+    component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
+    component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
+    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
+    component.generatingScenario = false;
+    fixture.detectChanges();
+
+    expect(await buttonHarness.isDisabled()).toBeFalse();
+  });
 
   it('update plan state when "identify project areas" form inputs change', () => {
     const generateAreas = component.formGroups[2].get('generateAreas');

@@ -59,12 +59,12 @@ interface StepState {
 export class CreateScenariosComponent implements OnInit, OnDestroy {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
 
+  generatingScenario: boolean = false;
   scenarioConfigId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
 
   formGroups: FormGroup[];
   panelExpanded: boolean = true;
-  stepStates: StepState[];
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     question_text: "",
@@ -95,13 +95,11 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.formGroups = [
       // Step 1: Select priorities
       this.fb.group({
-        selectedQuestion: [this.defaultSelectedQuestion],
+        selectedQuestion: ['', Validators.required],
       }),
       // Step 2: Set constraints
       this.fb.group(
         {
-          treatmentForm: this.fb.group({
-          }),
           budgetForm: this.fb.group({
             // Estimated cost in $ per acre
             estimatedCost: ['', Validators.min(0)],
@@ -110,9 +108,11 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
           }),
           physicalConstraintForm: this.fb.group({
             // Maximum slope allowed for planning area
-            maxSlope: ['', Validators.min(0)],
-            // Maximum road distance
-            maxRoadDistance: ['', Validators.min(0)],
+            maxSlope: ['', 
+              [Validators.min(0), Validators.max(100), Validators.required]],
+            // Minimum distance from road allowed for planning area
+            maxRoadDistance: ['', Validators.compose(
+              [Validators.min(0), Validators.required])],
             // Stand Size selection 
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
@@ -125,27 +125,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       ),
       // Step 3: Identify project areas
       this.fb.group({
-        generateAreas: ['', Validators.required],
+        // TODO Use flag to set required validator
+        generateAreas: [''],
         uploadedArea: [''],
       }),
-      // Step 4: Generate scenarios
-      this.fb.group({
-        priorityWeightsForm: this.fb.group({}),
-        areaPercent: [
-          10,
-          [Validators.required, Validators.min(10), Validators.max(40)],
-        ],
-      }),
-    ];
-
-    // Initialize step states (for showing preview text)
-    this.stepStates = [
-      {
-        opened: true,
-      },
-      {},
-      {},
-      {},
     ];
   }
 
@@ -187,9 +170,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     constraintsForm: AbstractControl
   ): ValidationErrors | null {
     // Only one of budget or treatment area constraints is required.
-    const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
-    const maxArea = constraintsForm.get('treatmentForm.maxArea');
-    const valid = !!estimatedCost?.value || !!maxArea?.value;
+
+    // TODO Add maxArea input and make required, this extra validator may be deprecated
+    // const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
+    // const maxArea = constraintsForm.get('treatmentForm.maxArea');
+     const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
+     const maxDistance = constraintsForm.get('physicalConstraintForm.maxRoadDistance');
+    const valid = !!maxSlope?.value || !!maxDistance?.value;
     return valid ? null : { budgetOrAreaRequired: true };
   }
 
@@ -231,21 +218,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       });
 
     });
-  }
-
-  selectedStepChanged(event: StepperSelectionEvent): void {
-    this.stepStates[event.selectedIndex].opened = true;
-    // Update scenario config in backend
-    if (
-      this.scenarioConfigId &&
-      this.formGroups.every(
-        (formGroup) => formGroup.valid || formGroup.pristine
-      )
-    ) {
-      this.planService
-        .updateProject(this.formValueToProjectConfig())
-        .subscribe();
-    }
   }
 
   private formValueToProjectConfig(): ProjectConfig {
@@ -294,6 +266,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   /** Creates the scenario and the uploaded project areas, if provided. */
   createScenarioAndProjectAreas(): void {
+    this.generatingScenario = true;
     this.createUploadedProjectAreas()
       .pipe(
         take(1),
@@ -302,20 +275,22 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             this.formValueToProjectConfig()
           );
         }),
-        catchError(() => {
-          this.matSnackBar.open(
-            '[Error] Project area shapefile should only include polygons or multipolygons',
-            'Dismiss',
-            {
-              duration: 10000,
-              panelClass: ['snackbar-error'],
-              verticalPosition: 'top',
-            }
-          );
-          return throwError(
-            () => new Error('Problem creating uploaded project areas')
-          );
-        })
+
+        // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
+        // catchError(() => {
+        //   this.matSnackBar.open(
+        //     '[Error] Project area shapefile should only include polygons or multipolygons',
+        //     'Dismiss',
+        //     {
+        //       duration: 10000,
+        //       panelClass: ['snackbar-error'],
+        //       verticalPosition: 'top',
+        //     }
+        //   );
+        //   return throwError(
+        //     () => new Error('Problem creating uploaded project areas')
+        //   );
+        // })
       )
       .subscribe(() => {
         // Navigate to scenario confirmation page
