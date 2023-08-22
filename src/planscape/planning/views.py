@@ -68,15 +68,20 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
 
 def create_planning_area(request: HttpRequest) -> HttpResponse:
     """
-    Creates a planning area (aka plan), given a name, region, and an optional geometry.
+    Creates a planning area (aka plan), given a name, region, an optional geometry,
+    and an optional notes string.
     Requires a logged in user.
 
-    Returns: the newly inserted planning area's primary key (int).
+    Returns: id: the newly inserted planning area's primary key (int)
 
     Required params:
       name (str): User-provided name of the planning area.
       region_name (str): The region name, in user-facing form, e.g. "Sierra Nevada"
       geometry (JSON str): The planning area shape, in GEOGeometry-compatible JSON.
+         This can be '{}', but the param does need to be specified.
+
+    Optional params:
+      notes (str): An optional note string for this planning area.
     """
     try:
         # Check that the user is logged in.
@@ -110,8 +115,13 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
 
         # Create the planning area
         planning_area = PlanningArea.objects.create(
-            user=user, name=name, region_name=region_name, geometry=geometry)
+            user=user, name=name, region_name=region_name, geometry=geometry, notes=body.get('notes', None))
         planning_area.save()
+
+        return HttpResponse(
+            json.dumps({'id': planning_area.pk}),
+            content_type="application/json")
+        
         return HttpResponse(str(planning_area.pk))
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
@@ -127,7 +137,7 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
     Returns: The list of IDs entered, including those IDs that failed to matched a user-owned planning area.
 
     Required params:
-      id (int): ID of the planning area to delete, or a list of IDs to delete.
+      id (int): JSON: {id: the ID of the planning area to delete, or a list of IDs to delete.}
     """
     try:
         # Check that the user is logged in.
@@ -165,7 +175,54 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
-# User can see only their own planning areas.
+def update_planning_area(request: HttpRequest) -> HttpResponse:
+    """
+    Updates a planning area's name or notes.  To date, these are the only fields that
+    can be modified after a planning area is created.  This can be also used to clear
+    the notes field, but the name needs to be defined always.
+
+    Calling this without anything to update will not throw an error.
+
+    Requires a logged in user.  Users can modify only their owned planning_areas.
+
+    Returns: id: The planning area's ID, even if nothing needed updating.
+
+    Required params:
+      id (int): ID of the planning area to retrieve.
+    """
+    try:
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        body = json.loads(request.body)
+        planning_area_id = body.get('id', None)
+        planning_area = get_object_or_404(user.planning_areas, id=planning_area_id)
+        is_dirty = False
+        
+        if 'notes' in body:
+            # This can clear the notes field
+            planning_area.notes = body.get('notes')
+            is_dirty = True
+
+        if 'name' in body:
+            # This must be always defined
+            new_name = body.get('name')
+            if (new_name is None) or (len(new_name) == 0):
+                raise ValueError("name must be defined")
+            planning_area.name = new_name
+            is_dirty = True
+
+        if is_dirty:
+            planning_area.save()
+
+        return HttpResponse(
+            json.dumps({'id': planning_area_id}),
+            content_type="application/json")
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
 def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     """
     Retrieves a planning area by ID.
@@ -188,7 +245,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
+    
 
 # No Params expected, since we're always using the logged in user.
 def list_planning_areas(request: HttpRequest) -> HttpResponse:
@@ -266,17 +323,21 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
+
 def create_scenario(request: HttpRequest) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
 
-    Returns: the ID of the newly inserted Scenario.
+    Returns: id: the ID of the newly inserted Scenario.
 
     Required params:
       name (str): The user-provided name of the Scenario.
       planning_area (int): The ID of the planning area that will recieve the new Scenario.
       configuration (str): A JSON string representing the scenario configuration (e.g. query parameters, weights).
+
+    Optional params:
+      notes (str): User-provided notes for this scenario.
     """
     try:
         # Check that the user is logged in.
@@ -305,13 +366,74 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             scenario=scenario)
         scenario_result.save()
 
-        return HttpResponse(str(scenario.pk))
+        return HttpResponse(
+            json.dumps({'id': scenario.pk}),
+            content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
 
 #TODO - when we want to support multiple scenario results for the same scenario:
 #def create_result_for_scenario(request: HttpRequest) -> HttpResponse:
 #def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
+#def get_latest_result_for_scenario
+
+
+
+def update_scenario(request: HttpRequest) -> HttpResponse:
+    """
+    Updates a scenario's name or notes.  To date, these are the only fields that
+    can be modified after a scenario is created.  This can be also used to clear
+    the notes field, but the name needs to be defined always.
+
+    Calling this without anything to update will not throw an error.
+
+    Requires a logged in user.  Users can modify only their owned scenarios.
+
+    Returns: id: The scenario's ID, even if nothing needed updating.
+
+    Required params:
+      id (int): ID of the scenario to retrieve.
+    """
+    try:
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        body = json.loads(request.body)
+        scenario_id = body.get('id', None)
+        if scenario_id is None:
+            raise ValueError("Scenario ID is required.")
+
+        scenario = Scenario.objects.select_related('planning_area__user').get(id=scenario_id)
+        if (scenario.planning_area.user.pk != user.pk):
+            # This matches the same error string if the planning area doesn't exist in the DB for any user.
+            raise ValueError("Scenario matching query does not exist.")
+
+        is_dirty = False
+        
+        if 'notes' in body:
+            # This can clear the notes field
+            scenario.notes = body.get('notes')
+            is_dirty = True
+
+        if 'name' in body:
+            # This must be always defined
+            new_name = body.get('name')
+            if (new_name is None) or (len(new_name) == 0):
+                raise ValueError("name must be defined")
+            scenario.name = new_name
+            is_dirty = True
+
+        if is_dirty:
+            scenario.save()
+
+        return HttpResponse(
+            json.dumps({'id': scenario_id}),
+            content_type="application/json")
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
 
 # TODO: add more things to update other than state
 # Unlike other routines, this does not require a user login context, as it is expected to be called
@@ -320,7 +442,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 # TODO: require credential from EP so that random people cannot call this endpoint.
 def update_scenario_result(request: HttpRequest) -> HttpResponse:
     """
-    Updates a ScenarioResult.
+    Updates a ScenarioResult's status.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
     Throws an error if no scenario/ScenarioResult owned by the user can be found with the desired ID.
     This does not modify the Scenario object itself.
@@ -328,7 +450,7 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
        PENDING -> RUNNING | FAILURE
        RUNNING -> SUCCESS | FAILURE
 
-    Returns: the ID of the Scenario whose ScenarioResult was updated.
+    Returns: id: the ID of the Scenario whose ScenarioResult was updated.
 
     Required params:
       scenario_id (int): The scenario ID whose ScenarioResult is meant to be updated.
@@ -368,7 +490,9 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
             
         scenario_result.save()
 
-        return HttpResponse(str(scenario_id))
+        return HttpResponse(
+            json.dumps({'id': scenario_id}),
+            content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Update Scenario error: " + str(e))
 
@@ -407,10 +531,10 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
-
-    Returns: the list of IDs to be deleted.  Scenarios that do not exist or do not belong to
-      a planning_area that is owned by the user will appear in the returned list, but scenarios
-      that are not owned by the user are not changed.
+    Scenarios that do not exist or do not belong to a planning_area that is owned by the user
+    will appear in the returned list, but scenarios that are not owned by the user are not changed.
+    
+    Returns: id: the list of IDs to be deleted.
 
     Required params:
       scenario_id (int): The ID of the scenario (or list of IDs) to delete.
