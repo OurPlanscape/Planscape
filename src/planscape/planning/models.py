@@ -17,6 +17,8 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     name: models.CharField = models.CharField(max_length=120)
 
+    notes = models.TextField(null=True)
+
     geometry = models.MultiPolygonField(srid=4269, null=True)
 
     class Meta:
@@ -48,6 +50,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
 
     name = models.CharField(max_length=120)
+
+    notes = models.TextField(null=True)
 
     configuration = models.JSONField(default=dict)
 
