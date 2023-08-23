@@ -11,7 +11,7 @@
           <div>
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Treatment cost</mat-label>
-              <input class="right-align" formControlName="estimatedCost" matInput type="number"
+              <input id="estimatedCost" class="right-align" formControlName="estimatedCost" matInput type="number"
                 (input)="toggleMaxCost()">
               <span matPrefix>$&nbsp;</span>
               <span matSuffix> /acre</span>
@@ -20,7 +20,7 @@
           <div>
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Max total cost</mat-label>
-              <input class="right-align" formControlName="maxCost" matInput type="number">
+              <input id="maxCost" class="right-align" formControlName="maxCost" matInput type="number">
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
           </div>
