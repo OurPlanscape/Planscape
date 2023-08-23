@@ -137,7 +137,7 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
     Returns: The list of IDs entered, including those IDs that failed to matched a user-owned planning area.
 
     Required params:
-      id (int): JSON: {id: the ID of the planning area to delete, or a list of IDs to delete.}
+      id (int): id: the ID of the planning area to delete, or a list of IDs to delete.
     """
     try:
         # Check that the user is logged in.
@@ -245,7 +245,6 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
-    
 
 # No Params expected, since we're always using the logged in user.
 def list_planning_areas(request: HttpRequest) -> HttpResponse:
