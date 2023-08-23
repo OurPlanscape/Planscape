@@ -1,6 +1,5 @@
 <div class="constraints-panel">
   <!-- Form -->
-
   <form class="constraints-form" [formGroup]="constraintsForm!">
     <div class="constraints-content">
       <div formGroupName="budgetForm" class="flex-column">
@@ -12,7 +11,8 @@
           <div>
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Treatment cost</mat-label>
-              <input class="right-align" formControlName="estimatedCost" matInput type="number">
+              <input class="right-align" formControlName="estimatedCost" matInput type="number"
+                (input)="toggleMaxCost()">
               <span matPrefix>$&nbsp;</span>
               <span matSuffix> /acre</span>
             </mat-form-field>
@@ -29,7 +29,6 @@
     </div>
     <div class="constraints-content">
       <div formGroupName="physicalConstraintForm" class="flex-column">
-        <!-- TODO Add stand size segmented button selection -->
         <div class="top-label">
           <label class="form-label">PHYSICAL CONSTRAINTS</label>
         </div>
@@ -44,17 +43,26 @@
           <div>
             <mat-form-field class="input-field" appearance="outline" floatLabel="always">
               <mat-label>Distance from roads </mat-label>
-              <input class="right-align" formControlName="maxRoadDistance" matInput type="number">
+              <input class="right-align" formControlName="minDistanceFromRoad" matInput type="number">
               <span matSuffix> yds</span>
             </mat-form-field>
           </div>
         </div>
-        <div class="button-wrapper">
-          <div class="small-label">Stand Size</div>
-          <mat-button-toggle-group formControlName="standSize" name="standSize" aria-label="Stand Size">
-            <mat-button-toggle *ngFor="let item of standSizeOptions;" [value]="item"
-              checked>{{item}}</mat-button-toggle>
-          </mat-button-toggle-group>
+        <div class="flex-row">
+          <div>
+            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+              <mat-label>Max acres to be treated </mat-label>
+              <input class="right-align" formControlName="maxArea" matInput type="number">
+            </mat-form-field>
+          </div>
+          <mat-form-field class="input-field" appearance="outline">
+            <mat-label>Stand size</mat-label>
+            <mat-select formControlName="standSize" [(value)]="standSizeOptions[-1]" required>
+              <mat-option *ngFor="let size of standSizeOptions;" [value]="size">
+                {{size}}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
         </div>
       </div>
     </div>
