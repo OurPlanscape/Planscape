@@ -14,6 +14,10 @@ from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioRes
 # Yes, we are pulling in an internal just for testing that a geometry write happened.
 from planning.views import _convert_polygon_to_multipolygon
 
+# TODO: Add tests to ensure that users can't have planning areas with the same
+# name in the same region, and that users can't have scenarios with the same
+# name in the same planning area.
+
 
 # Create test plans.  These are going straight to the test DB without
 # normal parameter checking (e.g. if is there a real geometry).
