@@ -8,6 +8,7 @@ from planning.models import (PlanningArea, Scenario, ScenarioResult)
 # TODO: flesh all serializers more for better maintainability.
 
 class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
+    notes = CharField(required = False)
     class Meta:
         fields = ("id", "user", "name", "notes", "region_name")
         model = PlanningArea
