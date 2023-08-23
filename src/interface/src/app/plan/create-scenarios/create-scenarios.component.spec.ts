@@ -109,7 +109,7 @@ describe('CreateScenariosComponent', () => {
 
 
   it('should emit create scenario event', async () => {
-    spyOn(component, 'createScenarioAndProjectAreas');
+    spyOn(component, 'createScenario');
     component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
     component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
@@ -122,7 +122,7 @@ describe('CreateScenariosComponent', () => {
     // Click on "GENERATE SCENARIO" button
     await buttonHarness.click();
 
-    expect(component.createScenarioAndProjectAreas).toHaveBeenCalled();
+    expect(component.createScenario).toHaveBeenCalled();
 
   });
 
@@ -210,20 +210,20 @@ describe('CreateScenariosComponent', () => {
   //   ]);
   // });
 
-  it('creates uploaded project areas when event is emitted', () => {
-    component.scenarioConfigId = 1;
-    component.formGroups[0].get('priorities')?.setValue(['test']);
-    component.formGroups[2].get('uploadedArea')?.setValue(fakeGeoJson);
-    const router = fixture.debugElement.injector.get(Router);
-    spyOn(router, 'navigate');
+  // it('creates uploaded project areas when event is emitted', () => {
+  //   component.scenarioConfigId = 1;
+  //   component.formGroups[0].get('priorities')?.setValue(['test']);
+  //   component.formGroups[2].get('uploadedArea')?.setValue(fakeGeoJson);
+  //   const router = fixture.debugElement.injector.get(Router);
+  //   spyOn(router, 'navigate');
 
-    component.createScenarioAndProjectAreas();
+  //   component.createScenario();
 
-    expect(fakePlanService.bulkCreateProjectAreas).toHaveBeenCalledOnceWith(
-      component.scenarioConfigId,
-      []
-    );
-  });
+  //   expect(fakePlanService.bulkCreateProjectAreas).toHaveBeenCalledOnceWith(
+  //     component.scenarioConfigId,
+  //     []
+  //   );
+  // });
 
   describe('convertSingleGeoJsonToGeoJsonArray', () => {
     it('converts a geojson with multiple multipolygons into geojsons', () => {

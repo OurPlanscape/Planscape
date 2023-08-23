@@ -265,17 +265,18 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Creates the scenario and the uploaded project areas, if provided. */
-  createScenarioAndProjectAreas(): void {
+  /** Creates the scenario */
+  // TODO Add support for uploaded Project Area shapefiles
+  createScenario(): void {
     this.generatingScenario = true;
-    this.createUploadedProjectAreas()
-      .pipe(
-        take(1),
-        concatMap(() => {
-          return this.planService.createScenario(
-            this.formValueToProjectConfig()
-          );
-        }),
+    // this.createUploadedProjectAreas()
+    //   .pipe(
+    //     take(1),
+    //     concatMap(() => {
+    //       return this.planService.createScenario(
+    //         this.formValueToProjectConfig()
+    //       );
+    //     }),
 
         // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
         // catchError(() => {
@@ -292,12 +293,12 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         //     () => new Error('Problem creating uploaded project areas')
         //   );
         // })
-      )
-      .subscribe(() => {
-        // Navigate to scenario confirmation page
-        const planId = this.plan$.getValue()?.id;
-        this.router.navigate(['scenario-confirmation', planId]);
-      });
+      // )
+      // .subscribe(() => {
+      //   // Navigate to scenario confirmation page
+      //   const planId = this.plan$.getValue()?.id;
+      //   this.router.navigate(['scenario-confirmation', planId]);
+      // });
   }
 
   createUploadedProjectAreas() {

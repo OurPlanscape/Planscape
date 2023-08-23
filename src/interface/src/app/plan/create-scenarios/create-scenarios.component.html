@@ -15,10 +15,10 @@
               mat-raised-button
               color="primary"
               [disabled]="!formGroups[0].valid || !formGroups[1].valid || !formGroups[2].valid || generatingScenario"
-              (click)="createScenarioAndProjectAreas()">
+              (click)="createScenario()">
               {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE' }}
             </button>
-            <div>
+            <div *ngIf="project_area_upload_enabled" >
               Estimated time ?????? 
             </div>
           </div>
