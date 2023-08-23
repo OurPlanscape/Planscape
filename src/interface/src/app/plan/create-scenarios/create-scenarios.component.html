@@ -10,6 +10,18 @@
           <app-identify-project-areas *ngIf="project_area_upload_enabled" [formGroup]="formGroups[2]">
           </app-identify-project-areas>
           <app-constraints-panel [constraintsForm]="formGroups[1]" [excludedAreasOptions]="excludedAreasOptions"> </app-constraints-panel>
+          <div class="flex-row gap-12">
+            <button
+              mat-raised-button
+              color="primary"
+              [disabled]="!formGroups[0].valid || !formGroups[1].valid || !formGroups[2].valid || generatingScenario"
+              (click)="createScenario()">
+              {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE' }}
+            </button>
+            <div *ngIf="project_area_upload_enabled" >
+              Estimated time ?????? 
+            </div>
+          </div>
         </div>
       </mat-tab>
       <mat-tab label="Outcome">

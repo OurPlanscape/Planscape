@@ -9,7 +9,6 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
-import { GenerateScenariosComponent } from './create-scenarios/generate-scenarios/generate-scenarios.component';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
 import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
 import { PlanMapComponent } from './plan-map/plan-map.component';
@@ -42,7 +41,6 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     SetPrioritiesComponent,
     ConstraintsPanelComponent,
     IdentifyProjectAreasComponent,
-    GenerateScenariosComponent,
     ScenarioDetailsComponent,
     OutcomeComponent,
     ScenarioConfirmationComponent,
