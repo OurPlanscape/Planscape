@@ -1,6 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import {
   FormBuilder,
   FormsModule,
@@ -16,11 +16,11 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { ConstraintsPanelComponent } from './constraints-panel.component';
 import { By } from '@angular/platform-browser';
 import { MatFormField } from '@angular/material/form-field';
-  //TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
-  /**
-   * 'marks maxCost as not required input if maxArea is provided'
-   * 'marks maxArea as not required input if maxCost isprovided'
-   */
+//TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
+/**
+ * 'marks maxCost as not required input if maxArea is provided'
+ * 'marks maxArea as not required input if maxCost isprovided'
+ */
 describe('ConstraintsPanelComponent', () => {
   let component: ConstraintsPanelComponent;
   let fixture: ComponentFixture<ConstraintsPanelComponent>;
@@ -38,7 +38,6 @@ describe('ConstraintsPanelComponent', () => {
       declarations: [ConstraintsPanelComponent],
       providers: [FormBuilder],
     }).compileComponents();
-
     fixture = TestBed.createComponent(ConstraintsPanelComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -59,7 +58,7 @@ describe('ConstraintsPanelComponent', () => {
         // Estimated cost in $ per acre
         estimatedCost: ['', [Validators.min(0), Validators.required]],
         // Max cost of treatment for entire planning area
-        maxCost: ['', Validators.min(0)],
+        maxCost: [{ value: '', disabled: true }, Validators.min(0)],
       }),
       physicalConstraintForm: fb.group({
         // Maximum slope allowed for planning area
@@ -85,16 +84,19 @@ describe('ConstraintsPanelComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should disable maxCost input when no estimatedCost input is provided'), async () => {
-    const maxCostControl = component.constraintsForm!.get('budgetForm.maxCost');
-    component.constraintsForm!.get('budgetForm.estimatedCost')?.setValue(null);
+  it('should disable maxCost input when no estimatedCost input is provided', async () => {
+    let estimatedCostinput = fixture.debugElement.query(By.css('#estimatedCost')).nativeElement;
+    estimatedCostinput.value = null;
+    estimatedCostinput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    expect(maxCostControl!.enabled).toBe(true);
-  }
-  it('should enable maxCost input when estimatedCost input is provided'), async () => {
-    const maxCostControl = component.constraintsForm!.get('budgetForm.maxCost');
-    component.constraintsForm!.get('budgetForm.estimatedCost')?.setValue(1);
+    expect(component.constraintsForm!.get('budgetForm.maxCost')!.disabled).toBe(true);
+  });
+
+  it('should enable maxCost input when estimatedCost input is provided', async () => {
+    let estimatedCostinput = fixture.debugElement.query(By.css('#estimatedCost')).nativeElement;
+    estimatedCostinput.value = 1;
+    estimatedCostinput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    expect(maxCostControl!.enabled).toBe(true);
-  }
+    expect(component.constraintsForm!.get('budgetForm.maxCost')!.enabled).toBe(true);
+  });
 });
