@@ -111,7 +111,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             // Maximum slope allowed for planning area
             maxSlope: ['', [Validators.min(0), Validators.max(100), Validators.required]],
             // Minimum distance from road allowed for planning area
-            // TODO update variable name to minDistanceFromRoad 
             minDistanceFromRoad: ['', [Validators.min(0), Validators.required]],
             // Maximum area to be treated in acres 
             maxArea: ['', [Validators.min(0), Validators.required]],
