@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(UP_MIGRATION_CREATE_COMPUTE_STAND_STATS),
-        migrations.RunPython(UP_MIGRATION_CREATE_GENERATE_STAND_METRICS),
+        migrations.RunSQL(UP_MIGRATION_CREATE_COMPUTE_STAND_STATS),
+        migrations.RunSQL(UP_MIGRATION_CREATE_GENERATE_STAND_METRICS),
     ]
