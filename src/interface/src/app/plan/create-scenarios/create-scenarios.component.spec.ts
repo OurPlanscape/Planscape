@@ -13,7 +13,12 @@ import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 
-// TODO Update commented tests once all new configs are in 
+  //TODO Add the following tests once implementation for tested behaviors is added:
+  /**
+   * 'configures proper priorities and weights based on chosen treatment question'
+   * 'creates scenario when createScenario is called'
+   * 'creates Project Areas when user uploads Project Area shapefile'
+   */
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -108,11 +113,12 @@ describe('CreateScenariosComponent', () => {
   });
 
 
-  it('should emit create scenario event', async () => {
+  it('should emit create scenario event on Generate button click', async () => {
     spyOn(component, 'createScenario');
     component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
+    component.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad')?.setValue(1);
+    component.formGroups[1].get('physicalConstraintForm.maxArea')?.setValue(1);
     fixture.detectChanges();
 
     const buttonHarness: MatButtonHarness = await loader.getHarness(
@@ -131,7 +137,7 @@ describe('CreateScenariosComponent', () => {
       MatButtonHarness.with({ text: /GENERATE/ })
     );
     component.formGroups[0].markAsDirty();
-    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(-1);
+    component.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad')?.setValue(-1);
     fixture.detectChanges();
 
     // Click on "GENERATE SCENARIO" button
@@ -146,7 +152,8 @@ describe('CreateScenariosComponent', () => {
     );
     component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
+    component.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad')?.setValue(1);
+    component.formGroups[1].get('physicalConstraintForm.maxArea')?.setValue(1);
     component.generatingScenario = false;
     fixture.detectChanges();
 
@@ -170,60 +177,6 @@ describe('CreateScenariosComponent', () => {
       'testvalue'
     );
   });
-
-  // it('adds a priority weight form control for each priority', () => {
-  //   component.formGroups[0]
-  //     .get('priorities')
-  //     ?.setValue(['priority1', 'priority2']);
-  //   const priorityWeightsForm = component.formGroups[3].get(
-  //     'priorityWeightsForm'
-  //   ) as FormGroup;
-
-  //   expect(priorityWeightsForm.value).toEqual({
-  //     priority1: 1,
-  //     priority2: 1,
-  //   });
-  // });
-
-  // it('creates scenario when event is emitted', () => {
-  //   component.scenarioConfigId = 1;
-  //   component.formGroups[0].get('priorities')?.setValue(['test']);
-  //   const router = fixture.debugElement.injector.get(Router);
-  //   spyOn(router, 'navigate');
-
-  //   component.createScenarioAndProjectAreas();
-
-  //   expect(fakePlanService.createScenario).toHaveBeenCalledOnceWith({
-  //     id: 1,
-  //     planId: 1,
-  //     est_cost: NaN,
-  //     max_budget: NaN,
-  //     max_treatment_area_ratio: NaN,
-  //     max_road_distance: NaN,
-  //     max_slope: NaN,
-  //     priorities: ['test'],
-  //     weights: [1],
-  //   });
-  //   expect(router.navigate).toHaveBeenCalledOnceWith([
-  //     'scenario-confirmation',
-  //     '1',
-  //   ]);
-  // });
-
-  // it('creates uploaded project areas when event is emitted', () => {
-  //   component.scenarioConfigId = 1;
-  //   component.formGroups[0].get('priorities')?.setValue(['test']);
-  //   component.formGroups[2].get('uploadedArea')?.setValue(fakeGeoJson);
-  //   const router = fixture.debugElement.injector.get(Router);
-  //   spyOn(router, 'navigate');
-
-  //   component.createScenario();
-
-  //   expect(fakePlanService.bulkCreateProjectAreas).toHaveBeenCalledOnceWith(
-  //     component.scenarioConfigId,
-  //     []
-  //   );
-  // });
 
   describe('convertSingleGeoJsonToGeoJsonArray', () => {
     it('converts a geojson with multiple multipolygons into geojsons', () => {
