@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS compute_stand_stats;
+DROP TYPE IF EXISTS stand_stats;
 CREATE TYPE stand_stats AS (
     stand_id     BIGINT,
     condition_id BIGINT,

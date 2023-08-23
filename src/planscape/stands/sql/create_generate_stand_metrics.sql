@@ -1,6 +1,6 @@
+DROP FUNCTION IF EXISTS generate_stand_metrics;
 CREATE OR REPLACE FUNCTION generate_stand_metrics(_condition_id INT, _clean bool)
-RETURNS VOID AS
-$$
+RETURNS VOID AS $$
 DECLARE
     raster_geometry geometry;
     stand record;
