@@ -18,7 +18,7 @@
           <li>Show estimated cost range based on estimated treatment costs per acre
             (Est. max: <b>${{ scenario?.config?.max_budget }}</b>)</li>
           <li><b>{{ scenario?.config?.max_treatment_area_ratio }}%</b> max treatment percentage of total planning area</li>
-          <li>Exclude areas off a road by <b>{{ scenario?.config?.max_road_distance}} ft.</b></li>
+          <li>Exclude areas off a road by <b>{{ scenario?.config?.min_distance_from_road}} ft.</b></li>
           <li>Include areas that are over {{ scenario?.config?.max_slope }} degrees</li>
         </ul>
       </div>
