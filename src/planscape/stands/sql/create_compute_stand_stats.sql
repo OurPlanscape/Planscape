@@ -8,7 +8,7 @@ CREATE TYPE stand_stats AS (
     count        BIGINT
 );
 
-CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id BIGINT, condition_id INT)
+CREATE OR REPLACE FUNCTION compute_stand_stats(_stand_id BIGINT, _condition_id INT)
   RETURNS stand_stats AS $$
 
     WITH stand AS (
@@ -17,23 +17,25 @@ CREATE OR REPLACE FUNCTION compute_stand_stats(stand_id BIGINT, condition_id INT
         ST_Transform(ss.geometry, 3857) AS geometry
       FROM stands_stand ss
       WHERE
-        id = stand_id
+        id = _stand_id
     ),
 
     stats AS (
       SELECT
-        row_number() OVER (ORDER BY s.id) AS id,
         s.id AS "stand_id",
         (ST_SummaryStats(ST_Clip(cc.raster, s.geometry))).*
       FROM conditions_conditionraster cc, stand s
       WHERE
-        cc.condition_id = condition_id AND
+        cc.condition_id = _condition_id AND
         s.geometry && cc.raster AND
         ST_Intersects(s.geometry, cc.raster)
+      ORDER BY
+        s.id
     )
 
-    SELECT stand_id,
-      condition_id,
+    SELECT 
+      stand_id,
+      _condition_id,
       min(ss.min) AS min,
       max(ss.max) AS max,
       sum(ss.mean * ss.count)/sum(ss.count) AS avg,
