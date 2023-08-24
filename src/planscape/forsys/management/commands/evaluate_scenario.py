@@ -1,9 +1,10 @@
 import argparse
+from datetime import datetime
+from django.db import transaction
 import json
 import logging
 import random
 import time
-from datetime import datetime
 
 from django.core.management.base import BaseCommand, CommandParser
 from planning.models import (Scenario, ScenarioResultStatus, ScenarioResult)
@@ -12,9 +13,8 @@ from planning.models import (Scenario, ScenarioResultStatus, ScenarioResult)
 class Command(BaseCommand):
     help = "Evaluates a specific scenario."
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.DEBUG)
 
-    def add_arguments(self, parser: CommandParser):
+    def add_arguments(self, parser):
         parser.add_argument("scenario_id", type=int)
         parser.add_argument('--dry_run',
                             type=bool, default=False, action=argparse.BooleanOptionalAction,
@@ -122,38 +122,38 @@ class Command(BaseCommand):
         run_starting_time = datetime.now()
         output_start_time = run_starting_time.strftime("%x %X")
 
-        # Update the status to running.
-        if dry_run:
-            run_output['dry_run'] = 'Dry run enabled.  Would have changed the status to Running.'
-        else:
+        with transaction.atomic():
             scenario_result.status = ScenarioResultStatus.RUNNING
             scenario_result.run_details = json.dumps({'start_time': output_start_time})
             scenario_result.save()
 
-        if fake_run:
-            run_output = self._evaluate_fake(scenario, scenario_result, dry_run, fake_run_time,
-                                             fake_run_failure_rate)
-        else:
-            try:
-                run_output = self._evaluate_scenario(scenario, scenario_result, dry_run)
-            except Exception as e:
-                run_output['new_status'] = ScenarioResultStatus.FAILURE
-                run_output['new_run_details']['error_details'] = str(e)
+            if fake_run:
+                run_output = self._evaluate_fake(scenario, scenario_result, dry_run, fake_run_time,
+                                                 fake_run_failure_rate)
+            else:
+                try:
+                    run_output = self._evaluate_scenario(scenario, scenario_result, dry_run)
+                    #TODO: Save project areas to DB, etc.
+                except Exception as e:
+                    run_output['new_status'] = ScenarioResultStatus.FAILURE
+                    run_output['new_run_details']['error_details'] = str(e)
 
-        run_output['new_run_details']['start_time'] = output_start_time
-        run_ending_time = datetime.now()
-        elapsed_time = run_ending_time - run_starting_time
-        run_output['new_run_details']['end_time'] = run_ending_time.strftime("%x %X")
-        run_output['new_run_details']['elapsed_time'] = elapsed_time.total_seconds()
+            run_output['new_run_details']['start_time'] = output_start_time
+            run_ending_time = datetime.now()
+            elapsed_time = run_ending_time - run_starting_time
+            run_output['new_run_details']['end_time'] = run_ending_time.strftime("%x %X")
+            run_output['new_run_details']['elapsed_time'] = elapsed_time.total_seconds()
 
-        if dry_run:
-            self.logger.info(json.dumps(run_output))
-        else:
             scenario_result.status = run_output['new_status']
             scenario_result.result = json.dumps(run_output['new_result'])
             scenario_result.run_details = json.dumps(run_output['new_run_details'])
             scenario_result.save()
-            self.logger.debug(json.dumps(run_output))
+
+            if dry_run:
+                self.logger.info(json.dumps(run_output))
+                transaction.set_rollback(True)
+            else:
+                self.logger.debug(json.dumps(run_output))
         return True
 
     def _run_forsys(self):
