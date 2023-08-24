@@ -18,4 +18,6 @@ src/interface/src/environments/environment.ts
 src/interface/src/environments/environment.prod.ts
 src/interface/src/app/features/features.json
 
+# Editors
 .vscode/*
+.idea/*
