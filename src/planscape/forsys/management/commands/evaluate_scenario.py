@@ -1,12 +1,13 @@
 import argparse
-from datetime import datetime
-from django.db import transaction
 import json
 import logging
 import random
 import time
 
-from django.core.management.base import BaseCommand, CommandParser
+from datetime import datetime
+from django.core.management.base import BaseCommand
+from django.db import transaction
+
 from planning.models import (Scenario, ScenarioResultStatus, ScenarioResult)
 
 #TODO: Move evaluate_scenario() outside of the command directory.
@@ -157,7 +158,6 @@ class Command(BaseCommand):
                 transaction.set_rollback(True)
             else:
                 self.logger.debug(json.dumps(run_output))
-        return True
 
     def _run_forsys(self):
         """
