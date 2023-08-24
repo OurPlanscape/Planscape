@@ -118,8 +118,7 @@ class Command(BaseCommand):
         scenario = Scenario.objects.select_related('planning_area').get(id=scenario_id)
 
         if scenario_result is None:
-            self.logger.debug('Scenarios need to be in a PENDING state in order to be evaluated.')
-            raise ValueError("No eligible scenario found")
+            raise ValueError("No eligible scenario (e.g. in a PENDING state) found")
 
         # TODO: Make a real class out of the output instead of toting around dictionaries
         run_output = {}
