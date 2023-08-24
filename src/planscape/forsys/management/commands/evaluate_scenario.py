@@ -9,9 +9,12 @@ import time
 from django.core.management.base import BaseCommand, CommandParser
 from planning.models import (Scenario, ScenarioResultStatus, ScenarioResult)
 
+#TODO: Move evaluate_scenario() outside of the command directory.
 
 class Command(BaseCommand):
     help = "Evaluates a specific scenario."
+
+    # TODO: configure a dedicated logger in settings.py for this command.
     logger = logging.getLogger(__name__)
 
     def add_arguments(self, parser):
