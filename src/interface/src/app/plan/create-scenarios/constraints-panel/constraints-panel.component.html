@@ -57,7 +57,7 @@
           </div>
           <mat-form-field class="input-field" appearance="outline">
             <mat-label>Stand size</mat-label>
-            <mat-select formControlName="standSize" [(value)]="standSizeOptions[-1]" required>
+            <mat-select formControlName="standSize" required>
               <mat-option *ngFor="let size of standSizeOptions;" [value]="size">
                 {{size}}
               </mat-option>

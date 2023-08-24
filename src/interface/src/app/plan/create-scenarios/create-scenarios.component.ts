@@ -91,6 +91,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.excludedAreasOptions.forEach((area: string) => {
       excludedAreasChosen[area] = [false, Validators.required];
     });
+    // TODO Move form builders to their corresponding components rather than passing as input
     // Initialize empty form
     this.formGroups = [
       // Step 1: Select priorities
