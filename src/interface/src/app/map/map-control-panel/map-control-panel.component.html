@@ -121,13 +121,13 @@
           <app-condition-tree
           #conditionTreeRaw
           [conditionsConfig$]="conditionsConfig$"
-          [header]="'Current Condition (Raw)'"
+          [header]="'Regional Resource Kit Data'"
           [map]="map"
           [dataType]="dataTypeEnum.RAW"
           (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(1)">
         </app-condition-tree>
        </div>
-        
+
         <!-- Normalized current condition controls -->
          <div *ngIf="translated_control_panel_enabled && translatedDataEnabled">
          <app-condition-tree
@@ -138,7 +138,7 @@
            [dataType]="dataTypeEnum.TRANSLATED"
            (changeConditionLayer)="changeConditionLayer.emit($event); unstyleConditionTree(0)">
          </app-condition-tree>
-         </div> 
+         </div>
 
         <!-- Future condition controls -->
          <div *ngIf="future_control_panel_enabled && futureDataEnabled">
@@ -162,7 +162,7 @@
             </mat-expansion-panel-header>
           </mat-expansion-panel>
         </div>
-          
+
         <div *ngIf="future_control_panel_enabled && !futureDataEnabled">
           <mat-expansion-panel disabled="true">
             <mat-expansion-panel-header class="layer-panel-header">
@@ -193,7 +193,7 @@
             </div>
           </mat-expansion-panel>
         </ng-container> -->
-        
+
         <!-- Disturbances controls -->
         <ng-container *featureFlag="'unlaunched_layers'">
           <mat-expansion-panel disabled="true">
