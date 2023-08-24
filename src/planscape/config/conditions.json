@@ -2184,7 +2184,7 @@
                 {
                   "metric_name": "moderate_severity_potential_smoke_emissions",
                   "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
-                  "raw_layer": "airQuality_Tier2_PotentialSmokeModerateSeverity_2021",
+                  "raw_layer": ":airQuality_Tier2_PotentialSmokeModerateSeverity_2021",
                   "raw_data_download_path": "sierra-nevada/airQuality/Tier2/PotentialSmokeModerateSeverity_2021.tif",
                   "normalized_layer": ":airQualityTranslate_Tier2_PotentialSmokeModerateSeverity_2021_scored",
                   "normalized_data_download_path": "sierra-nevada/airQualityTranslate/Tier2/PotentialSmokeModerateSeverity_2021_scored.tif",
