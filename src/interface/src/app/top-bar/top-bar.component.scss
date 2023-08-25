@@ -37,12 +37,19 @@
   flex: 1 1 auto;
 }
 
-.username {
+.username , .nav-link{
   color: white;
-  font-family: 'Roboto';
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
-  margin-right: 0px;
+  margin-right: 0;
   margin-left: 5px;
+}
+
+.nav-link {
+  text-decoration: none;
+  margin-right: 32px;
+  &:visited, &:active {
+    color: white;
+  }
 }
