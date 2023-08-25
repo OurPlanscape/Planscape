@@ -166,7 +166,7 @@ export class ConditionTreeComponent implements OnInit {
       if (node.condition.region_geoserver_name) {
         node_layer = node.condition.region_geoserver_name + node.condition.layer;
       } 
-      if (node_layer === config.layer) {
+      if (node_layer === node.condition.region_geoserver_name + config.layer) {
         this.expandAncestors(node);
         this.onSelect(node);
         return node.condition;
