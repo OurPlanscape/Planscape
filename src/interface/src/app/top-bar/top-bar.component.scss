@@ -1,19 +1,6 @@
 @import "../shared/_variables.scss";
 
-// Region select dropdown arrow
-@mixin arrow {
-  content: '';
-  $arrow-size: 5px;
-  position: relative;
-  right: 12px;
-  top: 15px;
-  width: 0;
-  height: 0;
-  border-left: $arrow-size solid transparent;
-  border-right: $arrow-size solid transparent;
-  border-top: $arrow-size solid #ffffff;
-  pointer-events: none;
-}
+
 
 // Top-bar styling
 .mat-toolbar {
@@ -44,36 +31,6 @@
   margin: 2px 6px 0 18px;
 }
 
-// Region selection dropdown styling
-.region-dropdown-wrapper {
-  position: relative;
-
-  &::after {
-    @include arrow;
-  }
-}
-
-select.region-dropdown {
-  &::-ms-expand {
-    display: none; /* IE */
-  }
-  -moz-appearance:none; /* Firefox */
-  -webkit-appearance:none; /* Safari and Chrome */
-  appearance:none;
-  background: #494949;
-  border: none;
-  outline: none;
-  text-align: left;
-  width: 140px;
-  margin-right: 5px;
-
-  cursor: pointer;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 200;
-  text-align: center;
-
-}
 
 // The space between left and right elements on the top-bar
 .spacer {

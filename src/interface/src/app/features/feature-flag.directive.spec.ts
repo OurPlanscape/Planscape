@@ -39,11 +39,18 @@ describe('FeatureFlagDirective', () => {
 
     expect(elementHtml).toEqual('True');
   });
+
+  it('should not show element guarded by true flag is `hide` is true', () => {
+    const elements = fixture.debugElement.queryAll(By.css('h3'));
+
+    expect(elements.length).toEqual(0);
+  });
 });
 
 @Component({
   template: ` <h2 *featureFlag="'false'">False</h2>
     <h2 *featureFlag="'undefined'">Undefined</h2>
-    <h2 *featureFlag="'true'">True</h2>`,
+    <h2 *featureFlag="'true'">True</h2>
+  <h3 *featureFlag="'true'; hide:true">Hidden</h3>`,
 })
 class TestComponent {}

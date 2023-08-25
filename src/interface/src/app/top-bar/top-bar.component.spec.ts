@@ -79,21 +79,6 @@ describe('TopBarComponent', () => {
     expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(AccountDialogComponent);
   });
 
-  describe('Region selection dropdown', () => {
-    it('should set the region', () => {
-      const setRegionSpy = spyOn<any>(mockSessionService, 'setRegion');
-      const regionDropdown = fixture.debugElement.query(
-        By.css('[class="region-dropdown"]')
-      ).nativeElement;
-
-      regionDropdown.value = regionDropdown.options[0].value;
-      regionDropdown.dispatchEvent(new Event('change'));
-      fixture.detectChanges();
-
-      expect(setRegionSpy).toHaveBeenCalledOnceWith(regionDropdown.value);
-    });
-  });
-
   describe('username', () => {
     it('should be "Guest" when no user is logged in', () => {
       expect(component.displayName).toEqual('Guest');
