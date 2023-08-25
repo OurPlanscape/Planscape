@@ -1,5 +1,10 @@
 <div class="controls-container">
   <h1><b>Map Control Panel</b></h1>
+  <div *featureFlag="'new_navigation'" class="region-wrapper">
+    <div>Region</div>
+    <app-region-dropdown></app-region-dropdown>
+  </div>
+
   <div *ngIf="mapHasDataLayer" class="title-container">
     <div class="transparency-box">
       <!-- Opacity controls for the currently shown data layer -->

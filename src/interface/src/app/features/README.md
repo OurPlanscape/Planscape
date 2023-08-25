@@ -48,6 +48,9 @@ This flag will enable the Project Area control panel in the Scenario Configurati
 This flag will enable use of ITS data for past resilience projects rather than
 Calmapper.
 
+### new_navigation
+This flags controls the changes regarding the new navigation
+
 ### Other flags
 There are two other flags, testFalseFeature and testTrueFeature created just for
 automated testing.  Their values should be kept to "false" and "true" for

@@ -17,16 +17,7 @@
   <img class="region-dropdown-icon" src="assets/svg/region-dropdown-icon.svg" />
 
   <!-- Region Dropdown -->
-  <div class="region-dropdown-wrapper">
-    <select class="region-dropdown" (change)="setRegion($event)">
-      <option [selected]="!(selectedRegion$ | async)" disabled>Select a region</option>
-      <option *ngFor="let region of regionOptions"
-        [value]="region.type"
-        [disabled]="!region.available"
-        [selected]="(selectedRegion$ | async) === region.type"
-        routerLink= "/map">{{ region.name }} </option>    
-    </select>
-  </div>
+  <app-region-dropdown *featureFlag="'new_navigation'; hide: true"></app-region-dropdown>
 
   <!-- Space between left and right elements -->
   <span class="spacer"></span>
@@ -35,7 +26,7 @@
   <a
     mat-icon-button
     routerLink="/help"
-    target="_blank" 
+    target="_blank"
     aria-label="help button"
     rel="noopener noreferrer">
     <mat-icon class="material-symbols-outlined">
@@ -43,7 +34,7 @@
     </mat-icon>
   </a>
   <span class="username">{{ displayName }}</span>
-  
+
   <button
     mat-icon-button
     data-testid="account-button"
