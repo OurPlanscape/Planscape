@@ -16,7 +16,8 @@ node_modules
 # Environment and Feature Switches
 src/interface/src/environments/environment.ts
 src/interface/src/environments/environment.prod.ts
-src/interface/src/app/features/features.json
+src/interface/src/app/features/features.prod.json
+src/interface/src/app/features/features.dev.json
 
 # Editors
 .vscode/*
