@@ -1,5 +1,6 @@
 {
   "login": true,
+  "new_navigation": true,
   "show_centralcoast": true,
   "show_future_control_panel": false,
   "show_socal": true,
@@ -9,6 +10,5 @@
   "top_percent_slider": true,
   "unlaunched_layers": false,
   "upload_project_area": false,
-  "use_its": false,
-  "new_navigation": true
+  "use_its": false
 }
