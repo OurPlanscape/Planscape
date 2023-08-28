@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 
-import { FeatureService} from './feature.service';
+import { FeatureService } from './feature.service';
 
 /** Guard for a route based on whether a feature flag is enabled. */
 export const createFeatureGuard: (

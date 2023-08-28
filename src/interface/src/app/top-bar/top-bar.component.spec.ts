@@ -121,9 +121,9 @@ describe('TopBarComponent', () => {
     });
   });
 
-  describe('feedback btn', () => {
+  describe('feedback button', () => {
 
-    it('should show the feedback btn when on new_navigation flag is on', ()=>{
+    it('should show the feedback button when on new_navigation flag is on', ()=>{
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
       fixture.detectChanges();
@@ -131,7 +131,7 @@ describe('TopBarComponent', () => {
       expect(feedbackBtn).toBeTruthy();
 
     });
-    it('should not show the btn when new_navigation flag is off ', ()=>{
+    it('should not show the button when new_navigation flag is off ', ()=>{
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
       fixture.detectChanges();
@@ -141,9 +141,9 @@ describe('TopBarComponent', () => {
 
   });
 
-  describe('help btn', () => {
+  describe('help button', () => {
 
-    it('should not show the help btn when on new_navigation flag is on', ()=>{
+    it('should not show the help button when on new_navigation flag is on', ()=>{
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
       fixture.detectChanges();
@@ -151,7 +151,7 @@ describe('TopBarComponent', () => {
       expect(feedbackBtn).toBeFalsy();
 
     });
-    it('should show the help btn when new_navigation flag is off ', ()=>{
+    it('should show the help button when new_navigation flag is off ', ()=>{
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
       fixture.detectChanges();
