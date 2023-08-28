@@ -41,11 +41,15 @@ export class RegionSelectionComponent implements OnInit {
 
   /** Sets the region and navigates to the map. */
   setRegion(regionOption: RegionOption) {
+    console.log(regionOption);
     if (!regionOption.available) {
       return;
     }
+    setTimeout(() => {
     this.sessionService.setRegion(regionOption.type);
     this.mapService.setConfigs();
+    }, 0);
+    
     this.router.navigateByUrl('/map');  
   }
 }
