@@ -6,14 +6,14 @@ import {
   ViewContainerRef,
 } from '@angular/core';
 
-import {FEATURE_FLAG_KEYS, FeatureService} from './feature.service';
+import {FeatureService} from './feature.service';
 
 /** Directive to show or hide a DOM element based on whether a feature flag is enabled. */
 @Directive({
   selector: '[featureFlag]',
 })
 export class FeatureFlagDirective implements OnInit {
-  @Input() featureFlag!: FEATURE_FLAG_KEYS;
+  @Input() featureFlag!: string;
   // if provided as true, will hide the content when the flag is true
   @Input() featureFlagHide= false;
 

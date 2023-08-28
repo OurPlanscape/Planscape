@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { FeaturesConfig } from './features-config';
 
 import config from './features.json';
-export type FEATURE_FLAG_KEYS = keyof typeof config;
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +14,7 @@ export class FeatureService {
   }
 
   /** If feature flag exists, return its value. */
-  isFeatureEnabled(featureName: FEATURE_FLAG_KEYS): boolean | undefined {
+  isFeatureEnabled(featureName: string): boolean | undefined {
     return this.config[featureName];
   }
 }
