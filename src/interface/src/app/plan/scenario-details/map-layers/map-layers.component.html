@@ -1,28 +1,33 @@
 <mat-table [dataSource]="datasource" class="priority-table">
   <ng-container matColumnDef="displayName">
-    <mat-header-cell *matHeaderCellDef>
-      Priorities
-    </mat-header-cell>
+    <mat-header-cell *matHeaderCellDef> Priorities </mat-header-cell>
     <mat-cell *matCellDef="let element" class="level-{{ element.level }}">
       <span class="indent-level-{{ element.level }}"></span>
-      <button mat-icon-button *ngIf="element.children.length" class="expand-button"
+      <button
+        mat-icon-button
+        *ngIf="element.children.length"
+        class="expand-button"
         (click)="toggleExpand(element)">
-        <mat-icon>{{ element.expanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+        <mat-icon>{{
+          element.expanded ? 'expand_less' : 'expand_more'
+        }}</mat-icon>
       </button>
       {{ element.displayName ? element.displayName : element.conditionName }}
     </mat-cell>
   </ng-container>
 
   <ng-container matColumnDef="score">
-    <mat-header-cell *matHeaderCellDef>
-      Condition score
-    </mat-header-cell>
+    <mat-header-cell *matHeaderCellDef> Condition score </mat-header-cell>
     <mat-cell *matCellDef="let element">
-      <mat-spinner [diameter]="24" *ngIf="!conditionScores.has(element.conditionName)"></mat-spinner>
+      <mat-spinner
+        [diameter]="24"
+        *ngIf="!conditionScores.has(element.conditionName)"></mat-spinner>
       <ng-container *ngIf="conditionScores.has(element.conditionName)">
         <div>
           <div>{{ getScoreLabel(element.conditionName) }}</div>
-          <div class="score">{{  getScore(element.conditionName) | number: '1.1-1' }}</div>
+          <div class="score">
+            {{ getScore(element.conditionName) | number: '1.1-1' }}
+          </div>
         </div>
       </ng-container>
     </mat-cell>
@@ -32,7 +37,9 @@
     <mat-header-cell *matHeaderCellDef></mat-header-cell>
     <mat-cell *matCellDef="let element">
       <button mat-icon-button>
-        <mat-icon class="material-symbols-outlined" (click)="toggleVisibility(element)"
+        <mat-icon
+          class="material-symbols-outlined"
+          (click)="toggleVisibility(element)"
           [class.grey-icon]="!element.visible">
           {{ element.visible ? 'image' : 'hide_image' }}
         </mat-icon>
@@ -41,5 +48,7 @@
   </ng-container>
 
   <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-  <mat-row *matRowDef="let row; columns: displayedColumns;" [class.hide-row]="row.hidden"></mat-row>
+  <mat-row
+    *matRowDef="let row; columns: displayedColumns"
+    [class.hide-row]="row.hidden"></mat-row>
 </mat-table>

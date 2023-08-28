@@ -53,9 +53,8 @@ describe('IdentifyProjectAreasComponent', () => {
   });
 
   it('should not require file upload when the "generate areas" button is selected', async () => {
-    const radioButtonGroup: MatRadioGroupHarness = await loader.getHarness(
-      MatRadioGroupHarness
-    );
+    const radioButtonGroup: MatRadioGroupHarness =
+      await loader.getHarness(MatRadioGroupHarness);
 
     // Select 'generate areas' button
     await (await radioButtonGroup.getRadioButtons())[0].check();
@@ -64,9 +63,8 @@ describe('IdentifyProjectAreasComponent', () => {
   });
 
   it('should require file upload when the "upload files" button is selected', async () => {
-    const radioButtonGroup: MatRadioGroupHarness = await loader.getHarness(
-      MatRadioGroupHarness
-    );
+    const radioButtonGroup: MatRadioGroupHarness =
+      await loader.getHarness(MatRadioGroupHarness);
 
     // Select 'upload file' button
     await (await radioButtonGroup.getRadioButtons())[1].check();

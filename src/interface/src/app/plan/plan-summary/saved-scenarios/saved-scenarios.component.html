@@ -7,13 +7,13 @@
     <mat-card-content>
       <p>{{ text1 }}</p>
 
-      <mat-table [dataSource]="scenarios" >
+      <mat-table [dataSource]="scenarios">
         <!-- ID Column -->
         <ng-container matColumnDef="id">
           <mat-header-cell *matHeaderCellDef> Scenario </mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="hover-indicator"></div>
-            {{element.id}}
+            {{ element.id }}
             <mat-checkbox
               class="scenario-checkbox"
               [(ngModel)]="element.selected"
@@ -25,15 +25,21 @@
         <ng-container matColumnDef="starred">
           <mat-header-cell *matHeaderCellDef> Starred by you </mat-header-cell>
           <mat-cell *matCellDef="let element">
-            <button mat-icon-button (click)="$event.stopPropagation(); toggleFavorited(element)">
-              <mat-icon [class.material-symbols-outlined]="!element.favorited">star</mat-icon>
+            <button
+              mat-icon-button
+              (click)="$event.stopPropagation(); toggleFavorited(element)">
+              <mat-icon [class.material-symbols-outlined]="!element.favorited"
+                >star</mat-icon
+              >
             </button>
           </mat-cell>
         </ng-container>
 
         <!-- Project Areas Column -->
         <ng-container matColumnDef="projectAreas">
-          <mat-header-cell *matHeaderCellDef> Number of Project Areas </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>
+            Number of Project Areas
+          </mat-header-cell>
           <mat-cell *matCellDef="let element"></mat-cell>
         </ng-container>
 
@@ -45,7 +51,9 @@
 
         <!-- Estimated Cost Column -->
         <ng-container matColumnDef="estimatedCost">
-          <mat-header-cell *matHeaderCellDef> Estimated cost range </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>
+            Estimated cost range
+          </mat-header-cell>
           <mat-cell *matCellDef="let element"></mat-cell>
         </ng-container>
 
@@ -58,29 +66,38 @@
         <!-- Owner Column -->
         <ng-container matColumnDef="owner">
           <mat-header-cell *matHeaderCellDef> Owner </mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{element.owner}} </mat-cell>
+          <mat-cell *matCellDef="let element"> {{ element.owner }} </mat-cell>
         </ng-container>
 
         <!-- Timestamp Column -->
         <ng-container matColumnDef="createdTimestamp">
           <mat-header-cell *matHeaderCellDef> Date Created </mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{element.createdTimestamp | date:'medium' }} </mat-cell>
+          <mat-cell *matCellDef="let element">
+            {{ element.createdTimestamp | date: 'medium' }}
+          </mat-cell>
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row
           class="scenario-row"
-          *matRowDef="let row; columns: displayedColumns;"
+          *matRowDef="let row; columns: displayedColumns"
           (click)="viewScenario(row.id)"></mat-row>
       </mat-table>
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-button [disabled]="!showDeleteButton()" (click)="deleteSelectedScenarios()">
+      <button
+        mat-button
+        [disabled]="!showDeleteButton()"
+        (click)="deleteSelectedScenarios()">
         <mat-icon>delete</mat-icon>
         DELETE
       </button>
-      <button mat-raised-button [disabled]="!showViewButton()" color="primary" (click)="viewScenario()">
+      <button
+        mat-raised-button
+        [disabled]="!showViewButton()"
+        color="primary"
+        (click)="viewScenario()">
         VIEW
       </button>
     </mat-card-actions>

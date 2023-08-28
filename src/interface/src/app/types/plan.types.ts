@@ -23,7 +23,7 @@ export interface BasePlan {
 export interface PlanPreview {
   id: string;
   name: string;
-  createdTimestamp?: number;  // in milliseconds since epoch
+  createdTimestamp?: number; // in milliseconds since epoch
   region?: Region;
   savedScenarios?: number;
   configurations?: number;
@@ -70,7 +70,7 @@ export interface ProjectConfig {
   max_slope?: number;
   priorities?: string[];
   weights?: number[];
-  createdTimestamp? : number;
+  createdTimestamp?: number;
 }
 
 export interface ProjectArea {

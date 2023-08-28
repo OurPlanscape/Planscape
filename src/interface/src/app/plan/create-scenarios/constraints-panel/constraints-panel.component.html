@@ -10,17 +10,31 @@
         </div>
         <div class="flex-row">
           <div>
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-form-field
+              class="input-field"
+              appearance="outline"
+              floatLabel="always">
               <mat-label>Treatment cost</mat-label>
-              <input class="right-align" formControlName="estimatedCost" matInput type="number">
+              <input
+                class="right-align"
+                formControlName="estimatedCost"
+                matInput
+                type="number" />
               <span matPrefix>$&nbsp;</span>
               <span matSuffix> /acre</span>
             </mat-form-field>
           </div>
           <div>
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-form-field
+              class="input-field"
+              appearance="outline"
+              floatLabel="always">
               <mat-label>Max total cost</mat-label>
-              <input class="right-align" formControlName="maxCost" matInput type="number">
+              <input
+                class="right-align"
+                formControlName="maxCost"
+                matInput
+                type="number" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
           </div>
@@ -35,25 +49,46 @@
         </div>
         <div class="flex-row">
           <div>
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-form-field
+              class="input-field"
+              appearance="outline"
+              floatLabel="always">
               <mat-label>Max slope</mat-label>
-              <input class="right-align" formControlName="maxSlope" matInput type="number">
+              <input
+                class="right-align"
+                formControlName="maxSlope"
+                matInput
+                type="number" />
               <span matSuffix> %</span>
             </mat-form-field>
           </div>
           <div>
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
+            <mat-form-field
+              class="input-field"
+              appearance="outline"
+              floatLabel="always">
               <mat-label>Distance from roads </mat-label>
-              <input class="right-align" formControlName="maxRoadDistance" matInput type="number">
+              <input
+                class="right-align"
+                formControlName="maxRoadDistance"
+                matInput
+                type="number" />
               <span matSuffix> yds</span>
             </mat-form-field>
           </div>
         </div>
         <div class="button-wrapper">
           <div class="small-label">Stand Size</div>
-          <mat-button-toggle-group formControlName="standSize" name="standSize" aria-label="Stand Size">
-            <mat-button-toggle *ngFor="let item of standSizeOptions;" [value]="item"
-              checked>{{item}}</mat-button-toggle>
+          <mat-button-toggle-group
+            formControlName="standSize"
+            name="standSize"
+            aria-label="Stand Size">
+            <mat-button-toggle
+              *ngFor="let item of standSizeOptions"
+              [value]="item"
+              checked
+              >{{ item }}</mat-button-toggle
+            >
           </mat-button-toggle-group>
         </div>
       </div>
@@ -65,8 +100,13 @@
         </div>
         <section class="area-selection">
           <div class="checkbox-column">
-            <mat-checkbox [color]="'primary'" *ngFor="let item of excludedAreasOptions;" [formControlName]="item"
-              [value]="item">{{item}}</mat-checkbox>
+            <mat-checkbox
+              [color]="'primary'"
+              *ngFor="let item of excludedAreasOptions"
+              [formControlName]="item"
+              [value]="item"
+              >{{ item }}</mat-checkbox
+            >
           </div>
         </section>
       </div>
