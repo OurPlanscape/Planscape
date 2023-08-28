@@ -56,12 +56,32 @@ export function defaultMapViewOptions(): MapViewOptions {
   };
 }
 
-export function defaultMapConfigsDictionary(): Record<Region, MapConfig[]> { 
+export function defaultMapConfigsDictionary(): Record<Region, MapConfig[]> {
   return {
-    [Region.SIERRA_NEVADA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-    [Region.SOUTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-    [Region.NORTHERN_CALIFORNIA] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
-    [Region.CENTRAL_COAST] : [defaultMapConfig(), defaultMapConfig(), defaultMapConfig(), defaultMapConfig()],
+    [Region.SIERRA_NEVADA]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+    [Region.SOUTHERN_CALIFORNIA]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+    [Region.NORTHERN_CALIFORNIA]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+    [Region.CENTRAL_COAST]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
   };
 }
 
@@ -86,5 +106,5 @@ export function regionMapCenters(region: Region): L.LatLngTuple {
     default:
       // Defaults to Sierra Nevada center
       return [38.646, -120.548];
-  };
+  }
 }

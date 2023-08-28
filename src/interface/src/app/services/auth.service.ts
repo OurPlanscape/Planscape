@@ -150,7 +150,7 @@ export class AuthService {
   getUser(userId: string): Observable<User> {
     const url = BackendConstants.END_POINT.concat(
       '/users/get_user_by_id/?id=',
-      userId,
+      userId
     );
     return this.http
       .get(url, {
@@ -229,7 +229,10 @@ export class AuthService {
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   canActivate(): Observable<boolean> {
     return this.authService.refreshLoggedInUser().pipe(

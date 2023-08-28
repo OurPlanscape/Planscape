@@ -6,9 +6,9 @@ import * as shp from 'shpjs';
 @Component({
   selector: 'app-identify-project-areas',
   templateUrl: './identify-project-areas.component.html',
-  styleUrls: ['./identify-project-areas.component.scss']
+  styleUrls: ['./identify-project-areas.component.scss'],
 })
-export class IdentifyProjectAreasComponent implements OnInit {
+export class IdentifyProjectAreasComponent {
   @Input() formGroup: FormGroup | undefined;
   @Output() formNextEvent = new EventEmitter<void>();
   @Output() formBackEvent = new EventEmitter<void>();
@@ -17,11 +17,6 @@ export class IdentifyProjectAreasComponent implements OnInit {
   showErrorText: boolean = false;
   showSuccessText: boolean = false;
   showUploader: boolean = false;
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
 
   /** Updates validators for the form based on radio button selection.
    *  If the "generate areas" radio button is selected, uploading an area isn't required.
@@ -69,5 +64,4 @@ export class IdentifyProjectAreasComponent implements OnInit {
       }
     }
   }
-
 }

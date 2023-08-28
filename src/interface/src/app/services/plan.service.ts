@@ -70,12 +70,22 @@ export class PlanService {
     mapShapes: null,
     panelExpanded: true,
   });
-  readonly treatmentGoalsConfig$ = new BehaviorSubject<TreatmentGoalConfig[] | null>(null);
+  readonly treatmentGoalsConfig$ = new BehaviorSubject<
+    TreatmentGoalConfig[] | null
+  >(null);
   readonly selectedRegion$ = this.sessionService.region$;
 
-  constructor(private http: HttpClient, private sessionService: SessionService, private mapService: MapService) {
+  constructor(
+    private http: HttpClient,
+    private sessionService: SessionService,
+    private mapService: MapService
+  ) {
     this.http
-      .get<TreatmentGoalConfig[]>(BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=' + `${this.mapService.regionToString(this.selectedRegion$.getValue())}`)
+      .get<TreatmentGoalConfig[]>(
+        BackendConstants.END_POINT +
+          '/plan/treatment_goals_config/?region_name=' +
+          `${this.mapService.regionToString(this.selectedRegion$.getValue())}`
+      )
       .pipe(take(1))
       .subscribe((config: TreatmentGoalConfig[]) => {
         this.treatmentGoalsConfig$.next(config);
@@ -337,12 +347,16 @@ export class PlanService {
   updateScenarioNotes(scenario: Scenario): Observable<number> {
     const url = BackendConstants.END_POINT.concat('/plan/update_scenario/');
     return this.http
-      .patch<number>(url, {
-        id: scenario.id,
-        notes: scenario.notes,
-      }, {
-        withCredentials: true,
-      })
+      .patch<number>(
+        url,
+        {
+          id: scenario.id,
+          notes: scenario.notes,
+        },
+        {
+          withCredentials: true,
+        }
+      )
       .pipe(take(1));
   }
 

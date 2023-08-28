@@ -7,7 +7,10 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./scenario-confirmation.component.scss'],
 })
 export class ScenarioConfirmationComponent {
-  constructor(private route: ActivatedRoute, private router: Router) {}
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
 
   navigateToAreaOverview(): void {
     const planId = this.route.snapshot.paramMap.get('id');

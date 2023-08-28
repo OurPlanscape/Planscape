@@ -26,7 +26,7 @@ import { AuthService, PlanService } from '../services';
 export class PlanComponent implements OnInit, OnDestroy {
   plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  planOwner$ = new Observable<User | null>;
+  planOwner$ = new Observable<User | null>();
   planNotFound: boolean = false;
   showOverview$ = new BehaviorSubject<boolean>(false);
 

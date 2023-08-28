@@ -9,12 +9,9 @@ describe('SignInCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ SignInDialogComponent ],
-      providers: [
-        { provide: MatDialogRef, useValue: {} },
-      ],
-    })
-    .compileComponents();
+      declarations: [SignInDialogComponent],
+      providers: [{ provide: MatDialogRef, useValue: {} }],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SignInDialogComponent);
     component = fixture.componentInstance;

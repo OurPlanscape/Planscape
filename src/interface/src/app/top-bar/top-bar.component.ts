@@ -14,7 +14,7 @@ import { Region, RegionOption, regionOptions } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 
 @Component({
-  selector: 'top-bar',
+  selector: 'app-top-bar',
   templateUrl: './top-bar.component.html',
   styleUrls: ['./top-bar.component.scss'],
 })
@@ -35,7 +35,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private router: Router,
     private sessionService: SessionService,
-    private mapService: MapService,
+    private mapService: MapService
   ) {}
 
   ngOnInit(): void {
@@ -44,7 +44,11 @@ export class TopBarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
         if (user) {
-          this.displayName = user.firstName ? user.firstName : (user.username ? user.username : '');
+          this.displayName = user.firstName
+            ? user.firstName
+            : user.username
+            ? user.username
+            : '';
         } else {
           this.displayName = 'Guest';
         }
@@ -70,9 +74,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
   setRegion(event: Event) {
     // The built-in type for event is generic, so it needs to be cast
     const region = (event.target as HTMLSelectElement).value as Region;
-    this.sessionService.setRegion(region);  
+    this.sessionService.setRegion(region);
     this.mapService.setConfigs();
-    if(this.router.url == '/home'){
+    if (this.router.url == '/home') {
       this.router.navigateByUrl('/map');
     }
   }
