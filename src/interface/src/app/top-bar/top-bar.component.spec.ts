@@ -7,11 +7,11 @@ import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from '../material/material.module';
 import { AuthService, SessionService } from '../services';
 import { Region, User } from '../types';
-import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
+import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
-import { FeatureService } from '../features/feature.service';
 import { FeaturesModule } from '../features/features.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FEATURES_JSON } from '../features/features-config';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -43,24 +43,27 @@ describe('TopBarComponent', () => {
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: SessionService, useValue: mockSessionService },
         {
-          provide: FeatureService,
-          useValue: { isFeatureEnabled: () => false },
+          provide: FEATURES_JSON,
+          useValue: { new_navigation: true },
         },
       ],
     }).compileComponents();
-
-    fixture = TestBed.createComponent(TopBarComponent);
-    component = fixture.componentInstance;
   });
 
-  it('should create', () => {
+  function setUpComponent() {
+    fixture = TestBed.createComponent(TopBarComponent);
+    component = fixture.componentInstance;
     fixture.detectChanges();
+  }
+
+  it('should create', () => {
+    setUpComponent();
     expect(component).toBeTruthy();
   });
 
   describe('actions', () => {
     beforeEach(() => {
-      fixture.detectChanges();
+      setUpComponent();
     });
 
     it('should toggle sidenav', () => {
@@ -97,7 +100,7 @@ describe('TopBarComponent', () => {
 
   describe('username', () => {
     beforeEach(() => {
-      fixture.detectChanges();
+      setUpComponent();
     });
 
     it('should be "Guest" when no user is logged in', () => {
@@ -122,18 +125,17 @@ describe('TopBarComponent', () => {
 
   describe('feedback button', () => {
     it('should show the feedback button when on new_navigation flag is on', () => {
-      const featureService = TestBed.inject(FeatureService);
-      spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
-      fixture.detectChanges();
+      setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
         By.css('[data-id="feedback"]')
       );
       expect(feedbackBtn).toBeTruthy();
     });
     it('should not show the button when new_navigation flag is off ', () => {
-      const featureService = TestBed.inject(FeatureService);
-      spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
-      fixture.detectChanges();
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { new_navigation: false },
+      });
+      setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
         By.css('[data-id="feedback"]')
       );
@@ -143,18 +145,17 @@ describe('TopBarComponent', () => {
 
   describe('help button', () => {
     it('should not show the help button when on new_navigation flag is on', () => {
-      const featureService = TestBed.inject(FeatureService);
-      spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
-      fixture.detectChanges();
+      setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
         By.css('[data-id="help"]')
       );
       expect(feedbackBtn).toBeFalsy();
     });
     it('should show the help button when new_navigation flag is off ', () => {
-      const featureService = TestBed.inject(FeatureService);
-      spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
-      fixture.detectChanges();
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { new_navigation: false },
+      });
+      setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
         By.css('[data-id="help"]')
       );
