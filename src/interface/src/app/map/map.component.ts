@@ -7,8 +7,8 @@ import {
   EnvironmentInjector,
   OnDestroy,
   OnInit,
-  ChangeDetectorRef, 
-  DoCheck
+  ChangeDetectorRef,
+  DoCheck,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
@@ -22,7 +22,7 @@ import {
   Subject,
   take,
   takeUntil,
-  of
+  of,
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
@@ -49,20 +49,19 @@ import {
   NONE_BOUNDARY_CONFIG,
   NONE_COLORMAP,
   Region,
-  regionMapCenters
+  regionMapCenters,
 } from '../types';
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
-import features from '../features/features.json'
+import features from '../features/features.json';
 
 export enum AreaCreationAction {
   NONE = 0,
   DRAW = 1,
   UPLOAD = 2,
 }
-
 
 @Component({
   selector: 'app-map',
@@ -82,7 +81,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   boundaryConfig$: Observable<BoundaryConfig[] | null>;
   conditionsConfig$: Observable<ConditionsConfig | null>;
-  regionRecord$: string= "";
+  regionRecord$: string = '';
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
   selectedMap$: Observable<Map | undefined>;
@@ -137,7 +136,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private planService: PlanService,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
       takeUntil(this.destroy$)
@@ -149,13 +148,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       takeUntil(this.destroy$)
     );
     this.sessionService.mapViewOptions$
-    .pipe(take(1))
-    .subscribe((mapViewOptions: MapViewOptions | null) => {
-      if (mapViewOptions) {
-        this.mapViewOptions$.next(mapViewOptions);
-      }
-    });
-  
+      .pipe(take(1))
+      .subscribe((mapViewOptions: MapViewOptions | null) => {
+        if (mapViewOptions) {
+          this.mapViewOptions$.next(mapViewOptions);
+        }
+      });
+
     this.planState$ = this.planService.planState$.pipe(
       takeUntil(this.destroy$)
     );
@@ -199,9 +198,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   ngOnInit(): void {
-    this.selectedRegion$
-    .pipe(take(1))
-    .subscribe((region) => {
+    this.selectedRegion$.pipe(take(1)).subscribe((region) => {
       this.regionRecord$ = region!;
     });
     this.restoreSession();
@@ -217,36 +214,33 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   ngDoCheck(): void {
-    this.selectedRegion$
-    .pipe(take(1))
-    .subscribe((region) => {
+    this.selectedRegion$.pipe(take(1)).subscribe((region) => {
       if (this.regionRecord$ != region) {
         this.regionRecord$ = region!;
         this.sessionService.mapConfigs$
-        .pipe(take(1))
-        .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
-          if (mapConfigs && region) {
-            var regionMaps = mapConfigs[region];
-            if (regionMaps) {
-              regionMaps.forEach((mapConfig, index) => {
-                this.maps[index].config = mapConfig;
-                this.boundaryConfig$
-                .pipe(filter((config) => !!config))
-                .subscribe((config) => {
-                // Ensure the radio button corresponding to the saved selection is selected.
-                  const boundaryConfig = config?.find(
-                  (boundary) =>
-                    boundary.boundary_name ===
-                    mapConfig.boundaryLayerConfig.boundary_name
-                  );
-                  this.maps[index].config.boundaryLayerConfig = boundaryConfig
-                  ? boundaryConfig
-                  : NONE_BOUNDARY_CONFIG;
+          .pipe(take(1))
+          .subscribe((mapConfigs: Record<Region, MapConfig[]> | null) => {
+            if (mapConfigs && region) {
+              var regionMaps = mapConfigs[region];
+              if (regionMaps) {
+                regionMaps.forEach((mapConfig, index) => {
+                  this.maps[index].config = mapConfig;
+                  this.boundaryConfig$
+                    .pipe(filter((config) => !!config))
+                    .subscribe((config) => {
+                      // Ensure the radio button corresponding to the saved selection is selected.
+                      const boundaryConfig = config?.find(
+                        (boundary) =>
+                          boundary.boundary_name ===
+                          mapConfig.boundaryLayerConfig.boundary_name
+                      );
+                      this.maps[index].config.boundaryLayerConfig =
+                        boundaryConfig ? boundaryConfig : NONE_BOUNDARY_CONFIG;
+                    });
                 });
-              });
+              }
             }
-          }
-        });
+          });
         this.maps.forEach((map: Map) => {
           this.initMap(map, map.id);
         });
@@ -280,19 +274,19 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       });
     this.sessionService.mapConfigs$
       .pipe(take(1))
-      .subscribe((mapConfigs:  Record<Region, MapConfig[]> | null) => {
+      .subscribe((mapConfigs: Record<Region, MapConfig[]> | null) => {
         this.selectedRegion$
-        .pipe(take(1))
-        .subscribe((region: Region | null) => {
-        if (mapConfigs && region) {
-          var regionMaps = mapConfigs[region]
-          if(regionMaps){
-          regionMaps.forEach((mapConfig, index) => {
-            this.maps[index].config = mapConfig;
+          .pipe(take(1))
+          .subscribe((region: Region | null) => {
+            if (mapConfigs && region) {
+              var regionMaps = mapConfigs[region];
+              if (regionMaps) {
+                regionMaps.forEach((mapConfig, index) => {
+                  this.maps[index].config = mapConfig;
+                });
+              }
+            }
           });
-        }
-        }
-        });
         this.boundaryConfig$
           .pipe(filter((config) => !!config))
           .subscribe((config) => {
@@ -309,7 +303,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
             });
           });
       });
-      this.cdr.detectChanges();
+    this.cdr.detectChanges();
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
@@ -400,9 +394,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     return component.location.nativeElement;
   }
 
-  private getBoundaryLayerVector(
-    vectorName: string
-  ): Observable<L.Layer> {
+  private getBoundaryLayerVector(vectorName: string): Observable<L.Layer> {
     return this.mapService.getBoundaryShapes(vectorName);
   }
 
@@ -415,12 +407,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       return;
     }
 
-    const openedDialog = this.dialog.open(
-      PlanCreateDialogComponent,
-      {
-        maxWidth: '560px'
-      }
-    );
+    const openedDialog = this.dialog.open(PlanCreateDialogComponent, {
+      maxWidth: '560px',
+    });
 
     openedDialog.afterClosed().subscribe((result) => {
       if (result) {
@@ -430,12 +419,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   private openSignInDialog() {
-    this.dialog.open(
-      SignInDialogComponent,
-      {
-        maxWidth: '560px'
-      }
-    );
+    this.dialog.open(SignInDialogComponent, {
+      maxWidth: '560px',
+    });
   }
 
   private createPlan(name: string, shape: GeoJSON.GeoJSON) {
@@ -561,8 +547,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  /** Gets the selected region geojson and renders it on the map. 
-   * Currently unused. 
+  /** Gets the selected region geojson and renders it on the map.
+   * Currently unused.
    * */
   private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
     if (!selectedRegion) return;
@@ -616,7 +602,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       map.legend = undefined;
       return;
     }
-
   }
 
   /** Change the opacity of the currently shown data layer on all maps (if any). */
@@ -625,25 +610,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.maps.forEach((map: Map) => {
       map.config.dataLayerConfig.opacity = opacity;
       this.mapManager.changeOpacity(map);
-    })
+    });
   }
 
   /** Return the selected map's data layer opacity. */
   getOpacityForSelectedMap(): Observable<number | undefined> {
     var dataLayerConfigOpacityDefined = true;
-    this.selectedMap$
-    .pipe(take(1))
-    .subscribe((selectedMap: any) => {
-      if(selectedMap?.config.dataLayerConfig.opacity == null){
+    this.selectedMap$.pipe(take(1)).subscribe((selectedMap: any) => {
+      if (selectedMap?.config.dataLayerConfig.opacity == null) {
         dataLayerConfigOpacityDefined = false;
       }
-    })
-    if(dataLayerConfigOpacityDefined){
-    return this.selectedMap$.pipe(
-      map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
-    );
-    }
-    else{
+    });
+    if (dataLayerConfigOpacityDefined) {
+      return this.selectedMap$.pipe(
+        map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
+      );
+    } else {
       return of(this.mapManager.defaultOpacity);
     }
   }

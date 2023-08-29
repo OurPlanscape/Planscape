@@ -65,7 +65,7 @@ export interface PillarConfig extends DataLayerConfig {
 export enum ConditionTreeType {
   RAW = 'Raw',
   TRANSLATED = 'Translated',
-  FUTURE = "Future",
+  FUTURE = 'Future',
 }
 
 export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {

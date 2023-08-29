@@ -7,8 +7,8 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { FeaturesModule } from '../features/features.module';
 import { AuthService } from '../services';
 import { NavigationComponent } from './navigation.component';
-import {FeatureService} from "../features/feature.service";
-import {By} from "@angular/platform-browser";
+import { FeatureService } from '../features/feature.service';
+import { By } from '@angular/platform-browser';
 import createSpyObj = jasmine.createSpyObj;
 
 describe('NavigationComponent', () => {
@@ -39,7 +39,6 @@ describe('NavigationComponent', () => {
     });
     fixture = TestBed.createComponent(NavigationComponent);
     component = fixture.componentInstance;
-
   });
 
   it('can load instance', () => {
@@ -52,26 +51,22 @@ describe('NavigationComponent', () => {
     expect(component.sidebarOpen).toEqual(false);
   });
 
-  it('should show sidebar if not on new_navigation fflag', ()=>{
+  it('should show sidebar if not on new_navigation fflag', () => {
     const service = TestBed.inject(FeatureService);
-    spyOn(service, "isFeatureEnabled").and.returnValue(false);
+    spyOn(service, 'isFeatureEnabled').and.returnValue(false);
     fixture.detectChanges();
 
-    const sidebar = fixture.debugElement.query(
-        By.css('.sidenav')
-    );
+    const sidebar = fixture.debugElement.query(By.css('.sidenav'));
     expect(sidebar).toBeTruthy();
   });
 
-  it('should not show sidebar if on navigation fflag', ()=>{
+  it('should not show sidebar if on navigation fflag', () => {
     const service = TestBed.inject(FeatureService);
-    spyOn(service, "isFeatureEnabled").and.returnValue(true);
+    spyOn(service, 'isFeatureEnabled').and.returnValue(true);
     fixture.detectChanges();
-    const sidebar = fixture.debugElement.query(
-        By.css('.sidenav')
-    );
+    const sidebar = fixture.debugElement.query(By.css('.sidenav'));
     expect(sidebar).toBeFalsy();
-  })
+  });
 
   it(`isLoggedIn$ has default value`, () => {
     fixture.detectChanges();

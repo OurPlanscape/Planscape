@@ -17,8 +17,7 @@ describe('PopupService', () => {
   describe('makeDetailsPopup', () => {
     it('returns html', () => {
       const data = 'Test data';
-      const expectedHtml = `` +
-      `<div>Name: Test data</div>`
+      const expectedHtml = `` + `<div>Name: Test data</div>`;
 
       expect(service.makeDetailsPopup(data)).toEqual(expectedHtml);
     });

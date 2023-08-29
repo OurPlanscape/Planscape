@@ -17,7 +17,12 @@ import {
 import { SessionService } from 'src/app/services';
 import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
-import { FrontendConstants, regionMapCenters, Plan, Region } from 'src/app/types';
+import {
+  FrontendConstants,
+  regionMapCenters,
+  Plan,
+  Region,
+} from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
 
@@ -48,7 +53,11 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private layer: string = '';
   private shapes: any | null = null;
 
-  constructor(private planService: PlanService, private session: SessionService, private router: Router) {
+  constructor(
+    private planService: PlanService,
+    private session: SessionService,
+    private router: Router
+  ) {
     this.selectedRegion$ = this.session.region$;
   }
 

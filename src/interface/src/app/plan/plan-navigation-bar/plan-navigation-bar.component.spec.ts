@@ -9,10 +9,9 @@ describe('BottomBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ MaterialModule ],
-      declarations: [ PlanNavigationBarComponent ]
-    })
-    .compileComponents();
+      imports: [MaterialModule],
+      declarations: [PlanNavigationBarComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PlanNavigationBarComponent);
     component = fixture.componentInstance;
