@@ -1,3 +1,4 @@
 bracketSameLine: true
+htmlWhitespaceSensitivity: "ignore"
 trailingComma: "es5"
 singleQuote: true

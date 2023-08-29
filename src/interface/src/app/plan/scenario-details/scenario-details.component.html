@@ -4,24 +4,24 @@
   <div
     class="scenario-details-panel-content"
     [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
-    <span class="scenario-details-header"
-      >Scenario {{ (scenario$ | async)?.id }} Details</span
-    >
+    <span class="scenario-details-header">
+      Scenario {{ (scenario$ | async)?.id }} Details
+    </span>
     <mat-divider></mat-divider>
 
     <div>
       <mat-tab-group>
-        <mat-tab class="scenario-tab" label="OUTCOME"
-          ><app-outcome
+        <mat-tab class="scenario-tab" label="OUTCOME">
+          <app-outcome
             [scenario]="scenario$ | async"
-            [plan]="plan$ | async"></app-outcome
-        ></mat-tab>
+            [plan]="plan$ | async"></app-outcome>
+        </mat-tab>
         <mat-tab class="scenario-tab" label="MAP LAYERS">
           <app-map-layers
             [plan]="plan$ | async"
             (changeConditionEvent)="changeCondition($event)"></app-map-layers>
         </mat-tab>
-        <mat-tab class="scenario-tab" label="INFO"> Info </mat-tab>
+        <mat-tab class="scenario-tab" label="INFO">Info</mat-tab>
       </mat-tab-group>
     </div>
 

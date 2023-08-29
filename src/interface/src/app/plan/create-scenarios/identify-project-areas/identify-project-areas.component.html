@@ -30,9 +30,9 @@
         requiredFileType="application/zip"
         (fileEvent)="loadFile($event)"></file-uploader>
 
-      <mat-error *ngIf="showErrorText"
-        >[Error] Not a valid shapefile!</mat-error
-      >
+      <mat-error *ngIf="showErrorText">
+        [Error] Not a valid shapefile!
+      </mat-error>
       <div class="success-text" *ngIf="showSuccessText">
         <mat-icon class="success-icon">check_circle</mat-icon>
         {{ filename }} uploaded

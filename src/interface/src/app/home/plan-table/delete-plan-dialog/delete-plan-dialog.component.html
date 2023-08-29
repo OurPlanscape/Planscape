@@ -1,5 +1,9 @@
 <h1>Delete {{ data.length }} plan{{ data.length > 1 ? 's' : '' }}</h1>
-<p>Are you sure? <b>Warning</b>: This operation cannot be reversed.</p>
+<p>
+  Are you sure?
+  <b>Warning</b>
+  : This operation cannot be reversed.
+</p>
 <div class="button-row">
   <button mat-raised-button (click)="cancel()">CANCEL</button>
   <button mat-raised-button (click)="confirm()" color="error" cdkFocusInitial>

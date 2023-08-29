@@ -1,9 +1,9 @@
 <div class="configurations-wrapper">
   <mat-card [style.margin-top]="'24px'">
     <mat-card-header>
-      <mat-card-title
-        >My Configurations ({{ configurations.length }})</mat-card-title
-      >
+      <mat-card-title>
+        My Configurations ({{ configurations.length }})
+      </mat-card-title>
     </mat-card-header>
 
     <mat-card-content>
@@ -25,7 +25,7 @@
 
         <!-- Timestamp Column -->
         <ng-container matColumnDef="createdTimestamp">
-          <mat-header-cell *matHeaderCellDef> Date Created </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Date Created</mat-header-cell>
           <mat-cell *matCellDef="let element">
             {{ element.createdTimestamp | date: 'medium' }}
           </mat-cell>
@@ -33,10 +33,8 @@
 
         <!-- Score Type Column -->
         <ng-container matColumnDef="scoreType">
-          <mat-header-cell *matHeaderCellDef>
-            Calculating Score
-          </mat-header-cell>
-          <mat-cell *matCellDef="let element"> Condition Score </mat-cell>
+          <mat-header-cell *matHeaderCellDef>Calculating Score</mat-header-cell>
+          <mat-cell *matCellDef="let element">Condition Score</mat-cell>
         </ng-container>
 
         <!-- Priorities Column -->

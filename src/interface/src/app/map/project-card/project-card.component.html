@@ -16,9 +16,8 @@
       <p>Treatments here:</p>
       <ul>
         <li *ngFor="let treatment of project.treatments">
-          <b>{{ treatment.TREATMENT_NAME }}</b> ({{
-            treatment.ACTIVITY_STATUS
-          }}): {{ treatment.TREATMENT_OBJECTIVE }}
+          <b>{{ treatment.TREATMENT_NAME }}</b>
+          ({{ treatment.ACTIVITY_STATUS }}): {{ treatment.TREATMENT_OBJECTIVE }}
         </li>
       </ul>
     </mat-card-content>
