@@ -2,6 +2,7 @@ library("DBI")
 library("RPostgreSQL")
 library("optparse")
 library("dbplyr")
+library("rjson")
 
 readRenviron("src/planscape/planscape/.env")
 
@@ -32,15 +33,10 @@ get_connection <- function() {
   return(connection)
 }
 
-get_scenario_data <- function(scenario_id) {
-  my_scenario <- list(
-    planning_area_id = 1,
-    scenario_id = scenario_id,
-    name = "my scenario",
-    notes = "my notes",
-    configuration = list(foo = "bar", bar = "baz")
-  )
-  return(my_scenario)
+get_scenario_data <- function(connection, scenario_id) {
+  query <- "SELECT * FROM planning_scenario WHERE id = $1;"
+  result <- dbGetQuery(connection, query, params = list(scenario_id))
+  return(head(result, 1))
 }
 
 
@@ -51,32 +47,48 @@ now_utc <- function() {
 
 call_forsys <- function(scenario) {
   now <- now_utc()
-  # call forsys
+  configuration <- fromJSON(toString(scenario["configuration"]))
 
-  scenario_result <- list(
-    now,
-    now,
-    scenario$scenario_id,
-    "SUCCESS"
+  print("Calling FORSYS")
+  print("scenario")
+  print(scenario)
+  print("configuration")
+  print(configuration)
+
+  sample_json <- list(
+    result = list(
+      scores = list(10, 20, 30),
+      stands = list(
+        stand_1 = 10,
+        stand_2 = 20,
+        stand_3 = 30
+      )
+    )
+  )
+
+  scenario_result <- data.frame(
+    created_at = now,
+    updated_at = now,
+    scenario_id = scenario$id,
+    status = "SUCCESS",
+    result = toJSON(sample_json)
   )
   return(scenario_result)
 }
 
 create_scenario_result <- function(connection, result) {
-  query <- "INSERT INTO planning_scenarioresult (
-    created_at,
-    updated_at,
-    scenario_id,
-    status)
-  VALUES ($1, $2, $3, $4)"
-  rs <- dbSendStatement(connection, query, params = result)
-  dbClearResult(rs)
+  dbWriteTable(
+    connection, c("planning_scenarioresult"),
+    value = result,
+    append = TRUE,
+    row.names = FALSE
+  )
 }
 
 main <- function(scenario_id) {
   sprintf("Scenario chosen is %s", scenario_id)
   connection <- get_connection()
-  scenario <- get_scenario_data(scenario_id)
+  scenario <- get_scenario_data(connection, scenario_id)
   result <- call_forsys(scenario)
   create_scenario_result(connection, result)
   dbReadTable(connection, "planning_scenarioresult")
