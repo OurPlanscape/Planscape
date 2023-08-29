@@ -9,6 +9,9 @@ import { AuthService, SessionService } from '../services';
 import { Region, User } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
+import {FeatureService} from "../features/feature.service";
+import {FeaturesModule} from "../features/features.module";
+import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -32,69 +35,72 @@ describe('TopBarComponent', () => {
       setRegion: () => {},
     };
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule],
+      imports: [HttpClientTestingModule, MaterialModule, FeaturesModule],
       declarations: [TopBarComponent],
+      schemas:[CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: SessionService, useValue: mockSessionService },
+        { provide: FeatureService, useValue: { isFeatureEnabled: () => false}}
       ],
     }).compileComponents();
 
+
+
     fixture = TestBed.createComponent(TopBarComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should toggle sidenav', () => {
-    spyOn(component.toggleEvent, 'emit');
-
-    // Act: click on the menu icon
-    const menuButton = fixture.debugElement.query(
-      By.css('[data-testid="menu-button"]')
-    );
-    const clickEvent = new MouseEvent('click');
-    menuButton.triggerEventHandler('click', clickEvent);
-
-    // Assert: expect that the toggleEvent emits the Event
-    expect(component.toggleEvent.emit).toHaveBeenCalledOnceWith(clickEvent);
-  });
-
-  it('should open account dialog', () => {
-    const fakeMatDialog: MatDialog =
-      fixture.debugElement.injector.get(MatDialog);
-
-    // Act: click on the account icon
-    const accountButton = fixture.debugElement.query(
-      By.css('[data-testid="account-button"]')
-    );
-    const clickEvent = new MouseEvent('click');
-    accountButton.triggerEventHandler('click', clickEvent);
-
-    // Assert: expect that the dialog opens
-    expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(AccountDialogComponent);
-  });
-
-  describe('Region selection dropdown', () => {
-    it('should set the region', () => {
-      const setRegionSpy = spyOn<any>(mockSessionService, 'setRegion');
-      const regionDropdown = fixture.debugElement.query(
-        By.css('[class="region-dropdown"]')
-      ).nativeElement;
-
-      regionDropdown.value = regionDropdown.options[0].value;
-      regionDropdown.dispatchEvent(new Event('change'));
+  describe('actions', ()=>{
+    beforeEach(()=>{
       fixture.detectChanges();
-
-      expect(setRegionSpy).toHaveBeenCalledOnceWith(regionDropdown.value);
     });
-  });
+
+    it('should toggle sidenav', () => {
+      spyOn(component.toggleEvent, 'emit');
+
+      // Act: click on the menu icon
+      const menuButton = fixture.debugElement.query(
+        By.css('[data-testid="menu-button"]')
+      );
+      const clickEvent = new MouseEvent('click');
+      menuButton.triggerEventHandler('click', clickEvent);
+
+      // Assert: expect that the toggleEvent emits the Event
+      expect(component.toggleEvent.emit).toHaveBeenCalledOnceWith(clickEvent);
+    });
+
+    it('should open account dialog', () => {
+      const fakeMatDialog: MatDialog =
+        fixture.debugElement.injector.get(MatDialog);
+
+      // Act: click on the account icon
+      const accountButton = fixture.debugElement.query(
+        By.css('[data-testid="account-button"]')
+      );
+      const clickEvent = new MouseEvent('click');
+      accountButton.triggerEventHandler('click', clickEvent);
+
+      // Assert: expect that the dialog opens
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(AccountDialogComponent);
+    });
+  })
+
+
 
   describe('username', () => {
+
+    beforeEach(()=>{
+      fixture.detectChanges();
+    });
+
     it('should be "Guest" when no user is logged in', () => {
       expect(component.displayName).toEqual('Guest');
     });
@@ -113,5 +119,45 @@ describe('TopBarComponent', () => {
 
       expect(component.displayName).toEqual('User');
     });
+  });
+
+  describe('feedback button', () => {
+
+    it('should show the feedback button when on new_navigation flag is on', ()=>{
+      const featureService = TestBed.inject(FeatureService);
+      spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
+      fixture.detectChanges();
+      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="feedback"]'));
+      expect(feedbackBtn).toBeTruthy();
+
+    });
+    it('should not show the button when new_navigation flag is off ', ()=>{
+      const featureService = TestBed.inject(FeatureService);
+      spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
+      fixture.detectChanges();
+      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="feedback"]'));
+      expect(feedbackBtn).toBeFalsy();
+    });
+
+  });
+
+  describe('help button', () => {
+
+    it('should not show the help button when on new_navigation flag is on', ()=>{
+      const featureService = TestBed.inject(FeatureService);
+      spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
+      fixture.detectChanges();
+      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="help"]'));
+      expect(feedbackBtn).toBeFalsy();
+
+    });
+    it('should show the help button when new_navigation flag is off ', ()=>{
+      const featureService = TestBed.inject(FeatureService);
+      spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
+      fixture.detectChanges();
+      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="help"]'));
+      expect(feedbackBtn).toBeTruthy();
+    });
+
   });
 });

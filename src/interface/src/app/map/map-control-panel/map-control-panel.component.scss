@@ -155,3 +155,10 @@ h3 {
 ::ng-deep .mat-tab-label {
   min-width: 60px !important;
 }
+
+.region-wrapper {
+  display: flex;
+  padding: 0 24px 24px;
+  align-items: center;
+  justify-content: space-between;
+}
