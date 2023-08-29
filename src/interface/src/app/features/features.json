@@ -1,5 +1,6 @@
 {
   "login": true,
+  "new_navigation": true,
   "show_centralcoast": true,
   "show_future_control_panel": false,
   "show_socal": true,
