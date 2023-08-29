@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RegionDropdownComponent } from './region-dropdown.component';
-import {By} from "@angular/platform-browser";
-import {AuthService, SessionService} from "../services";
-import {HttpClientTestingModule} from "@angular/common/http/testing";
-import {MaterialModule} from "../material/material.module";
-import {BehaviorSubject} from "rxjs";
-import {Region, User} from "../types";
+import { By } from '@angular/platform-browser';
+import { AuthService, SessionService } from '../services';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MaterialModule } from '../material/material.module';
+import { BehaviorSubject } from 'rxjs';
+import { Region, User } from '../types';
 
 describe('RegionDropdownComponent', () => {
   let component: RegionDropdownComponent;
@@ -24,13 +24,12 @@ describe('RegionDropdownComponent', () => {
     };
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MaterialModule],
-      declarations: [ RegionDropdownComponent ],
+      declarations: [RegionDropdownComponent],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
         { provide: SessionService, useValue: mockSessionService },
       ],
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RegionDropdownComponent);
     component = fixture.componentInstance;

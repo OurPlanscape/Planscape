@@ -6,14 +6,18 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { PlanService, PlanState } from 'src/app/services';
-import { Region, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
+import {
+  Region,
+  TreatmentGoalConfig,
+  TreatmentQuestionConfig,
+} from 'src/app/types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 
-// TODO Update commented tests once all new configs are in 
+// TODO Update commented tests once all new configs are in
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -22,10 +26,10 @@ describe('CreateScenariosComponent', () => {
   let fakeGeoJson: GeoJSON.GeoJSON;
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: "",
+    question_text: '',
     priorities: [''],
-    weights: [0]
-  }
+    weights: [0],
+  };
 
   beforeEach(async () => {
     fakeGeoJson = {
@@ -63,21 +67,20 @@ describe('CreateScenariosComponent', () => {
           mapShapes: null,
           panelExpanded: true,
         }),
-        treatmentGoalsConfig$: new BehaviorSubject<TreatmentGoalConfig[] | null>([
+        treatmentGoalsConfig$: new BehaviorSubject<
+          TreatmentGoalConfig[] | null
+        >([
           {
-            category_name: "test_category",
-            questions: [{
-              question_text: "test_question",
-              priorities: [
-                "test_priority"
-              ],
-              weights: [
-                1
-              ]
-            }
-            ]
-          }
-        ])
+            category_name: 'test_category',
+            questions: [
+              {
+                question_text: 'test_question',
+                priorities: ['test_priority'],
+                weights: [1],
+              },
+            ],
+          },
+        ]),
       }
     );
 
@@ -101,18 +104,21 @@ describe('CreateScenariosComponent', () => {
     expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
 
     component.formGroups[1].valueChanges.subscribe((_) => {
-      expect(
-        component.formGroups[1].get('budgetForm.maxCost')?.value
-      ).toEqual(100);
+      expect(component.formGroups[1].get('budgetForm.maxCost')?.value).toEqual(
+        100
+      );
     });
   });
 
-
   it('should emit create scenario event', async () => {
     spyOn(component, 'createScenario');
-    component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
+    component.formGroups[0]
+      .get('selectedQuestion')
+      ?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
+    component.formGroups[1]
+      .get('physicalConstraintForm.maxRoadDistance')
+      ?.setValue(1);
     fixture.detectChanges();
 
     const buttonHarness: MatButtonHarness = await loader.getHarness(
@@ -123,7 +129,6 @@ describe('CreateScenariosComponent', () => {
     await buttonHarness.click();
 
     expect(component.createScenario).toHaveBeenCalled();
-
   });
 
   it('should disable Generate button if form is invalid', async () => {
@@ -131,7 +136,9 @@ describe('CreateScenariosComponent', () => {
       MatButtonHarness.with({ text: /GENERATE/ })
     );
     component.formGroups[0].markAsDirty();
-    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(-1);
+    component.formGroups[1]
+      .get('physicalConstraintForm.maxRoadDistance')
+      ?.setValue(-1);
     fixture.detectChanges();
 
     // Click on "GENERATE SCENARIO" button
@@ -144,9 +151,13 @@ describe('CreateScenariosComponent', () => {
     const buttonHarness: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /GENERATE/ })
     );
-    component.formGroups[0].get('selectedQuestion')?.setValue(defaultSelectedQuestion);
+    component.formGroups[0]
+      .get('selectedQuestion')
+      ?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.maxRoadDistance')?.setValue(1);
+    component.formGroups[1]
+      .get('physicalConstraintForm.maxRoadDistance')
+      ?.setValue(1);
     component.generatingScenario = false;
     fixture.detectChanges();
 

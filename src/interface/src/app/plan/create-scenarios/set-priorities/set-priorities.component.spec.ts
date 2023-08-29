@@ -12,7 +12,12 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { Plan, Region, TreatmentQuestionConfig, TreatmentGoalConfig } from 'src/app/types';
+import {
+  Plan,
+  Region,
+  TreatmentQuestionConfig,
+  TreatmentGoalConfig,
+} from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
@@ -23,7 +28,7 @@ import {
   SetPrioritiesComponent,
 } from './set-priorities.component';
 
-// TODO Update commented tests once all new configs are in 
+// TODO Update commented tests once all new configs are in
 
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
@@ -36,13 +41,13 @@ describe('SetPrioritiesComponent', () => {
   const defaultSelectedQuestion: TreatmentQuestionConfig = {
     question_text: '',
     priorities: [''],
-    weights: [0]
-  }
+    weights: [0],
+  };
   const testQuestion: TreatmentQuestionConfig = {
     question_text: 'test_question',
     priorities: ['test_priority'],
-    weights: [1]
-  }
+    weights: [1],
+  };
 
   const fakeColormapConfig: ColormapConfig = {
     name: 'fakecolormap',
@@ -106,17 +111,14 @@ describe('SetPrioritiesComponent', () => {
         }),
       },
       {
-        treatmentGoalsConfig$: new BehaviorSubject<TreatmentGoalConfig[] | null>(
-          [
-            {
-              category_name: 'test_category',
-              questions: [
-                testQuestion,
-              ]
-            }
-          ]
-        )
-
+        treatmentGoalsConfig$: new BehaviorSubject<
+          TreatmentGoalConfig[] | null
+        >([
+          {
+            category_name: 'test_category',
+            questions: [testQuestion],
+          },
+        ]),
       }
     );
     await TestBed.configureTestingModule({
@@ -152,11 +154,9 @@ describe('SetPrioritiesComponent', () => {
     component.treatmentGoals$ = [
       {
         category_name: 'test_category',
-        questions: [
-          testQuestion,
-        ]
-      }
-    ]
+        questions: [testQuestion],
+      },
+    ];
 
     fixture.detectChanges();
   });
@@ -232,11 +232,16 @@ describe('SetPrioritiesComponent', () => {
 
   it('selecting a priority should update the form value', async () => {
     const radioButtonGroup = await loader.getHarness(
-      MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' }));
+      MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
+    );
 
     // Act: select the test treatment question
-    await radioButtonGroup.checkRadioButton({ label: testQuestion['question_text'] });
+    await radioButtonGroup.checkRadioButton({
+      label: testQuestion['question_text'],
+    });
 
-    expect(component.formGroup?.get('selectedQuestion')?.value).toEqual(testQuestion);
+    expect(component.formGroup?.get('selectedQuestion')?.value).toEqual(
+      testQuestion
+    );
   });
 });

@@ -1,8 +1,8 @@
-<div id="{{mapId ? mapId : 'map'}}" class="plan-map"></div>
+<div id="{{ mapId ? mapId : 'map' }}" class="plan-map"></div>
 <button
   mat-raised-button
   class="expand-panel-button"
   *ngIf="showTogglePanelButton() | async"
   (click)="togglePanel()">
-  {{panelExpanded ? 'COLLAPSE PANEL' : 'EXPAND PANEL'}}
+  {{ panelExpanded ? 'COLLAPSE PANEL' : 'EXPAND PANEL' }}
 </button>

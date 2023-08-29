@@ -57,16 +57,18 @@ export class ScenarioDetailsComponent implements OnInit {
     this.scenario$ = this.getScenario();
     this.plan$ = this.getPlan();
 
-    this.scenario$.pipe(
-      map((scenario) => {
-        return scenario?.projectAreas;
-      }),
-      take(1)
-    ).subscribe((projectAreas) => {
-      if (projectAreas) {
-        this.drawProjectAreas(projectAreas);
-      }
-    });
+    this.scenario$
+      .pipe(
+        map((scenario) => {
+          return scenario?.projectAreas;
+        }),
+        take(1)
+      )
+      .subscribe((projectAreas) => {
+        if (projectAreas) {
+          this.drawProjectAreas(projectAreas);
+        }
+      });
   }
 
   private getScenario() {
@@ -114,9 +116,9 @@ export class ScenarioDetailsComponent implements OnInit {
   }
 
   private drawProjectAreas(projectAreas: ProjectArea[]): void {
-    const areas: any[] = []
+    const areas: any[] = [];
     projectAreas.forEach((projectArea) => {
-      areas.push(projectArea.projectArea)
+      areas.push(projectArea.projectArea);
     });
     this.planService.updateStateWithShapes(areas);
   }

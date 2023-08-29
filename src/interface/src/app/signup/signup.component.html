@@ -1,38 +1,23 @@
 <div class="signup-root">
-
   <div class="info-card-container">
     <div class="info-card">
       <h3><b>With a Planscape account, you can:</b></h3>
 
       <ul>
-        <li><h3>
-          Save planning areas
-        </h3></li>
-        <li><h3>
-          Create plans, configurations, and scenarios
-        </h3></li>
-        <li><h3>
-          Download shapefiles & metadata
-        </h3></li>
-        <li><h3>
-          Share work with collaborators
-        </h3></li>
+        <li><h3>Save planning areas</h3></li>
+        <li><h3>Create plans, configurations, and scenarios</h3></li>
+        <li><h3>Download shapefiles & metadata</h3></li>
+        <li><h3>Share work with collaborators</h3></li>
       </ul>
 
       <h3><b>As a guest user, you can:</b></h3>
 
       <ul>
-        <li><h3>
-          Explore regional data on the map
-        </h3></li>
-        <li><h3>
-          View plans and/or scenarios that are publicly visible*
-        </h3></li>
+        <li><h3>Explore regional data on the map</h3></li>
+        <li><h3>View plans and/or scenarios that are publicly visible*</h3></li>
       </ul>
 
-      <p><i>
-        *Accessible only via direct links
-      </i></p>
+      <p><i>*Accessible only via direct links</i></p>
     </div>
   </div>
 
@@ -40,28 +25,20 @@
     <div class="signup-form">
       <h1 class="signup-title">Create your account</h1>
 
-      <form [formGroup]="form" (ngSubmit)="step === 0 ? step = 1 : signup()">
+      <form [formGroup]="form" (ngSubmit)="step === 0 ? (step = 1) : signup()">
         <ng-container *ngIf="step === 0; else finalStep">
-
           <mat-form-field appearance="fill">
             <mat-label>First name</mat-label>
-            <input
-              type="text"
-              required
-              formControlName="firstName"
-              matInput>
+            <input type="text" required formControlName="firstName" matInput />
           </mat-form-field>
 
           <mat-form-field appearance="fill">
             <mat-label>Last name</mat-label>
-            <input
-              type="text"
-              required
-              formControlName="lastName"
-              matInput>
+            <input type="text" required formControlName="lastName" matInput />
           </mat-form-field>
 
-          <button mat-flat-button
+          <button
+            mat-flat-button
             type="submit"
             color="primary"
             (click)="step = 1"
@@ -69,18 +46,15 @@
             Continue
           </button>
 
-          <button mat-button color="primary" type="button" (click)="login()">Log in</button>
+          <button mat-button color="primary" type="button" (click)="login()">
+            Log in
+          </button>
         </ng-container>
 
         <ng-template #finalStep>
-
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
-            <input
-              type="text"
-              required
-              formControlName="email"
-              matInput>
+            <input type="text" required formControlName="email" matInput />
           </mat-form-field>
 
           <mat-form-field appearance="fill">
@@ -89,10 +63,10 @@
               type="password"
               required
               formControlName="password1"
-              matInput>
-              <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
-                Password must contain at least 8 characters.
-              </mat-error>
+              matInput />
+            <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
+              Password must contain at least 8 characters.
+            </mat-error>
           </mat-form-field>
 
           <mat-form-field appearance="fill">
@@ -101,24 +75,27 @@
               type="password"
               required
               formControlName="password2"
-              matInput>
-              <mat-error *ngIf="form.hasError('passwordsNotEqual')">
-                Passwords must match.
-              </mat-error>
+              matInput />
+            <mat-error *ngIf="form.hasError('passwordsNotEqual')">
+              Passwords must match.
+            </mat-error>
           </mat-form-field>
 
           <p>{{ error?.message }}</p>
           <p *ngIf="error">{{ error?.error | json }}</p>
 
-          <button mat-flat-button
+          <button
+            mat-flat-button
             type="submit"
             color="primary"
             (click)="signup()"
             [disabled]="!form.valid || submitted">
-            {{submitted ? 'Please wait...' : 'Create account'}}
+            {{ submitted ? 'Please wait...' : 'Create account' }}
           </button>
 
-          <button mat-button color="primary" type="button" (click)="step = 0">Back</button>
+          <button mat-button color="primary" type="button" (click)="step = 0">
+            Back
+          </button>
         </ng-template>
       </form>
     </div>
@@ -128,5 +105,4 @@
       <div class="section-dot" [class.selected]="step === 1"></div>
     </div>
   </div>
-
 </div>

@@ -7,23 +7,37 @@
     class="menu-button"
     aria-label="menu icon button"
     (click)="sendToggle($event)">
-     <mat-icon>menu</mat-icon>
+    <mat-icon>menu</mat-icon>
   </button>
 
   <!-- Title -->
-  <a class="site-link" routerLink="/home"  *featureFlag="'new_navigation'; hide: true" data-id="title">Planscape preview</a>
+  <a
+    class="site-link"
+    routerLink="/home"
+    *featureFlag="'new_navigation'; hide: true"
+    data-id="title">
+    Planscape preview
+  </a>
 
   <!-- Title and logo-->
-  <a class="site-link logo-center" routerLink="/home"  *featureFlag="'new_navigation'" data-id="logo">
-    <img src="assets/svg/logo.svg" alt="planscape logo"/>
+  <a
+    class="site-link logo-center"
+    routerLink="/home"
+    *featureFlag="'new_navigation'"
+    data-id="logo">
+    <img src="assets/svg/logo.svg" alt="planscape logo" />
     Planscape
   </a>
 
   <!-- Dropdown Icon -->
-  <img class="region-dropdown-icon" src="assets/svg/region-dropdown-icon.svg" *featureFlag="'new_navigation'; hide: true"/>
+  <img
+    class="region-dropdown-icon"
+    src="assets/svg/region-dropdown-icon.svg"
+    *featureFlag="'new_navigation'; hide: true" />
 
   <!-- Region Dropdown -->
-  <app-region-dropdown *featureFlag="'new_navigation'; hide: true"></app-region-dropdown>
+  <app-region-dropdown
+    *featureFlag="'new_navigation'; hide: true"></app-region-dropdown>
 
   <!-- Space between left and right elements -->
   <span class="spacer"></span>
@@ -49,7 +63,7 @@
     data-id="help"
     *featureFlag="'new_navigation'; hide: true">
     <mat-icon class="material-symbols-outlined">
-      {{"help_outline"}}
+      {{ 'help_outline' }}
     </mat-icon>
   </a>
   <span class="username">{{ displayName }}</span>

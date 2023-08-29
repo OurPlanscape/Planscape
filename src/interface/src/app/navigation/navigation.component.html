@@ -1,37 +1,37 @@
 <mat-sidenav-container class="sidenav-container">
-  <mat-sidenav #drawer class="sidenav"
-     *featureFlag="'new_navigation'; hide: true"
+  <mat-sidenav
+    #drawer
+    class="sidenav"
+    *featureFlag="'new_navigation'; hide: true"
     [attr.role]="'navigation'"
     [mode]="'side'"
     [opened]="!sidebarOpen"
     [disableClose]>
     <mat-nav-list class="nav-list">
       <ng-container *ngFor="let link of sidenavLinks">
-
-        <a routerLink="{{link.href}}"
+        <a
+          routerLink="{{ link.href }}"
           class="nav-link"
-          [ngClass]="{'selected': isSelected(link.href)}">
-            <mat-icon class="material-symbols-outlined">
-              {{link.icon}}
-            </mat-icon>
-            <div class="nav-text">
-              {{link.text}}
-            </div>
-          </a>
-
+          [ngClass]="{ selected: isSelected(link.href) }">
+          <mat-icon class="material-symbols-outlined">
+            {{ link.icon }}
+          </mat-icon>
+          <div class="nav-text">
+            {{ link.text }}
+          </div>
+        </a>
       </ng-container>
       <a
-      routerLink="/feedback"
-      class="nav-link"
-      target="_blank"
-      rel="noopener noreferrer">
+        routerLink="/feedback"
+        class="nav-link"
+        target="_blank"
+        rel="noopener noreferrer">
         <mat-icon class="material-symbols-outlined">
-          {{"feedback"}}
+          {{ 'feedback' }}
         </mat-icon>
         <div class="nav-text">
-          {{"feedback"}}
+          {{ 'feedback' }}
         </div>
-
       </a>
       <ng-container *featureFlag="'login'">
         <a
@@ -39,18 +39,17 @@
           class="save-nav-link"
           (click)="logout()">
           <mat-icon>logout</mat-icon>
-          <div class="nav-text">
-            Logout
-          </div>
+          <div class="nav-text">Logout</div>
         </a>
         <ng-template #showLogin>
-          <a routerLink="/login"
+          <a
+            routerLink="/login"
             class="save-nav-link"
-            [ngClass]="{'selected': isSelected('/login')}">
-            <mat-icon class="material-symbols-outlined">account_circle</mat-icon>
-            <div class="nav-text">
-              Sign In / Create Account
-            </div>
+            [ngClass]="{ selected: isSelected('/login') }">
+            <mat-icon class="material-symbols-outlined">
+              account_circle
+            </mat-icon>
+            <div class="nav-text">Sign In / Create Account</div>
           </a>
         </ng-template>
       </ng-container>

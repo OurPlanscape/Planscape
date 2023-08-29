@@ -13,7 +13,7 @@ import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
 
 @Component({
-  selector: 'top-bar',
+  selector: 'app-top-bar',
   templateUrl: './top-bar.component.html',
   styleUrls: ['./top-bar.component.scss'],
 })
@@ -30,7 +30,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -39,7 +39,11 @@ export class TopBarComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((user) => {
         if (user) {
-          this.displayName = user.firstName ? user.firstName : (user.username ? user.username : '');
+          this.displayName = user.firstName
+            ? user.firstName
+            : user.username
+            ? user.username
+            : '';
         } else {
           this.displayName = 'Guest';
         }

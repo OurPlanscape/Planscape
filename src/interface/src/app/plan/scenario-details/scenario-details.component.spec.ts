@@ -36,16 +36,18 @@ describe('ScenarioDetailsComponent', () => {
         id: 1,
         max_budget: 200,
       },
-      projectAreas: [{
-        id: '1',
-        projectId: '1',
-        projectArea: new L.Polygon([
-          new L.LatLng(38.715517043571914, -120.42857302225725),
-          new L.LatLng(38.47079787227401, -120.5164425608172),
-          new L.LatLng(38.52668443555346, -120.11828371421737),
-        ]).toGeoJSON(),
-        estimatedAreaTreated: 5000,
-      }],
+      projectAreas: [
+        {
+          id: '1',
+          projectId: '1',
+          projectArea: new L.Polygon([
+            new L.LatLng(38.715517043571914, -120.42857302225725),
+            new L.LatLng(38.47079787227401, -120.5164425608172),
+            new L.LatLng(38.52668443555346, -120.11828371421737),
+          ]).toGeoJSON(),
+          estimatedAreaTreated: 5000,
+        },
+      ],
     };
     fakeService = jasmine.createSpyObj('PlanService', {
       getScenario: of(fakeScenario),
@@ -88,5 +90,5 @@ describe('ScenarioDetailsComponent', () => {
 
   it('should draw project areas on the map', () => {
     expect(fakeService.updateStateWithShapes).toHaveBeenCalled();
-  })
+  });
 });

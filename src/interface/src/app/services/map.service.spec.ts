@@ -14,9 +14,9 @@ import {
   Region,
 } from '../types';
 import * as L from 'leaflet';
-import "leaflet.vectorgrid";
+import 'leaflet.vectorgrid';
 
-// TODO Make more robust for new boundary vector tile 
+// TODO Make more robust for new boundary vector tile
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
   let service: MapService;
@@ -39,22 +39,28 @@ describe('MapService', () => {
       type: 'FeatureCollection',
       features: [],
     };
-    fakeVector = of(L.vectorGrid.protobuf(
-      "https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
-      {vectorTileLayerStyles: {
-        vector_huc12: { // To set style value for every layer name (which is the value after '<region>:' in vectorName)
-          weight: 1,
-          fillOpacity: 0,
-          color: '#0000ff',
-          fill: true,
+    fakeVector = of(
+      L.vectorGrid.protobuf(
+        'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
+        {
+          vectorTileLayerStyles: {
+            vector_huc12: {
+              // To set style value for every layer name (which is the value after '<region>:' in vectorName)
+              weight: 1,
+              fillOpacity: 0,
+              color: '#0000ff',
+              fill: true,
+            },
+          },
+          interactive: true,
+          zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
+          getFeatureId: function (f: any) {
+            return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
+          },
+          maxZoom: 13,
         }
-      },
-        interactive: true,
-        zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
-        getFeatureId: function(f:any) {
-          return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
-        },
-        maxZoom: 13, }));
+      )
+    );
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [MapService],
@@ -65,7 +71,8 @@ describe('MapService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT +
+        '/boundary/config/?region_name=sierra_cascade_inyo'
     );
     req1.flush(conditionsConfig);
     const req2 = httpTestingController.expectOne(
@@ -94,10 +101,10 @@ describe('MapService', () => {
       //   })
       //   });
       service
-        .getBoundaryShapes("sierra-nevada:vector_huc12")
-        .subscribe((res) => { 
+        .getBoundaryShapes('sierra-nevada:vector_huc12')
+        .subscribe((res) => {
           expect(res).toBeTruthy();
-        })
+        });
 
       // const req = httpTestingController.expectOne(
       //   'assets/geojson/sierra_cascade_inyo/huc12.geojson'

@@ -56,14 +56,14 @@ describe('SessionService', () => {
     });
 
     it('should default to sierra nevada when the saved value is invalid', () => {
-      mockLocalStorage.setItem('region', 'invalid')
+      mockLocalStorage.setItem('region', 'invalid');
       service = TestBed.inject(SessionService);
 
       expect(service.region$.value).toBe(Region.SIERRA_NEVADA);
     });
 
     it('should get the saved region', () => {
-      mockLocalStorage.setItem('region', Region.CENTRAL_COAST)
+      mockLocalStorage.setItem('region', Region.CENTRAL_COAST);
       service = TestBed.inject(SessionService);
 
       expect(service.region$.value).toBe(Region.CENTRAL_COAST);
@@ -88,7 +88,9 @@ describe('SessionService', () => {
         'mapConfigs',
         JSON.stringify(testMapConfigs)
       );
-      expect(service.mapConfigs$.value!['Sierra Nevada']).toBe(testMapConfigs['Sierra Nevada']);
+      expect(service.mapConfigs$.value!['Sierra Nevada']).toBe(
+        testMapConfigs['Sierra Nevada']
+      );
     });
 
     it('should save map view options', () => {
