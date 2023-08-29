@@ -5,8 +5,7 @@
     data-testid="menu-button"
     class="menu-button"
     aria-label="menu icon button"
-    (click)="sendToggle($event)"
-  >
+    (click)="sendToggle($event)">
     <mat-icon>menu</mat-icon>
   </button>
 
@@ -17,13 +16,11 @@
   <img
     class="region-dropdown-icon"
     src="assets/svg/region-dropdown-icon.svg"
-    *featureFlag="'new_navigation'; hide: true"
-  />
+    *featureFlag="'new_navigation'; hide: true" />
 
   <!-- Region Dropdown -->
   <app-region-dropdown
-    *featureFlag="'new_navigation'; hide: true"
-  ></app-region-dropdown>
+    *featureFlag="'new_navigation'; hide: true"></app-region-dropdown>
 
   <!-- Space between left and right elements -->
   <span class="spacer"></span>
@@ -35,8 +32,7 @@
     data-id="feedback"
     target="_blank"
     rel="noopener noreferrer"
-    *featureFlag="'new_navigation'"
-  >
+    *featureFlag="'new_navigation'">
     Feedback
   </a>
 
@@ -48,10 +44,9 @@
     aria-label="help button"
     rel="noopener noreferrer"
     data-id="help"
-    *featureFlag="'new_navigation'; hide: true"
-  >
+    *featureFlag="'new_navigation'; hide: true">
     <mat-icon class="material-symbols-outlined">
-      {{ "help_outline" }}
+      {{ 'help_outline' }}
     </mat-icon>
   </a>
   <span class="username">{{ displayName }}</span>
@@ -62,8 +57,7 @@
     class="top-bar-account-button"
     aria-label="account icon button"
     #accountButton
-    (click)="openAccountDialog()"
-  >
+    (click)="openAccountDialog()">
     <mat-icon>account_circle</mat-icon>
   </button>
 </mat-toolbar>
