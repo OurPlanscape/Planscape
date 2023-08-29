@@ -44,9 +44,8 @@ import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
-import { environment } from "src/environments/environment";
-import {RegionDropdownComponent} from "./region-dropdown/region-dropdown.component";
-
+import { environment } from 'src/environments/environment';
+import { RegionDropdownComponent } from './region-dropdown/region-dropdown.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +68,7 @@ import {RegionDropdownComponent} from "./region-dropdown/region-dropdown.compone
     PlanTableComponent,
     SignInDialogComponent,
     DeleteAccountDialogComponent,
-    RegionDropdownComponent
+    RegionDropdownComponent,
   ],
   imports: [
     AppRoutingModule,

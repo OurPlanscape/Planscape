@@ -26,10 +26,9 @@ describe('StringifyMapConfigPipe', () => {
           display_name: 'HUC-12',
           boundary_name: '',
           vector_name: 'sierra-nevada:vector_huc12',
-          shape_name: 'Name",'
+          shape_name: 'Name",',
         },
-        dataLayerConfig: {
-        },
+        dataLayerConfig: {},
         showExistingProjectsLayer: false,
       };
 
@@ -45,10 +44,9 @@ describe('StringifyMapConfigPipe', () => {
           display_name: 'HUC-12',
           boundary_name: 'huc12',
           vector_name: 'sierra-nevada:vector_huc12',
-          shape_name: 'Name",'
+          shape_name: 'Name",',
         },
-        dataLayerConfig: {
-        },
+        dataLayerConfig: {},
         showExistingProjectsLayer: false,
       };
       let mapConfigStr = 'HUC-12';
@@ -65,10 +63,9 @@ describe('StringifyMapConfigPipe', () => {
           display_name: 'HUC-12',
           boundary_name: '',
           vector_name: 'sierra-nevada:vector_huc12',
-          shape_name: 'Name",'
+          shape_name: 'Name",',
         },
-        dataLayerConfig: {
-        },
+        dataLayerConfig: {},
         showExistingProjectsLayer: true,
       };
       let mapConfigStr = 'Existing Projects';
@@ -85,7 +82,7 @@ describe('StringifyMapConfigPipe', () => {
           display_name: 'HUC-12',
           boundary_name: '',
           vector_name: 'sierra-nevada:vector_huc12',
-          shape_name: 'Name",'
+          shape_name: 'Name",',
         },
         dataLayerConfig: {
           display_name: 'Habitat Connectivity',
@@ -93,8 +90,7 @@ describe('StringifyMapConfigPipe', () => {
         },
         showExistingProjectsLayer: false,
       };
-      let mapConfigStr =
-        'Habitat Connectivity';
+      let mapConfigStr = 'Habitat Connectivity';
 
       let transformedStr = pipe.transform(mapConfig);
 
@@ -108,7 +104,7 @@ describe('StringifyMapConfigPipe', () => {
           display_name: 'HUC-12',
           boundary_name: 'huc12',
           vector_name: 'sierra-nevada:vector_huc12',
-          shape_name: 'Name",'
+          shape_name: 'Name",',
         },
         dataLayerConfig: {
           display_name: 'Habitat Connectivity',

@@ -9,9 +9,9 @@ import { AuthService, SessionService } from '../services';
 import { Region, User } from '../types';
 import { AccountDialogComponent } from './../account-dialog/account-dialog.component';
 import { TopBarComponent } from './top-bar.component';
-import {FeatureService} from "../features/feature.service";
-import {FeaturesModule} from "../features/features.module";
-import {CUSTOM_ELEMENTS_SCHEMA} from "@angular/core";
+import { FeatureService } from '../features/feature.service';
+import { FeaturesModule } from '../features/features.module';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -37,20 +37,20 @@ describe('TopBarComponent', () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MaterialModule, FeaturesModule],
       declarations: [TopBarComponent],
-      schemas:[CUSTOM_ELEMENTS_SCHEMA],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: AuthService, useValue: mockAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: SessionService, useValue: mockSessionService },
-        { provide: FeatureService, useValue: { isFeatureEnabled: () => false}}
+        {
+          provide: FeatureService,
+          useValue: { isFeatureEnabled: () => false },
+        },
       ],
     }).compileComponents();
 
-
-
     fixture = TestBed.createComponent(TopBarComponent);
     component = fixture.componentInstance;
-
   });
 
   it('should create', () => {
@@ -58,8 +58,8 @@ describe('TopBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('actions', ()=>{
-    beforeEach(()=>{
+  describe('actions', () => {
+    beforeEach(() => {
       fixture.detectChanges();
     });
 
@@ -89,15 +89,14 @@ describe('TopBarComponent', () => {
       accountButton.triggerEventHandler('click', clickEvent);
 
       // Assert: expect that the dialog opens
-      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(AccountDialogComponent);
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
+        AccountDialogComponent
+      );
     });
-  })
-
-
+  });
 
   describe('username', () => {
-
-    beforeEach(()=>{
+    beforeEach(() => {
       fixture.detectChanges();
     });
 
@@ -122,42 +121,44 @@ describe('TopBarComponent', () => {
   });
 
   describe('feedback button', () => {
-
-    it('should show the feedback button when on new_navigation flag is on', ()=>{
+    it('should show the feedback button when on new_navigation flag is on', () => {
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
       fixture.detectChanges();
-      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="feedback"]'));
+      const feedbackBtn = fixture.debugElement.query(
+        By.css('[data-id="feedback"]')
+      );
       expect(feedbackBtn).toBeTruthy();
-
     });
-    it('should not show the button when new_navigation flag is off ', ()=>{
+    it('should not show the button when new_navigation flag is off ', () => {
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
       fixture.detectChanges();
-      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="feedback"]'));
+      const feedbackBtn = fixture.debugElement.query(
+        By.css('[data-id="feedback"]')
+      );
       expect(feedbackBtn).toBeFalsy();
     });
-
   });
 
   describe('help button', () => {
-
-    it('should not show the help button when on new_navigation flag is on', ()=>{
+    it('should not show the help button when on new_navigation flag is on', () => {
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
       fixture.detectChanges();
-      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="help"]'));
+      const feedbackBtn = fixture.debugElement.query(
+        By.css('[data-id="help"]')
+      );
       expect(feedbackBtn).toBeFalsy();
-
     });
-    it('should show the help button when new_navigation flag is off ', ()=>{
+    it('should show the help button when new_navigation flag is off ', () => {
       const featureService = TestBed.inject(FeatureService);
       spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
       fixture.detectChanges();
-      const feedbackBtn = fixture.debugElement.query( By.css('[data-id="help"]'));
+      const feedbackBtn = fixture.debugElement.query(
+        By.css('[data-id="help"]')
+      );
       expect(feedbackBtn).toBeTruthy();
     });
-
   });
 });

@@ -1,16 +1,15 @@
 import { Component } from '@angular/core';
-import {Region, RegionOption, regionOptions} from "../types";
-import { MapService, SessionService } from "../services";
-import {Router} from "@angular/router";
-import {FeatureService} from "../features/feature.service";
+import { Region, RegionOption, regionOptions } from '../types';
+import { MapService, SessionService } from '../services';
+import { Router } from '@angular/router';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-region-dropdown',
   templateUrl: './region-dropdown.component.html',
-  styleUrls: ['./region-dropdown.component.scss']
+  styleUrls: ['./region-dropdown.component.scss'],
 })
 export class RegionDropdownComponent {
-
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
 
@@ -21,8 +20,7 @@ export class RegionDropdownComponent {
     private sessionService: SessionService,
     private mapService: MapService,
     private featureService: FeatureService
-  ) { }
-
+  ) {}
 
   /** Sets the region from the dropdown and goes to the map. */
   setRegion(event: Event) {

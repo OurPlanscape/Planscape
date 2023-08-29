@@ -1,14 +1,12 @@
 import { Injectable } from '@angular/core';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PopupService {
-
-  constructor() { }
+  constructor() {}
 
   makeDetailsPopup(data: any): string {
-    return `` +
-      `<div>Name: ${ data }</div>`
+    return `` + `<div>Name: ${data}</div>`;
   }
 }

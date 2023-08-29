@@ -3,7 +3,9 @@
     <mat-card-title-group>
       <mat-card-title>{{ project.PROJECT_NAME }}</mat-card-title>
       <mat-card-subtitle>
-        Project ({{ project.PROJECT_STATUS }}) &#8226; {{ project.PROJECT_START_DATE | date }} - {{ project.PROJECT_END_DATE | date }}
+        Project ({{ project.PROJECT_STATUS }}) &#8226;
+        {{ project.PROJECT_START_DATE | date }} -
+        {{ project.PROJECT_END_DATE | date }}
       </mat-card-subtitle>
     </mat-card-title-group>
     <mat-card-content>
@@ -14,7 +16,8 @@
       <p>Treatments here:</p>
       <ul>
         <li *ngFor="let treatment of project.treatments">
-          <b>{{ treatment.TREATMENT_NAME }}</b> ({{ treatment.ACTIVITY_STATUS }}): {{ treatment.TREATMENT_OBJECTIVE }}
+          <b>{{ treatment.TREATMENT_NAME }}</b>
+          ({{ treatment.ACTIVITY_STATUS }}): {{ treatment.TREATMENT_OBJECTIVE }}
         </li>
       </ul>
     </mat-card-content>
