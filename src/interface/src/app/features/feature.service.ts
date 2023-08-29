@@ -7,7 +7,7 @@ import config from './features.json';
   providedIn: 'root',
 })
 export class FeatureService {
-  private config: FeaturesConfig;
+  private readonly config: FeaturesConfig;
 
   constructor() {
     this.config = config;
