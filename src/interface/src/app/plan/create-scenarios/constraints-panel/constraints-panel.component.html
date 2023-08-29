@@ -21,7 +21,7 @@
                 matInput
                 type="number" />
               <span matPrefix>$&nbsp;</span>
-              <span matSuffix> /acre</span>
+              <span matSuffix>/acre</span>
             </mat-form-field>
           </div>
           <div>
@@ -59,7 +59,7 @@
                 formControlName="maxSlope"
                 matInput
                 type="number" />
-              <span matSuffix> %</span>
+              <span matSuffix>%</span>
             </mat-form-field>
           </div>
           <div>
@@ -67,13 +67,13 @@
               class="input-field"
               appearance="outline"
               floatLabel="always">
-              <mat-label>Distance from roads </mat-label>
+              <mat-label>Distance from roads</mat-label>
               <input
                 class="right-align"
                 formControlName="maxRoadDistance"
                 matInput
                 type="number" />
-              <span matSuffix> yds</span>
+              <span matSuffix>yds</span>
             </mat-form-field>
           </div>
         </div>
@@ -86,9 +86,9 @@
             <mat-button-toggle
               *ngFor="let item of standSizeOptions"
               [value]="item"
-              checked
-              >{{ item }}</mat-button-toggle
-            >
+              checked>
+              {{ item }}
+            </mat-button-toggle>
           </mat-button-toggle-group>
         </div>
       </div>
@@ -104,9 +104,9 @@
               [color]="'primary'"
               *ngFor="let item of excludedAreasOptions"
               [formControlName]="item"
-              [value]="item"
-              >{{ item }}</mat-checkbox
-            >
+              [value]="item">
+              {{ item }}
+            </mat-checkbox>
           </div>
         </section>
       </div>

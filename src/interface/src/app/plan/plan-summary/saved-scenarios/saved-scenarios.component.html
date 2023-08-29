@@ -10,7 +10,7 @@
       <mat-table [dataSource]="scenarios">
         <!-- ID Column -->
         <ng-container matColumnDef="id">
-          <mat-header-cell *matHeaderCellDef> Scenario </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Scenario</mat-header-cell>
           <mat-cell *matCellDef="let element">
             <div class="hover-indicator"></div>
             {{ element.id }}
@@ -23,14 +23,14 @@
 
         <!-- Starred Column -->
         <ng-container matColumnDef="starred">
-          <mat-header-cell *matHeaderCellDef> Starred by you </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Starred by you</mat-header-cell>
           <mat-cell *matCellDef="let element">
             <button
               mat-icon-button
               (click)="$event.stopPropagation(); toggleFavorited(element)">
-              <mat-icon [class.material-symbols-outlined]="!element.favorited"
-                >star</mat-icon
-              >
+              <mat-icon [class.material-symbols-outlined]="!element.favorited">
+                star
+              </mat-icon>
             </button>
           </mat-cell>
         </ng-container>
@@ -45,7 +45,7 @@
 
         <!-- Acres Treated Column -->
         <ng-container matColumnDef="acresTreated">
-          <mat-header-cell *matHeaderCellDef> Acres treated </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Acres treated</mat-header-cell>
           <mat-cell *matCellDef="let element"></mat-cell>
         </ng-container>
 
@@ -59,19 +59,19 @@
 
         <!-- Status Column -->
         <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
-          <mat-cell *matCellDef="let element"> In Progress </mat-cell>
+          <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
+          <mat-cell *matCellDef="let element">In Progress</mat-cell>
         </ng-container>
 
         <!-- Owner Column -->
         <ng-container matColumnDef="owner">
-          <mat-header-cell *matHeaderCellDef> Owner </mat-header-cell>
-          <mat-cell *matCellDef="let element"> {{ element.owner }} </mat-cell>
+          <mat-header-cell *matHeaderCellDef>Owner</mat-header-cell>
+          <mat-cell *matCellDef="let element">{{ element.owner }}</mat-cell>
         </ng-container>
 
         <!-- Timestamp Column -->
         <ng-container matColumnDef="createdTimestamp">
-          <mat-header-cell *matHeaderCellDef> Date Created </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Date Created</mat-header-cell>
           <mat-cell *matCellDef="let element">
             {{ element.createdTimestamp | date: 'medium' }}
           </mat-cell>

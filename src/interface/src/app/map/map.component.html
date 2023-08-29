@@ -15,8 +15,9 @@
     (changeMapCount)="changeMapCount($event)"
     (changeOpacity)="changeOpacity($event)"
     (selectMap)="selectMap($event)"
-    (toggleExistingProjectsLayer)="toggleExistingProjectsLayer($event)">
-  </app-map-control-panel>
+    (toggleExistingProjectsLayer)="
+      toggleExistingProjectsLayer($event)
+    "></app-map-control-panel>
 
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="maps-container">
@@ -37,7 +38,8 @@
             deselected: selectedAreaCreationAction === AreaCreationAction.UPLOAD
           }"
           (click)="onAreaCreationActionChange(AreaCreationAction.DRAW)">
-          <mat-icon>draw</mat-icon> DRAW AREA
+          <mat-icon>draw</mat-icon>
+          DRAW AREA
         </button>
       </div>
 
@@ -56,7 +58,8 @@
               deselected: selectedAreaCreationAction === AreaCreationAction.DRAW
             }"
             (click)="onAreaCreationActionChange(AreaCreationAction.UPLOAD)">
-            <mat-icon>upload_file</mat-icon> UPLOAD AREA
+            <mat-icon>upload_file</mat-icon>
+            UPLOAD AREA
           </button>
           <file-uploader
             *ngIf="showUploader"
@@ -107,8 +110,7 @@
         <app-map-nameplate
           [map]="maps[0]"
           [selected]="(mapViewOptions$ | async)?.selectedMapIndex === 0"
-          [width$]="mapNameplateWidths[0]">
-        </app-map-nameplate>
+          [width$]="mapNameplateWidths[0]"></app-map-nameplate>
         <div id="map1" class="map"></div>
       </div>
       <div
@@ -121,8 +123,7 @@
         <app-map-nameplate
           [map]="maps[1]"
           [selected]="(mapViewOptions$ | async)?.selectedMapIndex === 1"
-          [width$]="mapNameplateWidths[1]">
-        </app-map-nameplate>
+          [width$]="mapNameplateWidths[1]"></app-map-nameplate>
         <div id="map2" class="map"></div>
       </div>
     </div>
@@ -137,8 +138,7 @@
         <app-map-nameplate
           [map]="maps[2]"
           [selected]="(mapViewOptions$ | async)?.selectedMapIndex === 2"
-          [width$]="mapNameplateWidths[2]">
-        </app-map-nameplate>
+          [width$]="mapNameplateWidths[2]"></app-map-nameplate>
         <div id="map3" class="map"></div>
       </div>
       <div
@@ -151,8 +151,7 @@
         <app-map-nameplate
           [map]="maps[3]"
           [selected]="(mapViewOptions$ | async)?.selectedMapIndex === 3"
-          [width$]="mapNameplateWidths[3]">
-        </app-map-nameplate>
+          [width$]="mapNameplateWidths[3]"></app-map-nameplate>
         <div id="map4" class="map"></div>
       </div>
     </div>

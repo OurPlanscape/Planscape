@@ -11,16 +11,17 @@
             [plan$]="plan$"
             [formGroup]="formGroups[0]"
             [treatmentGoals$]="treatmentGoals | async"
-            (changeConditionEvent)="changeCondition($event)">
-          </app-set-priorities>
+            (changeConditionEvent)="
+              changeCondition($event)
+            "></app-set-priorities>
           <app-identify-project-areas
             *ngIf="project_area_upload_enabled"
-            [formGroup]="formGroups[2]">
-          </app-identify-project-areas>
+            [formGroup]="formGroups[2]"></app-identify-project-areas>
           <app-constraints-panel
             [constraintsForm]="formGroups[1]"
-            [excludedAreasOptions]="excludedAreasOptions">
-          </app-constraints-panel>
+            [excludedAreasOptions]="
+              excludedAreasOptions
+            "></app-constraints-panel>
           <div class="flex-row gap-12">
             <button
               mat-raised-button
@@ -38,7 +39,7 @@
           </div>
         </div>
       </mat-tab>
-      <mat-tab label="Outcome"> Scenario Results </mat-tab>
+      <mat-tab label="Outcome">Scenario Results</mat-tab>
     </mat-tab-group>
 
     <!-- Expand/collapse button -->

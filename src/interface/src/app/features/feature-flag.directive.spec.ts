@@ -54,10 +54,12 @@ describe('FeatureFlagDirective', () => {
 });
 
 @Component({
-  template: ` <h2 *featureFlag="'false'">False</h2>
+  template: `
+    <h2 *featureFlag="'false'">False</h2>
     <h2 *featureFlag="'undefined'">Undefined</h2>
     <h2 *featureFlag="'true'">True</h2>
     <h3 *featureFlag="'true'; hide: true">Hidden</h3>
-    <h4 *featureFlag="'true'; hide: false">Visible</h4>`,
+    <h4 *featureFlag="'true'; hide: false">Visible</h4>
+  `,
 })
 class TestComponent {}

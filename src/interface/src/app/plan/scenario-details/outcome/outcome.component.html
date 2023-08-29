@@ -17,12 +17,13 @@
         <ul>
           <li>
             Show estimated cost range based on estimated treatment costs per
-            acre (Est. max: <b>${{ scenario?.config?.max_budget }}</b
-            >)
+            acre (Est. max:
+            <b>${{ scenario?.config?.max_budget }}</b>
+            )
           </li>
           <li>
-            <b>{{ scenario?.config?.max_treatment_area_ratio }}%</b> max
-            treatment percentage of total planning area
+            <b>{{ scenario?.config?.max_treatment_area_ratio }}%</b>
+            max treatment percentage of total planning area
           </li>
           <li>
             Exclude areas off a road by
@@ -79,16 +80,16 @@
             <h3>Est. cost range</h3>
           </div>
           <div class="flex-row space-between reduced-height-row">
-            <span
-              >{{ scenario?.projectAreas?.length || '0' }} project areas</span
-            >
+            <span>
+              {{ scenario?.projectAreas?.length || '0' }} project areas
+            </span>
             <span>{{ totalAcresTreated }} ac</span>
-            <span
-              >{{
+            <span>
+              {{
                 (totalAcresTreated / totalPlanningAreaAcres) * 100
                   | number: '1.0-5'
-              }}%</span
-            >
+              }}%
+            </span>
             <span>{{ totalCostRange }}</span>
           </div>
         </div>
@@ -133,8 +134,7 @@
           class="notes-text"
           formControlName="notes"
           cols="64"
-          rows="10">
-        </textarea>
+          rows="10"></textarea>
         <button class="notes-button" type="submit">SEND</button>
       </div>
     </form>

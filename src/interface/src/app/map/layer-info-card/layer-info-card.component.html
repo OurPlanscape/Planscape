@@ -8,9 +8,9 @@
   <p>
     <span *ngIf="hasSource()">
       SOURCE:
-      <a [href]="dataLayerConfig?.source_link" target="_blank">{{
-        dataLayerConfig?.source
-      }}</a>
+      <a [href]="dataLayerConfig?.source_link" target="_blank">
+        {{ dataLayerConfig?.source }}
+      </a>
     </span>
   </p>
 
@@ -20,9 +20,9 @@
     </div>
     <p>
       DATA:
-      <a [href]="dataLayerConfig?.data_download_link" target="_blank"
-        >Download</a
-      >
+      <a [href]="dataLayerConfig?.data_download_link" target="_blank">
+        Download
+      </a>
     </p>
   </div>
 
@@ -31,7 +31,7 @@
     color="primary"
     *ngIf="hasReferenceLink()"
     [href]="dataLayerConfig?.reference_link"
-    target="_blank"
-    >Learn more</a
-  >
+    target="_blank">
+    Learn more
+  </a>
 </div>

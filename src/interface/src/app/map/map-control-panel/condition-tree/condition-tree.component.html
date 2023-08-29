@@ -29,9 +29,9 @@
               *ngIf="!node.condition.disableSelect"
               class="white"
               (change)="onSelect(node)">
-              <span class="condition-label">{{
-                node.condition.display_name
-              }}</span>
+              <span class="condition-label">
+                {{ node.condition.display_name }}
+              </span>
             </mat-radio-button>
             <span *ngIf="node.condition.disableSelect">
               {{ node.condition.display_name }}
