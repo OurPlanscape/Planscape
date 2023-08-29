@@ -103,7 +103,13 @@ export class MapService {
     );
   }
 
+<<<<<<< Updated upstream
   setConfigs() {
+=======
+
+  setConfigs(){
+    console.log(this.regionToString(this.selectedRegion$.getValue()));
+>>>>>>> Stashed changes
     this.http
       .get<BoundaryConfig[]>(
         BackendConstants.END_POINT +
@@ -131,15 +137,15 @@ export class MapService {
   regionToString(region: Region | null): string {
     switch (region) {
       case Region.SIERRA_NEVADA:
-        return 'sierra_cascade_inyo';
+        return 'sierra-nevada';
       case Region.CENTRAL_COAST:
-        return 'central_coast';
+        return 'central-coast';
       case Region.NORTHERN_CALIFORNIA:
-        return 'north_coast_inland';
+        return 'northern-california';
       case Region.SOUTHERN_CALIFORNIA:
-        return 'southern_california';
+        return 'southern-california';
     }
-    return 'sierra_cascade_inyo';
+    return 'sierra-nevada';
   }
 
   /** Get shapes for a boundary from assets, if possible.  Fall back to the

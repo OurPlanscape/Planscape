@@ -73,7 +73,7 @@ class TestForsysRankingRequestParamsFromUrlWithDefaults(TestCase):
         qd = QueryDict('request_type=1')
         params = get_ranking_request_params(qd)
 
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(
             params.priorities,
             ['fire_dynamics', 'forest_resilience', 'species_diversity'])
@@ -195,7 +195,7 @@ class TestForsysRankingRequestParamsFromDb(TestCase):
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.plan_with_user = Plan.objects.create(
-            owner=self.user, name="plan", region_name='sierra_cascade_inyo',
+            owner=self.user, name="plan", region_name='sierra-nevada',
             geometry=self.stored_geometry)
 
         self.project_with_user = Project.objects.create(
@@ -219,13 +219,13 @@ class TestForsysRankingRequestParamsFromDb(TestCase):
         self.project_area_with_user.delete()
         qd = QueryDict('project_id=' + str(self.project_with_user.pk))
         params = get_ranking_request_params(qd)
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(len(params.project_areas), 0)
 
     def test_read_ok(self):
         qd = QueryDict('project_id=' + str(self.project_with_user.pk))
         params = get_ranking_request_params(qd)
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(len(params.project_areas), 1)
         self.assertTrue(
             params.project_areas[self.project_area_with_user.pk].equals(
@@ -240,7 +240,7 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
             'request_type=1')
         params = get_generation_request_params(request)
 
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(
             params.priorities,
             ['fire_dynamics', 'forest_resilience', 'species_diversity'])
@@ -385,7 +385,7 @@ class TestForsysGenerationRequestParamsFromUrlWithDefaults(TestCase):
 
 class TestForsysGenerationRequestParamsFromDb(TestCase):
     def setUp(self) -> None:
-        self.region = 'sierra_cascade_inyo'
+        self.region = 'sierra-nevada'
 
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -427,7 +427,7 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         request.user = self.user
 
         params = get_generation_request_params(request)
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(params.planning_area.coords, ((
             ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
         self.assertListEqual(params.priorities, ['foo', 'bar', 'baz'])
@@ -454,7 +454,7 @@ class TestForsysGenerationRequestParamsFromDb(TestCase):
         settings.DEBUG = True
 
         params = get_generation_request_params(request)
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(params.planning_area.coords, ((
             ((1.0, 2.0), (2.0, 3.0), (3.0, 4.0), (1.0, 2.0)),),))
         self.assertListEqual(params.priorities, ['foo', 'bar', 'baz'])
@@ -588,7 +588,7 @@ class ForsysGenerationRequestParamsFromHuc12(TestCase):
         request.GET = QueryDict('request_type=2')
         params = get_generation_request_params(request)
 
-        self.assertEqual(params.region, 'sierra_cascade_inyo')
+        self.assertEqual(params.region, 'sierra-nevada')
         self.assertEqual(
             params.priorities,
             ['california_spotted_owl', 'storage', 'functional_fire',

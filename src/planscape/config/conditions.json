@@ -3,7 +3,7 @@
   "__comment_planning_sheet": "https://docs.google.com/spreadsheets/d/1Y4zsvrPtq5e6lxI8r04P-_CfWgmms4Ef9IlFGDEqm7I",
   "regions": [
     {
-      "region_name": "central_coast",
+      "region_name": "central-coast",
       "display_name": "Central Coast",
       "region_geoserver_name": "central-coast",
       "raw_data": true,
@@ -1093,7 +1093,7 @@
       ]
     },
     {
-      "region_name": "southern_california",
+      "region_name": "southern-california",
       "display_name": "Southern California",
       "region_geoserver_name": "southern-california",
       "raw_data": true,
@@ -2155,7 +2155,7 @@
       ]
     },
     {
-      "region_name": "sierra_cascade_inyo",
+      "region_name": "sierra-nevada",
       "filepath": "sierra_nevada",
       "region_geoserver_name": "sierra-nevada",
       "display_name": "Sierra Nevada",
