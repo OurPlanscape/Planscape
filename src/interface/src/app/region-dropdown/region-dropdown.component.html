@@ -1,11 +1,22 @@
 <!-- Region Dropdown -->
-<div [ngClass]="{ 'region-dropdown-wrapper': !newNavigation , 'region-wrapper': newNavigation}">
-  <select (change)="setRegion($event)" [ngClass]="{ 'region-dropdown': !newNavigation, 'region': newNavigation }">
-    <option [selected]="!(selectedRegion$ | async)" disabled>Select a region</option>
-    <option *ngFor="let region of regionOptions"
-            [value]="region.type"
-            [disabled]="!region.available"
-            [selected]="(selectedRegion$ | async) === region.type"
-            routerLink= "/map">{{ region.name }} </option>
+<div
+  [ngClass]="{
+    'region-dropdown-wrapper': !newNavigation,
+    'region-wrapper': newNavigation
+  }">
+  <select
+    (change)="setRegion($event)"
+    [ngClass]="{ 'region-dropdown': !newNavigation, region: newNavigation }">
+    <option [selected]="!(selectedRegion$ | async)" disabled>
+      Select a region
+    </option>
+    <option
+      *ngFor="let region of regionOptions"
+      [value]="region.type"
+      [disabled]="!region.available"
+      [selected]="(selectedRegion$ | async) === region.type"
+      routerLink="/map">
+      {{ region.name }}
+    </option>
   </select>
 </div>

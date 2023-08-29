@@ -2,8 +2,8 @@
   <h1>
     {{
       datasource.data.length && (loggedIn$ | async)
-        ? "Welcome back!"
-        : "Welcome to Planscape preview!"
+        ? 'Welcome back!'
+        : 'Welcome to Planscape preview!'
     }}
   </h1>
 
@@ -20,8 +20,7 @@
             <mat-cell *matCellDef="let element">
               <mat-checkbox
                 name="${element.id}-selected"
-                [(ngModel)]="element.selected"
-              ></mat-checkbox>
+                [(ngModel)]="element.selected"></mat-checkbox>
             </mat-cell>
           </ng-container>
 
@@ -41,7 +40,7 @@
               Date Created
             </mat-header-cell>
             <mat-cell *matCellDef="let element">
-              {{ element.createdTimestamp | date: "medium" }}
+              {{ element.createdTimestamp | date: 'medium' }}
             </mat-cell>
           </ng-container>
 
@@ -92,8 +91,7 @@
               <button
                 mat-icon-button
                 [matMenuTriggerFor]="menu"
-                aria-label="More options"
-              >
+                aria-label="More options">
                 <mat-icon>more_vert</mat-icon>
               </button>
               <mat-menu #menu="matMenu">
@@ -112,8 +110,7 @@
         <mat-paginator
           [pageSizeOptions]="[10, 20, 30]"
           showFirstLastButtons
-          aria-label="Select page of plans"
-        >
+          aria-label="Select page of plans">
         </mat-paginator>
 
         <div class="button-row">
@@ -121,8 +118,7 @@
             mat-button
             color="primary"
             (click)="delete()"
-            [disabled]="!showDelete()"
-          >
+            [disabled]="!showDelete()">
             <mat-icon>delete</mat-icon>
             DELETE
           </button>

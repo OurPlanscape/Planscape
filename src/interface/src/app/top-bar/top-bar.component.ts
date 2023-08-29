@@ -30,7 +30,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
