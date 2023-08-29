@@ -90,7 +90,6 @@ main <- function(scenario_id) {
   scenario <- get_scenario_data(connection, scenario_id)
   result <- call_forsys(scenario)
   create_scenario_result(connection, result)
-  dbReadTable(connection, "planning_scenarioresult")
 }
 
 main(scenario_id)
