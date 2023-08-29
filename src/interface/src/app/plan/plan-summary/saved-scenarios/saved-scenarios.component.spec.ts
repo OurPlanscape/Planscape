@@ -47,7 +47,12 @@ describe('SavedScenariosComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [FormsModule, HttpClientTestingModule, MaterialModule, NoopAnimationsModule],
+      imports: [
+        FormsModule,
+        HttpClientTestingModule,
+        MaterialModule,
+        NoopAnimationsModule,
+      ],
       declarations: [SavedScenariosComponent],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },

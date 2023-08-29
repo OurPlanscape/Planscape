@@ -48,7 +48,9 @@ export class OutcomeComponent implements OnInit, OnChanges {
     this.authService.loggedInUser$.pipe(take(1)).subscribe((user) => {
       if (user) {
         this.currentUser$.next(user);
-        this.displayName = user.firstName ? user.firstName : (user.username ?? '');
+        this.displayName = user.firstName
+          ? user.firstName
+          : user.username ?? '';
       } else {
         this.displayName = 'Guest';
       }

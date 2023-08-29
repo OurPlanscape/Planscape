@@ -5,17 +5,22 @@
     <h1>{{ (plan$ | async)?.name }}</h1>
     <div class="plan-scenario-panel-content">
       <p class="plan-scenario-panel-text">
-        Your planning area, priorities, and constraints are used to generate scenarios.
-        Using the Scenario Explorer, you can adjust the relative importance of priorities.
-        Saved scenarios are added to the Comparison table. Scenarios consist of Project Areas,
-        Treatment plans, Potential Outcomes, and Estimated costs.
+        Your planning area, priorities, and constraints are used to generate
+        scenarios. Using the Scenario Explorer, you can adjust the relative
+        importance of priorities. Saved scenarios are added to the Comparison
+        table. Scenarios consist of Project Areas, Treatment plans, Potential
+        Outcomes, and Estimated costs.
       </p>
       <button mat-raised-button color="primary" (click)="openConfig()">
         <mat-icon class="material-symbols-outlined">add_box</mat-icon>
         NEW CONFIGURATION
       </button>
     </div>
-    <app-scenario-configurations [plan]="plan$ | async" (openConfigEvent)="openConfig($event)"></app-scenario-configurations>
-    <app-saved-scenarios [plan]="plan$ | async" (createScenarioEvent)="openConfig()"></app-saved-scenarios>
+    <app-scenario-configurations
+      [plan]="plan$ | async"
+      (openConfigEvent)="openConfig($event)"></app-scenario-configurations>
+    <app-saved-scenarios
+      [plan]="plan$ | async"
+      (createScenarioEvent)="openConfig()"></app-saved-scenarios>
   </div>
 </div>

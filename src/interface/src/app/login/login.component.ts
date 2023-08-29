@@ -7,10 +7,9 @@ import { AuthService } from '../services';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-
   error: any;
 
   form: FormGroup;
@@ -32,17 +31,20 @@ export class LoginComponent {
     landscapes`,
     `Designed to utilize the latest Regional Resource Kits as the primary data source`,
     `Built to utilize the best state and federal science and models`,
-    `Intends to be scalable across US Landscapes`
+    `Intends to be scalable across US Landscapes`,
   ];
 
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private router: Router,
+    private router: Router
   ) {
     this.form = this.formBuilder.group({
-      email: this.formBuilder.control('', [Validators.required, Validators.email]),
-      password: this.formBuilder.control('', Validators.required)
+      email: this.formBuilder.control('', [
+        Validators.required,
+        Validators.email,
+      ]),
+      password: this.formBuilder.control('', Validators.required),
     });
   }
 
@@ -53,8 +55,8 @@ export class LoginComponent {
     const password: string = this.form.get('password')?.value;
 
     this.authService.login(email, password).subscribe(
-      _ => this.router.navigate(['map']),
-      error => this.error = error
+      (_) => this.router.navigate(['map']),
+      (error) => (this.error = error)
     );
   }
 
@@ -65,5 +67,4 @@ export class LoginComponent {
   continueAsGuest() {
     this.router.navigate(['home']);
   }
-
 }

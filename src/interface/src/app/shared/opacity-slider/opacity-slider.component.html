@@ -1,6 +1,6 @@
 <div class="root-container">
   <div class="opacity-slider-wrapper">
-    {{label}}
+    {{ label }}
     <mat-slider
       class="opacity-slider"
       color="primary"
@@ -9,7 +9,7 @@
       [thumbLabel]="true"
       [value]="opacityPercentage"
       (input)="onChange($event.value)">
-      <input matSliderThumb>
+      <input matSliderThumb />
     </mat-slider>
   </div>
 </div>
