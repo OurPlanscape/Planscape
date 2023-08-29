@@ -1,5 +1,6 @@
 <mat-sidenav-container class="sidenav-container">
   <mat-sidenav #drawer class="sidenav"
+     *featureFlag="'new_navigation'; hide: true"
     [attr.role]="'navigation'"
     [mode]="'side'"
     [opened]="!sidebarOpen"
@@ -19,10 +20,10 @@
           </a>
 
       </ng-container>
-      <a 
+      <a
       routerLink="/feedback"
       class="nav-link"
-      target="_blank" 
+      target="_blank"
       rel="noopener noreferrer">
         <mat-icon class="material-symbols-outlined">
           {{"feedback"}}
@@ -30,7 +31,7 @@
         <div class="nav-text">
           {{"feedback"}}
         </div>
-        
+
       </a>
       <ng-container *featureFlag="'login'">
         <a
