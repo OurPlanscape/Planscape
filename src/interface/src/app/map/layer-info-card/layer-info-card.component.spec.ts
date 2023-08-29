@@ -8,9 +8,8 @@ describe('LayerInfoCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ LayerInfoCardComponent ]
-    })
-    .compileComponents();
+      declarations: [LayerInfoCardComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LayerInfoCardComponent);
     component = fixture.componentInstance;

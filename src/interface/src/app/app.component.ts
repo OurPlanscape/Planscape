@@ -21,5 +21,4 @@ export class AppComponent implements OnInit {
     // Refresh the user's logged in status when the app initializes.
     this.authService.refreshLoggedInUser().pipe(take(1)).subscribe();
   }
-
 }

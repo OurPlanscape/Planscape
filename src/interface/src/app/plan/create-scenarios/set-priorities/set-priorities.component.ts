@@ -9,7 +9,11 @@ import { Plan } from 'src/app/types';
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
-import { PlanConditionScores, TreatmentQuestionConfig, TreatmentGoalConfig } from './../../../types/plan.types';
+import {
+  PlanConditionScores,
+  TreatmentQuestionConfig,
+  TreatmentGoalConfig,
+} from './../../../types/plan.types';
 
 export interface ScoreColumn {
   label: string;
@@ -104,17 +108,17 @@ export class SetPrioritiesComponent implements OnInit {
             element.metrics
               ?.filter((metric) => !!metric.filepath)
               .forEach((metric) => {
-              let metricRow: PriorityRow = {
-                conditionName: metric.metric_name!,
-                displayName: metric.display_name,
-                filepath: metric.filepath!.concat('_normalized'),
-                children: [],
-                level: 2,
-                hidden: true,
-              };
-              data.push(metricRow);
-              elementRow.children.push(metricRow);
-            });
+                let metricRow: PriorityRow = {
+                  conditionName: metric.metric_name!,
+                  displayName: metric.display_name,
+                  filepath: metric.filepath!.concat('_normalized'),
+                  children: [],
+                  level: 2,
+                  hidden: true,
+                };
+                data.push(metricRow);
+                elementRow.children.push(metricRow);
+              });
           });
       });
     return data;

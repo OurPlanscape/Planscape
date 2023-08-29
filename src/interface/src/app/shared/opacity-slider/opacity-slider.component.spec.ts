@@ -30,10 +30,10 @@ describe('OpacitySliderComponent', () => {
   });
 
   it('should emit event when opacity value changes', () => {
-    spyOn(component.change, 'emit');
+    spyOn(component.changeOpacity, 'emit');
 
     component.onChange(35);
 
-    expect(component.change.emit).toHaveBeenCalledOnceWith(0.35);
+    expect(component.changeOpacity.emit).toHaveBeenCalledOnceWith(0.35);
   });
 });

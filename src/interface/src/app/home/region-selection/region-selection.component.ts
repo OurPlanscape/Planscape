@@ -2,10 +2,14 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { take } from 'rxjs';
 
-import { AuthService, PlanService, SessionService, MapService } from '../../services';
+import {
+  AuthService,
+  PlanService,
+  SessionService,
+  MapService,
+} from '../../services';
 import { RegionOption, regionOptions } from '../../types';
-import features from '../../features/features.json'
-
+import features from '../../features/features.json';
 
 /**
  * The main region selection view component.
@@ -28,7 +32,7 @@ export class RegionSelectionComponent implements OnInit {
     private planService: PlanService,
     private sessionService: SessionService,
     private mapService: MapService,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -46,6 +50,6 @@ export class RegionSelectionComponent implements OnInit {
     }
     this.sessionService.setRegion(regionOption.type);
     this.mapService.setConfigs();
-    this.router.navigateByUrl('/map');  
+    this.router.navigateByUrl('/map');
   }
 }
