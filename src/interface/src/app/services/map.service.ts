@@ -103,13 +103,7 @@ export class MapService {
     );
   }
 
-<<<<<<< Updated upstream
   setConfigs() {
-=======
-
-  setConfigs(){
-    console.log(this.regionToString(this.selectedRegion$.getValue()));
->>>>>>> Stashed changes
     this.http
       .get<BoundaryConfig[]>(
         BackendConstants.END_POINT +

@@ -32,7 +32,7 @@ def _create_planning_area(
     are in Sierra Nevada.
     """
     planning_area = PlanningArea.objects.create(
-        user=user, name=name, region_name='sierra_cascade_inyo',
+        user=user, name=name, region_name='sierra-nevada',
         geometry=geometry, notes=notes)
     planning_area.save()
     return planning_area
@@ -64,7 +64,7 @@ class CreatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_areas.count(), 1)
         planning_area = planning_areas.first()
         assert planning_area is not None
-        self.assertEqual(planning_area.region_name, 'sierra_cascade_inyo')
+        self.assertEqual(planning_area.region_name, 'sierra-nevada')
         self.assertTrue(planning_area.geometry.equals(_convert_polygon_to_multipolygon(self.geometry)))
         self.assertEqual(planning_area.notes, self.notes)
         self.assertEqual(planning_area.name, 'test plan')
@@ -85,7 +85,7 @@ class CreatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_areas.count(), 1)
         planning_area = planning_areas.first()
         assert planning_area is not None
-        self.assertEqual(planning_area.region_name, 'sierra_cascade_inyo')
+        self.assertEqual(planning_area.region_name, 'sierra-nevada')
         self.assertTrue(planning_area.geometry.equals(_convert_polygon_to_multipolygon(self.geometry)))
         self.assertEqual(response.content, json.dumps(
             {"id": planning_area.pk}).encode())
@@ -103,7 +103,7 @@ class CreatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_areas.count(), 1)
         planning_area = planning_areas.first()
         assert planning_area is not None
-        self.assertEqual(planning_area.region_name, 'southern_california')
+        self.assertEqual(planning_area.region_name, 'southern-california')
         self.assertTrue(planning_area.geometry.equals(_convert_polygon_to_multipolygon(self.multipolygon_geometry)))
         self.assertEqual(response.content, json.dumps(
             {"id": planning_area.pk}).encode())
