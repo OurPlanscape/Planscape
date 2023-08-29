@@ -18,9 +18,9 @@ class Command(BaseCommand):
                             type=str, default='7-13',
                             help='Zoom levels in the output, e.g., 7-13.')
         parser.add_argument('--region_name', nargs='?',
-                            type=str, default='sierra_cascade_inyo',
-                            choices=['sierra_cascade_inyo', 'southern_california', 'coastal_inland',
-                                     'north_coast_inland'],
+                            type=str, default='sierra-nevada',
+                            choices=['sierra-nevada', 'southern-california', 'central-coast',
+                                     'northern-california'],
                             help='Region for which to generate tiles.')
         parser.add_argument('--dry_run',
                             type=bool, default=True, action=argparse.BooleanOptionalAction,
