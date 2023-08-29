@@ -1,7 +1,6 @@
 library("DBI")
 library("RPostgreSQL")
 library("optparse")
-library("dbplyr")
 library("rjson")
 
 readRenviron("src/planscape/planscape/.env")
