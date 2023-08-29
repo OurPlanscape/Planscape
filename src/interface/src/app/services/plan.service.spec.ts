@@ -60,18 +60,16 @@ describe('PlanService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT +
-        '/plan/treatment_goals_config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=sierra-nevada'
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(
-      BackendConstants.END_POINT +
-        '/boundary/config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra-nevada'
     );
     req2.flush(boundaryConfigs);
     const req3 = httpTestingController.expectOne(
       BackendConstants.END_POINT +
-        '/conditions/config/?region_name=sierra_cascade_inyo'
+        '/conditions/config/?region_name=sierra-nevada'
     );
     req3.flush(conditionsConfig);
   });

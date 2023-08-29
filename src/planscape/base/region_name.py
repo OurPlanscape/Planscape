@@ -11,10 +11,10 @@ class RegionName(str, enum.Enum):
     TCSI = 'tcsi'
 
     # California Wildfire and Forest Resilience Task Force regions.
-    SIERRA_CASCADE_INYO = 'sierra_cascade_inyo'
-    NORTH_COAST_INLAND = 'north_coast_inland'
-    COASTAL_INLAND = 'central_coast'
-    SOUTHERN_CALIFORNIA = 'southern_california'
+    SIERRA_NEVADA = 'sierra-nevada'
+    NORTHERN_CALIFORNIA = 'northern-california'
+    CENTRAL_COAST = 'central-coast'
+    SOUTHERN_CALIFORNIA = 'southern-california'
 
 
 def region_to_display_name(region: RegionName) -> str | None:
@@ -24,11 +24,11 @@ def region_to_display_name(region: RegionName) -> str | None:
     match region:
         case RegionName.TCSI:
             return 'TCSI'
-        case RegionName.SIERRA_CASCADE_INYO:
+        case RegionName.SIERRA_NEVADA:
             return 'Sierra Nevada'
-        case RegionName.NORTH_COAST_INLAND:
+        case RegionName.NORTHERN_CALIFORNIA:
             return 'Northern California'
-        case RegionName.COASTAL_INLAND:
+        case RegionName.CENTRAL_COAST:
             return 'Central Coast'
         case RegionName.SOUTHERN_CALIFORNIA:
             return 'Southern California'
@@ -45,11 +45,11 @@ def display_name_to_region(region: str) -> RegionName | None:
         case 'TCSI':
             return RegionName.TCSI
         case 'Sierra Nevada':
-            return RegionName.SIERRA_CASCADE_INYO
+            return RegionName.SIERRA_NEVADA
         case 'Northern California':
-            return RegionName.NORTH_COAST_INLAND
+            return RegionName.NORTHERN_CALIFORNIA
         case 'Central Coast':
-            return RegionName.COASTAL_INLAND
+            return RegionName.CENTRAL_COAST
         case 'Southern California':
             return RegionName.SOUTHERN_CALIFORNIA
         case _:

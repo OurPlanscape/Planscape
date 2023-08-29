@@ -293,7 +293,7 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
     _URL_MAX_COST = 'max_cost'
 
     # Constants that act as default values when parsing url parameters.
-    _DEFAULT_REGION = 'sierra_cascade_inyo'
+    _DEFAULT_REGION = 'sierra-nevada'
     _DEFAULT_PRIORITIES = ['fire_dynamics',
                            'forest_resilience', 'species_diversity']
 
@@ -373,7 +373,7 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
     _URL_MAX_COST_PER_PROJECT = 'max_cost_per_project'
 
     # Constants that act as default values when parsing url parameters.
-    _DEFAULT_REGION = 'sierra_cascade_inyo'
+    _DEFAULT_REGION = 'sierra-nevada'
     _DEFAULT_PRIORITIES = ['fire_dynamics',
                            'forest_resilience', 'species_diversity']
 
