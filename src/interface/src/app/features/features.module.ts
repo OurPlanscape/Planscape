@@ -5,9 +5,7 @@ import { FeatureFlagDirective } from './feature-flag.directive';
 import { FeatureService } from './feature.service';
 
 @NgModule({
-  declarations: [
-    FeatureFlagDirective
-  ],
+  declarations: [FeatureFlagDirective],
   imports: [CommonModule],
   providers: [FeatureService],
   exports: [FeatureFlagDirective],

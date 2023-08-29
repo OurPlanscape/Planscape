@@ -10,7 +10,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
-import "leaflet.vectorgrid";
+import 'leaflet.vectorgrid';
 import { BehaviorSubject, of } from 'rxjs';
 import * as shp from 'shpjs';
 
@@ -52,8 +52,9 @@ describe('MapComponent', () => {
 
   beforeEach(() => {
     const fakeLayer: L.Layer = L.vectorGrid.protobuf(
-      "https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf",
-      { } );
+      'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
+      {}
+    );
     const fakeGeoJson: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
       features: [
@@ -101,9 +102,9 @@ describe('MapComponent', () => {
       {
         boundaryConfig$: new BehaviorSubject<BoundaryConfig[] | null>([
           {
-            boundary_name: 'HUC-12', 
-            vector_name: "sierra-nevada:vector_huc12", 
-            shape_name: "Name",
+            boundary_name: 'HUC-12',
+            vector_name: 'sierra-nevada:vector_huc12',
+            shape_name: 'Name',
           },
         ]),
         conditionsConfig$: new BehaviorSubject<ConditionsConfig | null>({
@@ -112,7 +113,7 @@ describe('MapComponent', () => {
               display: true,
               elements: [
                 {
-		              display: true,
+                  display: true,
                   metrics: [
                     {
                       metric_name: 'test_metric_1',
@@ -145,7 +146,9 @@ describe('MapComponent', () => {
       ['setMapConfigs', 'setMapViewOptions'],
       {
         mapViewOptions$: new BehaviorSubject<MapViewOptions | null>(null),
-        mapConfigs$: new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary()),
+        mapConfigs$: new BehaviorSubject<Record<Region, MapConfig[]> | null>(
+          defaultMapConfigsDictionary()
+        ),
         region$: new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA),
         sessionInterval$: sessionInterval,
       }
@@ -164,7 +167,12 @@ describe('MapComponent', () => {
     );
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     TestBed.configureTestingModule({
-      imports: [FormsModule, MaterialModule, BrowserAnimationsModule, HttpClientTestingModule],
+      imports: [
+        FormsModule,
+        MaterialModule,
+        BrowserAnimationsModule,
+        HttpClientTestingModule,
+      ],
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [
         MapComponent,
@@ -203,8 +211,7 @@ describe('MapComponent', () => {
       const mapServiceStub: MapService =
         fixture.debugElement.injector.get(MapService);
 
-
-      // Region highlighting temporarily disabled. 
+      // Region highlighting temporarily disabled.
       // expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(
       //   Region.SIERRA_NEVADA
       // );
@@ -389,10 +396,11 @@ describe('MapComponent', () => {
           expect(map.boundaryLayerRef).toBeUndefined();
 
           // Act: select the HUC-12 boundary
-          map.config.boundaryLayerConfig = { 
-            boundary_name: 'HUC-12', 
-            vector_name: "sierra-nevada:vector_huc12", 
-            shape_name: "Name", };
+          map.config.boundaryLayerConfig = {
+            boundary_name: 'HUC-12',
+            vector_name: 'sierra-nevada:vector_huc12',
+            shape_name: 'Name',
+          };
           component.toggleBoundaryLayer(map);
 
           // Assert: expect that the map contains the HUC-12 layer
@@ -704,17 +712,19 @@ describe('MapComponent', () => {
         fixture.debugElement.injector.get(SessionService);
       const mapConfig = defaultMapConfig();
       mapConfig.boundaryLayerConfig = {
-        boundary_name: 'HUC-12', 
-        vector_name: "sierra-nevada:vector_huc12", 
-        shape_name: "Name",
-
+        boundary_name: 'HUC-12',
+        vector_name: 'sierra-nevada:vector_huc12',
+        shape_name: 'Name',
       };
-      const savedMapConfigs: Record<Region, MapConfig[]> = defaultMapConfigsDictionary();
+      const savedMapConfigs: Record<Region, MapConfig[]> =
+        defaultMapConfigsDictionary();
 
       sessionServiceStub.mapConfigs$.next(savedMapConfigs);
       component.ngOnInit();
 
-      expect(component.maps.map((map) => map.config)).toEqual(savedMapConfigs['Sierra Nevada']);
+      expect(component.maps.map((map) => map.config)).toEqual(
+        savedMapConfigs['Sierra Nevada']
+      );
     });
 
     it('restores map view options from session', () => {

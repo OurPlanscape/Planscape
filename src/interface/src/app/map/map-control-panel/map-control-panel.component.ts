@@ -16,14 +16,16 @@ import {
 } from 'src/app/types';
 import * as L from 'leaflet';
 
-import { NONE_DATA_LAYER_CONFIG, ConditionTreeType } from './../../types/data.types';
+import {
+  NONE_DATA_LAYER_CONFIG,
+  ConditionTreeType,
+} from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
 import {
   ConditionsNode,
   ConditionTreeComponent,
 } from './condition-tree/condition-tree.component';
 import features from '../../features/features.json';
-
 
 /** Map Legend Display Strings */
 
@@ -63,7 +65,6 @@ export class MapControlPanelComponent implements OnInit {
   readonly noneBoundaryConfig = NONE_BOUNDARY_CONFIG;
   readonly noneDataLayerConfig = NONE_DATA_LAYER_CONFIG;
 
-
   private readonly destroy$ = new Subject<void>();
   // Region-specific data flags
   rawDataEnabled: boolean | null = null;
@@ -73,7 +74,7 @@ export class MapControlPanelComponent implements OnInit {
   // General data flags
   future_control_panel_enabled = features.show_future_control_panel;
   translated_control_panel_enabled = features.show_translated_control_panel;
-  
+
   public dataTypeEnum = ConditionTreeType;
 
   conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
@@ -92,7 +93,6 @@ export class MapControlPanelComponent implements OnInit {
       });
   }
 
-
   enableClearAllButton(map: Map): boolean {
     return (
       map.config.boundaryLayerConfig !== NONE_BOUNDARY_CONFIG ||
@@ -107,7 +107,7 @@ export class MapControlPanelComponent implements OnInit {
     map.config.showExistingProjectsLayer = false;
     this.toggleExistingProjectsLayer.emit(map);
     map.config.dataLayerConfig = NONE_DATA_LAYER_CONFIG;
-    if(map.legend){
+    if (map.legend) {
       L.DomUtil.remove(map.legend);
     }
     this.changeConditionLayer.emit(map);

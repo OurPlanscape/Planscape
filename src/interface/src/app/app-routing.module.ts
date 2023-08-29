@@ -42,17 +42,17 @@ const routes: Routes = [
         component: SignupComponent,
         canActivate: [createFeatureGuard('login')],
       },
-      { 
-        path: 'map', 
-        title: 'Explore', 
-        component: MapComponent 
+      {
+        path: 'map',
+        title: 'Explore',
+        component: MapComponent,
       },
       {
         path: 'feedback',
         canActivate: [RedirectGuard],
         component: RedirectGuard,
         data: {
-          externalUrl: 'https://share.hsforms.com/1xXehW6VrR0WskbHhqxsrrw3atqe'
+          externalUrl: 'https://share.hsforms.com/1xXehW6VrR0WskbHhqxsrrw3atqe',
         },
       },
       {
@@ -60,7 +60,8 @@ const routes: Routes = [
         canActivate: [RedirectGuard],
         component: RedirectGuard,
         data: {
-          externalUrl: 'https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide'
+          externalUrl:
+            'https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide',
         },
       },
       {
@@ -105,8 +106,6 @@ export class PlanscapeTitleStrategy extends TitleStrategy {
     }
   }
 }
-
-
 
 @NgModule({
   imports: [RouterModule.forRoot(routes)],

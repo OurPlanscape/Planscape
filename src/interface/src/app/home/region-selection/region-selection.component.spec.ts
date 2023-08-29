@@ -50,13 +50,16 @@ describe('RegionSelectionComponent', () => {
   });
 
   it('should disable unavailable regions', async () => {
-    const regionButtons: MatButtonHarness[] = await loader.getAllHarnesses(
-      MatButtonHarness
-    );
+    const regionButtons: MatButtonHarness[] =
+      await loader.getAllHarnesses(MatButtonHarness);
 
     for (let regionButton of regionButtons) {
       // Add regions here as they become available to avoid false failures
-      if ((await regionButton.getText()).match(/(SIERRA NEVADA)|(SOUTHERN CALIFORNIA)|(CENTRAL COAST)/)) {
+      if (
+        (await regionButton.getText()).match(
+          /(SIERRA NEVADA)|(SOUTHERN CALIFORNIA)|(CENTRAL COAST)/
+        )
+      ) {
         expect(await regionButton.isDisabled()).toBeFalse();
       } else {
         expect(await regionButton.isDisabled()).toBeTrue();

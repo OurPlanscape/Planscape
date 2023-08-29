@@ -1,14 +1,16 @@
 <div class="file-uploader-wrapper mat-elevation-z4">
   <div class="title">Upload area shape file</div>
-  <input type="file"
+  <input
+    type="file"
     class="file-input"
     [accept]="requiredFileType"
-    (change)="onFileUploaded($event)" #fileUpload>
+    (change)="onFileUploaded($event)"
+    #fileUpload />
   <div class="upload-outline">
     <mat-icon *ngIf="!file">upload</mat-icon>
-    {{fileName || "Select a file"}}
-    <button mat-flat-button class="upload-button"
-      (click)="fileUpload.click()"> UPLOAD
+    {{ fileName || 'Select a file' }}
+    <button mat-flat-button class="upload-button" (click)="fileUpload.click()">
+      UPLOAD
     </button>
   </div>
   <span class="caption">only .zip of shapefile allowed</span>

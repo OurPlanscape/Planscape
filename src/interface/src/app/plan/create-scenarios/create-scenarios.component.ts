@@ -1,5 +1,11 @@
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -17,7 +23,7 @@ import {
   concatMap,
   of,
   throwError,
-  Observable
+  Observable,
 } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
@@ -27,8 +33,14 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
-import features from '../../features/features.json'
+import {
+  Plan,
+  ProjectArea,
+  ProjectConfig,
+  TreatmentGoalConfig,
+  TreatmentQuestionConfig,
+} from 'src/app/types';
+import features from '../../features/features.json';
 
 interface StepState {
   complete?: boolean;
@@ -67,12 +79,16 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   panelExpanded: boolean = true;
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: "",
+    question_text: '',
     priorities: [''],
-    weights: [0]
-  }
-  excludedAreasOptions: Array<string> = ["Private Land", "National Forests and Parks",
-    "Wilderness Area", "Tribal Lands"];
+    weights: [0],
+  };
+  excludedAreasOptions: Array<string> = [
+    'Private Land',
+    'National Forests and Parks',
+    'Wilderness Area',
+    'Tribal Lands',
+  ];
 
   private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
@@ -108,13 +124,17 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
           }),
           physicalConstraintForm: this.fb.group({
             // Maximum slope allowed for planning area
-            maxSlope: ['', 
-              [Validators.min(0), Validators.max(100), Validators.required]],
+            maxSlope: [
+              '',
+              [Validators.min(0), Validators.max(100), Validators.required],
+            ],
             // Minimum distance from road allowed for planning area
-            // TODO update variable name to minDistanceFromRoad 
-            maxRoadDistance: ['', Validators.compose(
-              [Validators.min(0), Validators.required])],
-            // Stand Size selection 
+            // TODO update variable name to minDistanceFromRoad
+            maxRoadDistance: [
+              '',
+              Validators.compose([Validators.min(0), Validators.required]),
+            ],
+            // Stand Size selection
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
@@ -175,8 +195,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // TODO Add maxArea input and make required, this extra validator may be deprecated
     // const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
     // const maxArea = constraintsForm.get('treatmentForm.maxArea');
-     const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
-     const maxDistance = constraintsForm.get('physicalConstraintForm.maxRoadDistance');
+    const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
+    const maxDistance = constraintsForm.get(
+      'physicalConstraintForm.maxRoadDistance'
+    );
     const valid = !!maxSlope?.value || !!maxDistance?.value;
     return valid ? null : { budgetOrAreaRequired: true };
   }
@@ -206,18 +228,20 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         excludeSlope?.setValue(config.max_slope);
       }
       // Check if scenario config priorities and weights match those of a question.
-      // If so, assume this was the selected treatment question. 
+      // If so, assume this was the selected treatment question.
       this.treatmentGoals.subscribe((goals) => {
         goals!.forEach((goal) => {
           goal.questions.forEach((question) => {
-            if ((question['priorities']?.toString() == config.priorities?.toString()) &&
-              question['weights']?.toString() == config.weights?.toString()) {
+            if (
+              question['priorities']?.toString() ==
+                config.priorities?.toString() &&
+              question['weights']?.toString() == config.weights?.toString()
+            ) {
               selectedQuestion?.setValue(question);
             }
-          })
-        })
+          });
+        });
       });
-
     });
   }
 
@@ -225,7 +249,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
     const maxCost = this.formGroups[1].get('budgetForm.maxCost');
     const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
-    const maxRoadDistance = this.formGroups[1].get('physicalConstraintForm.maxRoadDistance');
+    const maxRoadDistance = this.formGroups[1].get(
+      'physicalConstraintForm.maxRoadDistance'
+    );
     const maxSlope = this.formGroups[1].get('physicalConstraintForm.maxSlope');
     const selectedQuestion = this.formGroups[0].get('selectedQuestion');
 
@@ -240,8 +266,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
     if (maxRoadDistance?.valid)
       projectConfig.max_road_distance = parseFloat(maxRoadDistance.value);
-    if (maxSlope?.valid)
-      projectConfig.max_slope = parseFloat(maxSlope.value);
+    if (maxSlope?.valid) projectConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
       projectConfig.priorities = selectedQuestion.value['priorities'];
       projectConfig.weights = selectedQuestion!.value['weights'];
@@ -278,27 +303,27 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     //       );
     //     }),
 
-        // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
-        // catchError(() => {
-        //   this.matSnackBar.open(
-        //     '[Error] Project area shapefile should only include polygons or multipolygons',
-        //     'Dismiss',
-        //     {
-        //       duration: 10000,
-        //       panelClass: ['snackbar-error'],
-        //       verticalPosition: 'top',
-        //     }
-        //   );
-        //   return throwError(
-        //     () => new Error('Problem creating uploaded project areas')
-        //   );
-        // })
-      // )
-      // .subscribe(() => {
-      //   // Navigate to scenario confirmation page
-      //   const planId = this.plan$.getValue()?.id;
-      //   this.router.navigate(['scenario-confirmation', planId]);
-      // });
+    // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
+    // catchError(() => {
+    //   this.matSnackBar.open(
+    //     '[Error] Project area shapefile should only include polygons or multipolygons',
+    //     'Dismiss',
+    //     {
+    //       duration: 10000,
+    //       panelClass: ['snackbar-error'],
+    //       verticalPosition: 'top',
+    //     }
+    //   );
+    //   return throwError(
+    //     () => new Error('Problem creating uploaded project areas')
+    //   );
+    // })
+    // )
+    // .subscribe(() => {
+    //   // Navigate to scenario confirmation page
+    //   const planId = this.plan$.getValue()?.id;
+    //   this.router.navigate(['scenario-confirmation', planId]);
+    // });
   }
 
   createUploadedProjectAreas() {

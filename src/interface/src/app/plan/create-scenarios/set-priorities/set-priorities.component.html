@@ -1,18 +1,25 @@
 <div class="panel-container">
   <form [formGroup]="formGroup!">
     <div class="config-group">
-
-      <mat-radio-group name="treatmentGoalSelect" aria-label="Select an option" class="layer-radio-group" color="primary"
+      <mat-radio-group
+        name="treatmentGoalSelect"
+        aria-label="Select an option"
+        class="layer-radio-group"
+        color="primary"
         formControlName="selectedQuestion">
         <div class="goal-category">TREATMENT GOALS</div>
-        <div *ngFor="let treatmentGoal of treatmentGoals$" class="goal-control-container">
+        <div
+          *ngFor="let treatmentGoal of treatmentGoals$"
+          class="goal-control-container">
           <mat-expansion-panel expanded="true" [togglePosition]="'before'">
             <mat-expansion-panel-header class="goal-panel-header">
-              {{treatmentGoal['category_name']}}
+              {{ treatmentGoal['category_name'] }}
             </mat-expansion-panel-header>
-            <div *ngFor="let treatmentQuestion of treatmentGoal['questions']" class="layer-control-container">
+            <div
+              *ngFor="let treatmentQuestion of treatmentGoal['questions']"
+              class="layer-control-container">
               <mat-radio-button [value]="treatmentQuestion">
-                {{ treatmentQuestion.question_text}}
+                {{ treatmentQuestion.question_text }}
               </mat-radio-button>
             </div>
           </mat-expansion-panel>

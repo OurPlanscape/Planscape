@@ -32,7 +32,7 @@ describe('MapLayersComponent', () => {
               display: true,
               elements: [
                 {
-		  display: true,
+                  display: true,
                   element_name: 'test_element_1',
                   filepath: 'test_element_1',
                   metrics: [
@@ -50,7 +50,7 @@ describe('MapLayersComponent', () => {
     );
 
     fakePlanService = jasmine.createSpyObj('PlanService', {
-      getConditionScoresForPlanningArea: of({conditions: []}),
+      getConditionScoresForPlanningArea: of({ conditions: [] }),
     });
 
     await TestBed.configureTestingModule({
@@ -60,7 +60,7 @@ describe('MapLayersComponent', () => {
         MaterialModule,
         SharedModule,
       ],
-      declarations: [ MapLayersComponent ],
+      declarations: [MapLayersComponent],
       providers: [
         {
           provide: MapService,
@@ -68,8 +68,7 @@ describe('MapLayersComponent', () => {
         },
         { provide: PlanService, useValue: fakePlanService },
       ],
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(MapLayersComponent);
     component = fixture.componentInstance;

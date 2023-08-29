@@ -1,0 +1,100 @@
+@import "../shared/_variables.scss";
+
+// Region select dropdown arrow
+@mixin arrow {
+  content: '';
+  $arrow-size: 5px;
+  position: relative;
+  right: 12px;
+  top: 15px;
+  width: 0;
+  height: 0;
+  border-left: $arrow-size solid transparent;
+  border-right: $arrow-size solid transparent;
+  border-top: $arrow-size solid #ffffff;
+  pointer-events: none;
+}
+
+// Region selection dropdown styling
+.region-dropdown-wrapper {
+  position: relative;
+
+  &::after {
+    @include arrow;
+  }
+}
+
+
+// styles for the dropdown on the top nabvar
+select.region-dropdown {
+  &::-ms-expand {
+    display: none; /* IE */
+  }
+  -moz-appearance:none; /* Firefox */
+  -webkit-appearance:none; /* Safari and Chrome */
+  appearance:none;
+  background: #494949;
+  border: none;
+  outline: none;
+  width: 140px;
+  margin-right: 5px;
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 200;
+  text-align: center;
+}
+
+
+// styles for the dropdown on the map controls
+.region-wrapper {
+  height: 32px;
+  box-shadow: 0 1px 1px 0 #00000024, 0 2px 2px 0 #00000033, 0 1px 5px 0 #0000001F;
+
+  overflow: hidden;
+  border-radius: 6px;
+  position: relative;
+  &::before{
+    content: '';
+    width: 1px;
+    height: 100%;
+    background-color: #eee;
+    position: absolute;
+    right: 26px;
+    top: 0;
+  }
+
+  &::after {
+    content: '';
+    $arrow-size: 5px;
+    position: absolute;
+    right: 10px;
+    top: 14px;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid #3367D6;
+    pointer-events: none;
+  }
+}
+
+.region {
+  &::-ms-expand {
+    display: none; /* IE */
+  }
+
+  -moz-appearance:none; /* Firefox */
+  -webkit-appearance:none; /* Safari and Chrome */
+  appearance:none;
+  font-weight: 500;
+  border: none;
+  text-transform: uppercase;
+  color: #3367D6;
+  padding: 10px;
+  padding-right: 36px;
+  border-right: 1px solid #eeeeee;
+  text-align: center;
+}
+
+

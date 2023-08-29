@@ -48,6 +48,9 @@ This flag will enable the Project Area control panel in the Scenario Configurati
 This flag will enable use of ITS data for past resilience projects rather than
 Calmapper.
 
+### new_navigation
+This flag controls the changes regarding the new navigation. The new navigation introduces another top toolbar and removes the left sidebar and menu.
+
 ### Other flags
 There are two other flags, testFalseFeature and testTrueFeature created just for
 automated testing.  Their values should be kept to "false" and "true" for
@@ -70,4 +73,21 @@ for angular tests to pass.  You can start with this, but later enable settings.
   "upload_project_area": false,
   "use_its": false
 }
+```
+
+# Feature Flag directive
+
+Use the feature flag directive to show or hide content on your markup.
+
+```angular2html
+<div *featureFlag="'your_flag'">
+  Show me when the flag is on!
+</div>
+```
+You can alternatively hide content if the flag is on.
+
+```angular2html
+<div *featureFlag="'your_flag'; hide: true">
+  Hide me when the flag is on!
+</div>
 ```

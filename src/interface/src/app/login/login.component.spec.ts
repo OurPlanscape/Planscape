@@ -48,7 +48,10 @@ describe('LoginComponent', () => {
 
       component.login();
 
-      expect(fakeAuthService.login).toHaveBeenCalledOnceWith('test@test.com', 'password');
+      expect(fakeAuthService.login).toHaveBeenCalledOnceWith(
+        'test@test.com',
+        'password'
+      );
     });
   });
 
