@@ -9,7 +9,6 @@ import { AuthService } from '../services';
 import { NavigationComponent } from './navigation.component';
 import { FeatureService } from '../features/feature.service';
 import { By } from '@angular/platform-browser';
-import createSpyObj = jasmine.createSpyObj;
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
@@ -23,7 +22,7 @@ describe('NavigationComponent', () => {
       {
         logout: of({ detail: '' }),
       },
-      {}
+      {},
     );
     fakeLoggedInStatus = new BehaviorSubject(true);
     fakeAuthService.isLoggedIn$ = fakeLoggedInStatus;
