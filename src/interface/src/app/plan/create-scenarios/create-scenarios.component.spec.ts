@@ -17,12 +17,12 @@ import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 
-  //TODO Add the following tests once implementation for tested behaviors is added:
-  /**
-   * 'configures proper priorities and weights based on chosen treatment question'
-   * 'creates scenario when createScenario is called'
-   * 'creates Project Areas when user uploads Project Area shapefile'
-   */
+//TODO Add the following tests once implementation for tested behaviors is added:
+/**
+ * 'configures proper priorities and weights based on chosen treatment question'
+ * 'creates scenario when createScenario is called'
+ * 'creates Project Areas when user uploads Project Area shapefile'
+ */
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
@@ -121,7 +121,9 @@ describe('CreateScenariosComponent', () => {
       .get('selectedQuestion')
       ?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad')?.setValue(1);
+    component.formGroups[1]
+      .get('physicalConstraintForm.minDistanceFromRoad')
+      ?.setValue(1);
     component.formGroups[1].get('physicalConstraintForm.maxArea')?.setValue(1);
     fixture.detectChanges();
 
@@ -140,7 +142,9 @@ describe('CreateScenariosComponent', () => {
       MatButtonHarness.with({ text: /GENERATE/ })
     );
     component.formGroups[0].markAsDirty();
-    component.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad')?.setValue(-1);
+    component.formGroups[1]
+      .get('physicalConstraintForm.minDistanceFromRoad')
+      ?.setValue(-1);
     fixture.detectChanges();
 
     // Click on "GENERATE SCENARIO" button
@@ -157,7 +161,9 @@ describe('CreateScenariosComponent', () => {
       .get('selectedQuestion')
       ?.setValue(defaultSelectedQuestion);
     component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad')?.setValue(1);
+    component.formGroups[1]
+      .get('physicalConstraintForm.minDistanceFromRoad')
+      ?.setValue(1);
     component.formGroups[1].get('physicalConstraintForm.maxArea')?.setValue(1);
     component.generatingScenario = false;
     fixture.detectChanges();
