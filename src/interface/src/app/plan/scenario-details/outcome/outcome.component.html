@@ -1,8 +1,8 @@
 <!-- Plan Info -->
 <div class="plan-info">
   <span>Creator: {{ displayName }}</span>
-  <br>
-  <span>Created: {{ scenario?.createdTimestamp | date:'MM/dd/yyyy'}}</span>
+  <br />
+  <span>Created: {{ scenario?.createdTimestamp | date: 'MM/dd/yyyy' }}</span>
 </div>
 
 <div class="outcome-content">
@@ -32,13 +32,18 @@
           </div>
           <ng-container *ngFor="let priority of scenario?.priorities || []">
             <div class="flex-row space-between">
-              <h2>{{ priority.name | titlecase  }}</h2>
+              <h2>{{ priority.name | titlecase }}</h2>
               <div class="flex-row">
-                <mat-slider [disabled]=true [min]="0" [max]="5" [thumbLabel]="true" [value]="priority.weight"
+                <mat-slider
+                  [disabled]="true"
+                  [min]="0"
+                  [max]="5"
+                  [thumbLabel]="true"
+                  [value]="priority.weight"
                   color="primary">
-                  <input matSliderThumb>
+                  <input matSliderThumb />
                 </mat-slider>
-                <div class="slider-label">{{priority.weight}}</div>
+                <div class="slider-label">{{ priority.weight }}</div>
               </div>
             </div>
             <mat-divider></mat-divider>
@@ -62,9 +67,16 @@
             <h3>Est. cost range</h3>
           </div>
           <div class="flex-row space-between reduced-height-row">
-            <span>{{ scenario?.projectAreas?.length || '0' }} project areas</span>
+            <span>
+              {{ scenario?.projectAreas?.length || '0' }} project areas
+            </span>
             <span>{{ totalAcresTreated }} ac</span>
-            <span>{{ (totalAcresTreated / totalPlanningAreaAcres) * 100 | number: '1.0-5' }}%</span>
+            <span>
+              {{
+                (totalAcresTreated / totalPlanningAreaAcres) * 100
+                  | number: '1.0-5'
+              }}%
+            </span>
             <span>{{ totalCostRange }}</span>
           </div>
         </div>
@@ -73,7 +85,9 @@
         <div>
           <div *ngFor="let projectArea of scenario?.projectAreas; index as i">
             <div class="project-area-card">
-              <div class="flex-row"><h1>Area {{ i+1 }}</h1></div>
+              <div class="flex-row">
+                <h1>Area {{ i + 1 }}</h1>
+              </div>
               <div class="area-info-wrapper">
                 <div class="flex-row space-between darker-h1">
                   <span>{{ projectArea.actualAcresTreated }}</span>
@@ -94,7 +108,7 @@
             </div>
           </div>
         </div>
-    </div>
+      </div>
     </mat-expansion-panel>
   </mat-accordion>
 
@@ -107,11 +121,9 @@
           class="notes-text"
           formControlName="notes"
           cols="64"
-          rows="10">
-        </textarea>
+          rows="10"></textarea>
         <button class="notes-button" type="submit">SEND</button>
       </div>
     </form>
   </div>
 </div>
-

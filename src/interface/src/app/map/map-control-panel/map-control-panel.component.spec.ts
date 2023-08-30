@@ -43,7 +43,7 @@ describe('MapControlPanelComponent', () => {
         boundary_name: 'huc12',
         display_name: 'HUC-12',
         vector_name: 'sierra-nevada:vector_huc12',
-        shape_name: 'Name",'
+        shape_name: 'Name",',
       },
     ];
     component.conditionsConfig$ = of({});
@@ -186,7 +186,7 @@ describe('MapControlPanelComponent', () => {
         boundary_name: 'huc12',
         display_name: 'HUC-12',
         vector_name: 'sierra-nevada:vector_huc12',
-        shape_name: 'Name",'
+        shape_name: 'Name",',
       };
       spyOn(component.changeBoundaryLayer, 'emit');
       spyOn(component.toggleExistingProjectsLayer, 'emit');

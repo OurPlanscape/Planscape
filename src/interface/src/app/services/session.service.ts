@@ -26,7 +26,10 @@ export class SessionService {
     SESSION_SAVE_INTERVAL
   );
 
-  readonly mapConfigs$ = new BehaviorSubject<Record<Region, MapConfig[]> | null>(defaultMapConfigsDictionary());
+  readonly mapConfigs$ = new BehaviorSubject<Record<
+    Region,
+    MapConfig[]
+  > | null>(defaultMapConfigsDictionary());
   readonly mapViewOptions$ = new BehaviorSubject<MapViewOptions | null>(null);
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
@@ -53,13 +56,13 @@ export class SessionService {
   /** Emits the map configs and saves them in local storage. */
   setMapConfigs(value: MapConfig[]) {
     var regionIndex: Region | null = this.region$.getValue();
-    if(!regionIndex){
+    if (!regionIndex) {
       regionIndex = Region.SIERRA_NEVADA;
     }
-    var mapConf: Record<Region, MapConfig[]> | null= this.mapConfigs$.getValue();
-    if(mapConf && regionIndex){
+    var mapConf: Record<Region, MapConfig[]> | null =
+      this.mapConfigs$.getValue();
+    if (mapConf && regionIndex) {
       mapConf![regionIndex] = value;
-      
     }
     this.mapConfigs$.next(mapConf);
     localStorage.setItem('mapConfigs', JSON.stringify(mapConf));
@@ -89,16 +92,16 @@ export class SessionService {
    *  are present. */
   private validateSavedMapConfigs(data: string): boolean {
     const configs: any[] = JSON.parse(data);
-    for( var regionConfig of Object.values(configs)){
-      for (var mapConfig of Object.values(regionConfig)){
-        if(!this.instanceOfMapConfig(mapConfig)){
+    for (var regionConfig of Object.values(configs)) {
+      for (var mapConfig of Object.values(regionConfig)) {
+        if (!this.instanceOfMapConfig(mapConfig)) {
           console.log('not valid config ' + JSON.stringify(mapConfig));
           return false;
         }
       }
     }
-    for(var region of Object.keys(configs)){
-      if(!Object.values(Region).includes(region as unknown as Region)){
+    for (var region of Object.keys(configs)) {
+      if (!Object.values(Region).includes(region as unknown as Region)) {
         console.log('Config key not valid Region ' + region);
         return false;
       }

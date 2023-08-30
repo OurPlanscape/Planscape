@@ -5,7 +5,7 @@
       Welcome, {{ (user$ | async) ? displayName((user$ | async)!) : 'Guest' }}
     </h1>
 
-    <div *ngIf="(user$ | async) as user">
+    <div *ngIf="user$ | async as user">
       <h3>Account Name</h3>
       <h2>{{ displayName(user) }}</h2>
 
@@ -17,9 +17,13 @@
     </div>
 
     <div class="button-row" *ngIf="user$ | async">
-      <button mat-raised-button color="primary" (click)="editAccount()">EDIT ACCOUNT</button>
+      <button mat-raised-button color="primary" (click)="editAccount()">
+        EDIT ACCOUNT
+      </button>
 
-      <button mat-raised-button color="primary" (click)="changePassword()">CHANGE PASSWORD</button>
+      <button mat-raised-button color="primary" (click)="changePassword()">
+        CHANGE PASSWORD
+      </button>
 
       <button mat-raised-button (click)="logout()">SIGN OUT</button>
     </div>
@@ -35,8 +39,9 @@
             type="password"
             required
             formControlName="password1"
-            matInput>
-          <mat-error *ngIf="changePasswordForm.get('password1')?.hasError('minlength')">
+            matInput />
+          <mat-error
+            *ngIf="changePasswordForm.get('password1')?.hasError('minlength')">
             Password must contain at least 8 characters.
           </mat-error>
         </mat-form-field>
@@ -47,7 +52,7 @@
             type="password"
             required
             formControlName="password2"
-            matInput>
+            matInput />
           <mat-error *ngIf="changePasswordForm.hasError('passwordsNotEqual')">
             Passwords must match.
           </mat-error>
@@ -62,7 +67,9 @@
             {{ disableEditButton ? 'SAVING...' : 'SAVE CHANGES' }}
           </button>
 
-          <button mat-raised-button (click)="changingPassword = false">CANCEL</button>
+          <button mat-raised-button (click)="changingPassword = false">
+            CANCEL
+          </button>
         </div>
 
         <p>{{ error?.message }}</p>
@@ -72,25 +79,19 @@
 
     <!-- Edit account details -->
     <ng-container *ngIf="editingAccount">
-      <button mat-button color="primary" (click)="openDeleteAccountDialog()">DELETE ACCOUNT</button>
+      <button mat-button color="primary" (click)="openDeleteAccountDialog()">
+        DELETE ACCOUNT
+      </button>
 
       <form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
         <mat-form-field>
           <mat-label>First name</mat-label>
-          <input
-            type="text"
-            required
-            formControlName="firstName"
-            matInput>
+          <input type="text" required formControlName="firstName" matInput />
         </mat-form-field>
 
         <mat-form-field>
           <mat-label>Last name</mat-label>
-          <input
-            type="text"
-            required
-            formControlName="lastName"
-            matInput>
+          <input type="text" required formControlName="lastName" matInput />
         </mat-form-field>
 
         <mat-form-field>
@@ -99,7 +100,7 @@
             type="text"
             disabled
             [value]="editAccountForm.get('email')?.value"
-            matInput>
+            matInput />
         </mat-form-field>
 
         <div class="button-row">
@@ -111,7 +112,9 @@
             {{ disableEditButton ? 'SAVING...' : 'SAVE CHANGES' }}
           </button>
 
-          <button mat-raised-button (click)="editingAccount = false">CANCEL</button>
+          <button mat-raised-button (click)="editingAccount = false">
+            CANCEL
+          </button>
         </div>
 
         <p>{{ error?.message }}</p>

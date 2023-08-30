@@ -8,9 +8,8 @@ describe('PlanUnavailableComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PlanUnavailableComponent ]
-    })
-    .compileComponents();
+      declarations: [PlanUnavailableComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PlanUnavailableComponent);
     component = fixture.componentInstance;

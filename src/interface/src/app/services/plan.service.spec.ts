@@ -5,14 +5,19 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region, BoundaryConfig, ConditionsConfig } from '../types';
+import {
+  BasePlan,
+  Plan,
+  Region,
+  BoundaryConfig,
+  ConditionsConfig,
+} from '../types';
 import {
   PlanConditionScores,
   PlanPreview,
   ProjectConfig,
   Scenario,
   TreatmentGoalConfig,
-
 } from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
 import { MapService } from './map.service';
@@ -55,11 +60,13 @@ describe('PlanService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT +
+        '/plan/treatment_goals_config/?region_name=sierra_cascade_inyo'
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT +
+        '/boundary/config/?region_name=sierra_cascade_inyo'
     );
     req2.flush(boundaryConfigs);
     const req3 = httpTestingController.expectOne(
@@ -253,7 +260,9 @@ describe('PlanService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/plan/create_project_areas_for_project/')
+        BackendConstants.END_POINT.concat(
+          '/plan/create_project_areas_for_project/'
+        )
       );
       expect(req.request.body).toEqual({
         project_id: 1,

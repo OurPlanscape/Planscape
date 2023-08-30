@@ -33,14 +33,14 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   [ConditionName.NEUTRAL]: '#b1354c',
   [ConditionName.LEANING_POOR]: '#F4511e',
   [ConditionName.POOR]: '#fdd853',
-}
+};
 
 const SQUARE_METERS_PER_ACRE = 0.0002471054;
 
 @Component({
   selector: 'summary-panel',
   templateUrl: './summary-panel.component.html',
-  styleUrls: ['./summary-panel.component.scss']
+  styleUrls: ['./summary-panel.component.scss'],
 })
 export class SummaryPanelComponent implements OnChanges {
   @Input() plan: Plan | null = null;
@@ -52,21 +52,23 @@ export class SummaryPanelComponent implements OnChanges {
   conditionScoreColorMap = conditionScoreColorMap;
 
   ngOnChanges(): void {
-      if (!!this.plan) {
-        this.summaryInput = {
-          id: this.plan.id,
-          type: 'Plan',
-          name: this.plan.name,
-          owner: this.owner?.firstName ? this.owner?.firstName + ' ' + this.owner?.lastName : (this.owner?.username ?? 'Guest'),
-          region: this.plan.region,
-          area: this.plan.planningArea!,
-          createdTime: this.plan.createdTimestamp,
-          scenarios: this.plan.savedScenarios,
-          configs: this.plan.configs,
-          acres: this.calculateAcres(this.plan.planningArea!),
-          status: 'In progress',
-        }
-      }
+    if (!!this.plan) {
+      this.summaryInput = {
+        id: this.plan.id,
+        type: 'Plan',
+        name: this.plan.name,
+        owner: this.owner?.firstName
+          ? this.owner?.firstName + ' ' + this.owner?.lastName
+          : this.owner?.username ?? 'Guest',
+        region: this.plan.region,
+        area: this.plan.planningArea!,
+        createdTime: this.plan.createdTimestamp,
+        scenarios: this.plan.savedScenarios,
+        configs: this.plan.configs,
+        acres: this.calculateAcres(this.plan.planningArea!),
+        status: 'In progress',
+      };
+    }
   }
 
   calculateAcres(planningArea: GeoJSON.GeoJSON) {

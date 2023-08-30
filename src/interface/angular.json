@@ -61,6 +61,10 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
+                },
+                {
+                  "replace": "src/app/features/features.json",
+                  "with": "src/app/features/features.prod.json"
                 }
               ],
               "outputHashing": "all"
@@ -71,7 +75,13 @@
               "vendorChunk": true,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true
+              "namedChunks": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/app/features/features.json",
+                  "with": "src/app/features/features.dev.json"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -112,11 +122,23 @@
             ],
             "scripts": []
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
   },
   "cli": {
-    "analytics": "3301f864-55c8-45dc-ab8d-8c347e5f9b66"
+    "analytics": "3301f864-55c8-45dc-ab8d-8c347e5f9b66",
+    "schematicCollections": [
+      "@angular-eslint/schematics"
+    ]
   }
 }
