@@ -25,7 +25,7 @@ describe('TopBarComponent', () => {
       {
         open: undefined,
       },
-      {}
+      {},
     );
     mockAuthService = {
       loggedInUser$: new BehaviorSubject<User | null>(null),
@@ -44,7 +44,7 @@ describe('TopBarComponent', () => {
         { provide: SessionService, useValue: mockSessionService },
         {
           provide: FEATURES_JSON,
-          useValue: { new_navigation: true },
+          useValue: { new_navigation: false },
         },
       ],
     }).compileComponents();
@@ -71,7 +71,7 @@ describe('TopBarComponent', () => {
 
       // Act: click on the menu icon
       const menuButton = fixture.debugElement.query(
-        By.css('[data-testid="menu-button"]')
+        By.css('[data-testid="menu-button"]'),
       );
       const clickEvent = new MouseEvent('click');
       menuButton.triggerEventHandler('click', clickEvent);
@@ -86,14 +86,14 @@ describe('TopBarComponent', () => {
 
       // Act: click on the account icon
       const accountButton = fixture.debugElement.query(
-        By.css('[data-testid="account-button"]')
+        By.css('[data-testid="account-button"]'),
       );
       const clickEvent = new MouseEvent('click');
       accountButton.triggerEventHandler('click', clickEvent);
 
       // Assert: expect that the dialog opens
       expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
-        AccountDialogComponent
+        AccountDialogComponent,
       );
     });
   });
@@ -125,19 +125,19 @@ describe('TopBarComponent', () => {
 
   describe('feedback button', () => {
     it('should show the feedback button when on new_navigation flag is on', () => {
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { new_navigation: true },
+      });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="feedback"]')
+        By.css('[data-id="feedback"]'),
       );
       expect(feedbackBtn).toBeTruthy();
     });
     it('should not show the button when new_navigation flag is off ', () => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: false },
-      });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="feedback"]')
+        By.css('[data-id="feedback"]'),
       );
       expect(feedbackBtn).toBeFalsy();
     });
@@ -145,19 +145,19 @@ describe('TopBarComponent', () => {
 
   describe('help button', () => {
     it('should not show the help button when on new_navigation flag is on', () => {
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { new_navigation: true },
+      });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="help"]')
+        By.css('[data-id="help"]'),
       );
       expect(feedbackBtn).toBeFalsy();
     });
     it('should show the help button when new_navigation flag is off ', () => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: false },
-      });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="help"]')
+        By.css('[data-id="help"]'),
       );
       expect(feedbackBtn).toBeTruthy();
     });
@@ -165,18 +165,17 @@ describe('TopBarComponent', () => {
 
   describe('new logo', () => {
     it('should show the new logo when new_navigation flag is on', () => {
-      const featureService = TestBed.inject(FeatureService);
-      spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
-      fixture.detectChanges();
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { new_navigation: true },
+      });
+      setUpComponent();
       const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
       const title = fixture.debugElement.query(By.css('[data-id="title"]'));
       expect(logo).toBeTruthy();
       expect(title).toBeFalsy();
     });
     it('should show the preview logo when new_navigation flag is off ', () => {
-      const featureService = TestBed.inject(FeatureService);
-      spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
-      fixture.detectChanges();
+      setUpComponent();
       const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
       const title = fixture.debugElement.query(By.css('[data-id="title"]'));
       expect(logo).toBeFalsy();
