@@ -190,3 +190,7 @@
 .mat-grid-tile-content {
   width: fit-content;
 }
+
+::ng-deep .mat-select-value, ::ng-deep .mat-option-text {
+  text-align: center;
+}
