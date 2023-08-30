@@ -19,7 +19,7 @@ def _create_planning_area(
     are in Sierra Nevada.
     """
     planning_area = PlanningArea.objects.create(
-        user=user, name=name, region_name='sierra_cascade_inyo', geometry=geometry)
+        user=user, name=name, region_name='sierra-nevada', geometry=geometry)
     planning_area.save()
     return planning_area
 
