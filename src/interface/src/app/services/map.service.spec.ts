@@ -71,13 +71,12 @@ describe('MapService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT +
-        '/boundary/config/?region_name=sierra_cascade_inyo'
+      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra-nevada'
     );
     req1.flush(conditionsConfig);
     const req2 = httpTestingController.expectOne(
       BackendConstants.END_POINT +
-        '/conditions/config/?region_name=sierra_cascade_inyo'
+        '/conditions/config/?region_name=sierra-nevada'
     );
     req2.flush(conditionsConfig);
   });
@@ -123,7 +122,7 @@ describe('MapService', () => {
 
     //   const req = httpTestingController.expectOne(
     //     BackendConstants.END_POINT +
-    //       '/boundary/boundary_details/?boundary_name=huc12_fake&region_name=sierra_cascade_inyo'
+    //       '/boundary/boundary_details/?boundary_name=huc12_fake&region_name=sierra-nevada'
     //   );
     //   expect(req.request.method).toEqual('GET');
     //   req.flush(fakeGeoJson);

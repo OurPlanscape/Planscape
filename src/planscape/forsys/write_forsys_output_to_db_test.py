@@ -19,7 +19,7 @@ def _create_condition(name: str, region: str):
 
 
 def _set_up_db(self):
-    self.region = 'sierra_cascade_inyo'
+    self.region = 'sierra-nevada'
 
     poly = Polygon(((-120.14015536869722, 39.05413814388948),
                     (-120.18409937110482, 39.48622140686506),

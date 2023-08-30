@@ -17,7 +17,7 @@ To run this script run the following commands
     python manage.py shell
 2) In the python interactive shell
     from conditions import load
-    load.load_metrics('sierra_cascade_inyo')
+    load.load_metrics('sierra-nevada')
 """
 
 
