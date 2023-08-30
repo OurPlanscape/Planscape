@@ -7,11 +7,14 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { FeaturesModule } from '../features/features.module';
 import { AuthService } from '../services';
 import { NavigationComponent } from './navigation.component';
+import { FeatureService } from '../features/feature.service';
+import { By } from '@angular/platform-browser';
 
 describe('NavigationComponent', () => {
   let component: NavigationComponent;
   let fixture: ComponentFixture<NavigationComponent>;
   let fakeLoggedInStatus: Subject<boolean>;
+  let hasFlag = false;
 
   beforeEach(() => {
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
@@ -19,7 +22,7 @@ describe('NavigationComponent', () => {
       {
         logout: of({ detail: '' }),
       },
-      {}
+      {},
     );
     fakeLoggedInStatus = new BehaviorSubject(true);
     fakeAuthService.isLoggedIn$ = fakeLoggedInStatus;
@@ -35,18 +38,37 @@ describe('NavigationComponent', () => {
     });
     fixture = TestBed.createComponent(NavigationComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
   it('can load instance', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it(`sidebarOpen has default value`, () => {
+    fixture.detectChanges();
     expect(component.sidebarOpen).toEqual(false);
   });
 
+  it('should show sidebar if not on new_navigation fflag', () => {
+    const service = TestBed.inject(FeatureService);
+    spyOn(service, 'isFeatureEnabled').and.returnValue(false);
+    fixture.detectChanges();
+
+    const sidebar = fixture.debugElement.query(By.css('.sidenav'));
+    expect(sidebar).toBeTruthy();
+  });
+
+  it('should not show sidebar if on navigation fflag', () => {
+    const service = TestBed.inject(FeatureService);
+    spyOn(service, 'isFeatureEnabled').and.returnValue(true);
+    fixture.detectChanges();
+    const sidebar = fixture.debugElement.query(By.css('.sidenav'));
+    expect(sidebar).toBeFalsy();
+  });
+
   it(`isLoggedIn$ has default value`, () => {
+    fixture.detectChanges();
     const authServiceStub: AuthService =
       fixture.debugElement.injector.get(AuthService);
     expect(component.isLoggedIn$).toEqual(authServiceStub.isLoggedIn$);
@@ -54,6 +76,7 @@ describe('NavigationComponent', () => {
 
   describe('logout', () => {
     it('makes expected calls', () => {
+      fixture.detectChanges();
       const authServiceStub: AuthService =
         fixture.debugElement.injector.get(AuthService);
       component.logout();
