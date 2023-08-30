@@ -2,7 +2,7 @@
     "__comment1": "TODO: replace filename for SoCal's HUC10 when it loses its dash.",
     "regions": [
       {
-        "region_name": "southern_california",
+        "region_name": "southern-california",
         "display_name": "Southern California",
         "boundaries": [
         {
@@ -68,7 +68,7 @@
         ]
       },
       {
-        "region_name": "sierra_cascade_inyo",
+        "region_name": "sierra-nevada",
         "display_name": "Sierra Nevada",
         "boundaries": [
         {
@@ -134,7 +134,7 @@
 	]
       },
       {
-        "region_name": "central_coast",
+        "region_name": "central-coast",
         "display_name": "Central Coast",
         "boundaries": [
         {

@@ -1,3 +1,5 @@
+# 'plan' app to be replaced with 'planning' app, these tests are no longer needed but will be kept for reference for now
+
 import datetime
 import json
 
