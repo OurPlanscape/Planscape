@@ -1,37 +1,32 @@
 <app-nav-bar
   (goBack)="goBack()"
-  [breadcrumbs]="(breadcrumbs$ | async) || []"
-></app-nav-bar>
+  [breadcrumbs]="(breadcrumbs$ | async) || []"></app-nav-bar>
 <div class="root-container">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
       <summary-panel
         [plan]="currentPlan$ | async"
-        [owner]="planOwner$ | async"
-      ></summary-panel>
+        [owner]="planOwner$ | async"></summary-panel>
     </div>
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
     <div class="plan-content">
       <ng-container *featureFlag="'new_navigation'; hide: true">
         <app-plan-navigation-bar
           (backToOverviewEvent)="backToOverview()"
-          *ngIf="!(showOverview$ | async)"
-        ></app-plan-navigation-bar>
+          *ngIf="!(showOverview$ | async)"></app-plan-navigation-bar>
       </ng-container>
 
       <div class="plan-content-inner">
         <app-plan-overview
           [plan$]="currentPlan$"
-          *ngIf="showOverview$ | async"
-        ></app-plan-overview>
+          *ngIf="showOverview$ | async"></app-plan-overview>
         <ng-container *ngIf="!(showOverview$ | async)">
           <div class="plan-map-container">
             <app-plan-map
               [plan]="currentPlan$"
               [mapId]="'planning-map'"
-              [mapPadding]="[700, 0]"
-            ></app-plan-map>
+              [mapPadding]="[700, 0]"></app-plan-map>
           </div>
           <div class="plan-content-panel">
             <router-outlet #outlet="outlet"></router-outlet>

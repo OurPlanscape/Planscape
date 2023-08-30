@@ -43,7 +43,7 @@ export class PlanComponent implements OnInit, OnDestroy {
         crumbs.push(planState.currentConfigId + '');
       }
       return crumbs;
-    }),
+    })
   );
 
   openConfigId?: number;
@@ -54,7 +54,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private planService: PlanService,
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router
   ) {
     // TODO: Move everything in the constructor to ngOnInit
     const planId = this.route.snapshot.paramMap.get('id');
@@ -79,7 +79,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     this.planOwner$ = plan$.pipe(
       concatMap((plan) => {
         return this.authService.getUser(plan.ownerId);
-      }),
+      })
     );
   }
 
