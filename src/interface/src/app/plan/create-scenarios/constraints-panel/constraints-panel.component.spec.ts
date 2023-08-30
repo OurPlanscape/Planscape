@@ -1,6 +1,11 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import {
   FormBuilder,
   FormsModule,
@@ -14,7 +19,13 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { ConstraintsPanelComponent } from './constraints-panel.component';
-
+import { By } from '@angular/platform-browser';
+import { MatFormField } from '@angular/material/form-field';
+//TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
+/**
+ * 'marks maxCost as not required input if maxArea is provided'
+ * 'marks maxArea as not required input if maxCost isprovided'
+ */
 describe('ConstraintsPanelComponent', () => {
   let component: ConstraintsPanelComponent;
   let fixture: ComponentFixture<ConstraintsPanelComponent>;
@@ -32,7 +43,6 @@ describe('ConstraintsPanelComponent', () => {
       declarations: [ConstraintsPanelComponent],
       providers: [FormBuilder],
     }).compileComponents();
-
     fixture = TestBed.createComponent(ConstraintsPanelComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -57,13 +67,16 @@ describe('ConstraintsPanelComponent', () => {
         // Estimated cost in $ per acre
         estimatedCost: ['', [Validators.min(0), Validators.required]],
         // Max cost of treatment for entire planning area
-        maxCost: ['', Validators.min(0)],
+        maxCost: [{ value: '', disabled: true }, Validators.min(0)],
       }),
       physicalConstraintForm: fb.group({
         // Maximum slope allowed for planning area
         maxSlope: ['', Validators.min(0)],
-        // Maximum road distance
-        maxRoadDistance: ['', Validators.min(0)],
+        // Minimum distance from road allowed for planning area
+        // TODO: Update variable name to minDistanceFromRoad
+        minDistanceFromRoad: ['', Validators.min(0)],
+        // Maximum area to be treated in acres
+        maxArea: ['', [Validators.min(0), Validators.required]],
         standSize: ['Large', Validators.required],
       }),
       excludedAreasForm: fb.group(excludedAreasChosen),
@@ -80,34 +93,27 @@ describe('ConstraintsPanelComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // it('should emit event when next button is clicked and form is valid', async () => {
-  //   spyOn(component.formNextEvent, 'emit');
-  //   const nextButton: MatButtonHarness = (
-  //     await loader.getAllHarnesses(MatButtonHarness)
-  //   )[0];
-  //   // Set form to valid state
-  //   component.constraintsForm?.get('budgetForm.estimatedCost')?.setValue('1');
+  it('should disable maxCost input when no estimatedCost input is provided', async () => {
+    let estimatedCostinput = fixture.debugElement.query(
+      By.css('#estimatedCost')
+    ).nativeElement;
+    estimatedCostinput.value = null;
+    estimatedCostinput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(component.constraintsForm!.get('budgetForm.maxCost')!.disabled).toBe(
+      true
+    );
+  });
 
-  //   expect(component.constraintsForm?.valid).toBeTrue();
-  //   expect(await nextButton.isDisabled()).toBeFalse();
-
-  //   // Click next button
-  //   await nextButton.click();
-
-  //   expect(component.formNextEvent.emit).toHaveBeenCalledOnceWith();
-  // });
-
-  // it('should not emit event when next button is clicked and form is invalid', async () => {
-  //   spyOn(component.formNextEvent, 'emit');
-  //   const nextButton: MatButtonHarness = (
-  //     await loader.getAllHarnesses(MatButtonHarness)
-  //   )[0];
-
-  //   expect(component.constraintsForm?.valid).toBeFalse();
-
-  //   // Click next button
-  //   await nextButton.click();
-
-  //   expect(component.formNextEvent.emit).toHaveBeenCalledTimes(0);
-  // });
+  it('should enable maxCost input when estimatedCost input is provided', async () => {
+    let estimatedCostinput = fixture.debugElement.query(
+      By.css('#estimatedCost')
+    ).nativeElement;
+    estimatedCostinput.value = 1;
+    estimatedCostinput.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(component.constraintsForm!.get('budgetForm.maxCost')!.enabled).toBe(
+      true
+    );
+  });
 });
