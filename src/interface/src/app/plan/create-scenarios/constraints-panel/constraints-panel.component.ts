@@ -9,16 +9,19 @@ import { FormGroup, Validators } from '@angular/forms';
 export class ConstraintsPanelComponent {
   @Input() constraintsForm: FormGroup | undefined;
   @Input() excludedAreasOptions: Array<string> | undefined;
-  standSizeOptions: Array<String> = ["Small", "Medium", "Large"];
+  standSizeOptions: Array<String> = ['Small', 'Medium', 'Large'];
 
-  constructor() { }
+  constructor() {}
 
   toggleMaxCost() {
     if (this.constraintsForm!.get('budgetForm.estimatedCost')!.value) {
-      (this.constraintsForm!.get('budgetForm') as FormGroup).controls['maxCost'].enable()
-    }
-    else {
-      (this.constraintsForm!.get('budgetForm') as FormGroup).controls['maxCost'].disable()
+      (this.constraintsForm!.get('budgetForm') as FormGroup).controls[
+        'maxCost'
+      ].enable();
+    } else {
+      (this.constraintsForm!.get('budgetForm') as FormGroup).controls[
+        'maxCost'
+      ].disable();
     }
   }
 }

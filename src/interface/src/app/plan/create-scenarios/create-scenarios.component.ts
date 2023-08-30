@@ -122,16 +122,19 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             estimatedCost: ['', Validators.min(0)],
             // Max cost of treatment for entire planning area
             // Initially disabled, estimatedCost is required as input before maxCost is enabled
-            maxCost: [{value: '', disabled: true}, Validators.min(0)],
+            maxCost: [{ value: '', disabled: true }, Validators.min(0)],
           }),
           physicalConstraintForm: this.fb.group({
             // Maximum slope allowed for planning area
-            maxSlope: ['', [Validators.min(0), Validators.max(100), Validators.required]],
+            maxSlope: [
+              '',
+              [Validators.min(0), Validators.max(100), Validators.required],
+            ],
             // Minimum distance from road allowed for planning area
             minDistanceFromRoad: ['', [Validators.min(0), Validators.required]],
-            // Maximum area to be treated in acres 
+            // Maximum area to be treated in acres
             maxArea: ['', [Validators.min(0), Validators.required]],
-            // Stand Size selection 
+            // Stand Size selection
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
@@ -192,8 +195,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // TODO Add maxArea input and make required, this extra validator may be deprecated
     // const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
     // const maxArea = constraintsForm.get('treatmentForm.maxArea');
-     const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
-     const maxDistance = constraintsForm.get('physicalConstraintForm.minDistanceFromRoad');
+    const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
+    const maxDistance = constraintsForm.get(
+      'physicalConstraintForm.minDistanceFromRoad'
+    );
     const valid = !!maxSlope?.value || !!maxDistance?.value;
     return valid ? null : { budgetOrAreaRequired: true };
   }
@@ -203,8 +208,12 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
       const maxCost = this.formGroups[1].get('budgetForm.maxCost');
       const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
-      const excludeDistance = this.formGroups[1].get('physicalConstraintForm.excludeDistance');
-      const excludeSlope = this.formGroups[1].get('physicalConstraintForm.excludeSlope');
+      const excludeDistance = this.formGroups[1].get(
+        'physicalConstraintForm.excludeDistance'
+      );
+      const excludeSlope = this.formGroups[1].get(
+        'physicalConstraintForm.excludeSlope'
+      );
       const selectedQuestion = this.formGroups[0].get('selectedQuestion');
 
       if (config.est_cost) {
@@ -244,7 +253,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
     const maxCost = this.formGroups[1].get('budgetForm.maxCost');
     const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
-    const minDistanceFromRoad = this.formGroups[1].get('physicalConstraintForm.minDistanceFromRoad');
+    const minDistanceFromRoad = this.formGroups[1].get(
+      'physicalConstraintForm.minDistanceFromRoad'
+    );
     const maxSlope = this.formGroups[1].get('physicalConstraintForm.maxSlope');
     const selectedQuestion = this.formGroups[0].get('selectedQuestion');
 
@@ -258,9 +269,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     if (maxArea?.valid)
       projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
     if (minDistanceFromRoad?.valid)
-      projectConfig.min_distance_from_road = parseFloat(minDistanceFromRoad.value);
-    if (maxSlope?.valid)
-      projectConfig.max_slope = parseFloat(maxSlope.value);
+      projectConfig.min_distance_from_road = parseFloat(
+        minDistanceFromRoad.value
+      );
+    if (maxSlope?.valid) projectConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
       projectConfig.priorities = selectedQuestion.value['priorities'];
       projectConfig.weights = selectedQuestion!.value['weights'];

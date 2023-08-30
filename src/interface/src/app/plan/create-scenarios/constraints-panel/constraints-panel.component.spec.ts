@@ -1,6 +1,11 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  TestBed,
+  fakeAsync,
+  tick,
+} from '@angular/core/testing';
 import {
   FormBuilder,
   FormsModule,
@@ -70,7 +75,7 @@ describe('ConstraintsPanelComponent', () => {
         // Minimum distance from road allowed for planning area
         // TODO: Update variable name to minDistanceFromRoad
         minDistanceFromRoad: ['', Validators.min(0)],
-        // Maximum area to be treated in acres 
+        // Maximum area to be treated in acres
         maxArea: ['', [Validators.min(0), Validators.required]],
         standSize: ['Large', Validators.required],
       }),
@@ -89,18 +94,26 @@ describe('ConstraintsPanelComponent', () => {
   });
 
   it('should disable maxCost input when no estimatedCost input is provided', async () => {
-    let estimatedCostinput = fixture.debugElement.query(By.css('#estimatedCost')).nativeElement;
+    let estimatedCostinput = fixture.debugElement.query(
+      By.css('#estimatedCost')
+    ).nativeElement;
     estimatedCostinput.value = null;
     estimatedCostinput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    expect(component.constraintsForm!.get('budgetForm.maxCost')!.disabled).toBe(true);
+    expect(component.constraintsForm!.get('budgetForm.maxCost')!.disabled).toBe(
+      true
+    );
   });
 
   it('should enable maxCost input when estimatedCost input is provided', async () => {
-    let estimatedCostinput = fixture.debugElement.query(By.css('#estimatedCost')).nativeElement;
+    let estimatedCostinput = fixture.debugElement.query(
+      By.css('#estimatedCost')
+    ).nativeElement;
     estimatedCostinput.value = 1;
     estimatedCostinput.dispatchEvent(new Event('input'));
     fixture.detectChanges();
-    expect(component.constraintsForm!.get('budgetForm.maxCost')!.enabled).toBe(true);
+    expect(component.constraintsForm!.get('budgetForm.maxCost')!.enabled).toBe(
+      true
+    );
   });
 });

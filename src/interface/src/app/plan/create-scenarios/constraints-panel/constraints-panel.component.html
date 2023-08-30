@@ -14,8 +14,13 @@
               appearance="outline"
               floatLabel="always">
               <mat-label>Treatment cost</mat-label>
-              <input id="estimatedCost" class="right-align" formControlName="estimatedCost" matInput type="number"
-                (input)="toggleMaxCost()">
+              <input
+                id="estimatedCost"
+                class="right-align"
+                formControlName="estimatedCost"
+                matInput
+                type="number"
+                (input)="toggleMaxCost()" />
               <span matPrefix>$&nbsp;</span>
               <span matSuffix>/acre</span>
             </mat-form-field>
@@ -26,7 +31,12 @@
               appearance="outline"
               floatLabel="always">
               <mat-label>Max total cost</mat-label>
-              <input id="maxCost" class="right-align" formControlName="maxCost" matInput type="number">
+              <input
+                id="maxCost"
+                class="right-align"
+                formControlName="maxCost"
+                matInput
+                type="number" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
           </div>
@@ -54,25 +64,39 @@
             </mat-form-field>
           </div>
           <div>
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-              <mat-label>Distance from roads </mat-label>
-              <input class="right-align" formControlName="minDistanceFromRoad" matInput type="number">
-              <span matSuffix> yds</span>
+            <mat-form-field
+              class="input-field"
+              appearance="outline"
+              floatLabel="always">
+              <mat-label>Distance from roads</mat-label>
+              <input
+                class="right-align"
+                formControlName="minDistanceFromRoad"
+                matInput
+                type="number" />
+              <span matSuffix>yds</span>
             </mat-form-field>
           </div>
         </div>
         <div class="flex-row">
           <div>
-            <mat-form-field class="input-field" appearance="outline" floatLabel="always">
-              <mat-label>Max acres to be treated </mat-label>
-              <input class="right-align" formControlName="maxArea" matInput type="number">
+            <mat-form-field
+              class="input-field"
+              appearance="outline"
+              floatLabel="always">
+              <mat-label>Max acres to be treated</mat-label>
+              <input
+                class="right-align"
+                formControlName="maxArea"
+                matInput
+                type="number" />
             </mat-form-field>
           </div>
           <mat-form-field class="input-field" appearance="outline">
             <mat-label>Stand size</mat-label>
             <mat-select formControlName="standSize" required>
-              <mat-option *ngFor="let size of standSizeOptions;" [value]="size">
-                {{size}}
+              <mat-option *ngFor="let size of standSizeOptions" [value]="size">
+                {{ size }}
               </mat-option>
             </mat-select>
           </mat-form-field>
