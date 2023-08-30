@@ -3,4 +3,5 @@ __pycache__/
 .env
 ./interface/src/environments/environment.ts
 ./interface/src/environments/environment.prod.ts
-./interface/src/app/features/features.json
+./interface/src/app/features/features.prod.json
+./interface/src/app/features/features.dev.json

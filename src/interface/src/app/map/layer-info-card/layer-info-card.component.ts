@@ -16,7 +16,7 @@ export class LayerInfoCardComponent {
   hasDownloadLink(): boolean {
     return !!this.dataLayerConfig?.data_download_link;
   }
-  
+
   hasMinMax(): boolean {
     return (
       this.dataLayerConfig?.min_value != undefined &&

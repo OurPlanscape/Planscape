@@ -7,10 +7,7 @@ import { FileUploaderComponent } from './file-uploader/file-uploader.component';
 import { OpacitySliderComponent } from './opacity-slider/opacity-slider.component';
 
 @NgModule({
-  declarations: [
-    FileUploaderComponent,
-    OpacitySliderComponent,
-  ],
+  declarations: [FileUploaderComponent, OpacitySliderComponent],
   exports: [FileUploaderComponent, OpacitySliderComponent],
   imports: [CommonModule, FormsModule, MaterialModule, ReactiveFormsModule],
 })

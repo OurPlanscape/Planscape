@@ -98,7 +98,10 @@ export class SavedScenariosComponent implements OnInit {
     if (scenario.favorited) {
       this.planService.favoriteScenario(scenario.id).pipe(take(1)).subscribe();
     } else {
-      this.planService.unfavoriteScenario(scenario.id).pipe(take(1)).subscribe();
+      this.planService
+        .unfavoriteScenario(scenario.id)
+        .pipe(take(1))
+        .subscribe();
     }
   }
 }

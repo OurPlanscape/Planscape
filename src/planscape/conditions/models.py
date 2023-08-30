@@ -1,5 +1,5 @@
 from django.contrib.gis.db import models
-from planscape.settings import CRS_FOR_RASTERS
+from django.conf import settings
 
 
 class BaseCondition(models.Model):
@@ -42,6 +42,7 @@ class Condition(models.Model):
     # when condition_score_type = CURRENT and condition_level = METRIC, and is ignored
     # otherwise.
     is_raw: models.BooleanField = models.BooleanField(null=True)
+        
 
 
 class ConditionRaster(models.Model):
@@ -69,4 +70,6 @@ class ConditionRaster(models.Model):
     name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.
-    raster = models.RasterField(null=True, srid=CRS_FOR_RASTERS)
+    raster = models.RasterField(null=True, srid=settings.CRS_FOR_RASTERS)
+
+    condition = models.ForeignKey(Condition, null=True, on_delete=models.CASCADE, related_name="raster_tiles",)

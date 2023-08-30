@@ -42,8 +42,12 @@ describe('ConstraintsPanelComponent', () => {
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
 
-    var excludedAreasOptions = ["Private Land", "National Forests and Parks",
-      "Wilderness Area", "Tribal Lands"];
+    var excludedAreasOptions = [
+      'Private Land',
+      'National Forests and Parks',
+      'Wilderness Area',
+      'Tribal Lands',
+    ];
     var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
     excludedAreasOptions.forEach((area: string) => {
       excludedAreasChosen[area] = [false, Validators.required];

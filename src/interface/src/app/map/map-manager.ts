@@ -24,7 +24,7 @@ import {
   Map,
   MapViewOptions,
   Region,
-  regionMapCenters
+  regionMapCenters,
 } from '../types';
 
 // Set to true so that layers are not editable by default
@@ -52,9 +52,9 @@ export class MapManager {
     private startLoadingLayerCallback: (layerName: string) => void,
     private doneLoadingLayerCallback: (layerName: string) => void,
     private http: HttpClient
-    ) {
-      this.selectedRegion$ = this.session.region$;
-    }
+  ) {
+    this.selectedRegion$ = this.session.region$;
+  }
 
   getGeomanDrawOptions(): L.PM.ToolbarOptions {
     return {
@@ -79,9 +79,7 @@ export class MapManager {
       features: Feature<Geometry, any>[],
       onInitialized: () => void
     ) => any,
-    getBoundaryLayerVectorCallback: (
-      vectorName: string
-    ) => Observable<L.Layer>
+    getBoundaryLayerVectorCallback: (vectorName: string) => Observable<L.Layer>
   ) {
     if (map.instance != undefined) map.instance.remove();
 
@@ -159,7 +157,8 @@ export class MapManager {
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
       {
         maxZoom: 13,
-        attribution: 'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+        attribution:
+          'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
         zIndex: 0,
       }
     );
@@ -183,7 +182,8 @@ export class MapManager {
     return L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        attribution:
+          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
         zIndex: 0,
       }
     );
@@ -587,7 +587,7 @@ export class MapManager {
         fillColor: '#000000',
         fillOpacity: 0.4,
       }),
-    })
+    });
     map.regionLayerRef.addTo(map.instance!);
   }
 
@@ -621,9 +621,7 @@ export class MapManager {
   /** Toggles which boundary layer is shown. */
   toggleBoundaryLayer(
     map: Map,
-    getBoundaryLayerVectorCallback: (
-      vectorName: string
-    ) => Observable<L.Layer>
+    getBoundaryLayerVectorCallback: (vectorName: string) => Observable<L.Layer>
   ) {
     if (map.instance === undefined) return;
 
@@ -632,7 +630,7 @@ export class MapManager {
     const boundaryLayerName = map.config.boundaryLayerConfig.boundary_name;
     const boundaryVectorName = map.config.boundaryLayerConfig.vector_name;
     const boundaryShapeName = map.config.boundaryLayerConfig.shape_name;
-    
+
     if (boundaryLayerName !== '') {
       this.startLoadingLayerCallback(boundaryLayerName);
       getBoundaryLayerVectorCallback(boundaryVectorName)
@@ -640,14 +638,21 @@ export class MapManager {
         .subscribe((vector) => {
           this.doneLoadingLayerCallback(boundaryLayerName);
           this.boundaryVectorCache.set(boundaryLayerName, vector);
-          map.boundaryLayerRef = this.boundaryLayer(vector, boundaryShapeName, map.instance!);
+          map.boundaryLayerRef = this.boundaryLayer(
+            vector,
+            boundaryShapeName,
+            map.instance!
+          );
           map.boundaryLayerRef.addTo(map.instance!);
-          }
-        )
+        });
     }
   }
 
-  private boundaryLayer(boundary: L.Layer, shapeName: string, map: L.Map):  L.Layer {
+  private boundaryLayer(
+    boundary: L.Layer,
+    shapeName: string,
+    map: L.Map
+  ): L.Layer {
     const normalStyle: L.PathOptions = {
       weight: 1,
       color: '#0000ff',
@@ -660,19 +665,27 @@ export class MapManager {
       fillOpacity: 0.5,
       fill: true,
     };
-      return boundary.on('mouseover', function(e) {
+    return boundary
+      .on('mouseover', function (e) {
         var featureName = e.propagatedFrom.properties[shapeName];
-        if (featureName==''){
-          featureName= 'UNKNOWN';
+        if (featureName == '') {
+          featureName = 'UNKNOWN';
         }
         const pops = L.tooltip()
           .setContent(`<div>Name: ${featureName}</div>`)
           .setLatLng(e.latlng)
           .openOn(map);
         e.propagatedFrom.bindTooltip(pops);
-        (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, hoverStyle);
-      }).on('mouseout', function(e){
-        (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(e.propagatedFrom.properties.OBJECTID, normalStyle);        
+        (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(
+          e.propagatedFrom.properties.OBJECTID,
+          hoverStyle
+        );
+      })
+      .on('mouseout', function (e) {
+        (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(
+          e.propagatedFrom.properties.OBJECTID,
+          normalStyle
+        );
       });
   }
 
@@ -690,8 +703,8 @@ export class MapManager {
   addLegend(colormap: any, dataUnit: string | undefined, map: Map) {
     var entries = colormap['entries'];
     const legend = new (L.Control.extend({
-      options: { position: 'topleft' }
-    }));
+      options: { position: 'topleft' },
+    }))();
     const mapRef = map;
     legend.onAdd = function (map) {
       // Remove any pre-existing legend on map
@@ -701,7 +714,7 @@ export class MapManager {
 
       const div = L.DomUtil.create('div', 'legend');
       // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
-      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation 
+      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation
       // (otherwise div tags are automatically closed before they should be)
       var htmlContent = '';
       htmlContent += '<div class=parentlegend>';
@@ -712,31 +725,41 @@ export class MapManager {
         // For legends with categorical labels make header 'Legend'
         htmlContent += '<div><b>Legend</b></div>';
       }
-        // Reversing order to present legend values from high to low (default is low to high)
-        for (let i = entries.length-1; i >= 0; i--) {
-          var entry = entries[i]
-          // Add a margin-bottom to only the last entry in the legend
-          var lastChild = "";
-          if (i ==0) {
-            lastChild = 'style="margin-bottom: 6px;"';
+      // Reversing order to present legend values from high to low (default is low to high)
+      for (let i = entries.length - 1; i >= 0; i--) {
+        var entry = entries[i];
+        // Add a margin-bottom to only the last entry in the legend
+        var lastChild = '';
+        if (i == 0) {
+          lastChild = 'style="margin-bottom: 6px;"';
+        }
+        if (entry['label']) {
+          // Filter out 'nodata' entries
+          if (entry['color'] != '#000000') {
+            htmlContent +=
+              '<div class="legendline" ' +
+              lastChild +
+              '><i style="background:' +
+              entry['color'] +
+              '"> &emsp; &hairsp;</i> &nbsp;<label>' +
+              entry['label'] +
+              '<br/></label></div>';
+          } else if (lastChild != '') {
+            htmlContent += '<div class="legendline"' + lastChild + '></div>';
           }
-          if (entry['label']) {
-            // Filter out 'nodata' entries
-            if (entry['color'] != '#000000') {
-              htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp;<label>'
-              + entry['label'] + '<br/></label></div>';
-            } 
-            else if (lastChild != "") {
-              htmlContent += '<div class="legendline"' + lastChild + '></div>';
-            }
-          } else {
-            htmlContent += '<div class="legendline" '+ lastChild+ '><i style="background:'+ entry['color'] + '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
-          }
+        } else {
+          htmlContent +=
+            '<div class="legendline" ' +
+            lastChild +
+            '><i style="background:' +
+            entry['color'] +
+            '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
+        }
       }
       htmlContent += '</div>';
       div.innerHTML = htmlContent;
-      // Needed to allow for scrolling on the legend 
-      L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation)
+      // Needed to allow for scrolling on the legend
+      L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
       // Set reference to legend for later deletion
       mapRef.legend = div;
       return div;
@@ -763,12 +786,12 @@ export class MapManager {
       region = 'sierra-nevada';
     }
     map.dataLayerRef = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT + region + "/wms?" ,
+      BackendConstants.TILES_END_POINT + region + '/wms?',
       {
         layers: region + layer,
         minZoom: 7,
         maxZoom: 13,
-        format:'image/png',
+        format: 'image/png',
         transparent: true,
         opacity:
           map.config.dataLayerConfig.opacity !== undefined
@@ -778,21 +801,20 @@ export class MapManager {
     );
 
     map.dataLayerRef.addTo(map.instance);
-    
+
     // Map legend request
     var dataUnit = map.config.dataLayerConfig.data_units;
     const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
     let queryParams = new HttpParams();
-    queryParams = queryParams.append("request", "GetLegendGraphic");
-    queryParams = queryParams.append("layer", layer);
-    queryParams = queryParams.append("format", "application/json");
-    var legendJson = this.http.get<string>(legendUrl,{params:queryParams});
-    legendJson
-      .pipe(take(1))
-      .subscribe((value:any) => {
-        var colorMap = value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
-        this.addLegend(colorMap, dataUnit, map);
-      });
+    queryParams = queryParams.append('request', 'GetLegendGraphic');
+    queryParams = queryParams.append('layer', layer);
+    queryParams = queryParams.append('format', 'application/json');
+    var legendJson = this.http.get<string>(legendUrl, { params: queryParams });
+    legendJson.pipe(take(1)).subscribe((value: any) => {
+      var colorMap =
+        value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
+      this.addLegend(colorMap, dataUnit, map);
+    });
   }
 
   /** Change the opacity of a map's data layer. */
@@ -800,4 +822,3 @@ export class MapManager {
     map.dataLayerRef?.setOpacity(map.config.dataLayerConfig.opacity!);
   }
 }
-

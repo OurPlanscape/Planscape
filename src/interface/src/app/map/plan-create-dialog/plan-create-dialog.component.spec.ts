@@ -10,15 +10,10 @@ describe('PlanCreateDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ PlanCreateDialogComponent ],
-      providers: [
-        { provide: MatDialogRef, useValue: {} },
-      ],
-      schemas: [
-        NO_ERRORS_SCHEMA,
-      ],
-    })
-    .compileComponents();
+      declarations: [PlanCreateDialogComponent],
+      providers: [{ provide: MatDialogRef, useValue: {} }],
+      schemas: [NO_ERRORS_SCHEMA],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PlanCreateDialogComponent);
     component = fixture.componentInstance;

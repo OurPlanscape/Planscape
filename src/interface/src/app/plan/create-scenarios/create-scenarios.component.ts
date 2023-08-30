@@ -1,5 +1,11 @@
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { Component, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  ViewEncapsulation,
+} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -17,7 +23,7 @@ import {
   concatMap,
   of,
   throwError,
-  Observable
+  Observable,
 } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
 
@@ -27,8 +33,14 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, ProjectArea, ProjectConfig, TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
-import features from '../../features/features.json'
+import {
+  Plan,
+  ProjectArea,
+  ProjectConfig,
+  TreatmentGoalConfig,
+  TreatmentQuestionConfig,
+} from 'src/app/types';
+import features from '../../features/features.json';
 
 interface StepState {
   complete?: boolean;
@@ -67,12 +79,16 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   panelExpanded: boolean = true;
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: "",
+    question_text: '',
     priorities: [''],
-    weights: [0]
-  }
-  excludedAreasOptions: Array<string> = ["Private Land", "National Forests and Parks",
-    "Wilderness Area", "Tribal Lands"];
+    weights: [0],
+  };
+  excludedAreasOptions: Array<string> = [
+    'Private Land',
+    'National Forests and Parks',
+    'Wilderness Area',
+    'Tribal Lands',
+  ];
 
   private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
@@ -207,18 +223,20 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         excludeSlope?.setValue(config.max_slope);
       }
       // Check if scenario config priorities and weights match those of a question.
-      // If so, assume this was the selected treatment question. 
+      // If so, assume this was the selected treatment question.
       this.treatmentGoals.subscribe((goals) => {
         goals!.forEach((goal) => {
           goal.questions.forEach((question) => {
-            if ((question['priorities']?.toString() == config.priorities?.toString()) &&
-              question['weights']?.toString() == config.weights?.toString()) {
+            if (
+              question['priorities']?.toString() ==
+                config.priorities?.toString() &&
+              question['weights']?.toString() == config.weights?.toString()
+            ) {
               selectedQuestion?.setValue(question);
             }
-          })
-        })
+          });
+        });
       });
-
     });
   }
 
@@ -279,27 +297,27 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     //       );
     //     }),
 
-        // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
-        // catchError(() => {
-        //   this.matSnackBar.open(
-        //     '[Error] Project area shapefile should only include polygons or multipolygons',
-        //     'Dismiss',
-        //     {
-        //       duration: 10000,
-        //       panelClass: ['snackbar-error'],
-        //       verticalPosition: 'top',
-        //     }
-        //   );
-        //   return throwError(
-        //     () => new Error('Problem creating uploaded project areas')
-        //   );
-        // })
-      // )
-      // .subscribe(() => {
-      //   // Navigate to scenario confirmation page
-      //   const planId = this.plan$.getValue()?.id;
-      //   this.router.navigate(['scenario-confirmation', planId]);
-      // });
+    // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
+    // catchError(() => {
+    //   this.matSnackBar.open(
+    //     '[Error] Project area shapefile should only include polygons or multipolygons',
+    //     'Dismiss',
+    //     {
+    //       duration: 10000,
+    //       panelClass: ['snackbar-error'],
+    //       verticalPosition: 'top',
+    //     }
+    //   );
+    //   return throwError(
+    //     () => new Error('Problem creating uploaded project areas')
+    //   );
+    // })
+    // )
+    // .subscribe(() => {
+    //   // Navigate to scenario confirmation page
+    //   const planId = this.plan$.getValue()?.id;
+    //   this.router.navigate(['scenario-confirmation', planId]);
+    // });
   }
 
   createUploadedProjectAreas() {
