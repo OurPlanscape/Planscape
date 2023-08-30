@@ -66,7 +66,7 @@ export interface ProjectConfig {
   est_cost?: number;
   max_budget?: number;
   max_treatment_area_ratio?: number;
-  max_road_distance?: number;
+  min_distance_from_road?: number;
   max_slope?: number;
   priorities?: string[];
   weights?: number[];

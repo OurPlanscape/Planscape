@@ -28,8 +28,6 @@ import {
   SetPrioritiesComponent,
 } from './set-priorities.component';
 
-// TODO Update commented tests once all new configs are in
-
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
   let fixture: ComponentFixture<SetPrioritiesComponent>;
@@ -193,42 +191,6 @@ describe('SetPrioritiesComponent', () => {
     };
     expect(component.datasource.data).toEqual([pillar, element, metric]);
   });
-
-  // it('should populate condition score map', () => {
-  //   const fakePlan: Plan = {
-  //     id: '1',
-  //     name: 'fakeplan',
-  //     ownerId: '1',
-  //     region: Region.SIERRA_NEVADA,
-  //   };
-  //   const expectedMap = new Map<string, ScoreColumn>([
-  //     [
-  //       'test_pillar_1',
-  //       {
-  //         label: 'Medium',
-  //         score: 0.1,
-  //       },
-  //     ],
-  //     [
-  //       'test_element_1',
-  //       {
-  //         label: 'Lowest',
-  //         score: -0.7,
-  //       },
-  //     ],
-  //     [
-  //       'test_metric_1',
-  //       {
-  //         label: 'High',
-  //         score: 0.4,
-  //       },
-  //     ],
-  //   ]);
-
-  //   component.plan$.next(fakePlan);
-
-  //   expect(component.conditionScores).toEqual(expectedMap);
-  // });
 
   it('selecting a priority should update the form value', async () => {
     const radioButtonGroup = await loader.getHarness(
