@@ -1,8 +1,10 @@
+@import "../../shared/_variables.scss";
+
 .nav-bar {
   display: flex;
   align-items: center;
   background-color: white;
-  height: 56px;
+  height: $navbar-height;
   position: relative;
   z-index: 200;
   padding-left: 18px;
@@ -17,5 +19,26 @@
 
 .back-button {
   line-height: 0; // override line height from .mat-icon-button
+}
 
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.action-button {
+  color: #3367D6;
+  text-transform: uppercase;
+
+  &::ng-deep .mat-button-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.help {
+    line-height: 36px;
 }
