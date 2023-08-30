@@ -1,18 +1,22 @@
-<mat-sidenav-container class="sidenav-container">
+<mat-sidenav-container
+  class="sidenav-container"
+  *featureFlag="'new_navigation'; hide: true"
+>
   <mat-sidenav
     #drawer
     class="sidenav"
-    *featureFlag="'new_navigation'; hide: true"
     [attr.role]="'navigation'"
     [mode]="'side'"
     [opened]="!sidebarOpen"
-    [disableClose]>
+    [disableClose]
+  >
     <mat-nav-list class="nav-list">
       <ng-container *ngFor="let link of sidenavLinks">
         <a
           routerLink="{{ link.href }}"
           class="nav-link"
-          [ngClass]="{ selected: isSelected(link.href) }">
+          [ngClass]="{ selected: isSelected(link.href) }"
+        >
           <mat-icon class="material-symbols-outlined">
             {{ link.icon }}
           </mat-icon>
@@ -25,19 +29,21 @@
         routerLink="/feedback"
         class="nav-link"
         target="_blank"
-        rel="noopener noreferrer">
+        rel="noopener noreferrer"
+      >
         <mat-icon class="material-symbols-outlined">
-          {{ 'feedback' }}
+          {{ "feedback" }}
         </mat-icon>
         <div class="nav-text">
-          {{ 'feedback' }}
+          {{ "feedback" }}
         </div>
       </a>
       <ng-container *featureFlag="'login'">
         <a
           *ngIf="isLoggedIn$ | async; else showLogin"
           class="save-nav-link"
-          (click)="logout()">
+          (click)="logout()"
+        >
           <mat-icon>logout</mat-icon>
           <div class="nav-text">Logout</div>
         </a>
@@ -45,7 +51,8 @@
           <a
             routerLink="/login"
             class="save-nav-link"
-            [ngClass]="{ selected: isSelected('/login') }">
+            [ngClass]="{ selected: isSelected('/login') }"
+          >
             <mat-icon class="material-symbols-outlined">
               account_circle
             </mat-icon>
@@ -61,3 +68,4 @@
     <router-outlet></router-outlet>
   </mat-sidenav-content>
 </mat-sidenav-container>
+<router-outlet *featureFlag="'new_navigation'"></router-outlet>

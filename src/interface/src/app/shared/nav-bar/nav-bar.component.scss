@@ -1,0 +1,21 @@
+.nav-bar {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  height: 56px;
+  position: relative;
+  z-index: 200;
+  padding-left: 18px;
+  gap: 10px;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.back-button {
+  line-height: 0; // override line height from .mat-icon-button
+
+}
