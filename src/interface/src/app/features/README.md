@@ -4,8 +4,7 @@ under development or newly released.  You should add a features.json file (see
 below) in this directory before running angular.  The file is listed in the
 toplevel .gitignore so that it does not get overwritten with pulls.
 
-By convention, try to name feature flags such that "true" will enable things to
-the user, while "false" will hide them.  By default, we should keep new flags
+By convention, try to name feature flags such that "true" will enable features/show them to the user, while "false" will hide them.  By default, we should keep new flags
 set to false, and your code should be testing for "true".  This also will
 reduce the risk of releasing something unexpected to production.
 The exceptions are for "login" and "top_percent_slider", both of which need to
