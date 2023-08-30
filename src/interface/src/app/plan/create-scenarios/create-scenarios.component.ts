@@ -122,7 +122,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             estimatedCost: ['', Validators.min(0)],
             // Max cost of treatment for entire planning area
             // Initially disabled, estimatedCost is required as input before maxCost is enabled
-            maxCost: [{ value: '', disabled: true }, Validators.min(0)],
+            maxCost: [{ value: '', disabled: true }, Validators.min(0.01)],
           }),
           physicalConstraintForm: this.fb.group({
             // Maximum slope allowed for planning area
