@@ -6,11 +6,12 @@ import {
   Output,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-top-bar',
@@ -32,7 +33,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService,
+    private route: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
