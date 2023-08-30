@@ -107,6 +107,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.excludedAreasOptions.forEach((area: string) => {
       excludedAreasChosen[area] = [false, Validators.required];
     });
+    // TODO Move form builders to their corresponding components rather than passing as input
     // Initialize empty form
     this.formGroups = [
       // Step 1: Select priorities
@@ -120,7 +121,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
             // Estimated cost in $ per acre
             estimatedCost: ['', Validators.min(0)],
             // Max cost of treatment for entire planning area
-            maxCost: ['', Validators.min(0)],
+            // Initially disabled, estimatedCost is required as input before maxCost is enabled
+            maxCost: [{ value: '', disabled: true }, Validators.min(0.01)],
           }),
           physicalConstraintForm: this.fb.group({
             // Maximum slope allowed for planning area
@@ -129,11 +131,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
               [Validators.min(0), Validators.max(100), Validators.required],
             ],
             // Minimum distance from road allowed for planning area
-            // TODO update variable name to minDistanceFromRoad
-            maxRoadDistance: [
-              '',
-              Validators.compose([Validators.min(0), Validators.required]),
-            ],
+            minDistanceFromRoad: ['', [Validators.min(0), Validators.required]],
+            // Maximum area to be treated in acres
+            maxArea: ['', [Validators.min(0), Validators.required]],
             // Stand Size selection
             // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
@@ -197,7 +197,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // const maxArea = constraintsForm.get('treatmentForm.maxArea');
     const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
     const maxDistance = constraintsForm.get(
-      'physicalConstraintForm.maxRoadDistance'
+      'physicalConstraintForm.minDistanceFromRoad'
     );
     const valid = !!maxSlope?.value || !!maxDistance?.value;
     return valid ? null : { budgetOrAreaRequired: true };
@@ -207,9 +207,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
       const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
       const maxCost = this.formGroups[1].get('budgetForm.maxCost');
-      const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
-      const excludeDistance = this.formGroups[1].get('excludeDistance');
-      const excludeSlope = this.formGroups[1].get('excludeSlope');
+      const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
+      const excludeDistance = this.formGroups[1].get(
+        'physicalConstraintForm.excludeDistance'
+      );
+      const excludeSlope = this.formGroups[1].get(
+        'physicalConstraintForm.excludeSlope'
+      );
       const selectedQuestion = this.formGroups[0].get('selectedQuestion');
 
       if (config.est_cost) {
@@ -221,8 +225,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       if (config.max_treatment_area_ratio) {
         maxArea?.setValue(config.max_treatment_area_ratio);
       }
-      if (config.max_road_distance) {
-        excludeDistance?.setValue(config.max_road_distance);
+      if (config.min_distance_from_road) {
+        excludeDistance?.setValue(config.min_distance_from_road);
       }
       if (config.max_slope) {
         excludeSlope?.setValue(config.max_slope);
@@ -248,9 +252,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   private formValueToProjectConfig(): ProjectConfig {
     const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
     const maxCost = this.formGroups[1].get('budgetForm.maxCost');
-    const maxArea = this.formGroups[1].get('treatmentForm.maxArea');
-    const maxRoadDistance = this.formGroups[1].get(
-      'physicalConstraintForm.maxRoadDistance'
+    const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
+    const minDistanceFromRoad = this.formGroups[1].get(
+      'physicalConstraintForm.minDistanceFromRoad'
     );
     const maxSlope = this.formGroups[1].get('physicalConstraintForm.maxSlope');
     const selectedQuestion = this.formGroups[0].get('selectedQuestion');
@@ -264,8 +268,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     if (maxCost?.valid) projectConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid)
       projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
-    if (maxRoadDistance?.valid)
-      projectConfig.max_road_distance = parseFloat(maxRoadDistance.value);
+    if (minDistanceFromRoad?.valid)
+      projectConfig.min_distance_from_road = parseFloat(
+        minDistanceFromRoad.value
+      );
     if (maxSlope?.valid) projectConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
       projectConfig.priorities = selectedQuestion.value['priorities'];

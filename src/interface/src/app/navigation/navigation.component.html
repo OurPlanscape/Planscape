@@ -2,6 +2,7 @@
   <mat-sidenav
     #drawer
     class="sidenav"
+    *featureFlag="'new_navigation'; hide: true"
     [attr.role]="'navigation'"
     [mode]="'side'"
     [opened]="!sidebarOpen"

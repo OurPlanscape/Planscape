@@ -161,4 +161,25 @@ describe('TopBarComponent', () => {
       expect(feedbackBtn).toBeTruthy();
     });
   });
+
+  describe('new logo', () => {
+    it('should show the new logo when new_navigation flag is on', () => {
+      const featureService = TestBed.inject(FeatureService);
+      spyOn(featureService, 'isFeatureEnabled').and.returnValue(true);
+      fixture.detectChanges();
+      const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
+      const title = fixture.debugElement.query(By.css('[data-id="title"]'));
+      expect(logo).toBeTruthy();
+      expect(title).toBeFalsy();
+    });
+    it('should show the preview logo when new_navigation flag is off ', () => {
+      const featureService = TestBed.inject(FeatureService);
+      spyOn(featureService, 'isFeatureEnabled').and.returnValue(false);
+      fixture.detectChanges();
+      const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
+      const title = fixture.debugElement.query(By.css('[data-id="title"]'));
+      expect(logo).toBeFalsy();
+      expect(title).toBeTruthy();
+    });
+  });
 });
