@@ -73,7 +73,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   maps: Map[];
   mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
-    defaultMapViewOptions(),
+    defaultMapViewOptions()
   );
   mapNameplateWidths: BehaviorSubject<number | null>[] = Array(4)
     .fill(null)
@@ -136,16 +136,16 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private planService: PlanService,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroy$)
     );
     this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroy$)
     );
     this.selectedRegion$ = this.sessionService.region$.pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroy$)
     );
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -156,7 +156,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       });
 
     this.planState$ = this.planService.planState$.pipe(
-      takeUntil(this.destroy$),
+      takeUntil(this.destroy$)
     );
 
     this.mapService
@@ -174,12 +174,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           name: `${index + 1}`,
           config: defaultMapConfig(),
         };
-      },
+      }
     );
 
     this.selectedMap$ = this.mapViewOptions$.pipe(
       takeUntil(this.destroy$),
-      map((mapViewOptions) => this.maps[mapViewOptions.selectedMapIndex]),
+      map((mapViewOptions) => this.maps[mapViewOptions.selectedMapIndex])
     );
 
     this.mapManager = new MapManager(
@@ -190,7 +190,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       sessionService,
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this),
-      this.http,
+      this.http
     );
     this.mapManager.polygonsCreated$
       .pipe(takeUntil(this.destroy$))
@@ -208,7 +208,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       .subscribe((_) => {
         this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
         this.sessionService.setMapConfigs(
-          this.maps.map((map: Map) => map.config),
+          this.maps.map((map: Map) => map.config)
         );
       });
   }
@@ -232,7 +232,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
                       const boundaryConfig = config?.find(
                         (boundary) =>
                           boundary.boundary_name ===
-                          mapConfig.boundaryLayerConfig.boundary_name,
+                          mapConfig.boundaryLayerConfig.boundary_name
                       );
                       this.maps[index].config.boundaryLayerConfig =
                         boundaryConfig ? boundaryConfig : NONE_BOUNDARY_CONFIG;
@@ -295,7 +295,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
               const boundaryConfig = config?.find(
                 (boundary) =>
                   boundary.boundary_name ===
-                  map.config.boundaryLayerConfig.boundary_name,
+                  map.config.boundaryLayerConfig.boundary_name
               );
               map.config.boundaryLayerConfig = boundaryConfig
                 ? boundaryConfig
@@ -313,7 +313,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       id,
       this.existingProjectsGeoJson$,
       this.createDetailCardCallback.bind(this),
-      this.getBoundaryLayerVector.bind(this),
+      this.getBoundaryLayerVector.bind(this)
     );
 
     // Renders the selected region on the map.
@@ -332,7 +332,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         const selectedMapIndex =
           this.mapViewOptions$.getValue().selectedMapIndex;
         this.mapManager.removeDrawingControl(
-          this.maps[selectedMapIndex].instance!,
+          this.maps[selectedMapIndex].instance!
         );
         this.showUploader = true;
       }
@@ -355,7 +355,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   private updateMapNameplateWidth(map: Map) {
     this.mapNameplateWidths[this.maps.indexOf(map)].next(
-      this.getMapNameplateWidth(map),
+      this.getMapNameplateWidth(map)
     );
   }
 
@@ -383,7 +383,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   private createDetailCardCallback(
     features: Feature<Geometry, any>[],
-    onInitialized: () => void,
+    onInitialized: () => void
   ): any {
     let component = createComponent(ProjectCardComponent, {
       environmentInjector: this.environmentInjector,
@@ -455,7 +455,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
                 duration: 10000,
                 panelClass: ['snackbar-error'],
                 verticalPosition: 'top',
-              },
+              }
             );
           },
         });
@@ -469,7 +469,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     if (option === AreaCreationAction.DRAW) {
       this.addDrawingControlToAllMaps();
       this.mapManager.enablePolygonDrawingTool(
-        this.maps[selectedMapIndex].instance!,
+        this.maps[selectedMapIndex].instance!
       );
       this.showUploader = false;
       this.changeMapCount(1);
@@ -479,7 +479,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.maps[selectedMapIndex].instance!.pm.removeControls();
       }
       this.mapManager.disablePolygonDrawingTool(
-        this.maps[selectedMapIndex].instance!,
+        this.maps[selectedMapIndex].instance!
       );
       this.showUploader = !this.showUploader;
     }
@@ -489,7 +489,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
     this.mapManager.removeDrawingControl(this.maps[selectedMapIndex].instance!);
     this.mapManager.disablePolygonDrawingTool(
-      this.maps[selectedMapIndex].instance!,
+      this.maps[selectedMapIndex].instance!
     );
     this.mapManager.clearAllDrawings();
     this.selectedAreaCreationAction = AreaCreationAction.NONE;
@@ -502,7 +502,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       // Only add drawing controls to the selected map
       if (selectedMapIndex === this.maps.indexOf(map)) {
         this.mapManager.addDrawingControl(
-          this.maps[selectedMapIndex].instance!,
+          this.maps[selectedMapIndex].instance!
         );
       } else {
         // Show a copy of the drawing layer on the other maps
@@ -524,7 +524,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       });
       try {
         const geojson = (await shp.parseZip(
-          fileAsArrayBuffer,
+          fileAsArrayBuffer
         )) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
           this.mapManager.addGeoJsonToDrawing(geojson);
@@ -573,7 +573,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   toggleBoundaryLayer(map: Map) {
     this.mapManager.toggleBoundaryLayer(
       map,
-      this.getBoundaryLayerVector.bind(this),
+      this.getBoundaryLayerVector.bind(this)
     );
   }
 
@@ -594,7 +594,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private updateLegendWithColormap(
     map: Map,
     colormap?: string,
-    minMaxValues?: (number | undefined)[],
+    minMaxValues?: (number | undefined)[]
   ) {
     if (colormap == undefined) {
       colormap = DEFAULT_COLORMAP;
@@ -623,7 +623,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
     if (dataLayerConfigOpacityDefined) {
       return this.selectedMap$.pipe(
-        map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity),
+        map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
       );
     } else {
       return of(this.mapManager.defaultOpacity);
@@ -633,7 +633,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   /** Whether the currently selected map has a data layer active. */
   mapHasDataLayer(): Observable<boolean> {
     return this.selectedMap$.pipe(
-      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer),
+      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
     );
   }
 
@@ -669,10 +669,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.showConfirmAreaButton$.value
       ) {
         this.mapManager.disablePolygonDrawingTool(
-          this.maps[previousMapIndex].instance!,
+          this.maps[previousMapIndex].instance!
         );
         this.mapManager.removeDrawingControl(
-          this.maps[previousMapIndex].instance!,
+          this.maps[previousMapIndex].instance!
         );
         this.mapManager.showClonedDrawing(this.maps[previousMapIndex]);
         this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);

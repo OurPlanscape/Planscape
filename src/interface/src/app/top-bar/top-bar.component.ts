@@ -35,7 +35,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private router: Router,
     private featureService: FeatureService,
-    private route: ActivatedRoute,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
