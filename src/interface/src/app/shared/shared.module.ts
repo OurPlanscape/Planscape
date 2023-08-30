@@ -16,7 +16,6 @@ import { RouterLinkWithHref } from '@angular/router';
     NavBarComponent,
   ],
   exports: [FileUploaderComponent, OpacitySliderComponent, NavBarComponent],
-
   imports: [
     CommonModule,
     FormsModule,
