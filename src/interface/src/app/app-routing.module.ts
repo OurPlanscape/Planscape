@@ -76,7 +76,7 @@ const routes: Routes = [
             component: ScenarioDetailsComponent,
           },
           {
-            path: 'config/:id',
+            path: 'config',
             title: 'Scenario Configuration',
             component: CreateScenariosComponent,
           },

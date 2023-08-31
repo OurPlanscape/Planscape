@@ -68,10 +68,16 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    const routeChild = this.route.snapshot.firstChild;
+    const path = routeChild?.url[0].path;
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        if (state.currentScenarioId || state.currentConfigId) {
+        if (
+          state.currentScenarioId ||
+          state.currentConfigId ||
+          path === 'config'
+        ) {
           this.showOverview$.next(false);
         } else {
           this.showOverview$.next(true);
