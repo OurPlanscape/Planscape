@@ -1,3 +1,7 @@
+## How to run this script?
+## From the planscape repo root, do:
+## Rscript src/planscape/rscripts/forsys.R --scenario <scenario_id>
+## Replace `<scenario_id>` with an integer, corresponding with the scenario id
 library("DBI")
 library("RPostgreSQL")
 library("optparse")
@@ -56,11 +60,11 @@ call_forsys <- function(scenario) {
 
   sample_json <- list(
     result = list(
-      scores = list(10, 20, 30),
+      scores = list(11, 21, 31),
       stands = list(
-        stand_1 = 10,
-        stand_2 = 20,
-        stand_3 = 30
+        stand_1 = 11,
+        stand_2 = 21,
+        stand_3 = 32
       )
     )
   )
@@ -72,16 +76,33 @@ call_forsys <- function(scenario) {
     status = "SUCCESS",
     result = toJSON(sample_json)
   )
+  scenario_result <- list(
+    now,
+    now,
+    scenario$id,
+    "SUCCESS",
+    toJSON(sample_json)
+  )
   return(scenario_result)
 }
 
-create_scenario_result <- function(connection, result) {
-  dbWriteTable(
-    connection, c("planning_scenarioresult"),
-    value = result,
-    append = TRUE,
-    row.names = FALSE
+upsert_scenario_result <- function(connection, result) {
+  query <- "INSERT into planning_scenarioresult (
+    created_at,
+    updated_at,
+    scenario_id,
+    status,
+    result
+  ) VALUES (
+    $1, $2, $3, $4, $5
   )
+  ON CONFLICT (scenario_id) DO UPDATE
+  SET
+    updated_at = EXCLUDED.updated_at,
+    result = EXCLUDED.result,
+    status = EXCLUDED.status;
+  "
+  dbExecute(connection, query, result)
 }
 
 main <- function(scenario_id) {
@@ -89,7 +110,7 @@ main <- function(scenario_id) {
   connection <- get_connection()
   scenario <- get_scenario_data(connection, scenario_id)
   result <- call_forsys(scenario)
-  create_scenario_result(connection, result)
+  upsert_scenario_result(connection, result)
 }
 
 main(scenario_id)
