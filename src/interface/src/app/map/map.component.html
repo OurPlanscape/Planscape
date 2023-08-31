@@ -1,4 +1,7 @@
-<app-nav-bar (goBack)="backHome()" [breadcrumbs]="['New Plan']"></app-nav-bar>
+<app-nav-bar
+  (goBack)="backHome()"
+  [breadcrumbs]="['New Plan']"
+  *featureFlag="'new_navigation'"></app-nav-bar>
 <div class="root-container">
   <!-- Map control panel -->
   <app-map-control-panel
