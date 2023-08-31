@@ -62,7 +62,7 @@ class RasterConditionRetrievalTestCase(RasterRetrievalTestCase):
     def setUp(self) -> None:
         RasterRetrievalTestCase.setUp(self)
 
-        self.region = 'sierra_cascade_inyo'
+        self.region = 'sierra-nevada'
 
     def _create_condition_raster(
             self, condition_raster: GDALRaster,
