@@ -1,15 +1,11 @@
-import { Injectable } from '@angular/core';
-import { FeaturesConfig } from './features-config';
-
-import config from './features.json';
+import { Inject, Injectable } from '@angular/core';
+import { FEATURES_JSON, FeaturesConfig } from './features-config';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FeatureService {
-  private readonly config: FeaturesConfig;
-
-  constructor() {
+  constructor(@Inject(FEATURES_JSON) private readonly config: FeaturesConfig) {
     this.config = config;
   }
 

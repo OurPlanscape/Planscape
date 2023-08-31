@@ -1,17 +1,9 @@
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-
 import { FeatureFlagDirective } from './feature-flag.directive';
-import { FeatureService } from './feature.service';
-
-class MockFeatureService {
-  isFeatureEnabled(featureName: string): boolean | undefined {
-    if (featureName === 'true') return true;
-    if (featureName === 'false') return false;
-    return undefined;
-  }
-}
+import { FeaturesModule } from './features.module';
+import { FEATURES_JSON } from './features-config';
 
 describe('FeatureFlagDirective', () => {
   let fixture: ComponentFixture<TestComponent>;
@@ -19,12 +11,8 @@ describe('FeatureFlagDirective', () => {
   beforeEach(() => {
     fixture = TestBed.configureTestingModule({
       declarations: [FeatureFlagDirective, TestComponent],
-      providers: [
-        {
-          provide: FeatureService,
-          useClass: MockFeatureService,
-        },
-      ],
+      providers: [{ provide: FEATURES_JSON, useValue: { valid: true } }],
+      imports: [FeaturesModule],
     }).createComponent(TestComponent);
 
     fixture.detectChanges();
@@ -55,11 +43,12 @@ describe('FeatureFlagDirective', () => {
 
 @Component({
   template: `
-    <h2 *featureFlag="'false'">False</h2>
+    <h2 *featureFlag="'not_valid'">False</h2>
     <h2 *featureFlag="'undefined'">Undefined</h2>
-    <h2 *featureFlag="'true'">True</h2>
-    <h3 *featureFlag="'true'; hide: true">Hidden</h3>
-    <h4 *featureFlag="'true'; hide: false">Visible</h4>
+    <h2 *featureFlag="''">Nothing</h2>
+    <h2 *featureFlag="'valid'">True</h2>
+    <h3 *featureFlag="'valid'; hide: true">Hidden</h3>
+    <h4 *featureFlag="'valid'; hide: false">Visible</h4>
   `,
 })
 class TestComponent {}
