@@ -110,16 +110,15 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // TODO Move form builders to their corresponding components rather than passing as input
     // Initialize empty form
     this.formGroups = [
-            // Name the scenario
-      //TODO make this the first group and shift the indexing of the rest
+      // Step 1: Name the scenario
       this.fb.group({
         scenarioName: ['', Validators.required],
       }),
-      // Step 1: Select priorities
+      // Step 2: Select priorities
       this.fb.group({
         selectedQuestion: ['', Validators.required],
       }),
-      // Step 2: Set constraints
+      // Step 3: Set constraints
       this.fb.group(
         {
           budgetForm: this.fb.group({
@@ -149,7 +148,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         },
         { validators: this.constraintsFormValidator }
       ),
-      // Step 3: Identify project areas
+      // Step 4: Identify project areas
       this.fb.group({
         // TODO Use flag to set required validator
         generateAreas: [''],

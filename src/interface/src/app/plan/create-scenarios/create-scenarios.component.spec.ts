@@ -108,8 +108,8 @@ describe('CreateScenariosComponent', () => {
   it('should load existing config into form', () => {
     expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
 
-    component.formGroups[1].valueChanges.subscribe((_) => {
-      expect(component.formGroups[1].get('budgetForm.maxCost')?.value).toEqual(
+    component.formGroups[2].valueChanges.subscribe((_) => {
+      expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
         100
       );
     });
@@ -118,13 +118,16 @@ describe('CreateScenariosComponent', () => {
   it('should emit create scenario event on Generate button click', async () => {
     spyOn(component, 'createScenario');
     component.formGroups[0]
+      .get('scenarioName')
+      ?.setValue('scenarioName');
+    component.formGroups[1]
       .get('selectedQuestion')
       ?.setValue(defaultSelectedQuestion);
-    component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1]
+    component.formGroups[2].get('physicalConstraintForm.maxSlope')?.setValue(1);
+    component.formGroups[2]
       .get('physicalConstraintForm.minDistanceFromRoad')
       ?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.maxArea')?.setValue(1);
+    component.formGroups[2].get('physicalConstraintForm.maxArea')?.setValue(1);
     fixture.detectChanges();
 
     const buttonHarness: MatButtonHarness = await loader.getHarness(
@@ -141,8 +144,8 @@ describe('CreateScenariosComponent', () => {
     const buttonHarness: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /GENERATE/ })
     );
-    component.formGroups[0].markAsDirty();
-    component.formGroups[1]
+    component.formGroups[1].markAsDirty();
+    component.formGroups[2]
       .get('physicalConstraintForm.minDistanceFromRoad')
       ?.setValue(-1);
     fixture.detectChanges();
@@ -158,36 +161,40 @@ describe('CreateScenariosComponent', () => {
       MatButtonHarness.with({ text: /GENERATE/ })
     );
     component.formGroups[0]
+      .get('scenarioName')
+      ?.setValue('scenarioName');
+    component.formGroups[1]
       .get('selectedQuestion')
       ?.setValue(defaultSelectedQuestion);
-    component.formGroups[1].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[1]
+    component.formGroups[2].get('physicalConstraintForm.maxSlope')?.setValue(1);
+    component.formGroups[2]
       .get('physicalConstraintForm.minDistanceFromRoad')
       ?.setValue(1);
-    component.formGroups[1].get('physicalConstraintForm.maxArea')?.setValue(1);
+    component.formGroups[2].get('physicalConstraintForm.maxArea')?.setValue(1);
     component.generatingScenario = false;
     fixture.detectChanges();
 
     expect(await buttonHarness.isDisabled()).toBeFalse();
   });
 
-  it('update plan state when "identify project areas" form inputs change', () => {
-    const generateAreas = component.formGroups[2].get('generateAreas');
-    const uploadedArea = component.formGroups[2].get('uploadedArea');
+  // TODO Re-enable when support for uploading project areas in implemented
+  // it('update plan state when "identify project areas" form inputs change', () => {
+  //   const generateAreas = component.formGroups[3].get('generateAreas');
+  //   const uploadedArea = component.formGroups[3].get('uploadedArea');
 
-    // Set "generate areas automatically" to true
-    generateAreas?.setValue(true);
+  //   // Set "generate areas automatically" to true
+  //   generateAreas?.setValue(true);
 
-    expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(null);
+  //   expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(null);
 
-    // Add an uploaded area and set "generate areas automatically" to false
-    generateAreas?.setValue(false);
-    uploadedArea?.setValue('testvalue');
+  //   // Add an uploaded area and set "generate areas automatically" to false
+  //   generateAreas?.setValue(false);
+  //   uploadedArea?.setValue('testvalue');
 
-    expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(
-      'testvalue'
-    );
-  });
+  //   expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(
+  //     'testvalue'
+  //   );
+  // });
 
   describe('convertSingleGeoJsonToGeoJsonArray', () => {
     it('converts a geojson with multiple multipolygons into geojsons', () => {
