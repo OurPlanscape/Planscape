@@ -8,4 +8,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 export class NavBarComponent {
   @Input() breadcrumbs: string[] = [];
   @Output() goBack = new EventEmitter<void>();
+
+  copyLink() {
+    navigator.clipboard.writeText(window.location.href);
+  }
+
+  print() {
+    window.print();
+  }
 }

@@ -2,7 +2,7 @@
   <button mat-icon-button (click)="goBack.emit()" class="back-button">
     <mat-icon color="primary">arrow_back</mat-icon>
   </button>
-  <span class="title">Planning Areas / {{ breadcrumbs.join(' / ') }}</span>
+  <span class="title">Planning Areas / {{ breadcrumbs.join(" / ") }}</span>
   <div class="actions">
     <a
       mat-icon-button
@@ -11,19 +11,20 @@
       aria-label="help button"
       rel="noopener noreferrer"
       data-id="help"
-      class="help">
+      class="help"
+    >
       <mat-icon class="material-symbols-outlined" color="primary">
         info
       </mat-icon>
     </a>
 
-    <button mat-button class="action-button">
+    <button mat-button class="action-button" (click)="copyLink()">
       <mat-icon class="material-symbols-outlined" color="primary">
         link
       </mat-icon>
       Copy link
     </button>
-    <button mat-button class="action-button">
+    <button mat-button class="action-button" (click)="print()">
       <mat-icon class="material-symbols-outlined" color="primary">
         print
       </mat-icon>

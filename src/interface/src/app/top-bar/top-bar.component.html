@@ -68,6 +68,17 @@
 
   <button
     mat-icon-button
+    [matMenuTriggerFor]="dotMenu"
+    *featureFlag="'new_navigation'">
+    <mat-icon class="material-symbols-outlined">more_vert</mat-icon>
+  </button>
+  <mat-menu #dotMenu="matMenu">
+    <button mat-menu-item>Item 1</button>
+    <button mat-menu-item>Item 2</button>
+  </mat-menu>
+
+  <button
+    mat-icon-button
     data-testid="account-button"
     class="top-bar-account-button"
     aria-label="account icon button"
