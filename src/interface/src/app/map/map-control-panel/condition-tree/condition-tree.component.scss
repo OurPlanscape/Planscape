@@ -1,3 +1,5 @@
+@import "../../../shared/variables";
+
 .layer-panel-header {
   background-color: #D8D8D8 !important;
   font-size: 14px;
@@ -57,7 +59,7 @@ mat-tree-node {
   }
 
   &.selected {
-    background-color: #3367D6;
+    background-color: $primary-color;
 
     span {
       color: white;
@@ -100,7 +102,7 @@ mat-tree-node {
 }
 
 .selected-dot {
-  background-color: #3367D6;
+  background-color: $primary-color;
   border-radius: 4px;
   height: 8px;
   margin-right: 4px;

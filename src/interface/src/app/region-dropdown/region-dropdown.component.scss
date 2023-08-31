@@ -74,7 +74,7 @@ select.region-dropdown {
     height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 5px solid #3367D6;
+    border-top: 5px solid $primary-color;
     pointer-events: none;
   }
 }
@@ -90,7 +90,7 @@ select.region-dropdown {
   font-weight: 500;
   border: none;
   text-transform: uppercase;
-  color: #3367D6;
+  color: $primary-color;
   padding: 10px;
   padding-right: 36px;
   border-right: 1px solid #eeeeee;

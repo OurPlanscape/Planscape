@@ -10,78 +10,46 @@
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
 @include mat.core();
+@import "app/shared/variables";
 
-// CUSTOM
-// $primary-palette: (
-//     50 : #e9e9e9,
-//     100 : #c8c8c8,
-//     200 : #a4a4a4,
-//     300 : #808080,
-//     400 : #646464,
-//     500 : #494949,
-//     600 : #424242,
-//     700 : #393939,
-//     800 : #313131,
-//     900 : #212121,
-//     A100 : #f17d7d,
-//     A200 : #eb4f4f,
-//     A400 : #ff0808,
-//     A700 : #ee0000,
-//     contrast: (
-//         50 : #000000,
-//         100 : #000000,
-//         200 : #000000,
-//         300 : #000000,
-//         400 : #ffffff,
-//         500 : #ffffff,
-//         600 : #ffffff,
-//         700 : #ffffff,
-//         800 : #ffffff,
-//         900 : #ffffff,
-//         A100 : #000000,
-//         A200 : #ffffff,
-//         A400 : #ffffff,
-//         A700 : #ffffff,
-//     )
-// );
-
-// $secondary-palette: (
-//     50 : #e7edfa,
-//     100 : #c2d1f3,
-//     200 : #99b3eb,
-//     300 : #7095e2,
-//     400 : #527edc,
-//     500 : #3367d6,
-//     600 : #2e5fd1,
-//     700 : #2754cc,
-//     800 : #204ac6,
-//     900 : #1439bc,
-//     A100 : #edf0ff,
-//     A200 : #bac7ff,
-//     A400 : #879dff,
-//     A700 : #6e88ff,
-//     contrast: (
-//         50 : #000000,
-//         100 : #000000,
-//         200 : #000000,
-//         300 : #000000,
-//         400 : #ffffff,
-//         500 : #ffffff,
-//         600 : #ffffff,
-//         700 : #ffffff,
-//         800 : #ffffff,
-//         900 : #ffffff,
-//         A100 : #000000,
-//         A200 : #000000,
-//         A400 : #000000,
-//         A700 : #000000,
-//     )
-// );
+// Planscape palette, based on the $primary-color, generated with http://mcg.mbitson.com/
+$planscape: (
+  50 : #e7edfa,
+  100 : #c2d1f3,
+  200 : #99b3eb,
+  300 : #7095e2,
+  400 : #527edc,
+  500 : $primary-color,
+  600 : #2e5fd1,
+  700 : #2754cc,
+  800 : #204ac6,
+  900 : #1439bc,
+  A100 : #edf0ff,
+  A200 : #bac7ff,
+  A400 : #879dff,
+  A700 : #6e88ff,
+  contrast: (
+          50 : #000000,
+          100 : #000000,
+          200 : #000000,
+          300 : #000000,
+          400 : #ffffff,
+          500 : #ffffff,
+          600 : #ffffff,
+          700 : #ffffff,
+          800 : #ffffff,
+          900 : #ffffff,
+          A100 : #000000,
+          A200 : #000000,
+          A400 : #000000,
+          A700 : #000000,
+  )
+);
 
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$planscape-frontend-primary: mat.define-palette(mat.$indigo-palette);
+$planscape-frontend-primary: mat.define-palette($planscape);
 $planscape-frontend-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
 
 // The warn palette is optional (defaults to red).
@@ -117,7 +85,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 }
 
 .snackbar-error {
-  background: #b00020;
+  background: $error-color;
   button {
     color: #ffffff;
   }
@@ -136,7 +104,7 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 // Geoman drawing vertex styling
 .marker-icon,
  .marker-icon:focus {
-    border: 3px solid #3367D6;
+    border: 3px solid $primary-color;
     margin: -5px 0 0 -5px !important;
     width: 5px !important;
     height: 5px !important;
