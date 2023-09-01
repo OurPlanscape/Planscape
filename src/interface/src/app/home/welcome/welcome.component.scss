@@ -1,0 +1,32 @@
+
+:host {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0px 3px 1px -2px #0000001F;
+  box-shadow: 0px 2px 2px 0px #00000024;
+  box-shadow: 0px 1px 5px 0px #00000033;
+  padding: 80px 100px;
+  display: flex;
+  flex-direction: column;
+  max-width: 70%;
+  box-sizing: border-box;
+  color: #000000A8;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+h1 {
+  padding-bottom: 50px;
+}
+
+p {
+  margin-bottom: 16px;
+}
+.flex {
+  display: flex;
+  align-items: flex-start;
+}
+
+.explore {
+  margin-left: auto;
+}

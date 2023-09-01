@@ -1,26 +1,22 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { take } from 'rxjs';
-import { AuthService } from 'src/app/services';
-
-import { PlanService } from '../../services/plan.service';
-import { PlanPreview } from '../../types/plan.types';
-import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { AuthService, PlanService } from '../../services';
 import { FeatureService } from '../../features/feature.service';
-
+import { take } from 'rxjs';
+import { DeletePlanDialogComponent } from '../plan-table/delete-plan-dialog/delete-plan-dialog.component';
+import { PlanPreview } from '../../types';
 interface PlanRow extends PlanPreview {
   selected: boolean;
 }
-
 @Component({
-  selector: 'app-plan-table',
-  templateUrl: './plan-table.component.html',
-  styleUrls: ['./plan-table.component.scss'],
+  selector: 'app-planning-areas',
+  templateUrl: './planning-areas.component.html',
+  styleUrls: ['./planning-areas.component.scss'],
 })
-export class PlanTableComponent implements OnInit {
+export class PlanningAreasComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 

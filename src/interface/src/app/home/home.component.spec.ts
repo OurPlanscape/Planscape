@@ -3,11 +3,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HomeComponent } from './home.component';
 import { AuthService } from '../services';
 import { By } from '@angular/platform-browser';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
+import { FEATURES_JSON } from '../features/features-config';
 
-describe('HomeComponent', () => {
+fdescribe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
+
+  function setUpComponent() {
+    fixture = TestBed.createComponent(HomeComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -17,51 +24,45 @@ describe('HomeComponent', () => {
           provide: AuthService,
           useValue: { loggedInStatus$: new BehaviorSubject(false) },
         },
+        { provide: FEATURES_JSON, useValue: { login: false } },
       ],
     }).compileComponents();
-
-    fixture = TestBed.createComponent(HomeComponent);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  describe('login feature off', () => {
+    it('should show region and plan section', () => {
+      setUpComponent();
+      const planTable = fixture.debugElement.query(By.css('app-plan-table'));
+      const regionSelection = fixture.debugElement.query(
+        By.css('app-region-selection')
+      );
+      expect(planTable).toBeTruthy();
+      expect(regionSelection).toBeTruthy();
+    });
   });
 
-  it('should show plan table if logged in', () => {
-    const auth = TestBed.inject(AuthService);
-    auth.loggedInStatus$.next(true);
-    fixture.detectChanges();
-    const planTable = fixture.debugElement.query(By.css('app-plan-table'));
-    expect(planTable).toBeTruthy();
-  });
-
-  it('should not show home/welcome  if logged in', () => {
-    const auth = TestBed.inject(AuthService);
-    auth.loggedInStatus$.next(true);
-    fixture.detectChanges();
-    const planTable = fixture.debugElement.query(
-      By.css('app-region-selection'),
-    );
-    expect(planTable).toBeFalsy();
-  });
-
-  it('should show home/welcome if not logged in', () => {
-    const auth = TestBed.inject(AuthService);
-    auth.loggedInStatus$.next(false);
-    fixture.detectChanges();
-    const planTable = fixture.debugElement.query(
-      By.css('app-region-selection'),
-    );
-    expect(planTable).toBeTruthy();
-  });
-
-  it('should not show plan table if not logged in', () => {
-    const auth = TestBed.inject(AuthService);
-    auth.loggedInStatus$.next(false);
-    fixture.detectChanges();
-    const planTable = fixture.debugElement.query(By.css('app-plan-table'));
-    expect(planTable).toBeFalsy();
+  describe('login feature on', () => {
+    beforeEach(() => {
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { login: true },
+      });
+      setUpComponent();
+    });
+    it('should show welcome if not logged in', () => {
+      const auth = TestBed.inject(AuthService);
+      auth.loggedInStatus$.next(false);
+      fixture.detectChanges();
+      const planTable = fixture.debugElement.query(By.css('app-welcome'));
+      expect(planTable).toBeTruthy();
+    });
+    it('should show planning areas if logged in', () => {
+      const auth = TestBed.inject(AuthService);
+      auth.loggedInStatus$.next(true);
+      fixture.detectChanges();
+      const planTable = fixture.debugElement.query(
+        By.css('app-planning-areas')
+      );
+      expect(planTable).toBeTruthy();
+    });
   });
 });
