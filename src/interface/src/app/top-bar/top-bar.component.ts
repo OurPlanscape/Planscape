@@ -7,10 +7,11 @@ import {
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { map, Subject, takeUntil } from 'rxjs';
 
 import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-top-bar',
@@ -27,10 +28,17 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
+  showLogin$ = this.authService.isLoggedIn$.pipe(
+    map(
+      (loggedIn) => this.featureService.isFeatureEnabled('login') && !loggedIn
+    )
+  );
+
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {

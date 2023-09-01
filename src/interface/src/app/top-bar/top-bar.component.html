@@ -66,6 +66,10 @@
       {{ 'help_outline' }}
     </mat-icon>
   </a>
+
+  <!--  temp login button until we wrap up new nav-->
+  <a *ngIf="showLogin$ | async" routerLink="/login" class="nav-link">Login</a>
+
   <span class="username">{{ displayName }}</span>
 
   <button
