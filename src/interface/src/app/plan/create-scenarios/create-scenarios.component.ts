@@ -110,11 +110,15 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // TODO Move form builders to their corresponding components rather than passing as input
     // Initialize empty form
     this.formGroups = [
-      // Step 1: Select priorities
+      // Step 1: Name the scenario
+      this.fb.group({
+        scenarioName: ['', Validators.required],
+      }),
+      // Step 2: Select priorities
       this.fb.group({
         selectedQuestion: ['', Validators.required],
       }),
-      // Step 2: Set constraints
+      // Step 3: Set constraints
       this.fb.group(
         {
           budgetForm: this.fb.group({
@@ -144,7 +148,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         },
         { validators: this.constraintsFormValidator }
       ),
-      // Step 3: Identify project areas
+      // Step 4: Identify project areas
       this.fb.group({
         // TODO Use flag to set required validator
         generateAreas: [''],
@@ -249,7 +253,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private formValueToProjectConfig(): ProjectConfig {
+  private formValueToProjectConfig(): any {
     const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
     const maxCost = this.formGroups[1].get('budgetForm.maxCost');
     const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
@@ -258,7 +262,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     );
     const maxSlope = this.formGroups[1].get('physicalConstraintForm.maxSlope');
     const selectedQuestion = this.formGroups[0].get('selectedQuestion');
+    const scenarioName = this.formGroups[3].get('scenarioName');
 
+    let scenarioNameConfig: string = '';
+    let planID: string = '';
     let projectConfig: ProjectConfig = {
       id: this.scenarioConfigId!,
       planId: Number(this.plan$.getValue()?.id),
@@ -277,7 +284,20 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       projectConfig.priorities = selectedQuestion.value['priorities'];
       projectConfig.weights = selectedQuestion!.value['weights'];
     }
-    return projectConfig;
+    if (scenarioName?.valid) {
+      scenarioNameConfig = scenarioName.value;
+    }
+    this.planService.planState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((planState) => {
+        planID = planState.currentPlanId!;
+      });
+
+    return {
+      name: scenarioNameConfig,
+      planning_area: planID,
+      configuration: projectConfig,
+    };
   }
 
   private updatePriorityWeightsFormControls(): void {
