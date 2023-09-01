@@ -74,8 +74,7 @@ describe('PlanOverviewComponent', () => {
 
     await createScenarioButton.click();
 
-    expect(fakePlanService.createProjectInPlan).toHaveBeenCalledOnceWith('1');
-    expect(router.navigate).toHaveBeenCalledOnceWith(['config', 1], {
+    expect(router.navigate).toHaveBeenCalledOnceWith(['config'], {
       relativeTo: route,
     });
   });
