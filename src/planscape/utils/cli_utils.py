@@ -15,7 +15,6 @@ def raster2pgpsql(
         "-s",
         str(srid),
         "-a",
-        "-R",
         "-F",
         "-f",
         raster_column,
