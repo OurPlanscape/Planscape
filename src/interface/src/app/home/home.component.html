@@ -1,4 +1,8 @@
-<app-region-selection
-  *ngIf="(loggedIn$ | async) === false"
-></app-region-selection>
-<app-plan-table *ngIf="loggedIn$ | async"></app-plan-table>
+<ng-container *ngIf="login_enabled; else loginDisabled">
+  <app-welcome *ngIf="(loggedIn$ | async) === false"></app-welcome>
+  <app-planning-areas *ngIf="loggedIn$ | async"></app-planning-areas>
+</ng-container>
+<ng-template #loginDisabled>
+  <app-region-selection></app-region-selection>
+  <app-plan-table></app-plan-table>
+</ng-template>
