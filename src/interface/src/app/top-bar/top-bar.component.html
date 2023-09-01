@@ -75,6 +75,9 @@
     aria-label="account icon button"
     #accountButton
     (click)="openAccountDialog()">
-    <mat-icon>account_circle</mat-icon>
+    <mat-icon *ngIf="!loggedIn || !displayName">account_circle</mat-icon>
+    <div class="avatar mat-icon" *ngIf="loggedIn && displayName">
+      {{ displayName.substring(0, 1) }}
+    </div>
   </button>
 </mat-toolbar>
