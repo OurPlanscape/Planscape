@@ -1,2 +1,4 @@
-<app-region-selection></app-region-selection>
-<app-plan-table></app-plan-table>
+<app-region-selection
+  *ngIf="(loggedIn$ | async) === false"
+></app-region-selection>
+<app-plan-table *ngIf="loggedIn$ | async"></app-plan-table>
