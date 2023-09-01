@@ -76,7 +76,7 @@ class ScenarioResultStatus(models.TextChoices):
 
 
 class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
-    scenario = models.ForeignKey(
+    scenario = models.OneToOneField(
         Scenario,
         related_name="results",
         on_delete=models.CASCADE,
