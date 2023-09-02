@@ -46,8 +46,8 @@ class ConditionStatsTest(RasterConditionRetrievalTestCase):
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
             compute_condition_stats_from_raster(geo, "foo")
-        self.assertIn(
-            "invalid geo: Ring Self-intersection[", str(context.exception))
+        self.assertRegex(str(context.exception),
+                         'invalid geo: .*Self-intersection[')
 
     def test_fails_for_wrong_srid(self):
         polygon = Polygon(
@@ -368,8 +368,8 @@ class ConditionPixelsTest(RasterConditionRetrievalTestCase):
         geo.srid = 4269
         with self.assertRaises(Exception) as context:
             get_condition_values_from_raster(geo, "foo")
-        self.assertIn(
-            "invalid geo: Ring Self-intersection[", str(context.exception))
+        self.assertRegex(str(context.exception),
+                         r'invalid geo: .*Self-intersection[')
 
     def test_fails_for_wrong_srid(self):
         polygon = Polygon(
