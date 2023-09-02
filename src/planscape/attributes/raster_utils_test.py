@@ -54,7 +54,7 @@ class AttributePixelsTest(RasterRetrievalTestCase):
         with self.assertRaises(Exception) as context:
             get_attribute_values_from_raster(geo, "foo")
         self.assertRegex(str(context.exception),
-                         r'invalid geo: .*Self-intersection[')
+                         r'invalid geo: .*Self-intersection\[')
 
     def test_fails_for_wrong_srid(self):
         polygon = Polygon(
