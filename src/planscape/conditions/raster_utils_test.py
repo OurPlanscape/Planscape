@@ -47,7 +47,7 @@ class ConditionStatsTest(RasterConditionRetrievalTestCase):
         with self.assertRaises(Exception) as context:
             compute_condition_stats_from_raster(geo, "foo")
         self.assertRegex(str(context.exception),
-                         'invalid geo: .*Self-intersection[')
+                         r'invalid geo: .*Self-intersection[')
 
     def test_fails_for_wrong_srid(self):
         polygon = Polygon(
