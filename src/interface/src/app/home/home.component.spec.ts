@@ -6,7 +6,7 @@ import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { FEATURES_JSON } from '../features/features-config';
 
-fdescribe('HomeComponent', () => {
+describe('HomeComponent', () => {
   let component: HomeComponent;
   let fixture: ComponentFixture<HomeComponent>;
 
@@ -30,9 +30,9 @@ fdescribe('HomeComponent', () => {
   });
 
   describe('login feature off', () => {
-    it('should show region and plan section', () => {
+    it('should show region and preview section', () => {
       setUpComponent();
-      const planTable = fixture.debugElement.query(By.css('app-plan-table'));
+      const planTable = fixture.debugElement.query(By.css('app-preview'));
       const regionSelection = fixture.debugElement.query(
         By.css('app-region-selection')
       );

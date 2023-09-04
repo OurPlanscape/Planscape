@@ -60,7 +60,8 @@ describe('PlanService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=sierra-nevada'
+      BackendConstants.END_POINT +
+        '/plan/treatment_goals_config/?region_name=sierra-nevada'
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(

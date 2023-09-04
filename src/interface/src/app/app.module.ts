@@ -48,6 +48,7 @@ import { environment } from 'src/environments/environment';
 import { RegionDropdownComponent } from './region-dropdown/region-dropdown.component';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
+import { PreviewComponent } from './home/preview/preview.component';
 
 @NgModule({
   declarations: [
@@ -73,6 +74,7 @@ import { PlanningAreasComponent } from './home/planning-areas/planning-areas.com
     RegionDropdownComponent,
     WelcomeComponent,
     PlanningAreasComponent,
+    PreviewComponent,
   ],
   imports: [
     AppRoutingModule,
