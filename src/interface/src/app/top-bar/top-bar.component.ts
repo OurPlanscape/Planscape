@@ -21,6 +21,7 @@ export class TopBarComponent implements OnInit, OnDestroy {
   @Output()
   toggleEvent = new EventEmitter<Event>();
 
+  // display name is first name and then username
   displayName: string = '';
   loggedIn = false;
 
