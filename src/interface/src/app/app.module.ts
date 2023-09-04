@@ -49,6 +49,7 @@ import { RegionDropdownComponent } from './region-dropdown/region-dropdown.compo
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
+import { WINDOW_PROVIDERS } from './services/window.service';
 
 @NgModule({
   declarations: [
@@ -105,6 +106,7 @@ import { PreviewComponent } from './home/preview/preview.component';
     CookieService,
     SessionService,
     RedirectGuard,
+    WINDOW_PROVIDERS,
   ],
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],
