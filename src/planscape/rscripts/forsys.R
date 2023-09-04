@@ -9,6 +9,7 @@ library("rjson")
 library("glue")
 library("forsys")
 library("sf")
+library("dplyr")
 
 readRenviron("src/planscape/planscape/.env")
 
@@ -43,16 +44,44 @@ get_scenario_data <- function(connection, scenario_id) {
   query <- "SELECT
               s.id,
               s.name,
-              s.configuration
+              s.configuration,
+              pa.region_name as \"region_name\",
+              pa.name as \"planning_area_name\"
             FROM
               planning_scenario s
+            LEFT JOIN planning_planningarea pa ON (pa.id = s.planning_area_id)
             WHERE s.id = $1;"
   result <- dbGetQuery(connection, query, params = list(scenario_id))
   return(head(result, 1))
 }
 
+priority_to_condition <- function(connection, scenario, priority) {
+  region_name <- scenario$region_name
+  # given a scenario and it's configuration, return
+  # a list of condition ids
+  query <- glue_sql(
+    "SELECT
+      cc.id as \"condition_id\",
+      cb.id as \"base_id\",
+      cb.region_name,
+      cb.condition_name
+    FROM
+      conditions_condition cc
+    LEFT JOIN
+      conditions_basecondition cb ON (cb.id = cc.condition_dataset_id)
+    WHERE
+      cb.condition_name = {condition_name} AND
+      cb.region_name = {region_name}",
+    condition_name = priority,
+    region_name = region_name,
+    .con = connection
+  )
+  result <- dbGetQuery(connection, query)
+  return(head(result, 1))
+}
+
 get_stands <- function(connection, scenario_id) {
-  q <- "
+  query_text <- "
   WITH plan_scenario AS (
     SELECT
       pp.id as \"planning_area_id\",
@@ -71,7 +100,7 @@ get_stands <- function(connection, scenario_id) {
   WHERE
       ss.geometry && plan_scenario.geometry AND
       ST_Intersects(ss.geometry, plan_scenario.geometry)"
-  query <- glue_sql(q, scenario_id = scenario_id, .con = connection)
+  query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
 
   result <- st_read(
     dsn = connection,
@@ -80,6 +109,14 @@ get_stands <- function(connection, scenario_id) {
     geometry_column = "geometry"
   )
   return(result)
+}
+
+get_column_name <- function(condition_id) {
+  return(paste("condition", condition_id, sep = "_"))
+}
+
+rename_column <- function(dataframe, original, destination) {
+  colnames(dataframe)[colnames(dataframe) == "avg"] <- destination
 }
 
 get_stand_metrics <- function(connection, condition_id, stand_ids) {
@@ -109,17 +146,35 @@ now_utc <- function() {
   strftime(as.POSIXlt(Sys.time(), "UTC"), "%Y-%m-%dT%H:%M:%S")
 }
 
-get_stand_data <- function(connection, scenario_id, condition_id) {
-  stands <- get_stands(connection, scenario_id)
-  metrics <- get_stand_metrics(connection, condition_id, stands$stand_id)
-  return(merge_data(stands, metrics))
+get_stand_data <- function(connection, scenario, configuration) {
+  stands <- get_stands(connection, scenario$id)
+  print(stands)
+  for (priority in configuration$priorities) {
+    print(priority)
+    condition <- priority_to_condition(
+      connection,
+      scenario,
+      priority
+    )
+    print("condition")
+    print(condition)
+    metric <- get_stand_metrics(
+      connection,
+      condition$condition_id,
+      stands$stand_id
+    )
+    print(metric)
+    stands <- merge_data(stands, metric)
+  }
+
+  return(stands)
 }
 
 call_forsys <- function(connection, scenario, condition_id) {
   now <- now_utc()
-  configuration <- fromJSON(toString(scenario["configuration"]))
+  configuration <- fromJSON(toString(scenario[["configuration"]]))
 
-  stand_data <- get_stand_data(connection, scenario$id, condition_id)
+  stand_data <- get_stand_data(connection, scenario, configuration)
 
   out <- forsys::run(
     return_outputs = TRUE,
