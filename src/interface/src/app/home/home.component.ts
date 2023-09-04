@@ -11,6 +11,7 @@ export class HomeComponent {
   loggedIn$ = this.authService.loggedInStatus$;
 
   login_enabled = this.featuresService.isFeatureEnabled('login');
+
   constructor(
     private authService: AuthService,
     private featuresService: FeatureService

@@ -9,7 +9,6 @@ import { AuthService } from 'src/app/services';
 import { PlanService } from '../../services/plan.service';
 import { PlanPreview } from '../../types/plan.types';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
-import { FeatureService } from '../../features/feature.service';
 
 interface PlanRow extends PlanPreview {
   selected: boolean;
@@ -35,14 +34,11 @@ export class PlanTableComponent implements OnInit {
     'status',
     'options',
   ];
-  loggedIn$ = this.authService.loggedInStatus$;
-  login_enabled = this.featureService.isFeatureEnabled('login');
 
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private authService: AuthService,
-    private featureService: FeatureService
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
