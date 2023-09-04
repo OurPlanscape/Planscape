@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
+import { WINDOW } from '../../services/window.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -9,11 +10,13 @@ export class NavBarComponent {
   @Input() breadcrumbs: string[] = [];
   @Output() goBack = new EventEmitter<void>();
 
+  constructor(@Inject(WINDOW) private window: Window) {}
+
   copyLink() {
-    navigator.clipboard.writeText(window.location.href);
+    this.window.navigator.clipboard.writeText(this.window.location.href);
   }
 
   print() {
-    window.print();
+    this.window.print();
   }
 }

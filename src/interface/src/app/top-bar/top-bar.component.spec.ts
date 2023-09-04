@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { MaterialModule } from '../material/material.module';
 import { AuthService, SessionService } from '../services';
@@ -12,6 +12,8 @@ import { TopBarComponent } from './top-bar.component';
 import { FeaturesModule } from '../features/features.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FEATURES_JSON } from '../features/features-config';
+import { Router } from '@angular/router';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -27,15 +29,22 @@ describe('TopBarComponent', () => {
       },
       {}
     );
+
     mockAuthService = {
       loggedInUser$: new BehaviorSubject<User | null>(null),
+      logout: () => of({ detail: '' }),
     };
     mockSessionService = {
       region$: new BehaviorSubject<Region | null>(null),
       setRegion: () => {},
     };
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule, FeaturesModule],
+      imports: [
+        HttpClientTestingModule,
+        MaterialModule,
+        FeaturesModule,
+        RouterTestingModule,
+      ],
       declarations: [TopBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -180,6 +189,20 @@ describe('TopBarComponent', () => {
       const title = fixture.debugElement.query(By.css('[data-id="title"]'));
       expect(logo).toBeFalsy();
       expect(title).toBeTruthy();
+    });
+  });
+
+  describe('logout', () => {
+    it('should log out user and redirect', () => {
+      const auth = TestBed.inject(AuthService);
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+      spyOn(auth, 'logout').and.callThrough();
+
+      component.logout();
+
+      expect(auth.logout).toHaveBeenCalled();
+      expect(router.navigate).toHaveBeenCalledWith(['/']);
     });
   });
 });
