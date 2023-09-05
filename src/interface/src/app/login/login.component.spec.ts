@@ -1,4 +1,4 @@
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -17,11 +17,12 @@ describe('LoginComponent', () => {
     fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       { login: of({}) },
-      {}
+      {},
     );
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule],
       declarations: [LoginComponent],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: Router, useFactory: routerStub },
         { provide: AuthService, useValue: fakeAuthService },
@@ -50,7 +51,7 @@ describe('LoginComponent', () => {
 
       expect(fakeAuthService.login).toHaveBeenCalledOnceWith(
         'test@test.com',
-        'password'
+        'password',
       );
     });
   });

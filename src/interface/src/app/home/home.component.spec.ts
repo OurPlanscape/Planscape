@@ -1,10 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HomeComponent } from './home.component';
+
 import { AuthService } from '../services';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { FEATURES_JSON } from '../features/features-config';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -26,6 +28,8 @@ describe('HomeComponent', () => {
         },
         { provide: FEATURES_JSON, useValue: { login: false } },
       ],
+
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
   });
 
