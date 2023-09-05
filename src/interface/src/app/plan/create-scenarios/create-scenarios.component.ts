@@ -37,6 +37,8 @@ import {
   Plan,
   ProjectArea,
   ProjectConfig,
+  Scenario,
+  ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
@@ -163,16 +165,17 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioConfigId = planState.currentConfigId;
-        this.loadConfig();
+        if (this.scenarioConfigId) {
+          this.loadConfig();
+        }
         this.panelExpanded = planState.panelExpanded ?? false;
       });
 
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
     this.formGroups[2].valueChanges.subscribe((_) => {
-      const generateAreas = this.formGroups[2].get('generateAreas');
-      const uploadedArea = this.formGroups[2].get('uploadedArea');
+      const generateAreas = this.formGroups[3].get('generateAreas');
+      const uploadedArea = this.formGroups[3].get('uploadedArea');
       if (generateAreas?.value) {
         this.drawShapes(null);
       } else {
@@ -181,7 +184,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
 
     // When priorities are chosen, update the form controls for step 4.
-    this.formGroups[0].get('priorities')?.valueChanges.subscribe((_) => {
+    this.formGroups[1].get('priorities')?.valueChanges.subscribe((_) => {
       this.updatePriorityWeightsFormControls();
     });
   }
@@ -209,16 +212,16 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   private loadConfig(): void {
     this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
-      const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
-      const maxCost = this.formGroups[1].get('budgetForm.maxCost');
-      const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
-      const excludeDistance = this.formGroups[1].get(
+      const estimatedCost = this.formGroups[2].get('budgetForm.estimatedCost');
+      const maxCost = this.formGroups[2].get('budgetForm.maxCost');
+      const maxArea = this.formGroups[2].get('physicalConstraintForm.maxArea');
+      const excludeDistance = this.formGroups[2].get(
         'physicalConstraintForm.excludeDistance'
       );
-      const excludeSlope = this.formGroups[1].get(
+      const excludeSlope = this.formGroups[2].get(
         'physicalConstraintForm.excludeSlope'
       );
-      const selectedQuestion = this.formGroups[0].get('selectedQuestion');
+      const selectedQuestion = this.formGroups[1].get('selectedQuestion');
 
       if (config.est_cost) {
         estimatedCost?.setValue(config.est_cost);
@@ -254,21 +257,21 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   }
 
   private formValueToProjectConfig(): any {
-    const estimatedCost = this.formGroups[1].get('budgetForm.estimatedCost');
-    const maxCost = this.formGroups[1].get('budgetForm.maxCost');
-    const maxArea = this.formGroups[1].get('physicalConstraintForm.maxArea');
+    const estimatedCost = this.formGroups[2].get('budgetForm.estimatedCost');
+    const maxCost = this.formGroups[2].get('budgetForm.maxCost');
+    const maxArea = this.formGroups[2].get('physicalConstraintForm.maxArea');
     const minDistanceFromRoad = this.formGroups[1].get(
       'physicalConstraintForm.minDistanceFromRoad'
     );
-    const maxSlope = this.formGroups[1].get('physicalConstraintForm.maxSlope');
-    const selectedQuestion = this.formGroups[0].get('selectedQuestion');
-    const scenarioName = this.formGroups[3].get('scenarioName');
+    const maxSlope = this.formGroups[2].get('physicalConstraintForm.maxSlope');
+    const selectedQuestion = this.formGroups[1].get('selectedQuestion');
+    const scenarioName = this.formGroups[0].get('scenarioName');
 
     let scenarioNameConfig: string = '';
     let planID: string = '';
     let projectConfig: ProjectConfig = {
       id: this.scenarioConfigId!,
-      planId: Number(this.plan$.getValue()?.id),
+      plan_id: Number(this.plan$.getValue()?.id),
     };
     if (estimatedCost?.valid)
       projectConfig.est_cost = parseFloat(estimatedCost.value);
@@ -292,12 +295,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .subscribe((planState) => {
         planID = planState.currentPlanId!;
       });
-
-    return {
+    
+    let scenarioConfig: ScenarioConfig = {
       name: scenarioNameConfig,
       planning_area: planID,
       configuration: projectConfig,
-    };
+    } 
+    return scenarioConfig;
   }
 
   private updatePriorityWeightsFormControls(): void {
@@ -320,6 +324,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
     this.generatingScenario = true;
+    this.planService.createScenario(this.formValueToProjectConfig()).subscribe();
+    const planId = this.plan$.getValue()?.id;
+    this.router.navigate(['scenario-confirmation', planId]);
     // this.createUploadedProjectAreas()
     //   .pipe(
     //     take(1),

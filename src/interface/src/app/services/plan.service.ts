@@ -38,7 +38,7 @@ export interface PlanState {
 export interface BackendPlan {
   id?: number;
   name: string;
-  owner?: number;
+  user?: number;
   region_name: Region;
   geometry?: GeoJSON.GeoJSON;
   scenarios?: number;
@@ -114,7 +114,7 @@ export class PlanService {
   deletePlan(planIds: string[]): Observable<string> {
     return this.http.post<string>(
       BackendConstants.END_POINT.concat(
-        '/plan/delete/?id=',
+        '/planning/delete_planning_area/?id=',
         planIds.toString()
       ),
       {
@@ -130,7 +130,10 @@ export class PlanService {
   getPlan(planId: string): Observable<Plan> {
     return this.http
       .get<BackendPlan>(
-        BackendConstants.END_POINT.concat('/plan/get_plan/?id=', planId),
+        BackendConstants.END_POINT.concat(
+          '/planning/get_planning_area_by_id/?id=',
+          planId
+        ),
         {
           withCredentials: true,
         }
@@ -146,7 +149,9 @@ export class PlanService {
    *  If the user is not provided, return all plans with owner=null.
    */
   listPlansByUser(userId: string | null): Observable<PlanPreview[]> {
-    let url = BackendConstants.END_POINT.concat('/plan/list_plans_by_owner');
+    let url = BackendConstants.END_POINT.concat(
+      '/planning/list_planning_areas'
+    );
     if (userId) {
       url = url.concat('/?owner=', userId);
     }
@@ -179,12 +184,12 @@ export class PlanService {
    *  project. "Project" is synonymous with "Config" in the frontend.
    * */
   createProjectInPlan(planId: string): Observable<number> {
-    const url = BackendConstants.END_POINT.concat('/plan/create_project/');
+    const url = BackendConstants.END_POINT.concat('/planning/create_scenario/');
     return this.http
       .post<number>(
         url,
         {
-          plan_id: Number(planId),
+          planning_area: Number(planId),
         },
         {
           withCredentials: true,
@@ -251,7 +256,7 @@ export class PlanService {
   /** Fetches the projects for a plan from the backend. */
   getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
     const url = BackendConstants.END_POINT.concat(
-      '/plan/list_projects_for_plan/?plan_id=',
+      '/planning/list_scenarios_for_planning_area/?planning_area=',
       planId
     );
     return this.http
@@ -300,7 +305,7 @@ export class PlanService {
   /** Fetches a scenario by its id from the backend. */
   getScenario(scenarioId: string): Observable<Scenario> {
     const url = BackendConstants.END_POINT.concat(
-      '/plan/get_scenario/?id=',
+      '/planning/get_scenario_by_id/?id=',
       scenarioId
     );
     return this.http
@@ -318,7 +323,7 @@ export class PlanService {
     return this.http
       .get<any[]>(
         BackendConstants.END_POINT.concat(
-          '/plan/list_scenarios_for_plan/?plan_id=',
+          '/planning/list_scenarios_for_planning_area/?planning_area=',
           planId
         ),
         {
@@ -333,19 +338,22 @@ export class PlanService {
   }
 
   /** Creates a scenario in the backend. Returns scenario ID. */
-  createScenario(config: ProjectConfig): Observable<string> {
-    return this.http.post<string>(
-      BackendConstants.END_POINT.concat('/plan/create_scenario/'),
-      this.convertConfigToScenario(config),
-      {
-        withCredentials: true,
-      }
+  createScenario(scenarioParameters: any): Observable<any> {
+    scenarioParameters['configuration'] = this.convertConfigToScenario(
+      scenarioParameters['configuration']
     );
+    return this.http.post(
+        BackendConstants.END_POINT + '/planning/create_scenario/',
+        scenarioParameters,
+        {
+          withCredentials: true,
+        }
+      ).pipe(take(1));
   }
 
   /** Updates a scenario with new notes. */
   updateScenarioNotes(scenario: Scenario): Observable<number> {
-    const url = BackendConstants.END_POINT.concat('/plan/update_scenario/');
+    const url = BackendConstants.END_POINT.concat('/planning/update_scenario/');
     return this.http
       .patch<number>(
         url,
@@ -363,9 +371,9 @@ export class PlanService {
   /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
   deleteScenarios(scenarioIds: string[]): Observable<string[]> {
     return this.http.post<string[]>(
-      BackendConstants.END_POINT.concat('/plan/delete_scenarios/'),
+      BackendConstants.END_POINT.concat('/planning/delete_scenario/'),
       {
-        scenario_ids: scenarioIds,
+        scenario_id: scenarioIds,
       },
       {
         withCredentials: true,
@@ -402,7 +410,7 @@ export class PlanService {
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
-      ownerId: String(plan.owner),
+      ownerId: String(plan.user),
       name: plan.name,
       region: plan.region_name,
       planningArea: plan.geometry,
@@ -416,7 +424,7 @@ export class PlanService {
 
   private convertToDbPlan(plan: BasePlan): BackendPlan {
     return {
-      owner: Number(plan.ownerId),
+      user: Number(plan.ownerId),
       name: plan.name,
       region_name: plan.region,
       geometry: plan.planningArea,
@@ -439,7 +447,7 @@ export class PlanService {
   private convertToProjectConfig(config: any): ProjectConfig {
     return {
       id: config.id,
-      planId: config.plan_id,
+      plan_id: config.plan_id,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
@@ -456,7 +464,7 @@ export class PlanService {
   private convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
-      planId: scenario.plan,
+      plan_id: scenario.plan,
       projectId: scenario.project,
       owner: scenario.owner,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
@@ -509,8 +517,7 @@ export class PlanService {
 
   private convertConfigToScenario(config: ProjectConfig): any {
     return {
-      project_id: config.id,
-      plan_id: config.planId,
+      plan_id: config.plan_id,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
@@ -620,15 +627,19 @@ export class PlanService {
   private createPlanApi(plan: BasePlan): Observable<Plan> {
     const createPlanRequest = this.convertToDbPlan(plan);
     return this.http
-      .post(BackendConstants.END_POINT + '/plan/create/', createPlanRequest, {
-        withCredentials: true,
-      })
+      .post(
+        BackendConstants.END_POINT + '/planning/create_planning_area/',
+        createPlanRequest,
+        {
+          withCredentials: true,
+        }
+      )
       .pipe(
         take(1),
-        map((result) => {
+        map((result: any) => {
           return {
             ...plan,
-            id: result.toString(),
+            id: result['id'].toString(),
             savedScenarios: 0,
           };
         })
