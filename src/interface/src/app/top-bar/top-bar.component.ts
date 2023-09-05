@@ -6,12 +6,11 @@ import {
   Output,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
-import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-top-bar',
