@@ -7,7 +7,6 @@ import {
 } from '@angular/router';
 import {
   BehaviorSubject,
-  combineLatest,
   concatMap,
   filter,
   map,
@@ -80,10 +79,6 @@ export class PlanComponent implements OnInit, OnDestroy {
     );
   }
 
-  private getPathFromSnapshot() {
-    const routeChild = this.route.snapshot.firstChild;
-    return routeChild?.url[0].path;
-  }
   ngOnInit() {
     const path = this.getPathFromSnapshot();
     this.planService.planState$
@@ -111,6 +106,11 @@ export class PlanComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private getPathFromSnapshot() {
+    const routeChild = this.route.snapshot.firstChild;
+    return routeChild?.url[0].path;
   }
 
   private updatePlanStateFromRoute() {
