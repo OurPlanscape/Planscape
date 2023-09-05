@@ -34,18 +34,6 @@ describe('NavBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should copy the link when clicking on copy', () => {
-    const window = TestBed.inject(WINDOW);
-    spyOn(window.navigator.clipboard, 'writeText');
-    const copyLink = fixture.debugElement.query(By.css('[data-id="copy"]'));
-
-    copyLink.nativeElement.click();
-
-    expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(
-      window.location.href
-    );
-  });
-
   it('should open print menu when clicking on print', () => {
     const window = TestBed.inject(WINDOW);
     spyOn(window, 'print');

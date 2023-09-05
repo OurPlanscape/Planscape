@@ -13,7 +13,7 @@ export class NavBarComponent {
   constructor(@Inject(WINDOW) private window: Window) {}
 
   copyLink() {
-    this.window.navigator.clipboard.writeText(this.window.location.href);
+    console.log('not implemented');
   }
 
   print() {
