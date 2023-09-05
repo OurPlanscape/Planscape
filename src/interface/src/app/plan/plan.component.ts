@@ -31,16 +31,13 @@ export class PlanComponent implements OnInit, OnDestroy {
   planOwner$ = new Observable<User | null>();
   planNotFound: boolean = false;
   showOverview$ = new BehaviorSubject<boolean>(false);
-  // TODO this should show the scenario name if looking for configuration/scenario.
-  // for now displaying scenario id
-  breadcrumbs$ = combineLatest([
-    this.currentPlan$,
-    this.planService.planState$,
-  ]).pipe(
-    map(([plan, planState]) => {
+
+  breadcrumbs$ = this.currentPlan$.pipe(
+    map((plan) => {
       const crumbs = plan ? [plan.name] : [];
-      if (planState.currentConfigId) {
-        crumbs.push(planState.currentConfigId + '');
+      const path = this.getPathFromSnapshot();
+      if (path === 'config') {
+        crumbs.push('New Configuration');
       }
       return crumbs;
     })
@@ -83,9 +80,12 @@ export class PlanComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnInit() {
+  private getPathFromSnapshot() {
     const routeChild = this.route.snapshot.firstChild;
-    const path = routeChild?.url[0].path;
+    return routeChild?.url[0].path;
+  }
+  ngOnInit() {
+    const path = this.getPathFromSnapshot();
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
