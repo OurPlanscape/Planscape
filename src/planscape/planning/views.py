@@ -65,7 +65,7 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
 
 
 #### PLAN(NING AREA) Handlers ####
-
+@csrf_exempt
 def create_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Creates a planning area (aka plan), given a name, region, an optional geometry,
@@ -126,7 +126,7 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
 
-
+@csrf_exempt
 def delete_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Deletes a planning area or areas.
@@ -322,7 +322,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-
+@csrf_exempt
 def create_scenario(request: HttpRequest) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
@@ -378,7 +378,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 #def get_latest_result_for_scenario
 
 
-
+@csrf_exempt
 def update_scenario(request: HttpRequest) -> HttpResponse:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that
@@ -526,6 +526,7 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
 
+@csrf_exempt
 def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
