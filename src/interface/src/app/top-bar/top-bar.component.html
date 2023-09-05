@@ -81,7 +81,10 @@
       Log out
     </button>
     <a mat-menu-item *ngIf="(loggedIn$ | async) === false" routerLink="/login">
-      Login
+      Log in
+    </a>
+    <a mat-menu-item *ngIf="(loggedIn$ | async) === false" routerLink="/signup">
+      Create account
     </a>
   </mat-menu>
 
