@@ -111,25 +111,18 @@ get_stands <- function(connection, scenario_id) {
   return(result)
 }
 
-get_column_name <- function(condition_id) {
-  return(paste("condition", condition_id, sep = "_"))
-}
-
-rename_column <- function(dataframe, original, destination) {
-  colnames(dataframe)[colnames(dataframe) == "avg"] <- destination
-}
-
-get_stand_metrics <- function(connection, condition_id, stand_ids) {
+get_stand_metrics <- function(connection, condition, stand_ids) {
   query <- glue_sql(
     "SELECT
       stand_id,
-      avg
+      avg as {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
        stand_id IN ({stand_ids*}) AND
        avg is NOT NULL",
-    condition_id = condition_id,
+    condition_id = condition$condition_id,
+    condition_name = condition$condition_name,
     stand_ids = stand_ids,
     .con = connection
   )
@@ -146,43 +139,58 @@ now_utc <- function() {
   strftime(as.POSIXlt(Sys.time(), "UTC"), "%Y-%m-%dT%H:%M:%S")
 }
 
-get_stand_data <- function(connection, scenario, configuration) {
-  stands <- get_stands(connection, scenario$id)
-  print(stands)
+get_conditions <- function(connection, scenario, configuration) {
+  conditions <- list()
   for (priority in configuration$priorities) {
-    print(priority)
-    condition <- priority_to_condition(
-      connection,
-      scenario,
-      priority
-    )
-    print("condition")
-    print(condition)
+    condition <- priority_to_condition(connection, scenario, priority)
+    conditions[[condition$condition_name]] <- condition
+  }
+  return(conditions)
+}
+
+get_stand_data <- function(connection, scenario, conditions) {
+  stands <- get_stands(connection, scenario$id)
+  for (condition in conditions) {
     metric <- get_stand_metrics(
       connection,
-      condition$condition_id,
+      condition,
       stands$stand_id
     )
-    print(metric)
     stands <- merge_data(stands, metric)
   }
 
   return(stands)
 }
 
-call_forsys <- function(connection, scenario, condition_id) {
-  now <- now_utc()
+get_configuration <- function(scenario) {
   configuration <- fromJSON(toString(scenario[["configuration"]]))
+  return(configuration)
+}
 
-  stand_data <- get_stand_data(connection, scenario, configuration)
+call_forsys <- function(connection, scenario) {
+  now <- now_utc()
+  configuration <- get_configuration(scenario)
+  conditions <- get_conditions(connection, scenario, configuration)
+  stand_data <- get_stand_data(connection, scenario, conditions)
+
+  if (length(names(conditions)) > 1) {
+    stand_data <- stand_data %>% forsys::combine_priorities(
+      fields = names(conditions),
+      weights = configuration$weights,
+      new_field = "priority"
+    )
+    scenario_priorities <- c("priority")
+  } else {
+    scenario_priorities <- names(conditions)
+  }
 
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
     overwrite_output = TRUE,
     scenario_name = scenario$name,
-    scenario_output_fields = c("area_ha", "avg"),
-    scenario_priorities = c("avg"),
+    scenario_output_fields = c(scenario_priorities, "area_ha"),
+    scenario_priorities = scenario_priorities,
     stand_data = stand_data,
     stand_area_field = "area_ha",
     stand_id_field = "stand_id",
@@ -196,12 +204,6 @@ call_forsys <- function(connection, scenario, condition_id) {
     annual_target_field = "area_ha",
     annual_target = 100000
   )
-
-  print("Calling FORSYS")
-  print("scenario")
-  print(scenario)
-  print("configuration")
-  print(configuration)
 
   sample_json <- list(
     result = list(
