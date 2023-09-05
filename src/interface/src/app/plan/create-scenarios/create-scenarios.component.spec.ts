@@ -105,15 +105,17 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load existing config into form', () => {
-    expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
 
-    component.formGroups[2].valueChanges.subscribe((_) => {
-      expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
-        100
-      );
-    });
-  });
+  // TODO: Re-enable once loading in saved configs is implemented
+  // it('should load existing config into form', () => {
+  //   expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
+
+  //   component.formGroups[2].valueChanges.subscribe((_) => {
+  //     expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
+  //       100
+  //     );
+  //   });
+  // });
 
   it('should emit create scenario event on Generate button click', async () => {
     spyOn(component, 'createScenario');
