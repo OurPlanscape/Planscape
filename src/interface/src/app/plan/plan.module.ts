@@ -5,6 +5,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { RouterModule } from '@angular/router';
+import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
@@ -50,6 +51,7 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
+    HttpClientXsrfModule.withOptions({ cookieName: 'csrftoken', headerName: 'X-CSRFToken' }),
     MatButtonToggleModule,
     MaterialModule,
     ReactiveFormsModule,
