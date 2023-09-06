@@ -33,6 +33,7 @@ export interface PlanPreview {
 // TODO Replace Project Config
 export interface Scenario {
   id: string;
+  name: string;
   createdTimestamp?: number; //in milliseconds since epoch
   owner?: string;
   plan_id?: string;
@@ -70,6 +71,7 @@ export interface Priority {
 
 export interface ProjectConfig {
   id: number;
+  name?: string;
   est_cost?: number;
   max_budget?: number;
   max_treatment_area_ratio?: number;
@@ -78,6 +80,7 @@ export interface ProjectConfig {
   priorities?: string[];
   weights?: number[];
   createdTimestamp?: number;
+  excluded_areas?: {[key: string]: boolean[] };
 }
 
 export interface ProjectArea {
