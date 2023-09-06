@@ -25,8 +25,7 @@
     <div class="signup-form">
       <h1 class="signup-title">Create your account</h1>
 
-      <form [formGroup]="form" (ngSubmit)="step === 0 ? (step = 1) : signup()">
-        <ng-container *ngIf="step === 0; else finalStep">
+      <form [formGroup]="form" (ngSubmit)="signup()">
           <mat-form-field appearance="fill">
             <mat-label>First name</mat-label>
             <input type="text" required formControlName="firstName" matInput />
@@ -37,21 +36,6 @@
             <input type="text" required formControlName="lastName" matInput />
           </mat-form-field>
 
-          <button
-            mat-flat-button
-            type="submit"
-            color="primary"
-            (click)="step = 1"
-            [disabled]="!enableContinue()">
-            Continue
-          </button>
-
-          <button mat-button color="primary" type="button" (click)="login()">
-            Log in
-          </button>
-        </ng-container>
-
-        <ng-template #finalStep>
           <mat-form-field appearance="fill">
             <mat-label>Email</mat-label>
             <input type="text" required formControlName="email" matInput />
@@ -92,17 +76,8 @@
             [disabled]="!form.valid || submitted">
             {{ submitted ? 'Please wait...' : 'Create account' }}
           </button>
-
-          <button mat-button color="primary" type="button" (click)="step = 0">
-            Back
-          </button>
-        </ng-template>
       </form>
     </div>
 
-    <div class="section-dots">
-      <div class="section-dot" [class.selected]="step === 0"></div>
-      <div class="section-dot" [class.selected]="step === 1"></div>
-    </div>
   </div>
 </div>
