@@ -1,11 +1,14 @@
 import datetime
 import json
+import os
 
 import boto3
 from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
+from config.treatment_goals_config import TreatmentGoalsConfig
+from django.conf import settings as djangoSettings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count
@@ -16,7 +19,6 @@ from django.shortcuts import get_object_or_404
 from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus)
 from planning.serializers import (PlanningAreaSerializer, ScenarioSerializer, ScenarioResultSerializer)
 from planscape import settings
-
 
 # Retrieve the logged in user from the HTTP request.
 def _get_user(request: HttpRequest) -> User:
@@ -566,3 +568,22 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
             content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Delete Scenario error: " + str(e))
+    
+def get_treatment_goals_config_for_region(params: QueryDict):
+    # Get region name
+    assert isinstance(params['region_name'], str)
+    region_name = params['region_name']
+    
+    # Read from treatment_goals config
+    config_path = os.path.join(
+        djangoSettings.BASE_DIR, 'config/treatment_goals.json')
+    treatment_goals_config = json.load(open(config_path, 'r'))
+    for region in treatment_goals_config['regions']:
+        if region_name == region['region_name']:
+            return region['treatment_goals']
+        
+    return None
+
+def treatment_goals_config(request: HttpRequest) -> HttpResponse:
+    treatment_goals = get_treatment_goals_config_for_region(request.GET)
+    return JsonResponse(treatment_goals, safe = False)
