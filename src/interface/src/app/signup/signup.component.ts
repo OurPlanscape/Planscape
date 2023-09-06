@@ -18,7 +18,6 @@ export class SignupComponent {
   error: any;
 
   form: FormGroup;
-  step: number = 0;
   submitted: boolean = false;
 
   constructor(
@@ -68,12 +67,6 @@ export class SignupComponent {
 
   login() {
     this.router.navigate(['login']);
-  }
-
-  enableContinue(): boolean {
-    return !!(
-      this.form.get('firstName')?.valid && this.form.get('lastName')?.valid
-    );
   }
 
   private passwordsMatchValidator(group: AbstractControl) {
