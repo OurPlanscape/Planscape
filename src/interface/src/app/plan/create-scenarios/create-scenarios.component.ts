@@ -299,7 +299,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.excludedAreasOptions.forEach((area: string) => {
       if (this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid) {
         projectConfig.excluded_areas![area] = this.constraintsFormGroup.get('excludedAreasForm.' + area)?.value;
-        console.log(this.constraintsFormGroup.get('excludedAreasForm.' + area)?.value);
       }
     });
     if (estimatedCost?.valid)
