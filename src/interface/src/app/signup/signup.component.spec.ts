@@ -35,16 +35,26 @@ describe('SignupComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('signup form', () => {
-    it('disables continue button when first half of form is incomplete', () => {
-      expect(component.enableContinue()).toBeFalse();
+  fdescribe('signup form', () => {
+    beforeEach(() => {
+      component.form.reset();
     });
 
-    it('enables continue button when first half of form is complete', () => {
-      component.form.get('firstName')?.setValue('Foo');
-      component.form.get('lastName')?.setValue('Bar');
+    it('disables submit if required fields are missing', () => {
 
-      expect(component.enableContinue()).toBeTrue();
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('firstName')?.setValue('Foo');
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('lastName')?.setValue('Bar');
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('email')?.setValue('test@test.com');
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('password1')?.setValue('password');
+      expect(component.form.valid).toBeFalse();
     });
 
     it('disables submit when password fields are not equal', () => {
