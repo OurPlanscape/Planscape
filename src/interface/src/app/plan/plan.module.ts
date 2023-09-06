@@ -51,7 +51,10 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
-    HttpClientXsrfModule.withOptions({ cookieName: 'csrftoken', headerName: 'X-CSRFToken' }),
+    HttpClientXsrfModule.withOptions({
+      cookieName: 'csrftoken',
+      headerName: 'X-CSRFToken',
+    }),
     MatButtonToggleModule,
     MaterialModule,
     ReactiveFormsModule,

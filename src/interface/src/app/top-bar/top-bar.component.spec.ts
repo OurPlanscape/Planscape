@@ -25,7 +25,7 @@ describe('TopBarComponent', () => {
       {
         open: undefined,
       },
-      {},
+      {}
     );
     mockAuthService = {
       loggedInUser$: new BehaviorSubject<User | null>(null),
@@ -71,7 +71,7 @@ describe('TopBarComponent', () => {
 
       // Act: click on the menu icon
       const menuButton = fixture.debugElement.query(
-        By.css('[data-testid="menu-button"]'),
+        By.css('[data-testid="menu-button"]')
       );
       const clickEvent = new MouseEvent('click');
       menuButton.triggerEventHandler('click', clickEvent);
@@ -86,14 +86,14 @@ describe('TopBarComponent', () => {
 
       // Act: click on the account icon
       const accountButton = fixture.debugElement.query(
-        By.css('[data-testid="account-button"]'),
+        By.css('[data-testid="account-button"]')
       );
       const clickEvent = new MouseEvent('click');
       accountButton.triggerEventHandler('click', clickEvent);
 
       // Assert: expect that the dialog opens
       expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
-        AccountDialogComponent,
+        AccountDialogComponent
       );
     });
   });
@@ -130,14 +130,14 @@ describe('TopBarComponent', () => {
       });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="feedback"]'),
+        By.css('[data-id="feedback"]')
       );
       expect(feedbackBtn).toBeTruthy();
     });
     it('should not show the button when new_navigation flag is off ', () => {
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="feedback"]'),
+        By.css('[data-id="feedback"]')
       );
       expect(feedbackBtn).toBeFalsy();
     });
@@ -150,14 +150,14 @@ describe('TopBarComponent', () => {
       });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="help"]'),
+        By.css('[data-id="help"]')
       );
       expect(feedbackBtn).toBeFalsy();
     });
     it('should show the help button when new_navigation flag is off ', () => {
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="help"]'),
+        By.css('[data-id="help"]')
       );
       expect(feedbackBtn).toBeTruthy();
     });
