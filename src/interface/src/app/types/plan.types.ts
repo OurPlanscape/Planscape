@@ -30,7 +30,7 @@ export interface PlanPreview {
   status?: string;
 }
 
-// TODO Replace Project Config 
+// TODO Replace Project Config
 export interface Scenario {
   id: string;
   createdTimestamp?: number; //in milliseconds since epoch
@@ -69,7 +69,6 @@ export interface Priority {
 
 export interface ProjectConfig {
   id: number;
-  plan_id?: number;
   est_cost?: number;
   max_budget?: number;
   max_treatment_area_ratio?: number;
