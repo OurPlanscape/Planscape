@@ -21,7 +21,9 @@ export class TopBarComponent implements OnInit, OnDestroy {
   @Output()
   toggleEvent = new EventEmitter<Event>();
 
+  // display name is first name and then username
   displayName: string = '';
+  loggedIn = false;
 
   readonly color = 'primary';
 
@@ -44,8 +46,10 @@ export class TopBarComponent implements OnInit, OnDestroy {
             : user.username
             ? user.username
             : '';
+          this.loggedIn = true;
         } else {
           this.displayName = 'Guest';
+          this.loggedIn = false;
         }
       });
   }
