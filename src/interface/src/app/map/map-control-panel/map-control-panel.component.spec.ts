@@ -106,7 +106,7 @@ describe('MapControlPanelComponent', () => {
           let map = component.maps[testCase - 1];
           spyOn(component.changeBaseLayer, 'emit');
           const radioButtonGroup = await loader.getHarness(
-            MatRadioGroupHarness.with({ name: `${map.id}-base-layer-select` }),
+            MatRadioGroupHarness.with({ name: `${map.id}-base-layer-select` })
           );
 
           // Act: select the terrain base layer
@@ -128,7 +128,7 @@ describe('MapControlPanelComponent', () => {
           let map = component.maps[testCase - 1];
           spyOn(component.changeBoundaryLayer, 'emit');
           const radioButtonGroup = await loader.getHarness(
-            MatRadioGroupHarness.with({ name: `${map.id}-boundaries-select` }),
+            MatRadioGroupHarness.with({ name: `${map.id}-boundaries-select` })
           );
 
           // Act: select the HUC-12 boundary
@@ -145,7 +145,7 @@ describe('MapControlPanelComponent', () => {
           const checkbox = await loader.getHarness(
             MatCheckboxHarness.with({
               name: `${map.id}-existing-projects-toggle`,
-            }),
+            })
           );
 
           // Act: check the existing projects checkbox
@@ -153,7 +153,7 @@ describe('MapControlPanelComponent', () => {
 
           // Assert: expect that the map was updated
           expect(
-            component.toggleExistingProjectsLayer.emit,
+            component.toggleExistingProjectsLayer.emit
           ).toHaveBeenCalledWith(map);
           expect(map.config.showExistingProjectsLayer).toBeTrue();
 
@@ -162,7 +162,7 @@ describe('MapControlPanelComponent', () => {
 
           // Assert: expect that the map was updated
           expect(
-            component.toggleExistingProjectsLayer.emit,
+            component.toggleExistingProjectsLayer.emit
           ).toHaveBeenCalledWith(map);
           expect(map.config.showExistingProjectsLayer).toBeFalse();
         });
@@ -173,7 +173,7 @@ describe('MapControlPanelComponent', () => {
   describe('clear all button', () => {
     it('button should be disabled if map has no layers turned on', async () => {
       const button = await loader.getHarness(
-        MatButtonHarness.with({ text: /CLEAR ALL/ }),
+        MatButtonHarness.with({ text: /CLEAR ALL/ })
       );
 
       expect(await button.isDisabled()).toBeTrue();
@@ -182,7 +182,7 @@ describe('MapControlPanelComponent', () => {
     it('button should be enabled if map has layers turned on', async () => {
       component.maps[0].config.showExistingProjectsLayer = true;
       const button = await loader.getHarness(
-        MatButtonHarness.with({ text: /CLEAR ALL/ }),
+        MatButtonHarness.with({ text: /CLEAR ALL/ })
       );
 
       expect(await button.isDisabled()).toBeFalse();
@@ -199,20 +199,20 @@ describe('MapControlPanelComponent', () => {
       spyOn(component.changeBoundaryLayer, 'emit');
       spyOn(component.toggleExistingProjectsLayer, 'emit');
       const button = await loader.getHarness(
-        MatButtonHarness.with({ text: /CLEAR ALL/ }),
+        MatButtonHarness.with({ text: /CLEAR ALL/ })
       );
 
       await button.click();
 
       expect(component.changeBoundaryLayer.emit).toHaveBeenCalledOnceWith(
-        component.maps[0],
+        component.maps[0]
       );
       expect(
-        component.toggleExistingProjectsLayer.emit,
+        component.toggleExistingProjectsLayer.emit
       ).toHaveBeenCalledOnceWith(component.maps[0]);
       expect(component.maps[0].config.showExistingProjectsLayer).toBeFalse();
       expect(component.maps[0].config.boundaryLayerConfig).toEqual(
-        NONE_BOUNDARY_CONFIG,
+        NONE_BOUNDARY_CONFIG
       );
     });
   });
