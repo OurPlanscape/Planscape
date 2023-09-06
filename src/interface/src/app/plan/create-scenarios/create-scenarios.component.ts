@@ -165,9 +165,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        if (this.scenarioConfigId) {
-          this.loadConfig();
-        }
+        this.scenarioConfigId = planState.currentConfigId;
+        this.loadConfig();
         this.panelExpanded = planState.panelExpanded ?? false;
       });
 
@@ -268,10 +267,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     const scenarioName = this.formGroups[0].get('scenarioName');
 
     let scenarioNameConfig: string = '';
-    let planID: string = '';
+    let plan_id: string = '';
+    this.planService.planState$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((planState) => {
+        plan_id = planState.currentPlanId!;
+      });
     let projectConfig: ProjectConfig = {
       id: this.scenarioConfigId!,
-      plan_id: Number(this.plan$.getValue()?.id),
     };
     if (estimatedCost?.valid)
       projectConfig.est_cost = parseFloat(estimatedCost.value);
@@ -290,17 +293,12 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
     }
-    this.planService.planState$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((planState) => {
-        planID = planState.currentPlanId!;
-      });
-    
+
     let scenarioConfig: ScenarioConfig = {
       name: scenarioNameConfig,
-      planning_area: planID,
+      planning_area: plan_id,
       configuration: projectConfig,
-    } 
+    };
     return scenarioConfig;
   }
 
@@ -324,9 +322,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
     this.generatingScenario = true;
-    this.planService.createScenario(this.formValueToProjectConfig()).subscribe();
-    const planId = this.plan$.getValue()?.id;
-    this.router.navigate(['scenario-confirmation', planId]);
+    // TODO Add error catching for failed scenario creation
+    this.planService
+      .createScenario(this.formValueToProjectConfig())
+      .subscribe((_) => {
+        const planId = this.plan$.getValue()?.id;
+        this.router.navigate(['scenario-confirmation', planId]);
+      });
+
     // this.createUploadedProjectAreas()
     //   .pipe(
     //     take(1),

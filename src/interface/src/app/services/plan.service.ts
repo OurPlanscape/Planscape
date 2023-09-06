@@ -342,13 +342,15 @@ export class PlanService {
     scenarioParameters['configuration'] = this.convertConfigToScenario(
       scenarioParameters['configuration']
     );
-    return this.http.post(
+    return this.http
+      .post(
         BackendConstants.END_POINT + '/planning/create_scenario/',
         scenarioParameters,
         {
           withCredentials: true,
         }
-      ).pipe(take(1));
+      )
+      .pipe(take(1));
   }
 
   /** Updates a scenario with new notes. */
@@ -447,7 +449,6 @@ export class PlanService {
   private convertToProjectConfig(config: any): ProjectConfig {
     return {
       id: config.id,
-      plan_id: config.plan_id,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
@@ -517,7 +518,6 @@ export class PlanService {
 
   private convertConfigToScenario(config: ProjectConfig): any {
     return {
-      plan_id: config.plan_id,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,

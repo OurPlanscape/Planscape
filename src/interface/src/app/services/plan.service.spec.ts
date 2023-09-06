@@ -22,10 +22,10 @@ import {
 } from './../types/plan.types';
 import { BackendPlan, PlanService } from './plan.service';
 import { MapService } from './map.service';
-  // TODO Make test for getting scenario results
-  // TODO Make test for call to create project area
-  // TODO Make test for call to bulk create project area
-  // TODO 'createPlan' => it('should update state when response is a success' test once ProjectConfig Interface is replaced
+// TODO Make test for getting scenario results
+// TODO Make test for call to create project area
+// TODO Make test for call to bulk create project area
+// TODO 'createPlan' => it('should update state when response is a success' test once ProjectConfig Interface is replaced
 
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
@@ -65,7 +65,8 @@ describe('PlanService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/plan/treatment_goals_config/?region_name=sierra-nevada'
+      BackendConstants.END_POINT +
+        '/plan/treatment_goals_config/?region_name=sierra-nevada'
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(
@@ -85,7 +86,9 @@ describe('PlanService', () => {
         expect(res).toEqual('1');
       });
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/delete_planning_area/?id=1')
+        BackendConstants.END_POINT.concat(
+          '/planning/delete_planning_area/?id=1'
+        )
       );
 
       expect(req.request.method).toEqual('POST');
@@ -100,7 +103,9 @@ describe('PlanService', () => {
         expect(res).toEqual('[1,2,3]');
       });
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/delete_planning_area/?id=1,2,3')
+        BackendConstants.END_POINT.concat(
+          '/planning/delete_planning_area/?id=1,2,3'
+        )
       );
 
       expect(req.request.method).toEqual('POST');
@@ -134,7 +139,9 @@ describe('PlanService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/get_planning_area_by_id/?id=1')
+        BackendConstants.END_POINT.concat(
+          '/planning/get_planning_area_by_id/?id=1'
+        )
       );
       req.flush(backendPlan);
       httpTestingController.verify();
@@ -179,7 +186,6 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
         id: 1,
-        plan_id: undefined,
         est_cost: undefined,
         max_budget: undefined,
         min_distance_from_road: undefined,
@@ -217,7 +223,6 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', (done) => {
       const projectConfig: ProjectConfig = {
         id: 1,
-        plan_id: 1,
         est_cost: 1,
         min_distance_from_road: 1,
         max_slope: 1,
@@ -230,7 +235,7 @@ describe('PlanService', () => {
         name: 'name',
         planning_area: '1',
         configuration: projectConfig,
-      }
+      };
 
       service.createScenario(scenarioConfig).subscribe((res) => {
         expect(res).toEqual('1');
@@ -257,7 +262,6 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', (done) => {
       const projectConfig: ProjectConfig = {
         id: 1,
-        plan_id: undefined,
         est_cost: undefined,
         max_budget: 200,
         min_distance_from_road: undefined,
@@ -306,7 +310,6 @@ describe('PlanService', () => {
     it('should make HTTP request to backend', () => {
       const projectConfig: ProjectConfig = {
         id: 1,
-        plan_id: undefined,
         est_cost: undefined,
         max_budget: undefined,
         min_distance_from_road: undefined,
