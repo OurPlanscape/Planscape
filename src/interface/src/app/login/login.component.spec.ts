@@ -6,6 +6,14 @@ import { of } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
+import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+
+/**
+ * Reset Password Data Mock
+ */
+const EMAIL_DATA_MOCK = {
+  message: '',
+};
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -20,12 +28,14 @@ describe('LoginComponent', () => {
       {}
     );
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule],
+      imports: [FormsModule, ReactiveFormsModule, MatDialogModule,],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
         { provide: Router, useFactory: routerStub },
         { provide: AuthService, useValue: fakeAuthService },
+        {provide: MAT_DIALOG_DATA, useFactory: () => EMAIL_DATA_MOCK},
+      
       ],
     });
     fixture = TestBed.createComponent(LoginComponent);
