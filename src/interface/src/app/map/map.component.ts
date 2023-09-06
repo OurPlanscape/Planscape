@@ -727,4 +727,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         return '0%';
     }
   }
+
+  backHome() {
+    this.router.navigate(['home']);
+  }
 }
