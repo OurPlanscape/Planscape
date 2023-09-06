@@ -14,6 +14,17 @@
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
 
+        <button
+          (click)="openDialog()"
+          aria-label="Opens a dialog for composing an email with the participants of this activity"
+          i18n-aria-label="
+            Opens a dialog for composing an email with the participants of this
+            activity
+          "
+          matTooltip="Compose Email for follow-up with Contact">
+          Forgot Password?
+        </button>
+
         <p>{{ error?.message }}</p>
         <p *ngIf="error">{{ error?.error | json }}</p>
 

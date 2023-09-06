@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ɵ_sanitizeUrl } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services';
+import { MatDialog } from '@angular/material/dialog';
+import { ResetPasswordsModal } from '../modals/reset_password_modal';
 
 @Component({
   selector: 'app-login',
@@ -37,7 +39,8 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private readonly dialog: MatDialog,
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -45,6 +48,15 @@ export class LoginComponent {
         Validators.email,
       ]),
       password: this.formBuilder.control('', Validators.required),
+    });
+  }
+
+  openDialog() {
+    this.dialog.open(ResetPasswordsModal, {
+      data: {
+        message: `Enter the email address associated with your account, and
+        we'll email you a link to reset your password.`,
+      }
     });
   }
 
