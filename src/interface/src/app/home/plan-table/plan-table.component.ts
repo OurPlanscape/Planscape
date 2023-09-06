@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
@@ -20,19 +19,17 @@ interface PlanRow extends PlanPreview {
   styleUrls: ['./plan-table.component.scss'],
 })
 export class PlanTableComponent implements OnInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   datasource = new MatTableDataSource<PlanRow>();
+  selectedPlan: PlanRow | null = null;
+
   displayedColumns: string[] = [
-    'select',
     'name',
     'createdTimestamp',
-    'region',
     'savedScenarios',
-    'configurations',
-    'status',
-    'options',
+    'totalAcres',
+    'region',
   ];
 
   constructor(
@@ -65,18 +62,15 @@ export class PlanTableComponent implements OnInit {
           })
           .sort((plan) => plan.createdTimestamp ?? 0)
           .reverse();
-        this.datasource.paginator = this.paginator;
         this.datasource.sort = this.sort;
       });
   }
 
-  // If planId is provided, delete that plan only. Otherwise, delete all selected plans.
-  delete(planId?: string): void {
-    const planIdsToDelete: string[] = planId
-      ? [planId]
-      : this.datasource.data
-          .filter((plan) => plan.selected)
-          .map((plan) => plan.id);
+  deletePlan(): void {
+    if (!this.selectedPlan) {
+      return;
+    }
+    const planIdsToDelete: string[] = [this.selectedPlan.id];
     const dialogRef: MatDialogRef<DeletePlanDialogComponent> = this.dialog.open(
       DeletePlanDialogComponent,
       {
@@ -98,13 +92,11 @@ export class PlanTableComponent implements OnInit {
   refresh(): void {
     this.getPlansFromService();
   }
-
-  toggleAll(checked: boolean): void {
-    this.datasource.data.forEach((plan) => (plan.selected = checked));
+  selectPlan(plan: PlanRow) {
+    this.selectedPlan = plan;
   }
 
-  /** WARNING: This function is run repeatedly on this page. Avoid any heavy lifting here. */
-  showDelete(): boolean {
-    return !!this.datasource.data.find((plan) => plan.selected);
-  }
+  viewMap() {}
+
+  goToScenario() {}
 }

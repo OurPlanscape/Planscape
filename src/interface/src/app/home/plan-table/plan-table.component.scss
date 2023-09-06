@@ -4,7 +4,7 @@
   flex-direction: row;
   gap: 12px;
   justify-content: flex-end;
-  padding-bottom: 12px;
+  padding-block: 12px;
 }
 
 .no-saved-plans {
@@ -28,4 +28,43 @@ h2 {
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
+}
+
+.table-row {
+
+  cursor: pointer;
+}
+
+.selected .mat-column-name , .selected{
+  background-color: #F1F5FD;
+  border-left-color: #3B78E7;
+}
+
+mat-header-row , mat-row{
+  gap: 10px;
+}
+
+.mat-column-name {
+  border-left: 6px solid transparent;
+  position: relative;
+  overflow: visible;
+
+  &::after{
+    right: -5px;
+    background: linear-gradient(90deg, #d5d5d5, transparent);
+    position: absolute;
+    display: block;
+    content: "";
+    width: 5px;
+    height: 100%;
+
+  }
+}
+
+.action-button {
+  text-transform: uppercase;
+}
+
+.primary {
+  color: #3B78E7;
 }

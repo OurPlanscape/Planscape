@@ -116,7 +116,7 @@ describe('PlanTableComponent', () => {
       const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
       spyOn(dialogSpy, 'open').and.callThrough();
 
-      component.delete('1');
+      component.deletePlan('1');
 
       expect(dialogSpy.open).toHaveBeenCalledOnceWith(
         DeletePlanDialogComponent,
@@ -147,7 +147,7 @@ describe('PlanTableComponent', () => {
           selected: false,
         },
       ];
-      component.delete();
+      component.deletePlan();
 
       expect(dialogSpy.open).toHaveBeenCalledOnceWith(
         DeletePlanDialogComponent,
@@ -165,7 +165,7 @@ describe('PlanTableComponent', () => {
       const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
       spyOn(dialogSpy, 'open').and.returnValue(fakeDialogRef);
 
-      component.delete('1');
+      component.deletePlan('1');
 
       expect(fakePlanService.deletePlan).toHaveBeenCalledOnceWith(['1']);
     });
@@ -178,7 +178,7 @@ describe('PlanTableComponent', () => {
       const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
       spyOn(dialogSpy, 'open').and.returnValue(fakeDialogRef);
 
-      component.delete('1');
+      component.deletePlan('1');
 
       expect(fakePlanService.deletePlan).toHaveBeenCalledTimes(0);
     });
