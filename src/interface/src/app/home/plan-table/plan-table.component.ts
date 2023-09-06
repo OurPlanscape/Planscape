@@ -9,7 +9,6 @@ import { AuthService } from 'src/app/services';
 import { PlanService } from '../../services/plan.service';
 import { PlanPreview } from '../../types/plan.types';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
-import features from '../../features/features.json';
 
 interface PlanRow extends PlanPreview {
   selected: boolean;
@@ -35,8 +34,6 @@ export class PlanTableComponent implements OnInit {
     'status',
     'options',
   ];
-  loggedIn$ = this.authService.loggedInStatus$;
-  login_enabled = features.login;
 
   constructor(
     private dialog: MatDialog,

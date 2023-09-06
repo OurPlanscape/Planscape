@@ -22,7 +22,7 @@ describe('NavigationComponent', () => {
       {
         logout: of({ detail: '' }),
       },
-      {},
+      {}
     );
     fakeLoggedInStatus = new BehaviorSubject(true);
     fakeAuthService.isLoggedIn$ = fakeLoggedInStatus;
