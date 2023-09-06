@@ -46,6 +46,9 @@ import { TopBarComponent } from './top-bar/top-bar.component';
 import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
 import { environment } from 'src/environments/environment';
 import { RegionDropdownComponent } from './region-dropdown/region-dropdown.component';
+import { WelcomeComponent } from './home/welcome/welcome.component';
+import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
+import { PreviewComponent } from './home/preview/preview.component';
 
 @NgModule({
   declarations: [
@@ -69,6 +72,9 @@ import { RegionDropdownComponent } from './region-dropdown/region-dropdown.compo
     SignInDialogComponent,
     DeleteAccountDialogComponent,
     RegionDropdownComponent,
+    WelcomeComponent,
+    PlanningAreasComponent,
+    PreviewComponent,
   ],
   imports: [
     AppRoutingModule,

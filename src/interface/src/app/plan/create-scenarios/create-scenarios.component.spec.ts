@@ -117,9 +117,7 @@ describe('CreateScenariosComponent', () => {
 
   it('should emit create scenario event on Generate button click', async () => {
     spyOn(component, 'createScenario');
-    component.formGroups[0]
-      .get('scenarioName')
-      ?.setValue('scenarioName');
+    component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
     component.formGroups[1]
       .get('selectedQuestion')
       ?.setValue(defaultSelectedQuestion);
@@ -160,9 +158,7 @@ describe('CreateScenariosComponent', () => {
     const buttonHarness: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /GENERATE/ })
     );
-    component.formGroups[0]
-      .get('scenarioName')
-      ?.setValue('scenarioName');
+    component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
     component.formGroups[1]
       .get('selectedQuestion')
       ?.setValue(defaultSelectedQuestion);
