@@ -17,7 +17,7 @@ describe('LoginComponent', () => {
     fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       { login: of({}) },
-      {},
+      {}
     );
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule],
@@ -51,7 +51,7 @@ describe('LoginComponent', () => {
 
       expect(fakeAuthService.login).toHaveBeenCalledOnceWith(
         'test@test.com',
-        'password',
+        'password'
       );
     });
   });
