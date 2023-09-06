@@ -4,7 +4,6 @@
     <ng-container matColumnDef="name">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
       <mat-cell *matCellDef="let element">
-        <!--        <a href="/plan/{{ element.id }}">{{ element.name }}</a>-->
         {{ element.name }}
       </mat-cell>
     </ng-container>
@@ -25,7 +24,9 @@
       <mat-header-cell *matHeaderCellDef mat-sort-header>
         Total Acres
       </mat-header-cell>
-      <mat-cell *matCellDef="let element">10</mat-cell>
+      <mat-cell *matCellDef="let element">
+        {{ element.totalAcres | number }}
+      </mat-cell>
     </ng-container>
 
     <!-- Saved Scenarios Column -->
@@ -76,7 +77,7 @@
       (click)="goToScenario()"
       [disabled]="!selectedPlan"
       class="action-button primary">
-      scenario
+      scenarios
     </button>
   </div>
 </div>

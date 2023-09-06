@@ -443,6 +443,7 @@ export class PlanService {
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         plan.creation_timestamp
       ),
+      geometry: plan.geometry,
     };
   }
 
