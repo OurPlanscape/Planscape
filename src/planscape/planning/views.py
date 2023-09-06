@@ -13,7 +13,6 @@ from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
 from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus)
 from planning.serializers import (PlanningAreaSerializer, ScenarioSerializer, ScenarioResultSerializer)
 from planscape import settings
@@ -65,7 +64,6 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
 
 
 #### PLAN(NING AREA) Handlers ####
-
 def create_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Creates a planning area (aka plan), given a name, region, an optional geometry,
@@ -125,7 +123,6 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponse(str(planning_area.pk))
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
-
 
 def delete_planning_area(request: HttpRequest) -> HttpResponse:
     """
@@ -322,7 +319,6 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-
 def create_scenario(request: HttpRequest) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
@@ -376,8 +372,6 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 #def create_result_for_scenario(request: HttpRequest) -> HttpResponse:
 #def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
 #def get_latest_result_for_scenario
-
-
 
 def update_scenario(request: HttpRequest) -> HttpResponse:
     """
