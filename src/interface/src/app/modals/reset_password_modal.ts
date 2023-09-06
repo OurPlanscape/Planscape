@@ -23,6 +23,6 @@ export class ResetPasswordsModal {
 
   handleResetEmail() {
     // TODO: sterlingwellscaffeine
-    // Send a request to the backend server to create a reset email.s
+    // Send a request to the backend server to create a reset email.
   }
 }
