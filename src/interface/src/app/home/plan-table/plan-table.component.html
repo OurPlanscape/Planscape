@@ -235,8 +235,9 @@
       <p *ngIf="loggedIn$ | async; else signedout">There are no saved plans.</p>
       <ng-template #signedout>
         <p>
-          <a href="/signup">Create an account</a> or
-	  <a href="/login">log in</a>
+          <a href="/signup">Create an account</a>
+          or
+          <a href="/login">log in</a>
           to start making plans.
         </p>
       </ng-template>
