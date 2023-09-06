@@ -157,6 +157,7 @@ describe('PlanService', () => {
         savedScenarios: 1,
         configurations: 2,
         createdTimestamp: 5000,
+        geometry: mockPlan.planningArea,
       };
 
       const backendPlan: BackendPlan = {

@@ -8,9 +8,11 @@ import { AuthService } from 'src/app/services';
 import { PlanService } from '../../services/plan.service';
 import { PlanPreview } from '../../types/plan.types';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
+import { calculateAcres } from '../../plan/plan-helpers';
+import { Router } from '@angular/router';
 
 interface PlanRow extends PlanPreview {
-  selected: boolean;
+  totalAcres: number;
 }
 
 @Component({
@@ -27,15 +29,16 @@ export class PlanTableComponent implements OnInit {
   displayedColumns: string[] = [
     'name',
     'createdTimestamp',
-    'savedScenarios',
     'totalAcres',
+    'savedScenarios',
     'region',
   ];
 
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -57,7 +60,7 @@ export class PlanTableComponent implements OnInit {
           .map((plan) => {
             return {
               ...plan,
-              selected: false,
+              totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
             };
           })
           .sort((plan) => plan.createdTimestamp ?? 0)
@@ -98,5 +101,10 @@ export class PlanTableComponent implements OnInit {
 
   viewMap() {}
 
-  goToScenario() {}
+  goToScenario() {
+    if (!this.selectedPlan) {
+      return;
+    }
+    this.router.navigate(['plan', this.selectedPlan.id]);
+  }
 }

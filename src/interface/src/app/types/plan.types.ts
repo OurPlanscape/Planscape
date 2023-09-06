@@ -28,6 +28,7 @@ export interface PlanPreview {
   savedScenarios?: number;
   configurations?: number;
   status?: string;
+  geometry?: GeoJSON.GeoJSON;
 }
 
 // TODO Replace Project Config
