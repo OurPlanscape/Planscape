@@ -11,7 +11,6 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
-
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
@@ -20,17 +19,20 @@ describe('LoginComponent', () => {
   let loader: HarnessLoader;
 
   let dialogSpy: jasmine.Spy;
-  let dialogRefSpyObj = jasmine.createSpyObj({ afterClosed : of({}), close: null });
+  let dialogRefSpyObj = jasmine.createSpyObj({
+    afterClosed: of({}),
+    close: null,
+  });
   dialogRefSpyObj.componentInstance = { body: '' }; // attach componentInstance to the spy object...
 
-  beforeEach( async () => {
+  beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
-    fakeAuthService = jasmine.createSpyObj<AuthService>(
-      'AuthService',
-      ['login', 'sendPasswordResetEmail'],c
-    );
+    fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
+      'login',
+      'sendPasswordResetEmail',
+    ]);
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatDialogModule,],
+      imports: [FormsModule, ReactiveFormsModule, MatDialogModule],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -41,11 +43,15 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
-    forgotPasswordButton = await loader.getHarness(MatButtonHarness.with({text: 'Forgot password'}));
+    forgotPasswordButton = await loader.getHarness(
+      MatButtonHarness.with({ text: 'Forgot password' })
+    );
   });
 
   beforeEach(() => {
-    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(dialogRefSpyObj);
+    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(
+      dialogRefSpyObj
+    );
   });
 
   it('can load instance', () => {
@@ -99,7 +105,6 @@ describe('LoginComponent', () => {
   });
 
   it('reset password succeeds', async () => {
-
     const successEmitter = new BehaviorSubject<void>(undefined);
 
     fakeAuthService.sendPasswordResetEmail.and.returnValue(successEmitter);
@@ -107,7 +112,7 @@ describe('LoginComponent', () => {
     await forgotPasswordButton.click();
     successEmitter.subscribe((o) => {
       expect(o).toBe(undefined);
-    })
+    });
     expect(dialogSpy).toHaveBeenCalled();
-  })
+  });
 });
