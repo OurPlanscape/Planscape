@@ -146,6 +146,28 @@ export class AuthService {
     );
   }
 
+  sendPasswordResetEmail(email: string): Observable<any> {
+    return this.http.post(
+      this.API_ROOT.concat('password/reset/'),
+      {
+        email: email,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  verifyToken(token: string): Observable<boolean> {
+    return this.http
+      .get(this.API_ROOT.concat('token/'), {withCredentials: true})
+      .pipe(
+        map((response: any) => {
+          return response.success;
+        })
+      );
+  }
+
   /** Gets a user given the id. */
   getUser(userId: string): Observable<User> {
     const url = BackendConstants.END_POINT.concat(
