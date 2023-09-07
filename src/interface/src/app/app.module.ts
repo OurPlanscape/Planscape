@@ -49,6 +49,8 @@ import { RegionDropdownComponent } from './region-dropdown/region-dropdown.compo
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { ResetPasswordDialog } from './login/reset_password_dialog';
 import { WINDOW_PROVIDERS } from './services/window.service';
 
 @NgModule({
@@ -76,6 +78,7 @@ import { WINDOW_PROVIDERS } from './services/window.service';
     WelcomeComponent,
     PlanningAreasComponent,
     PreviewComponent,
+    ResetPasswordDialog,
   ],
   imports: [
     AppRoutingModule,
@@ -96,6 +99,7 @@ import { WINDOW_PROVIDERS } from './services/window.service';
     PlanModule,
     SharedModule,
     ReactiveFormsModule,
+    MatDialogModule,
   ],
   providers: [
     AuthService,
