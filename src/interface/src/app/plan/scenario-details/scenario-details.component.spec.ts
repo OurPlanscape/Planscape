@@ -32,6 +32,7 @@ describe('ScenarioDetailsComponent', () => {
 
     fakeScenario = {
       id: '1',
+      name: 'name',
       config: {
         id: 1,
         max_budget: 200,
