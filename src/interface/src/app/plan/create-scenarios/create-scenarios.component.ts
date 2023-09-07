@@ -162,6 +162,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         uploadedArea: [''],
       }),
     ];
+
+    //TODO Change this.formGroups into a formGroup to be able to set child form group names on creation
     this.nameFormGroup = this.formGroups[0];
     this.treatmentGoalGroup = this.formGroups[1];
     this.constraintsFormGroup = this.formGroups[2];
@@ -230,10 +232,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         'physicalConstraintForm.maxSlope'
       );
       this.excludedAreasOptions.forEach((area: string) => {
-        if (config.excluded_areas) {
-          if (config.excluded_areas![area]) {
+        if (config.excluded_areas && config.excluded_areas![area]) {
             this.constraintsFormGroup.get('excludedAreasForm.' + area)?.setValue(config.excluded_areas![area])
-          }
         }
       });
       const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
