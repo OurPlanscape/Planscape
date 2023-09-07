@@ -184,7 +184,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + ["Set-Cookie"]
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = str(
-    config("PLANSCAPE_CSRF_TRUSTED_ORIGINS", default="http://localhost:4200")
+    config("PLANSCAPE_CSRF_TRUSTED_ORIGINS", default="http://*")
 ).split(",")
 CSRF_HEADER_NAME = "CSRF_COOKIE"
 SESSION_COOKIE_SECURE = False
@@ -224,10 +224,13 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+#ACCOUNT_CONFIRM_EMAIL_ON_GET = True
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
+
+EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the
