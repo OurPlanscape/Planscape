@@ -25,6 +25,10 @@
         CHANGE PASSWORD
       </button>
 
+      <button mat-raised-button color="warn" (click)="openDeleteAccountDialog()">
+        DELETE ACCOUNT
+      </button>
+
       <button mat-raised-button (click)="logout()">SIGN OUT</button>
     </div>
   </ng-container>
@@ -79,9 +83,6 @@
 
     <!-- Edit account details -->
     <ng-container *ngIf="editingAccount">
-      <button mat-button color="primary" (click)="openDeleteAccountDialog()">
-        DELETE ACCOUNT
-      </button>
 
       <form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
         <mat-form-field>
