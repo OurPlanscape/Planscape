@@ -31,21 +31,6 @@ export class PlanComponent implements OnInit, OnDestroy {
   planOwner$ = new Observable<User | null>();
   planNotFound: boolean = false;
   showOverview$ = new BehaviorSubject<boolean>(false);
-  // TODO this should show the scenario name if looking for configuration/scenario.
-  // for now displaying scenario id
-  breadcrumbs$ = combineLatest([
-    this.currentPlan$,
-    this.planService.planState$,
-  ]).pipe(
-    map(([plan, planState]) => {
-      const crumbs = plan ? [plan.name] : [];
-      if (planState.currentConfigId) {
-        crumbs.push(planState.currentConfigId + '');
-      }
-      return crumbs;
-    })
-  );
-
   breadcrumbs$ = this.currentPlan$.pipe(
     map((plan) => {
       const crumbs = plan ? [plan.name] : [];
