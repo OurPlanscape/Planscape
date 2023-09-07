@@ -1,8 +1,14 @@
+@import "../shared/_variables.scss";
+
 .root-container {
   display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
+}
+
+.root-container.with-navbar {
+  height: calc(100%  - $navbar-height);
 }
 
 .plan-summary-panel {
