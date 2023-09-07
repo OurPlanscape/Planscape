@@ -28,8 +28,6 @@ urlpatterns = [
     # Auth URLs
     path('planscape-backend/users/', include('users.urls')),
     path('planscape-backend/dj-rest-auth/', include('dj_rest_auth.urls')),
-    # path('planscape-backend/dj-rest-auth/registration/account-confirm-email/<str:key>/',
-    #      ConfirmEmailView.as_view()),
     path('planscape-backend/dj-rest-auth/registration/',
          include('dj_rest_auth.registration.urls')),
     path(
