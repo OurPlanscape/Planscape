@@ -215,7 +215,6 @@ describe('PlanService', () => {
   //   });
   // });
 
-  
   describe('createScenario', () => {
     it('should make HTTP request to backend', (done) => {
       const projectConfig: ProjectConfig = {
@@ -255,8 +254,7 @@ describe('PlanService', () => {
     });
   });
 
-
-// TODO Update once Project/Scenario types are updated
+  // TODO Update once Project/Scenario types are updated
   // describe('getScenariosForPlan', () => {
   //   it('should make HTTP request to backend', (done) => {
   //     const projectConfig: ProjectConfig = {

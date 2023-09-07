@@ -168,7 +168,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.treatmentGoalGroup = this.formGroups[1];
     this.constraintsFormGroup = this.formGroups[2];
     this.projectAreaGroup = this.formGroups[3];
-
   }
 
   ngOnInit(): void {
@@ -182,7 +181,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         this.panelExpanded = planState.panelExpanded ?? false;
       });
 
-    // Has to be outside of service subscription or else will cause infinite loop 
+    // Has to be outside of service subscription or else will cause infinite loop
     this.loadConfig();
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -222,9 +221,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   private loadConfig(): void {
     this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
       const scenarioName = this.nameFormGroup.get('scenarioName');
-      const estimatedCost = this.constraintsFormGroup.get('budgetForm.estimatedCost');
+      const estimatedCost = this.constraintsFormGroup.get(
+        'budgetForm.estimatedCost'
+      );
       const maxCost = this.constraintsFormGroup.get('budgetForm.maxCost');
-      const maxArea = this.constraintsFormGroup.get('physicalConstraintForm.maxArea');
+      const maxArea = this.constraintsFormGroup.get(
+        'physicalConstraintForm.maxArea'
+      );
       const minDistanceFromRoad = this.constraintsFormGroup.get(
         'physicalConstraintForm.minDistanceFromRoad'
       );
@@ -233,7 +236,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       );
       this.excludedAreasOptions.forEach((area: string) => {
         if (config.excluded_areas && config.excluded_areas![area]) {
-            this.constraintsFormGroup.get('excludedAreasForm.' + area)?.setValue(config.excluded_areas![area])
+          this.constraintsFormGroup
+            .get('excludedAreasForm.' + area)
+            ?.setValue(config.excluded_areas![area]);
         }
       });
       const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
@@ -263,7 +268,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
           goal.questions.forEach((question) => {
             if (
               question['priorities']?.toString() ==
-              config.priorities?.toString() &&
+                config.priorities?.toString() &&
               question['weights']?.toString() == config.weights?.toString()
             ) {
               selectedQuestion?.setValue(question);
@@ -275,13 +280,19 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   }
 
   private formValueToProjectConfig(): any {
-    const estimatedCost = this.constraintsFormGroup.get('budgetForm.estimatedCost');
+    const estimatedCost = this.constraintsFormGroup.get(
+      'budgetForm.estimatedCost'
+    );
     const maxCost = this.constraintsFormGroup.get('budgetForm.maxCost');
-    const maxArea = this.constraintsFormGroup.get('physicalConstraintForm.maxArea');
+    const maxArea = this.constraintsFormGroup.get(
+      'physicalConstraintForm.maxArea'
+    );
     const minDistanceFromRoad = this.constraintsFormGroup.get(
       'physicalConstraintForm.minDistanceFromRoad'
     );
-    const maxSlope = this.constraintsFormGroup.get('physicalConstraintForm.maxSlope');
+    const maxSlope = this.constraintsFormGroup.get(
+      'physicalConstraintForm.maxSlope'
+    );
     const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
     const scenarioName = this.nameFormGroup.get('scenarioName');
 
@@ -298,7 +309,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     projectConfig.excluded_areas = {};
     this.excludedAreasOptions.forEach((area: string) => {
       if (this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid) {
-        projectConfig.excluded_areas![area] = this.constraintsFormGroup.get('excludedAreasForm.' + area)?.value;
+        projectConfig.excluded_areas![area] = this.constraintsFormGroup.get(
+          'excludedAreasForm.' + area
+        )?.value;
       }
     });
     if (estimatedCost?.valid)

@@ -528,7 +528,7 @@ export class PlanService {
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       priorities: config.priorities,
       weights: config.weights,
-      excluded_areas: config.excluded_areas
+      excluded_areas: config.excluded_areas,
     };
   }
 
