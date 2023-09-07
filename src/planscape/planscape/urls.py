@@ -32,7 +32,5 @@ urlpatterns = [
          include('dj_rest_auth.registration.urls')),
     path(
         'planscape-backend/dj-rest-auth/registration/account-confirm-email/',
-        VerifyEmailView.as_view(),
-        name='account_email_verification_sent'
-    ),
+        VerifyEmailView.as_view()),
 ]
