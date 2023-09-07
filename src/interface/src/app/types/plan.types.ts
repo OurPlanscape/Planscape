@@ -56,7 +56,8 @@ export interface TreatmentGoalConfig {
 }
 
 export interface TreatmentQuestionConfig {
-  question_text?: string;
+  long_question_text?: string;
+  short_question_text?: string;
   priorities?: string[];
   weights?: number[];
 }

@@ -83,7 +83,7 @@ export class PlanService {
     this.http
       .get<TreatmentGoalConfig[]>(
         BackendConstants.END_POINT +
-          '/plan/treatment_goals_config/?region_name=' +
+          '/planning/treatment_goals_config/?region_name=' +
           `${this.mapService.regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
