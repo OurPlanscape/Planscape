@@ -7,10 +7,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { ResetPasswordDialog } from './reset_password_dialog';
 
 import * as signInMessages from '../shared/constants';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-login',
-  templateUrl: './login.component.html',
+  templateUrl: './login.component.ng.html',
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
@@ -20,9 +21,6 @@ export class LoginComponent {
   @Input() email!: string;
 
   protected accountError = '';
-
-
-  error: any;
 
   form: FormGroup;
 
@@ -83,7 +81,7 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe(
       (_) => this.router.navigate(['map']),
-      (error) => (this.error = error)
+      (error) => (this.accountError = error)
     );
   }
 
