@@ -241,7 +241,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
         return JsonResponse(
             _serialize_planning_area(
                 get_object_or_404(user.planning_areas.annotate(scenario_count=Count('scenarios', distinct=True))\
-                                  .annotate(scenario_latest_updated_at=Max('scenarios__updated_at')), id=request.GET['id']),
+                                  .annotate(scenario_lastmodified=Max('scenarios__updated_at')), id=request.GET['id']),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -265,7 +265,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 # TODO: This could be really slow; consider paging or perhaps
 # fetching everything but geometries (since they're huge) for performance gains.
         planning_areas = PlanningArea.objects.annotate(scenario_count=Count('scenarios', distinct=True))\
-                                             .annotate(scenario_latest_updated_at=Max('scenarios__updated_at'))\
+                                             .annotate(scenario_lastmodified=Max('scenarios__updated_at'))\
                                              .filter(user=user_id)
 
         return JsonResponse(
