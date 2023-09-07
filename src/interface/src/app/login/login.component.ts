@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -6,12 +6,22 @@ import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
 import { ResetPasswordDialog } from './reset_password_dialog';
 
+import * as signInMessages from '../shared/constants';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
+
+  protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
+
+  @Input() email!: string;
+
+  protected accountError = '';
+
+
   error: any;
 
   form: FormGroup;
@@ -53,10 +63,16 @@ export class LoginComponent {
 
   resetPassword() {
 
-    // TODO: sterlingwellscaffeine -- add the functionality that validates the 
-    // email. The reason that this is not included in this CL is that I would like
-    // to make that a part of the server call and the server is not yet up and running.
-    this.dialog.open(ResetPasswordDialog);
+    this.authService.sendPasswordResetEmail(this.email).subscribe({
+      next : () => {
+        this.dialog.open(ResetPasswordDialog);
+      },
+      error: (err) => {
+        this.accountError = this.RESET_ERROR;
+      }
+    }
+
+    )
   }
 
   login() {
