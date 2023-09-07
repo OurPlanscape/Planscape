@@ -79,7 +79,7 @@ export interface ProjectConfig {
   priorities?: string[];
   weights?: number[];
   createdTimestamp?: number;
-  excluded_areas?: {[key: string]: boolean[] };
+  excluded_areas?: { [key: string]: boolean[] };
 }
 
 export interface ProjectArea {
