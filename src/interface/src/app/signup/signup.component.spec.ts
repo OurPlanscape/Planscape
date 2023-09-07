@@ -35,7 +35,7 @@ describe('SignupComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  fdescribe('signup form', () => {
+  describe('signup form', () => {
     beforeEach(() => {
       component.form.reset();
     });
