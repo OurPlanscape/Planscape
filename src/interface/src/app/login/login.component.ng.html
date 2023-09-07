@@ -30,9 +30,9 @@
             Sign in
           </button>
         </mat-card-actions>
-
-        <p>{{ error?.message }}</p>
-        <p *ngIf="error">{{ error?.error | json }}</p>
+        <mat-error class="mat-error" *ngIf="accountError">
+          {{ accountError }}
+        </mat-error>
       </form>
 
       <mat-divider></mat-divider>

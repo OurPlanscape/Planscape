@@ -52,6 +52,7 @@ import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ResetPasswordDialog } from './login/reset_password_dialog';
 import { WINDOW_PROVIDERS } from './services/window.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
 
 @NgModule({
   declarations: [
@@ -100,6 +101,7 @@ import { WINDOW_PROVIDERS } from './services/window.service';
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
+    MatFormFieldModule,
   ],
   providers: [
     AuthService,
