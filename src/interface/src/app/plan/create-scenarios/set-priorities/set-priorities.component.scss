@@ -64,7 +64,7 @@ h4 {
   font-weight:500;
   margin-bottom: 2px;
   margin-top: 10px;
- 
+
 }
 
 .goal-control-container {
@@ -224,3 +224,19 @@ h5 {
 .grey-icon {
   color: #8e918f;
 }
+
+.short-question:hover {
+  background-color:  #00000012;
+}
+
+::ng-deep {
+  .long-question-tooltip.mat-tooltip {
+    border: 1px solid #979797;
+    border-radius: 11px;
+    background-color: #E6E9F4;
+    color: black;
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
