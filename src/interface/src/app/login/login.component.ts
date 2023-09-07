@@ -4,10 +4,10 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
-import { ResetPasswordDialog } from './reset_password_dialog';
 
 import * as signInMessages from '../shared/constants';
 import { BehaviorSubject } from 'rxjs';
+import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dialog';
 
 @Component({
   selector: 'app-login',
