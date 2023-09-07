@@ -34,6 +34,15 @@
     <ng-container *ngIf="changingPassword">
       <form [formGroup]="changePasswordForm" (ngSubmit)="savePassword()">
         <mat-form-field>
+          <mat-label>Current password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="password0"
+            matInput />
+        </mat-form-field>
+
+        <mat-form-field>
           <mat-label>Password</mat-label>
           <input
             type="password"

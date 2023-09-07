@@ -39,6 +39,7 @@ export class AccountDialogComponent implements OnInit {
   ) {
     this.changePasswordForm = this.fb.group(
       {
+        password0: this.fb.control('', [Validators.required]),
         password1: this.fb.control('', [
           Validators.required,
           Validators.minLength(8),
@@ -87,9 +88,10 @@ export class AccountDialogComponent implements OnInit {
     if (this.changePasswordForm.invalid) return;
 
     this.disableChangeButton = true;
-
+    alert("password0: " + this.changePasswordForm.get('password0')?.value);
     this.authService
       .changePassword(
+        this.changePasswordForm.get('password0')?.value,
         this.changePasswordForm.get('password1')?.value,
         this.changePasswordForm.get('password2')?.value
       )
