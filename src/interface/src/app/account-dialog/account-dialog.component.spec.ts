@@ -117,6 +117,7 @@ describe('AccountDialogComponent', () => {
 
   it('saving new password calls AuthService', () => {
     component.changePasswordForm.setValue({
+      password0: 'password',
       password1: 'testpass',
       password2: 'testpass',
     });
@@ -124,6 +125,7 @@ describe('AccountDialogComponent', () => {
     component.savePassword();
 
     expect(fakeAuthService.changePassword).toHaveBeenCalledOnceWith(
+      'password',
       'testpass',
       'testpass'
     );
