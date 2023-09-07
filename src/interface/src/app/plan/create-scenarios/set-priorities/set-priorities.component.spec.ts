@@ -37,12 +37,12 @@ describe('SetPrioritiesComponent', () => {
   let fakePlanService: PlanService;
 
   const defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: '',
+    short_question_text: '',
     priorities: [''],
     weights: [0],
   };
   const testQuestion: TreatmentQuestionConfig = {
-    question_text: 'test_question',
+    short_question_text: 'test_question',
     priorities: ['test_priority'],
     weights: [1],
   };
@@ -199,7 +199,7 @@ describe('SetPrioritiesComponent', () => {
 
     // Act: select the test treatment question
     await radioButtonGroup.checkRadioButton({
-      label: testQuestion['question_text'],
+      label: testQuestion['short_question_text'],
     });
 
     expect(component.formGroup?.get('selectedQuestion')?.value).toEqual(
