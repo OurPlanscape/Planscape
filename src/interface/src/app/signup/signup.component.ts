@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -6,6 +6,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import {of, Subject} from 'rxjs';
+import {catchError, takeUntil} from 'rxjs/operators';
 
 import { AuthService } from './../services';
 
@@ -14,11 +16,17 @@ import { AuthService } from './../services';
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss'],
 })
-export class SignupComponent {
+export class SignupComponent implements OnDestroy {
   error: any;
 
   form: FormGroup;
   submitted: boolean = false;
+  private readonly destroyed = new Subject<void>();
+
+  ngOnDestroy() {
+    this.destroyed.next();
+    this.destroyed.complete();
+  }
 
   constructor(
     private authService: AuthService,
@@ -56,17 +64,17 @@ export class SignupComponent {
     const lastName: string = this.form.get('lastName')?.value;
     this.authService
       .signup(email, password1, password2, firstName, lastName)
-      .subscribe(
-        (_) => this.router.navigate(['map']),
-        (error) => {
+      .pipe(
+        takeUntil(this.destroyed),
+        catchError((error: Error) => {
           this.error = error;
           this.submitted = false;
+          return of({});
         }
+      ))
+      .subscribe(
+        (_) => this.router.navigate(['home'])
       );
-  }
-
-  login() {
-    this.router.navigate(['login']);
   }
 
   private passwordsMatchValidator(group: AbstractControl) {
