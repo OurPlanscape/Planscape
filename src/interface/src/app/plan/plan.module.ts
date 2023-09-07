@@ -5,6 +5,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { RouterModule } from '@angular/router';
+import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
@@ -24,6 +25,8 @@ import { ScenarioDetailsComponent } from './scenario-details/scenario-details.co
 import { OutcomeComponent } from './scenario-details/outcome/outcome.component';
 import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
+import { FeaturesModule } from '../features/features.module';
+import { WINDOW_PROVIDERS } from '../services/window.service';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -46,15 +49,21 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     ScenarioConfirmationComponent,
     MapLayersComponent,
   ],
+  providers: [WINDOW_PROVIDERS],
   imports: [
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
+    HttpClientXsrfModule.withOptions({
+      cookieName: 'csrftoken',
+      headerName: 'X-CSRFToken',
+    }),
     MatButtonToggleModule,
     MaterialModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
+    FeaturesModule,
   ],
 })
 export class PlanModule {}

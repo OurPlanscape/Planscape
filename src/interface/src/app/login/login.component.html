@@ -14,16 +14,25 @@
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
 
+        <mat-card-actions>
+          <a
+            mat-flat-button
+            i18n="Text on a button to reset password"
+            (click)="resetPassword()"
+          >
+            Forgot password
+          </a>
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="!form.valid">
+            Sign in
+          </button>
+        </mat-card-actions>
+
         <p>{{ error?.message }}</p>
         <p *ngIf="error">{{ error?.error | json }}</p>
-
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="!form.valid">
-          Sign in
-        </button>
       </form>
 
       <mat-divider></mat-divider>
