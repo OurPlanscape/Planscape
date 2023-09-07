@@ -1,10 +1,10 @@
-import { Component, ɵ_sanitizeUrl } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
-import { ResetPasswordsModal } from '../modals/reset_password_modal';
+import { ResetPasswordDialog } from './reset_password_dialog';
 
 @Component({
   selector: 'app-login',
@@ -51,13 +51,12 @@ export class LoginComponent {
     });
   }
 
-  openDialog() {
-    this.dialog.open(ResetPasswordsModal, {
-      data: {
-        message: `Enter the email address associated with your account, and
-        we'll email you a link to reset your password.`,
-      }
-    });
+  resetPassword() {
+
+    // TODO: sterlingwellscaffeine -- add the functionality that validates the 
+    // email. The reason that this is not included in this CL is that I would like
+    // to make that a part of the server call and the server is not yet up and running.
+    this.dialog.open(ResetPasswordDialog);
   }
 
   login() {

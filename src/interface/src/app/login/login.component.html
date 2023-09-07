@@ -14,27 +14,25 @@
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
 
-        <button
-          mat-flat-button
-          (click)="openDialog()"
-          aria-label="Opens a dialog for users who have forgotten their password"
-          i18n-aria-label="
-          Opens a dialog for users who have forgotten their password
-          "
-          matTooltip="If you have forgotten your password, reset it here.">
-          Forgot Password?
-        </button>
+        <mat-card-actions>
+          <a
+            mat-flat-button
+            i18n="Text on a button to reset password"
+            (click)="resetPassword()"
+          >
+            Forgot password
+          </a>
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="!form.valid">
+            Sign in
+          </button>
+        </mat-card-actions>
 
         <p>{{ error?.message }}</p>
         <p *ngIf="error">{{ error?.error | json }}</p>
-
-        <button
-          mat-flat-button
-          color="primary"
-          type="submit"
-          [disabled]="!form.valid">
-          Sign in
-        </button>
       </form>
 
       <mat-divider></mat-divider>
