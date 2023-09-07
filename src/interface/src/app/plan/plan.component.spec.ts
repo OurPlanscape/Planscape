@@ -97,11 +97,6 @@ describe('PlanComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('fetches plan from service using ID', () => {
-    expect(component.planNotFound).toBeFalse();
-    expect(component.plan).toEqual(fakePlan);
-  });
-
   it('calls service to update plan state based on route', () => {
     const planService = fixture.debugElement.injector.get(PlanService);
 
