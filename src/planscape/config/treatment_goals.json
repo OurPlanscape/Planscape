@@ -7,7 +7,8 @@
          "category_name": "Fire Dynamics",
           "questions": [
             {
-             "question_text": "Which areas within my planning area have the highest probability of high severity fire?",
+              "long_question_text": "What areas have the highest probability of high severity fire?",
+              "short_question_text": "[High-severity Fire Areas]",
              "priorities": [
                 "probability_of_fire_severity_high"
              ],
