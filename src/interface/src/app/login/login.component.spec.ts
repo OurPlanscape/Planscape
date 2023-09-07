@@ -27,11 +27,10 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
-    fakeAuthService = jasmine.createSpyObj<AuthService>(
-      'AuthService',
-      ['login', 'sendPasswordResetEmail'],
-      c
-    );
+    fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
+      'login',
+      'sendPasswordResetEmail',
+    ]);
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule, MatDialogModule],
       declarations: [LoginComponent],
