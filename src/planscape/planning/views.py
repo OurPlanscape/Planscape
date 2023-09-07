@@ -271,12 +271,14 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 
 # TODO: This could be really slow; consider paging or perhaps
 # fetching everything but geometries (since they're huge) for performance gains.
+# given that we need geometry to calculate total acres, should we save this value
+# when creating the planning area instead of calculating it each time?
+
         planning_areas = PlanningArea.objects.annotate(scenario_count=Count('scenarios', distinct=True))\
                                              .annotate(scenario_latest_updated_at=Max('scenarios__updated_at'))\
                                              .filter(user=user_id)
-
         return JsonResponse(
-            [_serialize_planning_area(planning_area, False) for planning_area in planning_areas],
+            [_serialize_planning_area(planning_area, True) for planning_area in planning_areas],
             safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
