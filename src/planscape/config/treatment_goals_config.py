@@ -52,10 +52,10 @@ class TreatmentGoalsConfig:
         
         def check_treatment_question(treatment_question) -> bool:
             return (isinstance(treatment_question, dict) and
-                    treatment_question.keys() <= set(['question_text', 'priorities', 'weights']) and
-                    isinstance(treatment_question['question_text'], str) and
+                    treatment_question.keys() <= set(['short_question_text', 'long_question_text','priorities', 'weights']) and
+                    isinstance(treatment_question['short_question_text'], str) and
+                    isinstance(treatment_question['long_question_text'], str) and
                     isinstance(treatment_question['priorities'], list) and
                     isinstance(treatment_question['weights'], list))
-
 
         return 'regions' in self._config and check_regions(self._config['regions'])
