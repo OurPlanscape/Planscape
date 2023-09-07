@@ -68,6 +68,37 @@
 
   <button
     mat-icon-button
+    [matMenuTriggerFor]="dotMenu"
+    *featureFlag="'new_navigation'">
+    <mat-icon class="material-symbols-outlined">more_vert</mat-icon>
+  </button>
+  <mat-menu #dotMenu="matMenu">
+    <button
+      mat-menu-item
+      *ngIf="loggedIn$ | async"
+      (click)="logout()"
+      data-id="logout"
+      class="menu-link">
+      Log out
+    </button>
+    <a
+      mat-menu-item
+      *ngIf="(loggedIn$ | async) === false"
+      routerLink="/login"
+      class="menu-link">
+      Log in
+    </a>
+    <a
+      mat-menu-item
+      *ngIf="(loggedIn$ | async) === false"
+      routerLink="/signup"
+      class="menu-link">
+      Create account
+    </a>
+  </mat-menu>
+
+  <button
+    mat-icon-button
     data-testid="account-button"
     class="top-bar-account-button"
     aria-label="account icon button"
