@@ -312,13 +312,14 @@ describe('AuthService', () => {
 
   describe('changePassword', () => {
     it('makes request to backend', () => {
-      service.changePassword('testpass', 'testpass').subscribe();
+      service.changePassword('password', 'testpass', 'testpass').subscribe();
 
       const req = httpTestingController.expectOne(
         BackendConstants.END_POINT + '/dj-rest-auth/password/change/'
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
+        old_password: 'password',
         new_password1: 'testpass',
         new_password2: 'testpass',
       });
