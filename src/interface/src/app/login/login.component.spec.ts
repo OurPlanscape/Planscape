@@ -11,7 +11,7 @@ import { MatButtonHarness } from '@angular/material/button/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
-fdescribe('LoginComponent', () => {
+describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let fakeAuthService: jasmine.SpyObj<AuthService>;
@@ -27,10 +27,11 @@ fdescribe('LoginComponent', () => {
 
   beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
-    fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
-      'login',
-      'sendPasswordResetEmail',
-    ]);
+    fakeAuthService = jasmine.createSpyObj<AuthService>(
+      'AuthService',
+      ['login', 'sendPasswordResetEmail'],
+      c
+    );
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule, MatDialogModule],
       declarations: [LoginComponent],
