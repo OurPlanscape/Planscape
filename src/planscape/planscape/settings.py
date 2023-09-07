@@ -184,7 +184,7 @@ CORS_ALLOW_HEADERS = list(default_headers) + ["Set-Cookie"]
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
 CSRF_TRUSTED_ORIGINS = str(
-    config("PLANSCAPE_CSRF_TRUSTED_ORIGINS", default="http://*")
+    config("PLANSCAPE_CSRF_TRUSTED_ORIGINS", default="http://localhost:4200")
 ).split(",")
 CSRF_HEADER_NAME = "CSRF_COOKIE"
 SESSION_COOKIE_SECURE = False
