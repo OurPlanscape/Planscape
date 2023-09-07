@@ -101,7 +101,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
-    MatFormFieldModule,
   ],
   providers: [
     AuthService,
