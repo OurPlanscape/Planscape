@@ -9,8 +9,7 @@ export class FeatureService {
     this.config = config;
   }
 
-  /** If feature flag exists, return its value. */
-  isFeatureEnabled(featureName: string): boolean | undefined {
-    return this.config[featureName];
+  isFeatureEnabled(featureName: string): boolean {
+    return !!this.config[featureName];
   }
 }
