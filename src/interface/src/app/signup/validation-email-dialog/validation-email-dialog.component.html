@@ -4,9 +4,13 @@
       Validation email sent
     </h3>
     <p class="gmat-body-1" i18n="Text indicating email sent to user to validate their account">
-      You should receive an email to the address you provided.
-      Please click on the link provided in the email to log validate your account and log in.
+      Please check your email to confirm your account.<br />
+      Note that this confirmation email will only be valid for 3 days.
     </p>
+    <p class="gmat-body-1" i18n="Text for resending validation email">
+      Didn't receive an email? Pease click <a clickable [routerLink]="" (click)="resendEmail()">here</a>.
+    </p>
+
   </mat-dialog-content>
   <mat-dialog-actions class="dialog-button-container">
     <button

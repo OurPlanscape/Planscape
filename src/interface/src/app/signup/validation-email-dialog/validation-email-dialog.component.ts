@@ -16,4 +16,8 @@ export class ValidationEmailDialog {
   protected close() {
     this.dialogRef.close({});
   }
+
+  resendEmail() {
+    
+  }
 }

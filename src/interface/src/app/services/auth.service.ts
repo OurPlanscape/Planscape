@@ -70,12 +70,7 @@ export class AuthService {
         email,
         first_name: firstName,
         last_name: lastName,
-      })
-      .pipe(
-        concatMap((_) => {
-          return this.login(email, password1);
-        })
-      );
+      });
   }
 
   logout() {
