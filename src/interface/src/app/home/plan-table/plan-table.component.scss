@@ -31,7 +31,6 @@ h2 {
 }
 
 .table-row {
-
   cursor: pointer;
 }
 
@@ -40,8 +39,12 @@ h2 {
   border-left-color: #3B78E7;
 }
 
+mat-header-row {
+  min-height: 80px;
+}
+
 mat-header-row , mat-row{
-  gap: 10px;
+  gap: 20px;
 }
 
 .mat-column-name {
@@ -58,6 +61,16 @@ mat-header-row , mat-row{
     width: 5px;
     height: 100%;
 
+  }
+}
+
+.mat-header-cell.mat-column-name {
+  font-weight: bold;
+  color: black;
+
+  ::ng-deep.mat-sort-header-container {
+    align-self: end;
+    padding-bottom: 10px;
   }
 }
 
