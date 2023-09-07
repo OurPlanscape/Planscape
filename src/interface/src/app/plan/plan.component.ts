@@ -7,6 +7,7 @@ import {
 } from '@angular/router';
 import {
   BehaviorSubject,
+  combineLatest,
   concatMap,
   filter,
   map,
@@ -30,7 +31,6 @@ export class PlanComponent implements OnInit, OnDestroy {
   planOwner$ = new Observable<User | null>();
   planNotFound: boolean = false;
   showOverview$ = new BehaviorSubject<boolean>(false);
-
   breadcrumbs$ = this.currentPlan$.pipe(
     map((plan) => {
       const crumbs = plan ? [plan.name] : [];
