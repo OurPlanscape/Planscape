@@ -276,7 +276,7 @@ export class PlanService {
   /** Fetches a project by its ID from the backend. */
   getProject(projectId: number): Observable<ProjectConfig> {
     const url = BackendConstants.END_POINT.concat(
-      '/plan/get_project/?id=',
+      '/planning/get_scenario_by_id/?id=',
       projectId.toString()
     );
     return this.http
@@ -449,13 +449,15 @@ export class PlanService {
   private convertToProjectConfig(config: any): ProjectConfig {
     return {
       id: config.id,
-      est_cost: config.est_cost,
-      max_budget: config.max_budget,
-      min_distance_from_road: config.min_distance_from_road,
-      max_slope: config.max_slope,
-      max_treatment_area_ratio: config.max_treatment_area_ratio,
-      priorities: config.priorities,
-      weights: config.weights,
+      name: config.name,
+      est_cost: config.configuration.est_cost,
+      max_budget: config.configuration.max_budget,
+      min_distance_from_road: config.configuration.min_distance_from_road,
+      max_slope: config.configuration.max_slope,
+      max_treatment_area_ratio: config.configuration.max_treatment_area_ratio,
+      priorities: config.configuration.priorities,
+      weights: config.configuration.weights,
+      excluded_areas: config.configuration.excluded_areas,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
       ),
@@ -465,6 +467,7 @@ export class PlanService {
   private convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
+      name: scenario.name,
       plan_id: scenario.plan,
       projectId: scenario.project,
       owner: scenario.owner,
@@ -525,6 +528,7 @@ export class PlanService {
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       priorities: config.priorities,
       weights: config.weights,
+      excluded_areas: config.excluded_areas,
     };
   }
 
