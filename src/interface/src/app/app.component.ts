@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { take } from 'rxjs';
-
 import { AuthService } from './services';
-import { FeatureService } from './features/feature.service';
 
 @Component({
   selector: 'app-root',
@@ -12,11 +10,7 @@ import { FeatureService } from './features/feature.service';
 export class AppComponent implements OnInit {
   sidebarOpen = false;
 
-  hasNewNavigation = this.featureService.isFeatureEnabled('new_navigation');
-  constructor(
-    private authService: AuthService,
-    private featureService: FeatureService
-  ) {}
+  constructor(private authService: AuthService) {}
 
   toggleSidebar(event: Event) {
     this.sidebarOpen = !this.sidebarOpen;

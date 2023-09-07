@@ -19,6 +19,7 @@ import {
 
 import { Plan, User } from '../types';
 import { AuthService, PlanService } from '../services';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-plan',
@@ -36,11 +37,13 @@ export class PlanComponent implements OnInit, OnDestroy {
       const crumbs = plan ? [plan.name] : [];
       const path = this.getPathFromSnapshot();
       if (path === 'config') {
-        crumbs.push('New Configuration');
+        crumbs.push('New Scenario');
       }
       return crumbs;
     })
   );
+
+  hasNewNavigation = this.featureService.isFeatureEnabled('new_navigation');
 
   openConfigId?: number;
 
@@ -50,7 +53,8 @@ export class PlanComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private planService: PlanService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {
     // TODO: Move everything in the constructor to ngOnInit
     const planId = this.route.snapshot.paramMap.get('id');

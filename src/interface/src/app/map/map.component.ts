@@ -11,7 +11,7 @@ import {
   DoCheck,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
@@ -37,7 +37,6 @@ import {
 } from '../services';
 import {
   BoundaryConfig,
-  colormapConfigToLegend,
   ConditionsConfig,
   DEFAULT_COLORMAP,
   defaultMapConfig,
@@ -55,7 +54,7 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
-import features from '../features/features.json';
+import { FeatureService } from '../features/feature.service';
 
 export enum AreaCreationAction {
   NONE = 0,
@@ -122,7 +121,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   showConfirmAreaButton$ = new BehaviorSubject(false);
 
   private readonly destroy$ = new Subject<void>();
-  login_enabled = features.login;
+  login_enabled = this.featureService.isFeatureEnabled('login');
+
+  hasNewNavigation = this.featureService.isFeatureEnabled('new_navigation');
 
   constructor(
     public applicationRef: ApplicationRef,
@@ -136,7 +137,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private planService: PlanService,
     private router: Router,
     private http: HttpClient,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private featureService: FeatureService
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
       takeUntil(this.destroy$)
