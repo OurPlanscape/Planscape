@@ -6,7 +6,6 @@ import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
 
 import * as signInMessages from '../shared/constants';
-import { BehaviorSubject } from 'rxjs';
 import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dialog';
 
 @Component({
@@ -15,7 +14,6 @@ import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dial
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-
   protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
 
   @Input() email!: string;
@@ -48,7 +46,7 @@ export class LoginComponent {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private readonly dialog: MatDialog,
+    private readonly dialog: MatDialog
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -60,17 +58,14 @@ export class LoginComponent {
   }
 
   resetPassword() {
-
     this.authService.sendPasswordResetEmail(this.email).subscribe({
-      next : () => {
+      next: () => {
         this.dialog.open(ResetPasswordDialog);
       },
       error: (err) => {
         this.accountError = this.RESET_ERROR;
-      }
-    }
-
-    )
+      },
+    });
   }
 
   login() {
