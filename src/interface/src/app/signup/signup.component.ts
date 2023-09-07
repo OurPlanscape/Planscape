@@ -6,10 +6,12 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { MatDialog } from '@angular/material/dialog';
 import {of, Subject} from 'rxjs';
 import {catchError, takeUntil} from 'rxjs/operators';
 
 import { AuthService } from './../services';
+import {ValidationEmailDialog} from './validation-email-dialog/validation-email-dialog.component';
 
 @Component({
   selector: 'app-signup',
@@ -30,6 +32,7 @@ export class SignupComponent implements OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private readonly dialog: MatDialog,
     private formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -73,7 +76,10 @@ export class SignupComponent implements OnDestroy {
         }
       ))
       .subscribe(
-        (_) => this.router.navigate(['home'])
+        (_) => {
+          this.router.navigate(['home']);
+          this.dialog.open(ValidationEmailDialog);
+        }
       );
   }
 

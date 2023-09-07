@@ -51,6 +51,7 @@ import { PlanningAreasComponent } from './home/planning-areas/planning-areas.com
 import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ResetPasswordDialog } from './login/reset_password_dialog';
+import { ValidationEmailDialog } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
 
 @NgModule({
@@ -79,6 +80,7 @@ import { WINDOW_PROVIDERS } from './services/window.service';
     PlanningAreasComponent,
     PreviewComponent,
     ResetPasswordDialog,
+    ValidationEmailDialog,
   ],
   imports: [
     AppRoutingModule,

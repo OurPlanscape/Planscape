@@ -1,0 +1,20 @@
+<mat-dialog-content class="validation-email-dialog">
+    <img src="{{ checkUrl }}" alt="" />
+    <h3 class="gmat-headline-3" i18n="Title text for dialog confirming validation email sent">
+      Validation email sent
+    </h3>
+    <p class="gmat-body-1" i18n="Text indicating email sent to user to validate their account">
+      You should receive an email to the address you provided.
+      Please click on the link provided in the email to log validate your account and log in.
+    </p>
+  </mat-dialog-content>
+  <mat-dialog-actions class="dialog-button-container">
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="close()"
+      i18n="Button to acknowledge and close the validation email dialog"
+    >
+      OK
+    </button>
+  </mat-dialog-actions>
