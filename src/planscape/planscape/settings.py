@@ -230,6 +230,7 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 
+# TODO: Replace with shared email component.
 EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
 
 # PostGIS constants. All raster data should be ingested with a common
