@@ -38,19 +38,19 @@
           <input
             type="password"
             required
-            formControlName="password0"
+            formControlName="currentPassword"
             matInput />
         </mat-form-field>
 
         <mat-form-field>
-          <mat-label>Password</mat-label>
+          <mat-label>New password</mat-label>
           <input
             type="password"
             required
-            formControlName="password1"
+            formControlName="newPassword1"
             matInput />
           <mat-error
-            *ngIf="changePasswordForm.get('password1')?.hasError('minlength')">
+            *ngIf="changePasswordForm.get('newPassword1')?.hasError('minlength')">
             Password must contain at least 8 characters.
           </mat-error>
         </mat-form-field>
@@ -60,7 +60,7 @@
           <input
             type="password"
             required
-            formControlName="password2"
+            formControlName="newPassword2"
             matInput />
           <mat-error *ngIf="changePasswordForm.hasError('passwordsNotEqual')">
             Passwords must match.

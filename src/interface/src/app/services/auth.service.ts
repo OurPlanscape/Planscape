@@ -133,13 +133,13 @@ export class AuthService {
       );
   }
 
-  changePassword(password0: string, password1: string, password2: string): Observable<any> {
+  changePassword(currentPassword: string, newPassword1: string, newPassword2: string): Observable<any> {
     return this.http.post(
       this.API_ROOT.concat('password/change/'),
       {
-        old_password: password0,
-        new_password1: password1,
-        new_password2: password2,
+        old_password: currentPassword,
+        new_password1: newPassword1,
+        new_password2: newPassword2,
       },
       {
         withCredentials: true,

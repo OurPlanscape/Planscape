@@ -39,12 +39,12 @@ export class AccountDialogComponent implements OnInit {
   ) {
     this.changePasswordForm = this.fb.group(
       {
-        password0: this.fb.control('', [Validators.required]),
-        password1: this.fb.control('', [
+        currentPassword: this.fb.control('', [Validators.required]),
+        newPassword1: this.fb.control('', [
           Validators.required,
           Validators.minLength(8),
         ]),
-        password2: this.fb.control('', [Validators.required]),
+        newPassword2: this.fb.control('', [Validators.required]),
       },
       {
         validator: this.passwordsMatchValidator,
@@ -88,12 +88,11 @@ export class AccountDialogComponent implements OnInit {
     if (this.changePasswordForm.invalid) return;
 
     this.disableChangeButton = true;
-    alert("password0: " + this.changePasswordForm.get('password0')?.value);
     this.authService
       .changePassword(
-        this.changePasswordForm.get('password0')?.value,
-        this.changePasswordForm.get('password1')?.value,
-        this.changePasswordForm.get('password2')?.value
+        this.changePasswordForm.get('currentPassword')?.value,
+        this.changePasswordForm.get('newPassword1')?.value,
+        this.changePasswordForm.get('newPassword2')?.value
       )
       .pipe(take(1))
       .subscribe(
@@ -141,8 +140,8 @@ export class AccountDialogComponent implements OnInit {
   }
 
   private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('password1')?.value;
-    const password2 = group.get('password2')?.value;
+    const password1 = group.get('newPassword1')?.value;
+    const password2 = group.get('newPassword2')?.value;
     return password1 === password2 ? null : { passwordsNotEqual: true };
   }
 
