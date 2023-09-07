@@ -30,11 +30,13 @@ export interface PlanPreview {
   status?: string;
 }
 
+// TODO Replace Project Config
 export interface Scenario {
   id: string;
+  name: string;
   createdTimestamp?: number; //in milliseconds since epoch
   owner?: string;
-  planId?: string;
+  plan_id?: string;
   projectId?: string;
   config: ProjectConfig;
   priorities?: Priority[];
@@ -43,13 +45,20 @@ export interface Scenario {
   favorited?: boolean;
 }
 
+export interface ScenarioConfig {
+  name: string;
+  planning_area: string;
+  configuration: ProjectConfig;
+}
+
 export interface TreatmentGoalConfig {
   category_name?: string;
   questions: TreatmentQuestionConfig[];
 }
 
 export interface TreatmentQuestionConfig {
-  question_text?: string;
+  long_question_text?: string;
+  short_question_text?: string;
   priorities?: string[];
   weights?: number[];
 }
@@ -62,7 +71,7 @@ export interface Priority {
 
 export interface ProjectConfig {
   id: number;
-  planId?: number;
+  name?: string;
   est_cost?: number;
   max_budget?: number;
   max_treatment_area_ratio?: number;
@@ -71,6 +80,7 @@ export interface ProjectConfig {
   priorities?: string[];
   weights?: number[];
   createdTimestamp?: number;
+  excluded_areas?: { [key: string]: boolean[] };
 }
 
 export interface ProjectArea {

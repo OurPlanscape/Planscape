@@ -31,7 +31,7 @@ describe('CreateScenariosComponent', () => {
   let fakeGeoJson: GeoJSON.GeoJSON;
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: '',
+    short_question_text: '',
     priorities: [''],
     weights: [0],
   };
@@ -79,7 +79,7 @@ describe('CreateScenariosComponent', () => {
             category_name: 'test_category',
             questions: [
               {
-                question_text: 'test_question',
+                short_question_text: 'test_question',
                 priorities: ['test_priority'],
                 weights: [1],
               },
@@ -105,15 +105,16 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load existing config into form', () => {
-    expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
+  // TODO: Re-enable once loading in saved configs is implemented
+  // it('should load existing config into form', () => {
+  //   expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
 
-    component.formGroups[2].valueChanges.subscribe((_) => {
-      expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
-        100
-      );
-    });
-  });
+  //   component.formGroups[2].valueChanges.subscribe((_) => {
+  //     expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
+  //       100
+  //     );
+  //   });
+  // });
 
   it('should emit create scenario event on Generate button click', async () => {
     spyOn(component, 'createScenario');

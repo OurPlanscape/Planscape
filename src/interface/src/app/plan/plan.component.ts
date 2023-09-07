@@ -7,8 +7,10 @@ import {
 } from '@angular/router';
 import {
   BehaviorSubject,
+  combineLatest,
   concatMap,
   filter,
+  map,
   Observable,
   Subject,
   take,
@@ -29,6 +31,16 @@ export class PlanComponent implements OnInit, OnDestroy {
   planOwner$ = new Observable<User | null>();
   planNotFound: boolean = false;
   showOverview$ = new BehaviorSubject<boolean>(false);
+  breadcrumbs$ = this.currentPlan$.pipe(
+    map((plan) => {
+      const crumbs = plan ? [plan.name] : [];
+      const path = this.getPathFromSnapshot();
+      if (path === 'config') {
+        crumbs.push('New Configuration');
+      }
+      return crumbs;
+    })
+  );
 
   openConfigId?: number;
 
@@ -68,8 +80,7 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const routeChild = this.route.snapshot.firstChild;
-    const path = routeChild?.url[0].path;
+    const path = this.getPathFromSnapshot();
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
@@ -97,6 +108,11 @@ export class PlanComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private getPathFromSnapshot() {
+    const routeChild = this.route.snapshot.firstChild;
+    return routeChild?.url[0].path;
+  }
+
   private updatePlanStateFromRoute() {
     const planId = this.route.snapshot.paramMap.get('id');
     this.planService.updateStateWithPlan(planId);
@@ -118,5 +134,13 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   backToOverview() {
     this.router.navigate(['plan', this.plan!.id]);
+  }
+
+  goBack() {
+    if (this.showOverview$.value) {
+      this.router.navigate(['home']);
+    } else {
+      this.backToOverview();
+    }
   }
 }

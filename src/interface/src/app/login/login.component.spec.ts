@@ -6,21 +6,32 @@ import { of } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let fakeAuthService: AuthService;
+  let forgotPasswordButton: MatButtonHarness;
+  let loader: HarnessLoader;
 
-  beforeEach(() => {
+  let dialogSpy: jasmine.Spy;
+  let dialogRefSpyObj = jasmine.createSpyObj({ afterClosed : of({}), close: null });
+  dialogRefSpyObj.componentInstance = { body: '' }; // attach componentInstance to the spy object...
+
+  beforeEach( async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       { login: of({}) },
-      {},
+      {}
     );
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule],
+      imports: [FormsModule, ReactiveFormsModule, MatDialogModule,],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -30,6 +41,12 @@ describe('LoginComponent', () => {
     });
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
+    forgotPasswordButton = await loader.getHarness(MatButtonHarness.with({text: 'Forgot password'}));
+  });
+
+  beforeEach(() => {
+    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(dialogRefSpyObj);
   });
 
   it('can load instance', () => {
@@ -51,7 +68,7 @@ describe('LoginComponent', () => {
 
       expect(fakeAuthService.login).toHaveBeenCalledOnceWith(
         'test@test.com',
-        'password',
+        'password'
       );
     });
   });
@@ -77,4 +94,9 @@ describe('LoginComponent', () => {
       expect(routerStub.navigate).toHaveBeenCalledOnceWith(['home']);
     });
   });
+
+  it('reset password succeeds', async () => {
+    await forgotPasswordButton.click();
+    expect(dialogSpy).toHaveBeenCalled();
+  })
 });

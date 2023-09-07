@@ -32,6 +32,7 @@ describe('SavedScenariosComponent', () => {
         getScenariosForPlan: of([
           {
             id: '1',
+            name: 'name',
             createdTimestamp: 100,
             config: {
               id: 1,
