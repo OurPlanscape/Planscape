@@ -66,7 +66,7 @@ describe('PlanService', () => {
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
       BackendConstants.END_POINT +
-        '/plan/treatment_goals_config/?region_name=sierra-nevada'
+        '/planning/treatment_goals_config/?region_name=sierra-nevada'
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(
