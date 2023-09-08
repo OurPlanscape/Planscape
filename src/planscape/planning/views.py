@@ -227,7 +227,9 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     Retrieves a planning area by ID.
     Requires a logged in user.  Users can see only their owned planning_areas.
 
-    Returns: The planning area in JSON form.
+    Returns: The planning area in JSON form.  The JSON will also include two metadata fields:
+      scenario_count: number of scenarios for this planning area.
+      scenario_latest_updated_at: latest datetime across all scenarios or None if there are no scenarios.
 
     Required params:
       id (int): ID of the planning area to retrieve.
@@ -252,7 +254,10 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     Retrieves all planning areas for a user.
     Requires a logged in user.  Users can see only their owned planning_areas.
 
-    Returns: A list of planning areas in JSON form.
+    Returns: A list of planning areas in JSON form.  Each planning area JSON will also include
+        two metadata fields:
+      scenario_count: number of scenarios for the planning area returned.
+      scenario_latest_updated_at: latest datetime across all scenarios or None if there are no scenarios.
 
     Required params: none
     """
