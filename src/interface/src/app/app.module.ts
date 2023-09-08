@@ -39,6 +39,7 @@ import {
   PlanService,
   PopupService,
   SessionService,
+  ValidationResolver,
 } from './services';
 import { SharedModule } from './shared/shared.module';
 import { SignupComponent } from './signup/signup.component';
@@ -114,6 +115,7 @@ import { WINDOW_PROVIDERS } from './services/window.service';
     CookieService,
     SessionService,
     RedirectGuard,
+    ValidationResolver,
     WINDOW_PROVIDERS,
   ],
   bootstrap: [AppComponent],
