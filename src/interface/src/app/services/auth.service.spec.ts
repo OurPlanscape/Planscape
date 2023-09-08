@@ -146,7 +146,7 @@ describe('AuthService', () => {
   });
 
   describe('signup', () => {
-    it('if successful, makes request to backend /login endpoint', (done) => {
+    it('if successful, does not make a call to the backend login/ endpoint', (done) => {
       const mockResponse = {
         accessToken: 'test',
       };
@@ -154,7 +154,7 @@ describe('AuthService', () => {
       service
         .signup('email', 'password1', 'password2', 'Foo', 'Bar')
         .subscribe((_) => {
-          expect(service.loggedInStatus$.value).toBeTrue();
+          expect(service.loggedInStatus$.value).toBeFalse();
           done();
         });
 
@@ -162,11 +162,6 @@ describe('AuthService', () => {
         BackendConstants.END_POINT + '/dj-rest-auth/registration/'
       );
       req1.flush(mockResponse);
-
-      const req2 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
-      );
-      req2.flush(mockResponse);
     });
 
     it('if unsuccessful, does not make request to backend /login endpoint', (done) => {
