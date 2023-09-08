@@ -279,7 +279,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private formValueToProjectConfig(): any {
+  private formValueToScenario(): Scenario {
     const estimatedCost = this.constraintsFormGroup.get(
       'budgetForm.estimatedCost'
     );
@@ -334,12 +334,11 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       scenarioNameConfig = scenarioName.value;
     }
 
-    let scenario: Scenario = {
+    return {
       name: scenarioNameConfig,
       planning_area: plan_id,
       configuration: projectConfig,
     };
-    return scenario;
   }
 
   private updatePriorityWeightsFormControls(): void {
@@ -364,7 +363,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.generatingScenario = true;
     // TODO Add error catching for failed scenario creation
     this.planService
-      .createScenario(this.formValueToProjectConfig())
+      .createScenario(this.formValueToScenario())
       .subscribe((_) => {
         const planId = this.plan$.getValue()?.id;
         this.router.navigate(['scenario-confirmation', planId]);
