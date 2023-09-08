@@ -10,7 +10,7 @@ import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dial
 
 @Component({
   selector: 'app-login',
-  templateUrl: './login.component.ng.html',
+  templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
