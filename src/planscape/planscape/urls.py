@@ -16,7 +16,6 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from dj_rest_auth.registration.views import VerifyEmailView
-from dj_rest_auth.views import PasswordResetConfirmView
 
 urlpatterns = [
     path('planscape-backend/admin/', admin.site.urls),
@@ -34,8 +33,4 @@ urlpatterns = [
     path(
         'planscape-backend/dj-rest-auth/registration/account-confirm-email/',
         VerifyEmailView.as_view()),
-    # TODO: We don't actually need this since we'll be using
-    # a different endpoint.
-    path('planscape-backend/dj-rest-auth/password/reset/confirm/<uidb64>/<token>/',
-         PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]
