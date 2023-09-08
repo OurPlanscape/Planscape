@@ -11,6 +11,7 @@ import { Subject, take, takeUntil } from 'rxjs';
 
 import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-top-bar',
