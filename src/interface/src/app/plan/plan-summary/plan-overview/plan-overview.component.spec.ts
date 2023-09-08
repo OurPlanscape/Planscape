@@ -69,7 +69,7 @@ describe('PlanOverviewComponent', () => {
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
     let createScenarioButton = await loader.getHarness(
-      MatButtonHarness.with({ text: /NEW CONFIGURATION/ })
+      MatButtonHarness.with({ text: /NEW SCENARIO/ })
     );
 
     await createScenarioButton.click();
