@@ -13,9 +13,9 @@
           <mat-header-cell *matHeaderCellDef>Scenario</mat-header-cell>
           <mat-cell class="name-column" *matCellDef="let element">
             <div class="hover-indicator"></div>
-   
+
             {{ element.name }}
-            
+
           </mat-cell>
         </ng-container>
 
@@ -38,7 +38,7 @@
           <mat-header-cell *matHeaderCellDef>
             Estimated cost range
           </mat-header-cell>
-          <mat-cell  class="data-cell" *matCellDef="let element">{{element.configuration.est_cost}}</mat-cell>
+          <mat-cell class="data-cell" *matCellDef="let element">{{element.configuration.est_cost}}</mat-cell>
         </ng-container>
 
         <!-- Status Column -->
@@ -62,28 +62,18 @@
         </ng-container>
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row
-        [ngClass]="{'highlight': highlightedId != row.id}"
-        [ngClass]="{'highlight': highlightedId == row.id}"
-          *matRowDef="let row; columns: displayedColumns"
-          (click)="highlightScenario(row.id)" 
-          (dblclick)="viewScenario(row.id)"></mat-row> 
+        <mat-row [ngClass]="{'scenario-row': highlightedId != row.id, 'highlight': highlightedId == row.id}"
+          *matRowDef="let row; columns: displayedColumns" (click)="highlightScenario(row.id)"
+          (dblclick)="viewScenario(row.id)"></mat-row>
       </mat-table>
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button
-        mat-button
-        [disabled]="!showDeleteButton()"
-        (click)="deleteSelectedScenarios()">
+      <button mat-button [disabled]="highlightedId == '-1'" (click)="deleteSelectedScenarios()">
         <mat-icon>delete</mat-icon>
         DELETE
       </button>
-      <button
-        mat-raised-button
-        [disabled]="!showViewButton()"
-        color="primary"
-        (click)="viewScenario()">
+      <button mat-raised-button [disabled]="highlightedId == '-1'" color="primary" (click)="viewScenario()">
         VIEW
       </button>
     </mat-card-actions>
