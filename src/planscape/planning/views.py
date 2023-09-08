@@ -11,7 +11,7 @@ from config.treatment_goals_config import TreatmentGoalsConfig
 from django.conf import settings as djangoSettings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Count
+from django.db.models import Count, Max
 from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
@@ -240,7 +240,8 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             _serialize_planning_area(
-                get_object_or_404(user.planning_areas, id=request.GET['id']),
+                get_object_or_404(user.planning_areas.annotate(scenario_count=Count('scenarios', distinct=True))\
+                                  .annotate(scenario_latest_updated_at=Max('scenarios__updated_at')), id=request.GET['id']),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -263,7 +264,10 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 
 # TODO: This could be really slow; consider paging or perhaps
 # fetching everything but geometries (since they're huge) for performance gains.
-        planning_areas = PlanningArea.objects.filter(user=user_id)
+        planning_areas = PlanningArea.objects.annotate(scenario_count=Count('scenarios', distinct=True))\
+                                             .annotate(scenario_latest_updated_at=Max('scenarios__updated_at'))\
+                                             .filter(user=user_id)
+
         return JsonResponse(
             [_serialize_planning_area(planning_area, False) for planning_area in planning_areas],
             safe=False)
