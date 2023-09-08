@@ -48,7 +48,6 @@ describe('ScenarioDetailsComponent', () => {
           },
         ],
       },
-      
     };
     fakeService = jasmine.createSpyObj('PlanService', {
       getScenario: of(fakeScenario),
@@ -64,10 +63,7 @@ describe('ScenarioDetailsComponent', () => {
         ReactiveFormsModule,
         SharedModule,
       ],
-      declarations: [
-        ScenarioDetailsComponent,
-        MapLayersComponent,
-      ],
+      declarations: [ScenarioDetailsComponent, MapLayersComponent],
       providers: [
         { provide: MatSnackBar, useValue: snackbarSpy },
         { provide: PlanService, useValue: fakeService },

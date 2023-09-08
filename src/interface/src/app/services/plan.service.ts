@@ -483,20 +483,12 @@ export class PlanService {
   }
 
   private convertBackendScenarioToScenario(scenario: any): Scenario {
-    console.log(scenario);
-    console.log(this.convertToScenarioConfig(scenario.configuration));
-    console.log({ id: scenario.id,
-      name: scenario.name,
-      planning_area: scenario.planning_area,
-      configuration: this.convertToScenarioConfig(scenario.configuration),
-      // projectAreas: this.convertToProjectAreas(scenario.project_areas),
-      notes: scenario.notes});
     return {
       id: scenario.id,
       name: scenario.name,
       planning_area: scenario.planning_area,
       configuration: this.convertToScenarioConfig(scenario.configuration),
-      
+
       notes: scenario.notes,
     };
   }
