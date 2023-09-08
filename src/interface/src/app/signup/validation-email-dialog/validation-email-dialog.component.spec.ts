@@ -13,7 +13,7 @@ import { AuthService } from 'src/app/services';
 
 import { ValidationEmailDialog } from './validation-email-dialog.component';
 
-fdescribe('ValidationEmailDialogComponent', () => {
+describe('ValidationEmailDialogComponent', () => {
   let component: ValidationEmailDialog;
   let fixture: ComponentFixture<ValidationEmailDialog>;
   let loader: HarnessLoader;
