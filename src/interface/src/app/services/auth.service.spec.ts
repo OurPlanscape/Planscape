@@ -413,7 +413,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
       };
 
-      service.deleteUser(user).subscribe((res) => {
+      service.deleteUser(user, 'password').subscribe((res) => {
         expect(res).toBeTrue();
         done();
       });
@@ -422,7 +422,7 @@ describe('AuthService', () => {
         BackendConstants.END_POINT + '/users/delete/'
       );
       expect(req.request.method).toEqual('POST');
-      expect(req.request.body).toEqual({ email: 'test@test.com' });
+      expect(req.request.body).toEqual({ email: 'test@test.com', password: 'password' });
       req.flush({ deleted: true });
       httpTestingController.verify();
     });
@@ -436,7 +436,7 @@ describe('AuthService', () => {
       email: 'test@test.com',
     };
 
-    service.deleteUser(user).subscribe((res) => {
+    service.deleteUser(user, 'password').subscribe((res) => {
       expect(service.loggedInStatus$.value).toBeFalse();
       expect(service.loggedInUser$.value).toBeNull();
       done();

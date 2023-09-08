@@ -29,8 +29,11 @@ def delete_user(request: HttpRequest) -> HttpResponse:
             raise ValueError("Must be logged in")
         body = json.loads(request.body)
         user_email_to_delete = body.get('email', None)
+        password = body.get('password', None)
         if user_email_to_delete is None or not isinstance(user_email_to_delete, str):
             raise ValueError("User email must be provided as a string")
+        if not logged_in_user.check_password(password):
+            raise ValueError("Invalid password")
         if user_email_to_delete != logged_in_user.email:
             raise ValueError("Cannot delete another user account")
 

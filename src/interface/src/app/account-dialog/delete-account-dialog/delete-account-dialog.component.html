@@ -5,19 +5,34 @@
     <b>Are you sure you want to delete your account?</b>
     <br />
     This will permanently erase your account and delete any plans that you own, including any shared plans.
+    <br />
+    <a href="/home">View my plans</a>
   </p>
 
-  <div class="button-row">
-    <button mat-raised-button (click)="cancel()">CANCEL</button>
+      <form [formGroup]="deleteAccountForm">
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="currentPassword"
+            matInput />
+        </mat-form-field>
 
-    <button
-      mat-raised-button
-      color="warn"
-      (click)="deleteAccount()"
-      [disabled]="disableDeleteButton">
-      DELETE
-    </button>
-  </div>
+        <div class="button-row">
+
+          <button
+            mat-raised-button
+            color="warn"
+            (click)="deleteAccount()"
+            [disabled]="disableDeleteButton">
+            DELETE
+          </button>
+
+          <button mat-raised-button (click)="cancel()">CANCEL</button>
+
+        </div>
+      </form>
 
   <p *ngIf="error">{{ error }}</p>
 </div>
