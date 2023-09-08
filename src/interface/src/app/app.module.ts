@@ -5,6 +5,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   NgxGoogleAnalyticsModule,
@@ -50,6 +51,7 @@ import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { ValidationEmailDialog } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialog } from './login/reset-password-dialog/reset_password_dialog';
 
@@ -79,6 +81,7 @@ import { ResetPasswordDialog } from './login/reset-password-dialog/reset_passwor
     PlanningAreasComponent,
     PreviewComponent,
     ResetPasswordDialog,
+    ValidationEmailDialog,
   ],
   imports: [
     AppRoutingModule,
@@ -97,6 +100,7 @@ import { ResetPasswordDialog } from './login/reset-password-dialog/reset_passwor
     NgxGoogleAnalyticsModule.forRoot(environment.google_analytics_id),
     NgxGoogleAnalyticsRouterModule,
     PlanModule,
+    RouterModule,
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,

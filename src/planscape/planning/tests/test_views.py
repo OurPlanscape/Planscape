@@ -501,6 +501,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(planning_areas), 2)
         self.assertEqual(planning_areas[0]['scenario_count'],1)
         self.assertIsNotNone(planning_areas[0]['scenario_latest_updated_at'])
+        dump(planning_areas[0]['scenario_latest_updated_at'])
         self.assertEqual(planning_areas[1]['scenario_count'],0)
         self.assertIsNone(planning_areas[1]['scenario_latest_updated_at'])
 
@@ -520,12 +521,11 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(response.json()), 0)
 
 
-# EndtoEnd test that lists, creates a planning_area, tests what was stored,
-# and then deletes it.
+# EndtoEnd test that lists, creates a planning_area, creates a scenario,
+# tests what was stored, and then deletes everything.
 # This covers the basic happiest of cases and should not be a substitute
 # for the main unit tests.
-# TODO: Add scenario steps
-class EndtoEndPlanningAreaTest(TransactionTestCase):
+class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -634,6 +634,10 @@ class EndtoEndPlanningAreaTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
+        # checking for a blank database
+        self.assertEqual(PlanningArea.objects.count(), 0)
+        self.assertEqual(Scenario.objects.count(), 0)
+        self.assertEqual(ScenarioResult.objects.count(), 0)
 
 #### SCENARIO Tests ####
 

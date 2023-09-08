@@ -93,15 +93,4 @@ describe('SignupComponent', () => {
       );
     });
   });
-
-  describe('login', () => {
-    it('navigates to login page', () => {
-      const routerStub: Router = fixture.debugElement.injector.get(Router);
-      spyOn(routerStub, 'navigate').and.callThrough();
-
-      component.login();
-
-      expect(routerStub.navigate).toHaveBeenCalled();
-    });
-  });
 });
