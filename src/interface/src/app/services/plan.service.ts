@@ -13,12 +13,13 @@ import {
 import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
 import {
+  Scenario,
+  ScenarioConfig,
   PlanConditionScores,
   PlanPreview,
   Priority,
   ProjectArea,
   ProjectConfig,
-  Scenario,
   TreatmentGoalConfig,
 } from './../types/plan.types';
 import { SessionService, MapService } from '../services';
@@ -464,21 +465,39 @@ export class PlanService {
     };
   }
 
+  private convertToScenarioConfig(config: any): ScenarioConfig {
+    return {
+      est_cost: config.est_cost,
+      max_budget: config.max_budget,
+      min_distance_from_road: config.min_distance_from_road,
+      max_slope: config.max_slope,
+      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      priorities: config.priorities,
+      weights: config.weights,
+      excluded_areas: config.excluded_areas,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        config.creation_timestamp
+      ),
+      projectAreas: this.convertToProjectAreas(config.project_areas),
+    };
+  }
+
   private convertBackendScenarioToScenario(scenario: any): Scenario {
+    console.log(scenario);
+    console.log(this.convertToScenarioConfig(scenario.configuration));
+    console.log({ id: scenario.id,
+      name: scenario.name,
+      planning_area: scenario.planning_area,
+      configuration: this.convertToScenarioConfig(scenario.configuration),
+      // projectAreas: this.convertToProjectAreas(scenario.project_areas),
+      notes: scenario.notes});
     return {
       id: scenario.id,
       name: scenario.name,
-      plan_id: scenario.plan,
-      projectId: scenario.project,
-      owner: scenario.owner,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        scenario.creation_timestamp
-      ),
-      config: this.convertToProjectConfig(scenario.config),
-      priorities: this.convertToPriorities(scenario.priorities),
-      projectAreas: this.convertToProjectAreas(scenario.project_areas),
+      planning_area: scenario.planning_area,
+      configuration: this.convertToScenarioConfig(scenario.configuration),
+      
       notes: scenario.notes,
-      favorited: scenario.favorited,
     };
   }
 
@@ -574,7 +593,7 @@ export class PlanService {
       all: {
         ...currentState.all,
       },
-      currentScenarioId: scenarioId,
+      currentScenarioId: Number(scenarioId),
     });
 
     this.planState$.next(updatedState);

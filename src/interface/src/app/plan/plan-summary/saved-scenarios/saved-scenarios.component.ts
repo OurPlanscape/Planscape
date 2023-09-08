@@ -24,13 +24,13 @@ export class SavedScenariosComponent implements OnInit {
     this planning area can also view all the scenarios within it.
   `;
 
+  highlightedId:string = '-1';
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
-    'id',
-    'starred',
+    'name',
     'projectAreas',
     'acresTreated',
-    'estimatedCost',
+    'estimated_cost',
     'status',
     'owner',
     'createdTimestamp',
@@ -57,10 +57,11 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   viewScenario(id?: string): void {
-    if (!id) {
-      id = this.scenarios.find((scenario) => scenario.selected)?.id;
-    }
-    this.router.navigate(['scenario', id], { relativeTo: this.route });
+    this.router.navigate(['config', this.highlightedId], { relativeTo: this.route });
+  }
+
+  highlightScenario(id: string): void {
+    this.highlightedId = id;
   }
 
   showDeleteButton(): boolean {
@@ -68,7 +69,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   showViewButton(): boolean {
-    return this.scenarios.filter((scenario) => scenario.selected).length === 1;
+    return this.highlightedId!='-1';
   }
 
   deleteSelectedScenarios(): void {
@@ -76,7 +77,7 @@ export class SavedScenariosComponent implements OnInit {
       .deleteScenarios(
         this.scenarios
           .filter((scenario) => scenario.selected)
-          .map((scenario) => scenario.id)
+          .map((scenario) => String(scenario.id))
       )
       .subscribe({
         next: (deletedIds) => {
@@ -93,15 +94,4 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
-  toggleFavorited(scenario: ScenarioRow): void {
-    scenario.favorited = !scenario.favorited;
-    if (scenario.favorited) {
-      this.planService.favoriteScenario(scenario.id).pipe(take(1)).subscribe();
-    } else {
-      this.planService
-        .unfavoriteScenario(scenario.id)
-        .pipe(take(1))
-        .subscribe();
-    }
-  }
 }

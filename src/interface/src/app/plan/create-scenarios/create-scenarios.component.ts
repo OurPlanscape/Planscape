@@ -334,12 +334,12 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       scenarioNameConfig = scenarioName.value;
     }
 
-    let scenarioConfig: ScenarioConfig = {
+    let scenario: Scenario = {
       name: scenarioNameConfig,
       planning_area: plan_id,
       configuration: projectConfig,
     };
-    return scenarioConfig;
+    return scenario;
   }
 
   private updatePriorityWeightsFormControls(): void {
