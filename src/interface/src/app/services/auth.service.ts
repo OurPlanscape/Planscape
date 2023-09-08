@@ -269,13 +269,12 @@ export class ValidationResolver implements Resolve<boolean> {
     ): Observable<boolean> {
     const token = route.paramMap.get('id');
     if (!token) {
-      this.router.navigate(['login']);
+      this.router.navigate(['home']);
     }
-    this.authService.validateAccount(token!)
-    return this.authService.refreshLoggedInUser().pipe(
+    return this.authService.validateAccount(token!).pipe(
       map((_) => true),
-      catchError((_) => {
-        this.router.navigate(['login']);
+      catchError((error: Error) => {
+        this.router.navigate(['home']);
         return of(false);
       })
     );
