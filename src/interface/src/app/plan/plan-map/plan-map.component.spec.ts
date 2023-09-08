@@ -165,7 +165,7 @@ describe('PlanMapComponent', () => {
 
       fakePlanState$.next({
         ...emptyPlanState,
-        currentScenarioId: '5',
+        currentScenarioId: 5,
       });
 
       expect(spy).toHaveBeenCalledWith(fakePlan, '#77aff3');

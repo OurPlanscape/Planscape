@@ -12,7 +12,6 @@ import * as L from 'leaflet';
 import { PlanService } from './../../services/plan.service';
 import { Scenario } from './../../types';
 import { MapLayersComponent } from './map-layers/map-layers.component';
-import { OutcomeComponent } from './outcome/outcome.component';
 import { ScenarioDetailsComponent } from './scenario-details.component';
 
 describe('ScenarioDetailsComponent', () => {
@@ -31,24 +30,25 @@ describe('ScenarioDetailsComponent', () => {
     );
 
     fakeScenario = {
-      id: '1',
+      id: 1,
       name: 'name',
-      config: {
-        id: 1,
+      planning_area: '1',
+      configuration: {
         max_budget: 200,
+        projectAreas: [
+          {
+            id: '1',
+            projectId: '1',
+            projectArea: new L.Polygon([
+              new L.LatLng(38.715517043571914, -120.42857302225725),
+              new L.LatLng(38.47079787227401, -120.5164425608172),
+              new L.LatLng(38.52668443555346, -120.11828371421737),
+            ]).toGeoJSON(),
+            estimatedAreaTreated: 5000,
+          },
+        ],
       },
-      projectAreas: [
-        {
-          id: '1',
-          projectId: '1',
-          projectArea: new L.Polygon([
-            new L.LatLng(38.715517043571914, -120.42857302225725),
-            new L.LatLng(38.47079787227401, -120.5164425608172),
-            new L.LatLng(38.52668443555346, -120.11828371421737),
-          ]).toGeoJSON(),
-          estimatedAreaTreated: 5000,
-        },
-      ],
+      
     };
     fakeService = jasmine.createSpyObj('PlanService', {
       getScenario: of(fakeScenario),
@@ -67,7 +67,6 @@ describe('ScenarioDetailsComponent', () => {
       declarations: [
         ScenarioDetailsComponent,
         MapLayersComponent,
-        OutcomeComponent,
       ],
       providers: [
         { provide: MatSnackBar, useValue: snackbarSpy },
