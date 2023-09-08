@@ -501,6 +501,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(planning_areas), 2)
         self.assertEqual(planning_areas[0]['scenario_count'],1)
         self.assertIsNotNone(planning_areas[0]['scenario_latest_updated_at'])
+        dump(planning_areas[0]['scenario_latest_updated_at'])
         self.assertEqual(planning_areas[1]['scenario_count'],0)
         self.assertIsNone(planning_areas[1]['scenario_latest_updated_at'])
 
