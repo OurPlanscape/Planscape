@@ -1,12 +1,14 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import {
   MAT_DIALOG_DATA,
   MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { AuthService } from 'src/app/services';
@@ -47,7 +49,7 @@ describe('DeleteAccountDialogComponent', () => {
       {}
     );
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [FormsModule, MaterialModule, ReactiveFormsModule, NoopAnimationsModule],
       declarations: [DeleteAccountDialogComponent],
       providers: [
         {
@@ -95,12 +97,15 @@ describe('DeleteAccountDialogComponent', () => {
     const deleteButton: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /DELETE/ })
     );
+    component.deleteAccountForm.setValue({
+      currentPassword: 'password',
+    });
 
     await deleteButton.click();
 
     expect(fakeAuthService.deleteUser).toHaveBeenCalledOnceWith({
       email: 'test@test.com',
-    });
+    }, 'password');
     expect(dialogRef.close).toHaveBeenCalledOnceWith({ deletedAccount: true });
   });
 });
