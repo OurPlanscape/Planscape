@@ -70,12 +70,16 @@ export class AuthService {
         email,
         first_name: firstName,
         last_name: lastName,
-      })
-      .pipe(
-        concatMap((_) => {
-          return this.login(email, password1);
-        })
-      );
+      });
+  }
+
+  resendValidationEmail(
+    email: string,
+  ) {
+    return this.http
+      .post(this.API_ROOT.concat('registration/resend-email/'), {
+        email,
+      });
   }
 
   logout() {
