@@ -15,7 +15,7 @@ import { CreateScenariosComponent } from './plan/create-scenarios/create-scenari
 import { PlanComponent } from './plan/plan.component';
 import { ScenarioConfirmationComponent } from './plan/scenario-confirmation/scenario-confirmation.component';
 import { ScenarioDetailsComponent } from './plan/scenario-details/scenario-details.component';
-import { AuthGuard } from './services';
+import { AuthGuard, ValidationResolver } from './services';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './redirect.guard';
 
@@ -41,6 +41,11 @@ const routes: Routes = [
         title: 'Signup',
         component: SignupComponent,
         canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'validate/:id',
+        redirectTo: 'map',
+        resolve: [ValidationResolver],
       },
       {
         path: 'map',
