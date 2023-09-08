@@ -77,11 +77,23 @@
       mat-menu-item
       *ngIf="loggedIn$ | async"
       (click)="logout()"
-      data-id="logout">
+      data-id="logout"
+      class="menu-link">
       Log out
     </button>
-    <a mat-menu-item *ngIf="(loggedIn$ | async) === false" routerLink="/login">
-      Login
+    <a
+      mat-menu-item
+      *ngIf="(loggedIn$ | async) === false"
+      routerLink="/login"
+      class="menu-link">
+      Log in
+    </a>
+    <a
+      mat-menu-item
+      *ngIf="(loggedIn$ | async) === false"
+      routerLink="/signup"
+      class="menu-link">
+      Create account
     </a>
   </mat-menu>
 
