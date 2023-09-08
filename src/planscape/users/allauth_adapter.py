@@ -10,6 +10,7 @@ class CustomAllauthAdapter(DefaultAccountAdapter):
         return confirmation_url
 
     def generate_unique_username(self, txts, regex=None):
-        # txt is passed in as [first_name, last_name, email, username, "user"].
-        # Return the email.
+        # txt is passed in as [first_name, last_name, email, username, "user"]
+        # in the DefaultAccountAdapter provided by django-allauth.
+        # Return the email part of `txts`.
         return txts[2]
