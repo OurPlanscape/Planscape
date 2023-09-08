@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "forsys",
     "leaflet",
+    'password_policies',
     "rest_framework",
     "rest_framework_gis",
     "rest_framework_simplejwt",
@@ -84,6 +85,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    'password_policies.middleware.PasswordExpirationMiddleware',
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -146,6 +148,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+    {
+        'NAME': 'password_policies.password_validation.ReusedPasswordValidator',
+        'OPTIONS': {
+            'record_length': 10,
+        }
     },
 ]
 

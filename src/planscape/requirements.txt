@@ -23,3 +23,4 @@ boto3
 pytz
 scipy
 sentry-sdk
+django-password-policies-validator>=1.0.2
