@@ -17,9 +17,6 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
 
         """
         domain = settings.PASSWORD_RESET_DOMAIN
-        # TODO: current_site is expected by the default template. We should not
-        # need a Site object for our custom template.
-        current_site = get_current_site(request)
         token_generator = kwargs.get('token_generator', default_token_generator)
         email = self.cleaned_data['email']
         for user in self.users:
@@ -36,7 +33,9 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
             # We don't specify a username because authentication is based
             # on email.
             context = {
-                "current_site": current_site,
+                # TODO: Change the template since the default template expects
+                # a Site object.
+                "current_site": domain,
                 "user": user,
                 "password_reset_url": url,
                 "request": request,
