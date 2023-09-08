@@ -229,7 +229,8 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
     Returns: The planning area in JSON form.  The JSON will also include two metadata fields:
       scenario_count: number of scenarios for this planning area.
-      scenario_latest_updated_at: latest datetime across all scenarios or None if there are no scenarios.
+      scenario_latest_updated_at: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+                                  None if there are no scenarios.
 
     Required params:
       id (int): ID of the planning area to retrieve.
@@ -257,7 +258,8 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     Returns: A list of planning areas in JSON form.  Each planning area JSON will also include
         two metadata fields:
       scenario_count: number of scenarios for the planning area returned.
-      scenario_latest_updated_at: latest datetime across all scenarios or None if there are no scenarios.
+      scenario_latest_updated_at: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+                                  None if there are no scenarios.
 
     Required params: none
     """
