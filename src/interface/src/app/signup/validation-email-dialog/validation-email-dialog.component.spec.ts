@@ -11,11 +11,11 @@ import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { AuthService } from 'src/app/services';
 
-import { DeleteAccountDialogComponent } from './delete-account-dialog.component';
+import { ValidationEmailDialog } from './validation-email-dialog.component';
 
-describe('DeleteAccountDialogComponent', () => {
-  let component: DeleteAccountDialogComponent;
-  let fixture: ComponentFixture<DeleteAccountDialogComponent>;
+describe('ValidationEmailDialogComponent', () => {
+  let component: ValidationEmailDialog;
+  let fixture: ComponentFixture<ValidationEmailDialog>;
   let loader: HarnessLoader;
   let fakeAuthService: AuthService;
 
@@ -48,7 +48,7 @@ describe('DeleteAccountDialogComponent', () => {
     );
     await TestBed.configureTestingModule({
       imports: [MaterialModule],
-      declarations: [DeleteAccountDialogComponent],
+      declarations: [ValidationEmailDialog],
       providers: [
         {
           provide: AuthService,
@@ -63,13 +63,13 @@ describe('DeleteAccountDialogComponent', () => {
           useValue: fakeDialog,
         },
         {
-          provide: MatDialogRef<DeleteAccountDialogComponent>,
+          provide: MatDialogRef<ValidationEmailDialog>,
           useValue: fakeDialogRef,
         },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DeleteAccountDialogComponent);
+    fixture = TestBed.createComponent(ValidationEmailDialog);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
@@ -79,7 +79,7 @@ describe('DeleteAccountDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('cancel button should close dialog', async () => {
+  it('OK button should close dialog', async () => {
     const dialogRef = fixture.debugElement.injector.get(MatDialogRef);
     const cancelButton: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /CANCEL/ })
@@ -90,7 +90,7 @@ describe('DeleteAccountDialogComponent', () => {
     expect(dialogRef.close).toHaveBeenCalledOnceWith();
   });
 
-  it('delete button should call AuthService and close dialog', async () => {
+  it('resubmit link should invoke the email service again', async () => {
     const dialogRef = fixture.debugElement.injector.get(MatDialogRef);
     const deleteButton: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /DELETE/ })
