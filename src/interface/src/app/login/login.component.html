@@ -1,0 +1,79 @@
+<div class="signin-root">
+  <div class="signin-card-container">
+    <div class="signin-card">
+      <h1 class="signin-title">Sign in to Planscape</h1>
+
+      <form [formGroup]="form" (ngSubmit)="login()">
+        <mat-form-field appearance="fill">
+          <mat-label>Email</mat-label>
+          <input type="text" required formControlName="email" matInput />
+        </mat-form-field>
+
+        <mat-form-field appearance="fill">
+          <mat-label>Password</mat-label>
+          <input type="password" required formControlName="password" matInput />
+        </mat-form-field>
+
+        <mat-card-actions>
+          <a
+            mat-flat-button
+            i18n="Text on a button to reset password"
+            (click)="resetPassword()"
+          >
+            Forgot password
+          </a>
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="!form.valid">
+            Sign in
+          </button>
+        </mat-card-actions>
+        <mat-error class="mat-error" *ngIf="accountError">
+          {{ accountError }}
+        </mat-error>
+      </form>
+
+      <mat-divider></mat-divider>
+
+      <button mat-stroked-button color="primary" (click)="continueAsGuest()">
+        Continue as Guest
+      </button>
+
+      <p class="signup-text">
+        <a href="signup/">Create an account</a>
+        to save your work & collaborate with others
+      </p>
+    </div>
+
+    <div class="disclaimer-text">
+      <p>{{ text1 }}</p>
+    </div>
+  </div>
+
+  <div class="info-text-container">
+    <h1>A new wildfire resilience planning tool</h1>
+
+    <h3>{{ text2 }}</h3>
+
+    <ul>
+      <li *ngFor="let bullet of bulletPoints">
+        <h3>{{ bullet }}</h3>
+      </li>
+    </ul>
+
+    <div class="data-info-box">
+      <p>
+        The data used is based on California's Regional Resource Kits, developed
+        by the California Wildfire & Forest Resilience Task Force. You can find
+        more detailed information about these
+        <a
+          href="https://wildfiretaskforce.org/regional-resource-kits-page/#kits">
+          here
+        </a>
+        .
+      </p>
+    </div>
+  </div>
+</div>
