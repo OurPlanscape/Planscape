@@ -9,19 +9,30 @@
     <a href="/home">View my plans</a>
   </p>
 
-  <div class="button-row">
+      <form [formGroup]="deleteAccountForm">
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="currentPassword"
+            matInput />
+        </mat-form-field>
 
-    <button
-      mat-raised-button
-      color="warn"
-      (click)="deleteAccount()"
-      [disabled]="disableDeleteButton">
-      DELETE
-    </button>
+        <div class="button-row">
 
-    <button mat-raised-button (click)="cancel()">CANCEL</button>
+          <button
+            mat-raised-button
+            color="warn"
+            (click)="deleteAccount()"
+            [disabled]="disableDeleteButton">
+            DELETE
+          </button>
 
-  </div>
+          <button mat-raised-button (click)="cancel()">CANCEL</button>
+
+        </div>
+      </form>
 
   <p *ngIf="error">{{ error }}</p>
 </div>
