@@ -41,7 +41,6 @@ describe('SignupComponent', () => {
     });
 
     it('disables submit if required fields are missing', () => {
-
       expect(component.form.valid).toBeFalse();
 
       component.form.get('firstName')?.setValue('Foo');

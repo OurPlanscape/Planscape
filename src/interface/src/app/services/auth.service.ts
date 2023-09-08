@@ -144,7 +144,11 @@ export class AuthService {
       );
   }
 
-  changePassword(currentPassword: string, newPassword1: string, newPassword2: string): Observable<any> {
+  changePassword(
+    currentPassword: string,
+    newPassword1: string,
+    newPassword2: string
+  ): Observable<any> {
     return this.http.post(
       this.API_ROOT.concat('password/change/'),
       {
@@ -156,6 +160,30 @@ export class AuthService {
         withCredentials: true,
       }
     );
+  }
+
+  sendPasswordResetEmail(email: string): Observable<any> {
+    return this.http.post(
+      this.API_ROOT.concat('password/reset/'),
+      {
+        email: email,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  resetPassword(token: string, userId: string): Observable<boolean> {
+    return this.http
+      .get(this.API_ROOT.concat('reset/confirm/', userId, '/', token, '/'), {
+        withCredentials: true,
+      })
+      .pipe(
+        map((response: any) => {
+          return response.success;
+        })
+      );
   }
 
   /** Gets a user given the id. */
