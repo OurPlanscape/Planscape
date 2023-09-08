@@ -151,6 +151,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'password_policies.password_validation.ReusedPasswordValidator',
+        'OPTIONS': {
+            'record_length': 10,
+        }
     },
 ]
 
