@@ -2,36 +2,37 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
-import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
-
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
-  let fakeAuthService: AuthService;
+  let fakeAuthService: jasmine.SpyObj<AuthService>;
   let forgotPasswordButton: MatButtonHarness;
   let loader: HarnessLoader;
 
   let dialogSpy: jasmine.Spy;
-  let dialogRefSpyObj = jasmine.createSpyObj({ afterClosed : of({}), close: null });
+  let dialogRefSpyObj = jasmine.createSpyObj({
+    afterClosed: of({}),
+    close: null,
+  });
   dialogRefSpyObj.componentInstance = { body: '' }; // attach componentInstance to the spy object...
 
-  beforeEach( async () => {
+  beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
-    fakeAuthService = jasmine.createSpyObj<AuthService>(
-      'AuthService',
-      { login: of({}) },
-      {}
-    );
+    fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
+      'login',
+      'sendPasswordResetEmail',
+    ]);
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatDialogModule,],
+      imports: [FormsModule, ReactiveFormsModule, MatDialogModule],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -42,11 +43,15 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
-    forgotPasswordButton = await loader.getHarness(MatButtonHarness.with({text: 'Forgot password'}));
+    forgotPasswordButton = await loader.getHarness(
+      MatButtonHarness.with({ text: 'Forgot password' })
+    );
   });
 
   beforeEach(() => {
-    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(dialogRefSpyObj);
+    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(
+      dialogRefSpyObj
+    );
   });
 
   it('can load instance', () => {
@@ -63,6 +68,10 @@ describe('LoginComponent', () => {
     it('calls auth service if form is valid', () => {
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password')?.setValue('password');
+
+      const successEmitter = new BehaviorSubject<any>({});
+
+      fakeAuthService.login.and.returnValue(successEmitter);
 
       component.login();
 
@@ -96,7 +105,14 @@ describe('LoginComponent', () => {
   });
 
   it('reset password succeeds', async () => {
+    const successEmitter = new BehaviorSubject<void>(undefined);
+
+    fakeAuthService.sendPasswordResetEmail.and.returnValue(successEmitter);
+
     await forgotPasswordButton.click();
+    successEmitter.subscribe((o) => {
+      expect(o).toBe(undefined);
+    });
     expect(dialogSpy).toHaveBeenCalled();
-  })
+  });
 });
