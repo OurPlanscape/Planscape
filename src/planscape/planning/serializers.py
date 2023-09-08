@@ -9,10 +9,11 @@ from planning.models import (PlanningArea, Scenario, ScenarioResult)
 
 class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     scenario_count = IntegerField(read_only=True, required=False)
-    scenario_lastmodified = DateTimeField(read_only=True, required=False)
+    scenario_latest_updated_at = DateTimeField(read_only=True, required=False)
     notes = CharField(required = False)
+
     class Meta:
-        fields = ("id", "user", "name", "notes", "region_name", "scenario_count", "scenario_lastmodified")
+        fields = ("id", "user", "name", "notes", "region_name", "scenario_count", "scenario_latest_updated_at")
         model = PlanningArea
         geo_field = "geometry"
 
