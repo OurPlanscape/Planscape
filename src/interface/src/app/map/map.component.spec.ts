@@ -41,6 +41,7 @@ import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
+import { FeaturesModule } from '../features/features.module';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -172,6 +173,7 @@ describe('MapComponent', () => {
         MaterialModule,
         BrowserAnimationsModule,
         HttpClientTestingModule,
+        FeaturesModule,
       ],
       schemas: [NO_ERRORS_SCHEMA],
       declarations: [

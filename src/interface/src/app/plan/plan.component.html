@@ -2,8 +2,7 @@
   (goBack)="goBack()"
   [breadcrumbs]="(breadcrumbs$ | async) || []"
   *featureFlag="'new_navigation'"></app-nav-bar>
-
-<div class="root-container">
+<div class="root-container" [ngClass]="{ 'with-navbar': hasNewNavigation }">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
