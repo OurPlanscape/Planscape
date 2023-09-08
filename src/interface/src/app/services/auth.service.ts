@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CanActivate, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Resolve, Router, RouterStateSnapshot } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   BehaviorSubject,
@@ -94,6 +94,13 @@ export class AuthService {
           this.snackbar.open(response.detail);
         })
       );
+  }
+
+  validateAccount(token: string) {
+    return this.http
+      .post(this.API_ROOT.concat('registration/account-confirm-email/'), {
+        key: token,
+      });
   }
 
   private refreshToken() {
@@ -245,6 +252,33 @@ export class AuthGuard implements CanActivate {
       map((_) => true),
       catchError((_) => {
         this.router.navigate(['login']);
+        return of(false);
+      })
+    );
+  }
+}
+
+/** The ValidateGuard validates the email address of a new account, and logs the user in while at it.
+ */
+@Injectable()
+export class ValidationResolver implements Resolve<boolean> {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
+
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+    ): Observable<boolean> {
+    const token = route.paramMap.get('id');
+    if (!token) {
+      this.router.navigate(['home']);
+    }
+    return this.authService.validateAccount(token!).pipe(
+      map((_) => true),
+      catchError((error: Error) => {
+        this.router.navigate(['home']);
         return of(false);
       })
     );
