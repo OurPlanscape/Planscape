@@ -194,6 +194,7 @@ describe('TopBarComponent', () => {
 
   describe('logout', () => {
     it('should log out user and redirect', () => {
+      setUpComponent();
       const auth = TestBed.inject(AuthService);
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
