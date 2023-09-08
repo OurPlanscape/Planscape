@@ -76,7 +76,7 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe(
       (_) => this.router.navigate(['map']),
-      (error) => (this.accountError = error)
+      (error) => (this.accountError = error.error)
     );
   }
 
