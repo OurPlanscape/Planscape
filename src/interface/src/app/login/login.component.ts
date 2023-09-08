@@ -16,8 +16,6 @@ import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dial
 export class LoginComponent {
   protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
 
-  @Input() email!: string;
-
   protected accountError = '';
 
   form: FormGroup;
@@ -58,7 +56,8 @@ export class LoginComponent {
   }
 
   resetPassword() {
-    this.authService.sendPasswordResetEmail(this.email).subscribe({
+    const email: string = this.form.get('email')?.value;
+    this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => {
         this.dialog.open(ResetPasswordDialog);
       },
