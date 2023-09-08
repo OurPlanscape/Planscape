@@ -65,8 +65,12 @@
             </mat-error>
           </mat-form-field>
 
-          <p>{{ error?.message }}</p>
-          <p *ngIf="error">{{ error?.error | json }}</p>
+          <mat-error *ngIf="errors.length > 0">
+          <p>Please correct the following errors:</p>
+          <ul>
+            <li *ngFor="let error of errors">{{error}}
+          </ul>
+          </mat-error>
 
           <button
             mat-flat-button

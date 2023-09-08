@@ -4,6 +4,23 @@ from django.urls import reverse
 
 # Create your tests here.
 
+class CreateUserTest(TransactionTestCase):
+    def test_create_user_username_is_email(self):
+        print("Create user test case")
+        response = self.client.post(
+            reverse('rest_register'), {
+                                         "email": "testuser@test.com",
+                                         "password1": "ComplexPassword123",
+                                         "password2": "ComplexPassword123",
+                                         "first_name": "FirstName",
+                                         "last_name": "LastName"
+                                     })
+        self.assertEquals(response.status_code, 201)
+
+        user = User.objects.get(email='testuser@test.com')
+        self.assertEquals(user.get_username(), "testuser@test.com")
+
+
 class DeleteUserTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(email='testuser@test.com')
