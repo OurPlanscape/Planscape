@@ -64,14 +64,6 @@ export class SavedScenariosComponent implements OnInit {
     this.highlightedId = id;
   }
 
-  showDeleteButton(): boolean {
-    return this.scenarios.filter((scenario) => scenario.selected).length > 0;
-  }
-
-  showViewButton(): boolean {
-    return this.highlightedId!='-1';
-  }
-
   deleteSelectedScenarios(): void {
     this.planService
       .deleteScenarios(
