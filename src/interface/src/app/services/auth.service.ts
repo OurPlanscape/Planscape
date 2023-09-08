@@ -225,11 +225,12 @@ export class AuthService {
    * "Deletes" user from backend. The behavior of this command is to disable the user account,
    *  not fully delete it, so data can be restored later if necessary.
    */
-  deleteUser(user: User): Observable<boolean> {
+  deleteUser(user: User, password: string): Observable<boolean> {
     return this.http
       .post(
         BackendConstants.END_POINT.concat('/users/delete/'),
         {
+          password: password,
           email: user.email,
         },
         {
