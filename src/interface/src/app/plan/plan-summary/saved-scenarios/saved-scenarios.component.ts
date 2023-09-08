@@ -24,7 +24,7 @@ export class SavedScenariosComponent implements OnInit {
     this planning area can also view all the scenarios within it.
   `;
 
-  highlightedId:string = '-1';
+  highlightedId: string = '-1';
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
     'name',
@@ -57,7 +57,9 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   viewScenario(id?: string): void {
-    this.router.navigate(['config', this.highlightedId], { relativeTo: this.route });
+    this.router.navigate(['config', this.highlightedId], {
+      relativeTo: this.route,
+    });
   }
 
   highlightScenario(id: string): void {
@@ -85,5 +87,4 @@ export class SavedScenariosComponent implements OnInit {
         },
       });
   }
-
 }

@@ -30,8 +30,6 @@ export interface PlanPreview {
   status?: string;
 }
 
-
-
 export interface Scenario {
   id?: number;
   name: string;
