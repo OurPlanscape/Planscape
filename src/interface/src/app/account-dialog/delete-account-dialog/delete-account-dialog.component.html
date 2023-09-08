@@ -10,7 +10,6 @@
   </p>
 
   <div class="button-row">
-    <button mat-raised-button (click)="cancel()">CANCEL</button>
 
     <button
       mat-raised-button
@@ -19,6 +18,9 @@
       [disabled]="disableDeleteButton">
       DELETE
     </button>
+
+    <button mat-raised-button (click)="cancel()">CANCEL</button>
+
   </div>
 
   <p *ngIf="error">{{ error }}</p>
