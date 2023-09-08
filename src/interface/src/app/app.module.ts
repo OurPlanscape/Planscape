@@ -5,6 +5,7 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   NgxGoogleAnalyticsModule,
@@ -99,6 +100,7 @@ import { WINDOW_PROVIDERS } from './services/window.service';
     NgxGoogleAnalyticsModule.forRoot(environment.google_analytics_id),
     NgxGoogleAnalyticsRouterModule,
     PlanModule,
+    RouterModule,
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,

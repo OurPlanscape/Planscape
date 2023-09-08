@@ -73,6 +73,15 @@ export class AuthService {
       });
   }
 
+  resendValidationEmail(
+    email: string,
+  ) {
+    return this.http
+      .post(this.API_ROOT.concat('registration/resend-email/'), {
+        email,
+      });
+  }
+
   logout() {
     return this.http
       .get<LogoutResponse>(this.API_ROOT.concat('logout/'), {

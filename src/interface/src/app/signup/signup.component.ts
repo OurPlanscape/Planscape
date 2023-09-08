@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -6,29 +6,22 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MatDialog } from '@angular/material/dialog';
-import {of, Subject} from 'rxjs';
-import {catchError, takeUntil} from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 
 import { AuthService } from './../services';
-import {ValidationEmailDialog} from './validation-email-dialog/validation-email-dialog.component';
+import { ValidationEmailDialog } from './validation-email-dialog/validation-email-dialog.component';
 
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.scss'],
 })
-export class SignupComponent implements OnDestroy {
-  error: any;
+export class SignupComponent {
+  errors: string[] = [];
 
   form: FormGroup;
   submitted: boolean = false;
-  private readonly destroyed = new Subject<void>();
-
-  ngOnDestroy() {
-    this.destroyed.next();
-    this.destroyed.complete();
-  }
 
   constructor(
     private authService: AuthService,
@@ -59,7 +52,6 @@ export class SignupComponent implements OnDestroy {
   signup() {
     if (this.submitted) return;
 
-    this.submitted = true;
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
@@ -67,20 +59,20 @@ export class SignupComponent implements OnDestroy {
     const lastName: string = this.form.get('lastName')?.value;
     this.authService
       .signup(email, password1, password2, firstName, lastName)
-      .pipe(
-        takeUntil(this.destroyed),
-        catchError((error: Error) => {
-          this.error = error;
-          this.submitted = false;
-          return of({});
-        }
-      ))
-      .subscribe(
-        (_) => {
+      .subscribe({
+        next: () => {
+          this.submitted = true;
           this.router.navigate(['home']);
-          this.dialog.open(ValidationEmailDialog);
+          const dialogConfig = {
+            data: email,
+          };
+          this.dialog.open(ValidationEmailDialog, dialogConfig);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.errors = Object.values(error.error);
+          this.submitted = false;
         }
-      );
+      });
   }
 
   private passwordsMatchValidator(group: AbstractControl) {

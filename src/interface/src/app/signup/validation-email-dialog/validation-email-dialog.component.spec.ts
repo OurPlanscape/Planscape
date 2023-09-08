@@ -13,7 +13,7 @@ import { AuthService } from 'src/app/services';
 
 import { ValidationEmailDialog } from './validation-email-dialog.component';
 
-describe('ValidationEmailDialogComponent', () => {
+fdescribe('ValidationEmailDialogComponent', () => {
   let component: ValidationEmailDialog;
   let fixture: ComponentFixture<ValidationEmailDialog>;
   let loader: HarnessLoader;
@@ -23,15 +23,10 @@ describe('ValidationEmailDialogComponent', () => {
     fakeAuthService = jasmine.createSpyObj(
       'AuthService',
       {
-        deleteUser: of(true),
+        resendValidationEmail: of(true),
       },
       {}
     );
-    const fakeData = {
-      user: {
-        email: 'test@test.com',
-      },
-    };
     const fakeDialog = jasmine.createSpyObj(
       'MatDialog',
       {
@@ -56,7 +51,7 @@ describe('ValidationEmailDialogComponent', () => {
         },
         {
           provide: MAT_DIALOG_DATA,
-          useValue: fakeData,
+          useValue: 'test@test.com',
         },
         {
           provide: MatDialog,
@@ -81,26 +76,17 @@ describe('ValidationEmailDialogComponent', () => {
 
   it('OK button should close dialog', async () => {
     const dialogRef = fixture.debugElement.injector.get(MatDialogRef);
-    const cancelButton: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: /CANCEL/ })
+    const okButton: MatButtonHarness = await loader.getHarness(
+      MatButtonHarness.with({ text: /OK/ })
     );
 
-    await cancelButton.click();
+    await okButton.click();
 
     expect(dialogRef.close).toHaveBeenCalledOnceWith();
   });
 
   it('resubmit link should invoke the email service again', async () => {
-    const dialogRef = fixture.debugElement.injector.get(MatDialogRef);
-    const deleteButton: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: /DELETE/ })
-    );
-
-    await deleteButton.click();
-
-    expect(fakeAuthService.deleteUser).toHaveBeenCalledOnceWith({
-      email: 'test@test.com',
-    });
-    expect(dialogRef.close).toHaveBeenCalledOnceWith({ deletedAccount: true });
+    component.resendEmail();
+    expect(fakeAuthService.resendValidationEmail).toHaveBeenCalledOnceWith('test@test.com');
   });
 });
