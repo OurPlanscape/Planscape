@@ -22,6 +22,13 @@ class DeleteUserTest(TransactionTestCase):
             reverse('users:delete'), {},
             content_type='application/json')
         self.assertEqual(response.status_code, 400)
+
+    def test_missing_password(self):
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse('users:delete'), {'email': 'testuser@test.com'},
+            content_type='application/json')
+        self.assertEqual(response.status_code, 400)
     
     def test_different_user(self):
         self.client.force_login(self.user)
@@ -33,7 +40,7 @@ class DeleteUserTest(TransactionTestCase):
     def test_same_user(self):
         self.client.force_login(self.user)
         response = self.client.post(
-            reverse('users:delete'), {'email': 'testuser@test.com'},
+            reverse('users:delete'), {'email': 'testuser@test.com', 'password': '12345'},
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)

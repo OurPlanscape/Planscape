@@ -1,4 +1,5 @@
 import { Component, Inject } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { AuthService } from 'src/app/services';
 import { User } from 'src/app/types';
@@ -9,14 +10,22 @@ import { User } from 'src/app/types';
   styleUrls: ['./delete-account-dialog.component.scss'],
 })
 export class DeleteAccountDialogComponent {
+  deleteAccountForm: FormGroup;
   disableDeleteButton: boolean = false;
   error: any;
 
   constructor(
     private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) private data: { user: User },
+    private fb: FormBuilder,
     private dialogRef: MatDialogRef<DeleteAccountDialogComponent>
-  ) {}
+  ) {
+    this.deleteAccountForm = this.fb.group(
+      {
+        currentPassword: this.fb.control('', [Validators.required]),
+      },
+    );
+  }
 
   cancel(): void {
     this.dialogRef.close();
@@ -24,7 +33,7 @@ export class DeleteAccountDialogComponent {
 
   deleteAccount(): void {
     this.disableDeleteButton = true;
-    this.authService.deleteUser(this.data.user).subscribe(
+    this.authService.deleteUser(this.data.user, this.deleteAccountForm.get("currentPassword")?.value).subscribe(
       (_) => {
         this.dialogRef.close({
           deletedAccount: true,
