@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core import mail
 from django.test import TransactionTestCase
 from django.urls import reverse
 
@@ -19,6 +20,11 @@ class CreateUserTest(TransactionTestCase):
 
         user = User.objects.get(email='testuser@test.com')
         self.assertEquals(user.get_username(), "testuser@test.com")
+
+        # Verification email is sent.
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject,
+                         "[Planscape] Please Confirm Your E-mail Address")
 
 
 class DeleteUserTest(TransactionTestCase):
