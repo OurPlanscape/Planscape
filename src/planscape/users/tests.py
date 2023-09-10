@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
+from django.core import mail
 from django.test import TransactionTestCase
 from django.urls import reverse
-from django.core import mail
 
 # Create your tests here.
 
