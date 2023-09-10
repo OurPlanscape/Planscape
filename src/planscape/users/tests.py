@@ -1,3 +1,4 @@
+from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TransactionTestCase
@@ -67,3 +68,34 @@ class DeleteUserTest(TransactionTestCase):
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
+
+
+class IsVerifiedUserTest(TransactionTestCase):
+    def setUp(self):
+        self.client.post(
+            reverse('rest_register'), {
+                                         "email": "testuser@test.com",
+                                         "password1": "ComplexPassword123",
+                                         "password2": "ComplexPassword123",
+                                         "first_name": "FirstName",
+                                         "last_name": "LastName"
+                                     })
+        self.user = User.objects.filter(email='testuser@test.com').get()
+
+    def test_not_logged_in(self):
+        response = self.client.get(reverse('users:is_verified_user'))
+        self.assertEqual(response.status_code, 400)
+    
+    def test_not_verified(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('users:is_verified_user'))
+        self.assertEqual(response.status_code, 400)
+
+    def test_verfied(self):
+        self.client.force_login(self.user)
+        email = EmailAddress.objects.filter(email='testuser@test.com').get()
+        email.verified = True
+        email.save()
+
+        response = self.client.get(reverse('users:is_verified_user'))
+        self.assertEqual(response.status_code, 200)
