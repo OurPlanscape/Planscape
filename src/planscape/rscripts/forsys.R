@@ -130,6 +130,56 @@ get_stand_metrics <- function(connection, condition, stand_ids) {
   return(result)
 }
 
+get_project_geometry <- function(connection, stand_ids) {
+  query <- glue_sql("SELECT
+            ST_AsGeoJSON(
+              ST_Transform(
+                ST_Union(geometry),
+                4326),
+              6, -- max precision
+              0  -- output mode
+            )
+            FROM stands_stand
+            WHERE id IN ({stand_ids*})",
+    stand_ids = stand_ids,
+    .con = connection
+  )
+  result <- dbGetQuery(connection, query)
+  return(result)
+}
+
+get_project_ids <- function(forsys_output) {
+  return(unique(forsys_output$project_output$proj_id))
+}
+
+to_project_data <- function(con, project_id, forsys_output) {
+  project_stand_ids <- select(
+    filter(
+      forsys_output$stand_output,
+      proj_id == project_id
+    ),
+    stand_id
+  )
+  project_stand_ids <- as.integer(project_stand_ids$stand_id)
+  geometry <- get_project_geometry(con, project_stand_ids)
+  properties <- list()
+  return(list(
+    type = "Feature",
+    properties = properties,
+    geometry = geometry
+  ))
+}
+
+to_projects <- function(con, forsys_output) {
+  project_ids <- get_project_ids(forsys_output)
+  projects <- list()
+  for (project_id in project_ids) {
+    print(project_id)
+    projects[[project_id]] <- to_project_data(con, project_id, forsys_output)
+  }
+  return(projects)
+}
+
 merge_data <- function(stands, metrics) {
   data <- merge(x = stands, y = metrics, by = "stand_id")
   return(data)
@@ -205,50 +255,49 @@ call_forsys <- function(connection, scenario) {
     annual_target = 100000
   )
 
-  sample_json <- list(
-    result = list(
-      scores = list(11, 21, 31),
-      stands = list(
-        stand_1 = 11,
-        stand_2 = 21,
-        stand_3 = 32
-      )
-    )
-  )
+  result <- to_projects(connection, out)
 
-  scenario_result <- data.frame(
-    created_at = now,
-    updated_at = now,
-    scenario_id = scenario$id,
-    status = "SUCCESS",
-    result = toJSON(sample_json)
-  )
   scenario_result <- list(
     now,
     now,
     scenario$id,
     "SUCCESS",
-    toJSON(sample_json)
+    toJSON(result)
   )
   return(scenario_result)
 }
 
-upsert_scenario_result <- function(connection, result) {
-  query <- "INSERT into planning_scenarioresult (
+upsert_scenario_result <- function(
+    connection,
+    timestamp,
+    scenario_id,
+    status,
+    result) {
+  query <- glue_sql("INSERT into planning_scenarioresult (
     created_at,
     updated_at,
     scenario_id,
     status,
     result
   ) VALUES (
-    $1, $2, $3, $4, $5
+    {timestamp},
+    {timestamp},
+    {scenario_id},
+    {status},
+    {result}
   )
   ON CONFLICT (scenario_id) DO UPDATE
   SET
     updated_at = EXCLUDED.updated_at,
     result = EXCLUDED.result,
     status = EXCLUDED.status;
-  "
+  ",
+    timestamp = timestamp,
+    scenario_id = scenario_id,
+    status = status,
+    result = result,
+    .con = connection
+  )
   dbExecute(connection, query, result)
 }
 
