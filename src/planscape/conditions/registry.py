@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import subprocess
 from django.conf import settings
@@ -31,6 +32,14 @@ def get_tile_name(condition):
     )
 
 
+def get_registry_env():
+    environment = os.environ.copy()
+    environment = {
+        **environment,
+        **{"GDAL_NUM_THREADS": str(settings.GDAL_NUM_THREADS)},
+    }
+
+
 def register_condition_raster(
     condition: Condition,
     clear: bool = True,
@@ -52,10 +61,15 @@ def register_condition_raster(
         if clear:
             condition.raster_tiles.all().delete()
 
+        environment = get_registry_env()
         raster_command = raster2pgpsql(
             raster_path, "public.conditions_conditionraster", tile_size, srid
         )
-        raster_process = subprocess.Popen(raster_command, stdout=subprocess.PIPE)
+        raster_process = subprocess.Popen(
+            raster_command,
+            stdout=subprocess.PIPE,
+            env=environment,
+        )
         psql_command = psql(
             settings.PLANSCAPE_DATABASE_USER,
             settings.PLANSCAPE_DATABASE_NAME,
