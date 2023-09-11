@@ -1,5 +1,6 @@
 import json
 
+from allauth.account.utils import has_verified_email
 from django.contrib.auth.models import User
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse)
@@ -42,5 +43,17 @@ def delete_user(request: HttpRequest) -> HttpResponse:
         logged_in_user.save()
 
         return JsonResponse({"deleted": True})
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def is_verified_user(request: HttpRequest) -> HttpResponse:
+    try:
+        logged_in_user = get_user(request)
+        if logged_in_user is None:
+            raise ValueError("Must be logged in")
+        if not has_verified_email(logged_in_user):
+            raise ValueError("Email not verified.")
+        return JsonResponse({"verified": True})
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
