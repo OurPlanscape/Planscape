@@ -18,6 +18,7 @@ These settings are
   PLANSCAPE_CACHE_BACKEND: Backend type for cache
   PLANSCAPE_CACHE_LOCATION: Cache location (important for memcached, etc.)
 """
+import multiprocessing
 import os
 from pathlib import Path
 
@@ -69,7 +70,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "forsys",
     "leaflet",
-    'password_policies',
+    "password_policies",
     "rest_framework",
     "rest_framework_gis",
     "rest_framework_simplejwt",
@@ -85,7 +86,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    'password_policies.middleware.PasswordExpirationMiddleware',
+    "password_policies.middleware.PasswordExpirationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -97,7 +98,7 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             os.path.join(BASE_DIR, "templates"),
-            os.path.join(BASE_DIR, "templates/allauth")
+            os.path.join(BASE_DIR, "templates/allauth"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -150,10 +151,10 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
     {
-        'NAME': 'password_policies.password_validation.ReusedPasswordValidator',
-        'OPTIONS': {
-            'record_length': 10,
-        }
+        "NAME": "password_policies.password_validation.ReusedPasswordValidator",
+        "OPTIONS": {
+            "record_length": 10,
+        },
     },
 ]
 
@@ -245,9 +246,9 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
-PASSWORD_RESET_TIMEOUT = 1800   # 30 minutes.
+PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
 # TODO: Need to figure out how this will be decided.
-PASSWORD_RESET_DOMAIN = "planscape.org" # Password reset domain
+PASSWORD_RESET_DOMAIN = "planscape.org"  # Password reset domain
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
@@ -326,3 +327,6 @@ DEFAULT_CONDITIONS_FILE = config(
 )
 RASTER_ROOT = config("RASTER_ROOT", "/mnt/gis/planscape")
 RASTER_TILE = config("RASTER_TILE", "32x32")
+GDAL_NUM_THREADS = config(
+    "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
+)
