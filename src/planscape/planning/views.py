@@ -276,7 +276,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 
         planning_areas = PlanningArea.objects.annotate(scenario_count=Count('scenarios', distinct=True))\
                                              .annotate(scenario_latest_updated_at=Max('scenarios__updated_at'))\
-                                             .filter(user=user_id)
+                                             .filter(user=user_id).order_by('-scenarios__updated_at')
         return JsonResponse(
             [_serialize_planning_area(planning_area, True) for planning_area in planning_areas],
             safe=False)

@@ -62,8 +62,6 @@ export class PlanTableComponent implements OnInit {
             totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
           };
         });
-        //  .sort((plan) => plan.createdTimestamp ?? 0)
-        //   .reverse();
         this.datasource.sort = this.sort;
       });
   }

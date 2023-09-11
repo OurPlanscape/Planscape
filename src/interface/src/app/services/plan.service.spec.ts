@@ -13,14 +13,13 @@ import {
   ConditionsConfig,
 } from '../types';
 import {
-  PlanConditionScores,
   PlanPreview,
   ProjectConfig,
   Scenario,
   ScenarioConfig,
   TreatmentGoalConfig,
 } from './../types/plan.types';
-import { BackendPlan, PlanService } from './plan.service';
+import { BackendPlan, BackendPlanPreview, PlanService } from './plan.service';
 import { MapService } from './map.service';
 // TODO Make test for getting scenario results
 // TODO Make test for call to create project area
@@ -150,25 +149,28 @@ describe('PlanService', () => {
 
   describe('listPlansByUser', () => {
     it('should make HTTP get request to DB', () => {
+      const date = '2023-09-11T14:01:31.360004Z';
+
       const expectedPlan: PlanPreview = {
-        id: '1',
+        id: 1,
         name: mockPlan.name,
         region: mockPlan.region,
-        savedScenarios: 1,
-        configurations: 2,
-        createdTimestamp: 5000,
+        notes: '',
+        ownerId: 2,
+        scenarios: 1,
+        lastUpdated: new Date(date),
         geometry: mockPlan.planningArea,
       };
 
-      const backendPlan: BackendPlan = {
+      const backendPlan: BackendPlanPreview = {
         id: 1,
         name: expectedPlan.name,
         user: 2,
         region_name: mockPlan.region,
         geometry: mockPlan.planningArea,
-        scenarios: 1,
-        projects: 2,
-        creation_timestamp: 5,
+        scenario_count: 1,
+        scenario_latest_updated_at: date,
+        notes: '',
       };
 
       service.listPlansByUser(null).subscribe((res) => {

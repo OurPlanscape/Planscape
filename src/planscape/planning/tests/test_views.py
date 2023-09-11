@@ -499,11 +499,10 @@ class ListPlanningAreaTest(TransactionTestCase):
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(planning_areas), 2)
-        self.assertEqual(planning_areas[0]['scenario_count'],1)
-        self.assertIsNotNone(planning_areas[0]['scenario_latest_updated_at'])
-        dump(planning_areas[0]['scenario_latest_updated_at'])
-        self.assertEqual(planning_areas[1]['scenario_count'],0)
-        self.assertIsNone(planning_areas[1]['scenario_latest_updated_at'])
+        self.assertEqual(planning_areas[0]['scenario_count'],0)
+        self.assertIsNone(planning_areas[0]['scenario_latest_updated_at'])
+        self.assertEqual(planning_areas[1]['scenario_count'],1)
+        self.assertIsNotNone(planning_areas[1]['scenario_latest_updated_at'])
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(reverse('planning:list_planning_areas'), {},
