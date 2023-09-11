@@ -28,9 +28,9 @@ export class PlanTableComponent implements OnInit {
 
   displayedColumns: string[] = [
     'name',
-    'createdTimestamp',
+    'lastUpdated',
     'totalAcres',
-    'savedScenarios',
+    'scenarios',
     'region',
   ];
 
@@ -56,15 +56,14 @@ export class PlanTableComponent implements OnInit {
       .listPlansByUser(null)
       .pipe(take(1))
       .subscribe((plans) => {
-        this.datasource.data = plans
-          .map((plan) => {
-            return {
-              ...plan,
-              totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
-            };
-          })
-          .sort((plan) => plan.createdTimestamp ?? 0)
-          .reverse();
+        this.datasource.data = plans.map((plan) => {
+          return {
+            ...plan,
+            totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
+          };
+        });
+        //  .sort((plan) => plan.createdTimestamp ?? 0)
+        //   .reverse();
         this.datasource.sort = this.sort;
       });
   }
@@ -73,7 +72,7 @@ export class PlanTableComponent implements OnInit {
     if (!this.selectedPlan) {
       return;
     }
-    const planIdsToDelete: string[] = [this.selectedPlan.id];
+    const planIdsToDelete: string[] = [String(this.selectedPlan.id)];
     const dialogRef: MatDialogRef<DeletePlanDialogComponent> = this.dialog.open(
       DeletePlanDialogComponent,
       {

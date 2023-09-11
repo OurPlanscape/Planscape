@@ -10,12 +10,12 @@
 
     <!-- Timestamp Column -->
     <!-- TODO replace with last modified-->
-    <ng-container matColumnDef="createdTimestamp">
+    <ng-container matColumnDef="lastUpdated">
       <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Date Created
+        Date Last Modified
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
-        {{ element.createdTimestamp | date: 'medium' }}
+        {{ element.lastUpdated | date: 'medium' }}
       </mat-cell>
     </ng-container>
 
@@ -30,12 +30,12 @@
     </ng-container>
 
     <!-- Saved Scenarios Column -->
-    <ng-container matColumnDef="savedScenarios">
+    <ng-container matColumnDef="scenarios">
       <mat-header-cell *matHeaderCellDef mat-sort-header>
         # of Scenarios
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
-        {{ element.savedScenarios }}
+        {{ element.scenarios }}
       </mat-cell>
     </ng-container>
 
@@ -54,7 +54,8 @@
       class="table-row"
       [ngClass]="{ selected: selectedPlan && selectedPlan.id === row.id }"
       *matRowDef="let row; columns: displayedColumns"
-      (click)="selectPlan(row)"></mat-row>
+      (click)="selectPlan(row)"
+      (dblclick)="goToScenario()"></mat-row>
   </mat-table>
 
   <div class="button-row">
@@ -65,6 +66,7 @@
       class="action-button">
       delete
     </button>
+    <!--    Todo add view map-->
     <!--    <button-->
     <!--      mat-raised-button-->
     <!--      (click)="viewMap()"-->
