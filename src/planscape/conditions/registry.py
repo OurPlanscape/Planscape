@@ -32,6 +32,14 @@ def get_tile_name(condition):
     )
 
 
+def get_registry_env():
+    environment = os.environ.copy()
+    environment = {
+        **environment,
+        **{"GDAL_NUM_THREADS": str(settings.GDAL_NUM_THREADS)},
+    }
+
+
 def register_condition_raster(
     condition: Condition,
     clear: bool = True,
@@ -53,9 +61,7 @@ def register_condition_raster(
         if clear:
             condition.raster_tiles.all().delete()
 
-        environment = os.environ.copy()
-        environment = {**environment, **{"GDAL_NUM_THREADS": "8"}}
-
+        environment = get_registry_env()
         raster_command = raster2pgpsql(
             raster_path, "public.conditions_conditionraster", tile_size, srid
         )
