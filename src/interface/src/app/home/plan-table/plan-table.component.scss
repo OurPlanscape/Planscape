@@ -1,3 +1,6 @@
+:host{
+  display: block;
+}
 
 .button-row {
   display: flex;
@@ -5,6 +8,7 @@
   gap: 12px;
   justify-content: flex-end;
   padding-block: 12px;
+  margin-right: 10px;
 }
 
 .no-saved-plans {
@@ -50,6 +54,7 @@ mat-header-row , mat-row{
 .mat-column-name {
   border-left: 6px solid transparent;
   flex-basis: 8%;
+  margin-right: 1px;
 }
 
 .mat-header-cell.mat-column-name {
@@ -85,4 +90,8 @@ mat-header-row , mat-row{
     width: 5px;
     height: 100%;
   }
+}
+
+.mat-header-cell:not(.mat-column-name ) {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
