@@ -49,19 +49,7 @@ mat-header-row , mat-row{
 
 .mat-column-name {
   border-left: 6px solid transparent;
-  position: relative;
-  overflow: visible;
-
-  &::after{
-    right: -5px;
-    background: linear-gradient(90deg, #d5d5d5, transparent);
-    position: absolute;
-    display: block;
-    content: "";
-    width: 5px;
-    height: 100%;
-
-  }
+  flex-basis: 8%;
 }
 
 .mat-header-cell.mat-column-name {
@@ -80,4 +68,21 @@ mat-header-row , mat-row{
 
 .primary {
   color: #3B78E7;
+}
+
+
+.mat-column-lastUpdated {
+  flex-basis: 10%;
+  position: relative;
+  overflow: visible;
+
+  &::after{
+    left: -20px;
+    background: linear-gradient(90deg, #d5d5d5, transparent);
+    position: absolute;
+    display: block;
+    content: "";
+    width: 5px;
+    height: 100%;
+  }
 }
