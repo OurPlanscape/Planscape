@@ -1,3 +1,7 @@
+<app-nav-bar
+  (goBack)="goBack()"
+  [breadcrumbs]="(breadcrumbs$ | async) || []"
+  *featureFlag="'new_navigation'"></app-nav-bar>
 <div class="root-container">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="!planNotFound && plan">
@@ -8,9 +12,12 @@
     </div>
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
     <div class="plan-content">
-      <app-plan-navigation-bar
-        (backToOverviewEvent)="backToOverview()"
-        *ngIf="!(showOverview$ | async)"></app-plan-navigation-bar>
+      <ng-container *featureFlag="'new_navigation'; hide: true">
+        <app-plan-navigation-bar
+          (backToOverviewEvent)="backToOverview()"
+          *ngIf="!(showOverview$ | async)"></app-plan-navigation-bar>
+      </ng-container>
+
       <div class="plan-content-inner">
         <app-plan-overview
           [plan$]="currentPlan$"
