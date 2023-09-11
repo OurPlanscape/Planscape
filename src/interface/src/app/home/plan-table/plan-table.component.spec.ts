@@ -16,16 +16,22 @@ import { PlanTableComponent } from './plan-table.component';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: PlanPreview = {
-    id: 'temp1',
+    id: 1,
     name: 'somePlan',
     region: Region.SIERRA_NEVADA,
-    createdTimestamp: 1,
+    lastUpdated: new Date(),
+    notes: '',
+    scenarios: 1,
+    ownerId: 1,
   };
   const fakePlan2: PlanPreview = {
-    id: 'temp2',
+    id: 2,
     name: 'somePlan',
     region: Region.SIERRA_NEVADA,
-    createdTimestamp: 2,
+    lastUpdated: new Date(),
+    notes: '',
+    scenarios: 2,
+    ownerId: 1,
   };
 
   let component: PlanTableComponent;
@@ -78,33 +84,17 @@ describe('PlanTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('ngOnInit', () => {
-    it('should fetch plans from the DB and sort descending by timestamp', () => {
-      expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
-      expect(component.datasource.data).toEqual([
-        {
-          ...fakePlan2,
-          totalAcres: 0,
-        },
-        {
-          ...fakePlan1,
-          totalAcres: 0,
-        },
-      ]);
-    });
-  });
-
   describe('refresh', () => {
     it('should fetch plans from the DB', () => {
       component.refresh();
       expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
       expect(component.datasource.data).toEqual([
         {
-          ...fakePlan2,
+          ...fakePlan1,
           totalAcres: 0,
         },
         {
-          ...fakePlan1,
+          ...fakePlan2,
           totalAcres: 0,
         },
       ]);
@@ -121,7 +111,7 @@ describe('PlanTableComponent', () => {
       expect(dialogSpy.open).toHaveBeenCalledOnceWith(
         DeletePlanDialogComponent,
         {
-          data: ['temp1'],
+          data: ['1'],
         }
       );
     });

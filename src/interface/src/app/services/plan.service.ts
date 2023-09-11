@@ -46,7 +46,7 @@ export interface BackendPlan {
   creation_timestamp?: number; // in seconds since epoch
 }
 
-interface BackendPlanPreview {
+export interface BackendPlanPreview {
   id: number;
   name: string;
   notes: string;
