@@ -169,7 +169,7 @@ describe('PlanService', () => {
         region_name: mockPlan.region,
         geometry: mockPlan.planningArea,
         scenario_count: 1,
-        scenario_latest_updated_at: date,
+        latest_updated: date,
         notes: '',
       };
 

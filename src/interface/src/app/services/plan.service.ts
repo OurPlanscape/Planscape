@@ -53,7 +53,7 @@ export interface BackendPlanPreview {
   user: number;
   region_name: Region;
   scenario_count: number;
-  scenario_latest_updated_at: string;
+  latest_updated: string;
   geometry?: GeoJSON.GeoJSON;
 }
 
@@ -451,8 +451,8 @@ export class PlanService {
       region: plan.region_name,
       scenarios: plan.scenario_count,
       notes: plan.notes,
-      lastUpdated: plan.scenario_latest_updated_at
-        ? new Date(plan.scenario_latest_updated_at)
+      lastUpdated: plan.latest_updated
+        ? new Date(plan.latest_updated)
         : undefined,
       geometry: plan.geometry,
       ownerId: plan.user,
