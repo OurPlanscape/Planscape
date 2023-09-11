@@ -14,6 +14,7 @@ import { AuthService, PlanService } from 'src/app/services';
 import { Plan, ProjectArea, Scenario, User } from 'src/app/types';
 import { FeatureCollection } from 'geojson';
 import area from '@turf/area';
+import { calculateAcres } from '../../plan-helpers';
 
 const SQUARE_METERS_PER_ACRE = 0.0002471054;
 
@@ -56,9 +57,7 @@ export class OutcomeComponent implements OnInit, OnChanges {
       }
     });
     if (this.plan) {
-      this.totalPlanningAreaAcres = this.calculateAcres(
-        this.plan.planningArea!
-      );
+      this.totalPlanningAreaAcres = calculateAcres(this.plan.planningArea!);
     }
     this.authService.loggedInUser$.pipe(take(1)).subscribe(this.currentUser$);
   }
@@ -73,7 +72,7 @@ export class OutcomeComponent implements OnInit, OnChanges {
       }
       if (this.scenario?.projectAreas) {
         this.scenario?.projectAreas.forEach((projectArea) => {
-          projectArea.actualAcresTreated = this.calculateAcres(
+          projectArea.actualAcresTreated = calculateAcres(
             projectArea.projectArea
           );
         });
@@ -88,12 +87,6 @@ export class OutcomeComponent implements OnInit, OnChanges {
     return projectAreas.reduce((totalAcres, projectArea) => {
       return totalAcres + (projectArea.actualAcresTreated ?? 0);
     }, 0);
-  }
-
-  private calculateAcres(shape: GeoJSON.GeoJSON) {
-    const squareMeters = area(shape as FeatureCollection);
-    const acres = squareMeters * SQUARE_METERS_PER_ACRE;
-    return Math.round(acres);
   }
 
   onSubmit(): void {
