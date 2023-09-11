@@ -1,5 +1,6 @@
+DROP FUNCTION IF EXISTS generate_stand_metrics;
 CREATE OR REPLACE FUNCTION generate_stand_metrics(_condition_id INT, _clean bool)
-RETURNS VOID as $$
+RETURNS VOID AS $$
 DECLARE
     raster_geometry geometry;
     stand record;
@@ -18,8 +19,6 @@ BEGIN
             conditions_conditionraster cc
         WHERE
             condition_id = _condition_id
-        GROUP BY
-            condition_id
     );
 
     FOR stand IN
@@ -31,7 +30,7 @@ BEGIN
         stats := compute_stand_stats(stand.id, _condition_id);
 
         IF stats.count > 0 THEN
-            insert into stands_standmetric (
+            INSERT INTO stands_standmetric (
                 created_at,
                 min,
                 avg,
@@ -40,7 +39,7 @@ BEGIN
                 count,
                 condition_id,
                 stand_id
-            ) values (
+            ) VALUES (
                 my_timestamp,
                 stats.min,
                 stats.avg,
