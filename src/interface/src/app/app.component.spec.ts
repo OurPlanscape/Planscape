@@ -7,6 +7,8 @@ import { TestBed, ComponentFixture } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { MockComponent } from 'ng-mocks';
+import { FeatureService } from './features/feature.service';
+import { FeaturesModule } from './features/features.module';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -19,7 +21,7 @@ describe('AppComponent', () => {
       {}
     );
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, RouterTestingModule],
+      imports: [HttpClientTestingModule, RouterTestingModule, FeaturesModule],
       declarations: [
         AppComponent,
         MockComponent(NavigationComponent),

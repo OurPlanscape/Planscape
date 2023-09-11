@@ -24,6 +24,7 @@ import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
 import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
+import { FeaturesModule } from '../features/features.module';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -58,6 +59,7 @@ import { MapLayersComponent } from './scenario-details/map-layers/map-layers.com
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
+    FeaturesModule,
   ],
 })
 export class PlanModule {}
