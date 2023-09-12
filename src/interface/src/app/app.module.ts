@@ -55,6 +55,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ValidationEmailDialog } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialog } from './login/reset-password-dialog/reset_password_dialog';
+import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 
 @NgModule({
   declarations: [
@@ -83,6 +84,7 @@ import { ResetPasswordDialog } from './login/reset-password-dialog/reset_passwor
     PreviewComponent,
     ResetPasswordDialog,
     ValidationEmailDialog,
+    MapConfigSummaryComponent,
   ],
   imports: [
     AppRoutingModule,
