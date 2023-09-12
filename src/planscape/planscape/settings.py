@@ -18,6 +18,7 @@ These settings are
   PLANSCAPE_CACHE_BACKEND: Backend type for cache
   PLANSCAPE_CACHE_LOCATION: Cache location (important for memcached, etc.)
 """
+import multiprocessing
 import os
 from pathlib import Path
 
@@ -69,6 +70,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "forsys",
     "leaflet",
+    "password_policies",
     "rest_framework",
     "rest_framework_gis",
     "rest_framework_simplejwt",
@@ -84,6 +86,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "password_policies.middleware.PasswordExpirationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -93,7 +96,10 @@ ROOT_URLCONF = "planscape.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [os.path.join(BASE_DIR, "templates")],
+        "DIRS": [
+            os.path.join(BASE_DIR, "templates"),
+            os.path.join(BASE_DIR, "templates/allauth"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -143,6 +149,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+    },
+    {
+        "NAME": "password_policies.password_validation.ReusedPasswordValidator",
+        "OPTIONS": {
+            "record_length": 10,
+        },
     },
 ]
 
@@ -210,6 +222,9 @@ REST_AUTH = {
     "JWT_AUTH_REFRESH_COOKIE": "my-refresh-token",
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
+    "OLD_PASSWORD_FIELD_ENABLED": True,
+    "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": "dj_rest_auth.serializers.PasswordResetConfirmSerializer",
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -224,10 +239,24 @@ AUTHENTICATION_BACKENDS = [
 SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Planscape] "
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
+ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
+PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
+# TODO: Need to figure out how this will be decided.
+PASSWORD_RESET_DOMAIN = "planscape.org"  # Password reset domain
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "noreply@planscape.org"
+EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
+
 
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the
@@ -298,3 +327,6 @@ DEFAULT_CONDITIONS_FILE = config(
 )
 RASTER_ROOT = config("RASTER_ROOT", "/mnt/gis/planscape")
 RASTER_TILE = config("RASTER_TILE", "32x32")
+GDAL_NUM_THREADS = config(
+    "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
+)

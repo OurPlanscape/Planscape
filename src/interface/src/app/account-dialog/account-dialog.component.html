@@ -25,6 +25,10 @@
         CHANGE PASSWORD
       </button>
 
+      <button mat-raised-button color="warn" (click)="openDeleteAccountDialog()">
+        DELETE ACCOUNT
+      </button>
+
       <button mat-raised-button (click)="logout()">SIGN OUT</button>
     </div>
   </ng-container>
@@ -34,14 +38,23 @@
     <ng-container *ngIf="changingPassword">
       <form [formGroup]="changePasswordForm" (ngSubmit)="savePassword()">
         <mat-form-field>
-          <mat-label>Password</mat-label>
+          <mat-label>Current password</mat-label>
           <input
             type="password"
             required
-            formControlName="password1"
+            formControlName="currentPassword"
+            matInput />
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>New password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="newPassword1"
             matInput />
           <mat-error
-            *ngIf="changePasswordForm.get('password1')?.hasError('minlength')">
+            *ngIf="changePasswordForm.get('newPassword1')?.hasError('minlength')">
             Password must contain at least 8 characters.
           </mat-error>
         </mat-form-field>
@@ -51,7 +64,7 @@
           <input
             type="password"
             required
-            formControlName="password2"
+            formControlName="newPassword2"
             matInput />
           <mat-error *ngIf="changePasswordForm.hasError('passwordsNotEqual')">
             Passwords must match.
@@ -79,9 +92,6 @@
 
     <!-- Edit account details -->
     <ng-container *ngIf="editingAccount">
-      <button mat-button color="primary" (click)="openDeleteAccountDialog()">
-        DELETE ACCOUNT
-      </button>
 
       <form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
         <mat-form-field>

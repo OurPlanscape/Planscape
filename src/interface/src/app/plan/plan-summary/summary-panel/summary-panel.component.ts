@@ -1,8 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
-import area from '@turf/area';
-import { FeatureCollection } from 'geojson';
-
 import { Plan, Region, User } from '../../../types';
+import { calculateAcres } from '../../plan-helpers';
 
 export interface SummaryInput {
   id?: string;
@@ -35,8 +33,6 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   [ConditionName.POOR]: '#fdd853',
 };
 
-const SQUARE_METERS_PER_ACRE = 0.0002471054;
-
 @Component({
   selector: 'summary-panel',
   templateUrl: './summary-panel.component.html',
@@ -65,15 +61,9 @@ export class SummaryPanelComponent implements OnChanges {
         createdTime: this.plan.createdTimestamp,
         scenarios: this.plan.savedScenarios,
         configs: this.plan.configs,
-        acres: this.calculateAcres(this.plan.planningArea!),
+        acres: calculateAcres(this.plan.planningArea!),
         status: 'In progress',
       };
     }
-  }
-
-  calculateAcres(planningArea: GeoJSON.GeoJSON) {
-    const squareMeters = area(planningArea as FeatureCollection);
-    const acres = squareMeters * SQUARE_METERS_PER_ACRE;
-    return Math.round(acres);
   }
 }

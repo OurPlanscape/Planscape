@@ -23,7 +23,7 @@ describe('FeatureService', () => {
     expect(service.isFeatureEnabled('testTrueFeature')).toBeTrue();
   });
 
-  it('nonexistent flag should be undefined', () => {
-    expect(service.isFeatureEnabled('nonexistent_flag')).toBeUndefined();
+  it('nonexistent flag should be false', () => {
+    expect(service.isFeatureEnabled('nonexistent_flag')).toBeFalse();
   });
 });

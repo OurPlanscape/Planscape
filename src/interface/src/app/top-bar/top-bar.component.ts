@@ -6,11 +6,12 @@ import {
   Output,
 } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Router } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, take, takeUntil } from 'rxjs';
 
 import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-top-bar',
@@ -29,10 +30,14 @@ export class TopBarComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
+  loggedIn$ = this.authService.isLoggedIn$;
+
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -67,5 +72,11 @@ export class TopBarComponent implements OnInit, OnDestroy {
   /** Toggles the sidebar in the navigation component. */
   sendToggle(event: Event) {
     this.toggleEvent.emit(event);
+  }
+
+  logout() {
+    this.authService.logout().subscribe((_) => {
+      this.router.navigate(['/']);
+    });
   }
 }

@@ -21,13 +21,14 @@ export interface BasePlan {
 }
 
 export interface PlanPreview {
-  id: string;
+  id: number;
   name: string;
-  createdTimestamp?: number; // in milliseconds since epoch
-  region?: Region;
-  savedScenarios?: number;
-  configurations?: number;
-  status?: string;
+  notes: string;
+  ownerId: number;
+  region: Region;
+  scenarios: number;
+  lastUpdated?: Date;
+  geometry?: GeoJSON.GeoJSON;
 }
 
 export interface Scenario {
@@ -57,7 +58,8 @@ export interface TreatmentGoalConfig {
 }
 
 export interface TreatmentQuestionConfig {
-  question_text?: string;
+  long_question_text?: string;
+  short_question_text?: string;
   priorities?: string[];
   weights?: number[];
 }

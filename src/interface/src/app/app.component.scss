@@ -11,7 +11,3 @@
 app-navigation {
   height: calc(100% - $toolbar-height);
 }
-
-.with-navbar {
-  height: calc(100% - $toolbar-height - $navbar-height);
-}

@@ -7,6 +7,11 @@
   width: 100%;
 }
 
+.root-container.with-navbar {
+  height: calc(100%  - $navbar-height);
+}
+
+
 .maps-container {
   display: flex;
   flex-direction: column;
@@ -63,12 +68,12 @@
   transition-duration: 0.8s;
 }
 
-// Setting heights for built-in leaflet styles to be able to configure relative max-height 
+// Setting heights for built-in leaflet styles to be able to configure relative max-height
 ::ng-deep .leaflet-left  .leaflet-control {
   height:auto;
   max-height:75%;
 }
-// Setting heights for built-in leaflet styles to be able to configure relative max-height 
+// Setting heights for built-in leaflet styles to be able to configure relative max-height
 ::ng-deep .leaflet-top {
   height:100%;
 }
@@ -87,7 +92,7 @@
   overflow-x:hidden;
   line-height: 18px;
   background: white;
-  white-space: nowrap; 
+  white-space: nowrap;
   opacity: 0.7;
   display: inline-block;
   border: 2px #AAA solid;
@@ -104,7 +109,7 @@
 
 // Legend line
 ::ng-deep .legendline {
-  white-space: nowrap; 
+  white-space: nowrap;
   display: inline-block;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -122,7 +127,7 @@
   text-overflow: ellipsis;
   overflow: hidden;
   flex:1;
-  white-space: nowrap; 
+  white-space: nowrap;
   max-width: 65px;
 }
 
@@ -207,4 +212,27 @@
   margin-left: auto;
   pointer-events: auto;
   width: fit-content;
+}
+
+.config-summary {
+  display: none;
+}
+
+@media print {
+
+  .config-summary {
+    display: flex;
+    gap: 30px;
+    padding: 10px;
+  }
+  .root-container {
+    flex-direction: column;
+  }
+
+  app-map-control-panel, app-nav-bar, .map-actions-bar {
+    display: none;
+  }
+  .map-box.selected {
+    border: 1px solid black
+  }
 }
