@@ -162,7 +162,12 @@ to_project_data <- function(con, project_id, forsys_output) {
   )
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
   geometry <- get_project_geometry(con, project_stand_ids)
-  properties <- list(proj_id = project_id)
+  properties <- as.list(
+    filter(
+      forsys_output$project_output,
+      proj_id == project_id
+    )
+  )
   return(list(
     type = "Feature",
     properties = properties,
