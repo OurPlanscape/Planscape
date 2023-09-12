@@ -145,7 +145,7 @@ get_project_geometry <- function(connection, stand_ids) {
     .con = connection
   )
   result <- dbGetQuery(connection, query)
-  return(result)
+  return(fromJSON(result$st_asgeojson))
 }
 
 get_project_ids <- function(forsys_output) {
@@ -162,7 +162,7 @@ to_project_data <- function(con, project_id, forsys_output) {
   )
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
   geometry <- get_project_geometry(con, project_stand_ids)
-  properties <- list()
+  properties <- list(proj_id = project_id)
   return(list(
     type = "Feature",
     properties = properties,
@@ -174,10 +174,11 @@ to_projects <- function(con, forsys_output) {
   project_ids <- get_project_ids(forsys_output)
   projects <- list()
   for (project_id in project_ids) {
-    print(project_id)
-    projects[[project_id]] <- to_project_data(con, project_id, forsys_output)
+    project <- to_project_data(con, project_id, forsys_output)
+    projects <- append(projects, list(project))
   }
-  return(projects)
+  geojson <- list(type = "FeatureCollection", features = projects)
+  return(geojson)
 }
 
 merge_data <- function(stands, metrics) {
@@ -254,15 +255,19 @@ call_forsys <- function(connection, scenario) {
     annual_target_field = "area_ha",
     annual_target = 100000
   )
+  return(out)
+}
 
-  result <- to_projects(connection, out)
+to_result <- function(connection, scenario, forsys_output) {
+  now <- now_utc()
+  result <- to_projects(connection, forsys_output)
 
   scenario_result <- list(
     now,
     now,
     scenario$id,
     "SUCCESS",
-    toJSON(result)
+    result
   )
   return(scenario_result)
 }
