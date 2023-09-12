@@ -69,3 +69,16 @@
 .menu-link {
   text-align: center;
 }
+
+@media print {
+  .nav-link, .username, .mat-menu-trigger , .avatar {
+    display: none;
+  }
+  .mat-toolbar .site-link {
+    color: black;
+  }
+
+  .site-link img {
+    filter: invert(1);
+  }
+}
