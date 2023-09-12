@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
@@ -9,9 +8,11 @@ import { AuthService } from 'src/app/services';
 import { PlanService } from '../../services/plan.service';
 import { PlanPreview } from '../../types/plan.types';
 import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
+import { calculateAcres } from '../../plan/plan-helpers';
+import { Router } from '@angular/router';
 
 interface PlanRow extends PlanPreview {
-  selected: boolean;
+  totalAcres: number;
 }
 
 @Component({
@@ -20,25 +21,24 @@ interface PlanRow extends PlanPreview {
   styleUrls: ['./plan-table.component.scss'],
 })
 export class PlanTableComponent implements OnInit {
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   datasource = new MatTableDataSource<PlanRow>();
+  selectedPlan: PlanRow | null = null;
+
   displayedColumns: string[] = [
-    'select',
     'name',
-    'createdTimestamp',
+    'lastUpdated',
+    'totalAcres',
+    'scenarios',
     'region',
-    'savedScenarios',
-    'configurations',
-    'status',
-    'options',
   ];
 
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -48,35 +48,26 @@ export class PlanTableComponent implements OnInit {
     });
   }
 
-  /** Retrieve plans from backend and sort them by date created, descending.
-   *  TODO: Sort by last updated instead when that field is available.
-   */
   getPlansFromService(): void {
     this.planService
       .listPlansByUser(null)
       .pipe(take(1))
       .subscribe((plans) => {
-        this.datasource.data = plans
-          .map((plan) => {
-            return {
-              ...plan,
-              selected: false,
-            };
-          })
-          .sort((plan) => plan.createdTimestamp ?? 0)
-          .reverse();
-        this.datasource.paginator = this.paginator;
+        this.datasource.data = plans.map((plan) => {
+          return {
+            ...plan,
+            totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
+          };
+        });
         this.datasource.sort = this.sort;
       });
   }
 
-  // If planId is provided, delete that plan only. Otherwise, delete all selected plans.
-  delete(planId?: string): void {
-    const planIdsToDelete: string[] = planId
-      ? [planId]
-      : this.datasource.data
-          .filter((plan) => plan.selected)
-          .map((plan) => plan.id);
+  deletePlan(): void {
+    if (!this.selectedPlan) {
+      return;
+    }
+    const planIdsToDelete: string[] = [String(this.selectedPlan.id)];
     const dialogRef: MatDialogRef<DeletePlanDialogComponent> = this.dialog.open(
       DeletePlanDialogComponent,
       {
@@ -98,13 +89,16 @@ export class PlanTableComponent implements OnInit {
   refresh(): void {
     this.getPlansFromService();
   }
-
-  toggleAll(checked: boolean): void {
-    this.datasource.data.forEach((plan) => (plan.selected = checked));
+  selectPlan(plan: PlanRow) {
+    this.selectedPlan = plan;
   }
 
-  /** WARNING: This function is run repeatedly on this page. Avoid any heavy lifting here. */
-  showDelete(): boolean {
-    return !!this.datasource.data.find((plan) => plan.selected);
+  viewMap() {}
+
+  goToScenario() {
+    if (!this.selectedPlan) {
+      return;
+    }
+    this.router.navigate(['plan', this.selectedPlan.id]);
   }
 }

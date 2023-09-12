@@ -229,8 +229,8 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
     Returns: The planning area in JSON form.  The JSON will also include two metadata fields:
       scenario_count: number of scenarios for this planning area.
-      scenario_latest_updated_at: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
-                                  None if there are no scenarios.
+      latest_updated: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+        PlanningArea updated_at if no scenarios
 
     Required params:
       id (int): ID of the planning area to retrieve.
@@ -258,8 +258,8 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     Returns: A list of planning areas in JSON form.  Each planning area JSON will also include
         two metadata fields:
       scenario_count: number of scenarios for the planning area returned.
-      scenario_latest_updated_at: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
-                                  None if there are no scenarios.
+      latest_updated: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+        PlanningArea updated_at if no scenarios
 
     Required params: none
     """
@@ -271,12 +271,15 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 
 # TODO: This could be really slow; consider paging or perhaps
 # fetching everything but geometries (since they're huge) for performance gains.
-        planning_areas = PlanningArea.objects.annotate(scenario_count=Count('scenarios', distinct=True))\
-                                             .annotate(scenario_latest_updated_at=Max('scenarios__updated_at'))\
-                                             .filter(user=user_id)
+# given that we need geometry to calculate total acres, should we save this value
+# when creating the planning area instead of calculating it each time?
 
+        planning_areas = PlanningArea.objects.filter(user=user_id)\
+                                            .annotate(scenario_count=Count("scenarios", distinct=True))\
+                                            .annotate(scenario_latest_updated_at=Max("scenarios__updated_at"))\
+                                            .order_by("-scenario_latest_updated_at")
         return JsonResponse(
-            [_serialize_planning_area(planning_area, False) for planning_area in planning_areas],
+            [_serialize_planning_area(planning_area, True) for planning_area in planning_areas],
             safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))

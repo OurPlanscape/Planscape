@@ -499,11 +499,10 @@ class ListPlanningAreaTest(TransactionTestCase):
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(planning_areas), 2)
-        self.assertEqual(planning_areas[0]['scenario_count'],1)
-        self.assertIsNotNone(planning_areas[0]['scenario_latest_updated_at'])
-        dump(planning_areas[0]['scenario_latest_updated_at'])
-        self.assertEqual(planning_areas[1]['scenario_count'],0)
-        self.assertIsNone(planning_areas[1]['scenario_latest_updated_at'])
+        self.assertEqual(planning_areas[0]['scenario_count'],0)
+        self.assertIsNotNone(planning_areas[0]['latest_updated'])
+        self.assertEqual(planning_areas[1]['scenario_count'],1)
+        self.assertIsNotNone(planning_areas[1]['latest_updated'])
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(reverse('planning:list_planning_areas'), {},
@@ -617,7 +616,7 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         self.assertEqual(planning_area['id'], listed_planning_area['id'])
         self.assertEqual(planning_area['geometry'], self.internal_geometry)
         self.assertEqual(planning_area['scenario_count'], 1)
-        self.assertIsNotNone(planning_area['scenario_latest_updated_at'])
+        self.assertIsNotNone(planning_area['latest_updated'])
         
         # remove it
         response = self.client.post(
