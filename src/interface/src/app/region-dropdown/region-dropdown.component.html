@@ -1,12 +1,12 @@
 <!-- Region Dropdown -->
 <div
   [ngClass]="{
-    'region-dropdown-wrapper': !newNavigation,
-    'region-wrapper': newNavigation
+    'region-dropdown-wrapper': !loginEnabled,
+    'region-wrapper': loginEnabled
   }">
   <select
     (change)="setRegion($event)"
-    [ngClass]="{ 'region-dropdown': !newNavigation, region: newNavigation }">
+    [ngClass]="{ 'region-dropdown': !loginEnabled, region: loginEnabled }">
     <option [selected]="!(selectedRegion$ | async)" disabled>
       Select a region
     </option>

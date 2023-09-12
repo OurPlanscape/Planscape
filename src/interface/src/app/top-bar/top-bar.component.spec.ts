@@ -53,7 +53,7 @@ describe('TopBarComponent', () => {
         { provide: SessionService, useValue: mockSessionService },
         {
           provide: FEATURES_JSON,
-          useValue: { new_navigation: false },
+          useValue: { login: false },
         },
       ],
     }).compileComponents();
@@ -133,9 +133,9 @@ describe('TopBarComponent', () => {
   });
 
   describe('feedback button', () => {
-    it('should show the feedback button when on new_navigation flag is on', () => {
+    it('should show the feedback button when on login flag is on', () => {
       TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: true },
+        useValue: { login: true },
       });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
@@ -143,7 +143,7 @@ describe('TopBarComponent', () => {
       );
       expect(feedbackBtn).toBeTruthy();
     });
-    it('should not show the button when new_navigation flag is off ', () => {
+    it('should not show the button when login flag is off ', () => {
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
         By.css('[data-id="feedback"]')
@@ -153,9 +153,9 @@ describe('TopBarComponent', () => {
   });
 
   describe('help button', () => {
-    it('should not show the help button when on new_navigation flag is on', () => {
+    it('should not show the help button when on login flag is on', () => {
       TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: true },
+        useValue: { login: true },
       });
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
@@ -163,7 +163,7 @@ describe('TopBarComponent', () => {
       );
       expect(feedbackBtn).toBeFalsy();
     });
-    it('should show the help button when new_navigation flag is off ', () => {
+    it('should show the help button when login flag is off ', () => {
       setUpComponent();
       const feedbackBtn = fixture.debugElement.query(
         By.css('[data-id="help"]')
@@ -173,9 +173,9 @@ describe('TopBarComponent', () => {
   });
 
   describe('new logo', () => {
-    it('should show the new logo when new_navigation flag is on', () => {
+    it('should show the new logo when login flag is on', () => {
       TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: true },
+        useValue: { login: true },
       });
       setUpComponent();
       const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
@@ -183,7 +183,7 @@ describe('TopBarComponent', () => {
       expect(logo).toBeTruthy();
       expect(title).toBeFalsy();
     });
-    it('should show the preview logo when new_navigation flag is off ', () => {
+    it('should show the preview logo when login flag is off ', () => {
       setUpComponent();
       const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
       const title = fixture.debugElement.query(By.css('[data-id="title"]'));

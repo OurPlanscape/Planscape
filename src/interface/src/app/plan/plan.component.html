@@ -1,8 +1,8 @@
 <app-nav-bar
   (goBack)="goBack()"
   [breadcrumbs]="(breadcrumbs$ | async) || []"
-  *featureFlag="'new_navigation'"></app-nav-bar>
-<div class="root-container" [ngClass]="{ 'with-navbar': hasNewNavigation }">
+  *featureFlag="'login'"></app-nav-bar>
+<div class="root-container" [ngClass]="{ 'with-navbar': loginEnabled }">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="currentPlan$ | async">
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
@@ -12,7 +12,7 @@
     </div>
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
     <div class="plan-content">
-      <ng-container *featureFlag="'new_navigation'; hide: true">
+      <ng-container *featureFlag="'login'; hide: true">
         <app-plan-navigation-bar
           (backToOverviewEvent)="backToOverview()"
           *ngIf="!(showOverview$ | async)"></app-plan-navigation-bar>

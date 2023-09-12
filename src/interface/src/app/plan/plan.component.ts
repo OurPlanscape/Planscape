@@ -59,7 +59,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     })
   );
 
-  hasNewNavigation = this.featureService.isFeatureEnabled('new_navigation');
+  loginEnabled = this.featureService.isFeatureEnabled('login');
 
   private readonly destroy$ = new Subject<void>();
 

@@ -1,8 +1,8 @@
 <app-nav-bar
   (goBack)="backHome()"
   [breadcrumbs]="['New Plan']"
-  *featureFlag="'new_navigation'"></app-nav-bar>
-<div class="root-container" [ngClass]="{ 'with-navbar': hasNewNavigation }">
+  *featureFlag="'login'"></app-nav-bar>
+<div class="root-container" [ngClass]="{ 'with-navbar': login_enabled }">
   <!-- Map control panel -->
   <app-map-control-panel
     [boundaryConfig]="boundaryConfig$ | async"

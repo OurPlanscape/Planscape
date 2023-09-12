@@ -13,7 +13,7 @@ export class RegionDropdownComponent {
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
 
-  newNavigation = this.featureService.isFeatureEnabled('new_navigation');
+  loginEnabled = this.featureService.isFeatureEnabled('login');
 
   constructor(
     private router: Router,
