@@ -1,14 +1,17 @@
 import datetime
 import json
+import os
 
 import boto3
 from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
+from config.treatment_goals_config import TreatmentGoalsConfig
+from django.conf import settings as djangoSettings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Count
+from django.db.models import Count, Max
 from django.db.models.query import QuerySet
 from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
                          JsonResponse, QueryDict)
@@ -16,7 +19,6 @@ from django.shortcuts import get_object_or_404
 from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus)
 from planning.serializers import (PlanningAreaSerializer, ScenarioSerializer, ScenarioResultSerializer)
 from planscape import settings
-
 
 # Retrieve the logged in user from the HTTP request.
 def _get_user(request: HttpRequest) -> User:
@@ -225,7 +227,10 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     Retrieves a planning area by ID.
     Requires a logged in user.  Users can see only their owned planning_areas.
 
-    Returns: The planning area in JSON form.
+    Returns: The planning area in JSON form.  The JSON will also include two metadata fields:
+      scenario_count: number of scenarios for this planning area.
+      latest_updated: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+        PlanningArea updated_at if no scenarios
 
     Required params:
       id (int): ID of the planning area to retrieve.
@@ -238,7 +243,8 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             _serialize_planning_area(
-                get_object_or_404(user.planning_areas, id=request.GET['id']),
+                get_object_or_404(user.planning_areas.annotate(scenario_count=Count('scenarios', distinct=True))\
+                                  .annotate(scenario_latest_updated_at=Max('scenarios__updated_at')), id=request.GET['id']),
                 True))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -249,7 +255,11 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     Retrieves all planning areas for a user.
     Requires a logged in user.  Users can see only their owned planning_areas.
 
-    Returns: A list of planning areas in JSON form.
+    Returns: A list of planning areas in JSON form.  Each planning area JSON will also include
+        two metadata fields:
+      scenario_count: number of scenarios for the planning area returned.
+      latest_updated: latest datetime (e.g. 2023-09-08T20:33:28.090393Z) across all scenarios or
+        PlanningArea updated_at if no scenarios
 
     Required params: none
     """
@@ -261,9 +271,15 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 
 # TODO: This could be really slow; consider paging or perhaps
 # fetching everything but geometries (since they're huge) for performance gains.
-        planning_areas = PlanningArea.objects.filter(user=user_id)
+# given that we need geometry to calculate total acres, should we save this value
+# when creating the planning area instead of calculating it each time?
+
+        planning_areas = PlanningArea.objects.filter(user=user_id)\
+                                            .annotate(scenario_count=Count("scenarios", distinct=True))\
+                                            .annotate(scenario_latest_updated_at=Max("scenarios__updated_at"))\
+                                            .order_by("-scenario_latest_updated_at")
         return JsonResponse(
-            [_serialize_planning_area(planning_area, False) for planning_area in planning_areas],
+            [_serialize_planning_area(planning_area, True) for planning_area in planning_areas],
             safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -566,3 +582,22 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
             content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Delete Scenario error: " + str(e))
+    
+def get_treatment_goals_config_for_region(params: QueryDict):
+    # Get region name
+    assert isinstance(params['region_name'], str)
+    region_name = params['region_name']
+    
+    # Read from treatment_goals config
+    config_path = os.path.join(
+        djangoSettings.BASE_DIR, 'config/treatment_goals.json')
+    treatment_goals_config = json.load(open(config_path, 'r'))
+    for region in treatment_goals_config['regions']:
+        if region_name == region['region_name']:
+            return region['treatment_goals']
+        
+    return None
+
+def treatment_goals_config(request: HttpRequest) -> HttpResponse:
+    treatment_goals = get_treatment_goals_config_for_region(request.GET)
+    return JsonResponse(treatment_goals, safe = False)

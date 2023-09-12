@@ -6,8 +6,11 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
+import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 
 import { AuthService } from './../services';
+import { ValidationEmailDialog } from './validation-email-dialog/validation-email-dialog.component';
 
 @Component({
   selector: 'app-signup',
@@ -15,14 +18,14 @@ import { AuthService } from './../services';
   styleUrls: ['./signup.component.scss'],
 })
 export class SignupComponent {
-  error: any;
+  errors: string[] = [];
 
   form: FormGroup;
-  step: number = 0;
   submitted: boolean = false;
 
   constructor(
     private authService: AuthService,
+    private readonly dialog: MatDialog,
     private formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -49,7 +52,6 @@ export class SignupComponent {
   signup() {
     if (this.submitted) return;
 
-    this.submitted = true;
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
@@ -57,23 +59,20 @@ export class SignupComponent {
     const lastName: string = this.form.get('lastName')?.value;
     this.authService
       .signup(email, password1, password2, firstName, lastName)
-      .subscribe(
-        (_) => this.router.navigate(['map']),
-        (error) => {
-          this.error = error;
+      .subscribe({
+        next: () => {
+          this.submitted = true;
+          this.router.navigate(['home']);
+          const dialogConfig = {
+            data: email,
+          };
+          this.dialog.open(ValidationEmailDialog, dialogConfig);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.errors = Object.values(error.error);
           this.submitted = false;
         }
-      );
-  }
-
-  login() {
-    this.router.navigate(['login']);
-  }
-
-  enableContinue(): boolean {
-    return !!(
-      this.form.get('firstName')?.valid && this.form.get('lastName')?.valid
-    );
+      });
   }
 
   private passwordsMatchValidator(group: AbstractControl) {

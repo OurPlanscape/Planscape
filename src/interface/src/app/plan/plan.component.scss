@@ -1,8 +1,14 @@
+@import "../shared/_variables.scss";
+
 .root-container {
   display: flex;
   flex-direction: row;
   height: 100%;
   width: 100%;
+}
+
+.root-container.with-navbar {
+  height: calc(100%  - $navbar-height);
 }
 
 .plan-summary-panel {
@@ -57,4 +63,39 @@
 .scenario-details {
   height: 100%;
   width: 100%;
+}
+
+
+
+@media print {
+  app-nav-bar {
+    display: none;
+  }
+
+  .plan-summary-panel {
+    display: none;
+  }
+
+  ::ng-deep {
+    .plan-overview-container .plan-scenario-panel .plan-scenario-panel-content {
+      display: none;
+    }
+
+    app-scenario-configurations .configurations-wrapper .no-configs-overlay{
+      display: none;
+    }
+    summary-panel .summary-content .grid-container {
+      display: block;
+    }
+
+    ::ng-deep app-scenario-configurations mat-card-actions.mat-card-actions {
+      display: none;
+    }
+
+    ::ng-deep .mat-column-select{
+      display: none;
+    }
+
+
+  }
 }

@@ -85,7 +85,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   panelExpanded: boolean = true;
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: '',
+    short_question_text: '',
     priorities: [''],
     weights: [0],
   };

@@ -25,6 +25,7 @@ import { ScenarioDetailsComponent } from './scenario-details/scenario-details.co
 import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 import { FeaturesModule } from '../features/features.module';
+import { WINDOW_PROVIDERS } from '../services/window.service';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -46,6 +47,7 @@ import { FeaturesModule } from '../features/features.module';
     ScenarioConfirmationComponent,
     MapLayersComponent,
   ],
+  providers: [WINDOW_PROVIDERS],
   imports: [
     BrowserAnimationsModule,
     CommonModule,

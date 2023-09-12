@@ -1,5 +1,6 @@
 import datetime
 import json
+from dumper import dump
 
 from base.condition_types import ConditionLevel, ConditionScoreType
 from conditions.models import BaseCondition, Condition, ConditionRaster
@@ -475,6 +476,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area1 = _create_planning_area(self.user, 'test plan1', stored_geometry)
         self.planning_area2 = _create_planning_area(self.user, 'test plan2', stored_geometry)
+        self.scenario1 = _create_scenario(self.planning_area1, 'test scenario1', '{}', '')
 
         self.user2 = User.objects.create(username='testuser2')
         self.user2.set_password('12345')
@@ -494,8 +496,13 @@ class ListPlanningAreaTest(TransactionTestCase):
             reverse('planning:list_planning_areas'),
             {},
             content_type="application/json")
+        planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(len(planning_areas), 2)
+        self.assertEqual(planning_areas[0]['scenario_count'],0)
+        self.assertIsNotNone(planning_areas[0]['latest_updated'])
+        self.assertEqual(planning_areas[1]['scenario_count'],1)
+        self.assertIsNotNone(planning_areas[1]['latest_updated'])
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(reverse('planning:list_planning_areas'), {},
@@ -513,12 +520,11 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(response.json()), 0)
 
 
-# EndtoEnd test that lists, creates a planning_area, tests what was stored,
-# and then deletes it.
+# EndtoEnd test that lists, creates a planning_area, creates a scenario,
+# tests what was stored, and then deletes everything.
 # This covers the basic happiest of cases and should not be a substitute
 # for the main unit tests.
-# TODO: Add scenario steps
-class EndtoEndPlanningAreaTest(TransactionTestCase):
+class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username='testuser')
         self.user.set_password('12345')
@@ -526,6 +532,16 @@ class EndtoEndPlanningAreaTest(TransactionTestCase):
         self.internal_geometry = {'type': 'MultiPolygon',
                          'coordinates': [[[[1, 2], [2, 3], [3, 4], [1, 2]]]]}
         self.geometry = {'features': [{'geometry': self.internal_geometry}]}
+        self.scenario_configuration = {
+            'est_cost': 0,
+            'max_budget': 0,
+            'max_road_distance': 0,
+            'max_slope': 0,
+            'priorities': ['priority1'],
+            'weights': [0],
+            'stand_size': 'Large',
+            'excluded_areas': []
+        }
 
     def test_end_to_end(self):
         self.client.force_login(self.user)
@@ -555,7 +571,8 @@ class EndtoEndPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(response.json()), 1)
         planning_areas = response.json()
         listed_planning_area = planning_areas[0]
-        
+        self.assertEqual(listed_planning_area['scenario_count'], 0)
+ 
         # get plan details
         response = self.client.get(
             reverse('planning:get_planning_area_by_id'),
@@ -568,6 +585,39 @@ class EndtoEndPlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area['id'], listed_planning_area['id'])
         self.assertEqual(planning_area['geometry'], self.internal_geometry)
 
+        # create a scenario
+        response = self.client.post(
+            reverse('planning:create_scenario'),
+            {'planning_area': listed_planning_area['id'],
+             'configuration': json.dumps(self.scenario_configuration),
+             'name': 'test scenario',
+             'notes': 'test notes'},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        output = json.loads(response.content)
+        scenario_id = output['id']
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(ScenarioResult.objects.count(), 1)
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertEqual(scenario.planning_area.pk, listed_planning_area['id'])
+        self.assertEqual(scenario.configuration, json.dumps(self.scenario_configuration))
+        self.assertEqual(scenario.name, 'test scenario')
+        self.assertEqual(scenario.notes, 'test notes')
+
+        # check that scenario metadata shows up in the plan details.
+        response = self.client.get(
+            reverse('planning:get_planning_area_by_id'),
+            {'id': listed_planning_area['id']},
+            content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        planning_area = response.json()
+        self.assertEqual(planning_area['name'], 'test plan')
+        self.assertEqual(planning_area['region_name'], 'Sierra Nevada')
+        self.assertEqual(planning_area['id'], listed_planning_area['id'])
+        self.assertEqual(planning_area['geometry'], self.internal_geometry)
+        self.assertEqual(planning_area['scenario_count'], 1)
+        self.assertIsNotNone(planning_area['latest_updated'])
+        
         # remove it
         response = self.client.post(
             reverse('planning:delete_planning_area'),
@@ -583,6 +633,10 @@ class EndtoEndPlanningAreaTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
 
+        # checking for a blank database
+        self.assertEqual(PlanningArea.objects.count(), 0)
+        self.assertEqual(Scenario.objects.count(), 0)
+        self.assertEqual(ScenarioResult.objects.count(), 0)
 
 #### SCENARIO Tests ####
 

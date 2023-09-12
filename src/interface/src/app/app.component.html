@@ -1,5 +1,3 @@
 <!-- Toolbar -->
 <app-top-bar (toggleEvent)="toggleSidebar($event)"></app-top-bar>
-<app-navigation
-  [sidebarOpen]="sidebarOpen"
-  [ngClass]="{ 'with-navbar': hasNewNavigation }"></app-navigation>
+<app-navigation [sidebarOpen]="sidebarOpen"></app-navigation>

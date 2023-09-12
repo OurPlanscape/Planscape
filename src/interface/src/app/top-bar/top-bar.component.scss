@@ -46,7 +46,7 @@
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
-  margin-right: 0;
+  margin-right: 5px;
   margin-left: 5px;
 }
 
@@ -63,4 +63,22 @@
   background-color: white;
   color: #494949;
   font-weight: bold;
+  text-transform: uppercase;
+}
+
+.menu-link {
+  text-align: center;
+}
+
+@media print {
+  .nav-link, .username, .mat-menu-trigger , .avatar {
+    display: none;
+  }
+  .mat-toolbar .site-link {
+    color: black;
+  }
+
+  .site-link img {
+    filter: invert(1);
+  }
 }

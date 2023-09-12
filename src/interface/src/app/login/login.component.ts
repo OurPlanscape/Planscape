@@ -1,8 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '../services';
+import { MatDialog } from '@angular/material/dialog';
+
+import * as signInMessages from '../shared/constants';
+import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dialog';
 
 @Component({
   selector: 'app-login',
@@ -10,7 +14,9 @@ import { AuthService } from '../services';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  error: any;
+  protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
+
+  protected accountError = '';
 
   form: FormGroup;
 
@@ -37,7 +43,8 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private readonly dialog: MatDialog
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -45,6 +52,18 @@ export class LoginComponent {
         Validators.email,
       ]),
       password: this.formBuilder.control('', Validators.required),
+    });
+  }
+
+  resetPassword() {
+    const email: string = this.form.get('email')?.value;
+    this.authService.sendPasswordResetEmail(email).subscribe({
+      next: () => {
+        this.dialog.open(ResetPasswordDialog);
+      },
+      error: (err) => {
+        this.accountError = this.RESET_ERROR;
+      },
     });
   }
 
@@ -56,7 +75,7 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe(
       (_) => this.router.navigate(['map']),
-      (error) => (this.error = error)
+      (error) => (this.accountError = error.error)
     );
   }
 

@@ -1,0 +1,11 @@
+{% load account %}
+{% load i18n %}
+{% autoescape off %}
+
+{% blocktrans with user_display=user %}Dear {{ user_display }},{% endblocktrans %}
+
+Thanks for signing up for Planscape. Please go to {{ activate_url }} to validate your email, and then you can get started!
+
+Team Planscape
+
+{% endautoescape %}

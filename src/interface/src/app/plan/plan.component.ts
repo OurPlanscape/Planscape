@@ -7,17 +7,21 @@ import {
 } from '@angular/router';
 import {
   BehaviorSubject,
+  combineLatest,
   concatMap,
   filter,
   map,
   Observable,
+  of,
   Subject,
+  switchMap,
   take,
   takeUntil,
 } from 'rxjs';
 
 import { Plan, User } from '../types';
 import { AuthService, PlanService } from '../services';
+import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-plan',
@@ -25,47 +29,61 @@ import { AuthService, PlanService } from '../services';
   styleUrls: ['./plan.component.scss'],
 })
 export class PlanComponent implements OnInit, OnDestroy {
-  plan: Plan | undefined;
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
   planOwner$ = new Observable<User | null>();
-  planNotFound: boolean = false;
+
   showOverview$ = new BehaviorSubject<boolean>(false);
 
-  breadcrumbs$ = this.currentPlan$.pipe(
-    map((plan) => {
-      const crumbs = plan ? [plan.name] : [];
+  scenario$ = this.planService.planState$.pipe(
+    switchMap((state) => {
+      if (state.currentConfigId) {
+        return this.planService.getProject(state.currentConfigId);
+      }
+      return of(null);
+    })
+  );
+  breadcrumbs$ = combineLatest([
+    this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
+    this.scenario$,
+  ]).pipe(
+    map(([plan, scenario]) => {
+      const crumbs = [plan.name];
       const path = this.getPathFromSnapshot();
-      if (path === 'config') {
-        crumbs.push('New Configuration');
+      if (path === 'config' && !scenario) {
+        crumbs.push('New Scenario');
+      }
+      if (scenario) {
+        crumbs.push(scenario.name || '');
       }
       return crumbs;
     })
   );
 
-  openConfigId?: number;
+  hasNewNavigation = this.featureService.isFeatureEnabled('new_navigation');
 
   private readonly destroy$ = new Subject<void>();
+
+  planId = this.route.snapshot.paramMap.get('id');
+  planNotFound: boolean = !this.planId;
 
   constructor(
     private authService: AuthService,
     private planService: PlanService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private featureService: FeatureService
   ) {
     // TODO: Move everything in the constructor to ngOnInit
-    const planId = this.route.snapshot.paramMap.get('id');
 
-    if (planId === null) {
+    if (this.planId === null) {
       this.planNotFound = true;
       return;
     }
-
-    const plan$ = this.planService.getPlan(planId).pipe(take(1));
+    const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
 
     plan$.subscribe({
       next: (plan) => {
-        this.plan = plan;
-        this.currentPlan$.next(this.plan);
+        this.currentPlan$.next(plan);
       },
       error: (error) => {
         this.planNotFound = true;
@@ -114,8 +132,7 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   private updatePlanStateFromRoute() {
-    const planId = this.route.snapshot.paramMap.get('id');
-    this.planService.updateStateWithPlan(planId);
+    this.planService.updateStateWithPlan(this.planId);
     const routeChild = this.route.snapshot.firstChild;
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;
@@ -133,7 +150,7 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.plan!.id]);
+    this.router.navigate(['plan', this.currentPlan$.value!.id]);
   }
 
   goBack() {

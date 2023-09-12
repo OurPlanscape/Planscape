@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CanActivate, Router } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivate, Resolve, Router, RouterStateSnapshot } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   BehaviorSubject,
@@ -70,12 +70,16 @@ export class AuthService {
         email,
         first_name: firstName,
         last_name: lastName,
-      })
-      .pipe(
-        concatMap((_) => {
-          return this.login(email, password1);
-        })
-      );
+      });
+  }
+
+  resendValidationEmail(
+    email: string,
+  ) {
+    return this.http
+      .post(this.API_ROOT.concat('registration/resend-email/'), {
+        email,
+      });
   }
 
   logout() {
@@ -90,6 +94,13 @@ export class AuthService {
           this.snackbar.open(response.detail);
         })
       );
+  }
+
+  validateAccount(token: string) {
+    return this.http
+      .post(this.API_ROOT.concat('registration/account-confirm-email/'), {
+        key: token,
+      });
   }
 
   private refreshToken() {
@@ -133,17 +144,46 @@ export class AuthService {
       );
   }
 
-  changePassword(password1: string, password2: string): Observable<any> {
+  changePassword(
+    currentPassword: string,
+    newPassword1: string,
+    newPassword2: string
+  ): Observable<any> {
     return this.http.post(
       this.API_ROOT.concat('password/change/'),
       {
-        new_password1: password1,
-        new_password2: password2,
+        old_password: currentPassword,
+        new_password1: newPassword1,
+        new_password2: newPassword2,
       },
       {
         withCredentials: true,
       }
     );
+  }
+
+  sendPasswordResetEmail(email: string): Observable<any> {
+    return this.http.post(
+      this.API_ROOT.concat('password/reset/'),
+      {
+        email: email,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  resetPassword(token: string, userId: string): Observable<boolean> {
+    return this.http
+      .get(this.API_ROOT.concat('reset/confirm/', userId, '/', token, '/'), {
+        withCredentials: true,
+      })
+      .pipe(
+        map((response: any) => {
+          return response.success;
+        })
+      );
   }
 
   /** Gets a user given the id. */
@@ -202,11 +242,12 @@ export class AuthService {
    * "Deletes" user from backend. The behavior of this command is to disable the user account,
    *  not fully delete it, so data can be restored later if necessary.
    */
-  deleteUser(user: User): Observable<boolean> {
+  deleteUser(user: User, password: string): Observable<boolean> {
     return this.http
       .post(
         BackendConstants.END_POINT.concat('/users/delete/'),
         {
+          password: password,
           email: user.email,
         },
         {
@@ -239,6 +280,33 @@ export class AuthGuard implements CanActivate {
       map((_) => true),
       catchError((_) => {
         this.router.navigate(['login']);
+        return of(false);
+      })
+    );
+  }
+}
+
+/** The ValidateGuard validates the email address of a new account, and logs the user in while at it.
+ */
+@Injectable()
+export class ValidationResolver implements Resolve<boolean> {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
+
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+    ): Observable<boolean> {
+    const token = route.paramMap.get('id');
+    if (!token) {
+      this.router.navigate(['home']);
+    }
+    return this.authService.validateAccount(token!).pipe(
+      map((_) => true),
+      catchError((error: Error) => {
+        this.router.navigate(['home']);
         return of(false);
       })
     );

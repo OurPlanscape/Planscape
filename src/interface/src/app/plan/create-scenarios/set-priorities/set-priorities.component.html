@@ -19,7 +19,13 @@
               *ngFor="let treatmentQuestion of treatmentGoal['questions']"
               class="layer-control-container">
               <mat-radio-button [value]="treatmentQuestion">
-                {{ treatmentQuestion.question_text }}
+                <div
+                  [matTooltip]="treatmentQuestion.long_question_text || ''"
+                  matTooltipPosition="right"
+                  matTooltipClass="long-question-tooltip"
+                  class="short-question">
+                  {{ treatmentQuestion.short_question_text }}
+                </div>
               </mat-radio-button>
             </div>
           </mat-expansion-panel>

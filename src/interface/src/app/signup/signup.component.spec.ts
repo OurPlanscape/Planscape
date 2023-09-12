@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
@@ -20,7 +21,7 @@ describe('SignupComponent', () => {
       {}
     );
     TestBed.configureTestingModule({
-      imports: [FormsModule, MaterialModule, ReactiveFormsModule],
+      imports: [FormsModule, MaterialModule, NoopAnimationsModule, ReactiveFormsModule],
       declarations: [SignupComponent],
       providers: [
         { provide: Router, useFactory: routerStub },
@@ -36,15 +37,24 @@ describe('SignupComponent', () => {
   });
 
   describe('signup form', () => {
-    it('disables continue button when first half of form is incomplete', () => {
-      expect(component.enableContinue()).toBeFalse();
+    beforeEach(() => {
+      component.form.reset();
     });
 
-    it('enables continue button when first half of form is complete', () => {
-      component.form.get('firstName')?.setValue('Foo');
-      component.form.get('lastName')?.setValue('Bar');
+    it('disables submit if required fields are missing', () => {
+      expect(component.form.valid).toBeFalse();
 
-      expect(component.enableContinue()).toBeTrue();
+      component.form.get('firstName')?.setValue('Foo');
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('lastName')?.setValue('Bar');
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('email')?.setValue('test@test.com');
+      expect(component.form.valid).toBeFalse();
+
+      component.form.get('password1')?.setValue('password');
+      expect(component.form.valid).toBeFalse();
     });
 
     it('disables submit when password fields are not equal', () => {
@@ -82,17 +92,6 @@ describe('SignupComponent', () => {
         'Foo',
         'Bar'
       );
-    });
-  });
-
-  describe('login', () => {
-    it('navigates to login page', () => {
-      const routerStub: Router = fixture.debugElement.injector.get(Router);
-      spyOn(routerStub, 'navigate').and.callThrough();
-
-      component.login();
-
-      expect(routerStub.navigate).toHaveBeenCalled();
     });
   });
 });

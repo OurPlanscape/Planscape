@@ -31,7 +31,7 @@ describe('CreateScenariosComponent', () => {
   let fakeGeoJson: GeoJSON.GeoJSON;
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
-    question_text: '',
+    short_question_text: '',
     priorities: [''],
     weights: [0],
   };
@@ -79,7 +79,7 @@ describe('CreateScenariosComponent', () => {
             category_name: 'test_category',
             questions: [
               {
-                question_text: 'test_question',
+                short_question_text: 'test_question',
                 priorities: ['test_priority'],
                 weights: [1],
               },
