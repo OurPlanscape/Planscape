@@ -46,6 +46,17 @@ export interface BackendPlan {
   creation_timestamp?: number; // in seconds since epoch
 }
 
+export interface BackendPlanPreview {
+  id: number;
+  name: string;
+  notes: string;
+  user: number;
+  region_name: Region;
+  scenario_count: number;
+  latest_updated: string;
+  geometry?: GeoJSON.GeoJSON;
+}
+
 export interface BackendProjectArea {
   id: number;
   geometry: GeoJSON.GeoJSON;
@@ -156,7 +167,7 @@ export class PlanService {
       url = url.concat('/?owner=', userId);
     }
     return this.http
-      .get<BackendPlan[]>(url, {
+      .get<BackendPlanPreview[]>(url, {
         withCredentials: true,
       })
       .pipe(
@@ -433,16 +444,18 @@ export class PlanService {
     };
   }
 
-  private convertToPlanPreview(plan: BackendPlan): PlanPreview {
+  private convertToPlanPreview(plan: BackendPlanPreview): PlanPreview {
     return {
-      id: String(plan.id),
+      id: plan.id,
       name: plan.name,
       region: plan.region_name,
-      savedScenarios: plan.scenarios,
-      configurations: plan.projects,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        plan.creation_timestamp
-      ),
+      scenarios: plan.scenario_count,
+      notes: plan.notes,
+      lastUpdated: plan.latest_updated
+        ? new Date(plan.latest_updated)
+        : undefined,
+      geometry: plan.geometry,
+      ownerId: plan.user,
     };
   }
 

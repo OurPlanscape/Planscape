@@ -1,10 +1,14 @@
+:host{
+  display: block;
+}
 
 .button-row {
   display: flex;
   flex-direction: row;
   gap: 12px;
   justify-content: flex-end;
-  padding-bottom: 12px;
+  padding-block: 12px;
+  margin-right: 10px;
 }
 
 .no-saved-plans {
@@ -28,4 +32,66 @@ h2 {
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
+}
+
+.table-row {
+  cursor: pointer;
+}
+
+.selected .mat-column-name , .selected{
+  background-color: #F1F5FD;
+  border-left-color: #3B78E7;
+}
+
+mat-header-row {
+  min-height: 80px;
+}
+
+mat-header-row , mat-row{
+  gap: 20px;
+}
+
+.mat-column-name {
+  border-left: 6px solid transparent;
+  flex-basis: 8%;
+}
+
+.mat-header-cell.mat-column-name {
+  font-weight: bold;
+  color: black;
+  margin-right: 1px;
+
+  ::ng-deep.mat-sort-header-container {
+    align-self: end;
+    padding-bottom: 10px;
+  }
+}
+
+.action-button {
+  text-transform: uppercase;
+}
+
+.primary {
+  color: #3B78E7;
+}
+
+
+.mat-column-lastUpdated {
+  flex-basis: 10%;
+  position: relative;
+  overflow: visible;
+
+  &::after{
+    left: -20px;
+    background: linear-gradient(90deg, #d5d5d5, transparent);
+    position: absolute;
+    display: block;
+    content: "";
+    width: 5px;
+    height: 100%;
+  }
+}
+
+.mat-header-cell:not(.mat-column-name ) {
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
 }

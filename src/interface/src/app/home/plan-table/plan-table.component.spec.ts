@@ -2,7 +2,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
@@ -16,16 +16,22 @@ import { PlanTableComponent } from './plan-table.component';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: PlanPreview = {
-    id: 'temp1',
+    id: 1,
     name: 'somePlan',
     region: Region.SIERRA_NEVADA,
-    createdTimestamp: 1,
+    lastUpdated: new Date(),
+    notes: '',
+    scenarios: 1,
+    ownerId: 1,
   };
   const fakePlan2: PlanPreview = {
-    id: 'temp2',
+    id: 2,
     name: 'somePlan',
     region: Region.SIERRA_NEVADA,
-    createdTimestamp: 2,
+    lastUpdated: new Date(),
+    notes: '',
+    scenarios: 2,
+    ownerId: 1,
   };
 
   let component: PlanTableComponent;
@@ -78,34 +84,18 @@ describe('PlanTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('ngOnInit', () => {
-    it('should fetch plans from the DB and sort descending by timestamp', () => {
-      expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
-      expect(component.datasource.data).toEqual([
-        {
-          ...fakePlan2,
-          selected: false,
-        },
-        {
-          ...fakePlan1,
-          selected: false,
-        },
-      ]);
-    });
-  });
-
   describe('refresh', () => {
     it('should fetch plans from the DB', () => {
       component.refresh();
       expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
       expect(component.datasource.data).toEqual([
         {
-          ...fakePlan2,
-          selected: false,
+          ...fakePlan1,
+          totalAcres: 0,
         },
         {
-          ...fakePlan1,
-          selected: false,
+          ...fakePlan2,
+          totalAcres: 0,
         },
       ]);
     });
@@ -115,8 +105,8 @@ describe('PlanTableComponent', () => {
     it('should open a dialog with a single ID to delete', () => {
       const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
       spyOn(dialogSpy, 'open').and.callThrough();
-
-      component.delete('1');
+      component.selectedPlan = { ...fakePlan1, totalAcres: 100 };
+      component.deletePlan();
 
       expect(dialogSpy.open).toHaveBeenCalledOnceWith(
         DeletePlanDialogComponent,
@@ -124,63 +114,6 @@ describe('PlanTableComponent', () => {
           data: ['1'],
         }
       );
-    });
-
-    it('should open a dialog with multiple IDs to delete', () => {
-      const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
-      spyOn(dialogSpy, 'open').and.callThrough();
-
-      component.datasource.data = [
-        {
-          ...fakePlan1,
-          id: '1',
-          selected: true,
-        },
-        {
-          ...fakePlan1,
-          id: '2',
-          selected: true,
-        },
-        {
-          ...fakePlan1,
-          id: '3',
-          selected: false,
-        },
-      ];
-      component.delete();
-
-      expect(dialogSpy.open).toHaveBeenCalledOnceWith(
-        DeletePlanDialogComponent,
-        {
-          data: ['1', '2'],
-        }
-      );
-    });
-
-    it('when dialog is closed with value true, call service to delete', () => {
-      const fakeDialogRef: MatDialogRef<DeletePlanDialogComponent> =
-        jasmine.createSpyObj('MatDialogRef<DeletePlanDialogComponent>', {
-          afterClosed: of(true),
-        });
-      const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
-      spyOn(dialogSpy, 'open').and.returnValue(fakeDialogRef);
-
-      component.delete('1');
-
-      expect(fakePlanService.deletePlan).toHaveBeenCalledOnceWith(['1']);
-    });
-
-    it('when dialog is closed with value false, do nothing', () => {
-      const fakeDialogRef: MatDialogRef<DeletePlanDialogComponent> =
-        jasmine.createSpyObj('MatDialogRef<DeletePlanDialogComponent>', {
-          afterClosed: of(false),
-        });
-      const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
-      spyOn(dialogSpy, 'open').and.returnValue(fakeDialogRef);
-
-      component.delete('1');
-
-      expect(fakePlanService.deletePlan).toHaveBeenCalledTimes(0);
     });
   });
 

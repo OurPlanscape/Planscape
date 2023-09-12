@@ -1,32 +1,41 @@
 <div *ngIf="datasource.data.length; else noplans">
   <mat-table [dataSource]="datasource" matSort>
-    <!-- Select Column -->
-    <ng-container matColumnDef="select">
-      <mat-header-cell *matHeaderCellDef>
-        <mat-checkbox (change)="toggleAll($event.checked)"></mat-checkbox>
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <mat-checkbox
-          name="${element.id}-selected"
-          [(ngModel)]="element.selected"></mat-checkbox>
-      </mat-cell>
-    </ng-container>
-
     <!-- Name Column -->
     <ng-container matColumnDef="name">
       <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
       <mat-cell *matCellDef="let element">
-        <a href="/plan/{{ element.id }}">{{ element.name }}</a>
+        {{ element.name }}
       </mat-cell>
     </ng-container>
 
     <!-- Timestamp Column -->
-    <ng-container matColumnDef="createdTimestamp">
+    <!-- TODO replace with last modified-->
+    <ng-container matColumnDef="lastUpdated">
       <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Date Created
+        Date Last Modified
       </mat-header-cell>
       <mat-cell *matCellDef="let element">
-        {{ element.createdTimestamp | date: 'medium' }}
+        {{ element.lastUpdated | date: 'medium' }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Acres Column -->
+    <ng-container matColumnDef="totalAcres">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        Total Acres
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{ element.totalAcres | number }}
+      </mat-cell>
+    </ng-container>
+
+    <!-- Saved Scenarios Column -->
+    <ng-container matColumnDef="scenarios">
+      <mat-header-cell *matHeaderCellDef mat-sort-header>
+        # of Scenarios
+      </mat-header-cell>
+      <mat-cell *matCellDef="let element">
+        {{ element.scenarios }}
       </mat-cell>
     </ng-container>
 
@@ -40,76 +49,37 @@
       </mat-cell>
     </ng-container>
 
-    <!-- Saved Scenarios Column -->
-    <ng-container matColumnDef="savedScenarios">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Saved Scenarios
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.savedScenarios }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Configurations Column -->
-    <ng-container matColumnDef="configurations">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Configurations
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.configurations }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Status Column -->
-    <ng-container matColumnDef="status">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Status
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.status }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Options Column -->
-    <ng-container matColumnDef="options">
-      <mat-header-cell *matHeaderCellDef></mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="menu"
-          aria-label="More options">
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #menu="matMenu">
-          <button mat-menu-item (click)="delete(element.id)">
-            <mat-icon>delete</mat-icon>
-            Delete
-          </button>
-        </mat-menu>
-      </mat-cell>
-    </ng-container>
-
     <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row *matRowDef="let row; columns: displayedColumns"></mat-row>
+    <mat-row
+      class="table-row"
+      [ngClass]="{ selected: selectedPlan && selectedPlan.id === row.id }"
+      *matRowDef="let row; columns: displayedColumns"
+      (click)="selectPlan(row)"
+      (dblclick)="goToScenario()"></mat-row>
   </mat-table>
-
-  <mat-paginator
-    [pageSizeOptions]="[10, 20, 30]"
-    showFirstLastButtons
-    aria-label="Select page of plans"></mat-paginator>
 
   <div class="button-row">
     <button
       mat-button
-      color="primary"
-      (click)="delete()"
-      [disabled]="!showDelete()">
-      <mat-icon>delete</mat-icon>
-      DELETE
+      (click)="deletePlan()"
+      [disabled]="!selectedPlan"
+      class="action-button">
+      delete
     </button>
-    <button mat-button color="primary" (click)="refresh()">
-      <mat-icon>refresh</mat-icon>
-      REFRESH
+    <!--    Todo add view map-->
+    <!--    <button-->
+    <!--      mat-raised-button-->
+    <!--      (click)="viewMap()"-->
+    <!--      [disabled]="!selectedPlan"-->
+    <!--      class="action-button primary">-->
+    <!--      view map-->
+    <!--    </button>-->
+    <button
+      mat-raised-button
+      (click)="goToScenario()"
+      [disabled]="!selectedPlan"
+      class="action-button primary">
+      scenarios
     </button>
   </div>
 </div>
