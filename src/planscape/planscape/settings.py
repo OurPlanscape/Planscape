@@ -113,6 +113,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "planscape.wsgi.application"
 
+# TODO: This is for debugging email messages, and it needs to be removed.
+EMAIL_BACKEND='django.core.mail.backends.console.EmailBackend'
+
 PLANSCAPE_DATABASE_HOST = config("PLANSCAPE_DATABASE_HOST", default="localhost")
 PLANSCAPE_DATABASE_PASSWORD = config("PLANSCAPE_DATABASE_PASSWORD", default="pass")
 PLANSCAPE_DATABASE_USER = config("PLANSCAPE_DATABASE_USER", default="planscape")
@@ -222,8 +225,9 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
     "OLD_PASSWORD_FIELD_ENABLED": True,
+
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
-    "PASSWORD_RESET_CONFIRM_SERIALIZER": "dj_rest_auth.serializers.PasswordResetConfirmSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.PasswordResetConfirmSerializer",
 }
 
 AUTHENTICATION_BACKENDS = [
