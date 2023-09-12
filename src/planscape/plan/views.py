@@ -225,7 +225,7 @@ def list_plans_by_owner(request: HttpRequest) -> HttpResponse:
                  .annotate(projects=Count('project', distinct=True))
                  .annotate(scenarios=Count('project__scenario')))
         return JsonResponse(
-            [_serialize_plan(plan, True) for plan in plans],
+            [_serialize_plan(plan, False) for plan in plans],
             safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
