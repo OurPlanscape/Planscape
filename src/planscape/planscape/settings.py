@@ -225,7 +225,6 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
     "OLD_PASSWORD_FIELD_ENABLED": True,
-
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.PasswordResetConfirmSerializer",
 }
@@ -259,6 +258,10 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "noreply@planscape.org"
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
+<<<<<<< HEAD
+=======
+PASSWORD_RESET_TIMEOUT = 1800   # 30 minutes.
+>>>>>>> 166929a0 (Rebasing to resolve conflicts.)
 
 
 # PostGIS constants. All raster data should be ingested with a common
