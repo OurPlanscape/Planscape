@@ -49,6 +49,8 @@ interface StepState {
   opened?: boolean;
 }
 
+type ScenarioState = 'not-started' | 'pending' | 'completed';
+
 @Component({
   selector: 'app-create-scenarios',
   templateUrl: './create-scenarios.component.html',
@@ -98,6 +100,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
+
+  // TODO This should come from somewhere
+  scenarioState: ScenarioState = 'completed';
 
   constructor(
     private fb: FormBuilder,

@@ -27,6 +27,11 @@ import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 import { FeaturesModule } from '../features/features.module';
 import { WINDOW_PROVIDERS } from '../services/window.service';
+import { ScenarioNotStartedComponent } from './scenario-not-started/scenario-not-started.component';
+import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.component';
+import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';
+import { ProjectAreasComponent } from './project-areas/project-areas.component';
+import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-areas-metrics.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -48,6 +53,11 @@ import { WINDOW_PROVIDERS } from '../services/window.service';
     OutcomeComponent,
     ScenarioConfirmationComponent,
     MapLayersComponent,
+    ScenarioNotStartedComponent,
+    ScenarioPendingComponent,
+    ScenarioResultsComponent,
+    ProjectAreasComponent,
+    ProjectAreasMetricsComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
