@@ -176,8 +176,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioConfigId = planState.currentConfigId;
-        this.loadConfig();
+        this.scenarioConfigId = planState.currentScenarioId;
         this.panelExpanded = planState.panelExpanded ?? false;
       });
 
@@ -219,7 +218,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   }
 
   private loadConfig(): void {
-    this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
+    this.planService.getScenario(this.scenarioConfigId!).subscribe((scenario) => {
+      var config = scenario.configuration;
       const scenarioName = this.nameFormGroup.get('scenarioName');
       const estimatedCost = this.constraintsFormGroup.get(
         'budgetForm.estimatedCost'
@@ -243,8 +243,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       });
       const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
 
-      if (config.name) {
-        scenarioName?.setValue(config.name);
+      if (scenario.name) {
+        scenarioName?.setValue(scenario.name);
       }
       if (config.est_cost) {
         estimatedCost?.setValue(config.est_cost);
@@ -303,32 +303,30 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .subscribe((planState) => {
         plan_id = planState.currentPlanId!;
       });
-    let projectConfig: ProjectConfig = {
-      id: this.scenarioConfigId!,
-    };
-    projectConfig.excluded_areas = {};
+    let scenarioConfig: ScenarioConfig = {};
+    scenarioConfig.excluded_areas = {};
     this.excludedAreasOptions.forEach((area: string) => {
       if (this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid) {
-        projectConfig.excluded_areas![area] = this.constraintsFormGroup.get(
+        scenarioConfig.excluded_areas![area] = this.constraintsFormGroup.get(
           'excludedAreasForm.' + area
         )?.value;
       }
     });
     if (estimatedCost?.valid)
-      projectConfig.est_cost = parseFloat(estimatedCost.value);
-    if (maxCost?.valid) projectConfig.max_budget = parseFloat(maxCost.value);
+      scenarioConfig.est_cost = parseFloat(estimatedCost.value);
+    if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
+      scenarioConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
     }
     if (minDistanceFromRoad?.valid) {
-      projectConfig.min_distance_from_road = parseFloat(
+      scenarioConfig.min_distance_from_road = parseFloat(
         minDistanceFromRoad.value
       );
     }
-    if (maxSlope?.valid) projectConfig.max_slope = parseFloat(maxSlope.value);
+    if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
-      projectConfig.priorities = selectedQuestion.value['priorities'];
-      projectConfig.weights = selectedQuestion!.value['weights'];
+      scenarioConfig.priorities = selectedQuestion.value['priorities'];
+      scenarioConfig.weights = selectedQuestion!.value['weights'];
     }
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
@@ -337,7 +335,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     return {
       name: scenarioNameConfig,
       planning_area: plan_id,
-      configuration: projectConfig,
+      configuration: scenarioConfig,
     };
   }
 
