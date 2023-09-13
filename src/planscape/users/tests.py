@@ -122,5 +122,5 @@ class PasswordResetTest(TransactionTestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject,
                          "[Planscape] Password Reset E-mail")
-        self.assertContains(mail.outbox[0].body, "http://localhost:4200/reset")
+        self.assertIn("http://localhost:4200/reset", mail.outbox[0].body)
         
