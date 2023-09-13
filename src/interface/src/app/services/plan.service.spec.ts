@@ -208,7 +208,7 @@ describe('PlanService', () => {
         configuration: scenarioConfig,
       };
 
-      service.getScenario('1').subscribe((res) => {
+      service.getScenario(1).subscribe((res) => {
         expect(res).toEqual(scenario);
       });
       const req = httpTestingController.expectOne(

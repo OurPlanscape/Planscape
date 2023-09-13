@@ -79,7 +79,7 @@ export class ScenarioDetailsComponent implements OnInit {
       map((state) => state.currentScenarioId),
       filter((scenarioId) => !!scenarioId),
       switchMap((scenarioId) => {
-        return this.planService.getScenario(String(scenarioId)).pipe(take(1));
+        return this.planService.getScenario(scenarioId!).pipe(take(1));
       }),
       catchError(() => {
         this.matSnackBar.open('[Error] Scenario not found!', 'Dismiss', {
