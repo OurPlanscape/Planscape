@@ -102,7 +102,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   project_area_upload_enabled = features.upload_project_area;
 
   // TODO This should come from somewhere
-  scenarioState: ScenarioState = 'completed';
+  scenarioState: ScenarioState = 'pending';
 
   constructor(
     private fb: FormBuilder,
