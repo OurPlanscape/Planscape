@@ -19,7 +19,6 @@ export class PlanOverviewComponent {
   ) {}
 
   openConfig(configId?: number): void {
-    // TODO Make scenario id an optional parameter
     if (!configId) {
       this.router.navigate(['config', ''], {
         relativeTo: this.route,

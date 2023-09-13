@@ -56,7 +56,7 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
-  viewScenario(id?: string): void {
+  viewScenario(): void {
     this.router.navigate(['config', this.highlightedId], {
       relativeTo: this.route,
     });
