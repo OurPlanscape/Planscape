@@ -53,7 +53,16 @@
             </div>
           </div>
         </mat-tab>
-        <mat-tab label="Outcome">Scenario Results</mat-tab>
+        <mat-tab label="Outcome">
+          <ng-container [ngSwitch]="scenarioState">
+            <app-scenario-not-started
+              *ngSwitchCase="'not-started'"></app-scenario-not-started>
+            <app-scenario-pending
+              *ngSwitchCase="'pending'"></app-scenario-pending>
+            <app-scenario-results
+              *ngSwitchCase="'completed'"></app-scenario-results>
+          </ng-container>
+        </mat-tab>
       </mat-tab-group>
     </div>
 
