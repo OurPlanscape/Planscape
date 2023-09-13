@@ -32,6 +32,7 @@ describe('TopBarComponent', () => {
 
     mockAuthService = {
       loggedInUser$: new BehaviorSubject<User | null | undefined>(null),
+      isLoggedIn$: new BehaviorSubject(false),
       logout: () => of({ detail: '' }),
     };
     mockSessionService = {
@@ -113,25 +114,23 @@ describe('TopBarComponent', () => {
     });
 
     it('should be "Guest" when no user is logged in', async () => {
-      // expect(component.displayName).toEqual('Guest');
       const displayName = await firstValueFrom(component.displayName$);
-      console.log('the display!');
-      console.log(displayName);
+      expect(displayName).toEqual('Guest');
     });
 
-    it('should be the first name of the logged in user', () => {
+    it('should be the first name of the logged in user', async () => {
       mockAuthService.loggedInUser$?.next({
         firstName: 'Foo',
         username: 'User',
       });
-
-      //   expect(component.displayName).toEqual('Foo');
+      const displayName = await firstValueFrom(component.displayName$);
+      expect(displayName).toEqual('Foo');
     });
 
-    it('should be the username of the logged in user if they have no first name', () => {
+    it('should be the username of the logged in user if they have no first name', async () => {
       mockAuthService.loggedInUser$?.next({ username: 'User' });
-
-      // expect(component.displayName).toEqual('User');
+      const displayName = await firstValueFrom(component.displayName$);
+      expect(displayName).toEqual('User');
     });
   });
 
