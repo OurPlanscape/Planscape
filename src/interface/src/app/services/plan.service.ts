@@ -24,6 +24,7 @@ import {
 } from './../types/plan.types';
 import { SessionService, MapService } from '../services';
 
+// TODO Remove Config
 export interface PlanState {
   all: {
     [planId: string]: Plan;
@@ -233,27 +234,29 @@ export class PlanService {
       );
   }
 
-  /** Creates multiple project areas for a project. */
-  bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
-    const url = BackendConstants.END_POINT.concat(
-      '/plan/create_project_areas_for_project/'
-    );
-    return this.http
-      .post<number>(
-        url,
-        {
-          project_id: Number(projectId),
-          geometries: projectAreas,
-        },
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(
-        take(1),
-        map(() => null)
-      );
-  }
+  // Currently unused and unimplemented
+  // TODO either adapt to use scenarioID or remove
+  // /** Creates multiple project areas for a project. */
+  // bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
+  //   const url = BackendConstants.END_POINT.concat(
+  //     '/plan/create_project_areas_for_project/'
+  //   );
+  //   return this.http
+  //     .post<number>(
+  //       url,
+  //       {
+  //         project_id: Number(projectId),
+  //         geometries: projectAreas,
+  //       },
+  //       {
+  //         withCredentials: true,
+  //       }
+  //     )
+  //     .pipe(
+  //       take(1),
+  //       map(() => null)
+  //     );
+  // }
 
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
@@ -315,10 +318,10 @@ export class PlanService {
   }
 
   /** Fetches a scenario by its id from the backend. */
-  getScenario(scenarioId: number): Observable<Scenario> {
+  getScenario(scenarioId: string): Observable<Scenario> {
     const url = BackendConstants.END_POINT.concat(
       '/planning/get_scenario_by_id/?id=',
-      String(scenarioId)
+      scenarioId
     );
     return this.http
       .get(url, {
@@ -501,7 +504,6 @@ export class PlanService {
       name: scenario.name,
       planning_area: scenario.planning_area,
       configuration: this.convertToScenarioConfig(scenario.configuration),
-
       notes: scenario.notes,
     };
   }
@@ -598,12 +600,13 @@ export class PlanService {
       all: {
         ...currentState.all,
       },
-      currentScenarioId: Number(scenarioId),
+      currentScenarioId: scenarioId,
     });
 
     this.planState$.next(updatedState);
   }
 
+  // Deprecated
   updateStateWithConfig(configId: number | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({

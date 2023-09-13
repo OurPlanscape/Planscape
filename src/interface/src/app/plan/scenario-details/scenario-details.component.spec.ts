@@ -30,7 +30,7 @@ describe('ScenarioDetailsComponent', () => {
     );
 
     fakeScenario = {
-      id: 1,
+      id: '1',
       name: 'name',
       planning_area: '1',
       configuration: {

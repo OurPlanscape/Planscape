@@ -56,7 +56,6 @@ describe('CreateScenariosComponent', () => {
           maxBudget: 100,
         }),
         updateProject: of(1),
-        bulkCreateProjectAreas: of(null),
         createProjectArea: of(1),
         createScenario: of('1'),
         getScenario: of(fakeScenario),
@@ -74,7 +73,7 @@ describe('CreateScenariosComponent', () => {
           },
           currentPlanId: '1',
           currentConfigId: 1,
-          currentScenarioId: 1,
+          currentScenarioId: '1',
           mapConditionLayer: null,
           mapShapes: null,
           panelExpanded: true,
@@ -112,10 +111,8 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // TODO: Re-enable once loading in saved configs is implemented
   it('should load existing scenario', () => {
-    expect(fakePlanService.getScenario).toHaveBeenCalledOnceWith(1);
-
+    expect(fakePlanService.getScenario).toHaveBeenCalledOnceWith('1');
     component.formGroups[2].valueChanges.subscribe((_) => {
       expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
         100
