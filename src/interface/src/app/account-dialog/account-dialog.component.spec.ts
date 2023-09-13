@@ -24,7 +24,7 @@ describe('AccountDialogComponent', () => {
         updateUser: of(),
       },
       {
-        loggedInUser$: new BehaviorSubject<User | null>({
+        loggedInUser$: new BehaviorSubject<User | null | undefined>({
           firstName: 'Foo',
           lastName: 'Bar',
           email: 'test@test.com',

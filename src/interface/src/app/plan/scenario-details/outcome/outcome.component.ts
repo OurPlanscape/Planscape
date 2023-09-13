@@ -59,7 +59,7 @@ export class OutcomeComponent implements OnInit, OnChanges {
     if (this.plan) {
       this.totalPlanningAreaAcres = calculateAcres(this.plan.planningArea!);
     }
-    this.authService.loggedInUser$.pipe(take(1)).subscribe(this.currentUser$);
+    //this.authService.loggedInUser$.pipe(take(1)).subscribe(this.currentUser$);
   }
 
   ngOnChanges(changes: SimpleChanges): void {
