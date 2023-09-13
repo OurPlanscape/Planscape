@@ -30,7 +30,7 @@ export class SavedScenariosComponent implements OnInit {
     'name',
     'projectAreas',
     'acresTreated',
-    'estimated_cost',
+    'estimatedCost',
     'status',
     'owner',
     'createdTimestamp',
