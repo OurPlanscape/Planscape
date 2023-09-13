@@ -68,15 +68,11 @@ export class SavedScenariosComponent implements OnInit {
 
   deleteSelectedScenarios(): void {
     this.planService
-      .deleteScenarios(
-        this.scenarios
-          .filter((scenario) => scenario.selected)
-          .map((scenario) => String(scenario.id))
-      )
+      .deleteScenarios([this.highlightedId])
       .subscribe({
         next: (deletedIds) => {
           this.snackbar.open(
-            `Deleted ${deletedIds.length} scenario${
+            `Deleted scenario${
               deletedIds.length > 1 ? 's' : ''
             }`
           );
