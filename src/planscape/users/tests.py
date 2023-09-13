@@ -99,3 +99,28 @@ class IsVerifiedUserTest(TransactionTestCase):
 
         response = self.client.get(reverse('users:is_verified_user'))
         self.assertEqual(response.status_code, 200)
+
+
+class PasswordResetTest(TransactionTestCase):
+    def setUp(self):
+        self.client.post(
+            reverse('rest_register'), {
+                                         "email": "testuser@test.com",
+                                         "password1": "ComplexPassword123",
+                                         "password2": "ComplexPassword123",
+                                         "first_name": "FirstName",
+                                         "last_name": "LastName"
+                                     })
+        self.user = User.objects.filter(email='testuser@test.com').get()
+
+    def test_reset_link(self):
+        self.client.force_login(self.user)
+        self.client.post(reverse("rest_password_reset"),
+                         {"email": "testuser@test.com"},
+                         HTTP_ORIGIN='http://localhost:4200')
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject,
+                         "[Planscape] Password Reset E-mail")
+        self.assertContains(mail.outbox[0].body, "http://localhost:4200/reset")
+        
