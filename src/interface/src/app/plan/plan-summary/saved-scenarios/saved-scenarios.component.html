@@ -65,8 +65,8 @@
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row
           [ngClass]="{
-            'scenario-row': highlightedId != row.id,
-            highlight: highlightedId == row.id
+            'scenario-row': highlightedId !== row.id,
+            highlight: highlightedId === row.id
           }"
           *matRowDef="let row; columns: displayedColumns"
           (click)="highlightScenario(row.id)"
@@ -77,14 +77,14 @@
     <mat-card-actions align="end">
       <button
         mat-button
-        [disabled]="highlightedId == '-1'"
+        [disabled]="highlightedId === null"
         (click)="deleteSelectedScenarios()">
         <mat-icon>delete</mat-icon>
         DELETE
       </button>
       <button
         mat-raised-button
-        [disabled]="highlightedId == '-1'"
+        [disabled]="highlightedId === null"
         color="primary"
         (click)="viewScenario()">
         VIEW

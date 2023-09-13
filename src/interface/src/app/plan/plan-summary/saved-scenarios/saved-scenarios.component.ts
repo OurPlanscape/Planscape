@@ -24,7 +24,7 @@ export class SavedScenariosComponent implements OnInit {
     this planning area can also view all the scenarios within it.
   `;
 
-  highlightedId: string = '-1';
+  highlightedId: string | null = null;
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
     'name',
@@ -68,7 +68,7 @@ export class SavedScenariosComponent implements OnInit {
 
   deleteSelectedScenarios(): void {
     this.planService
-      .deleteScenarios([this.highlightedId])
+      .deleteScenarios([this.highlightedId!])
       .subscribe({
         next: (deletedIds) => {
           this.snackbar.open(
