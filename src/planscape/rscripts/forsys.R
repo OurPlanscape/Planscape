@@ -224,7 +224,6 @@ get_configuration <- function(scenario) {
 }
 
 call_forsys <- function(connection, scenario) {
-  now <- now_utc()
   configuration <- get_configuration(scenario)
   conditions <- get_conditions(connection, scenario, configuration)
   stand_data <- get_stand_data(connection, scenario, conditions)
@@ -263,26 +262,12 @@ call_forsys <- function(connection, scenario) {
   return(out)
 }
 
-to_result <- function(connection, scenario, forsys_output) {
-  now <- now_utc()
-  result <- to_projects(connection, forsys_output)
-
-  scenario_result <- list(
-    now,
-    now,
-    scenario$id,
-    "SUCCESS",
-    result
-  )
-  return(scenario_result)
-}
-
 upsert_scenario_result <- function(
     connection,
     timestamp,
     scenario_id,
     status,
-    result) {
+    geojson_result) {
   query <- glue_sql("INSERT into planning_scenarioresult (
     created_at,
     updated_at,
@@ -290,11 +275,11 @@ upsert_scenario_result <- function(
     status,
     result
   ) VALUES (
-    {timestamp},
-    {timestamp},
+    {created_at},
+    {updated_at},
     {scenario_id},
     {status},
-    {result}
+    {geojson_result}::jsonb
   )
   ON CONFLICT (scenario_id) DO UPDATE
   SET
@@ -302,21 +287,24 @@ upsert_scenario_result <- function(
     result = EXCLUDED.result,
     status = EXCLUDED.status;
   ",
-    timestamp = timestamp,
+    created_at = timestamp,
+    updated_at = timestamp,
     scenario_id = scenario_id,
     status = status,
-    result = result,
+    geojson_result = toJSON(geojson_result),
     .con = connection
   )
-  dbExecute(connection, query, result)
+  dbExecute(connection, query, immediate = TRUE)
 }
 
 main <- function(scenario_id) {
+  now <- now_utc()
   sprintf("Scenario chosen is %s", scenario_id)
   connection <- get_connection()
   scenario <- get_scenario_data(connection, scenario_id)
-  result <- call_forsys(scenario)
-  upsert_scenario_result(connection, result)
+  forsys_output <- call_forsys(connection, scenario)
+  result <- to_projects(connection, forsys_output)
+  upsert_scenario_result(connection, now, scenario_id, "SUCCESS", result)
 }
 
 main(scenario_id)
