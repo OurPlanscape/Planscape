@@ -86,7 +86,7 @@ describe('SavedScenariosComponent', () => {
   });
 
   it('should delete selected scenarios', () => {
-    component.scenarios[0].selected = true;
+    component.highlightedId = '1'
 
     component.deleteSelectedScenarios();
 

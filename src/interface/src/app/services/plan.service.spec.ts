@@ -227,6 +227,7 @@ describe('PlanService', () => {
         max_slope: 1,
         max_treatment_area_ratio: 1,
         priorities: ['priority'],
+        excluded_areas:undefined,
         weights: [1],
         max_budget: 200,
       };
@@ -246,12 +247,11 @@ describe('PlanService', () => {
       );
       expect(req.request.method).toEqual('POST');
 
-      // TODO Re-enable after projectConfig is replaced
-      // expect(req.request.body).toEqual({
-      //   name: 'name',
-      //   plan_id: '1',
-      //   configuration: projectConfig
-      // });
+      expect(req.request.body).toEqual({
+        name: 'name',
+        planning_area: '1',
+        configuration: scenarioConfig
+      });
       req.flush('1');
       httpTestingController.verify();
     });
