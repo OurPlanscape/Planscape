@@ -1,6 +1,7 @@
 import { Component, HostBinding } from '@angular/core';
 import { AuthService } from '../services';
 import { FeatureService } from '../features/feature.service';
+import { tap } from 'rxjs';
 
 @Component({
   selector: 'app-home',
@@ -8,7 +9,7 @@ import { FeatureService } from '../features/feature.service';
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent {
-  loggedIn$ = this.authService.loggedInStatus$;
+  loggedIn$ = this.authService.loggedInStatus$.pipe(tap((v) => console.log(v)));
 
   login_enabled = this.featuresService.isFeatureEnabled('login');
 

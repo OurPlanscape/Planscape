@@ -49,7 +49,7 @@ describe('MapComponent', () => {
   let fixture: ComponentFixture<MapComponent>;
   let loader: HarnessLoader;
   let sessionInterval = new BehaviorSubject<number>(0);
-  let userSignedIn$ = new BehaviorSubject<boolean>(false);
+  let userSignedIn$ = new BehaviorSubject<boolean | null>(false);
 
   beforeEach(() => {
     const fakeLayer: L.Layer = L.vectorGrid.protobuf(
