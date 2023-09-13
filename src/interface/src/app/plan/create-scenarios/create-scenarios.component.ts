@@ -74,7 +74,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
 
   generatingScenario: boolean = false;
-  scenarioConfigId?: number | null;
+  scenarioId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
 
   formGroups: FormGroup[];
@@ -176,7 +176,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioConfigId = planState.currentScenarioId;
+        this.scenarioId = planState.currentScenarioId;
         this.panelExpanded = planState.panelExpanded ?? false;
       });
 
@@ -218,7 +218,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   }
 
   private loadConfig(): void {
-    this.planService.getScenario(this.scenarioConfigId!).subscribe((scenario) => {
+    this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
       var config = scenario.configuration;
       const scenarioName = this.nameFormGroup.get('scenarioName');
       const estimatedCost = this.constraintsFormGroup.get(
@@ -399,16 +399,16 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // });
   }
 
-  createUploadedProjectAreas() {
-    const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
-    if (this.scenarioConfigId && uploadedArea) {
-      return this.planService.bulkCreateProjectAreas(
-        this.scenarioConfigId,
-        this.convertSingleGeoJsonToGeoJsonArray(uploadedArea)
-      );
-    }
-    return of(null);
-  }
+  // createUploadedProjectAreas() {
+  //   const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
+  //   if (this.scenarioConfigId && uploadedArea) {
+  //     return this.planService.bulkCreateProjectAreas(
+  //       this.scenarioConfigId,
+  //       this.convertSingleGeoJsonToGeoJsonArray(uploadedArea)
+  //     );
+  //   }
+  //   return of(null);
+  // }
 
   /**
    * Converts each feature found in a GeoJSON into individual GeoJSONs, else

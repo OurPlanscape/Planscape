@@ -32,7 +32,7 @@ export interface PlanPreview {
 }
 
 export interface Scenario {
-  id?: number;
+  id?: string;
   name: string;
   notes?: string;
   planning_area: string;
