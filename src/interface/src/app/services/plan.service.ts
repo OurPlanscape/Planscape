@@ -315,10 +315,10 @@ export class PlanService {
   }
 
   /** Fetches a scenario by its id from the backend. */
-  getScenario(scenarioId: string): Observable<Scenario> {
+  getScenario(scenarioId: number): Observable<Scenario> {
     const url = BackendConstants.END_POINT.concat(
       '/planning/get_scenario_by_id/?id=',
-      scenarioId
+      String(scenarioId)
     );
     return this.http
       .get(url, {
