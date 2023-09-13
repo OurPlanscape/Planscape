@@ -6,11 +6,10 @@
 $color-config:    mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
-::ng-deep
-mat-cell:first-of-type {
+.name-column {
   justify-content:left !important;
 }
-::ng-deep
+
 mat-header-cell, mat-cell {
   justify-content: center;
 }
