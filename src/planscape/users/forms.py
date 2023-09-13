@@ -16,26 +16,19 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
         configuration set via Django's configuration.
 
         """
-        domain = settings.PASSWORD_RESET_DOMAIN
+        referrer = request.META.get('HTTP_ORIGIN')
         token_generator = kwargs.get('token_generator', default_token_generator)
         email = self.cleaned_data['email']
         for user in self.users:
             token = token_generator.make_token(user)
             user_id = user_pk_to_url_str(user)
-            url = "{proto}://{domain}/reset/{uid}/{token}".format(
-                # Assume that the other service's http protocol is consistent
-                # with this one.
-                proto=app_settings.DEFAULT_HTTP_PROTOCOL,
-                domain=domain,
-                uid=user_id,
-                token=token,
-            )
+            url = f"{referrer}/reset/{user_id}/{token}"
             # We don't specify a username because authentication is based
             # on email.
             context = {
                 # TODO: Change the template since the default template expects
                 # a Site object.
-                "current_site": domain,
+                "current_site": referrer,
                 "user": user,
                 "password_reset_url": url,
                 "request": request,
