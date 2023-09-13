@@ -1,0 +1,31 @@
+<div class="flex-row">
+  <h3 class="title">Project Areas</h3>
+  <mat-icon class="material-symbols-outlined" color="primary">info</mat-icon>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      <th>Acres</th>
+      <th>% Total</th>
+      <th>Est Cost</th>
+      <th>Score</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let area of areas">
+      <td>{{ area.id }}</td>
+      <td>{{ area.acres }}</td>
+      <td>{{ area.percentTotal }}</td>
+      <td>{{ area.estimatedCost }}</td>
+      <td class="score">{{ area.score }}</td>
+    </tr>
+    <tr class="total-row">
+      <td></td>
+      <td>{{ total.acres }}</td>
+      <td>{{ total.percentTotal }}</td>
+      <td>{{ total.estimatedCost }}</td>
+      <td></td>
+    </tr>
+  </tbody>
+</table>
