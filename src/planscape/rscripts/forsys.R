@@ -167,6 +167,8 @@ to_properties <- function(
     proj_id == project_id
   )
   # change column names here
+  # add estimated cost
+  # add percentage of area
   return(as.list(project_data))
 }
 
