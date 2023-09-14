@@ -3,14 +3,9 @@
 .root-container {
   display: flex;
   flex-direction: row;
-  height: 100%;
+  height: calc(100%  - $navbar-height);
   width: 100%;
 }
-
-.root-container.with-navbar {
-  height: calc(100%  - $navbar-height);
-}
-
 
 .maps-container {
   display: flex;
