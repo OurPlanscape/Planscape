@@ -25,6 +25,7 @@ export class PlanTableComponent implements OnInit {
 
   datasource = new MatTableDataSource<PlanRow>();
   selectedPlan: PlanRow | null = null;
+  loading = true;
 
   displayedColumns: string[] = [
     'name',
@@ -53,6 +54,7 @@ export class PlanTableComponent implements OnInit {
       .listPlansByUser(null)
       .pipe(take(1))
       .subscribe((plans) => {
+        this.loading = false;
         this.datasource.data = plans.map((plan) => {
           return {
             ...plan,
