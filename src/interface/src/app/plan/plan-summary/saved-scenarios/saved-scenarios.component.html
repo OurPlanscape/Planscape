@@ -8,30 +8,13 @@
       <p>{{ text1 }}</p>
 
       <mat-table [dataSource]="scenarios">
-        <!-- ID Column -->
-        <ng-container matColumnDef="id">
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef>Scenario</mat-header-cell>
-          <mat-cell *matCellDef="let element">
+          <mat-cell class="name-column" *matCellDef="let element">
             <div class="hover-indicator"></div>
-            {{ element.id }}
-            <mat-checkbox
-              class="scenario-checkbox"
-              [(ngModel)]="element.selected"
-              (click)="$event.stopPropagation()"></mat-checkbox>
-          </mat-cell>
-        </ng-container>
 
-        <!-- Starred Column -->
-        <ng-container matColumnDef="starred">
-          <mat-header-cell *matHeaderCellDef>Starred by you</mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            <button
-              mat-icon-button
-              (click)="$event.stopPropagation(); toggleFavorited(element)">
-              <mat-icon [class.material-symbols-outlined]="!element.favorited">
-                star
-              </mat-icon>
-            </button>
+            {{ element.name }}
           </mat-cell>
         </ng-container>
 
@@ -54,7 +37,9 @@
           <mat-header-cell *matHeaderCellDef>
             Estimated cost range
           </mat-header-cell>
-          <mat-cell *matCellDef="let element"></mat-cell>
+          <mat-cell class="data-cell" *matCellDef="let element">
+            {{ element.configuration.est_cost }}
+          </mat-cell>
         </ng-container>
 
         <!-- Status Column -->
@@ -79,23 +64,27 @@
 
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row
-          class="scenario-row"
+          [ngClass]="{
+            'scenario-row': highlightedId !== row.id,
+            highlight: highlightedId === row.id
+          }"
           *matRowDef="let row; columns: displayedColumns"
-          (click)="viewScenario(row.id)"></mat-row>
+          (click)="highlightScenario(row.id)"
+          (dblclick)="viewScenario()"></mat-row>
       </mat-table>
     </mat-card-content>
 
     <mat-card-actions align="end">
       <button
         mat-button
-        [disabled]="!showDeleteButton()"
+        [disabled]="highlightedId === null"
         (click)="deleteSelectedScenarios()">
         <mat-icon>delete</mat-icon>
         DELETE
       </button>
       <button
         mat-raised-button
-        [disabled]="!showViewButton()"
+        [disabled]="highlightedId === null"
         color="primary"
         (click)="viewScenario()">
         VIEW

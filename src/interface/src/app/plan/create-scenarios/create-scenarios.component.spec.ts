@@ -8,6 +8,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { PlanService, PlanState } from 'src/app/services';
 import {
   Region,
+  Scenario,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
@@ -36,6 +37,11 @@ describe('CreateScenariosComponent', () => {
     priorities: [''],
     weights: [0],
   };
+  let fakeScenario: Scenario = {
+    name: 'name',
+    planning_area: '1',
+    configuration: {}
+  }
 
   beforeEach(async () => {
     fakeGeoJson = {
@@ -51,9 +57,9 @@ describe('CreateScenariosComponent', () => {
           maxBudget: 100,
         }),
         updateProject: of(1),
-        bulkCreateProjectAreas: of(null),
         createProjectArea: of(1),
         createScenario: of('1'),
+        getScenario: of(fakeScenario),
         updateStateWithShapes: undefined,
       },
       {
@@ -68,7 +74,7 @@ describe('CreateScenariosComponent', () => {
           },
           currentPlanId: '1',
           currentConfigId: 1,
-          currentScenarioId: null,
+          currentScenarioId: '1',
           mapConditionLayer: null,
           mapShapes: null,
           panelExpanded: true,
@@ -111,16 +117,14 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // TODO: Re-enable once loading in saved configs is implemented
-  // it('should load existing config into form', () => {
-  //   expect(fakePlanService.getProject).toHaveBeenCalledOnceWith(1);
-
-  //   component.formGroups[2].valueChanges.subscribe((_) => {
-  //     expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
-  //       100
-  //     );
-  //   });
-  // });
+  it('should load existing scenario', () => {
+    expect(fakePlanService.getScenario).toHaveBeenCalledOnceWith('1');
+    component.formGroups[2].valueChanges.subscribe((_) => {
+      expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
+        100
+      );
+    });
+  });
 
   it('should emit create scenario event on Generate button click', async () => {
     spyOn(component, 'createScenario');

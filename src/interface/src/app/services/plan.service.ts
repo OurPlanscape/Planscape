@@ -13,16 +13,18 @@ import {
 import { BackendConstants } from '../backend-constants';
 import { BasePlan, Plan, Region } from '../types';
 import {
+  Scenario,
+  ScenarioConfig,
   PlanConditionScores,
   PlanPreview,
   Priority,
   ProjectArea,
   ProjectConfig,
-  Scenario,
   TreatmentGoalConfig,
 } from './../types/plan.types';
 import { SessionService, MapService } from '../services';
 
+// TODO Remove Config
 export interface PlanState {
   all: {
     [planId: string]: Plan;
@@ -103,6 +105,11 @@ export class PlanService {
       });
   }
 
+  // TODO clean up requests with string interpolation
+  /**  TODO Reimplement: 
+   * bulkCreateProjectAreas
+   * */
+
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(
     basePlan: BasePlan
@@ -178,6 +185,7 @@ export class PlanService {
       );
   }
 
+  // TODO REMOVE
   /** Makes a request to the backend for the average condition scores in a planning area. */
   getConditionScoresForPlanningArea(
     planId: string
@@ -190,6 +198,7 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  // TODO REMOVE
   /**
    * Creates a project in a plan, and returns an ID which can be used to get or update the
    *  project. "Project" is synonymous with "Config" in the frontend.
@@ -209,6 +218,7 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  // TODO REMOVE
   /** Creates project area and returns the ID of the created project area. */
   createProjectArea(projectId: number, projectArea: GeoJSON.GeoJSON) {
     const url = BackendConstants.END_POINT.concat('/plan/create_project_area/');
@@ -232,28 +242,7 @@ export class PlanService {
       );
   }
 
-  /** Creates multiple project areas for a project. */
-  bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
-    const url = BackendConstants.END_POINT.concat(
-      '/plan/create_project_areas_for_project/'
-    );
-    return this.http
-      .post<number>(
-        url,
-        {
-          project_id: Number(projectId),
-          geometries: projectAreas,
-        },
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(
-        take(1),
-        map(() => null)
-      );
-  }
-
+  // TODO REMOVE
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
     const url = BackendConstants.END_POINT.concat('/plan/update_project/');
@@ -264,6 +253,7 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  // TODO REMOVE
   /** Fetches the projects for a plan from the backend. */
   getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
     const url = BackendConstants.END_POINT.concat(
@@ -284,6 +274,7 @@ export class PlanService {
       );
   }
 
+  // TODO REMOVE
   /** Fetches a project by its ID from the backend. */
   getProject(projectId: number): Observable<ProjectConfig> {
     const url = BackendConstants.END_POINT.concat(
@@ -300,6 +291,7 @@ export class PlanService {
       );
   }
 
+  // TODO REMOVE
   /** Deletes one or more projects from the backend. */
   deleteProjects(projectIds: number[]): Observable<number[]> {
     return this.http.post<number[]>(
@@ -394,6 +386,7 @@ export class PlanService {
     );
   }
 
+  // TODO REMOVE
   /** Favorite a scenario in the backend. */
   favoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
     return this.http.post<{ favorited: boolean }>(
@@ -407,6 +400,7 @@ export class PlanService {
     );
   }
 
+  // TODO REMOVE
   /** Unfavorite a scenario in the backend. */
   unfavoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
     return this.http.post<{ favorited: boolean }>(
@@ -477,21 +471,30 @@ export class PlanService {
     };
   }
 
+  private convertToScenarioConfig(config: any): ScenarioConfig {
+    return {
+      est_cost: config.est_cost,
+      max_budget: config.max_budget,
+      min_distance_from_road: config.min_distance_from_road,
+      max_slope: config.max_slope,
+      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      priorities: config.priorities,
+      weights: config.weights,
+      excluded_areas: config.excluded_areas,
+      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+        config.creation_timestamp
+      ),
+      projectAreas: this.convertToProjectAreas(config.project_areas),
+    };
+  }
+
   private convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
       name: scenario.name,
-      plan_id: scenario.plan,
-      projectId: scenario.project,
-      owner: scenario.owner,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        scenario.creation_timestamp
-      ),
-      config: this.convertToProjectConfig(scenario.config),
-      priorities: this.convertToPriorities(scenario.priorities),
-      projectAreas: this.convertToProjectAreas(scenario.project_areas),
+      planning_area: scenario.planning_area,
+      configuration: this.convertToScenarioConfig(scenario.configuration),
       notes: scenario.notes,
-      favorited: scenario.favorited,
     };
   }
 
@@ -593,6 +596,9 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
+   /**
+   * @deprecated
+   */
   updateStateWithConfig(configId: number | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({

@@ -24,10 +24,10 @@ export class SavedScenariosComponent implements OnInit {
     this planning area can also view all the scenarios within it.
   `;
 
+  highlightedId: string | null = null;
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
-    'id',
-    'starred',
+    'name',
     'projectAreas',
     'acresTreated',
     'estimatedCost',
@@ -56,32 +56,25 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
-  viewScenario(id?: string): void {
-    if (!id) {
-      id = this.scenarios.find((scenario) => scenario.selected)?.id;
-    }
-    this.router.navigate(['scenario', id], { relativeTo: this.route });
+  viewScenario(): void {
+    this.router.navigate(['config', this.highlightedId], {
+      relativeTo: this.route,
+    });
   }
 
-  showDeleteButton(): boolean {
-    return this.scenarios.filter((scenario) => scenario.selected).length > 0;
-  }
-
-  showViewButton(): boolean {
-    return this.scenarios.filter((scenario) => scenario.selected).length === 1;
+  highlightScenario(id: string): void {
+    this.highlightedId = id;
   }
 
   deleteSelectedScenarios(): void {
+    // Bulk scenario deletion isn't possible with the current UI, 
+    // but logic to make 'scenario' plural if more than one scenario is deleted was kept from legacy code
     this.planService
-      .deleteScenarios(
-        this.scenarios
-          .filter((scenario) => scenario.selected)
-          .map((scenario) => scenario.id)
-      )
+      .deleteScenarios([this.highlightedId!])
       .subscribe({
         next: (deletedIds) => {
           this.snackbar.open(
-            `Deleted ${deletedIds.length} scenario${
+            `Deleted scenario${
               deletedIds.length > 1 ? 's' : ''
             }`
           );
@@ -91,17 +84,5 @@ export class SavedScenariosComponent implements OnInit {
           this.snackbar.open(`Error: ${err}`);
         },
       });
-  }
-
-  toggleFavorited(scenario: ScenarioRow): void {
-    scenario.favorited = !scenario.favorited;
-    if (scenario.favorited) {
-      this.planService.favoriteScenario(scenario.id).pipe(take(1)).subscribe();
-    } else {
-      this.planService
-        .unfavoriteScenario(scenario.id)
-        .pipe(take(1))
-        .subscribe();
-    }
   }
 }
