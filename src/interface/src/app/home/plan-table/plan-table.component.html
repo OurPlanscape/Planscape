@@ -1,89 +1,97 @@
-<div *ngIf="datasource.data.length; else noplans">
-  <mat-table [dataSource]="datasource" matSort>
-    <!-- Name Column -->
-    <ng-container matColumnDef="name">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>Name</mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.name }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Timestamp Column -->
-    <!-- TODO replace with last modified-->
-    <ng-container matColumnDef="lastUpdated">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Date Last Modified
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.lastUpdated | date: 'medium' }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Acres Column -->
-    <ng-container matColumnDef="totalAcres">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Total Acres
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.totalAcres | number }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Saved Scenarios Column -->
-    <ng-container matColumnDef="scenarios">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        # of Scenarios
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.scenarios }}
-      </mat-cell>
-    </ng-container>
-
-    <!-- Region Column -->
-    <ng-container matColumnDef="region">
-      <mat-header-cell *matHeaderCellDef mat-sort-header>
-        Region
-      </mat-header-cell>
-      <mat-cell *matCellDef="let element">
-        {{ element.region }}
-      </mat-cell>
-    </ng-container>
-
-    <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-    <mat-row
-      class="table-row"
-      [ngClass]="{ selected: selectedPlan && selectedPlan.id === row.id }"
-      *matRowDef="let row; columns: displayedColumns"
-      (click)="selectPlan(row)"
-      (dblclick)="goToScenario()"></mat-row>
-  </mat-table>
-
-  <div class="button-row">
-    <button
-      mat-button
-      (click)="deletePlan()"
-      [disabled]="!selectedPlan"
-      class="action-button">
-      delete
-    </button>
-    <!--    Todo add view map-->
-    <!--    <button-->
-    <!--      mat-raised-button-->
-    <!--      (click)="viewMap()"-->
-    <!--      [disabled]="!selectedPlan"-->
-    <!--      class="action-button primary">-->
-    <!--      view map-->
-    <!--    </button>-->
-    <button
-      mat-raised-button
-      (click)="goToScenario()"
-      [disabled]="!selectedPlan"
-      class="action-button primary">
-      scenarios
-    </button>
-  </div>
+<div *ngIf="loading; else dataLoaded">
+  <mat-spinner diameter="40" class="spinner"></mat-spinner>
 </div>
 
-<ng-template #noplans class="no-saved-plans">
-  <p>There are no saved plans.</p>
+<ng-template #dataLoaded>
+  <div *ngIf="datasource.data.length; else noplans">
+    <mat-table [dataSource]="datasource" matSort>
+      <!-- Name Column -->
+      <ng-container matColumnDef="name">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Name
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.name }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Timestamp Column -->
+      <!-- TODO replace with last modified-->
+      <ng-container matColumnDef="lastUpdated">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Date Last Modified
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.lastUpdated | date: 'medium' }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Acres Column -->
+      <ng-container matColumnDef="totalAcres">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Total Acres
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.totalAcres | number }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Saved Scenarios Column -->
+      <ng-container matColumnDef="scenarios">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          # of Scenarios
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.scenarios }}
+        </mat-cell>
+      </ng-container>
+
+      <!-- Region Column -->
+      <ng-container matColumnDef="region">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Region
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.region }}
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row
+        class="table-row"
+        [ngClass]="{ selected: selectedPlan && selectedPlan.id === row.id }"
+        *matRowDef="let row; columns: displayedColumns"
+        (click)="selectPlan(row)"
+        (dblclick)="goToScenario()"></mat-row>
+    </mat-table>
+
+    <div class="button-row">
+      <button
+        mat-button
+        (click)="deletePlan()"
+        [disabled]="!selectedPlan"
+        class="action-button">
+        delete
+      </button>
+      <!--    Todo add view map-->
+      <!--    <button-->
+      <!--      mat-raised-button-->
+      <!--      (click)="viewMap()"-->
+      <!--      [disabled]="!selectedPlan"-->
+      <!--      class="action-button primary">-->
+      <!--      view map-->
+      <!--    </button>-->
+      <button
+        mat-raised-button
+        (click)="goToScenario()"
+        [disabled]="!selectedPlan"
+        class="action-button primary">
+        scenarios
+      </button>
+    </div>
+  </div>
+
+  <ng-template #noplans class="no-saved-plans">
+    <p>There are no saved plans.</p>
+  </ng-template>
 </ng-template>

@@ -27,7 +27,7 @@ export class AccountDialogComponent implements OnInit {
   editingAccount: boolean = false;
   editAccountForm: FormGroup;
   error: any;
-  user$!: Observable<User | null>;
+  user$!: Observable<User | null | undefined>;
 
   constructor(
     private authService: AuthService,

@@ -90,7 +90,7 @@ describe('AuthService', () => {
       service.login('email', 'password').subscribe(
         (_) => {},
         (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInStatus$.value).toBeNull();
           done();
         }
       );
@@ -128,11 +128,11 @@ describe('AuthService', () => {
     it('if unsuccessful, does not make request to backend /user endpoint', (done) => {
       service.login('email', 'password').subscribe(
         (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInStatus$.value).toBeNull();
           done();
         },
         (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInStatus$.value).toBeNull();
           done();
         }
       );
@@ -154,7 +154,7 @@ describe('AuthService', () => {
       service
         .signup('email', 'password1', 'password2', 'Foo', 'Bar')
         .subscribe((_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInStatus$.value).toBeNull();
           done();
         });
 
@@ -168,7 +168,7 @@ describe('AuthService', () => {
       service.signup('email', 'password1', 'password2', 'Foo', 'Bar').subscribe(
         (_) => {},
         (_) => {
-          expect(service.loggedInStatus$.value).toBeFalse();
+          expect(service.loggedInStatus$.value).toBeNull();
           done();
         }
       );
@@ -417,7 +417,10 @@ describe('AuthService', () => {
         BackendConstants.END_POINT + '/users/delete/'
       );
       expect(req.request.method).toEqual('POST');
-      expect(req.request.body).toEqual({ email: 'test@test.com', password: 'password' });
+      expect(req.request.body).toEqual({
+        email: 'test@test.com',
+        password: 'password',
+      });
       req.flush({ deleted: true });
       httpTestingController.verify();
     });
