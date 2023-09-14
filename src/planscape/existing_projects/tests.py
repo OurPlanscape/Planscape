@@ -2,7 +2,6 @@ from unittest.mock import patch
 from django.test import TestCase
 from django.urls import reverse
 from requests.models import Response
-from django.test.client import Client as HttpClient
 
 class ITSTest(TestCase):
     def test_token_missing(self):
