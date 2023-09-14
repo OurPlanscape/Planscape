@@ -36,8 +36,8 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   scenario$ = this.planService.planState$.pipe(
     switchMap((state) => {
-      if (state.currentConfigId) {
-        return this.planService.getProject(state.currentConfigId);
+      if (state.currentScenarioId) {
+        return this.planService.getScenario(state.currentScenarioId);
       }
       return of(null);
     })
@@ -137,10 +137,8 @@ export class PlanComponent implements OnInit, OnDestroy {
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;
 
-    if (path === 'scenario') {
+    if (path === 'config') {
       this.planService.updateStateWithScenario(id);
-    } else if (path === 'config') {
-      this.planService.updateStateWithConfig(Number(id));
       this.planService.updateStateWithShapes(null);
     } else {
       this.planService.updateStateWithConfig(null);

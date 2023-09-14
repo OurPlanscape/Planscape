@@ -18,8 +18,10 @@ import {
   expandCollapsePanelTrigger,
   opacityTransitionTrigger,
 } from 'src/app/shared/animations';
-import { Plan, Scenario, ProjectArea } from 'src/app/types';
+import { Plan, ProjectArea, Scenario } from 'src/app/types';
 
+// TODO Confirm if this page is still needed and delete if not
+// If it is still needed, improve how scenarioId is retrieved 
 @Component({
   selector: 'app-scenario-details',
   templateUrl: './scenario-details.component.html',
@@ -60,7 +62,7 @@ export class ScenarioDetailsComponent implements OnInit {
     this.scenario$
       .pipe(
         map((scenario) => {
-          return scenario?.projectAreas;
+          return scenario?.configuration?.projectAreas;
         }),
         take(1)
       )
@@ -79,7 +81,7 @@ export class ScenarioDetailsComponent implements OnInit {
       map((state) => state.currentScenarioId),
       filter((scenarioId) => !!scenarioId),
       switchMap((scenarioId) => {
-        return this.planService.getScenario(scenarioId as string).pipe(take(1));
+        return this.planService.getScenario(scenarioId!).pipe(take(1));
       }),
       catchError(() => {
         this.matSnackBar.open('[Error] Scenario not found!', 'Dismiss', {

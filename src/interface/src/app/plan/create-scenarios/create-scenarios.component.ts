@@ -76,7 +76,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
 
   generatingScenario: boolean = false;
-  scenarioConfigId?: number | null;
+  scenarioId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
 
   formGroups: FormGroup[];
@@ -181,13 +181,15 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioConfigId = planState.currentConfigId;
-        this.loadConfig();
+        this.scenarioId = planState.currentScenarioId;
         this.panelExpanded = planState.panelExpanded ?? false;
       });
 
-    // Has to be outside of service subscription or else will cause infinite loop
-    this.loadConfig();
+    if (this.scenarioId) {
+      // Has to be outside of service subscription or else will cause infinite loop
+      this.loadConfig();
+    }
+
 
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
@@ -224,7 +226,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   }
 
   private loadConfig(): void {
-    this.planService.getProject(this.scenarioConfigId!).subscribe((config) => {
+    this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
+      var config = scenario.configuration;
       const scenarioName = this.nameFormGroup.get('scenarioName');
       const estimatedCost = this.constraintsFormGroup.get(
         'budgetForm.estimatedCost'
@@ -248,8 +251,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       });
       const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
 
-      if (config.name) {
-        scenarioName?.setValue(config.name);
+      if (scenario.name) {
+        scenarioName?.setValue(scenario.name);
       }
       if (config.est_cost) {
         estimatedCost?.setValue(config.est_cost);
@@ -273,7 +276,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
           goal.questions.forEach((question) => {
             if (
               question['priorities']?.toString() ==
-                config.priorities?.toString() &&
+              config.priorities?.toString() &&
               question['weights']?.toString() == config.weights?.toString()
             ) {
               selectedQuestion?.setValue(question);
@@ -284,7 +287,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private formValueToProjectConfig(): any {
+  private formValueToScenario(): Scenario {
     const estimatedCost = this.constraintsFormGroup.get(
       'budgetForm.estimatedCost'
     );
@@ -308,43 +311,40 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .subscribe((planState) => {
         plan_id = planState.currentPlanId!;
       });
-    let projectConfig: ProjectConfig = {
-      id: this.scenarioConfigId!,
-    };
-    projectConfig.excluded_areas = {};
+    let scenarioConfig: ScenarioConfig = {};
+    scenarioConfig.excluded_areas = {};
     this.excludedAreasOptions.forEach((area: string) => {
       if (this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid) {
-        projectConfig.excluded_areas![area] = this.constraintsFormGroup.get(
+        scenarioConfig.excluded_areas![area] = this.constraintsFormGroup.get(
           'excludedAreasForm.' + area
         )?.value;
       }
     });
     if (estimatedCost?.valid)
-      projectConfig.est_cost = parseFloat(estimatedCost.value);
-    if (maxCost?.valid) projectConfig.max_budget = parseFloat(maxCost.value);
+      scenarioConfig.est_cost = parseFloat(estimatedCost.value);
+    if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      projectConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
+      scenarioConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
     }
     if (minDistanceFromRoad?.valid) {
-      projectConfig.min_distance_from_road = parseFloat(
+      scenarioConfig.min_distance_from_road = parseFloat(
         minDistanceFromRoad.value
       );
     }
-    if (maxSlope?.valid) projectConfig.max_slope = parseFloat(maxSlope.value);
+    if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
-      projectConfig.priorities = selectedQuestion.value['priorities'];
-      projectConfig.weights = selectedQuestion!.value['weights'];
+      scenarioConfig.priorities = selectedQuestion.value['priorities'];
+      scenarioConfig.weights = selectedQuestion!.value['weights'];
     }
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
     }
 
-    let scenarioConfig: ScenarioConfig = {
+    return {
       name: scenarioNameConfig,
       planning_area: plan_id,
-      configuration: projectConfig,
+      configuration: scenarioConfig,
     };
-    return scenarioConfig;
   }
 
   private updatePriorityWeightsFormControls(): void {
@@ -369,7 +369,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.generatingScenario = true;
     // TODO Add error catching for failed scenario creation
     this.planService
-      .createScenario(this.formValueToProjectConfig())
+      .createScenario(this.formValueToScenario())
       .subscribe((_) => {
         const planId = this.plan$.getValue()?.id;
         this.router.navigate(['scenario-confirmation', planId]);
@@ -407,16 +407,16 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // });
   }
 
-  createUploadedProjectAreas() {
-    const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
-    if (this.scenarioConfigId && uploadedArea) {
-      return this.planService.bulkCreateProjectAreas(
-        this.scenarioConfigId,
-        this.convertSingleGeoJsonToGeoJsonArray(uploadedArea)
-      );
-    }
-    return of(null);
-  }
+  // createUploadedProjectAreas() {
+  //   const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
+  //   if (this.scenarioConfigId && uploadedArea) {
+  //     return this.planService.bulkCreateProjectAreas(
+  //       this.scenarioConfigId,
+  //       this.convertSingleGeoJsonToGeoJsonArray(uploadedArea)
+  //     );
+  //   }
+  //   return of(null);
+  // }
 
   /**
    * Converts each feature found in a GeoJSON into individual GeoJSONs, else

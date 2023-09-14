@@ -33,8 +33,9 @@ describe('SavedScenariosComponent', () => {
           {
             id: '1',
             name: 'name',
+            planning_area: '1',
             createdTimestamp: 100,
-            config: {
+            configuration: {
               id: 1,
               max_budget: 200,
             },
@@ -85,25 +86,10 @@ describe('SavedScenariosComponent', () => {
   });
 
   it('should delete selected scenarios', () => {
-    component.scenarios[0].selected = true;
+    component.highlightedId = '1'
 
     component.deleteSelectedScenarios();
 
     expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
-  });
-
-  it('should call service to favorite a scenario', () => {
-    component.toggleFavorited(component.scenarios[0]);
-
-    expect(fakePlanService.favoriteScenario).toHaveBeenCalledOnceWith('1');
-    expect(component.scenarios[0].favorited).toBeTrue();
-  });
-
-  it('should call service to unfavorite a scenario', () => {
-    component.scenarios[0].favorited = true;
-    component.toggleFavorited(component.scenarios[0]);
-
-    expect(fakePlanService.unfavoriteScenario).toHaveBeenCalledOnceWith('1');
-    expect(component.scenarios[0].favorited).toBeFalse();
   });
 });

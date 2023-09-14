@@ -22,7 +22,6 @@ import { DeletePlanDialogComponent } from '../home/plan-table/delete-plan-dialog
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
-import { OutcomeComponent } from './scenario-details/outcome/outcome.component';
 import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 import { FeaturesModule } from '../features/features.module';
@@ -50,7 +49,6 @@ import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-ar
     ConstraintsPanelComponent,
     IdentifyProjectAreasComponent,
     ScenarioDetailsComponent,
-    OutcomeComponent,
     ScenarioConfirmationComponent,
     MapLayersComponent,
     ScenarioNotStartedComponent,

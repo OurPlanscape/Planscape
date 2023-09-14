@@ -186,57 +186,58 @@ describe('PlanService', () => {
   });
 
   // TODO Update once Project/Scenario types are updated
-  // describe('getScenario', () => {
-  //   it('should make HTTP request to backend', () => {
-  //     const projectConfig: ProjectConfig = {
-  //       id: 1,
-  //       // est_cost: undefined,
-  //       max_budget: undefined,
-  //       min_distance_from_road: undefined,
-  //       max_slope: undefined,
-  //       max_treatment_area_ratio: undefined,
-  //       priorities: undefined,
-  //       createdTimestamp: undefined,
-  //       weights: undefined,
-  //     };
-  //     const scenario: ScenarioConfig = {
-  //       name: 'name',
-  //       planning_area: '1',
-  //       configuration: projectConfig,
-  //     };
+  describe('getScenario', () => {
+    it('should make HTTP request to backend', () => {
+      const scenarioConfig: ScenarioConfig = {
+        est_cost: undefined,
+        max_budget: undefined,
+        min_distance_from_road: undefined,
+        max_slope: undefined,
+        max_treatment_area_ratio: undefined,
+        priorities: undefined,
+        createdTimestamp: undefined,
+        projectAreas: [],
+        excluded_areas: undefined,
+        weights: undefined,
+      };
+      const scenario: Scenario = {
+        id: '1',
+        name: 'name',
+        notes: undefined,
+        planning_area: '1',
+        configuration: scenarioConfig,
+      };
 
-  //     service.getScenario('1').subscribe((res) => {
-  //       console.log('in test');
-  //       console.log(res);
-  //       expect(res).toEqual(scenario);
-  //     });
-  //     const req = httpTestingController.expectOne(
-  //       BackendConstants.END_POINT.concat('/planning/get_scenario_by_id/?id=1')
-  //     );
-  //     expect(req.request.method).toEqual('GET');
-  //     req.flush(scenario);
-  //   });
-  // });
+      service.getScenario('1').subscribe((res) => {
+        expect(res).toEqual(scenario);
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/planning/get_scenario_by_id/?id=1')
+      );
+      expect(req.request.method).toEqual('GET');
+      req.flush(scenario);
+    });
+  });
 
   describe('createScenario', () => {
     it('should make HTTP request to backend', (done) => {
-      const projectConfig: ProjectConfig = {
-        id: 1,
+      const scenarioConfig: ScenarioConfig = {
         est_cost: 1,
         min_distance_from_road: 1,
         max_slope: 1,
         max_treatment_area_ratio: 1,
         priorities: ['priority'],
+        excluded_areas:undefined,
         weights: [1],
         max_budget: 200,
       };
-      const scenarioConfig: ScenarioConfig = {
+      const scenario: Scenario = {
         name: 'name',
         planning_area: '1',
-        configuration: projectConfig,
+        configuration: scenarioConfig,
       };
 
-      service.createScenario(scenarioConfig).subscribe((res) => {
+      service.createScenario(scenario).subscribe((res) => {
         expect(res).toEqual('1');
         done();
       });
@@ -246,12 +247,11 @@ describe('PlanService', () => {
       );
       expect(req.request.method).toEqual('POST');
 
-      // TODO Re-enable after projectConfig is replaced
-      // expect(req.request.body).toEqual({
-      //   name: 'name',
-      //   plan_id: '1',
-      //   configuration: projectConfig
-      // });
+      expect(req.request.body).toEqual({
+        name: 'name',
+        planning_area: '1',
+        configuration: scenarioConfig
+      });
       req.flush('1');
       httpTestingController.verify();
     });
@@ -309,8 +309,7 @@ describe('PlanService', () => {
 
   describe('updateScenarioNotes', () => {
     it('should make HTTP request to backend', () => {
-      const projectConfig: ProjectConfig = {
-        id: 1,
+      const scenarioConfig: ScenarioConfig = {
         est_cost: undefined,
         max_budget: undefined,
         min_distance_from_road: undefined,
@@ -323,15 +322,9 @@ describe('PlanService', () => {
       const scenario: Scenario = {
         id: '1',
         name: 'name',
-        plan_id: undefined,
-        projectId: undefined,
-        config: projectConfig,
-        priorities: [],
-        projectAreas: [],
-        createdTimestamp: undefined,
+        planning_area: '1',
+        configuration: scenarioConfig,
         notes: 'hello',
-        owner: undefined,
-        favorited: undefined,
       };
 
       service.updateScenarioNotes(scenario).subscribe((res) => {
