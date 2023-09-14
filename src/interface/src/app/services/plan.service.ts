@@ -105,6 +105,11 @@ export class PlanService {
       });
   }
 
+  // TODO clean up requests with string interpolation
+  /**  TODO Reimplement: 
+   * bulkCreateProjectAreas
+   * */
+
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(
     basePlan: BasePlan
@@ -180,6 +185,7 @@ export class PlanService {
       );
   }
 
+  // TODO REMOVE
   /** Makes a request to the backend for the average condition scores in a planning area. */
   getConditionScoresForPlanningArea(
     planId: string
@@ -192,6 +198,7 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  // TODO REMOVE
   /**
    * Creates a project in a plan, and returns an ID which can be used to get or update the
    *  project. "Project" is synonymous with "Config" in the frontend.
@@ -211,6 +218,7 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  // TODO REMOVE
   /** Creates project area and returns the ID of the created project area. */
   createProjectArea(projectId: number, projectArea: GeoJSON.GeoJSON) {
     const url = BackendConstants.END_POINT.concat('/plan/create_project_area/');
@@ -234,30 +242,7 @@ export class PlanService {
       );
   }
 
-  // Currently unused and unimplemented
-  // TODO either adapt to use scenarioID or remove
-  // /** Creates multiple project areas for a project. */
-  // bulkCreateProjectAreas(projectId: number, projectAreas: GeoJSON.GeoJSON[]) {
-  //   const url = BackendConstants.END_POINT.concat(
-  //     '/plan/create_project_areas_for_project/'
-  //   );
-  //   return this.http
-  //     .post<number>(
-  //       url,
-  //       {
-  //         project_id: Number(projectId),
-  //         geometries: projectAreas,
-  //       },
-  //       {
-  //         withCredentials: true,
-  //       }
-  //     )
-  //     .pipe(
-  //       take(1),
-  //       map(() => null)
-  //     );
-  // }
-
+  // TODO REMOVE
   /** Updates a project with new parameters. */
   updateProject(projectConfig: ProjectConfig): Observable<number> {
     const url = BackendConstants.END_POINT.concat('/plan/update_project/');
@@ -268,6 +253,7 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  // TODO REMOVE
   /** Fetches the projects for a plan from the backend. */
   getProjectsForPlan(planId: string): Observable<ProjectConfig[]> {
     const url = BackendConstants.END_POINT.concat(
@@ -288,6 +274,7 @@ export class PlanService {
       );
   }
 
+  // TODO REMOVE
   /** Fetches a project by its ID from the backend. */
   getProject(projectId: number): Observable<ProjectConfig> {
     const url = BackendConstants.END_POINT.concat(
@@ -304,6 +291,7 @@ export class PlanService {
       );
   }
 
+  // TODO REMOVE
   /** Deletes one or more projects from the backend. */
   deleteProjects(projectIds: number[]): Observable<number[]> {
     return this.http.post<number[]>(
@@ -398,6 +386,7 @@ export class PlanService {
     );
   }
 
+  // TODO REMOVE
   /** Favorite a scenario in the backend. */
   favoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
     return this.http.post<{ favorited: boolean }>(
@@ -411,6 +400,7 @@ export class PlanService {
     );
   }
 
+  // TODO REMOVE
   /** Unfavorite a scenario in the backend. */
   unfavoriteScenario(scenarioId: string): Observable<{ favorited: boolean }> {
     return this.http.post<{ favorited: boolean }>(
@@ -606,7 +596,9 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-  // Deprecated
+   /**
+   * @deprecated
+   */
   updateStateWithConfig(configId: number | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
