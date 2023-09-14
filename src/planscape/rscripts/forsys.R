@@ -157,29 +157,38 @@ get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
 }
 
-to_project_data <- function(connection, project_id, forsys_output) {
-  # configuration <- get_configuration(scenario)
-  # priorities <- get_priorities(connection, scenario, configuration)
-  # outputs <- get_priorities(
-  #   connection,
-  #   scenario,
-  #   configuration,
-  #   key = "scenario_output_fields"
-  # )
+to_properties <- function(
+    project_id,
+    priorities,
+    outputs,
+    forsys_project_outputs) {
+  project_data <- forsys_project_outputs %>% filter(
+    proj_id == project_id
+  )
+  # change column names here
+  return(as.list(project_data))
+}
+
+to_project_data <- function(
+    connection,
+    project_id,
+    priorities,
+    outputs,
+    forsys_outputs) {
   project_stand_ids <- select(
     filter(
-      forsys_output$stand_output,
+      forsys_outputs$stand_output,
       proj_id == project_id
     ),
     stand_id
   )
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
   geometry <- get_project_geometry(connection, project_stand_ids)
-  properties <- as.list(
-    filter(
-      forsys_output$project_output,
-      proj_id == project_id
-    )
+  properties <- to_properties(
+    project_id,
+    priorities,
+    outputs,
+    forsys_project_outputs = forsys_outputs$project_output
   )
   return(list(
     type = "Feature",
@@ -188,11 +197,18 @@ to_project_data <- function(connection, project_id, forsys_output) {
   ))
 }
 
-to_projects <- function(con, forsys_output) {
-  project_ids <- get_project_ids(forsys_output)
+to_projects <- function(con, priorities, outputs, forsys_outputs) {
+  project_ids <- get_project_ids(forsys_outputs)
   projects <- list()
+  # maybe we can lapply here
   for (project_id in project_ids) {
-    project <- to_project_data(con, project_id, forsys_output)
+    project <- to_project_data(
+      con,
+      project_id,
+      priorities,
+      outputs,
+      forsys_outputs
+    )
     projects <- append(projects, list(project))
   }
   geojson <- list(type = "FeatureCollection", features = projects)
@@ -246,15 +262,12 @@ get_configuration <- function(scenario) {
 }
 
 
-call_forsys <- function(connection, scenario) {
-  configuration <- get_configuration(scenario)
-  priorities <- get_priorities(connection, scenario, configuration)
-  outputs <- get_priorities(
+call_forsys <- function(
     connection,
     scenario,
     configuration,
-    key = "scenario_output_fields"
-  )
+    priorities,
+    outputs) {
   forsys_inputs <- rbind(priorities, outputs)
   stand_data <- get_stand_data(connection, scenario, forsys_inputs)
 
@@ -329,12 +342,28 @@ upsert_scenario_result <- function(
 }
 
 main <- function(scenario_id) {
-  now <- now_utc()
   sprintf("Scenario chosen is %s", scenario_id)
+  now <- now_utc()
   connection <- get_connection()
   scenario <- get_scenario_data(connection, scenario_id)
-  forsys_output <- call_forsys(connection, scenario)
-  result <- to_projects(connection, forsys_output)
+  configuration <- get_configuration(scenario)
+  priorities <- get_priorities(connection, scenario, configuration)
+  outputs <- get_priorities(
+    connection,
+    scenario,
+    configuration,
+    key = "scenario_output_fields"
+  )
+
+  forsys_output <- call_forsys(
+    connection,
+    scenario,
+    configuration,
+    priorities,
+    outputs
+  )
+
+  result <- to_projects(connection, priorities, outputs, forsys_output)
   upsert_scenario_result(connection, now, scenario_id, "SUCCESS", result)
 }
 
