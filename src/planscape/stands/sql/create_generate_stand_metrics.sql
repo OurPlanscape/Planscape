@@ -9,7 +9,7 @@ DECLARE
 BEGIN
 
     IF _clean THEN
-        DELETE FROM stands_standmetric WHERE condition_id = condition_id;
+        DELETE FROM stands_standmetric WHERE condition_id = _condition_id;
     END IF;
 
     raster_geometry := (
