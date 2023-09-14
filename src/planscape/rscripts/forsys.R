@@ -10,6 +10,7 @@ library("glue")
 library("forsys")
 library("sf")
 library("dplyr")
+library("purrr")
 
 readRenviron("src/planscape/planscape/.env")
 
@@ -111,7 +112,11 @@ get_stands <- function(connection, scenario_id) {
   return(result)
 }
 
-get_stand_metrics <- function(connection, condition, stand_ids) {
+get_stand_metrics <- function(
+    connection,
+    condition_id,
+    condition_name,
+    stand_ids) {
   query <- glue_sql(
     "SELECT
       stand_id,
@@ -121,8 +126,8 @@ get_stand_metrics <- function(connection, condition, stand_ids) {
        condition_id = {condition_id} AND
        stand_id IN ({stand_ids*}) AND
        avg is NOT NULL",
-    condition_id = condition$condition_id,
-    condition_name = condition$condition_name,
+    condition_id = condition_id,
+    condition_name = condition_name,
     stand_ids = stand_ids,
     .con = connection
   )
@@ -152,7 +157,15 @@ get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
 }
 
-to_project_data <- function(con, project_id, forsys_output) {
+to_project_data <- function(connection, project_id, forsys_output) {
+  # configuration <- get_configuration(scenario)
+  # priorities <- get_priorities(connection, scenario, configuration)
+  # outputs <- get_priorities(
+  #   connection,
+  #   scenario,
+  #   configuration,
+  #   key = "scenario_output_fields"
+  # )
   project_stand_ids <- select(
     filter(
       forsys_output$stand_output,
@@ -161,7 +174,7 @@ to_project_data <- function(con, project_id, forsys_output) {
     stand_id
   )
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
-  geometry <- get_project_geometry(con, project_stand_ids)
+  geometry <- get_project_geometry(connection, project_stand_ids)
   properties <- as.list(
     filter(
       forsys_output$project_output,
@@ -195,21 +208,29 @@ now_utc <- function() {
   strftime(as.POSIXlt(Sys.time(), "UTC"), "%Y-%m-%dT%H:%M:%S")
 }
 
-get_conditions <- function(connection, scenario, configuration) {
-  conditions <- list()
-  for (priority in configuration$priorities) {
+get_priorities <- function(
+    connection,
+    scenario,
+    configuration,
+    key = "scenario_priorities") {
+  priorities <- list()
+  for (priority in configuration[[key]]) {
     condition <- priority_to_condition(connection, scenario, priority)
-    conditions[[condition$condition_name]] <- condition
+    priorities <- append(priorities, list(condition))
   }
-  return(conditions)
+  return(as.data.frame(priorities))
 }
 
 get_stand_data <- function(connection, scenario, conditions) {
   stands <- get_stands(connection, scenario$id)
-  for (condition in conditions) {
+
+  for (row in seq_len(nrow(conditions))) {
+    condition_id <- conditions[row, "condition_id"]
+    condition_name <- conditions[row, "condition_name"]
     metric <- get_stand_metrics(
       connection,
-      condition,
+      condition_id,
+      condition_name,
       stands$stand_id
     )
     stands <- merge_data(stands, metric)
@@ -219,24 +240,34 @@ get_stand_data <- function(connection, scenario, conditions) {
 }
 
 get_configuration <- function(scenario) {
+  print(scenario)
   configuration <- fromJSON(toString(scenario[["configuration"]]))
   return(configuration)
 }
 
+
 call_forsys <- function(connection, scenario) {
   configuration <- get_configuration(scenario)
-  conditions <- get_conditions(connection, scenario, configuration)
-  stand_data <- get_stand_data(connection, scenario, conditions)
+  priorities <- get_priorities(connection, scenario, configuration)
+  outputs <- get_priorities(
+    connection,
+    scenario,
+    configuration,
+    key = "scenario_output_fields"
+  )
+  forsys_inputs <- rbind(priorities, outputs)
+  stand_data <- get_stand_data(connection, scenario, forsys_inputs)
 
-  if (length(names(conditions)) > 1) {
+  if (length(priorities$condition_name) > 1) {
+    print("Combining prios")
     stand_data <- stand_data %>% forsys::combine_priorities(
-      fields = names(conditions),
+      fields = priorities$condition_name,
       weights = configuration$weights,
       new_field = "priority"
     )
     scenario_priorities <- c("priority")
   } else {
-    scenario_priorities <- names(conditions)
+    scenario_priorities <- first(priorities$condition_name)
   }
 
   out <- forsys::run(
@@ -244,7 +275,7 @@ call_forsys <- function(connection, scenario) {
     write_outputs = TRUE,
     overwrite_output = TRUE,
     scenario_name = scenario$name,
-    scenario_output_fields = c(scenario_priorities, "area_ha"),
+    scenario_output_fields = c(outputs$condition_name, "area_ha"),
     scenario_priorities = scenario_priorities,
     stand_data = stand_data,
     stand_area_field = "area_ha",
