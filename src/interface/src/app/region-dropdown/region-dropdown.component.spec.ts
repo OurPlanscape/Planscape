@@ -17,7 +17,7 @@ describe('RegionDropdownComponent', () => {
 
   beforeEach(async () => {
     mockAuthService = {
-      loggedInUser$: new BehaviorSubject<User | null>(null),
+      loggedInUser$: new BehaviorSubject<User | null | undefined>(null),
     };
     mockSessionService = {
       region$: new BehaviorSubject<Region | null>(null),

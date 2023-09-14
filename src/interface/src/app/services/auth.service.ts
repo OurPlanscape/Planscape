@@ -1,7 +1,13 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRouteSnapshot, CanActivate, Resolve, Router, RouterStateSnapshot } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Resolve,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   BehaviorSubject,
@@ -12,6 +18,7 @@ import {
   of,
   take,
   tap,
+  throwError,
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
@@ -25,9 +32,9 @@ interface LogoutResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  loggedInStatus$ = new BehaviorSubject(false);
-  isLoggedIn$: Observable<boolean> = this.loggedInStatus$;
-  loggedInUser$ = new BehaviorSubject<User | null>(null);
+  loggedInStatus$ = new BehaviorSubject<boolean | null>(null);
+  isLoggedIn$: Observable<boolean | null> = this.loggedInStatus$;
+  loggedInUser$ = new BehaviorSubject<User | null | undefined>(undefined);
 
   private readonly API_ROOT = BackendConstants.END_POINT + '/dj-rest-auth/';
 
@@ -63,23 +70,19 @@ export class AuthService {
     firstName: string,
     lastName: string
   ) {
-    return this.http
-      .post(this.API_ROOT.concat('registration/'), {
-        password1,
-        password2,
-        email,
-        first_name: firstName,
-        last_name: lastName,
-      });
+    return this.http.post(this.API_ROOT.concat('registration/'), {
+      password1,
+      password2,
+      email,
+      first_name: firstName,
+      last_name: lastName,
+    });
   }
 
-  resendValidationEmail(
-    email: string,
-  ) {
-    return this.http
-      .post(this.API_ROOT.concat('registration/resend-email/'), {
-        email,
-      });
+  resendValidationEmail(email: string) {
+    return this.http.post(this.API_ROOT.concat('registration/resend-email/'), {
+      email,
+    });
   }
 
   logout() {
@@ -97,10 +100,12 @@ export class AuthService {
   }
 
   validateAccount(token: string) {
-    return this.http
-      .post(this.API_ROOT.concat('registration/account-confirm-email/'), {
+    return this.http.post(
+      this.API_ROOT.concat('registration/account-confirm-email/'),
+      {
         key: token,
-      });
+      }
+    );
   }
 
   private refreshToken() {
@@ -113,6 +118,11 @@ export class AuthService {
       .pipe(
         tap((response: any) => {
           this.loggedInStatus$.next(!!response.access);
+        }),
+        catchError((err) => {
+          this.loggedInStatus$.next(false);
+          this.loggedInUser$.next(null);
+          return throwError(err);
         })
       );
   }
@@ -292,13 +302,13 @@ export class AuthGuard implements CanActivate {
 export class ValidationResolver implements Resolve<boolean> {
   constructor(
     private authService: AuthService,
-    private router: Router,
+    private router: Router
   ) {}
 
   resolve(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-    ): Observable<boolean> {
+  ): Observable<boolean> {
     const token = route.paramMap.get('id');
     if (!token) {
       this.router.navigate(['home']);
