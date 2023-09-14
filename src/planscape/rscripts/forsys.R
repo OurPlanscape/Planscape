@@ -14,6 +14,8 @@ library("purrr")
 
 readRenviron("src/planscape/planscape/.env")
 
+COST_PER_ACRE <- 2470
+
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -163,9 +165,10 @@ to_properties <- function(
     priorities,
     outputs,
     forsys_project_outputs) {
-  project_data <- forsys_project_outputs %>% filter(
-    proj_id == project_id
-  )
+  project_data <- forsys_project_outputs %>%
+    filter(proj_id == project_id) %>%
+    mutate(cost_per_acre = ETrt_area_acres * COST_PER_ACRE)
+
   # change column names here
   # add estimated cost
   # add percentage of area
@@ -285,7 +288,9 @@ call_forsys <- function(
   } else {
     scenario_priorities <- first(priorities$condition_name)
   }
-
+  number_of_projects <- 10
+  min_area <- configuration$max_treatment_area_ratio
+  max_area <- min_area * number_of_projects
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
@@ -297,9 +302,9 @@ call_forsys <- function(
     stand_area_field = "area_acres",
     stand_id_field = "stand_id",
     run_with_patchmax = TRUE,
-    patchmax_proj_size = configuration$max_treatment_area_ratio,
-    patchmax_proj_size_min = configuration$max_treatment_area_ratio / 2,
-    patchmax_proj_number = 10,
+    patchmax_proj_size = max_area,
+    patchmax_proj_size_min = min_area,
+    patchmax_proj_number = number_of_projects,
     patchmax_SDW = 0.5,
     patchmax_EPW = 1,
     patchmax_sample_frac = 0.1,
