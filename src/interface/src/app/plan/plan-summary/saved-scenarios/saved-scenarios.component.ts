@@ -67,6 +67,8 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   deleteSelectedScenarios(): void {
+    // Bulk scenario deletion isn't possible with the current UI, 
+    // but logic to make 'scenario' plural if more than one scenario is deleted was kept from legacy code
     this.planService
       .deleteScenarios([this.highlightedId!])
       .subscribe({
