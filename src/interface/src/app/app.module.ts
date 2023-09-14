@@ -29,6 +29,7 @@ import { PlanCreateDialogComponent } from './map/plan-create-dialog/plan-create-
 import { ProjectCardComponent } from './map/project-card/project-card.component';
 import { SignInDialogComponent } from './map/sign-in-dialog/sign-in-dialog.component';
 import { MaterialModule } from './material/material.module';
+import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
 import { RedirectGuard } from './redirect.guard';
 import {
@@ -62,6 +63,7 @@ import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-s
     MapComponent,
     LoginComponent,
     SignupComponent,
+    NavigationComponent,
     TopBarComponent,
     AccountDialogComponent,
     RegionSelectionComponent,
