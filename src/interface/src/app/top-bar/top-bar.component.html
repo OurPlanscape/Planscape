@@ -42,73 +42,76 @@
   <!-- Space between left and right elements -->
   <span class="spacer"></span>
 
-  <!--  Feedback-->
-  <a
-    routerLink="/feedback"
-    class="nav-link"
-    data-id="feedback"
-    target="_blank"
-    rel="noopener noreferrer"
-    *featureFlag="'new_navigation'">
-    Feedback
-  </a>
+  <!-- Show this section once we know if the user is logged in or not to avoid -->
+  <!-- flashing guest / default icon and content shifting -->
+  <ng-container *ngIf="(displayName$ | async) !== undefined">
+    <!--  Feedback-->
+    <a
+      routerLink="/feedback"
+      class="nav-link"
+      data-id="feedback"
+      target="_blank"
+      rel="noopener noreferrer"
+      *featureFlag="'new_navigation'">
+      Feedback
+    </a>
 
-  <!-- Account Name & Button -->
-  <a
-    mat-icon-button
-    routerLink="/help"
-    target="_blank"
-    aria-label="help button"
-    rel="noopener noreferrer"
-    data-id="help"
-    *featureFlag="'new_navigation'; hide: true">
-    <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
-  </a>
-  <span class="username">{{ displayName }}</span>
+    <!-- Account Name & Button -->
+    <a
+      mat-icon-button
+      routerLink="/help"
+      target="_blank"
+      aria-label="help button"
+      rel="noopener noreferrer"
+      data-id="help"
+      *featureFlag="'new_navigation'; hide: true">
+      <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
+    </a>
+    <span class="username">{{ displayName$ | async }}</span>
 
-  <button
-    mat-icon-button
-    [matMenuTriggerFor]="dotMenu"
-    *featureFlag="'new_navigation'">
-    <mat-icon class="material-symbols-outlined">more_vert</mat-icon>
-  </button>
-  <mat-menu #dotMenu="matMenu">
     <button
-      mat-menu-item
-      *ngIf="loggedIn$ | async"
-      (click)="logout()"
-      data-id="logout"
-      class="menu-link">
-      Log out
+      mat-icon-button
+      [matMenuTriggerFor]="dotMenu"
+      *featureFlag="'new_navigation'">
+      <mat-icon class="material-symbols-outlined">more_vert</mat-icon>
     </button>
-    <a
-      mat-menu-item
-      *ngIf="(loggedIn$ | async) === false"
-      routerLink="/login"
-      class="menu-link">
-      Log in
-    </a>
-    <a
-      mat-menu-item
-      *ngIf="(loggedIn$ | async) === false"
-      routerLink="/signup"
-      class="menu-link">
-      Create account
-    </a>
-  </mat-menu>
+    <mat-menu #dotMenu="matMenu">
+      <button
+        mat-menu-item
+        *ngIf="loggedIn$ | async"
+        (click)="logout()"
+        data-id="logout"
+        class="menu-link">
+        Log out
+      </button>
+      <a
+        mat-menu-item
+        *ngIf="(loggedIn$ | async) === false"
+        routerLink="/login"
+        class="menu-link">
+        Log in
+      </a>
+      <a
+        mat-menu-item
+        *ngIf="(loggedIn$ | async) === false"
+        routerLink="/signup"
+        class="menu-link">
+        Create account
+      </a>
+    </mat-menu>
 
-  <button
-    mat-icon-button
-    data-testid="account-button"
-    class="top-bar-account-button"
-    aria-label="account icon button"
-    #accountButton
-    (click)="openAccountDialog()">
-    <!-- If user is not logged in or we dont have a display name, show default avatar icon -->
-    <mat-icon *ngIf="!loggedIn || !displayName">account_circle</mat-icon>
-    <!-- If we have a display name, show the first letter as avatar -->
-    <div class="avatar mat-icon" *ngIf="loggedIn && displayName">
-      {{ displayName.substring(0, 1) }}
-    </div>
-  </button>
+    <button
+      mat-icon-button
+      data-testid="account-button"
+      class="top-bar-account-button"
+      aria-label="account icon button"
+      (click)="openAccountDialog()">
+      <!-- If not logged in show default avatar icon -->
+      <mat-icon *ngIf="(loggedIn$ | async) === false">account_circle</mat-icon>
+      <!-- If logged in, show the first letter as avatar -->
+      <div *ngIf="loggedIn$ | async" class="avatar mat-icon">
+        {{ initial$ | async }}
+      </div>
+    </button>
+  </ng-container>
 </mat-toolbar>

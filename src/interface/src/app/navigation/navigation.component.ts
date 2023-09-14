@@ -29,7 +29,7 @@ export class NavigationComponent implements OnInit, OnDestroy {
       icon: 'explore',
     },
   ];
-  isLoggedIn$: Observable<boolean> = this.authService.isLoggedIn$;
+  isLoggedIn$: Observable<boolean | null> = this.authService.isLoggedIn$;
 
   private isLoggedInSubscription!: Subscription;
 

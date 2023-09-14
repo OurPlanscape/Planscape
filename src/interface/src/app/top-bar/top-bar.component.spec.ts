@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatDialog } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
 
 import { MaterialModule } from '../material/material.module';
 import { AuthService, SessionService } from '../services';
@@ -31,7 +31,8 @@ describe('TopBarComponent', () => {
     );
 
     mockAuthService = {
-      loggedInUser$: new BehaviorSubject<User | null>(null),
+      loggedInUser$: new BehaviorSubject<User | null | undefined>(null),
+      isLoggedIn$: new BehaviorSubject(false),
       logout: () => of({ detail: '' }),
     };
     mockSessionService = {
@@ -112,23 +113,24 @@ describe('TopBarComponent', () => {
       setUpComponent();
     });
 
-    it('should be "Guest" when no user is logged in', () => {
-      expect(component.displayName).toEqual('Guest');
+    it('should be "Guest" when no user is logged in', async () => {
+      const displayName = await firstValueFrom(component.displayName$);
+      expect(displayName).toEqual('Guest');
     });
 
-    it('should be the first name of the logged in user', () => {
+    it('should be the first name of the logged in user', async () => {
       mockAuthService.loggedInUser$?.next({
         firstName: 'Foo',
         username: 'User',
       });
-
-      expect(component.displayName).toEqual('Foo');
+      const displayName = await firstValueFrom(component.displayName$);
+      expect(displayName).toEqual('Foo');
     });
 
-    it('should be the username of the logged in user if they have no first name', () => {
+    it('should be the username of the logged in user if they have no first name', async () => {
       mockAuthService.loggedInUser$?.next({ username: 'User' });
-
-      expect(component.displayName).toEqual('User');
+      const displayName = await firstValueFrom(component.displayName$);
+      expect(displayName).toEqual('User');
     });
   });
 

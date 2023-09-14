@@ -17,6 +17,7 @@ import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -96,7 +97,12 @@ describe('CreateScenariosComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, HttpClientTestingModule, PlanModule],
+      imports: [
+        BrowserAnimationsModule,
+        HttpClientTestingModule,
+        PlanModule,
+        RouterTestingModule,
+      ],
       declarations: [CreateScenariosComponent],
       providers: [{ provide: PlanService, useValue: fakePlanService }],
     }).compileComponents();
