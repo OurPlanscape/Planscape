@@ -90,7 +90,7 @@ MIDDLEWARE = [
     "password_policies.middleware.PasswordExpirationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-#    'lockdown.middleware.LockdownMiddleware',
+    'lockdown.middleware.LockdownMiddleware',
 ]
 
 ROOT_URLCONF = "planscape.urls"
@@ -145,8 +145,8 @@ LOCKDOWN_VIEW_EXCEPTIONS = [
 
 # should put in all IPs matching planscape/trusted hosts
 LOCKDOWN_REMOTE_ADDR_EXCEPTIONS = [
-#    '127.0.0.1',
-#    '::1',
+    '127.0.0.1',
+    '::1',
 ]
 
 
