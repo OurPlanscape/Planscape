@@ -85,8 +85,8 @@ get_stands <- function(connection, scenario_id) {
   query_text <- "
   WITH plan_scenario AS (
     SELECT
-      pp.id as \"planning_area_id\",
-      ps.id as \"scenario_id\",
+      pp.id AS \"planning_area_id\",
+      ps.id AS \"scenario_id\",
       pp.geometry
   FROM planning_planningarea pp
   LEFT JOIN planning_scenario ps ON (ps.planning_area_id = pp.id)
@@ -94,9 +94,10 @@ get_stands <- function(connection, scenario_id) {
       ps.id = {scenario_id}
   )
   SELECT
-      ss.id as \"stand_id\",
-      ST_Transform(ss.geometry, 3310) as \"geometry\",
-      ss.area_m2 / 10000 as \"area_ha\"
+      ss.id AS \"stand_id\",
+      ST_Transform(ss.geometry, 5070) AS \"geometry\",
+      ss.area_m2 / 10000 AS \"area_ha\",
+      ss.area_m2 / 4047 AS \"area_acres\"
   FROM stands_stand ss, plan_scenario
   WHERE
       ss.geometry && plan_scenario.geometry AND
@@ -288,19 +289,19 @@ call_forsys <- function(
     write_outputs = TRUE,
     overwrite_output = TRUE,
     scenario_name = scenario$name,
-    scenario_output_fields = c(outputs$condition_name, "area_ha"),
+    scenario_output_fields = c(outputs$condition_name, "area_acres"),
     scenario_priorities = scenario_priorities,
     stand_data = stand_data,
-    stand_area_field = "area_ha",
+    stand_area_field = "area_acres",
     stand_id_field = "stand_id",
     run_with_patchmax = TRUE,
-    patchmax_proj_size = 6000,
-    patchmax_proj_size_min = 1000,
-    patchmax_proj_number = 5,
+    patchmax_proj_size = configuration$max_treatment_area_ratio,
+    patchmax_proj_size_min = configuration$max_treatment_area_ratio / 2,
+    patchmax_proj_number = 10,
     patchmax_SDW = 0.5,
     patchmax_EPW = 1,
     patchmax_sample_frac = 0.1,
-    annual_target_field = "area_ha",
+    annual_target_field = "area_acres",
     annual_target = 100000
   )
   return(out)
