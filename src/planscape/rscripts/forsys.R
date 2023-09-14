@@ -160,18 +160,25 @@ get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
 }
 
+rename_col <- function(name) {
+  new_name <- gsub(
+    "^(Pr_[0-9]+_|ETrt_)",
+    "",
+    name
+  )
+  return(new_name)
+}
+
 to_properties <- function(
     project_id,
+    planning_area_acres,
     priorities,
     outputs,
     forsys_project_outputs) {
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
-    mutate(cost_per_acre = ETrt_area_acres * COST_PER_ACRE)
-
-  # change column names here
-  # add estimated cost
-  # add percentage of area
+    mutate(cost_per_acre = ETrt_area_acres * COST_PER_ACRE) %>%
+    rename_with(.fn = rename_col)
   return(as.list(project_data))
 }
 
