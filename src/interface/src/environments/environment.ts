@@ -6,8 +6,8 @@ export const environment = {
   production: false,
   backend_endpoint: 'http://localhost:8000/planscape-backend',
   google_analytics_id: '', // Replace with actual ID.
-  tile_endpoint: '', // Replace with actual URL
-  download_endpoint: '', // Replace with actual URL
+  tile_endpoint: 'https://dev-geo.planscape.org/geoserver/', // Replace with actual URL
+  download_endpoint: 'https://dev-geo.planscape.org/', // Replace with actual URL
 };
 
 /*
