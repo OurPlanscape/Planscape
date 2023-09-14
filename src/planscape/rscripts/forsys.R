@@ -171,9 +171,6 @@ rename_col <- function(name) {
 
 to_properties <- function(
     project_id,
-    planning_area_acres,
-    priorities,
-    outputs,
     forsys_project_outputs) {
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
@@ -199,8 +196,6 @@ to_project_data <- function(
   geometry <- get_project_geometry(connection, project_stand_ids)
   properties <- to_properties(
     project_id,
-    priorities,
-    outputs,
     forsys_project_outputs = forsys_outputs$project_output
   )
   return(list(
@@ -213,17 +208,15 @@ to_project_data <- function(
 to_projects <- function(con, priorities, outputs, forsys_outputs) {
   project_ids <- get_project_ids(forsys_outputs)
   projects <- list()
-  # maybe we can lapply here
-  for (project_id in project_ids) {
-    project <- to_project_data(
+  projects <- lapply(project_ids, function(project_id) {
+    return(to_project_data(
       con,
       project_id,
       priorities,
       outputs,
       forsys_outputs
-    )
-    projects <- append(projects, list(project))
-  }
+    ))
+  })
   geojson <- list(type = "FeatureCollection", features = projects)
   return(geojson)
 }
@@ -269,7 +262,6 @@ get_stand_data <- function(connection, scenario, conditions) {
 }
 
 get_configuration <- function(scenario) {
-  print(scenario)
   configuration <- fromJSON(toString(scenario[["configuration"]]))
   return(configuration)
 }
@@ -285,7 +277,6 @@ call_forsys <- function(
   stand_data <- get_stand_data(connection, scenario, forsys_inputs)
 
   if (length(priorities$condition_name) > 1) {
-    print("Combining prios")
     stand_data <- stand_data %>% forsys::combine_priorities(
       fields = priorities$condition_name,
       weights = configuration$weights,
@@ -357,7 +348,6 @@ upsert_scenario_result <- function(
 }
 
 main <- function(scenario_id) {
-  sprintf("Scenario chosen is %s", scenario_id)
   now <- now_utc()
   connection <- get_connection()
   scenario <- get_scenario_data(connection, scenario_id)
