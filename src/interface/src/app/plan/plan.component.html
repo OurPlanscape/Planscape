@@ -7,7 +7,7 @@
   <ng-container *ngIf="currentPlan$ | async">
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
       <summary-panel
-        [plan]="currentPlan$ | async"
+        [plan]="currentPlan$"
         [owner]="planOwner$ | async"></summary-panel>
     </div>
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>

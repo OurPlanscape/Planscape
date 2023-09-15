@@ -120,9 +120,11 @@ describe('PlanService', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
-        savedScenarios: 0,
+        scenarios: 0,
+        notes: '',
         configs: 0,
         createdTimestamp: undefined,
+        lastUpdated: undefined,
       };
 
       const backendPlan: BackendPlan = {
@@ -227,7 +229,7 @@ describe('PlanService', () => {
         max_slope: 1,
         max_treatment_area_ratio: 1,
         priorities: ['priority'],
-        excluded_areas:undefined,
+        excluded_areas: undefined,
         weights: [1],
         max_budget: 200,
       };
@@ -250,7 +252,7 @@ describe('PlanService', () => {
       expect(req.request.body).toEqual({
         name: 'name',
         planning_area: '1',
-        configuration: scenarioConfig
+        configuration: scenarioConfig,
       });
       req.flush('1');
       httpTestingController.verify();

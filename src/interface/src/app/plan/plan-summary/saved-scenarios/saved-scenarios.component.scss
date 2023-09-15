@@ -54,6 +54,17 @@ mat-header-cell, mat-cell {
   }
 }
 
+.new-scenario-button{
+  right:5px;
+  margin-left: auto;
+}
+
+.scenario-table-head {
+  display: flex;
+  gap: 50%;
+  align-items: center;
+}
+
 .scenario-row {
   cursor: pointer;
 

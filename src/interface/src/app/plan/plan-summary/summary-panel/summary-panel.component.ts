@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
 import { calculateAcres } from '../../plan-helpers';
+import { BehaviorSubject } from 'rxjs';
 
 export interface SummaryInput {
   id?: string;
@@ -13,7 +14,9 @@ export interface SummaryInput {
   createdTime?: number;
   scenarios?: number;
   configs?: number;
+  lastUpdated: Date;
   acres: number;
+  notes?: string;
 }
 
 // todo: move this to shared types
@@ -39,7 +42,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   styleUrls: ['./summary-panel.component.scss'],
 })
 export class SummaryPanelComponent implements OnChanges {
-  @Input() plan: Plan | null = null;
+  @Input() plan = new BehaviorSubject<Plan | null>(null);
   @Input() owner: User | null = null;
 
   summaryInput: SummaryInput | null = null;
@@ -49,19 +52,23 @@ export class SummaryPanelComponent implements OnChanges {
 
   ngOnChanges(): void {
     if (!!this.plan) {
+      var plan_value = this.plan.getValue();
+      console.log(this.plan);
       this.summaryInput = {
-        id: this.plan.id,
+        id: plan_value!.id,
         type: 'Plan',
-        name: this.plan.name,
+        name: plan_value!.name,
         owner: this.owner?.firstName
           ? this.owner?.firstName + ' ' + this.owner?.lastName
           : this.owner?.username ?? 'Guest',
-        region: this.plan.region,
-        area: this.plan.planningArea!,
-        createdTime: this.plan.createdTimestamp,
-        scenarios: this.plan.savedScenarios,
-        configs: this.plan.configs,
-        acres: calculateAcres(this.plan.planningArea!),
+        region: plan_value!.region,
+        area: plan_value!.planningArea!,
+        createdTime: plan_value!.createdTimestamp,
+        scenarios: plan_value!.scenarios,
+        notes: plan_value!.notes,
+        configs: plan_value!.configs,
+        lastUpdated: plan_value!.lastUpdated!,
+        acres: calculateAcres(plan_value!.planningArea!),
         status: 'In progress',
       };
     }

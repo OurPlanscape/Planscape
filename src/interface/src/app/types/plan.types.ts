@@ -7,9 +7,10 @@ export interface Plan extends BasePlan {
   region: Region;
   planningArea?: GeoJSON.GeoJSON;
   createdTimestamp?: number;
-  updatedTimestamp?: number;
-  savedScenarios?: number;
+  lastUpdated?: Date;
+  scenarios?: number;
   configs?: number;
+  notes?: string;
 }
 
 export interface BasePlan {
@@ -17,6 +18,9 @@ export interface BasePlan {
   name: string;
   ownerId: string;
   region: Region;
+  scenarios?: number;
+  lastUpdated?: Date;
+  notes?: string;
   planningArea?: GeoJSON.GeoJSON;
 }
 

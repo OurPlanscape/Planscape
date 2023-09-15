@@ -43,6 +43,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
   panelExpanded: boolean = true;
+  // TODO grab region from planning area
   selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
     map(({ currentScenarioId }) => currentScenarioId),
@@ -91,14 +92,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       zoomControl: false,
       pmIgnore: false,
       scrollWheelZoom: false,
+      attributionControl: false,
     });
-    this.map.attributionControl.setPosition('topright');
-
-    // Add zoom controls to bottom right corner
-    const zoomControl = L.control.zoom({
-      position: 'bottomright',
-    });
-    zoomControl.addTo(this.map);
 
     combineLatest([this.plan, this.currentScenarioId$])
       .pipe(
@@ -144,8 +139,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
       {
         maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
       }
     );
   }
