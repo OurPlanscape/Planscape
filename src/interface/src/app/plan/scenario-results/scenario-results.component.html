@@ -1,5 +1,7 @@
 <app-project-areas [areas]="areas" [total]="total"></app-project-areas>
-<app-project-areas-metrics></app-project-areas-metrics>
+<app-project-areas-metrics
+  [data]="data"
+  [selectedCharts]="selectedCharts"></app-project-areas-metrics>
 
 <div class="actions">
   <button mat-raised-button>Download CSV data</button>
