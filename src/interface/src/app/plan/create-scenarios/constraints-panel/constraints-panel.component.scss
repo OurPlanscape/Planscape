@@ -181,16 +181,19 @@
   border: #cccfd8 solid 2px;
 }
 
-::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
-  line-height: 20px;
-  top: 5px;
-  width: 60px;
+:host {
+  ::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+    line-height: 20px;
+    top: 5px;
+    width: 60px;
+  }
+  ::ng-deep .mat-select-value, ::ng-deep .mat-option-text {
+    text-align: center;
+  }
 }
+
 
 .mat-grid-tile-content {
   width: fit-content;
 }
 
-::ng-deep .mat-select-value, ::ng-deep .mat-option-text {
-  text-align: center;
-}
