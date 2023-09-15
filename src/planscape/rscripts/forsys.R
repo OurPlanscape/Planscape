@@ -49,7 +49,8 @@ get_scenario_data <- function(connection, scenario_id) {
               s.name,
               s.configuration,
               pa.region_name as \"region_name\",
-              pa.name as \"planning_area_name\"
+              pa.name as \"planning_area_name\",
+              ST_Area(pa.geometry::geography, TRUE) / 4047 as \"planning_area_acres\"
             FROM
               planning_scenario s
             LEFT JOIN planning_planningarea pa ON (pa.id = s.planning_area_id)
@@ -98,8 +99,7 @@ get_stands <- function(connection, scenario_id) {
   SELECT
       ss.id AS \"stand_id\",
       ST_Transform(ss.geometry, 5070) AS \"geometry\",
-      ss.area_m2 / 10000 AS \"area_ha\",
-      ss.area_m2 / 4047 AS \"area_acres\"
+      ST_Area(ss.geometry::geography, TRUE) / 4047 as \"area_acres\"
   FROM stands_stand ss, plan_scenario
   WHERE
       ss.geometry && plan_scenario.geometry AND
@@ -171,19 +171,20 @@ rename_col <- function(name) {
 
 to_properties <- function(
     project_id,
+    scenario,
     forsys_project_outputs) {
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
     mutate(cost_per_acre = ETrt_area_acres * COST_PER_ACRE) %>%
+    mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
     rename_with(.fn = rename_col)
   return(as.list(project_data))
 }
 
 to_project_data <- function(
     connection,
+    scenario,
     project_id,
-    priorities,
-    outputs,
     forsys_outputs) {
   project_stand_ids <- select(
     filter(
@@ -196,6 +197,7 @@ to_project_data <- function(
   geometry <- get_project_geometry(connection, project_stand_ids)
   properties <- to_properties(
     project_id,
+    scenario,
     forsys_project_outputs = forsys_outputs$project_output
   )
   return(list(
@@ -205,15 +207,14 @@ to_project_data <- function(
   ))
 }
 
-to_projects <- function(con, priorities, outputs, forsys_outputs) {
+to_projects <- function(con, scenario, forsys_outputs) {
   project_ids <- get_project_ids(forsys_outputs)
   projects <- list()
   projects <- lapply(project_ids, function(project_id) {
     return(to_project_data(
       con,
+      scenario,
       project_id,
-      priorities,
-      outputs,
       forsys_outputs
     ))
   })
@@ -265,7 +266,6 @@ get_configuration <- function(scenario) {
   configuration <- fromJSON(toString(scenario[["configuration"]]))
   return(configuration)
 }
-
 
 call_forsys <- function(
     connection,
@@ -368,7 +368,7 @@ main <- function(scenario_id) {
     outputs
   )
 
-  result <- to_projects(connection, priorities, outputs, forsys_output)
+  result <- to_projects(connection, scenario, forsys_output)
   upsert_scenario_result(connection, now, scenario_id, "SUCCESS", result)
 }
 
