@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "django.contrib.gis",
     "forsys",
     "leaflet",
+    "lockdown",
     "password_policies",
     "rest_framework",
     "rest_framework_gis",
@@ -89,6 +90,7 @@ MIDDLEWARE = [
     "password_policies.middleware.PasswordExpirationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'lockdown.middleware.LockdownMiddleware',
 ]
 
 ROOT_URLCONF = "planscape.urls"
@@ -132,6 +134,22 @@ DATABASES = {
         },
     }
 }
+
+
+# Locking down API calls to only itself.
+LOCKDOWN_ENABLED = True
+
+# if we ever needed to make some backend APIs (views) available to anyone.
+LOCKDOWN_VIEW_EXCEPTIONS = [
+]
+
+# should put in all IPs matching planscape/trusted hosts
+LOCKDOWN_REMOTE_ADDR_EXCEPTIONS = [
+    '127.0.0.1',
+    '::1',
+]
+
+
 
 
 # Password validation
