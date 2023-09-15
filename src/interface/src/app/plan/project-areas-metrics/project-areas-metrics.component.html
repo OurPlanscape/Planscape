@@ -3,8 +3,20 @@
   <mat-icon class="material-symbols-outlined" color="primary">info</mat-icon>
 </div>
 <div class="chart-holder">
-  <div class="chart-temp-container">Chart!</div>
-  <div class="chart-temp-container">Chart!</div>
-  <div class="chart-temp-container">Chart!</div>
-  <div class="chart-temp-container">Chart!</div>
+  <div *ngFor="let chart of selectedCharts; index as i">
+    <mat-form-field>
+      <mat-select
+        [value]="chart"
+        (selectionChange)="selectDataPoint($event, i)">
+        <mat-option
+          *ngFor="let dataSet of filterData(data, selectedCharts, chart)"
+          [value]="dataSet">
+          {{ dataSet.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <app-report-chart
+      [label]="chart.label"
+      [values]="chart.values"></app-report-chart>
+  </div>
 </div>
