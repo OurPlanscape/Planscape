@@ -28,6 +28,8 @@ from planning.serializers import (
     ScenarioResultSerializer,
 )
 from planscape import settings
+from planscape.utils.cli_utils import call_forsys
+
 
 
 # Retrieve the logged in user from the HTTP request.
@@ -316,13 +318,25 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 #### SCENARIO Handlers ####
 
 
+<<<<<<< HEAD
 def _serialize_scenario(scenario: Scenario) -> dict:
+=======
+def _serialize_scenario(
+    scenario: Scenario, scenario_result: ScenarioResult | None
+) -> dict:
+>>>>>>> 23e08350 (calls forsys script so we can watch the R code working)
     """
     Serializes a Scenario into a dictionary.
     # TODO: Add more logic here as our Scenario model expands beyond just the
     #       JSON "configuration" field.
     """
     data = ScenarioSerializer(scenario).data
+<<<<<<< HEAD
+=======
+    if scenario_result:
+        data["result"] = ScenarioResultSerializer(scenario_result).data
+
+>>>>>>> 23e08350 (calls forsys script so we can watch the R code working)
     return data
 
 
@@ -341,6 +355,11 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         if user is None:
             raise ValueError("User must be logged in.")
 
+<<<<<<< HEAD
+=======
+        show_results = request.GET.get("show_results", False)
+
+>>>>>>> 23e08350 (calls forsys script so we can watch the R code working)
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
         )
@@ -348,7 +367,15 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
             # This matches the same error string if the planning area doesn't exist in the DB for any user.
             raise ValueError("Scenario matching query does not exist.")
 
+<<<<<<< HEAD
         return JsonResponse(_serialize_scenario(scenario), safe=False)
+=======
+        scenario_result = None
+        if show_results:
+            scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+
+        return JsonResponse(_serialize_scenario(scenario, scenario_result), safe=False)
+>>>>>>> 23e08350 (calls forsys script so we can watch the R code working)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -393,6 +420,9 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         # a corresponding ScenarioResult.
         scenario_result = ScenarioResult.objects.create(scenario=scenario)
         scenario_result.save()
+
+        # async popen call
+        call_forsys(scenario.pk)
 
         return HttpResponse(
             json.dumps({"id": scenario.pk}), content_type="application/json"
@@ -551,8 +581,14 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(
             planning_area__pk=planning_area_id
         )
+<<<<<<< HEAD
         return JsonResponse(
             [_serialize_scenario(scenario) for scenario in scenarios], safe=False
+=======
+
+        return JsonResponse(
+            [_serialize_scenario(scenario, None) for scenario in scenarios], safe=False
+>>>>>>> 23e08350 (calls forsys script so we can watch the R code working)
         )
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))

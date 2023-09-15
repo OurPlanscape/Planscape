@@ -346,3 +346,5 @@ RASTER_TILE = config("RASTER_TILE", "32x32")
 GDAL_NUM_THREADS = config(
     "GDAL_NUM_THREADS", default=multiprocessing.cpu_count(), cast=int
 )
+
+FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
