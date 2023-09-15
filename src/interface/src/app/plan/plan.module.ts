@@ -5,7 +5,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { RouterModule } from '@angular/router';
-import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
+import { HttpClientXsrfModule } from '@angular/common/http';
 
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
@@ -31,6 +31,7 @@ import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.co
 import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';
 import { ProjectAreasComponent } from './project-areas/project-areas.component';
 import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-areas-metrics.component';
+import { ReportChartComponent } from './report-chart/report-chart.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -56,6 +57,7 @@ import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-ar
     ScenarioResultsComponent,
     ProjectAreasComponent,
     ProjectAreasMetricsComponent,
+    ReportChartComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
