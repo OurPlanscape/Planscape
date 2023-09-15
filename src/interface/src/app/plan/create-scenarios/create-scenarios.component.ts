@@ -102,7 +102,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   project_area_upload_enabled = features.upload_project_area;
 
   // TODO This should come from somewhere
-  scenarioState: ScenarioState = 'pending';
+  scenarioState: ScenarioState = 'completed';
 
   constructor(
     private fb: FormBuilder,
@@ -190,7 +190,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       this.loadConfig();
     }
 
-
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
     this.projectAreaGroup.valueChanges.subscribe((_) => {
@@ -276,7 +275,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
           goal.questions.forEach((question) => {
             if (
               question['priorities']?.toString() ==
-              config.priorities?.toString() &&
+                config.priorities?.toString() &&
               question['weights']?.toString() == config.weights?.toString()
             ) {
               selectedQuestion?.setValue(question);
