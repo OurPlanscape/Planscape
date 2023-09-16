@@ -335,10 +335,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     }
     if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
-      scenarioConfig.scenario_priorities = selectedQuestion.value['scenario_priorities'];
-      scenarioConfig.scenario_output_fields = selectedQuestion.value['scenario_output_fields'];
-      scenarioConfig.stand_thresholds = selectedQuestion.value['stand_thresholds'];
-      scenarioConfig.global_thresholds = selectedQuestion.value['global_thresholds'];
+      scenarioConfig.scenario_priorities =
+        selectedQuestion.value['scenario_priorities'];
+      scenarioConfig.scenario_output_fields =
+        selectedQuestion.value['scenario_output_fields'];
+      scenarioConfig.stand_thresholds =
+        selectedQuestion.value['stand_thresholds'];
+      scenarioConfig.global_thresholds =
+        selectedQuestion.value['global_thresholds'];
       scenarioConfig.weights = selectedQuestion!.value['weights'];
     }
     if (scenarioName?.valid) {
