@@ -88,7 +88,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    priorities: [''],
+    scenario_priorities: [''],
+    scenario_output_fields: [''],
+    stand_thresholds: [''],
+    global_thresholds: [''],
     weights: [0],
   };
   excludedAreasOptions: Array<string> = [
@@ -274,8 +277,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         goals!.forEach((goal) => {
           goal.questions.forEach((question) => {
             if (
-              question['priorities']?.toString() ==
-                config.priorities?.toString() &&
+              question['scenario_priorities']?.toString() ==
+                config.scenario_priorities?.toString() &&
               question['weights']?.toString() == config.weights?.toString()
             ) {
               selectedQuestion?.setValue(question);
@@ -332,7 +335,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     }
     if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
-      scenarioConfig.priorities = selectedQuestion.value['priorities'];
+      scenarioConfig.scenario_priorities = selectedQuestion.value['scenario_priorities'];
+      scenarioConfig.scenario_output_fields = selectedQuestion.value['scenario_output_fields'];
+      scenarioConfig.stand_thresholds = selectedQuestion.value['stand_thresholds'];
+      scenarioConfig.global_thresholds = selectedQuestion.value['global_thresholds'];
       scenarioConfig.weights = selectedQuestion!.value['weights'];
     }
     if (scenarioName?.valid) {
