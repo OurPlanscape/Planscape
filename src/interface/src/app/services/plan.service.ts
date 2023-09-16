@@ -478,7 +478,10 @@ export class PlanService {
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
-      priorities: config.priorities,
+      scenario_priorities: config.scenario_priorities,
+      scenario_output_fields: config.scenario_output_fields,
+      stand_thresholds: config.stand_thresholds,
+      global_thresholds: config.global_thresholds,
       weights: config.weights,
       excluded_areas: config.excluded_areas,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
@@ -535,14 +538,17 @@ export class PlanService {
     });
   }
 
-  private convertConfigToScenario(config: ProjectConfig): any {
+  private convertConfigToScenario(config: ScenarioConfig): any {
     return {
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
-      priorities: config.priorities,
+      scenario_priorities: config.scenario_priorities,
+      scenario_output_fields: config.scenario_output_fields,
+      stand_thresholds: config.stand_thresholds,
+      global_thresholds: config.global_thresholds,
       weights: config.weights,
       excluded_areas: config.excluded_areas,
     };
