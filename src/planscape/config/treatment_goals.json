@@ -12,9 +12,7 @@
               "scenario_priorities": [
                 "probability_of_fire_severity_high"
               ],
-              "weights": [
-                5
-              ],
+              "weights": [],
               "scenario_output_fields": [
                 "high_severity_potential_smoke_emissions",
                 "total_fuel_exposed_to_fire",
@@ -38,9 +36,7 @@
                 "structure_exposure_score",
                 "wui_damage_potential"
               ],
-              "weights": [
-                5
-              ],
+              "weights": [],
               "scenario_output_fields": [
                 "high_severity_potential_smoke_emissions",
                 "moderate_severity_potential_smoke_emissions",
@@ -61,9 +57,7 @@
               "scenario_priorities": [
                 "total_fuel_exposed_to_fire"
               ],
-              "weights": [
-                5
-              ],
+              "weights": [],
               "scenario_output_fields": [
                 "high_severity_potential_smoke_emissions",
                 "moderate_severity_potential_smoke_emissions",
@@ -88,9 +82,7 @@
                 "total_fuel_exposed_to_fire",
                 "standing_dead_and_ladder_fuels"
               ],
-              "weights": [
-                5
-              ],
+              "weights": [],
               "scenario_output_fields": [
                 "costs_of_potential_treatment_moving_biomass",
                 "costs_of_potential_treatment_moving_sawlogs",
