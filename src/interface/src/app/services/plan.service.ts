@@ -307,6 +307,7 @@ export class PlanService {
     );
   }
 
+  // TODO Add boolean parameter to control if show_results flag is true or false
   /** Fetches a scenario by its id from the backend. */
   getScenario(scenarioId: string): Observable<Scenario> {
     const url = BackendConstants.END_POINT.concat(
@@ -417,8 +418,6 @@ export class PlanService {
   }
 
   private convertToPlan(plan: BackendPlan): Plan {
-    console.log('in service');
-    console.log(plan);
     return {
       id: String(plan.id),
       ownerId: String(plan.user),

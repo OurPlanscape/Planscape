@@ -32,7 +32,7 @@ import { BackendConstants } from './../../backend-constants';
   styleUrls: ['./plan-map.component.scss'],
 })
 export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() plan = new BehaviorSubject<Plan | null>(null);
+  @Input() plan: Plan | null = null;
   @Input() mapId?: string;
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
@@ -95,18 +95,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       attributionControl: false,
     });
 
-    combineLatest([this.plan, this.currentScenarioId$])
-      .pipe(
-        takeUntil(this.destroy$),
-        filter(([plan]) => !!plan)
-      )
-      .subscribe(([plan, currentScenarioId]) => {
-        if (currentScenarioId) {
-          this.drawPlanningArea(plan!, '#77aff3');
-        } else {
-          this.drawPlanningArea(plan!);
-        }
-      });
+    if(this.plan) {
+        this.drawPlanningArea(this.plan!);
+    }
 
     setTimeout(() => this.map.invalidateSize(), 0);
   }
