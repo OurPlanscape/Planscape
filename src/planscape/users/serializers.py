@@ -2,8 +2,11 @@ import logging
 
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import PasswordResetSerializer, PasswordResetConfirmSerializer
-from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.core.mail import EmailMessage
+from django.template import Context
+from django.template.loader import get_template
+from rest_framework import serializers
 
 from users.forms import CustomAllAuthPasswordResetForm
 
@@ -39,9 +42,19 @@ class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
     """Custom serializer to send email for password reset post-save."""
     def save(self):
         super(CustomPasswordResetConfirmSerializer, self).save()
-
-        log.warning('qwer CustomPasswordResetConfirmSerializer')
-        
-        log.warning('asdf Reset send email.')
+        self._send_email()
    
+    def _send_email(self):
+        message = get_template(
+            "email/password/password_reset_confirmation_message.txt")
+        user = User.objects.get(username=str(self.user))
+        content = message.render({ 
+            "name": f"{user.first_name} {user.last_name}" 
+        })
 
+        email = EmailMessage(
+            subject="[Planscape] Password Reset",
+            body=content,
+            to=[user.email],
+        )
+        email.send()

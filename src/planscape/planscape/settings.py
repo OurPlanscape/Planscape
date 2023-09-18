@@ -272,11 +272,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "noreply@planscape.org"
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
-
-ACCOUNT_FORMS = {
-    'change_password': 'users.forms.CustomChangePasswordForm',
-    'reset_password_from_key': 'users.forms.CustomResetPasswordKeyForm',
-}
+DEFAULT_FROM_EMAIL = "noreply@planscape.org"
 
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the
