@@ -63,8 +63,7 @@
       target="_blank"
       aria-label="help button"
       rel="noopener noreferrer"
-      data-id="help"
-      *featureFlag="'new_navigation'; hide: true">
+      data-id="help">
       <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
     </a>
     <span class="username">{{ displayName$ | async }}</span>
@@ -72,7 +71,7 @@
     <button
       mat-icon-button
       [matMenuTriggerFor]="dotMenu"
-      *featureFlag="'new_navigation'">
+      *featureFlag="'login'">
       <mat-icon class="material-symbols-outlined">more_vert</mat-icon>
     </button>
     <mat-menu #dotMenu="matMenu">
