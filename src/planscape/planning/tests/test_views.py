@@ -504,6 +504,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertIsNotNone(planning_areas[0]['latest_updated'])
         self.assertEqual(planning_areas[1]['scenario_count'],1)
         self.assertIsNotNone(planning_areas[1]['latest_updated'])
+        self.assertIsNotNone(planning_areas[0]['created_at'])
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(reverse('planning:list_planning_areas'), {},
