@@ -42,7 +42,10 @@ load-metrics:
 load-rasters:
 	cd src/planscape && python3 manage.py load_rasters
 
-deploy-backend: migrate load-conditions restart
+install-dependencies:
+	pip install -r src/planscape/requirements.txt
+
+deploy-backend: install-dependencies migrate load-conditions restart
 
 deploy-all: deploy-backend deploy-frontend
 
