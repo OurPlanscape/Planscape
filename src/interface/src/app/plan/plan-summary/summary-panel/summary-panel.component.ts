@@ -42,7 +42,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   styleUrls: ['./summary-panel.component.scss'],
 })
 export class SummaryPanelComponent implements OnChanges {
-  @Input() plan = new BehaviorSubject<Plan | null>(null);
+  @Input() plan: Plan | null = null;
   @Input() owner: User | null = null;
 
   summaryInput: SummaryInput | null = null;
@@ -52,23 +52,21 @@ export class SummaryPanelComponent implements OnChanges {
 
   ngOnChanges(): void {
     if (!!this.plan) {
-      var plan_value = this.plan.getValue();
-      console.log(this.plan);
       this.summaryInput = {
-        id: plan_value!.id,
+        id: this.plan!.id,
         type: 'Plan',
-        name: plan_value!.name,
+        name: this.plan!.name,
         owner: this.owner?.firstName
           ? this.owner?.firstName + ' ' + this.owner?.lastName
           : this.owner?.username ?? 'Guest',
-        region: plan_value!.region,
-        area: plan_value!.planningArea!,
-        createdTime: plan_value!.createdTimestamp,
-        scenarios: plan_value!.scenarios,
-        notes: plan_value!.notes,
-        configs: plan_value!.configs,
-        lastUpdated: plan_value!.lastUpdated!,
-        acres: calculateAcres(plan_value!.planningArea!),
+        region: this.plan!.region,
+        area: this.plan!.planningArea!,
+        createdTime: this.plan!.createdTimestamp,
+        scenarios: this.plan!.scenarios,
+        notes: this.plan!.notes,
+        configs: this.plan!.configs,
+        lastUpdated: this.plan!.lastUpdated!,
+        acres: calculateAcres(this.plan!.planningArea!),
         status: 'In progress',
       };
     }
