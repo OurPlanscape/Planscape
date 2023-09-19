@@ -91,7 +91,7 @@ describe('CreateScenariosComponent', () => {
               {
                 short_question_text: 'test_question',
                 scenario_output_fields: [''],
-                scenario_priorities: ['test_priority'],
+                scenario_priorities: [''],
                 stand_thresholds: [''],
                 global_thresholds: [''],
                 weights: [1],
