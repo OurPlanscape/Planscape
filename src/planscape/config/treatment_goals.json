@@ -71,7 +71,7 @@
                 "california_spotted_owl"
               ],
               "stand_thresholds": [
-                "Probability of Fire Severity (High) > 50% TODO Replace with actual threshold string"
+                "PHSF > 0.2"
               ],
               "global_thresholds": []
             },
@@ -96,9 +96,7 @@
                 "california_spotted_owl"
               ],
               "stand_thresholds": [
-                "Probability of Fire Severity (High) < 3% TODO Replace with actual threshold string",
-                "Distance from roads (default .5 mile)",
-                "non-burnable = false (might need a new raster- LANDFIRE?)"
+                "PHSF < 0.3 & Burnable == 1"
               ],
               "global_thresholds": []
             }
