@@ -10,7 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog, MatDialogConfig } from '@angular/material/dialog';
 
 import { AuthService } from './../services';
-import { ValidationEmailDialog } from './validation-email-dialog/validation-email-dialog.component';
+import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
 
 @Component({
   selector: 'app-signup',
@@ -66,12 +66,12 @@ export class SignupComponent {
           const dialogConfig = {
             data: email,
           };
-          this.dialog.open(ValidationEmailDialog, dialogConfig);
+          this.dialog.open(ValidationEmailDialogComponent, dialogConfig);
         },
         error: (error: HttpErrorResponse) => {
           this.errors = Object.values(error.error);
           this.submitted = false;
-        }
+        },
       });
   }
 

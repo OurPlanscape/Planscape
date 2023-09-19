@@ -21,7 +21,7 @@ import {
 import { Plan, ProjectArea, Scenario } from 'src/app/types';
 
 // TODO Confirm if this page is still needed and delete if not
-// If it is still needed, improve how scenarioId is retrieved 
+// If it is still needed, improve how scenarioId is retrieved
 @Component({
   selector: 'app-scenario-details',
   templateUrl: './scenario-details.component.html',
