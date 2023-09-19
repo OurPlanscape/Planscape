@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0022_alter_scenario_project'),
+        ("plan", "0022_alter_scenario_project"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='max_area_per_project_in_km2',
+            model_name="project",
+            name="max_area_per_project_in_km2",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='project',
-            name='max_cost_per_project_in_usd',
+            model_name="project",
+            name="max_cost_per_project_in_usd",
             field=models.FloatField(null=True),
         ),
     ]

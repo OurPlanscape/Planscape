@@ -13,17 +13,27 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, Max
 from django.db.models.query import QuerySet
-from django.http import (HttpRequest, HttpResponse, HttpResponseBadRequest,
-                         JsonResponse, QueryDict)
+from django.http import (
+    HttpRequest,
+    HttpResponse,
+    HttpResponseBadRequest,
+    JsonResponse,
+    QueryDict,
+)
 from django.shortcuts import get_object_or_404
-from planning.models import (PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus)
-from planning.serializers import (PlanningAreaSerializer, ScenarioSerializer, ScenarioResultSerializer)
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from planning.serializers import (
+    PlanningAreaSerializer,
+    ScenarioSerializer,
+    ScenarioResultSerializer,
+)
 from planscape import settings
+
 
 # Retrieve the logged in user from the HTTP request.
 def _get_user(request: HttpRequest) -> User:
     user = None
-    if hasattr(request, 'user') and request.user.is_authenticated:
+    if hasattr(request, "user") and request.user.is_authenticated:
         user = request.user
     return user
 
@@ -31,18 +41,19 @@ def _get_user(request: HttpRequest) -> User:
 # We always need to store multipolygons, so coerce a single polygon to
 # a multigolygon if needed.
 def _convert_polygon_to_multipolygon(geometry: dict):
-    features = geometry.get('features', [])
+    features = geometry.get("features", [])
     if len(features) > 1 or len(features) == 0:
         raise ValueError("Must send exactly one feature.")
     feature = features[0]
-    geom = feature['geometry']
-    if geom['type'] == 'Polygon':
-        geom['type'] = 'MultiPolygon'
-        geom['coordinates'] = [feature['geometry']['coordinates']]
+    geom = feature["geometry"]
+    if geom["type"] == "Polygon":
+        geom["type"] = "MultiPolygon"
+        geom["coordinates"] = [feature["geometry"]["coordinates"]]
     actual_geometry = GEOSGeometry(json.dumps(geom))
-    if actual_geometry.geom_type != 'MultiPolygon':
+    if actual_geometry.geom_type != "MultiPolygon":
         raise ValueError("Could not parse geometry")
     return actual_geometry
+
 
 # TODO: Along with PlanningAreaSerializer, refactor this a bit more to
 # make it more maintainable.
@@ -56,12 +67,12 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
     4. Replaces the internal region_name with the display version.
     """
     data = PlanningAreaSerializer(planning_area).data
-    result = data['properties']
-    result['id'] = data['id']
-    if 'geometry' in data and add_geometry:
-        result['geometry'] = data['geometry']
-    if 'region_name' in result:
-        result['region_name'] = region_to_display_name(result['region_name'])
+    result = data["properties"]
+    result["id"] = data["id"]
+    if "geometry" in data and add_geometry:
+        result["geometry"] = data["geometry"]
+    if "region_name" in result:
+        result["region_name"] = region_to_display_name(result["region_name"])
     return result
 
 
@@ -88,24 +99,24 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
         if user is None:
             raise ValueError("User must be logged in.")
-        
+
         # Get the name of the planning area.
         body = json.loads(request.body)
-        name = body.get('name')
+        name = body.get("name")
         if name is None:
             raise ValueError("Must specify a planning area name.")
 
         # Get the region name; it should be in the human-readable display name format.
-        region_name_input = body.get('region_name')
+        region_name_input = body.get("region_name")
         if region_name_input is None:
             raise ValueError("Region name must be specified.")
-        
+
         region_name = display_name_to_region(region_name_input)
         if region_name is None:
             raise ValueError("Unknown region_name: " + region_name_input)
 
         # Get the geometry of the planning area.
-        geometry = body.get('geometry')
+        geometry = body.get("geometry")
         if geometry is None:
             raise ValueError("Must specify the planning area geometry.")
 
@@ -115,16 +126,22 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
 
         # Create the planning area
         planning_area = PlanningArea.objects.create(
-            user=user, name=name, region_name=region_name, geometry=geometry, notes=body.get('notes', None))
+            user=user,
+            name=name,
+            region_name=region_name,
+            geometry=geometry,
+            notes=body.get("notes", None),
+        )
         planning_area.save()
 
         return HttpResponse(
-            json.dumps({'id': planning_area.pk}),
-            content_type="application/json")
-        
+            json.dumps({"id": planning_area.pk}), content_type="application/json"
+        )
+
         return HttpResponse(str(planning_area.pk))
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
+
 
 def delete_planning_area(request: HttpRequest) -> HttpResponse:
     """
@@ -146,7 +163,7 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
 
         # Get the planning area IDs
         body = json.loads(request.body)
-        planning_area_id = body.get('id', None)
+        planning_area_id = body.get("id", None)
         planning_area_ids = []
         if planning_area_id is None:
             raise ValueError("Must specify planning area id.")
@@ -165,11 +182,9 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.
         # The end result is that those planning areas don't exist as far as the user is concerned.
-        response_data = {'id': planning_area_ids}
+        response_data = {"id": planning_area_ids}
 
-        return HttpResponse(
-            json.dumps(response_data),
-            content_type="application/json")
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
@@ -195,18 +210,18 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
             raise ValueError("User must be logged in.")
 
         body = json.loads(request.body)
-        planning_area_id = body.get('id', None)
+        planning_area_id = body.get("id", None)
         planning_area = get_object_or_404(user.planning_areas, id=planning_area_id)
         is_dirty = False
-        
-        if 'notes' in body:
+
+        if "notes" in body:
             # This can clear the notes field
-            planning_area.notes = body.get('notes')
+            planning_area.notes = body.get("notes")
             is_dirty = True
 
-        if 'name' in body:
+        if "name" in body:
             # This must be always defined
-            new_name = body.get('name')
+            new_name = body.get("name")
             if (new_name is None) or (len(new_name) == 0):
                 raise ValueError("name must be defined")
             planning_area.name = new_name
@@ -216,8 +231,8 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
             planning_area.save()
 
         return HttpResponse(
-            json.dumps({'id': planning_area_id}),
-            content_type="application/json")
+            json.dumps({"id": planning_area_id}), content_type="application/json"
+        )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -243,11 +258,18 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse(
             _serialize_planning_area(
-                get_object_or_404(user.planning_areas.annotate(scenario_count=Count('scenarios', distinct=True))\
-                                  .annotate(scenario_latest_updated_at=Max('scenarios__updated_at')), id=request.GET['id']),
-                True))
+                get_object_or_404(
+                    user.planning_areas.annotate(
+                        scenario_count=Count("scenarios", distinct=True)
+                    ).annotate(scenario_latest_updated_at=Max("scenarios__updated_at")),
+                    id=request.GET["id"],
+                ),
+                True,
+            )
+        )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
 
 # No Params expected, since we're always using the logged in user.
 def list_planning_areas(request: HttpRequest) -> HttpResponse:
@@ -269,26 +291,34 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
             raise ValueError("User must be logged in.")
         user_id = user.pk
 
-# TODO: This could be really slow; consider paging or perhaps
-# fetching everything but geometries (since they're huge) for performance gains.
-# given that we need geometry to calculate total acres, should we save this value
-# when creating the planning area instead of calculating it each time?
+        # TODO: This could be really slow; consider paging or perhaps
+        # fetching everything but geometries (since they're huge) for performance gains.
+        # given that we need geometry to calculate total acres, should we save this value
+        # when creating the planning area instead of calculating it each time?
 
-        planning_areas = PlanningArea.objects.filter(user=user_id)\
-                                            .annotate(scenario_count=Count("scenarios", distinct=True))\
-                                            .annotate(scenario_latest_updated_at=Max("scenarios__updated_at"))\
-                                            .order_by("-scenario_latest_updated_at")
+        planning_areas = (
+            PlanningArea.objects.filter(user=user_id)
+            .annotate(scenario_count=Count("scenarios", distinct=True))
+            .annotate(scenario_latest_updated_at=Max("scenarios__updated_at"))
+            .order_by("-scenario_latest_updated_at")
+        )
         return JsonResponse(
-            [_serialize_planning_area(planning_area, True) for planning_area in planning_areas],
-            safe=False)
+            [
+                _serialize_planning_area(planning_area, True)
+                for planning_area in planning_areas
+            ],
+            safe=False,
+        )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-
 #### SCENARIO Handlers ####
 
-def _serialize_scenario(scenario: Scenario, scenario_result: ScenarioResult | None) -> dict:
+
+def _serialize_scenario(
+    scenario: Scenario, scenario_result: ScenarioResult | None
+) -> dict:
     """
     Serializes a Scenario into a dictionary.
     # TODO: Add more logic here as our Scenario model expands beyond just the
@@ -296,7 +326,7 @@ def _serialize_scenario(scenario: Scenario, scenario_result: ScenarioResult | No
     """
     data = ScenarioSerializer(scenario).data
     if scenario_result:
-        data['result'] = ScenarioResultSerializer(scenario_result).data
+        data["result"] = ScenarioResultSerializer(scenario_result).data
 
     return data
 
@@ -318,10 +348,12 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         if user is None:
             raise ValueError("User must be logged in.")
 
-        show_results = request.GET.get('show_results', False)
+        show_results = request.GET.get("show_results", False)
 
-        scenario = Scenario.objects.select_related('planning_area__user').get(id=request.GET['id'])
-        if (scenario.planning_area.user.pk != user.pk):
+        scenario = Scenario.objects.select_related("planning_area__user").get(
+            id=request.GET["id"]
+        )
+        if scenario.planning_area.user.pk != user.pk:
             # This matches the same error string if the planning area doesn't exist in the DB for any user.
             raise ValueError("Scenario matching query does not exist.")
 
@@ -329,11 +361,10 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         if show_results:
             scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
 
-        return JsonResponse(
-            _serialize_scenario(scenario, scenario_result),
-            safe=False)
+        return JsonResponse(_serialize_scenario(scenario, scenario_result), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
 
 def create_scenario(request: HttpRequest) -> HttpResponse:
     """
@@ -364,7 +395,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 
         # Ensure that we have a viable planning area owned by the user.  Note that this gives a slightly different
         # error response for a nonowned planning area vs. when given a nonexistent planning area.
-        planning_area = get_object_or_404(user.planning_areas, id=body['planning_area'])
+        planning_area = get_object_or_404(user.planning_areas, id=body["planning_area"])
 
         # TODO: Parse configuration field into further components.
 
@@ -373,21 +404,21 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         # Create a default scenario result.
         # Note that if this fails, we will have still written the Scenario without
         # a corresponding ScenarioResult.
-        scenario_result = ScenarioResult.objects.create(
-            scenario=scenario)
+        scenario_result = ScenarioResult.objects.create(scenario=scenario)
         scenario_result.save()
 
         return HttpResponse(
-            json.dumps({'id': scenario.pk}),
-            content_type="application/json")
+            json.dumps({"id": scenario.pk}), content_type="application/json"
+        )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-#TODO - when we want to support multiple scenario results for the same scenario:
-#def create_result_for_scenario(request: HttpRequest) -> HttpResponse:
-#def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
-#def get_latest_result_for_scenario
+# TODO - when we want to support multiple scenario results for the same scenario:
+# def create_result_for_scenario(request: HttpRequest) -> HttpResponse:
+# def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
+# def get_latest_result_for_scenario
+
 
 def update_scenario(request: HttpRequest) -> HttpResponse:
     """
@@ -410,25 +441,27 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
             raise ValueError("User must be logged in.")
 
         body = json.loads(request.body)
-        scenario_id = body.get('id', None)
+        scenario_id = body.get("id", None)
         if scenario_id is None:
             raise ValueError("Scenario ID is required.")
 
-        scenario = Scenario.objects.select_related('planning_area__user').get(id=scenario_id)
-        if (scenario.planning_area.user.pk != user.pk):
+        scenario = Scenario.objects.select_related("planning_area__user").get(
+            id=scenario_id
+        )
+        if scenario.planning_area.user.pk != user.pk:
             # This matches the same error string if the planning area doesn't exist in the DB for any user.
             raise ValueError("Scenario matching query does not exist.")
 
         is_dirty = False
-        
-        if 'notes' in body:
+
+        if "notes" in body:
             # This can clear the notes field
-            scenario.notes = body.get('notes')
+            scenario.notes = body.get("notes")
             is_dirty = True
 
-        if 'name' in body:
+        if "name" in body:
             # This must be always defined
-            new_name = body.get('name')
+            new_name = body.get("name")
             if (new_name is None) or (len(new_name) == 0):
                 raise ValueError("name must be defined")
             scenario.name = new_name
@@ -438,8 +471,8 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
             scenario.save()
 
         return HttpResponse(
-            json.dumps({'id': scenario_id}),
-            content_type="application/json")
+            json.dumps({"id": scenario_id}), content_type="application/json"
+        )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -471,13 +504,13 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
     """
     try:
         body = json.loads(request.body)
-        scenario_id = body.get('scenario_id')
+        scenario_id = body.get("scenario_id")
 
         scenario_result = ScenarioResult.objects.get(scenario__id=scenario_id)
-        
-        new_status = body.get('status')
+
+        new_status = body.get("status")
         old_status = scenario_result.status
-        
+
         if new_status is not None:
             match new_status:
                 case ScenarioResultStatus.RUNNING:
@@ -490,18 +523,18 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
                     if new_status != ScenarioResultStatus.FAILURE:
                         raise ValueError("Invalid new state.")
             scenario_result.status = new_status
-            
-        if (run_details := body.get('run_details')) is not None:
+
+        if (run_details := body.get("run_details")) is not None:
             scenario_result.run_details = run_details
- 
-        if (result := body.get('result')) is not None:
+
+        if (result := body.get("result")) is not None:
             scenario_result.result = result
-            
+
         scenario_result.save()
 
         return HttpResponse(
-            json.dumps({'id': scenario_id}),
-            content_type="application/json")
+            json.dumps({"id": scenario_id}), content_type="application/json"
+        )
     except Exception as e:
         return HttpResponseBadRequest("Update Scenario error: " + str(e))
 
@@ -524,17 +557,20 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         if user is None:
             raise ValueError("User must be logged in.")
 
-        planning_area_id = request.GET['planning_area']
+        planning_area_id = request.GET["planning_area"]
         if planning_area_id is None:
             raise ValueError("Missing planning_area")
 
-        scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(planning_area__pk=planning_area_id)
-        
+        scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(
+            planning_area__pk=planning_area_id
+        )
+
         return JsonResponse(
-            [_serialize_scenario(scenario, None) for scenario in scenarios],
-            safe=False)
+            [_serialize_scenario(scenario, None) for scenario in scenarios], safe=False
+        )
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
+
 
 def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
@@ -542,7 +578,7 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
     Requires a logged in user, as a scenario must be associated with a user's planning area.
     Scenarios that do not exist or do not belong to a planning_area that is owned by the user
     will appear in the returned list, but scenarios that are not owned by the user are not changed.
-    
+
     Returns: id: the list of IDs to be deleted.
 
     Required params:
@@ -553,9 +589,9 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
         if user is None:
             raise ValueError("User must be logged in.")
-        
+
         body = json.loads(request.body)
-        scenario_id_str = body.get('scenario_id', None)
+        scenario_id_str = body.get("scenario_id", None)
         if scenario_id_str is None:
             raise ValueError("Must specify scenario id(s)")
 
@@ -568,36 +604,37 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
             raise ValueError("scenario_id must be an int or a list of ints.")
 
         # Get the scenarios matching the provided IDs and the logged-in user.
-        scenarios = Scenario.objects.filter(pk__in=scenario_ids).filter(planning_area__user=user.pk)
+        scenarios = Scenario.objects.filter(pk__in=scenario_ids).filter(
+            planning_area__user=user.pk
+        )
         # This automatically deletes ScenarioResult entries for the deleted Scenarios.
         scenarios.delete()
 
         # We still report that the full set of scenario IDs requested were deleted,
         # since from the user's perspective, there are no scenarios with that ID after this
         # call completes.
-        response_data = {'id': scenario_ids}
+        response_data = {"id": scenario_ids}
 
-        return HttpResponse(
-            json.dumps(response_data),
-            content_type="application/json")
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
     except Exception as e:
         return HttpResponseBadRequest("Delete Scenario error: " + str(e))
-    
+
+
 def get_treatment_goals_config_for_region(params: QueryDict):
     # Get region name
-    assert isinstance(params['region_name'], str)
-    region_name = params['region_name']
-    
+    assert isinstance(params["region_name"], str)
+    region_name = params["region_name"]
+
     # Read from treatment_goals config
-    config_path = os.path.join(
-        djangoSettings.BASE_DIR, 'config/treatment_goals.json')
-    treatment_goals_config = json.load(open(config_path, 'r'))
-    for region in treatment_goals_config['regions']:
-        if region_name == region['region_name']:
-            return region['treatment_goals']
-        
+    config_path = os.path.join(djangoSettings.BASE_DIR, "config/treatment_goals.json")
+    treatment_goals_config = json.load(open(config_path, "r"))
+    for region in treatment_goals_config["regions"]:
+        if region_name == region["region_name"]:
+            return region["treatment_goals"]
+
     return None
+
 
 def treatment_goals_config(request: HttpRequest) -> HttpResponse:
     treatment_goals = get_treatment_goals_config_for_region(request.GET)
-    return JsonResponse(treatment_goals, safe = False)
+    return JsonResponse(treatment_goals, safe=False)

@@ -5,15 +5,18 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0006_rename_generatedprojectareas_projectarea_and_more'),
+        ("plan", "0006_rename_generatedprojectareas_projectarea_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='projectarea',
-            name='scenario',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='plan.scenario'),
+            model_name="projectarea",
+            name="scenario",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="plan.scenario",
+            ),
         ),
     ]

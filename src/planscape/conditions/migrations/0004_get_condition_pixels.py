@@ -95,10 +95,12 @@ END;
 $$;
 """
 
+
 class Migration(migrations.Migration):
+    dependencies: list[Tuple[str, str]] = [("conditions", "0003_get_condition_stats")]
 
-    dependencies: list[Tuple[str, str]] = [
-      ('conditions', '0003_get_condition_stats')
+    operations = [
+        migrations.RunSQL(
+            sql=SQL, reverse_sql="DROP FUNCTION IF EXISTS get_condition_pixels;"
+        )
     ]
-
-    operations = [migrations.RunSQL(sql=SQL, reverse_sql='DROP FUNCTION IF EXISTS get_condition_pixels;')]

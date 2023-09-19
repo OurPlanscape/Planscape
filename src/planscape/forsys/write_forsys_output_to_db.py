@@ -5,12 +5,17 @@ from conditions.models import Condition
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from forsys.forsys_request_params import ForsysGenerationRequestParams
 from plan.models import (
-    Plan, Project, ProjectArea, RankedProjectArea, Scenario,
-    ScenarioWeightedPriority)
+    Plan,
+    Project,
+    ProjectArea,
+    RankedProjectArea,
+    Scenario,
+    ScenarioWeightedPriority,
+)
 from pytz import timezone
 
 
-# Given a WKT, validates that the WKT repreesents either a Polygon or 
+# Given a WKT, validates that the WKT repreesents either a Polygon or
 # MultiPolygon, then returns a MultiPolygon.
 def _get_multipolygon(wkt: str):
     geo = GEOSGeometry(wkt)
@@ -21,29 +26,34 @@ def _get_multipolygon(wkt: str):
         multi.srid = geo.srid
         return multi
 
-    raise Exception(
-        "geometry, %s, is neither a polygon nor a multipolygon" % (wkt))
+    raise Exception("geometry, %s, is neither a polygon nor a multipolygon" % (wkt))
 
 
 def _create_plan(params: ForsysGenerationRequestParams) -> Plan:
     plan = Plan.objects.create(
-        owner=params.db_params.user, name=datetime.now().astimezone(
-            timezone('US/Pacific')
-        ).strftime("%Y%-m-%d-%H:%M"), region_name=params.region,
-        geometry=_get_multipolygon(params.planning_area))
+        owner=params.db_params.user,
+        name=datetime.now()
+        .astimezone(timezone("US/Pacific"))
+        .strftime("%Y%-m-%d-%H:%M"),
+        region_name=params.region,
+        geometry=_get_multipolygon(params.planning_area),
+    )
     plan.save()
     return plan
 
 
 def _create_weighted_priorities(
-        params: ForsysGenerationRequestParams, scenario: Scenario):
+    params: ForsysGenerationRequestParams, scenario: Scenario
+):
     for i in range(len(params.priorities)):
-        condition = Condition.objects.select_related('condition_dataset').get(
+        condition = Condition.objects.select_related("condition_dataset").get(
             condition_dataset__condition_name=params.priorities[i],
-            condition_score_type=ConditionScoreType.CURRENT, is_raw=False)
+            condition_score_type=ConditionScoreType.CURRENT,
+            is_raw=False,
+        )
         weighted_priority = ScenarioWeightedPriority.objects.create(
-            scenario=scenario, priority=condition,
-            weight=params.priority_weights[i])
+            scenario=scenario, priority=condition, weight=params.priority_weights[i]
+        )
         weighted_priority.save()
 
 
@@ -53,8 +63,7 @@ def _create_weighted_priorities(
 # ForsysGenerationRequestParams.db_params is missing a scenario.
 # TODO: this assumes ForsysGenerationRequestParams is well-formed; input
 # validation logic needs to be added and tested.
-def create_plan_and_scenario(
-        params: ForsysGenerationRequestParams) -> Scenario:
+def create_plan_and_scenario(params: ForsysGenerationRequestParams) -> Scenario:
     user = params.db_params.user
 
     plan = _create_plan(params)
@@ -62,8 +71,7 @@ def create_plan_and_scenario(
     project = Project.objects.create(owner=user, plan=plan)
     project.save()
 
-    scenario = Scenario.objects.create(
-        owner=user, plan=plan, project=project)
+    scenario = Scenario.objects.create(owner=user, plan=plan, project=project)
     scenario.save()
 
     _create_weighted_priorities(params, scenario)
@@ -77,21 +85,23 @@ def create_plan_and_scenario(
 # ForsysGenerationOutputForASingleScenario.scenario.
 # TODO: this assumes the input arguments are well-formed; input validation
 # logic needs to be added and tested.
-def save_generation_output_to_db(scenario: Scenario,
-                                 output_scenario: dict):
+def save_generation_output_to_db(scenario: Scenario, output_scenario: dict):
     owner = scenario.owner
     project = scenario.project
 
-    for p in output_scenario['ranked_projects']:
+    for p in output_scenario["ranked_projects"]:
         # TODO: add scenario as an optional field in ProjectArea so that project areas previously-generated for a scenario can be deleted.
         project_area = ProjectArea.objects.create(
-            owner=owner, project=project,
-            project_area=_get_multipolygon(p['geo_wkt']))
+            owner=owner, project=project, project_area=_get_multipolygon(p["geo_wkt"])
+        )
         project_area.save()
 
         ranked_project_area = RankedProjectArea.objects.create(
-            scenario=scenario, project_area=project_area,
-            rank=p['rank'], weighted_score=p['total_score'])
+            scenario=scenario,
+            project_area=project_area,
+            rank=p["rank"],
+            weighted_score=p["total_score"],
+        )
         ranked_project_area.save()
 
     scenario.status = Scenario.ScenarioStatus.SUCCESS
