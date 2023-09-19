@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
 import { calculateAcres } from '../../plan-helpers';
+import { BehaviorSubject } from 'rxjs';
 
 export interface SummaryInput {
   id?: string;
@@ -13,7 +14,9 @@ export interface SummaryInput {
   createdTime?: number;
   scenarios?: number;
   configs?: number;
+  lastUpdated: Date;
   acres: number;
+  notes?: string;
 }
 
 // todo: move this to shared types
@@ -50,18 +53,20 @@ export class SummaryPanelComponent implements OnChanges {
   ngOnChanges(): void {
     if (!!this.plan) {
       this.summaryInput = {
-        id: this.plan.id,
+        id: this.plan!.id,
         type: 'Plan',
-        name: this.plan.name,
+        name: this.plan!.name,
         owner: this.owner?.firstName
           ? this.owner?.firstName + ' ' + this.owner?.lastName
           : this.owner?.username ?? 'Guest',
-        region: this.plan.region,
-        area: this.plan.planningArea!,
-        createdTime: this.plan.createdTimestamp,
-        scenarios: this.plan.savedScenarios,
-        configs: this.plan.configs,
-        acres: calculateAcres(this.plan.planningArea!),
+        region: this.plan!.region,
+        area: this.plan!.planningArea!,
+        createdTime: this.plan!.createdTimestamp,
+        scenarios: this.plan!.scenarios,
+        notes: this.plan!.notes,
+        configs: this.plan!.configs,
+        lastUpdated: this.plan!.lastUpdated!,
+        acres: calculateAcres(this.plan!.planningArea!),
         status: 'In progress',
       };
     }
