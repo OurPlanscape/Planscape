@@ -322,7 +322,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       );
     }
     if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
-    if (selectedQuestion?.valid) scenarioConfig.treatment_question = selectedQuestion.value;
+    if (selectedQuestion?.valid) {
+      scenarioConfig.treatment_question = selectedQuestion.value;
+    }
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
     }
