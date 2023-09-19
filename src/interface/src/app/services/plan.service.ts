@@ -482,18 +482,18 @@ export class PlanService {
   private convertToScenarioConfig(config: any): ScenarioConfig {
     var selectedQuestion: TreatmentQuestionConfig | null = null;
     this.treatmentGoalsConfig$.subscribe((goals) => {
-      goals!.forEach((goal) => {
-        goal.questions.forEach((question) => {
-          if (
-            question['scenario_priorities']?.toString() ==
-              config.scenario_priorities?.toString() &&
-            question['weights']?.toString() == config.weights?.toString()
-          ) {
-            selectedQuestion = question;
-          }
+        goals!.forEach((goal) => {
+          goal.questions.forEach((question) => {
+            if (
+              question['scenario_priorities']?.toString() ==
+                config.scenario_priorities?.toString() &&
+              question['weights']?.toString() == config.weights?.toString()
+            ) {
+              selectedQuestion = question;
+            }
+          });
         });
       });
-    });
 
     return {
       est_cost: config.est_cost,
@@ -565,8 +565,7 @@ export class PlanService {
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       scenario_priorities: config.treatment_question!['scenario_priorities'],
-      scenario_output_fields:
-        config.treatment_question!['scenario_output_fields'],
+      scenario_output_fields: config.treatment_question!['scenario_output_fields'],
       stand_thresholds: config.treatment_question!['stand_thresholds'],
       global_thresholds: config.treatment_question!['global_thresholds'],
       weights: config.treatment_question!['weights'],
