@@ -14,14 +14,17 @@
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
 
+
+
         <mat-card-actions>
-          <a
+          <button
             mat-flat-button
+            class="forget-password-button"
             i18n="Text on a button to reset password"
-            (click)="resetPassword()"
-          >
-            Forgot password
-          </a>
+            (click)="resetPassword()">
+            Forgot password?
+          </button>
+
           <button
             mat-flat-button
             color="primary"
