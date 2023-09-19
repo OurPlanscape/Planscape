@@ -286,6 +286,9 @@ call_forsys <- function(
   } else {
     scenario_priorities <- first(priorities$condition_name)
   }
+  # this might be configurable in the future. if it's the case, it will come in
+  # the configuration variable. This also might change due the course of the
+  # project as we're not sure on how many projects we will have at the beginning
   number_of_projects <- 10
   min_area <- configuration$max_treatment_area_ratio
   max_area <- min_area * number_of_projects
