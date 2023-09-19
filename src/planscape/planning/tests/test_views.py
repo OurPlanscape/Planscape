@@ -440,6 +440,7 @@ class GetPlanningAreaTest(TransactionTestCase):
         returned_planning_area = response.json()
         self.assertEqual(returned_planning_area['name'], 'test plan')
         self.assertEqual(returned_planning_area['region_name'], 'Sierra Nevada')
+        self.assertIsNotNone(returned_planning_area['created_at'])
 
     def test_get_nonexistent_planning_area(self):
         self.client.force_login(self.user)
@@ -503,6 +504,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertIsNotNone(planning_areas[0]['latest_updated'])
         self.assertEqual(planning_areas[1]['scenario_count'],1)
         self.assertIsNotNone(planning_areas[1]['latest_updated'])
+        self.assertIsNotNone(planning_areas[0]['created_at'])
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(reverse('planning:list_planning_areas'), {},
@@ -1150,6 +1152,8 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
         self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]['created_at'])
+        self.assertIsNotNone(scenarios[0]['updated_at'])
 
     def test_list_scenario_not_logged_in(self):
         response = self.client.get(
@@ -1217,6 +1221,9 @@ class GetScenarioTest(TransactionTestCase):
             {'id': self.scenario.pk},
             content_type="application/json")
         self.assertEqual(response.status_code, 200)
+        response_json = json.loads(response.content)
+        self.assertIsNotNone(response_json['created_at'])
+        self.assertIsNotNone(response_json['updated_at'])
 
     def test_get_scenario_not_logged_in(self):
         response = self.client.get(

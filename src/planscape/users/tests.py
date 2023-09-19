@@ -114,7 +114,6 @@ class PasswordResetTest(TransactionTestCase):
         self.user = User.objects.filter(email='testuser@test.com').get()
 
     def test_reset_link(self):
-        self.client.force_login(self.user)
         self.client.post(reverse("rest_password_reset"),
                          {"email": "testuser@test.com"},
                          HTTP_ORIGIN='http://localhost:4200')
@@ -153,3 +152,37 @@ class PasswordResetTest(TransactionTestCase):
                          "[Planscape] Password Reset")
         
         
+class PasswordChangeTest(TransactionTestCase):
+    def setUp(self):
+        self.client.post(reverse('rest_register'),
+                         {
+                             "email": "testuser@test.com",
+                             "password1": "ComplexPassword123",
+                             "password2": "ComplexPassword123",
+                             "first_name": "FirstName",
+                             "last_name": "LastName"
+                         })
+        self.user = User.objects.filter(email='testuser@test.com').get()
+    
+    def test_password_change_confirmation_email(self):
+        # Must do a full login. 
+        # `self.client.force_login(self.user)` does not work.
+        response = self.client.post(reverse("rest_login"), {
+                                        "email": "testuser@test.com",
+                                        "password": "ComplexPassword123"
+                                    })
+        self.assertEqual(response.status_code, 200)
+
+        # POST request to change password.
+        response = self.client.post(reverse("rest_password_change"),
+                                    {
+                                        "old_password": "ComplexPassword123",
+                                        "new_password1": "ComplexPassword456",
+                                        "new_password2": "ComplexPassword456"
+                                    })
+        self.assertEqual(response.status_code, 200)
+        
+        # Check that password reset confirmation email was received.
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject,
+                         "[Planscape] Password Changed")
