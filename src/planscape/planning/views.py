@@ -316,25 +316,13 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 #### SCENARIO Handlers ####
 
 
-<<<<<<< HEAD
-def _serialize_scenario(
-    scenario: Scenario, scenario_result: ScenarioResult | None
-) -> dict:
-=======
 def _serialize_scenario(scenario: Scenario) -> dict:
->>>>>>> aebdcc20 (1. Adds new fields to scenario_results so we can track start/end of runs (PLAN-400))
     """
     Serializes a Scenario into a dictionary.
     # TODO: Add more logic here as our Scenario model expands beyond just the
     #       JSON "configuration" field.
     """
     data = ScenarioSerializer(scenario).data
-<<<<<<< HEAD
-    if scenario_result:
-        data["result"] = ScenarioResultSerializer(scenario_result).data
-
-=======
->>>>>>> aebdcc20 (1. Adds new fields to scenario_results so we can track start/end of runs (PLAN-400))
     return data
 
 
@@ -355,11 +343,6 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         if user is None:
             raise ValueError("User must be logged in.")
 
-<<<<<<< HEAD
-        show_results = request.GET.get("show_results", False)
-
-=======
->>>>>>> aebdcc20 (1. Adds new fields to scenario_results so we can track start/end of runs (PLAN-400))
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
         )
@@ -367,15 +350,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
             # This matches the same error string if the planning area doesn't exist in the DB for any user.
             raise ValueError("Scenario matching query does not exist.")
 
-<<<<<<< HEAD
-        scenario_result = None
-        if show_results:
-            scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
-
-        return JsonResponse(_serialize_scenario(scenario, scenario_result), safe=False)
-=======
         return JsonResponse(_serialize_scenario(scenario), safe=False)
->>>>>>> aebdcc20 (1. Adds new fields to scenario_results so we can track start/end of runs (PLAN-400))
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -578,14 +553,8 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(
             planning_area__pk=planning_area_id
         )
-<<<<<<< HEAD
-
-        return JsonResponse(
-            [_serialize_scenario(scenario, None) for scenario in scenarios], safe=False
-=======
         return JsonResponse(
             [_serialize_scenario(scenario) for scenario in scenarios], safe=False
->>>>>>> aebdcc20 (1. Adds new fields to scenario_results so we can track start/end of runs (PLAN-400))
         )
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
