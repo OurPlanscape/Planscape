@@ -116,12 +116,10 @@ $$;
 
 
 class Migration(migrations.Migration):
-
-    dependencies: list[Tuple[str, str]] = [
-    ]
+    dependencies: list[Tuple[str, str]] = []
 
     operations = [
-      CreateExtension('postgis'),
-      CreateExtension('postgis_raster'),
-      migrations.RunSQL(SQL)
+        CreateExtension("postgis"),
+        CreateExtension("postgis_raster"),
+        migrations.RunSQL(SQL),
     ]

@@ -5,15 +5,14 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('attributes', '0001_initial'),
+        ("attributes", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='attributeraster',
-            name='raster',
+            model_name="attributeraster",
+            name="raster",
             field=django.contrib.gis.db.models.fields.RasterField(null=True, srid=3857),
         ),
     ]

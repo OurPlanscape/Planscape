@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("conditions", "0004_get_condition_pixels"),
         ("plan", "0009_remove_project_max_cost_project_max_budget_and_more"),
