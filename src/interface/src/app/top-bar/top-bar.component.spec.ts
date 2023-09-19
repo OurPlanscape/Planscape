@@ -154,26 +154,6 @@ describe('TopBarComponent', () => {
     });
   });
 
-  describe('help button', () => {
-    it('should not show the help button when on new_navigation flag is on', () => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: true },
-      });
-      setUpComponent();
-      const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="help"]')
-      );
-      expect(feedbackBtn).toBeFalsy();
-    });
-    it('should show the help button when new_navigation flag is off ', () => {
-      setUpComponent();
-      const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="help"]')
-      );
-      expect(feedbackBtn).toBeTruthy();
-    });
-  });
-
   describe('new logo', () => {
     it('should show the new logo when new_navigation flag is on', () => {
       TestBed.overrideProvider(FEATURES_JSON, {

@@ -1,8 +1,18 @@
 <div id="{{ mapId ? mapId : 'map' }}" class="plan-map"></div>
-<button
-  mat-raised-button
-  class="expand-panel-button"
-  *ngIf="showTogglePanelButton() | async"
-  (click)="togglePanel()">
+<button mat-raised-button class="expand-panel-button" *ngIf="showTogglePanelButton() | async" (click)="togglePanel()">
   {{ panelExpanded ? 'COLLAPSE PANEL' : 'EXPAND PANEL' }}
 </button>
+&copy;
+<a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>
+, &copy;
+<a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">
+  Stadia Maps
+</a>
+, <br> &copy;
+<a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">
+  OpenMapTiles
+</a>
+&copy;
+<a href="http://openstreetmap.org" target="_blank" rel="noreferrer">
+  OpenStreetMap
+</a>
