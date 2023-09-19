@@ -4,27 +4,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('conditions', '0001_initial'),
-        ('plan', '0005_scenarioset_scenario_scenario_set'),
+        ("conditions", "0001_initial"),
+        ("plan", "0005_scenarioset_scenario_scenario_set"),
     ]
 
     operations = [
         migrations.RenameModel(
-            old_name='GeneratedProjectAreas',
-            new_name='ProjectArea',
+            old_name="GeneratedProjectAreas",
+            new_name="ProjectArea",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='scenario_set',
+            model_name="scenario",
+            name="scenario_set",
         ),
         migrations.AddField(
-            model_name='project',
-            name='priorities',
-            field=models.ManyToManyField(to='conditions.condition'),
+            model_name="project",
+            name="priorities",
+            field=models.ManyToManyField(to="conditions.condition"),
         ),
         migrations.DeleteModel(
-            name='ScenarioSet',
+            name="ScenarioSet",
         ),
     ]

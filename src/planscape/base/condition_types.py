@@ -27,6 +27,7 @@ ConditionMatrix = npt.NDArray[np.float32]
 
 class ConditionLevel(enum.IntEnum):
     """Level of the hierarchy of the condition."""
+
     ECOSYSTEM = 0  # An average of the Pillar condition scores.
     PILLAR = 1
     ELEMENT = 2
@@ -35,6 +36,7 @@ class ConditionLevel(enum.IntEnum):
 
 class ConditionScoreType(enum.IntEnum):
     """Types of condition scores."""
+
     CURRENT = 0
     FUTURE = 1
     IMPACT = 2
@@ -80,4 +82,3 @@ class Region(TypedDict):
     filepath: NotRequired[str]
     display_name: NotRequired[str]
     colormap: NotRequired[str]
-

@@ -6,10 +6,11 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.http import HttpRequest, QueryDict
 from forsys.default_forsys_request_params_polygons import (
-    get_default_planning_area, get_default_project_areas)
+    get_default_planning_area,
+    get_default_project_areas,
+)
 from forsys.merge_polygons import merge_polygons
-from plan.models import (Project, ProjectArea, Plan,
-                         Scenario, ScenarioWeightedPriority)
+from plan.models import Project, ProjectArea, Plan, Scenario, ScenarioWeightedPriority
 from plan.views import get_scenario_by_id, get_user
 from planscape import settings
 
@@ -41,16 +42,16 @@ class ClusterAlgorithmType(IntEnum):
     KMEANS_IN_R = 2
 
 
-class ClusterAlgorithmRequestParams():
+class ClusterAlgorithmRequestParams:
     # Constants for parsing url parameters.
     # cluster algorithm types are listed in enum, ClusterAlgorithmType.
-    _URL_CLUSTER_TYPE = 'cluster_algorithm_type'
+    _URL_CLUSTER_TYPE = "cluster_algorithm_type"
     # For pre-patchmax clustering: this is the desired number of clusters.
-    _URL_NUM_CLUSTERS = 'num_clusters'
+    _URL_NUM_CLUSTERS = "num_clusters"
     # For pre-patchax clustering: pixel_index_weight is one of the input
     # parameters for ClusteredStands. It controls the extent to which we favor
     # rounder, smaller clusters.
-    _URL_CLUSTER_PIXEL_INDEX_WEIGHT = 'cluster_pixel_index_weight'
+    _URL_CLUSTER_PIXEL_INDEX_WEIGHT = "cluster_pixel_index_weight"
 
     # Constants that act as default values when parsing url parameters.
     # By default, no clustering occurs.
@@ -71,32 +72,41 @@ class ClusterAlgorithmRequestParams():
         self._read_url_params_with_defaults(params)
 
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
-        self.cluster_algorithm_type = ClusterAlgorithmType(int(params.get(
-            self._URL_CLUSTER_TYPE, self._DEFAULT_CLUSTER_TYPE)))
-        self.num_clusters = int(params.get(
-            self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS))
+        self.cluster_algorithm_type = ClusterAlgorithmType(
+            int(params.get(self._URL_CLUSTER_TYPE, self._DEFAULT_CLUSTER_TYPE))
+        )
+        self.num_clusters = int(
+            params.get(self._URL_NUM_CLUSTERS, self._DEFAULT_NUM_CLUSTERS)
+        )
         if self.num_clusters <= 0:
             raise Exception("expected num_clusters to be > 0")
-        self.pixel_index_weight = float(params.get(
-            self._URL_CLUSTER_PIXEL_INDEX_WEIGHT, self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT))
+        self.pixel_index_weight = float(
+            params.get(
+                self._URL_CLUSTER_PIXEL_INDEX_WEIGHT,
+                self._DEFAULT_CLUSTER_PIXEL_INDEX_WEIGHT,
+            )
+        )
         if self.pixel_index_weight < 0:
             raise Exception("expected cluster_pixel_index_weight to be > 0")
 
 
 # TODO: incorporate this with RankingRequestParams, too.
-class DbRequestParams():
+class DbRequestParams:
     # Constants for parsing url parameters.
     # Scenario ID indicates the scenario to be processed.
-    _URL_SCENARIO_ID = 'scenario_id'
+    _URL_SCENARIO_ID = "scenario_id"
     # A boolean representing whether Forsys output data will be saved to the DB.
-    _URL_WRITE_TO_DB = 'write_to_db'
+    _URL_WRITE_TO_DB = "write_to_db"
 
     # In production, the user can be accessed via get_user(request); however,
     # for backend debugging purposes, this url parameter is also available for
     # use if settings.DEBUG is true.
-    _URL_DEBUG_USER_ID = 'debug_user_id'
+    _URL_DEBUG_USER_ID = "debug_user_id"
 
-    def __init__(self, request: HttpRequest,) -> None:
+    def __init__(
+        self,
+        request: HttpRequest,
+    ) -> None:
         self.write_to_db = None
         self.scenario = None
         self.user = self._get_user(request)
@@ -119,7 +129,7 @@ class DbRequestParams():
     user: User
 
     def _get_user(self, request: HttpRequest) -> User:
-        if hasattr(request, 'user'):
+        if hasattr(request, "user"):
             user = get_user(request)
             if user is not None:
                 return user
@@ -128,7 +138,8 @@ class DbRequestParams():
         if settings.DEBUG and self._URL_DEBUG_USER_ID in params.keys():
             if not isinstance(params[self._URL_DEBUG_USER_ID], str):
                 raise Exception(
-                    "expected parameter, debug_user_id, to have a string value")
+                    "expected parameter, debug_user_id, to have a string value"
+                )
             user_id = int(params.get(self._URL_DEBUG_USER_ID, "0"))
             return User.objects.get(id=user_id)
 
@@ -142,8 +153,7 @@ class DbRequestParamsForGenerationFromUrlWithDefaults(DbRequestParams):
     def __init__(self, request: HttpRequest):
         DbRequestParams.__init__(self, request)
         params = request.GET
-        self.write_to_db = params.get(
-            DbRequestParams._URL_WRITE_TO_DB, False)
+        self.write_to_db = params.get(DbRequestParams._URL_WRITE_TO_DB, False)
         self.scenario = None
 
 
@@ -153,10 +163,8 @@ class DbRequestParamsForGenerationFromDb(DbRequestParams):
     def __init__(self, request: HttpRequest):
         DbRequestParams.__init__(self, request)
         params = request.GET
-        self.write_to_db = params.get(
-            DbRequestParams._URL_WRITE_TO_DB, True)
-        self.scenario = get_scenario_by_id(
-            self.user, self._URL_SCENARIO_ID, params)
+        self.write_to_db = params.get(DbRequestParams._URL_WRITE_TO_DB, True)
+        self.scenario = get_scenario_by_id(self.user, self._URL_SCENARIO_ID, params)
 
 
 # Parameters for deciding whether a stand is eligible for treatment.
@@ -166,13 +174,13 @@ class StandEligibilityParams:
     # If true, stands occupied by buildings are deemed ineligible for treatment.
     filter_by_buildings: bool
 
-    # If true, stands with slope greater than max_slope_in_percent_rise are 
+    # If true, stands with slope greater than max_slope_in_percent_rise are
     # deemed ineligible for treatment.
     filter_by_slope: bool
     max_slope_in_percent_rise: float
 
-    # If true, stands occupied by roads (proximity=0) are deemed ineligible for 
-    # treatment while stands with road proximity greater than 
+    # If true, stands occupied by roads (proximity=0) are deemed ineligible for
+    # treatment while stands with road proximity greater than
     # max_distance_from_road_in_meters are filtered.
     filter_by_road_proximity: bool
     max_distance_from_road_in_meters: float
@@ -193,36 +201,34 @@ class StandEligibilityParams:
 # ForsysRankingRequestParamsFromUrlWithDefaults and
 # ForsysGenerationRequestParamsFromUrlWithDefaults.
 def _read_common_url_params(self, params: QueryDict) -> None:
-    self.region = params.get(
-        self._URL_REGION, self._DEFAULT_REGION)
-    self.priorities = params.getlist(
-        self._URL_PRIORITIES, self._DEFAULT_PRIORITIES)
+    self.region = params.get(self._URL_REGION, self._DEFAULT_REGION)
+    self.priorities = params.getlist(self._URL_PRIORITIES, self._DEFAULT_PRIORITIES)
     self.priority_weights = params.getlist(
-        self._URL_PRIORITY_WEIGHTS,
-        [1 for i in range(len(self.priorities))])
+        self._URL_PRIORITY_WEIGHTS, [1 for i in range(len(self.priorities))]
+    )
     self.priority_weights = [float(pw) for pw in self.priority_weights]
     if len(self.priorities) != len(self.priority_weights):
         raise AssertionError(
-            "expected %d priority weights, instead, %d were given" %
-            (len(self.priorities),
-                len(self.priority_weights)))
+            "expected %d priority weights, instead, %d were given"
+            % (len(self.priorities), len(self.priority_weights))
+        )
 
-class CommonParams():
+
+class CommonParams:
     # If field is present, returns field value but raises an exception if the
     # field value isn't positive.
     # IF field isn't present, returns None.
-    def _read_positive_float(
-            self, params: QueryDict, query_param: str) -> float | None:
+    def _read_positive_float(self, params: QueryDict, query_param: str) -> float | None:
         v = params.get(query_param, None)
         if v is None:
             return None
         v = float(v)
         if v <= 0:
             raise Exception(
-                "expected param, %s, to have a positive value" % query_param)
+                "expected param, %s, to have a positive value" % query_param
+            )
         return v
 
-    
 
 # A class containing forsys ranking input parameters.
 class ForsysRankingRequestParams(CommonParams):
@@ -262,15 +268,15 @@ class ForsysRankingRequestParamsFromDb(ForsysRankingRequestParams):
     def _read_db_params(self, params: QueryDict) -> None:
         try:
             # TODO: re-use plan/views retrieval methods.
-            project_id = params['project_id']
+            project_id = params["project_id"]
             project = Project.objects.get(id=project_id)
             project_areas = ProjectArea.objects.filter(project=project_id)
             self.region = project.plan.region_name
 
             self.priorities = [
-                BaseCondition.objects.get(
-                    id=c.condition_dataset_id).condition_name
-                for c in project.priorities.all()]
+                BaseCondition.objects.get(id=c.condition_dataset_id).condition_name
+                for c in project.priorities.all()
+            ]
             # TODO: add logic for reading priority weights from db.
             self.priority_weights = [1 for p in self.priorities]
 
@@ -286,16 +292,15 @@ class ForsysRankingRequestParamsFromDb(ForsysRankingRequestParams):
 # This is intended for debugging purposes.
 class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
     # Constants for parsing url parameters.
-    _URL_REGION = 'region'
-    _URL_PRIORITIES = 'priorities'
-    _URL_PRIORITY_WEIGHTS = 'priority_weights'
-    _URL_MAX_AREA = 'max_area'
-    _URL_MAX_COST = 'max_cost'
+    _URL_REGION = "region"
+    _URL_PRIORITIES = "priorities"
+    _URL_PRIORITY_WEIGHTS = "priority_weights"
+    _URL_MAX_AREA = "max_area"
+    _URL_MAX_COST = "max_cost"
 
     # Constants that act as default values when parsing url parameters.
-    _DEFAULT_REGION = 'sierra-nevada'
-    _DEFAULT_PRIORITIES = ['fire_dynamics',
-                           'forest_resilience', 'species_diversity']
+    _DEFAULT_REGION = "sierra-nevada"
+    _DEFAULT_PRIORITIES = ["fire_dynamics", "forest_resilience", "species_diversity"]
 
     def __init__(self, params: QueryDict) -> None:
         ForsysRankingRequestParams.__init__(self)
@@ -304,10 +309,8 @@ class ForsysRankingRequestParamsFromUrlWithDefaults(ForsysRankingRequestParams):
     def _read_url_params_with_defaults(self, params: QueryDict) -> None:
         _read_common_url_params(self, params)
         self.project_areas = get_default_project_areas()
-        self.max_area_in_km2 = self._read_positive_float(params,
-                                                         self._URL_MAX_AREA)
-        self.max_cost_in_usd = self._read_positive_float(params,
-                                                         self._URL_MAX_COST)
+        self.max_area_in_km2 = self._read_positive_float(params, self._URL_MAX_AREA)
+        self.max_cost_in_usd = self._read_positive_float(params, self._URL_MAX_COST)
 
 
 # A class containing forsys generation input parameters.
@@ -339,7 +342,7 @@ class ForsysGenerationRequestParams(CommonParams):
 
     # default values for these params, regardless of how params were generated
     _DEFAULT_MAX_AREA = 20
-    
+
     def __init__(self):
         self.region = None
         self.priorities = None
@@ -362,20 +365,18 @@ class ForsysGenerationRequestParams(CommonParams):
 # Looks up forsys generation parameters from URL parameters.
 # Also provides default values if any url parameters are missing.
 # This is intended for debugging purposes.
-class ForsysGenerationRequestParamsFromUrlWithDefaults(
-        ForsysGenerationRequestParams):
+class ForsysGenerationRequestParamsFromUrlWithDefaults(ForsysGenerationRequestParams):
     # Constants for parsing url parameters.
-    _URL_REGION = 'region'
-    _URL_PRIORITIES = 'priorities'
-    _URL_PRIORITY_WEIGHTS = 'priority_weights'
-    _URL_PLANNING_AREA = 'planning_area'
-    _URL_MAX_AREA_PER_PROJECT = 'max_area_per_project'
-    _URL_MAX_COST_PER_PROJECT = 'max_cost_per_project'
+    _URL_REGION = "region"
+    _URL_PRIORITIES = "priorities"
+    _URL_PRIORITY_WEIGHTS = "priority_weights"
+    _URL_PLANNING_AREA = "planning_area"
+    _URL_MAX_AREA_PER_PROJECT = "max_area_per_project"
+    _URL_MAX_COST_PER_PROJECT = "max_cost_per_project"
 
     # Constants that act as default values when parsing url parameters.
-    _DEFAULT_REGION = 'sierra-nevada'
-    _DEFAULT_PRIORITIES = ['fire_dynamics',
-                           'forest_resilience', 'species_diversity']
+    _DEFAULT_REGION = "sierra-nevada"
+    _DEFAULT_PRIORITIES = ["fire_dynamics", "forest_resilience", "species_diversity"]
 
     def __init__(self, params: QueryDict) -> None:
         ForsysGenerationRequestParams.__init__(self)
@@ -384,8 +385,7 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
 
         request = HttpRequest()
         request.GET = params
-        self.db_params = DbRequestParamsForGenerationFromUrlWithDefaults(
-            request)
+        self.db_params = DbRequestParamsForGenerationFromUrlWithDefaults(request)
         # TODO: add logic for parsing stand eligibility params from url params.
         self.stand_eligibility_params = StandEligibilityParams()
 
@@ -399,16 +399,19 @@ class ForsysGenerationRequestParamsFromUrlWithDefaults(
         self.planning_area = get_default_planning_area()
         km2 = self._read_positive_float(params, self._URL_MAX_AREA_PER_PROJECT)
         if km2 is not None:
-          self.max_area_per_project_in_km2 = km2
-        self.max_cost_per_project_in_usd = self._read_positive_float(params,
-                                                                     self._URL_MAX_COST_PER_PROJECT)
+            self.max_area_per_project_in_km2 = km2
+        self.max_cost_per_project_in_usd = self._read_positive_float(
+            params, self._URL_MAX_COST_PER_PROJECT
+        )
+
 
 # Looks up forsys generation parameters from DB.
 # This is intended for production.
 # TODO: Update logic so that all parameters are set from DB (presently, some
 # are set via url parameters)
 class ForsysGenerationRequestParamsFromDb(
-        ForsysGenerationRequestParamsFromUrlWithDefaults):
+    ForsysGenerationRequestParamsFromUrlWithDefaults
+):
     def __init__(self, request: HttpRequest) -> None:
         ForsysGenerationRequestParams.__init__(self)
 
@@ -426,17 +429,19 @@ class ForsysGenerationRequestParamsFromDb(
 
     def _validate_scenario(self, scenario: Scenario):
         status = scenario.status
-        if not (status == Scenario.ScenarioStatus.INITIALIZED or
-                status == Scenario.ScenarioStatus.FAILED):
+        if not (
+            status == Scenario.ScenarioStatus.INITIALIZED
+            or status == Scenario.ScenarioStatus.FAILED
+        ):
             raise Exception(
-                "scenario status for scenario ID, %d" % (scenario.pk) +
-                ", is %s (expected Initialized or Failed)" %
-                (scenario.get_status_display()))
+                "scenario status for scenario ID, %d" % (scenario.pk)
+                + ", is %s (expected Initialized or Failed)"
+                % (scenario.get_status_display())
+            )
 
         # TODO: the model for scenario.project should be null=False.
         if scenario.project is None:
-            raise Exception(
-                "project is none for scenario ID, %d" % (scenario.pk))
+            raise Exception("project is none for scenario ID, %d" % (scenario.pk))
 
     def _read_db_params(self) -> None:
         scenario = self.db_params.scenario
@@ -448,17 +453,17 @@ class ForsysGenerationRequestParamsFromDb(
         self.planning_area = plan.geometry
         if self.planning_area is None:
             raise Exception(
-                "geometry missing for plan ID, %d, for scenario ID, %d" %
-                (plan.pk, self.db_write_params.scenario.pk))
+                "geometry missing for plan ID, %d, for scenario ID, %d"
+                % (plan.pk, self.db_write_params.scenario.pk)
+            )
 
-        self.priorities, self.priority_weights = self._get_weighted_priorities(
-            scenario)
+        self.priorities, self.priority_weights = self._get_weighted_priorities(scenario)
 
         self.max_cost_per_project_in_usd = project.max_cost_per_project_in_usd
         # for backwards compatibility, don't assume this was defined in old projects
         km2 = project.max_area_per_project_in_km2
         if km2 is not None:
-          self.max_area_per_project_in_km2 = km2
+            self.max_area_per_project_in_km2 = km2
 
     def _get_weighted_priorities(
         self, scenario: Scenario
@@ -470,31 +475,32 @@ class ForsysGenerationRequestParamsFromDb(
             priority_weights.append(w.weight)
         if len(priorities) == 0:
             raise Exception(
-                "no weighted priorities available for scenario ID, %d" %
-                (scenario.id))
+                "no weighted priorities available for scenario ID, %d" % (scenario.id)
+            )
         return priorities, priority_weights
 
 
 # Sets planning area from HUC-12 boundary names.
 # Sets default priorities to th ones used for experimenting with realistic data.
 class ForsysGenerationRequestParamsFromHuc12(
-        ForsysGenerationRequestParamsFromUrlWithDefaults):
+    ForsysGenerationRequestParamsFromUrlWithDefaults
+):
     # The ID representing HUC-12 boundaries in the DB.
     _HUC12_ID = 43
 
     # Constants for parsing url parameters.
-    _URL_HUC12_NAMES = 'huc12_names'
+    _URL_HUC12_NAMES = "huc12_names"
 
     # Constants that act as default values when parsing url parameters.
-    _DEFAULT_HUC12_NAMES = ['Little Silver Creek-Silver Creek']
+    _DEFAULT_HUC12_NAMES = ["Little Silver Creek-Silver Creek"]
 
     # Default priorities that are retrieved.
     _DEFAULT_PRIORITIES = [
-        'california_spotted_owl',
-        'storage',
-        'functional_fire',
-        'forest_structure',
-        'max_sdi'
+        "california_spotted_owl",
+        "storage",
+        "functional_fire",
+        "forest_structure",
+        "max_sdi",
     ]
 
     # huc-12 area nams.
@@ -503,26 +509,28 @@ class ForsysGenerationRequestParamsFromHuc12(
     def __init__(self, params: QueryDict):
         ForsysGenerationRequestParamsFromUrlWithDefaults.__init__(self, params)
         self.huc12_names = params.getlist(
-            self._URL_HUC12_NAMES, self._DEFAULT_HUC12_NAMES)
+            self._URL_HUC12_NAMES, self._DEFAULT_HUC12_NAMES
+        )
         self.planning_area = self._get_planning_area(self.huc12_names)
 
     def get_priority_weights_dict(self) -> dict[str, float]:
         return ForsysGenerationRequestParams.get_priority_weights_dict(self)
 
     def _get_planning_area(self, huc12_names: list[str]) -> GEOSGeometry:
-        huc12s = BoundaryDetails.objects.filter(
-            boundary_id=self._HUC12_ID).filter(shape_name__in=huc12_names)
+        huc12s = BoundaryDetails.objects.filter(boundary_id=self._HUC12_ID).filter(
+            shape_name__in=huc12_names
+        )
         polygons = [huc12.geometry for huc12 in huc12s]
         return merge_polygons(polygons, 0)
 
 
 class SilverCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
     _DEFAULT_HUC12_NAMES = [
-        'Little Silver Creek-Silver Creek',
-        'South Fork Rubicon River',
-        'Jones Fork Silver Creek',
-        'Brush Creek-South Fork American River',
-        'South Fork Silver Creek'
+        "Little Silver Creek-Silver Creek",
+        "South Fork Rubicon River",
+        "Jones Fork Silver Creek",
+        "Brush Creek-South Fork American River",
+        "South Fork Silver Creek",
     ]
 
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -531,13 +539,13 @@ class SilverCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
 
 class CowCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
     _DEFAULT_HUC12_NAMES = [
-        'Upper Old Cow Creek',
-        'Lower Old Cow Creek',
-        'Upper South Cow Creek',
-        'Lower South Cow Creek',
-        'Glendenning Creek',
-        'Clover Creek',
-        'Oak Run Creek'
+        "Upper Old Cow Creek",
+        "Lower Old Cow Creek",
+        "Upper South Cow Creek",
+        "Lower South Cow Creek",
+        "Glendenning Creek",
+        "Clover Creek",
+        "Oak Run Creek",
     ]
 
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -546,13 +554,13 @@ class CowCreekForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
 
 class MiddleForkForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
     _DEFAULT_HUC12_NAMES = [
-        'Middle Fork Bishop Creek',
-        'South Fork Bishop Creek',
-        'Evolution Creek',
-        'Headwaters Middle Fork Kings River',
-        'Goddard Creek',
-        'Goddard Canyon-South Fork San Joaquin River',
-        'Upper Middle Fork Kings River'
+        "Middle Fork Bishop Creek",
+        "South Fork Bishop Creek",
+        "Evolution Creek",
+        "Headwaters Middle Fork Kings River",
+        "Goddard Creek",
+        "Goddard Canyon-South Fork San Joaquin River",
+        "Upper Middle Fork Kings River",
     ]
 
     def get_priority_weights_dict(self) -> dict[str, float]:
@@ -561,10 +569,8 @@ class MiddleForkForsysGenerationParams(ForsysGenerationRequestParamsFromHuc12):
 
 # Returns ForsysRankingRequestParams based on url parameter value for the
 # parameter name in _URL_REQUEST_PARAMS_TYPE.
-def get_ranking_request_params(
-        params: QueryDict) -> ForsysRankingRequestParams:
-    type = ForsysRankingRequestParamsType(
-        int(params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
+def get_ranking_request_params(params: QueryDict) -> ForsysRankingRequestParams:
+    type = ForsysRankingRequestParamsType(int(params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
     if type == ForsysRankingRequestParamsType.DATABASE:
         return ForsysRankingRequestParamsFromDb(params)
     elif type == ForsysRankingRequestParamsType.ALL_DEFAULTS:
@@ -576,24 +582,23 @@ def get_ranking_request_params(
 # Returns ForsysGenerationRequestParams based on url parameter value for the
 # parameter name in _URL_REQUEST_PARAMS_TYPE.
 def get_generation_request_params(
-        request: HttpRequest) -> ForsysGenerationRequestParams:
+    request: HttpRequest,
+) -> ForsysGenerationRequestParams:
     params = request.GET
-    type = ForsysGenerationRequestParamsType(int(
-        params.get(_URL_REQUEST_PARAMS_TYPE, 0)))
+    type = ForsysGenerationRequestParamsType(
+        int(params.get(_URL_REQUEST_PARAMS_TYPE, 0))
+    )
     if type == ForsysGenerationRequestParamsType.DATABASE:
         return ForsysGenerationRequestParamsFromDb(request)
     elif type == ForsysGenerationRequestParamsType.ALL_DEFAULTS:
         return ForsysGenerationRequestParamsFromUrlWithDefaults(params)
     elif type == ForsysGenerationRequestParamsType.HUC12S_WITH_DEFAULTS:
         return ForsysGenerationRequestParamsFromHuc12(params)
-    elif type == \
-            ForsysGenerationRequestParamsType.SILVER_CREEK_HUC12S_WITH_DEFAULTS:
+    elif type == ForsysGenerationRequestParamsType.SILVER_CREEK_HUC12S_WITH_DEFAULTS:
         return SilverCreekForsysGenerationParams(params)
-    elif type ==  \
-            ForsysGenerationRequestParamsType.COW_CREEK_HUC12S_WITH_DEFAULTS:
+    elif type == ForsysGenerationRequestParamsType.COW_CREEK_HUC12S_WITH_DEFAULTS:
         return CowCreekForsysGenerationParams(params)
-    elif type == \
-            ForsysGenerationRequestParamsType.MIDDLE_FORK_HUC12S_WITH_DEFAULTS:
+    elif type == ForsysGenerationRequestParamsType.MIDDLE_FORK_HUC12S_WITH_DEFAULTS:
         return MiddleForkForsysGenerationParams(params)
     else:
         raise Exception("generation request type was not recognized")

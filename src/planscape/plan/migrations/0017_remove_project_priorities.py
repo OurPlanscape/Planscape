@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0016_remove_projectarea_scenario_scenario_status_and_more'),
+        ("plan", "0016_remove_projectarea_scenario_scenario_status_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='project',
-            name='priorities',
+            model_name="project",
+            name="priorities",
         ),
     ]

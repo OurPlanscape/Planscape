@@ -10,15 +10,14 @@ from dj_rest_auth.forms import AllAuthPasswordResetForm
 
 
 class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
-
     def save(self, request, **kwargs):
         """Adapted from dj_rest_auth's own password reset form, but with URL
         configuration set via Django's configuration.
 
         """
-        referrer = request.META.get('HTTP_ORIGIN')
-        token_generator = kwargs.get('token_generator', default_token_generator)
-        email = self.cleaned_data['email']
+        referrer = request.META.get("HTTP_ORIGIN")
+        token_generator = kwargs.get("token_generator", default_token_generator)
+        email = self.cleaned_data["email"]
         for user in self.users:
             token = token_generator.make_token(user)
             user_id = user_pk_to_url_str(user)
@@ -34,6 +33,6 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
                 "request": request,
             }
             get_adapter(request).send_mail(
-                'account/email/password_reset_key', email, context
+                "account/email/password_reset_key", email, context
             )
-        return self.cleaned_data['email']
+        return self.cleaned_data["email"]

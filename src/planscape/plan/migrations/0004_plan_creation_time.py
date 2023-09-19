@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0003_project_scenario_generatedprojectareas'),
+        ("plan", "0003_project_scenario_generatedprojectareas"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='plan',
-            name='creation_time',
+            model_name="plan",
+            name="creation_time",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
     ]

@@ -18,19 +18,22 @@ from django.urls import path, include
 from dj_rest_auth.registration.views import VerifyEmailView
 
 urlpatterns = [
-    path('planscape-backend/admin/', admin.site.urls),
-    path('planscape-backend/boundary/', include('boundary.urls')),
-    path('planscape-backend/conditions/', include('conditions.urls')),
-    path('planscape-backend/forsys/', include('forsys.urls')),
-    path('planscape-backend/plan/', include('plan.urls')),
-    path('planscape-backend/planning/', include('planning.urls')),
-    path('planscape-backend/projects/', include('existing_projects.urls')),
+    path("planscape-backend/admin/", admin.site.urls),
+    path("planscape-backend/boundary/", include("boundary.urls")),
+    path("planscape-backend/conditions/", include("conditions.urls")),
+    path("planscape-backend/forsys/", include("forsys.urls")),
+    path("planscape-backend/plan/", include("plan.urls")),
+    path("planscape-backend/planning/", include("planning.urls")),
+    path("planscape-backend/projects/", include("existing_projects.urls")),
     # Auth URLs
-    path('planscape-backend/users/', include('users.urls')),
-    path('planscape-backend/dj-rest-auth/', include('dj_rest_auth.urls')),
-    path('planscape-backend/dj-rest-auth/registration/',
-         include('dj_rest_auth.registration.urls')),
+    path("planscape-backend/users/", include("users.urls")),
+    path("planscape-backend/dj-rest-auth/", include("dj_rest_auth.urls")),
     path(
-        'planscape-backend/dj-rest-auth/registration/account-confirm-email/',
-        VerifyEmailView.as_view()),
+        "planscape-backend/dj-rest-auth/registration/",
+        include("dj_rest_auth.registration.urls"),
+    ),
+    path(
+        "planscape-backend/dj-rest-auth/registration/account-confirm-email/",
+        VerifyEmailView.as_view(),
+    ),
 ]
