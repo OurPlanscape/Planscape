@@ -41,11 +41,13 @@ export interface BackendPlan {
   id?: number;
   name: string;
   user?: number;
+  notes?: string;
   region_name: Region;
   geometry?: GeoJSON.GeoJSON;
-  scenarios?: number;
+  scenario_count?: number;
   projects?: number;
   creation_timestamp?: number; // in seconds since epoch
+  latest_updated?: string;
 }
 
 export interface BackendPlanPreview {
@@ -106,7 +108,7 @@ export class PlanService {
   }
 
   // TODO clean up requests with string interpolation
-  /**  TODO Reimplement: 
+  /**  TODO Reimplement:
    * bulkCreateProjectAreas
    * */
 
@@ -305,6 +307,7 @@ export class PlanService {
     );
   }
 
+  // TODO Add boolean parameter to control if show_results flag is true or false
   /** Fetches a scenario by its id from the backend. */
   getScenario(scenarioId: string): Observable<Scenario> {
     const url = BackendConstants.END_POINT.concat(
@@ -421,11 +424,15 @@ export class PlanService {
       name: plan.name,
       region: plan.region_name,
       planningArea: plan.geometry,
-      savedScenarios: plan.scenarios ?? 0,
+      scenarios: plan.scenario_count ?? 0,
+      notes: plan.notes ?? '',
       configs: plan.projects ?? 0,
       createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
         plan.creation_timestamp
       ),
+      lastUpdated: plan.latest_updated
+        ? new Date(plan.latest_updated)
+        : undefined,
     };
   }
 
@@ -596,7 +603,7 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-   /**
+  /**
    * @deprecated
    */
   updateStateWithConfig(configId: number | null) {

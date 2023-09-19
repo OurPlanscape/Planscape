@@ -32,8 +32,7 @@ export class SavedScenariosComponent implements OnInit {
     'acresTreated',
     'estimatedCost',
     'status',
-    'owner',
-    'createdTimestamp',
+    'completedTimestamp',
   ];
 
   constructor(
@@ -55,7 +54,15 @@ export class SavedScenariosComponent implements OnInit {
         this.scenarios = scenarios;
       });
   }
-
+  openConfig(configId?: number): void {
+    if (!configId) {
+      this.router.navigate(['config', ''], {
+        relativeTo: this.route,
+      });
+    } else {
+      this.router.navigate(['config', configId], { relativeTo: this.route });
+    }
+  }
   viewScenario(): void {
     this.router.navigate(['config', this.highlightedId], {
       relativeTo: this.route,
@@ -67,22 +74,18 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   deleteSelectedScenarios(): void {
-    // Bulk scenario deletion isn't possible with the current UI, 
+    // Bulk scenario deletion isn't possible with the current UI,
     // but logic to make 'scenario' plural if more than one scenario is deleted was kept from legacy code
-    this.planService
-      .deleteScenarios([this.highlightedId!])
-      .subscribe({
-        next: (deletedIds) => {
-          this.snackbar.open(
-            `Deleted scenario${
-              deletedIds.length > 1 ? 's' : ''
-            }`
-          );
-          this.fetchScenarios();
-        },
-        error: (err) => {
-          this.snackbar.open(`Error: ${err}`);
-        },
-      });
+    this.planService.deleteScenarios([this.highlightedId!]).subscribe({
+      next: (deletedIds) => {
+        this.snackbar.open(
+          `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`
+        );
+        this.fetchScenarios();
+      },
+      error: (err) => {
+        this.snackbar.open(`Error: ${err}`);
+      },
+    });
   }
 }

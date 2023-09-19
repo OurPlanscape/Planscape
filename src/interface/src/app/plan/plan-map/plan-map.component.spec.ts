@@ -79,7 +79,7 @@ describe('PlanMapComponent', () => {
   });
 
   it('should add planning area to map', () => {
-    component.plan = new BehaviorSubject<Plan | null>(fakePlan);
+    component.plan = fakePlan;
     component.ngAfterViewInit();
 
     let foundPlanningAreaLayer = false;
@@ -88,7 +88,7 @@ describe('PlanMapComponent', () => {
       if (layer instanceof L.GeoJSON) {
         if (
           (layer as L.GeoJSON).toGeoJSON().bbox ===
-          component.plan.value?.planningArea!.bbox
+          component.plan!.planningArea!.bbox
         ) {
           foundPlanningAreaLayer = true;
         }
@@ -156,20 +156,6 @@ describe('PlanMapComponent', () => {
 
       expect(component.projectAreasLayer).toBeDefined();
       expect(component.map.hasLayer(component.projectAreasLayer!)).toBeTrue();
-    });
-
-    it('should draw planning area in different color when scenarioId exists', () => {
-      const spy = spyOn(component as any, 'drawPlanningArea').and.callThrough();
-      component.plan = new BehaviorSubject<Plan | null>(fakePlan);
-      component.ngAfterViewInit();
-
-      fakePlanState$.next({
-        ...emptyPlanState,
-        currentScenarioId: '5',
-      });
-
-      expect(spy).toHaveBeenCalledWith(fakePlan, '#77aff3');
-      expect(component.map.hasLayer(component.drawingLayer!)).toBeTrue();
     });
 
     it('should remove project areas layer when drawShapes is called with null', () => {

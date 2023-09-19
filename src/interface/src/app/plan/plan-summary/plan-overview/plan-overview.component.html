@@ -1,21 +1,6 @@
 <div class="plan-overview-container">
-  <app-plan-map [plan]="plan$" class="plan-map-view"></app-plan-map>
   <mat-divider></mat-divider>
   <div class="plan-scenario-panel">
-    <h1>{{ (plan$ | async)?.name }}</h1>
-    <div class="plan-scenario-panel-content">
-      <p class="plan-scenario-panel-text">
-        Your planning area, priorities, and constraints are used to generate
-        scenarios. Using the Scenario Explorer, you can adjust the relative
-        importance of priorities. Saved scenarios are added to the Comparison
-        table. Scenarios consist of Project Areas, Treatment plans, Potential
-        Outcomes, and Estimated costs.
-      </p>
-      <button mat-raised-button color="primary" (click)="openConfig()">
-        <mat-icon class="material-symbols-outlined">add_box</mat-icon>
-        NEW SCENARIO
-      </button>
-    </div>
     <app-saved-scenarios
       [plan]="plan$ | async"
       (createScenarioEvent)="openConfig()"></app-saved-scenarios>
