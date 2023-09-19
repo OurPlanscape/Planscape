@@ -137,7 +137,7 @@ DATABASES = {
 
 
 # Locking down API calls to only itself.
-LOCKDOWN_ENABLED = True
+LOCKDOWN_ENABLED = False
 
 # if we ever needed to make some backend APIs (views) available to anyone.
 LOCKDOWN_VIEW_EXCEPTIONS = []
