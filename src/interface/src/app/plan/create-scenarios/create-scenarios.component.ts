@@ -271,21 +271,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       if (config.max_slope) {
         maxSlope?.setValue(config.max_slope);
       }
-      // Check if scenario config priorities and weights match those of a question.
-      // If so, assume this was the selected treatment question.
-      this.treatmentGoals.subscribe((goals) => {
-        goals!.forEach((goal) => {
-          goal.questions.forEach((question) => {
-            if (
-              question['scenario_priorities']?.toString() ==
-                config.scenario_priorities?.toString() &&
-              question['weights']?.toString() == config.weights?.toString()
-            ) {
-              selectedQuestion?.setValue(question);
-            }
-          });
-        });
-      });
+      if (config.treatment_question) {
+        selectedQuestion?.setValue(config.treatment_question);
+      }
     });
   }
 
@@ -334,17 +322,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       );
     }
     if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
-    if (selectedQuestion?.valid) {
-      scenarioConfig.scenario_priorities =
-        selectedQuestion.value['scenario_priorities'];
-      scenarioConfig.scenario_output_fields =
-        selectedQuestion.value['scenario_output_fields'];
-      scenarioConfig.stand_thresholds =
-        selectedQuestion.value['stand_thresholds'];
-      scenarioConfig.global_thresholds =
-        selectedQuestion.value['global_thresholds'];
-      scenarioConfig.weights = selectedQuestion!.value['weights'];
-    }
+    if (selectedQuestion?.valid) scenarioConfig.treatment_question = selectedQuestion.value;
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
     }
