@@ -24,10 +24,13 @@ taggit:
 	git tag -a $(VERSION); \
 	git push origin --tags
 
+install-dependencies-frontend:
+	cd src/interface && npm install
+
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
 
-deploy-frontend: compile-angular
+deploy-frontend: install-dependencies-frontend compile-angular
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 
 migrate:
@@ -42,10 +45,10 @@ load-metrics:
 load-rasters:
 	cd src/planscape && python3 manage.py load_rasters
 
-install-dependencies:
+install-dependencies-backend:
 	pip install -r src/planscape/requirements.txt
 
-deploy-backend: install-dependencies migrate load-conditions restart
+deploy-backend: install-dependencies-backend migrate load-conditions restart
 
 deploy-all: deploy-backend deploy-frontend
 
