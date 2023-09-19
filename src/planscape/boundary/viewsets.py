@@ -9,11 +9,11 @@ from .models import Boundary, BoundaryDetails
 from .serializers import BoundaryDetailsSerializer, BoundarySerializer
 
 # Time to cache the boundary responses, in seconds.
-CACHE_TIME_IN_SECONDS = 60*60*2
+CACHE_TIME_IN_SECONDS = 60 * 60 * 2
 
 
 class BoundaryViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = Boundary.objects.all().exclude(boundary_name='task_force_regions')
+    queryset = Boundary.objects.all().exclude(boundary_name="task_force_regions")
     serializer_class = BoundarySerializer
 
 
@@ -22,7 +22,7 @@ class BoundaryDetailsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BoundaryDetailsSerializer
 
     def region_name_to_official_name(self, region: RegionName):
-        """ Returns the official name of the boundary."""
+        """Returns the official name of the boundary."""
         match region:
             case RegionName.SIERRA_CASCADE_INYO:
                 return "Sierra-Cascade-Inyo"
@@ -46,17 +46,24 @@ class BoundaryDetailsViewSet(viewsets.ReadOnlyModelViewSet):
         region_name = self.request.GET.get("region_name", None)
         if boundary_name is not None:
             if region_name is None:
-                return (BoundaryDetails.objects.filter(boundary__boundary_name=boundary_name)
-                        .annotate(clipped_geometry=F('geometry')))
+                return BoundaryDetails.objects.filter(
+                    boundary__boundary_name=boundary_name
+                ).annotate(clipped_geometry=F("geometry"))
 
             database_region_name = self.region_name_to_official_name(
-                RegionName(region_name))
+                RegionName(region_name)
+            )
             region = BoundaryDetails.objects.filter(
-                boundary__boundary_name='task_force_regions').filter(shape_name=database_region_name)
-            return (BoundaryDetails.objects.filter(boundary__boundary_name=boundary_name)
-                    .annotate(region_boundary=Subquery(region.values('geometry')[:1]))
-                    .filter(geometry__intersects=F('region_boundary'))
-                    .annotate(clipped_geometry=Intersection(F('geometry'), F('region_boundary'))))
+                boundary__boundary_name="task_force_regions"
+            ).filter(shape_name=database_region_name)
+            return (
+                BoundaryDetails.objects.filter(boundary__boundary_name=boundary_name)
+                .annotate(region_boundary=Subquery(region.values("geometry")[:1]))
+                .filter(geometry__intersects=F("region_boundary"))
+                .annotate(
+                    clipped_geometry=Intersection(F("geometry"), F("region_boundary"))
+                )
+            )
 
         return BoundaryDetails.objects.none()
 

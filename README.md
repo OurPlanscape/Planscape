@@ -25,10 +25,27 @@ for how to download, build, and test Planscape.
 - [PostGIS](https://postgis.net/) - database for storing user sessions and plans
 - [ESRI](https://www.esri.com/en-us/home) - GIS mapping software, web GIS and geodatabase management applications
 - [Django REST framework](https://www.django-rest-framework.org/) - backend framework
+- [black](https://black.readthedocs.io/en/stable/index.html) - code formatter
 - [Angular](https://angular.io/) - frontend framework
 - [Leaflet](https://leafletjs.com/) - used to display maps and layers
 - [ForSys](https://github.com/forsys-sp/forsysr) - greedy heuristic optimization software package for land management planning and prioritization
 - [PROMOTe](https://www.fs.usda.gov/psw/topics/restoration/tcsi/publications/TCSI-Blueprint.pdf) - used to compute conditions from basic data, and find new optimal areas for treatment
+
+## How to run black?
+
+`black` is a uncompromising code formatter. For us to have a standardized repository, black is being used
+as the sole formatter.
+
+During CI we will check if this passes `black` formatting. If it fails, it will stop the build.
+
+This only affects GitHub actions - so we won't be able to merge if it fails.
+
+You should run locally before your commits. You can do so by:
+
+```bash
+cd src/planscape
+black .
+```
 
 ## Contributing
 

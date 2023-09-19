@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,15 +15,34 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Plan',
+            name="Plan",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=120)),
-                ('region_name', models.CharField(max_length=120)),
-                ('public', models.BooleanField(default=False, null=True)),
-                ('locked', models.BooleanField(default=False, null=True)),
-                ('geometry', django.contrib.gis.db.models.fields.MultiPolygonField(null=True, srid=4269)),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=120)),
+                ("region_name", models.CharField(max_length=120)),
+                ("public", models.BooleanField(default=False, null=True)),
+                ("locked", models.BooleanField(default=False, null=True)),
+                (
+                    "geometry",
+                    django.contrib.gis.db.models.fields.MultiPolygonField(
+                        null=True, srid=4269
+                    ),
+                ),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

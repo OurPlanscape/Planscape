@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0016_scenario_favorited'),
-        ('plan', '0018_remove_project_priorities_new_project_priorities'),
+        ("plan", "0016_scenario_favorited"),
+        ("plan", "0018_remove_project_priorities_new_project_priorities"),
     ]
 
-    operations = [
-    ]
+    operations = []

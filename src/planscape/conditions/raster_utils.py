@@ -9,10 +9,10 @@ from planscape import settings
 from typing import TypedDict
 
 # Name of the table and column from models.py.
-RASTER_SCHEMA = 'public'
-RASTER_CONDITION_TABLE = 'conditions_conditionraster'
-RASTER_COLUMN = 'raster'
-RASTER_NAME_COLUMN = 'name'
+RASTER_SCHEMA = "public"
+RASTER_CONDITION_TABLE = "conditions_conditionraster"
+RASTER_COLUMN = "raster"
+RASTER_NAME_COLUMN = "name"
 
 
 # Statistics across stands within a subarea of a raster.
@@ -52,35 +52,34 @@ def _validate_geo(geo: GEOSGeometry) -> None:
         raise AssertionError("invalid geo: %s" % geo.valid_reason)
     if geo.srid != settings.CRS_FOR_RASTERS:
         raise AssertionError(
-            "geometry SRID is %d (expected %d)" %
-            (geo.srid, settings.CRS_FOR_RASTERS))
+            "geometry SRID is %d (expected %d)" % (geo.srid, settings.CRS_FOR_RASTERS)
+        )
 
 
 # Validates that the raster name exists.
 # This should be called before a postGIS function call.
 def _validate_condition_raster_name(raster_name: str) -> None:
     if len(ConditionRaster.objects.filter(name=raster_name).all()) == 0:
-        raise AssertionError(
-            "no rasters available for raster_name, %s" % (raster_name))
+        raise AssertionError("no rasters available for raster_name, %s" % (raster_name))
 
 
 # Returns None if no statistics are stored in the database.
 # Otherwise, returns the fetched ConditionScores instance.
-def _get_db_stats_for_plan(
-        plan_id, condition_id) -> ConditionStatistics | None:
-    db_score = ConditionScores.objects.filter(
-        plan_id=plan_id).filter(condition_id=condition_id).first()
+def _get_db_stats_for_plan(plan_id, condition_id) -> ConditionStatistics | None:
+    db_score = (
+        ConditionScores.objects.filter(plan_id=plan_id)
+        .filter(condition_id=condition_id)
+        .first()
+    )
     if db_score is None:
         return None
     return ConditionStatistics(
-        {'mean': db_score.mean_score,
-         'sum': db_score.sum,
-         'count': db_score.count})
+        {"mean": db_score.mean_score, "sum": db_score.sum, "count": db_score.count}
+    )
 
 
 # Sets a dictionary key value if it doesn't exist.
-def _set_if_not_none(
-        values: dict, key: str, value: float) -> None:
+def _set_if_not_none(values: dict, key: str, value: float) -> None:
     if key not in values.keys():
         values[key] = value
 
@@ -88,8 +87,7 @@ def _set_if_not_none(
 # With the expectation that a dictionary key value is a list, either appends
 # the input value to the list or sets the key value to a list with the input
 # value.
-def _append_to_list(
-        values: dict, key: str, value: int | float) -> None:
+def _append_to_list(values: dict, key: str, value: int | float) -> None:
     if key in values.keys():
         values[key].append(value)
     else:
@@ -103,8 +101,9 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
     transformed_geo = geo.clone()
     transformed_geo.transform(
         CoordTransform(
-            SpatialReference(geo.srid),
-            SpatialReference(settings.CRS_9822_PROJ4)))
+            SpatialReference(geo.srid), SpatialReference(settings.CRS_9822_PROJ4)
+        )
+    )
     transformed_geo.srid = settings.CRS_FOR_RASTERS
     return transformed_geo
 
@@ -113,32 +112,40 @@ def get_raster_geo(geo: GEOSGeometry) -> GEOSGeometry:
 # raster.
 # Otherwise, returns ConditionStatistics.
 def compute_condition_stats_from_raster(
-        geo: GEOSGeometry, raster_name: str) -> ConditionStatistics | None:
+    geo: GEOSGeometry, raster_name: str
+) -> ConditionStatistics | None:
     _validate_condition_raster_name(raster_name)
     _validate_geo(geo)
     with connection.cursor() as cursor:
         cursor.callproc(
-            'get_condition_stats',
-            (RASTER_CONDITION_TABLE, RASTER_SCHEMA, raster_name,
-             RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
+            "get_condition_stats",
+            (
+                RASTER_CONDITION_TABLE,
+                RASTER_SCHEMA,
+                raster_name,
+                RASTER_NAME_COLUMN,
+                RASTER_COLUMN,
+                geo.ewkb,
+            ),
+        )
         fetch = cursor.fetchone()
         if fetch is None or len(fetch) != 3:
-            return ConditionStatistics({'mean': None,
-                                        'sum': 0.0,
-                                        'count': 0})
+            return ConditionStatistics({"mean": None, "sum": 0.0, "count": 0})
         return ConditionStatistics(
-            {'mean': fetch[0],
-             'sum': 0 if fetch[1] is None else fetch[1],
-             'count': 0 if fetch[2] is None else fetch[2]})
+            {
+                "mean": fetch[0],
+                "sum": 0 if fetch[1] is None else fetch[1],
+                "count": 0 if fetch[2] is None else fetch[2],
+            }
+        )
 
 
 # Returns a {condition name: ConditionStatistics} dictionary for a given plan.
 # First tries to look up plan details in a database.
 # If that's unavailable, computes them from condition rasters and the plan
 # geometry.
-def fetch_or_compute_condition_stats(
-        plan: Plan) -> dict[str, ConditionStatistics]:
-    reg = plan.region_name.removeprefix('RegionName.').lower()
+def fetch_or_compute_condition_stats(plan: Plan) -> dict[str, ConditionStatistics]:
+    reg = plan.region_name.removeprefix("RegionName.").lower()
     if reg not in RegionName.__members__.values():
         raise AssertionError("region, %s, is invalid" % (reg))
     geo = plan.geometry
@@ -149,13 +156,16 @@ def fetch_or_compute_condition_stats(
 
     ids_to_condition_names = {
         c.pk: c.condition_name
-        for c in BaseCondition.objects.filter(region_name=reg).all()}
+        for c in BaseCondition.objects.filter(region_name=reg).all()
+    }
     if len(ids_to_condition_names.keys()) == 0:
         raise AssertionError("no conditions exist for region, %s" % reg)
 
-    conditions = Condition.objects.filter(
-        condition_dataset_id__in=ids_to_condition_names.keys()).filter(
-        is_raw=False).all()
+    conditions = (
+        Condition.objects.filter(condition_dataset_id__in=ids_to_condition_names.keys())
+        .filter(is_raw=False)
+        .all()
+    )
 
     condition_stats = {}
     for condition in conditions:
@@ -167,13 +177,15 @@ def fetch_or_compute_condition_stats(
             condition_stats[name] = stats
             continue
 
-        stats = compute_condition_stats_from_raster(
-            geo, condition.raster_name)
+        stats = compute_condition_stats_from_raster(geo, condition.raster_name)
         condition_stats[name] = stats
         ConditionScores.objects.create(
-            plan=plan, condition=condition, mean_score=stats['mean'],
-            sum=stats['sum'],
-            count=stats['count'])
+            plan=plan,
+            condition=condition,
+            mean_score=stats["mean"],
+            sum=stats["sum"],
+            count=stats["count"],
+        )
 
     return condition_stats
 
@@ -181,29 +193,37 @@ def fetch_or_compute_condition_stats(
 # Fetches raster pixel values for all non-NaN pixels that intersect with geo.
 # If no intersection exists, returns None.
 def get_pixel_values_from_raster(
-        geo: GEOSGeometry, table_name: str, raster_name: str) -> RasterPixelValues | None:
+    geo: GEOSGeometry, table_name: str, raster_name: str
+) -> RasterPixelValues | None:
     _validate_geo(geo)
     with connection.cursor() as cursor:
         cursor.callproc(
-            'get_condition_pixels',
-            (table_name, RASTER_SCHEMA, raster_name,
-             RASTER_NAME_COLUMN, RASTER_COLUMN, geo.ewkb))
+            "get_condition_pixels",
+            (
+                table_name,
+                RASTER_SCHEMA,
+                raster_name,
+                RASTER_NAME_COLUMN,
+                RASTER_COLUMN,
+                geo.ewkb,
+            ),
+        )
         fetch = cursor.fetchall()
     if len(fetch) == 0:
         return None
     values = {}
     for entry in fetch:
-        _set_if_not_none(values, 'upper_left_coord_x', entry[0])
-        _set_if_not_none(values, 'upper_left_coord_y', entry[1])
+        _set_if_not_none(values, "upper_left_coord_x", entry[0])
+        _set_if_not_none(values, "upper_left_coord_y", entry[1])
         # Pixel 1 is located at index 1 (not 0).
-        _append_to_list(values, 'pixel_dist_x', entry[2] - 1)
-        _append_to_list(values, 'pixel_dist_y', entry[3] - 1)
-        _append_to_list(values, 'values', entry[4])
+        _append_to_list(values, "pixel_dist_x", entry[2] - 1)
+        _append_to_list(values, "pixel_dist_y", entry[3] - 1)
+        _append_to_list(values, "values", entry[4])
     return RasterPixelValues(values)
 
 
 def get_condition_values_from_raster(
-        geo: GEOSGeometry, raster_name: str) -> ConditionPixelValues | None:
+    geo: GEOSGeometry, raster_name: str
+) -> ConditionPixelValues | None:
     _validate_condition_raster_name(raster_name)
-    return get_pixel_values_from_raster(
-        geo, RASTER_CONDITION_TABLE, raster_name)
+    return get_pixel_values_from_raster(geo, RASTER_CONDITION_TABLE, raster_name)
