@@ -66,7 +66,7 @@ describe('PlanService', () => {
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
       BackendConstants.END_POINT +
-      '/planning/treatment_goals_config/?region_name=sierra-nevada'
+        '/planning/treatment_goals_config/?region_name=sierra-nevada'
     );
     req1.flush(treatmentGoalConfigs);
     const req2 = httpTestingController.expectOne(
@@ -75,7 +75,7 @@ describe('PlanService', () => {
     req2.flush(boundaryConfigs);
     const req3 = httpTestingController.expectOne(
       BackendConstants.END_POINT +
-      '/conditions/config/?region_name=sierra-nevada'
+        '/conditions/config/?region_name=sierra-nevada'
     );
     req3.flush(conditionsConfig);
   });
@@ -259,7 +259,7 @@ describe('PlanService', () => {
         stand_thresholds: [''],
         global_thresholds: [''],
         weights: [0],
-      }
+      };
 
       service.createScenario(scenario).subscribe((res) => {
         expect(res).toEqual('1');
