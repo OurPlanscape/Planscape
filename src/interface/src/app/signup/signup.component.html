@@ -26,61 +26,60 @@
       <h1 class="signup-title">Create your account</h1>
 
       <form [formGroup]="form" (ngSubmit)="signup()">
-          <mat-form-field appearance="fill">
-            <mat-label>First name</mat-label>
-            <input type="text" required formControlName="firstName" matInput />
-          </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>First name</mat-label>
+          <input type="text" required formControlName="firstName" matInput />
+        </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Last name</mat-label>
-            <input type="text" required formControlName="lastName" matInput />
-          </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Last name</mat-label>
+          <input type="text" required formControlName="lastName" matInput />
+        </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Email</mat-label>
-            <input type="text" required formControlName="email" matInput />
-          </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Email</mat-label>
+          <input type="text" required formControlName="email" matInput />
+        </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Create password</mat-label>
-            <input
-              type="password"
-              required
-              formControlName="password1"
-              matInput />
-            <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
-              Password must contain at least 8 characters.
-            </mat-error>
-          </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Create password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="password1"
+            matInput />
+          <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
+            Password must contain at least 8 characters.
+          </mat-error>
+        </mat-form-field>
 
-          <mat-form-field appearance="fill">
-            <mat-label>Confirm password</mat-label>
-            <input
-              type="password"
-              required
-              formControlName="password2"
-              matInput />
-            <mat-error *ngIf="form.hasError('passwordsNotEqual')">
-              Passwords must match.
-            </mat-error>
-          </mat-form-field>
+        <mat-form-field appearance="fill">
+          <mat-label>Confirm password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="password2"
+            matInput />
+          <mat-error *ngIf="form.hasError('passwordsNotEqual')">
+            Passwords must match.
+          </mat-error>
+        </mat-form-field>
 
-          <mat-error *ngIf="errors.length > 0">
+        <mat-error *ngIf="errors.length > 0">
           <p>Please correct the following errors:</p>
           <ul>
-            <li *ngFor="let error of errors">{{error}}
+            <li *ngFor="let error of errors">{{ error }}</li>
           </ul>
-          </mat-error>
+        </mat-error>
 
-          <button
-            mat-flat-button
-            type="submit"
-            color="primary"
-            [disabled]="!form.valid || submitted">
-            {{ submitted ? 'Please wait...' : 'Create account' }}
-          </button>
+        <button
+          mat-flat-button
+          type="submit"
+          color="primary"
+          [disabled]="!form.valid || submitted">
+          {{ submitted ? 'Please wait...' : 'Create account' }}
+        </button>
       </form>
     </div>
-
   </div>
 </div>
