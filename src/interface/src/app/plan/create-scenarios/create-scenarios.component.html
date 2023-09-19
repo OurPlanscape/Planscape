@@ -15,8 +15,8 @@
       </form>
     </div>
     <div class="tab-container">
-      <mat-tab-group>
-        <mat-tab label=" Configuration">
+      <mat-tab-group [selectedIndex]="selectedTabIndex">
+        <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
               [plan$]="plan$"
@@ -53,7 +53,7 @@
             </div>
           </div>
         </mat-tab>
-        <mat-tab label="Outcome">
+        <mat-tab label="Results">
           <ng-container [ngSwitch]="scenarioState">
             <app-scenario-not-started
               *ngSwitchCase="'not-started'"></app-scenario-not-started>
