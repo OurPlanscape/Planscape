@@ -43,8 +43,8 @@ describe('CreateScenariosComponent', () => {
   let fakeScenario: Scenario = {
     name: 'name',
     planning_area: '1',
-    configuration: {}
-  }
+    configuration: {},
+  };
 
   beforeEach(async () => {
     fakeGeoJson = {

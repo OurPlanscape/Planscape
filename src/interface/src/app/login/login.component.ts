@@ -6,7 +6,7 @@ import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
 
 import * as signInMessages from '../shared/constants';
-import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dialog';
+import { ResetPasswordDialogComponent } from './reset-password-dialog/reset_password_dialog';
 
 @Component({
   selector: 'app-login',
@@ -59,7 +59,7 @@ export class LoginComponent {
     const email: string = this.form.get('email')?.value;
     this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => {
-        this.dialog.open(ResetPasswordDialog);
+        this.dialog.open(ResetPasswordDialogComponent);
       },
       error: (err) => {
         this.accountError = this.RESET_ERROR;

@@ -44,7 +44,7 @@ const routes: Routes = [
       },
       {
         path: 'validate/:id',
-        resolve: {validated: ValidationResolver},
+        resolve: { validated: ValidationResolver },
         component: LoginComponent,
         canActivate: [createFeatureGuard('login')],
       },

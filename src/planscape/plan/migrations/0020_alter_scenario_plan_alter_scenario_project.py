@@ -5,20 +5,23 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0019_merge_20230306_2022'),
+        ("plan", "0019_merge_20230306_2022"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='scenario',
-            name='plan',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='plan.plan'),
+            model_name="scenario",
+            name="plan",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="plan.plan"
+            ),
         ),
         migrations.AlterField(
-            model_name='scenario',
-            name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='plan.project'),
+            model_name="scenario",
+            name="project",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE, to="plan.project"
+            ),
         ),
     ]
