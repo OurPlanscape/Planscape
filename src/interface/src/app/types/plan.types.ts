@@ -44,20 +44,15 @@ export interface Scenario {
 }
 
 export interface ScenarioConfig {
-  createdTimestamp?: number;
+  created_timestamp?: number;
   est_cost?: number;
   excluded_areas?: { [key: string]: boolean[] };
-  global_thresholds?: string[];
   max_budget?: number;
   max_slope?: number;
   max_treatment_area_ratio?: number;
   min_distance_from_road?: number;
-  projectAreas?: ProjectArea[];
-  scenario_output_fields?: string[];
-  scenario_priorities?: string[];
-  short_question_text?: string;
-  stand_thresholds?: string[];
-  weights?: number[];
+  project_areas?: ProjectArea[];
+  treatment_question?: TreatmentQuestionConfig | null;
 }
 
 export interface TreatmentGoalConfig {

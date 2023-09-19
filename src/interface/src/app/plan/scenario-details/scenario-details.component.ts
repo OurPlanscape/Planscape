@@ -62,7 +62,7 @@ export class ScenarioDetailsComponent implements OnInit {
     this.scenario$
       .pipe(
         map((scenario) => {
-          return scenario?.configuration?.projectAreas;
+          return scenario?.configuration?.project_areas;
         }),
         take(1)
       )

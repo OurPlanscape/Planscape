@@ -21,6 +21,7 @@ import {
   ProjectArea,
   ProjectConfig,
   TreatmentGoalConfig,
+  TreatmentQuestionConfig,
 } from './../types/plan.types';
 import { SessionService, MapService } from '../services';
 
@@ -479,22 +480,33 @@ export class PlanService {
   }
 
   private convertToScenarioConfig(config: any): ScenarioConfig {
+    var selectedQuestion: TreatmentQuestionConfig | null = null;
+    this.treatmentGoalsConfig$.subscribe((goals) => {
+        goals!.forEach((goal) => {
+          goal.questions.forEach((question) => {
+            if (
+              question['scenario_priorities']?.toString() ==
+                config.scenario_priorities?.toString() &&
+              question['weights']?.toString() == config.weights?.toString()
+            ) {
+              selectedQuestion = question;
+            }
+          });
+        });
+      });
+
     return {
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
-      scenario_priorities: config.scenario_priorities,
-      scenario_output_fields: config.scenario_output_fields,
-      stand_thresholds: config.stand_thresholds,
-      global_thresholds: config.global_thresholds,
-      weights: config.weights,
+      treatment_question: selectedQuestion,
       excluded_areas: config.excluded_areas,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+      created_timestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
       ),
-      projectAreas: this.convertToProjectAreas(config.project_areas),
+      project_areas: this.convertToProjectAreas(config.project_areas),
     };
   }
 
@@ -552,11 +564,11 @@ export class PlanService {
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
-      scenario_priorities: config.scenario_priorities,
-      scenario_output_fields: config.scenario_output_fields,
-      stand_thresholds: config.stand_thresholds,
-      global_thresholds: config.global_thresholds,
-      weights: config.weights,
+      scenario_priorities: config.treatment_question!['scenario_priorities'],
+      scenario_output_fields: config.treatment_question!['scenario_output_fields'],
+      stand_thresholds: config.treatment_question!['stand_thresholds'],
+      global_thresholds: config.treatment_question!['global_thresholds'],
+      weights: config.treatment_question!['weights'],
       excluded_areas: config.excluded_areas,
     };
   }
