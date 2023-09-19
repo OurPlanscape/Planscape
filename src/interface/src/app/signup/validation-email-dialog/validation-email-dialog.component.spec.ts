@@ -11,11 +11,11 @@ import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { AuthService } from 'src/app/services';
 
-import { ValidationEmailDialog } from './validation-email-dialog.component';
+import { ValidationEmailDialogComponent } from './validation-email-dialog.component';
 
 describe('ValidationEmailDialogComponent', () => {
-  let component: ValidationEmailDialog;
-  let fixture: ComponentFixture<ValidationEmailDialog>;
+  let component: ValidationEmailDialogComponent;
+  let fixture: ComponentFixture<ValidationEmailDialogComponent>;
   let loader: HarnessLoader;
   let fakeAuthService: AuthService;
 
@@ -43,7 +43,7 @@ describe('ValidationEmailDialogComponent', () => {
     );
     await TestBed.configureTestingModule({
       imports: [MaterialModule],
-      declarations: [ValidationEmailDialog],
+      declarations: [ValidationEmailDialogComponent],
       providers: [
         {
           provide: AuthService,
@@ -58,13 +58,13 @@ describe('ValidationEmailDialogComponent', () => {
           useValue: fakeDialog,
         },
         {
-          provide: MatDialogRef<ValidationEmailDialog>,
+          provide: MatDialogRef<ValidationEmailDialogComponent>,
           useValue: fakeDialogRef,
         },
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ValidationEmailDialog);
+    fixture = TestBed.createComponent(ValidationEmailDialogComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
@@ -87,6 +87,8 @@ describe('ValidationEmailDialogComponent', () => {
 
   it('resubmit link should invoke the email service again', async () => {
     component.resendEmail();
-    expect(fakeAuthService.resendValidationEmail).toHaveBeenCalledOnceWith('test@test.com');
+    expect(fakeAuthService.resendValidationEmail).toHaveBeenCalledOnceWith(
+      'test@test.com'
+    );
   });
 });
