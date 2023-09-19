@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 
 @Component({
@@ -6,7 +6,7 @@ import { ChartConfiguration } from 'chart.js';
   templateUrl: './report-chart.component.html',
   styleUrls: ['./report-chart.component.scss'],
 })
-export class ReportChartComponent {
+export class ReportChartComponent implements OnInit {
   @Input() measurement = '';
   @Input() values: number[] = [];
 
