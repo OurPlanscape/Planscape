@@ -112,14 +112,14 @@ for angular tests to pass.  You can start with this, but later enable settings.
 Use the feature flag directive to show or hide content on your markup.
 
 ```angular2html
-<div *featureFlag="'your_flag'">
+<div *appFeatureFlag="'your_flag'">
   Show me when the flag is on!
 </div>
 ```
 You can alternatively hide content if the flag is on.
 
 ```angular2html
-<div *featureFlag="'your_flag'; hide: true">
+<div *appFeatureFlag="'your_flag'; hide: true">
   Hide me when the flag is on!
 </div>
 ```
