@@ -6,16 +6,21 @@ from typing import Optional, cast
 from base.condition_types import ConditionMatrix, ConditionScoreType
 
 
-def convert_nodata_to_nan(no_data_value: float, condition: ConditionMatrix) -> Optional[ConditionMatrix]:
-    """ Convert all NoData pixels to NaN. """
-    condition = condition.astype('float32')
-    condition_is_nodata = np.isnan(condition) if np.isnan(
-        no_data_value) else (condition == no_data_value)
+def convert_nodata_to_nan(
+    no_data_value: float, condition: ConditionMatrix
+) -> Optional[ConditionMatrix]:
+    """Convert all NoData pixels to NaN."""
+    condition = condition.astype("float32")
+    condition_is_nodata = (
+        np.isnan(condition) if np.isnan(no_data_value) else (condition == no_data_value)
+    )
     condition[condition_is_nodata] = np.nan
     return condition
 
 
-def weighted_average_condition(no_data_value: float, conditions_with_weights: list[tuple[ConditionMatrix, float]]) -> Optional[ConditionMatrix]:
+def weighted_average_condition(
+    no_data_value: float, conditions_with_weights: list[tuple[ConditionMatrix, float]]
+) -> Optional[ConditionMatrix]:
     """Computes the weighted average condition.
 
     Args:
@@ -34,19 +39,24 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
     Raises:
       ValueError if the conditions do not have the same shape.
     """
-    for (condition, weight) in conditions_with_weights:
-      if np.any(np.isnan(condition)) and not np.isnan(no_data_value):
-        raise KeyError("Raster has NaN values, but NaN is not defined as NoData value.")
+    for condition, weight in conditions_with_weights:
+        if np.any(np.isnan(condition)) and not np.isnan(no_data_value):
+            raise KeyError(
+                "Raster has NaN values, but NaN is not defined as NoData value."
+            )
 
     sum = None
     total_weight = None
-    for (condition, weight) in conditions_with_weights:
+    for condition, weight in conditions_with_weights:
         # Convert all conditions to float. This allows us to output NoData values as NaN.
-        condition = condition.astype('float32')
+        condition = condition.astype("float32")
 
         # Convert all NoData values to NaN
-        condition_is_nodata = np.isnan(condition) if np.isnan(
-            no_data_value) else (condition == no_data_value)
+        condition_is_nodata = (
+            np.isnan(condition)
+            if np.isnan(no_data_value)
+            else (condition == no_data_value)
+        )
         weighted_path = ~condition_is_nodata * weight
         condition[condition_is_nodata] = np.nan
 
@@ -55,8 +65,7 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
             total_weight = weighted_path
         else:
             # Set NoData values to 0, then add condition*weight to rolling sum.
-            raw = (np.nan_to_num(sum, nan=0) +
-                   np.nan_to_num(condition, nan=0) * weight)
+            raw = np.nan_to_num(sum, nan=0) + np.nan_to_num(condition, nan=0) * weight
             # Masked array is True if both sum and condition arrays have NoData value.
             raw = np.ma.masked_array(raw, np.isnan(sum) & condition_is_nodata)
             # Set True value to Nan.
@@ -64,11 +73,13 @@ def weighted_average_condition(no_data_value: float, conditions_with_weights: li
             total_weight = total_weight + weighted_path
     if sum is None or total_weight is None:
         return None
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         return cast(ConditionMatrix, sum / total_weight)
 
 
-def average_condition(no_data_value: float, conditions: list[ConditionMatrix]) -> Optional[ConditionMatrix]:
+def average_condition(
+    no_data_value: float, conditions: list[ConditionMatrix]
+) -> Optional[ConditionMatrix]:
     """Computes the (unweighted) average condition.
 
     Args:
@@ -80,10 +91,14 @@ def average_condition(no_data_value: float, conditions: list[ConditionMatrix]) -
     Raises:
       ValueError if the conditions do not have the same shape.
     """
-    return weighted_average_condition(no_data_value, list(zip(conditions, [1.0] * len(conditions))))
+    return weighted_average_condition(
+        no_data_value, list(zip(conditions, [1.0] * len(conditions)))
+    )
 
 
-def management_condition(current: ConditionMatrix, future: ConditionMatrix, type: ConditionScoreType) -> ConditionMatrix:
+def management_condition(
+    current: ConditionMatrix, future: ConditionMatrix, type: ConditionScoreType
+) -> ConditionMatrix:
     """Computes a management condition from the current and future conditions.
 
     See the PROMOTe framework for the meanings of these condition.
@@ -99,10 +114,10 @@ def management_condition(current: ConditionMatrix, future: ConditionMatrix, type
     Raises:
       ValueError if the conditions do not have the same shape.
     """
+
     def scaled_distance(x: int, y: int) -> ConditionMatrix:
         root2 = np.sqrt(2)
-        distance = np.sqrt((current - x) * (current - x) +
-                           (future - y) * (future - y))
+        distance = np.sqrt((current - x) * (current - x) + (future - y) * (future - y))
         return (root2 - distance) / root2
 
     match type:
@@ -119,10 +134,8 @@ def management_condition(current: ConditionMatrix, future: ConditionMatrix, type
         case ConditionScoreType.TRANSFORM:
             return scaled_distance(-1, -1)
         case ConditionScoreType.IMPACT:
-            adapt = management_condition(
-                current, future, ConditionScoreType.ADAPT)
-            protect = management_condition(
-                current, future, ConditionScoreType.PROTECT)
+            adapt = management_condition(current, future, ConditionScoreType.ADAPT)
+            protect = management_condition(current, future, ConditionScoreType.PROTECT)
             max = np.maximum(adapt, protect)
             factor = (2 - np.sqrt(2)) / np.sqrt(2)
-            return (2 * max + factor - 1)/(factor + 1)
+            return (2 * max + factor - 1) / (factor + 1)

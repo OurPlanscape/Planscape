@@ -5,15 +5,18 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0021_alter_scenario_status'),
+        ("plan", "0021_alter_scenario_status"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='scenario',
-            name='project',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='plan.project'),
+            model_name="scenario",
+            name="project",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="plan.project",
+            ),
         ),
     ]

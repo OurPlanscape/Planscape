@@ -8,9 +8,8 @@ describe('ScenarioPendingComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ScenarioPendingComponent ]
-    })
-    .compileComponents();
+      declarations: [ScenarioPendingComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioPendingComponent);
     component = fixture.componentInstance;
