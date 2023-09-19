@@ -92,5 +92,13 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     run_details = models.JSONField(null=True)
 
+    started_at = models.DateTimeField(
+        null=True, help_text="Start of the Forsys run, in UTC timezone"
+    )
+
+    completed_at = models.DateTimeField(
+        null=True, help_text="End of the Forsys run, in UTC timezone"
+    )
+
     class Meta:
         ordering = ["scenario", "-created_at"]
