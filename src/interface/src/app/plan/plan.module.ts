@@ -22,7 +22,6 @@ import { DeletePlanDialogComponent } from '../home/plan-table/delete-plan-dialog
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
-import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 import { FeaturesModule } from '../features/features.module';
 import { WINDOW_PROVIDERS } from '../services/window.service';
@@ -51,7 +50,6 @@ import { NgChartsModule } from 'ng2-charts';
     ConstraintsPanelComponent,
     IdentifyProjectAreasComponent,
     ScenarioDetailsComponent,
-    ScenarioConfirmationComponent,
     MapLayersComponent,
     ScenarioNotStartedComponent,
     ScenarioPendingComponent,
