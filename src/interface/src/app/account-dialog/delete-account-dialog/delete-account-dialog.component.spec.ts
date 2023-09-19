@@ -49,7 +49,12 @@ describe('DeleteAccountDialogComponent', () => {
       {}
     );
     await TestBed.configureTestingModule({
-      imports: [FormsModule, MaterialModule, ReactiveFormsModule, NoopAnimationsModule],
+      imports: [
+        FormsModule,
+        MaterialModule,
+        ReactiveFormsModule,
+        NoopAnimationsModule,
+      ],
       declarations: [DeleteAccountDialogComponent],
       providers: [
         {
@@ -103,9 +108,12 @@ describe('DeleteAccountDialogComponent', () => {
 
     await deleteButton.click();
 
-    expect(fakeAuthService.deleteUser).toHaveBeenCalledOnceWith({
-      email: 'test@test.com',
-    }, 'password');
+    expect(fakeAuthService.deleteUser).toHaveBeenCalledOnceWith(
+      {
+        email: 'test@test.com',
+      },
+      'password'
+    );
     expect(dialogRef.close).toHaveBeenCalledOnceWith({ deletedAccount: true });
   });
 });
