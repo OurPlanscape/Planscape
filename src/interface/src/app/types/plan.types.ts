@@ -53,7 +53,7 @@ export interface ScenarioConfig {
   weights?: number[];
   projectAreas?: ProjectArea[];
   createdTimestamp?: number;
-  excluded_areas?: { [key: string]: boolean[] };
+  excluded_areas?: string[];
 }
 
 export interface TreatmentGoalConfig {
