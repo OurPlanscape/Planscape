@@ -241,6 +241,7 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
     "OLD_PASSWORD_FIELD_ENABLED": True,
+    "PASSWORD_CHANGE_SERIALIZER": "users.serializers.CustomPasswordChangeSerializer",
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
 }
