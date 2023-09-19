@@ -8,6 +8,7 @@ import {
 } from '@angular/router';
 
 import { createFeatureGuard } from './features/feature.guard';
+import { ForgetPasswordComponent } from './forget-password/forget-password.component'
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
@@ -29,6 +30,12 @@ const routes: Routes = [
         path: 'login',
         title: 'Login',
         component: LoginComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'forget-password',
+        title: 'Forget password',
+        component: ForgetPasswordComponent,
         canActivate: [createFeatureGuard('login')],
       },
       {
