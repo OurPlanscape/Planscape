@@ -1,2 +1,7 @@
-<div>Label:{{ label }}</div>
-<div>Values: {{ values | json }}</div>
+<canvas
+  *ngIf="barChartData"
+  baseChart
+  [data]="barChartData"
+  [options]="barChartOptions"
+  [legend]="false"
+  [type]="'bar'"></canvas>
