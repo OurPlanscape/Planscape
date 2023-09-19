@@ -241,8 +241,9 @@ REST_AUTH = {
     "JWT_AUTH_HTTPONLY": False,
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
     "OLD_PASSWORD_FIELD_ENABLED": True,
+    "PASSWORD_CHANGE_SERIALIZER": "users.serializers.CustomPasswordChangeSerializer",
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
-    "PASSWORD_RESET_CONFIRM_SERIALIZER": "dj_rest_auth.serializers.PasswordResetConfirmSerializer",
+    "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -272,7 +273,7 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = "noreply@planscape.org"
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
-
+DEFAULT_FROM_EMAIL = "noreply@planscape.org"
 
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the

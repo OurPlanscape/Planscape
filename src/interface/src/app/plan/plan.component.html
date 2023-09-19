@@ -22,17 +22,6 @@
         <app-plan-overview
           [plan$]="currentPlan$"
           *ngIf="showOverview$ | async"></app-plan-overview>
-        <ng-container *ngIf="!(showOverview$ | async)">
-          <div class="plan-map-container">
-            <app-plan-map
-              [plan]="currentPlan$"
-              [mapId]="'planning-map'"
-              [mapPadding]="[700, 0]"></app-plan-map>
-          </div>
-          <div class="plan-content-panel">
-            <router-outlet #outlet="outlet"></router-outlet>
-          </div>
-        </ng-container>
       </div>
     </div>
   </ng-container>

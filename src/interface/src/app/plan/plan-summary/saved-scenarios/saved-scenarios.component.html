@@ -1,16 +1,24 @@
 <div class="saved-scenarios-wrapper">
   <mat-card [style.margin-top]="'24px'">
-    <mat-card-header>
-      <mat-card-title>My Scenarios ({{ scenarios.length }})</mat-card-title>
-    </mat-card-header>
+    <div class="scenario-table-head">
+      <mat-card-title>Scenarios</mat-card-title>
+      <div class="new-scenario-button">
+        <button
+          matSuffix
+          mat-raised-button
+          color="primary"
+          (click)="openConfig()">
+          <mat-icon class="material-symbols-outlined">add_box</mat-icon>
+          NEW SCENARIO
+        </button>
+      </div>
+    </div>
 
     <mat-card-content>
-      <p>{{ text1 }}</p>
-
       <mat-table [dataSource]="scenarios">
         <!-- Name Column -->
         <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef>Scenario</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
           <mat-cell class="name-column" *matCellDef="let element">
             <div class="hover-indicator"></div>
 
@@ -20,23 +28,19 @@
 
         <!-- Project Areas Column -->
         <ng-container matColumnDef="projectAreas">
-          <mat-header-cell *matHeaderCellDef>
-            Number of Project Areas
-          </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Areas</mat-header-cell>
           <mat-cell *matCellDef="let element"></mat-cell>
         </ng-container>
 
         <!-- Acres Treated Column -->
         <ng-container matColumnDef="acresTreated">
-          <mat-header-cell *matHeaderCellDef>Acres treated</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Acres</mat-header-cell>
           <mat-cell *matCellDef="let element"></mat-cell>
         </ng-container>
 
         <!-- Estimated Cost Column -->
         <ng-container matColumnDef="estimatedCost">
-          <mat-header-cell *matHeaderCellDef>
-            Estimated cost range
-          </mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Budget</mat-header-cell>
           <mat-cell class="data-cell" *matCellDef="let element">
             {{ element.configuration.est_cost }}
           </mat-cell>
@@ -48,15 +52,9 @@
           <mat-cell *matCellDef="let element">In Progress</mat-cell>
         </ng-container>
 
-        <!-- Owner Column -->
-        <ng-container matColumnDef="owner">
-          <mat-header-cell *matHeaderCellDef>Owner</mat-header-cell>
-          <mat-cell *matCellDef="let element">{{ element.owner }}</mat-cell>
-        </ng-container>
-
         <!-- Timestamp Column -->
-        <ng-container matColumnDef="createdTimestamp">
-          <mat-header-cell *matHeaderCellDef>Date Created</mat-header-cell>
+        <ng-container matColumnDef="completedTimestamp">
+          <mat-header-cell *matHeaderCellDef>Completed</mat-header-cell>
           <mat-cell *matCellDef="let element">
             {{ element.createdTimestamp | date: 'medium' }}
           </mat-cell>
@@ -91,8 +89,4 @@
       </button>
     </mat-card-actions>
   </mat-card>
-
-  <div *ngIf="scenarios.length === 0" class="no-scenarios-overlay">
-    <p>Saved scenarios will appear here.</p>
-  </div>
 </div>

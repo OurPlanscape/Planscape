@@ -120,9 +120,11 @@ describe('PlanService', () => {
       const expectedPlan: Plan = {
         ...mockPlan,
         id: '1',
-        savedScenarios: 0,
+        scenarios: 0,
+        notes: '',
         configs: 0,
         createdTimestamp: undefined,
+        lastUpdated: undefined,
       };
 
       const backendPlan: BackendPlan = {
@@ -256,7 +258,7 @@ describe('PlanService', () => {
       expect(req.request.body).toEqual({
         name: 'name',
         planning_area: '1',
-        configuration: scenarioConfig
+        configuration: scenarioConfig,
       });
       req.flush('1');
       httpTestingController.verify();
