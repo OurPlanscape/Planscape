@@ -56,6 +56,7 @@ import { ValidationEmailDialog } from './signup/validation-email-dialog/validati
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialog } from './login/reset-password-dialog/reset_password_dialog';
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
+import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -107,6 +108,7 @@ import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-s
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
+    NgChartsModule,
   ],
   providers: [
     AuthService,
