@@ -5,21 +5,22 @@ import { ChartData } from '../project-areas-metrics/chart-data';
  */
 export function generateDummyData(): ChartData[] {
   const labels = [
-    'Dead and down fuels',
-    'Total Large tree carbon',
-    'Residential Structures',
-    'Potential Smoke Emissions',
-    'Particulate Matter',
-    'Community Integrity',
-    'Species Richness: Cavity Nesters/Excavators',
-    'Open Habitat Raptors Species Richness',
-    'Wood Product Industry',
-    'Ember Load Index',
-    'Wildfire Ignitions',
+    ['Dead and down fuels', 'Short Tons/Acre'],
+    ['Total Large tree carbon', 'Mg C/ha'],
+    ['Residential Structures', 'Unknown'],
+    ['Potential Smoke Emissions', 'Short Tons of PM2.5'],
+    ['Particulate Matter', 'Short Tons of PM2.5'],
+    ['Community Integrity', 'Categorical'],
+    ['Species Richness: Cavity Nesters/Excavators', 'Number of Species'],
+    ['Open Habitat Raptors Species Richness', 'Number of Species'],
+    ['Wood Product Industry', 'Dry Weight Ton/Acre'],
+    ['Ember Load Index', 'Relative Number of Embers'],
+    ['Wildfire Ignitions', 'Count of Fires'],
   ];
 
-  return labels.map((label) => ({
-    label,
+  return labels.map((label, i) => ({
+    label: label[0],
+    measurement: label[1],
     values: Array.from({ length: 5 }, () => Math.floor(Math.random() * 10)),
   }));
 }
