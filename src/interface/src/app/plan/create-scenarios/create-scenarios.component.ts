@@ -43,7 +43,6 @@ import {
   TreatmentQuestionConfig,
 } from 'src/app/types';
 import features from '../../features/features.json';
-import { TestRequest } from '@angular/common/http/testing';
 
 interface StepState {
   complete?: boolean;
