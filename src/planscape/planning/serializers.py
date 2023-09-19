@@ -34,26 +34,40 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
         geo_field = "geometry"
 
 
+class ScenarioResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "started_at",
+            "completed_at",
+            "status",
+            "result",
+            "run_details",
+        )
+        model = ScenarioResult
+
+
 class ScenarioSerializer(serializers.ModelSerializer):
     configuration = JSONField()
     notes = CharField(required=False)
     updated_at = DateTimeField(required=False)
     created_at = DateTimeField(required=False)
+    results = ScenarioResultSerializer(
+        required=False,
+        read_only=True,
+    )
 
     class Meta:
         fields = (
             "id",
+            "updated_at",
+            "created_at",
             "planning_area",
             "name",
             "notes",
             "configuration",
-            "updated_at",
-            "created_at",
+            "results",
         )
         model = Scenario
-
-
-class ScenarioResultSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = ("id", "status", "result", "run_details")
-        model = ScenarioResult
