@@ -24,11 +24,11 @@
       </mat-radio-group>
 
       <!-- File uploader -->
-      <file-uploader
+      <app-file-uploader
         *ngIf="showUploader"
         class="file-uploader"
         requiredFileType="application/zip"
-        (fileEvent)="loadFile($event)"></file-uploader>
+        (fileEvent)="loadFile($event)"></app-file-uploader>
 
       <mat-error *ngIf="showErrorText">
         [Error] Not a valid shapefile!

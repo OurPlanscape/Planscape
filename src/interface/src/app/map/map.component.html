@@ -62,11 +62,11 @@
             <mat-icon>upload_file</mat-icon>
             UPLOAD AREA
           </button>
-          <file-uploader
+          <app-file-uploader
             *ngIf="showUploader"
             class="file-uploader"
             requiredFileType="application/zip"
-            (fileEvent)="loadArea($event)"></file-uploader>
+            (fileEvent)="loadArea($event)"></app-file-uploader>
         </div>
       </div>
 
