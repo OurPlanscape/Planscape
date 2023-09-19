@@ -7,14 +7,13 @@ DECLARE
     stats stand_stats%rowtype;
     my_timestamp timestamp := timezone('utc', now());
 BEGIN
-
     IF _clean THEN
-        DELETE FROM stands_standmetric WHERE condition_id = condition_id;
+        DELETE FROM stands_standmetric WHERE condition_id = _condition_id;
     END IF;
 
     raster_geometry := (
         SELECT
-            st_transform(ST_Envelope(ST_Collect(ST_Envelope(raster))), 4269)
+            ST_Transform(ST_Envelope(ST_Collect(ST_Envelope(raster))), 4269)
         FROM
             conditions_conditionraster cc
         WHERE
@@ -52,5 +51,4 @@ BEGIN
         END IF;
     END LOOP;
 END
-$$
-LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
