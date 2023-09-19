@@ -26,8 +26,9 @@ class CreateUserTest(TransactionTestCase):
 
         # Verification email is sent.
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject,
-                         "[Planscape] Please Confirm Your E-mail Address")
+        self.assertEqual(
+            mail.outbox[0].subject, "[Planscape] Please Confirm Your E-mail Address"
+        )
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
 
@@ -165,11 +166,10 @@ class PasswordResetTest(TransactionTestCase):
 
         # Check that password reset confirmation email was received.
         self.assertEqual(len(mail.outbox), 2)
-        self.assertEqual(mail.outbox[1].subject,
-                         "[Planscape] Password Reset")
+        self.assertEqual(mail.outbox[1].subject, "[Planscape] Password Reset")
         self.assertIn("Team Planscape", mail.outbox[1].body)
-        
-        
+
+
 class PasswordChangeTest(TransactionTestCase):
     def setUp(self):
         self.client.post(
@@ -206,6 +206,5 @@ class PasswordChangeTest(TransactionTestCase):
 
         # Check that password reset confirmation email was received.
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject,
-                         "[Planscape] Password Changed")
+        self.assertEqual(mail.outbox[0].subject, "[Planscape] Password Changed")
         self.assertIn("Team Planscape", mail.outbox[0].body)
