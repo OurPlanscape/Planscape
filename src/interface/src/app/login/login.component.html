@@ -14,12 +14,19 @@
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
         <p>
-          <a class="forget-password-link" i18n="Text on a button to reset password" href="reset/">
+          <a
+            class="forget-password-link"
+            i18n="Text on a button to reset password"
+            href="reset/">
             Forgot password?
           </a>
         </p>
         <mat-card-actions>
-          <button mat-flat-button color="primary" type="submit" [disabled]="!form.valid">
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="!form.valid">
             Sign in
           </button>
         </mat-card-actions>
@@ -46,6 +53,6 @@
   </div>
 
   <div class="info-text-container">
-    <planscape-about></planscape-about>
+    <app-planscape-about></app-planscape-about>
   </div>
 </div>

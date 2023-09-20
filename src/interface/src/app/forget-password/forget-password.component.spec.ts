@@ -55,7 +55,7 @@ describe('ForgetPasswordComponent', () => {
     });
 
     it('calls auth service if form is valid', () => {
-      component.form.get('email')?.setValue('test@test.com')
+      component.form.get('email')?.setValue('test@test.com');
 
       const successEmitter = new BehaviorSubject<any>({});
       fakeAuthService.sendPasswordResetEmail.and.returnValue(successEmitter);
@@ -63,7 +63,8 @@ describe('ForgetPasswordComponent', () => {
       component.submit();
 
       expect(fakeAuthService.sendPasswordResetEmail).toHaveBeenCalledOnceWith(
-        'test@test.com');
+        'test@test.com'
+      );
     });
   });
 });

@@ -1,12 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'planscape-about',
+  selector: 'app-planscape-about',
   templateUrl: './about.component.html',
-  styleUrls: ['./about.component.scss']
+  styleUrls: ['./about.component.scss'],
 })
-export class AboutComponent implements OnInit {
-
+export class AboutComponent {
   readonly text1: string = `
     designed to bring the best available state & federal data and science together. Planscape
     guides regional planners in prioritizing landscape treatments to mitigate fire risk, maximize
@@ -21,10 +20,4 @@ export class AboutComponent implements OnInit {
     `Built to utilize the best state and federal science and models`,
     `Intends to be scalable across US Landscapes`,
   ];
-
-  constructor() { }
-
-  ngOnInit(): void {
-  }
-
 }
