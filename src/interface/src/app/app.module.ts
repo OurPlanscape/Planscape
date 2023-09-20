@@ -129,4 +129,4 @@ import { NgChartsModule } from 'ng2-charts';
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],
 })
-export class AppModule { }
+export class AppModule {}
