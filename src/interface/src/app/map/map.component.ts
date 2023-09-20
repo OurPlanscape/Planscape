@@ -123,8 +123,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private readonly destroy$ = new Subject<void>();
   login_enabled = this.featureService.isFeatureEnabled('login');
 
-  hasNewNavigation = this.featureService.isFeatureEnabled('new_navigation');
-
   constructor(
     public applicationRef: ApplicationRef,
     private authService: AuthService,
