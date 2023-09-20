@@ -15,36 +15,6 @@
   pointer-events: none;
 }
 
-// Region selection dropdown styling
-.region-dropdown-wrapper {
-  position: relative;
-
-  &::after {
-    @include arrow;
-  }
-}
-
-
-// styles for the dropdown on the top nabvar
-select.region-dropdown {
-  &::-ms-expand {
-    display: none; /* IE */
-  }
-  -moz-appearance:none; /* Firefox */
-  -webkit-appearance:none; /* Safari and Chrome */
-  appearance:none;
-  background: #494949;
-  border: none;
-  outline: none;
-  width: 140px;
-  margin-right: 5px;
-  cursor: pointer;
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 200;
-  text-align: center;
-}
-
 
 // styles for the dropdown on the map controls
 .region-wrapper {
