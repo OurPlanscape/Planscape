@@ -169,13 +169,24 @@ rename_col <- function(name) {
   return(new_name)
 }
 
+get_cost_per_acre <- function(scenario) {
+  configuration <- get_configuration(scenario)
+  user_defined_cost <- configuration$est_cost
+  if (user_defined_cost) {
+    return(user_defined_cost)
+  } else {
+    return(COST_PER_ACRE)
+  }
+}
+
 to_properties <- function(
     project_id,
     scenario,
     forsys_project_outputs) {
+  cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
-    mutate(cost_per_acre = ETrt_area_acres * COST_PER_ACRE) %>%
+    mutate(cost_per_acre = ETrt_area_acres * cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
     rename_with(.fn = rename_col)
   return(as.list(project_data))
