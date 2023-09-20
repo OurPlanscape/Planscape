@@ -21,7 +21,12 @@ describe('SignupComponent', () => {
       {}
     );
     TestBed.configureTestingModule({
-      imports: [FormsModule, MaterialModule, NoopAnimationsModule, ReactiveFormsModule],
+      imports: [
+        FormsModule,
+        MaterialModule,
+        NoopAnimationsModule,
+        ReactiveFormsModule,
+      ],
       declarations: [SignupComponent],
       providers: [
         { provide: Router, useFactory: routerStub },

@@ -53,11 +53,12 @@ import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ValidationEmailDialog } from './signup/validation-email-dialog/validation-email-dialog.component';
+import { ValidationEmailDialogComponent } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
-import { ResetPasswordDialog } from './forget-password/reset-password-dialog/reset_password_dialog';
+import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
+import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
   declarations: [
@@ -84,8 +85,8 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
     WelcomeComponent,
     PlanningAreasComponent,
     PreviewComponent,
-    ResetPasswordDialog,
-    ValidationEmailDialog,
+    ResetPasswordDialogComponent,
+    ValidationEmailDialogComponent,
     MapConfigSummaryComponent,
     ForgetPasswordComponent,
     AboutComponent,
@@ -111,6 +112,7 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
+    NgChartsModule,
   ],
   providers: [
     AuthService,
@@ -127,4 +129,4 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],
 })
-export class AppModule {}
+export class AppModule { }

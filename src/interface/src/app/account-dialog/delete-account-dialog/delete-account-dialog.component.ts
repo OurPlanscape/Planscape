@@ -20,11 +20,9 @@ export class DeleteAccountDialogComponent {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DeleteAccountDialogComponent>
   ) {
-    this.deleteAccountForm = this.fb.group(
-      {
-        currentPassword: this.fb.control('', [Validators.required]),
-      },
-    );
+    this.deleteAccountForm = this.fb.group({
+      currentPassword: this.fb.control('', [Validators.required]),
+    });
   }
 
   cancel(): void {
@@ -33,16 +31,21 @@ export class DeleteAccountDialogComponent {
 
   deleteAccount(): void {
     this.disableDeleteButton = true;
-    this.authService.deleteUser(this.data.user, this.deleteAccountForm.get("currentPassword")?.value).subscribe(
-      (_) => {
-        this.dialogRef.close({
-          deletedAccount: true,
-        });
-      },
-      (err) => {
-        this.error = err.error;
-        this.disableDeleteButton = false;
-      }
-    );
+    this.authService
+      .deleteUser(
+        this.data.user,
+        this.deleteAccountForm.get('currentPassword')?.value
+      )
+      .subscribe(
+        (_) => {
+          this.dialogRef.close({
+            deletedAccount: true,
+          });
+        },
+        (err) => {
+          this.error = err.error;
+          this.disableDeleteButton = false;
+        }
+      );
   }
 }
