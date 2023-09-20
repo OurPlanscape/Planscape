@@ -28,6 +28,8 @@ import {
   Plan,
   Scenario,
   ScenarioConfig,
+  ScenarioResult,
+  ScenarioResultStatus,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
@@ -71,8 +73,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
 
-  // TODO This should come from somewhere
-  scenarioState: ScenarioState = 'not-started';
+  // this value gets updated once we load the scenario result.
+  scenarioState: ScenarioResultStatus = 'PENDING';
+
+  scenarioResults: ScenarioResult | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -198,6 +202,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   private loadConfig(): void {
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
+      if (scenario.scenario_result) {
+        this.scenarioResults = scenario.scenario_result;
+        this.scenarioState = scenario.scenario_result?.status;
+        this.disableForms();
+        this.selectedTabIndex = 1;
+      }
+
       var config = scenario.configuration;
       const scenarioName = this.nameFormGroup.get('scenarioName');
       const estimatedCost = this.constraintsFormGroup.get(
@@ -335,7 +346,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .createScenario(this.formValueToScenario())
       .subscribe((_) => {
         const planId = this.plan$.getValue()?.id;
-        this.scenarioState = 'pending';
+        this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;
       });

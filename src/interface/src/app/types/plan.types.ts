@@ -35,12 +35,34 @@ export interface PlanPreview {
   geometry?: GeoJSON.GeoJSON;
 }
 
+// TODO add types to this!
+export interface FeatureCollection {
+  geometry: any;
+  properties: any;
+  type: string;
+}
+
+export type ScenarioResultStatus =
+  | 'PENDING'
+  | 'RUNNING'
+  | 'SUCCESS'
+  | 'FAILURE';
+
+export interface ScenarioResult {
+  status: ScenarioResultStatus;
+  result: {
+    features: FeatureCollection[];
+    type: string;
+  };
+}
+
 export interface Scenario {
   id?: string;
   name: string;
   notes?: string;
   planning_area: string;
   configuration: ScenarioConfig;
+  scenario_result?: ScenarioResult;
 }
 
 export interface ScenarioConfig {

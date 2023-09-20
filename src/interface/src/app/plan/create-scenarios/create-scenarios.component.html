@@ -52,11 +52,12 @@
         <mat-tab label="Results">
           <ng-container [ngSwitch]="scenarioState">
             <app-scenario-not-started
-              *ngSwitchCase="'not-started'"></app-scenario-not-started>
+              *ngSwitchCase="'PENDING'"></app-scenario-not-started>
             <app-scenario-pending
-              *ngSwitchCase="'pending'"></app-scenario-pending>
+              *ngSwitchCase="'RUNNING'"></app-scenario-pending>
             <app-scenario-results
-              *ngSwitchCase="'completed'"></app-scenario-results>
+              *ngSwitchCase="'SUCCESS'"
+              [results]="scenarioResults"></app-scenario-results>
           </ng-container>
         </mat-tab>
       </mat-tab-group>

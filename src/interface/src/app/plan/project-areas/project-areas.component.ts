@@ -4,14 +4,14 @@ export interface ProjectAreaReport {
   id: number;
   acres: number;
   percentTotal: number;
-  estimatedCost: string;
+  estimatedCost: number;
   score: number;
 }
 
 export interface ProjectTotalReport {
   acres: number;
   percentTotal: number;
-  estimatedCost: string;
+  estimatedCost: number;
 }
 
 @Component({

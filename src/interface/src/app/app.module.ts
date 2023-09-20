@@ -1,5 +1,5 @@
 import { LayoutModule } from '@angular/cdk/layout';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -59,6 +59,7 @@ import { ResetPasswordDialogComponent } from './forget-password/reset-password-d
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
+import { CurrencyInKPipe } from './pipes/currency-in-k.pipe';
 
 @NgModule({
   declarations: [
@@ -125,6 +126,7 @@ import { NgChartsModule } from 'ng2-charts';
     RedirectGuard,
     ValidationResolver,
     WINDOW_PROVIDERS,
+    CurrencyPipe,
   ],
   bootstrap: [AppComponent],
   entryComponents: [AccountDialogComponent],
