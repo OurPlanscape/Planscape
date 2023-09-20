@@ -5,17 +5,12 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
 
-import * as signInMessages from '../shared/constants';
-import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dialog';
-
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
-
   protected accountError = '';
 
   form: FormGroup;
@@ -24,21 +19,6 @@ export class LoginComponent {
     Planscape is a collaborative effort by the California Natural Resources Agency (CNRA) and the
     USDA Forest Service, with support from Google.org.
   `;
-
-  readonly text2: string = `
-    designed to bring the best available state & federal data and science together. Planscape
-    guides regional planners in prioritizing landscape treatments to mitigate fire risk, maximize
-    ecological benefits, and help California’s landscapes adapt to climate change.
-  `;
-
-  readonly bulletPoints: string[] = [
-    `Open source and free to use, for state and federal planners, as well as the public`,
-    `Supports regional planning for fire resilience and ecological benefits across broader
-    landscapes`,
-    `Designed to utilize the latest Regional Resource Kits as the primary data source`,
-    `Built to utilize the best state and federal science and models`,
-    `Intends to be scalable across US Landscapes`,
-  ];
 
   constructor(
     private authService: AuthService,
@@ -52,18 +32,6 @@ export class LoginComponent {
         Validators.email,
       ]),
       password: this.formBuilder.control('', Validators.required),
-    });
-  }
-
-  resetPassword() {
-    const email: string = this.form.get('email')?.value;
-    this.authService.sendPasswordResetEmail(email).subscribe({
-      next: () => {
-        this.dialog.open(ResetPasswordDialog);
-      },
-      error: (err) => {
-        this.accountError = this.RESET_ERROR;
-      },
     });
   }
 

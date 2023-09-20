@@ -42,6 +42,7 @@ import {
   ValidationResolver,
 } from './services';
 import { SharedModule } from './shared/shared.module';
+import { AboutComponent } from './home/about/about.component';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
@@ -54,7 +55,7 @@ import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ValidationEmailDialog } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
-import { ResetPasswordDialog } from './login/reset-password-dialog/reset_password_dialog';
+import { ResetPasswordDialog } from './forget-password/reset-password-dialog/reset_password_dialog';
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 
@@ -87,6 +88,7 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
     ValidationEmailDialog,
     MapConfigSummaryComponent,
     ForgetPasswordComponent,
+    AboutComponent,
   ],
   imports: [
     AppRoutingModule,

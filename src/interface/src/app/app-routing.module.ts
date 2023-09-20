@@ -33,7 +33,7 @@ const routes: Routes = [
         canActivate: [createFeatureGuard('login')],
       },
       {
-        path: 'forget-password',
+        path: 'reset',
         title: 'Forget password',
         component: ForgetPasswordComponent,
         canActivate: [createFeatureGuard('login')],

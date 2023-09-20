@@ -1,0 +1,21 @@
+.data-info-box {
+  background-color: #EBEBEB;
+  border-radius: 16px;
+  box-sizing: border-box;
+  display: flex;
+  padding: 30px 38px;
+  width: 100%;
+
+  p {
+    color: #4E4E4E;
+    font-family: 'Roboto';
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 20px;
+    margin: auto;
+  }
+}
+
+ul {
+  margin: 40px 0px;
+}

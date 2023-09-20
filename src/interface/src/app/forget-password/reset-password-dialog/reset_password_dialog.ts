@@ -1,4 +1,5 @@
-import { Component, Inject } from '@angular/core';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { MatDialogRef } from '@angular/material/dialog';
 
 /**  Component for reset password confirmation dialog. */
@@ -9,9 +10,13 @@ import { MatDialogRef } from '@angular/material/dialog';
 export class ResetPasswordDialog {
   protected readonly checkUrl = '/assets/png/gm_done_gm_grey_24dp.png';
 
-  constructor(private readonly dialogRef: MatDialogRef<ResetPasswordDialog>) {}
+  constructor(
+    private readonly dialogRef: MatDialogRef<ResetPasswordDialog>,
+    private router: Router
+  ) { }
 
   protected close() {
     this.dialogRef.close({});
+    this.router.navigate(['home']);
   }
 }
