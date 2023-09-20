@@ -1528,13 +1528,15 @@ class GetScenarioTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
-            {"id": self.scenario.pk, "show_results": True},
+            {"id": self.scenario.pk},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result["name"], "test scenario")
-        self.assertEqual(result["result"]["status"], ScenarioResultStatus.PENDING)
+        self.assertEqual(
+            result["scenario_result"]["status"], ScenarioResultStatus.PENDING
+        )
 
 
 class DeleteScenarioTest(TransactionTestCase):
