@@ -3,7 +3,8 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 _MULTIPOLYGON = 6
 _POLYGON = 3
 
-# Given a GEOSGeometry, validates that it represents either a Polygon or 
+
+# Given a GEOSGeometry, validates that it represents either a Polygon or
 # MultiPolygon, then returns a MultiPolygon.
 def get_multipolygon(geo: GEOSGeometry) -> MultiPolygon:
     if geo.geom_typeid == _MULTIPOLYGON:
@@ -12,6 +13,5 @@ def get_multipolygon(geo: GEOSGeometry) -> MultiPolygon:
         multi = MultiPolygon((geo))
         multi.srid = geo.srid
         return multi
-    
-    raise Exception(
-        "geometry, %s, is neither a polygon nor a multipolygon" % (geo.wkt))
+
+    raise Exception("geometry, %s, is neither a polygon nor a multipolygon" % (geo.wkt))

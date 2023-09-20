@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0010_remove_project_max_cost_project_max_budget_and_more'),
+        ("plan", "0010_remove_project_max_cost_project_max_budget_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='creation_time',
+            model_name="project",
+            name="creation_time",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
     ]

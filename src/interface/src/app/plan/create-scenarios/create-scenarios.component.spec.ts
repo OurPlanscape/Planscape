@@ -34,14 +34,17 @@ describe('CreateScenariosComponent', () => {
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    priorities: [''],
+    scenario_output_fields: [''],
+    scenario_priorities: [''],
+    stand_thresholds: [''],
+    global_thresholds: [''],
     weights: [0],
   };
   let fakeScenario: Scenario = {
     name: 'name',
     planning_area: '1',
-    configuration: {}
-  }
+    configuration: {},
+  };
 
   beforeEach(async () => {
     fakeGeoJson = {
@@ -87,7 +90,10 @@ describe('CreateScenariosComponent', () => {
             questions: [
               {
                 short_question_text: 'test_question',
-                priorities: ['test_priority'],
+                scenario_output_fields: [''],
+                scenario_priorities: [''],
+                stand_thresholds: [''],
+                global_thresholds: [''],
                 weights: [1],
               },
             ],

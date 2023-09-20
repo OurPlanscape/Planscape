@@ -8,9 +8,8 @@ describe('ScenarioNotStartedComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ScenarioNotStartedComponent ]
-    })
-    .compileComponents();
+      declarations: [ScenarioNotStartedComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioNotStartedComponent);
     component = fixture.componentInstance;

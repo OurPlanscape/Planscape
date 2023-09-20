@@ -1,17 +1,18 @@
 from django.contrib.gis.db import models
 from planscape.settings import CRS_FOR_RASTERS
 
+
 class Attribute(models.Model):
     """
     An Attribute has a name, an optional display name, and a raster_name.
     """
+
     # The name of the attribute.
     attribute_name: models.CharField = models.CharField(max_length=120)
 
     # The name of the condition for use in interfaces.
-    display_name: models.CharField = models.CharField(
-        max_length=120, null=True)
-    
+    display_name: models.CharField = models.CharField(max_length=120, null=True)
+
     # The name of the raster, used for accessing the tiles of the raster data
     # stored in the AttributeRaster table.
     raster_name: models.TextField = models.TextField()
@@ -37,8 +38,8 @@ class AttributeRaster(models.Model):
     # Primary key; predetermined by raster2pgsql
     rid: models.AutoField = models.AutoField(primary_key=True)
 
-    # The name of the raster, which must match the raster_name in the 
-    # Attribute. 
+    # The name of the raster, which must match the raster_name in the
+    # Attribute.
     name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.

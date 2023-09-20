@@ -5,11 +5,9 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("conditions", "0003_get_condition_stats"),
         ("plan", "0008_projectarea_owner"),
     ]
 
-    operations = [
-    ]
+    operations = []

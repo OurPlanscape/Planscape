@@ -1,4 +1,3 @@
-import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import {
   Component,
   OnDestroy,
@@ -16,16 +15,8 @@ import {
 import { MatStepper } from '@angular/material/stepper';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import {
-  BehaviorSubject,
-  Subject,
-  take,
-  concatMap,
-  of,
-  throwError,
-  Observable,
-} from 'rxjs';
-import { catchError, takeUntil } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Observable } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 import { PlanService } from 'src/app/services';
 import {
@@ -35,19 +26,12 @@ import {
 } from 'src/app/shared/animations';
 import {
   Plan,
-  ProjectArea,
-  ProjectConfig,
   Scenario,
   ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
 import features from '../../features/features.json';
-
-interface StepState {
-  complete?: boolean;
-  opened?: boolean;
-}
 
 type ScenarioState = 'not-started' | 'pending' | 'completed';
 
@@ -74,7 +58,7 @@ type ScenarioState = 'not-started' | 'pending' | 'completed';
 })
 export class CreateScenariosComponent implements OnInit, OnDestroy {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
-
+  selectedTabIndex = 0;
   generatingScenario: boolean = false;
   scenarioId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
@@ -88,7 +72,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    priorities: [''],
+    scenario_priorities: [''],
+    scenario_output_fields: [''],
+    stand_thresholds: [''],
+    global_thresholds: [''],
     weights: [0],
   };
   excludedAreasOptions: Array<string> = [
@@ -102,7 +89,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   project_area_upload_enabled = features.upload_project_area;
 
   // TODO This should come from somewhere
-  scenarioState: ScenarioState = 'completed';
+  scenarioState: ScenarioState = 'not-started';
 
   constructor(
     private fb: FormBuilder,
@@ -124,7 +111,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.formGroups = [
       // Step 1: Name the scenario
       this.fb.group({
-        scenarioName: ['', Validators.required],
+        scenarioName: [, Validators.required],
       }),
       // Step 2: Select priorities
       this.fb.group({
@@ -272,21 +259,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       if (config.max_slope) {
         maxSlope?.setValue(config.max_slope);
       }
-      // Check if scenario config priorities and weights match those of a question.
-      // If so, assume this was the selected treatment question.
-      this.treatmentGoals.subscribe((goals) => {
-        goals!.forEach((goal) => {
-          goal.questions.forEach((question) => {
-            if (
-              question['priorities']?.toString() ==
-                config.priorities?.toString() &&
-              question['weights']?.toString() == config.weights?.toString()
-            ) {
-              selectedQuestion?.setValue(question);
-            }
-          });
-        });
-      });
+      if (config.treatment_question) {
+        selectedQuestion?.setValue(config.treatment_question);
+      }
     });
   }
 
@@ -337,8 +312,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     }
     if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
-      scenarioConfig.priorities = selectedQuestion.value['priorities'];
-      scenarioConfig.weights = selectedQuestion!.value['weights'];
+      scenarioConfig.treatment_question = selectedQuestion.value;
     }
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
@@ -376,7 +350,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .createScenario(this.formValueToScenario())
       .subscribe((_) => {
         const planId = this.plan$.getValue()?.id;
-        this.router.navigate(['scenario-confirmation', planId]);
+        this.scenarioState = 'pending';
+        this.disableForms();
+        this.selectedTabIndex = 1;
       });
 
     // this.createUploadedProjectAreas()
@@ -409,6 +385,12 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     //   const planId = this.plan$.getValue()?.id;
     //   this.router.navigate(['scenario-confirmation', planId]);
     // });
+  }
+
+  disableForms() {
+    this.formGroups.forEach((form) => {
+      form.disable();
+    });
   }
 
   // createUploadedProjectAreas() {

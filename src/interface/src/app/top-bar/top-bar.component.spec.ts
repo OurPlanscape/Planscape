@@ -11,7 +11,6 @@ import { AccountDialogComponent } from '../account-dialog/account-dialog.compone
 import { TopBarComponent } from './top-bar.component';
 import { FeaturesModule } from '../features/features.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { FEATURES_JSON } from '../features/features-config';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -52,10 +51,6 @@ describe('TopBarComponent', () => {
         { provide: AuthService, useValue: mockAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: SessionService, useValue: mockSessionService },
-        {
-          provide: FEATURES_JSON,
-          useValue: { new_navigation: false },
-        },
       ],
     }).compileComponents();
   });
@@ -74,20 +69,6 @@ describe('TopBarComponent', () => {
   describe('actions', () => {
     beforeEach(() => {
       setUpComponent();
-    });
-
-    it('should toggle sidenav', () => {
-      spyOn(component.toggleEvent, 'emit');
-
-      // Act: click on the menu icon
-      const menuButton = fixture.debugElement.query(
-        By.css('[data-testid="menu-button"]')
-      );
-      const clickEvent = new MouseEvent('click');
-      menuButton.triggerEventHandler('click', clickEvent);
-
-      // Assert: expect that the toggleEvent emits the Event
-      expect(component.toggleEvent.emit).toHaveBeenCalledOnceWith(clickEvent);
     });
 
     it('should open account dialog', () => {
@@ -134,44 +115,20 @@ describe('TopBarComponent', () => {
     });
   });
 
-  describe('feedback button', () => {
-    it('should show the feedback button when on new_navigation flag is on', () => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: true },
-      });
-      setUpComponent();
-      const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="feedback"]')
-      );
-      expect(feedbackBtn).toBeTruthy();
-    });
-    it('should not show the button when new_navigation flag is off ', () => {
-      setUpComponent();
-      const feedbackBtn = fixture.debugElement.query(
-        By.css('[data-id="feedback"]')
-      );
-      expect(feedbackBtn).toBeFalsy();
-    });
+  it('should show logo', () => {
+    setUpComponent();
+    const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
+    const title = fixture.debugElement.query(By.css('[data-id="title"]'));
+    expect(logo).toBeTruthy();
+    expect(title).toBeFalsy();
   });
 
-  describe('new logo', () => {
-    it('should show the new logo when new_navigation flag is on', () => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { new_navigation: true },
-      });
-      setUpComponent();
-      const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
-      const title = fixture.debugElement.query(By.css('[data-id="title"]'));
-      expect(logo).toBeTruthy();
-      expect(title).toBeFalsy();
-    });
-    it('should show the preview logo when new_navigation flag is off ', () => {
-      setUpComponent();
-      const logo = fixture.debugElement.query(By.css('[data-id="logo"]'));
-      const title = fixture.debugElement.query(By.css('[data-id="title"]'));
-      expect(logo).toBeFalsy();
-      expect(title).toBeTruthy();
-    });
+  it('should show the feedback button', () => {
+    setUpComponent();
+    const feedbackBtn = fixture.debugElement.query(
+      By.css('[data-id="feedback"]')
+    );
+    expect(feedbackBtn).toBeTruthy();
   });
 
   describe('logout', () => {

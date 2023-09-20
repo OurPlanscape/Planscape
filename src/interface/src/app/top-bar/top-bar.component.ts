@@ -1,11 +1,10 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 
 import { AuthService } from '../services';
 import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
-import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-top-bar',
@@ -51,11 +50,6 @@ export class TopBarComponent implements OnInit {
   /** Opens the account management dialog. */
   openAccountDialog() {
     this.dialog.open(AccountDialogComponent);
-  }
-
-  /** Toggles the sidebar in the navigation component. */
-  sendToggle(event: Event) {
-    this.toggleEvent.emit(event);
   }
 
   logout() {

@@ -6,6 +6,7 @@ class BaseCondition(models.Model):
     """
     A BaseCondition has a name and level, and an optional display/region name and level.
     """
+
     # The name of the condition.
     condition_name: models.CharField = models.CharField(max_length=120)
 
@@ -14,8 +15,7 @@ class BaseCondition(models.Model):
     condition_level: models.IntegerField = models.IntegerField()
 
     # The name of the condition for use in interfaces.
-    display_name: models.CharField = models.CharField(
-        max_length=120, null=True)
+    display_name: models.CharField = models.CharField(max_length=120, null=True)
 
     # The region associated with the condition, drawn from the RegionName enum in
     # base/region_name.py.
@@ -27,8 +27,10 @@ class Condition(models.Model):
     A Condition is a single raster, referencing the ConditionDataset, with additional metadata
     describing the raster.
     """
+
     condition_dataset = models.ForeignKey(
-        BaseCondition, on_delete=models.CASCADE)  # type: ignore
+        BaseCondition, on_delete=models.CASCADE
+    )  # type: ignore
 
     # The name of the raster, used for accessing the tiles of the raster data
     # stored in the ConditionRaster table.
@@ -42,7 +44,6 @@ class Condition(models.Model):
     # when condition_score_type = CURRENT and condition_level = METRIC, and is ignored
     # otherwise.
     is_raw: models.BooleanField = models.BooleanField(null=True)
-        
 
 
 class ConditionRaster(models.Model):
@@ -62,14 +63,20 @@ class ConditionRaster(models.Model):
     WARNING: This model has been tailored to match the output of raster2pgsql;
     any changes should be carefully considered.
     """
+
     # Primary key; predetermined by raster2pgsql
     rid: models.AutoField = models.AutoField(primary_key=True)
 
-    # The name of the raster, which must match the raster_name in the Condition. 
-    # WARNING: raster2pgsql does not work if this field name has any _ chars. 
+    # The name of the raster, which must match the raster_name in the Condition.
+    # WARNING: raster2pgsql does not work if this field name has any _ chars.
     name: models.TextField = models.TextField(null=True)
 
     # A tile in the raster.
     raster = models.RasterField(null=True, srid=settings.CRS_FOR_RASTERS)
 
-    condition = models.ForeignKey(Condition, null=True, on_delete=models.CASCADE, related_name="raster_tiles",)
+    condition = models.ForeignKey(
+        Condition,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="raster_tiles",
+    )

@@ -4,26 +4,25 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('plan', '0014_scenario_notes'),
+        ("plan", "0014_scenario_notes"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='scenario',
-            name='max_budget',
+            model_name="scenario",
+            name="max_budget",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='max_road_distance',
+            model_name="scenario",
+            name="max_road_distance",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='max_slope',
+            model_name="scenario",
+            name="max_slope",
         ),
         migrations.RemoveField(
-            model_name='scenario',
-            name='max_treatment_area_ratio',
+            model_name="scenario",
+            name="max_treatment_area_ratio",
         ),
     ]

@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { Region, RegionOption, regionOptions } from '../types';
 import { MapService, SessionService } from '../services';
 import { Router } from '@angular/router';
-import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-region-dropdown',
@@ -13,13 +12,10 @@ export class RegionDropdownComponent {
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
 
-  newNavigation = this.featureService.isFeatureEnabled('new_navigation');
-
   constructor(
     private router: Router,
     private sessionService: SessionService,
-    private mapService: MapService,
-    private featureService: FeatureService
+    private mapService: MapService
   ) {}
 
   /** Sets the region from the dropdown and goes to the map. */
