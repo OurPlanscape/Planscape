@@ -321,8 +321,7 @@ call_forsys <- function(
     patchmax_SDW = 0.5,
     patchmax_EPW = 1,
     patchmax_sample_frac = 0.1,
-    annual_target_field = "area_acres",
-    annual_target = 100000
+    annual_target_value = 100000
   )
   return(out)
 }
