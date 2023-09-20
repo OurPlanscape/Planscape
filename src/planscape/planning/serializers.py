@@ -54,9 +54,10 @@ class ScenarioSerializer(serializers.ModelSerializer):
     notes = CharField(required=False)
     updated_at = DateTimeField(required=False)
     created_at = DateTimeField(required=False)
-    results = ScenarioResultSerializer(
+    scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
+        source="results",
     )
 
     class Meta:
@@ -68,6 +69,6 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "name",
             "notes",
             "configuration",
-            "results",
+            "scenario_result",
         )
         model = Scenario

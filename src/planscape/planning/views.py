@@ -326,8 +326,6 @@ def _serialize_scenario(scenario: Scenario) -> dict:
     return data
 
 
-# Scenario can be retrieved by a user's planning area.
-# This also can return the result as well, optionally.
 def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     """
     Retrieves a scenario by its ID.
