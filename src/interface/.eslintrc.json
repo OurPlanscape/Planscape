@@ -21,7 +21,7 @@
       ],
       "rules": {
         "@angular-eslint/directive-selector": [
-          "warn",
+          "error",
           {
             "type": "attribute",
             "prefix": "app",
@@ -29,7 +29,7 @@
           }
         ],
         "@angular-eslint/component-selector": [
-          "warn",
+          "error",
           {
             "type": "element",
             "prefix": "app",

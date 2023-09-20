@@ -4,7 +4,7 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 30px 180px 0px;
+  padding: 30px 180px 0;
   justify-content: center;
 }
 
@@ -18,6 +18,7 @@
   display: flex;
   flex-direction: column;
   max-width: 80%;
+  margin-bottom: 10px;
 }
 
 .plans-not-implemented {
@@ -31,13 +32,13 @@
     font-size: 15px;
     font-weight: 700;
     line-height: 20px;
-    margin: 0px;
+    margin: 0;
   }
   p li{
     font-size: 15px;
     font-weight: 400;
     line-height: 20px;
-    margin: 0px;
+    margin: 0;
 
   }
 

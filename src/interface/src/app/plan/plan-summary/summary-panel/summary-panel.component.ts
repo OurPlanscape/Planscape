@@ -1,7 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
 import { calculateAcres } from '../../plan-helpers';
-import { BehaviorSubject } from 'rxjs';
 
 export interface SummaryInput {
   id?: string;
@@ -37,7 +36,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
 };
 
 @Component({
-  selector: 'summary-panel',
+  selector: 'app-summary-panel',
   templateUrl: './summary-panel.component.html',
   styleUrls: ['./summary-panel.component.scss'],
 })

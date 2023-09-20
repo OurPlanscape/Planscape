@@ -72,7 +72,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    priorities: [''],
+    scenario_priorities: [''],
+    scenario_output_fields: [''],
+    stand_thresholds: [''],
+    global_thresholds: [''],
     weights: [0],
   };
   excludedAreasOptions: Array<string> = [
@@ -229,10 +232,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         'physicalConstraintForm.maxSlope'
       );
       this.excludedAreasOptions.forEach((area: string) => {
-        if (config.excluded_areas && config.excluded_areas![area]) {
+        if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
           this.constraintsFormGroup
             .get('excludedAreasForm.' + area)
-            ?.setValue(config.excluded_areas![area]);
+            ?.setValue(true);
+        } else {
+          this.constraintsFormGroup
+            .get('excludedAreasForm.' + area)
+            ?.setValue(false);
         }
       });
       const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
@@ -255,21 +262,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       if (config.max_slope) {
         maxSlope?.setValue(config.max_slope);
       }
-      // Check if scenario config priorities and weights match those of a question.
-      // If so, assume this was the selected treatment question.
-      this.treatmentGoals.subscribe((goals) => {
-        goals!.forEach((goal) => {
-          goal.questions.forEach((question) => {
-            if (
-              question['priorities']?.toString() ==
-                config.priorities?.toString() &&
-              question['weights']?.toString() == config.weights?.toString()
-            ) {
-              selectedQuestion?.setValue(question);
-            }
-          });
-        });
-      });
+      if (config.treatment_question) {
+        selectedQuestion?.setValue(config.treatment_question);
+      }
     });
   }
 
@@ -298,12 +293,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         plan_id = planState.currentPlanId!;
       });
     let scenarioConfig: ScenarioConfig = {};
-    scenarioConfig.excluded_areas = {};
+    scenarioConfig.excluded_areas = [];
     this.excludedAreasOptions.forEach((area: string) => {
-      if (this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid) {
-        scenarioConfig.excluded_areas![area] = this.constraintsFormGroup.get(
-          'excludedAreasForm.' + area
-        )?.value;
+      if (
+        this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid &&
+        this.constraintsFormGroup.get('excludedAreasForm.' + area)?.value
+      ) {
+        scenarioConfig.excluded_areas?.push(area);
       }
     });
     if (estimatedCost?.valid)
@@ -319,8 +315,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     }
     if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
     if (selectedQuestion?.valid) {
-      scenarioConfig.priorities = selectedQuestion.value['priorities'];
-      scenarioConfig.weights = selectedQuestion!.value['weights'];
+      scenarioConfig.treatment_question = selectedQuestion.value;
     }
     if (scenarioName?.valid) {
       scenarioNameConfig = scenarioName.value;
