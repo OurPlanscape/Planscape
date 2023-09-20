@@ -1534,7 +1534,9 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result["name"], "test scenario")
-        self.assertEqual(result["results"]["status"], ScenarioResultStatus.PENDING)
+        self.assertEqual(
+            result["scenario_result"]["status"], ScenarioResultStatus.PENDING
+        )
 
 
 class DeleteScenarioTest(TransactionTestCase):
