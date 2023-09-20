@@ -676,7 +676,7 @@ export class PlanService {
   }
 
     /**
-   * Updates planRegion and treatmentGoalsConfig  if value is a valid Region 
+   * Updates planRegion and treatmentGoalsConfig if value is a valid Region 
    */
   setPlanRegion(value: Region) {
     if (Object.values(Region).includes(value)) {
