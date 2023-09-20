@@ -3,13 +3,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -28,7 +28,6 @@ describe('LoginComponent', () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
       'login',
-      'sendPasswordResetEmail',
     ]);
     TestBed.configureTestingModule({
       imports: [FormsModule, ReactiveFormsModule, MatDialogModule],

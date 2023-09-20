@@ -48,6 +48,8 @@ export class ForgetPasswordComponent implements OnInit {
   }
 
   submit() {
+    if (!this.form.valid) return;
+
     const email: string = this.form.get('email')?.value;
     this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => {
