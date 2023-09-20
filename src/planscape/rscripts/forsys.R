@@ -186,7 +186,8 @@ to_properties <- function(
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
-    mutate(cost_per_acre = ETrt_area_acres * scenario_cost_per_acre) %>%
+    mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
+    mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
     rename_with(.fn = rename_col)
   return(as.list(project_data))
