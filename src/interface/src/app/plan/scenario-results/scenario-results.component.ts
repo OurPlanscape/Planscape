@@ -43,7 +43,7 @@ export class ScenarioResultsComponent {
         acres: props.area_acres,
         percentTotal: props.pct_area,
         estimatedCost: props.cost_per_acre,
-        score: props.treatment_rank,
+        score: props.weightedPriority,
       };
     });
   }
