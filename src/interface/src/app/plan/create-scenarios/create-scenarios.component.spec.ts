@@ -82,6 +82,7 @@ describe('CreateScenariosComponent', () => {
           mapShapes: null,
           panelExpanded: true,
         }),
+        setPlanRegion: () => {},
         treatmentGoalsConfig$: new BehaviorSubject<
           TreatmentGoalConfig[] | null
         >([

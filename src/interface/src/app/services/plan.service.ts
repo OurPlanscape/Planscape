@@ -89,8 +89,7 @@ export class PlanService {
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
   >(null);
-  readonly selectedRegion$ = this.sessionService.region$;
-
+  readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   constructor(
     private http: HttpClient,
     private sessionService: SessionService,
@@ -100,7 +99,7 @@ export class PlanService {
       .get<TreatmentGoalConfig[]>(
         BackendConstants.END_POINT +
           '/planning/treatment_goals_config/?region_name=' +
-          `${this.mapService.regionToString(this.selectedRegion$.getValue())}`
+          `${this.mapService.regionToString(this.planRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: TreatmentGoalConfig[]) => {
@@ -693,5 +692,24 @@ export class PlanService {
           };
         })
       );
+  }
+
+  /**
+   * Updates planRegion and treatmentGoalsConfig if value is a valid Region
+   */
+  setPlanRegion(value: Region) {
+    if (Object.values(Region).includes(value)) {
+      this.planRegion$.next(value);
+      this.http
+        .get<TreatmentGoalConfig[]>(
+          BackendConstants.END_POINT +
+            '/planning/treatment_goals_config/?region_name=' +
+            `${this.mapService.regionToString(this.planRegion$.getValue())}`
+        )
+        .pipe(take(1))
+        .subscribe((config: TreatmentGoalConfig[]) => {
+          this.treatmentGoalsConfig$.next(config);
+        });
+    }
   }
 }
