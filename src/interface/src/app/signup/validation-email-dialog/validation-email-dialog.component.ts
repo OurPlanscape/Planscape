@@ -4,7 +4,7 @@ import { AuthService } from '../../services';
 
 /**  Component for reset password confirmation dialog. */
 @Component({
-  selector: 'validation-email-dialog',
+  selector: 'app-validation-email-dialog',
   templateUrl: './validation-email-dialog.component.html',
 })
 export class ValidationEmailDialogComponent {
