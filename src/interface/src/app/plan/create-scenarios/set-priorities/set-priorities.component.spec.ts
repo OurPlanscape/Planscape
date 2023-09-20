@@ -38,12 +38,18 @@ describe('SetPrioritiesComponent', () => {
 
   const defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    priorities: [''],
+    scenario_output_fields: [''],
+    scenario_priorities: [''],
+    global_thresholds: [''],
+    stand_thresholds: [''],
     weights: [0],
   };
   const testQuestion: TreatmentQuestionConfig = {
     short_question_text: 'test_question',
-    priorities: ['test_priority'],
+    scenario_priorities: ['test_priority'],
+    scenario_output_fields: [''],
+    global_thresholds: [''],
+    stand_thresholds: [''],
     weights: [1],
   };
 
