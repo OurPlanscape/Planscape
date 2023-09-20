@@ -6,6 +6,7 @@
   (click)="togglePanel()">
   {{ panelExpanded ? 'COLLAPSE PANEL' : 'EXPAND PANEL' }}
 </button>
+<div *ngIf="!configPage">
 &copy;
 <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>
 , &copy;
@@ -22,3 +23,4 @@
 <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">
   OpenStreetMap
 </a>
+</div>
