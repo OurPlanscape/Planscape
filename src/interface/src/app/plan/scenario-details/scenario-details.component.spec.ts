@@ -35,7 +35,7 @@ describe('ScenarioDetailsComponent', () => {
       planning_area: '1',
       configuration: {
         max_budget: 200,
-        projectAreas: [
+        project_areas: [
           {
             id: '1',
             projectId: '1',
