@@ -229,10 +229,14 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         'physicalConstraintForm.maxSlope'
       );
       this.excludedAreasOptions.forEach((area: string) => {
-        if (config.excluded_areas && config.excluded_areas![area]) {
+        if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
           this.constraintsFormGroup
             .get('excludedAreasForm.' + area)
-            ?.setValue(config.excluded_areas![area]);
+            ?.setValue(true);
+        } else {
+          this.constraintsFormGroup
+            .get('excludedAreasForm.' + area)
+            ?.setValue(false);
         }
       });
       const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
@@ -286,12 +290,13 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         plan_id = planState.currentPlanId!;
       });
     let scenarioConfig: ScenarioConfig = {};
-    scenarioConfig.excluded_areas = {};
+    scenarioConfig.excluded_areas = [];
     this.excludedAreasOptions.forEach((area: string) => {
-      if (this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid) {
-        scenarioConfig.excluded_areas![area] = this.constraintsFormGroup.get(
-          'excludedAreasForm.' + area
-        )?.value;
+      if (
+        this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid &&
+        this.constraintsFormGroup.get('excludedAreasForm.' + area)?.value
+      ) {
+        scenarioConfig.excluded_areas?.push(area);
       }
     });
     if (estimatedCost?.valid)
