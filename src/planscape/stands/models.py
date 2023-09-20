@@ -3,10 +3,12 @@ from django.contrib.gis.db import models
 from core.models import CreatedAtMixin
 from conditions.models import Condition
 
+
 class StandSizeChoices(models.TextChoices):
     SMALL = "SMALL", "Small"
     MEDIUM = "MEDIUM", "Medium"
     LARGE = "LARGE", "Large"
+
 
 HEX_LENGTH = {
     StandSizeChoices.LARGE: 877.38267558,

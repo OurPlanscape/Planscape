@@ -1,20 +1,104 @@
 {
- "regions": [
+  "regions": [
     {
-     "region_name": "sierra-nevada",
+      "region_name": "sierra-nevada",
       "treatment_goals": [
         {
-         "category_name": "Fire Dynamics",
+          "category_name": "Fire Dynamics",
           "questions": [
             {
               "long_question_text": "What areas have the highest probability of high severity fire?",
-              "short_question_text": "[High-severity Fire Areas]",
-             "priorities": [
+              "short_question_text": "High-severity Fire Areas",
+              "scenario_priorities": [
                 "probability_of_fire_severity_high"
-             ],
-             "weights": [
-                5
-             ]
+              ],
+              "weights": [],
+              "scenario_output_fields": [
+                "high_severity_potential_smoke_emissions",
+                "total_fuel_exposed_to_fire",
+                "dead_and_down_carbon",
+                "structure_exposure",
+                "damage_potential_wui",
+                "standing_dead_and_ladder_fuels",
+                "available_standing_biomass",
+                "sawtimber_biomass",
+                "costs_of_potential_treatment_moving_biomass",
+                "costs_of_potential_treatment_moving_sawlogs",
+                "california_spotted_owl"
+              ],
+              "stand_thresholds": [],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface?",
+              "short_question_text": "Reduce WUI Fire Risk",
+              "scenario_priorities": [
+                "structure_exposure_score",
+                "wui_damage_potential"
+              ],
+              "weights": [],
+              "scenario_output_fields": [
+                "high_severity_potential_smoke_emissions",
+                "moderate_severity_potential_smoke_emissions",
+                "total_fuel_exposed_to_fire",
+                "dead_and_down_carbon",
+                "standing_dead_and_ladder_fuels",
+                "available_standing_biomass",
+                "sawtimber_biomass",
+                "heavy_fuel_load",
+                "california_spotted_owl"
+              ],
+              "stand_thresholds": [],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "Where are the optimal areas to treat to reduce overall fuel loads?",
+              "short_question_text": "Fuel-load Reduction Opportunities",
+              "scenario_priorities": [
+                "total_fuel_exposed_to_fire"
+              ],
+              "weights": [],
+              "scenario_output_fields": [
+                "high_severity_potential_smoke_emissions",
+                "moderate_severity_potential_smoke_emissions",
+                "dead_and_down_carbon",
+                "standing_dead_and_ladder_fuels",
+                "available_standing_biomass",
+                "sawtimber_biomass",
+                "heavy_fuel_load",
+                "probability_of_fire_severity_high",
+                "probability_of_fire_severity_moderate",
+                "california_spotted_owl"
+              ],
+              "stand_thresholds": [
+                "PHSF > 0.2"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "What areas are both needed and are suitable for prescribed burning?",
+              "short_question_text": "Areas for Prescribed Burns",
+              "scenario_priorities": [
+                "total_fuel_exposed_to_fire",
+                "standing_dead_and_ladder_fuels"
+              ],
+              "weights": [],
+              "scenario_output_fields": [
+                "costs_of_potential_treatment_moving_biomass",
+                "costs_of_potential_treatment_moving_sawlogs",
+                "moderate_severity_potential_smoke_emissions",
+                "structure_exposure",
+                "damage_potential_wui",
+                "available_standing_biomass",
+                "sawtimber_biomass",
+                "seral_stage_late",
+                "low_income_populations",
+                "california_spotted_owl"
+              ],
+              "stand_thresholds": [
+                "PHSF < 0.3 & Burnable == 1"
+              ],
+              "global_thresholds": []
             }
           ]
         }

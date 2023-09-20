@@ -13,7 +13,7 @@ from django.contrib.gis.gdal import GDALRaster
 # ... an added raster has a different scale than the original raster
 # ... an added raster has a different srid than the original raster
 # ... an added raster has an overlapping pixel with the original raster
-class RasterMerger():
+class RasterMerger:
     merged_raster: GDALRaster
 
     def __init__(self, original_raster: GDALRaster = None) -> None:
@@ -27,39 +27,43 @@ class RasterMerger():
         if self.merged_raster is None:
             self.merged_raster = raster
             return
-            
+
         self._ensure_raster_is_compatible_with_merged_raster(raster)
         self._merge_raster(raster)
 
     def _ensure_raster_is_valid(self, raster: GDALRaster) -> None:
         if raster.skew.x != 0 and raster.skew.y != 0:
             raise Exception(
-                "invalid raster skew, [%f, %f] (expected [0, 0])" %
-                (raster.skew.x, raster.skew.y))
+                "invalid raster skew, [%f, %f] (expected [0, 0])"
+                % (raster.skew.x, raster.skew.y)
+            )
         if len(raster.bands) != 1:
             raise Exception(
-                "invalid raster has %d bands (expected 1)" %
-                (len(raster.bands)))
+                "invalid raster has %d bands (expected 1)" % (len(raster.bands))
+            )
         if not np.isnan(raster.bands[0].nodata_value):
             raise Exception(
-                "invalid raster has nodata value, %s (expected np.nan)" %
-                (raster.bands[0].nodata_value))
+                "invalid raster has nodata value, %s (expected np.nan)"
+                % (raster.bands[0].nodata_value)
+            )
 
     def _ensure_raster_is_compatible_with_merged_raster(
-            self, raster: GDALRaster) -> None:
+        self, raster: GDALRaster
+    ) -> None:
         if self.merged_raster is None:
             return
 
         scale = self.merged_raster.scale
         if raster.scale.x != scale.x and raster.scale.y != scale.y:
             raise Exception(
-                "invalid raster scale, [%f, %f] " %
-                (raster.scale.x, raster.scale.y) +
-                "(expected original scale, [%f, %f])" % (scale.x, scale.y))
+                "invalid raster scale, [%f, %f] " % (raster.scale.x, raster.scale.y)
+                + "(expected original scale, [%f, %f])" % (scale.x, scale.y)
+            )
         if raster.srid != self.merged_raster.srid:
             raise Exception(
-                "invalid raster srid, %d (expected original srid, %d)" %
-                (raster.srid, self.merged_raster.srid))
+                "invalid raster srid, %d (expected original srid, %d)"
+                % (raster.srid, self.merged_raster.srid)
+            )
 
     def _merge_raster(self, raster: GDALRaster) -> None:
         if self.merged_raster is None:
@@ -72,14 +76,12 @@ class RasterMerger():
         width = dims[0]
         height = dims[1]
 
-        r1 = raster.warp(
-            {"width": width, "height": height, "origin": origin})
+        r1 = raster.warp({"width": width, "height": height, "origin": origin})
         r2 = self.merged_raster.warp(
-            {"width": width, "height": height, "origin": origin})
+            {"width": width, "height": height, "origin": origin}
+        )
 
-        data = self._merge_band_data(
-            r1.bands[0].data(),
-            r2.bands[0].data())
+        data = self._merge_band_data(r1.bands[0].data(), r2.bands[0].data())
         r2.bands[0].data(data)
         self.merged_raster = r2
 
@@ -90,39 +92,49 @@ class RasterMerger():
         scale = self.merged_raster.scale
         origin = self.merged_raster.origin
 
-        return [self._select_origin(scale.x, [origin.x, raster.origin.x]),
-                self._select_origin(scale.y, [origin.y, raster.origin.y])]
+        return [
+            self._select_origin(scale.x, [origin.x, raster.origin.x]),
+            self._select_origin(scale.y, [origin.y, raster.origin.y]),
+        ]
 
     def _select_origin(self, scale: float, origins: list[float]) -> float:
         if scale > 0:
             return min(origins)
         return max(origins)
 
-    def _compute_updated_dimensions(self, raster: GDALRaster,
-                                    updated_origin: list[float]) -> list[float]:
+    def _compute_updated_dimensions(
+        self, raster: GDALRaster, updated_origin: list[float]
+    ) -> list[float]:
         if self.merged_raster is None:
             return [raster.width, raster.height]
 
         scale = self.merged_raster.scale
-        return [self._compute_dim(scale.x, raster.width,
-                                  raster.origin.x, updated_origin[0]),
-                self._compute_dim(scale.y, raster.height,
-                raster.origin.y, updated_origin[1])]
+        return [
+            self._compute_dim(
+                scale.x, raster.width, raster.origin.x, updated_origin[0]
+            ),
+            self._compute_dim(
+                scale.y, raster.height, raster.origin.y, updated_origin[1]
+            ),
+        ]
 
-    def _compute_dim(self,
-                     scale: float, existing_dim: int, existing_origin: float,
-                     target_origin: float) -> int:
-        return int(
-            np.ceil(existing_dim + (existing_origin - target_origin) / scale))
+    def _compute_dim(
+        self,
+        scale: float,
+        existing_dim: int,
+        existing_origin: float,
+        target_origin: float,
+    ) -> int:
+        return int(np.ceil(existing_dim + (existing_origin - target_origin) / scale))
 
     def _merge_band_data(self, d1: np.array, d2: np.array) -> np.array:
         overlap = np.logical_and(~np.isnan(d1), ~np.isnan(d2))
         overlap_size = overlap.sum()
         if overlap_size > 0:
             raise Exception(
-                "%d overlapping elements were detected " % overlap_size +
-                "between the raster to be added and the merged raster")
-        indices_to_replace = np.logical_and(
-            np.isnan(d1), ~np.isnan(d2))
+                "%d overlapping elements were detected " % overlap_size
+                + "between the raster to be added and the merged raster"
+            )
+        indices_to_replace = np.logical_and(np.isnan(d1), ~np.isnan(d2))
         d1[indices_to_replace] = d2[indices_to_replace]
         return d1

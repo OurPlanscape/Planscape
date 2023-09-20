@@ -128,9 +128,8 @@ $$;
 
 
 class Migration(migrations.Migration):
-
     dependencies: list[Tuple[str, str]] = [
-        ('conditions', '0001_initial'),
+        ("conditions", "0001_initial"),
     ]
 
     operations = [migrations.RunSQL(SQL)]

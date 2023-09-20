@@ -18,6 +18,7 @@ import {
   Scenario,
   ScenarioConfig,
   TreatmentGoalConfig,
+  TreatmentQuestionConfig,
 } from './../types/plan.types';
 import { BackendPlan, BackendPlanPreview, PlanService } from './plan.service';
 import { MapService } from './map.service';
@@ -196,11 +197,10 @@ describe('PlanService', () => {
         min_distance_from_road: undefined,
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
-        priorities: undefined,
-        createdTimestamp: undefined,
-        projectAreas: [],
+        treatment_question: null,
+        created_timestamp: undefined,
+        project_areas: [],
         excluded_areas: undefined,
-        weights: undefined,
       };
       const scenario: Scenario = {
         id: '1',
@@ -222,21 +222,43 @@ describe('PlanService', () => {
   });
 
   describe('createScenario', () => {
+    let defaultSelectedQuestion: TreatmentQuestionConfig = {
+      short_question_text: '',
+      long_question_text: '',
+      scenario_output_fields: [''],
+      scenario_priorities: [''],
+      stand_thresholds: [''],
+      global_thresholds: [''],
+      weights: [0],
+    };
     it('should make HTTP request to backend', (done) => {
       const scenarioConfig: ScenarioConfig = {
         est_cost: 1,
         min_distance_from_road: 1,
         max_slope: 1,
         max_treatment_area_ratio: 1,
-        priorities: ['priority'],
         excluded_areas: undefined,
-        weights: [1],
         max_budget: 200,
+        treatment_question: defaultSelectedQuestion,
       };
       const scenario: Scenario = {
         name: 'name',
         planning_area: '1',
         configuration: scenarioConfig,
+      };
+
+      const backendConfig = {
+        est_cost: 1,
+        min_distance_from_road: 1,
+        max_slope: 1,
+        max_treatment_area_ratio: 1,
+        excluded_areas: undefined,
+        max_budget: 200,
+        scenario_output_fields: [''],
+        scenario_priorities: [''],
+        stand_thresholds: [''],
+        global_thresholds: [''],
+        weights: [0],
       };
 
       service.createScenario(scenario).subscribe((res) => {
@@ -252,7 +274,7 @@ describe('PlanService', () => {
       expect(req.request.body).toEqual({
         name: 'name',
         planning_area: '1',
-        configuration: scenarioConfig,
+        configuration: backendConfig,
       });
       req.flush('1');
       httpTestingController.verify();
@@ -317,9 +339,8 @@ describe('PlanService', () => {
         min_distance_from_road: undefined,
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
-        priorities: undefined,
-        createdTimestamp: undefined,
-        weights: undefined,
+        created_timestamp: undefined,
+        treatment_question: undefined,
       };
       const scenario: Scenario = {
         id: '1',

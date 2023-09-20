@@ -95,8 +95,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       attributionControl: false,
     });
 
-    if(this.plan) {
-        this.drawPlanningArea(this.plan!);
+    if (this.plan) {
+      this.drawPlanningArea(this.plan!);
     }
 
     setTimeout(() => this.map.invalidateSize(), 0);

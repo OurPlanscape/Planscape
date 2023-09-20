@@ -22,7 +22,6 @@ import { DeletePlanDialogComponent } from '../home/plan-table/delete-plan-dialog
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { ScenarioDetailsComponent } from './scenario-details/scenario-details.component';
-import { ScenarioConfirmationComponent } from './scenario-confirmation/scenario-confirmation.component';
 import { MapLayersComponent } from './scenario-details/map-layers/map-layers.component';
 import { FeaturesModule } from '../features/features.module';
 import { WINDOW_PROVIDERS } from '../services/window.service';
@@ -32,6 +31,7 @@ import { ScenarioResultsComponent } from './scenario-results/scenario-results.co
 import { ProjectAreasComponent } from './project-areas/project-areas.component';
 import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-areas-metrics.component';
 import { ReportChartComponent } from './report-chart/report-chart.component';
+import { NgChartsModule } from 'ng2-charts';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -50,7 +50,6 @@ import { ReportChartComponent } from './report-chart/report-chart.component';
     ConstraintsPanelComponent,
     IdentifyProjectAreasComponent,
     ScenarioDetailsComponent,
-    ScenarioConfirmationComponent,
     MapLayersComponent,
     ScenarioNotStartedComponent,
     ScenarioPendingComponent,
@@ -74,6 +73,7 @@ import { ReportChartComponent } from './report-chart/report-chart.component';
     RouterModule,
     SharedModule,
     FeaturesModule,
+    NgChartsModule,
   ],
 })
 export class PlanModule {}

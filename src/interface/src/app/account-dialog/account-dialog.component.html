@@ -25,7 +25,10 @@
         CHANGE PASSWORD
       </button>
 
-      <button mat-raised-button color="warn" (click)="openDeleteAccountDialog()">
+      <button
+        mat-raised-button
+        color="warn"
+        (click)="openDeleteAccountDialog()">
         DELETE ACCOUNT
       </button>
 
@@ -54,7 +57,9 @@
             formControlName="newPassword1"
             matInput />
           <mat-error
-            *ngIf="changePasswordForm.get('newPassword1')?.hasError('minlength')">
+            *ngIf="
+              changePasswordForm.get('newPassword1')?.hasError('minlength')
+            ">
             Password must contain at least 8 characters.
           </mat-error>
         </mat-form-field>
@@ -92,7 +97,6 @@
 
     <!-- Edit account details -->
     <ng-container *ngIf="editingAccount">
-
       <form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
         <mat-form-field>
           <mat-label>First name</mat-label>

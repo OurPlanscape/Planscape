@@ -10,12 +10,12 @@ import { FeatureService } from './feature.service';
 
 /** Directive to show or hide a DOM element based on whether a feature flag is enabled. */
 @Directive({
-  selector: '[featureFlag]',
+  selector: '[appFeatureFlag]',
 })
 export class FeatureFlagDirective implements OnInit {
-  @Input() featureFlag!: string;
+  @Input() appFeatureFlag!: string;
   // if provided as true, will hide the content when the flag is true
-  @Input() featureFlagHide = false;
+  @Input() appFeatureFlagHide = false;
 
   constructor(
     private featureService: FeatureService,
@@ -24,8 +24,8 @@ export class FeatureFlagDirective implements OnInit {
   ) {}
 
   ngOnInit() {
-    const isEnabled = this.featureService.isFeatureEnabled(this.featureFlag);
-    const shouldShow = this.featureFlagHide ? !isEnabled : isEnabled;
+    const isEnabled = this.featureService.isFeatureEnabled(this.appFeatureFlag);
+    const shouldShow = this.appFeatureFlagHide ? !isEnabled : isEnabled;
     if (shouldShow) {
       this.viewContainerRef.createEmbeddedView(this.templateRef);
     }

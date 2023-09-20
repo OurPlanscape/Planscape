@@ -5,50 +5,70 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('conditions', '0004_get_condition_pixels'),
-        ('plan', '0011_project_creation_time'),
+        ("conditions", "0004_get_condition_pixels"),
+        ("plan", "0011_project_creation_time"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='scenario',
-            name='creation_time',
+            model_name="scenario",
+            name="creation_time",
             field=models.DateTimeField(auto_now_add=True, null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='max_budget',
+            model_name="scenario",
+            name="max_budget",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='max_road_distance',
+            model_name="scenario",
+            name="max_road_distance",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='max_slope',
+            model_name="scenario",
+            name="max_slope",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='max_treatment_area_ratio',
+            model_name="scenario",
+            name="max_treatment_area_ratio",
             field=models.FloatField(null=True),
         ),
         migrations.AddField(
-            model_name='scenario',
-            name='plan',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='plan.plan'),
+            model_name="scenario",
+            name="plan",
+            field=models.ForeignKey(
+                null=True, on_delete=django.db.models.deletion.CASCADE, to="plan.plan"
+            ),
         ),
         migrations.CreateModel(
-            name='ScenarioWeightedPriority',
+            name="ScenarioWeightedPriority",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('weight', models.IntegerField(null=True)),
-                ('priority', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='conditions.condition')),
-                ('scenario', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='plan.scenario')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("weight", models.IntegerField(null=True)),
+                (
+                    "priority",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="conditions.condition",
+                    ),
+                ),
+                (
+                    "scenario",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, to="plan.scenario"
+                    ),
+                ),
             ],
         ),
     ]
