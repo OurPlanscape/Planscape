@@ -316,23 +316,16 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 #### SCENARIO Handlers ####
 
 
-def _serialize_scenario(
-    scenario: Scenario, scenario_result: ScenarioResult | None
-) -> dict:
+def _serialize_scenario(scenario: Scenario) -> dict:
     """
     Serializes a Scenario into a dictionary.
     # TODO: Add more logic here as our Scenario model expands beyond just the
     #       JSON "configuration" field.
     """
     data = ScenarioSerializer(scenario).data
-    if scenario_result:
-        data["result"] = ScenarioResultSerializer(scenario_result).data
-
     return data
 
 
-# Scenario can be retrieved by a user's planning area.
-# This also can return the result as well, optionally.
 def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     """
     Retrieves a scenario by its ID.
@@ -348,8 +341,6 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         if user is None:
             raise ValueError("User must be logged in.")
 
-        show_results = request.GET.get("show_results", False)
-
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
         )
@@ -357,11 +348,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
             # This matches the same error string if the planning area doesn't exist in the DB for any user.
             raise ValueError("Scenario matching query does not exist.")
 
-        scenario_result = None
-        if show_results:
-            scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
-
-        return JsonResponse(_serialize_scenario(scenario, scenario_result), safe=False)
+        return JsonResponse(_serialize_scenario(scenario), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -564,9 +551,8 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(
             planning_area__pk=planning_area_id
         )
-
         return JsonResponse(
-            [_serialize_scenario(scenario, None) for scenario in scenarios], safe=False
+            [_serialize_scenario(scenario) for scenario in scenarios], safe=False
         )
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
