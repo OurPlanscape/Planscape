@@ -89,9 +89,7 @@ export class PlanService {
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
   >(null);
-  readonly planRegion$ = new BehaviorSubject<Region | null>(
-    Region.SIERRA_NEVADA
-  );
+  readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   constructor(
     private http: HttpClient,
     private sessionService: SessionService,
