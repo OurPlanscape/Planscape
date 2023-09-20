@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 
 import { AuthService } from '../services';
 import { MatDialog } from '@angular/material/dialog';
-import { ResetPasswordDialog } from './reset-password-dialog/reset_password_dialog';
+import { ResetPasswordDialogComponent } from './reset-password-dialog/reset_password_dialog.component';
 
 import * as signInMessages from '../shared/constants';
 
@@ -51,7 +51,7 @@ export class ForgetPasswordComponent implements OnInit {
     const email: string = this.form.get('email')?.value;
     this.authService.sendPasswordResetEmail(email).subscribe({
       next: () => {
-        this.dialog.open(ResetPasswordDialog);
+        this.dialog.open(ResetPasswordDialogComponent);
       },
       error: (err) => {
         this.accountError = this.RESET_ERROR;
