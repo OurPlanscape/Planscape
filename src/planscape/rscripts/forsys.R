@@ -14,8 +14,6 @@ library("purrr")
 
 readRenviron("src/planscape/planscape/.env")
 
-COST_PER_ACRE <- 2470
-
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -31,6 +29,8 @@ if (is.null(scenario_id)) {
   print_help(parser)
   stop("You need to specify one scenario id.")
 }
+
+COST_PER_ACRE <- Sys.getenv("PLANSCAPE_COST_PER_ACRE", unset = 2470)
 
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
@@ -289,7 +289,7 @@ call_forsys <- function(
   # this might be configurable in the future. if it's the case, it will come in
   # the configuration variable. This also might change due the course of the
   # project as we're not sure on how many projects we will have at the beginning
-  number_of_projects <- 10
+  number_of_projects <- 5
   min_area <- configuration$max_treatment_area_ratio
   max_area <- min_area * number_of_projects
   out <- forsys::run(
