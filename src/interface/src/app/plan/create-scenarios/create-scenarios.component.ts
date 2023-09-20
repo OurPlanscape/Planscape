@@ -167,6 +167,9 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
         this.panelExpanded = planState.panelExpanded ?? false;
+        if (this.plan$.getValue()?.region) {
+          this.planService.setPlanRegion(this.plan$.getValue()?.region!);
+        }
       });
 
     if (this.scenarioId) {
