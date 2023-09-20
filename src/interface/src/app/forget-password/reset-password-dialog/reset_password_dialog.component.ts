@@ -13,7 +13,7 @@ export class ResetPasswordDialogComponent {
   constructor(
     private readonly dialogRef: MatDialogRef<ResetPasswordDialogComponent>,
     private router: Router
-  ) { }
+  ) {}
 
   protected close() {
     this.dialogRef.close({});
