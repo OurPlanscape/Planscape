@@ -10,24 +10,24 @@
         [owner]="planOwner$ | async"></app-summary-panel>
     </div>
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
-    <div class="plan-content">
-      <div class="plan-content-inner">
-        <app-plan-overview
-          [plan$]="currentPlan$"
-          *ngIf="showOverview$ | async"></app-plan-overview>
-        <ng-container *ngIf="!(showOverview$ | async)">
-          <div class="plan-map-container">
-            <app-plan-map
-              [plan]="currentPlan$ | async"
-              [mapId]="'planning-map'"
-              [mapPadding]="[700, 0]"
-              [showAttributionAndZoom]="true"></app-plan-map>
-          </div>
-          <div class="plan-content-panel">
-            <router-outlet #outlet="outlet"></router-outlet>
-          </div>
-        </ng-container>
-      </div>
+    <div
+      class="plan-content"
+      [ngClass]="{ 'with-overview': showOverview$ | async }">
+      <app-plan-overview
+        [plan$]="currentPlan$"
+        *ngIf="showOverview$ | async"></app-plan-overview>
+      <ng-container *ngIf="!(showOverview$ | async)">
+        <div class="plan-content-panel">
+          <router-outlet #outlet="outlet"></router-outlet>
+        </div>
+        <div class="plan-map-container">
+          <app-plan-map
+            [plan]="currentPlan$ | async"
+            [mapId]="'planning-map'"
+            [mapPadding]="[0, 0]"
+            [showAttributionAndZoom]="true"></app-plan-map>
+        </div>
+      </ng-container>
     </div>
   </ng-container>
 </div>

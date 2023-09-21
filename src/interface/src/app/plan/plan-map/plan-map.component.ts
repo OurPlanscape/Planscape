@@ -43,7 +43,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   drawingLayer: L.GeoJSON | undefined;
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
-  panelExpanded: boolean = true;
+
   // TODO grab region from planning area
   selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
@@ -74,9 +74,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         if (state.mapShapes !== this.shapes) {
           this.shapes = state.mapShapes;
           this.drawShapes(state.mapShapes);
-        }
-        if (state.panelExpanded !== this.panelExpanded) {
-          this.panelExpanded = state.panelExpanded ?? false;
         }
       });
   }
@@ -191,19 +188,5 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }),
     });
     this.projectAreasLayer.addTo(this.map);
-  }
-
-  showTogglePanelButton(): Observable<boolean> {
-    return this.planService.planState$.pipe(
-      map(
-        (planState) =>
-          !!planState.currentConfigId || !!planState.currentScenarioId
-      )
-    );
-  }
-
-  togglePanel(): void {
-    this.panelExpanded = !this.panelExpanded;
-    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }
