@@ -36,7 +36,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() mapId?: string;
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
-  @Input() configPage: boolean = false;
+  @Input() showAttributionAndZoom: boolean = false;
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
@@ -93,10 +93,10 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       zoomControl: false,
       pmIgnore: false,
       scrollWheelZoom: false,
-      attributionControl: this.configPage,
+      attributionControl: this.showAttributionAndZoom,
     });
 
-    if (this.configPage) {
+    if (this.showAttributionAndZoom) {
       this.map.attributionControl.setPosition('topright');
 
       // Add zoom controls to bottom right corner
@@ -138,7 +138,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
   private stadiaAlidadeTiles() {
     var attributionString = '';
-    if (this.configPage) {
+    if (this.showAttributionAndZoom) {
       attributionString =
         '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
     }
