@@ -34,7 +34,7 @@ export class ScenarioResultsComponent implements OnChanges {
         id: i + 1,
         acres: props.area_acres,
         percentTotal: props.pct_area,
-        estimatedCost: props.cost_per_acre,
+        estimatedCost: props.total_cost,
         score: props.weightedPriority,
       };
     });
