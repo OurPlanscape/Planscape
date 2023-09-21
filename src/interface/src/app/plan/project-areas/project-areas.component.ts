@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 
 export interface ProjectAreaReport {
   id: number;
@@ -19,7 +19,40 @@ export interface ProjectTotalReport {
   templateUrl: './project-areas.component.html',
   styleUrls: ['./project-areas.component.scss'],
 })
-export class ProjectAreasComponent {
+export class ProjectAreasComponent implements OnChanges {
   @Input() areas!: ProjectAreaReport[];
-  @Input() total!: ProjectTotalReport;
+
+  total: ProjectTotalReport = {
+    acres: 0,
+    percentTotal: 0,
+    estimatedCost: 0,
+  };
+
+  ngOnChanges() {
+    this.calculateTotal();
+  }
+
+  private calculateTotal() {
+    if (this.areas) {
+      this.total = this.parseResultsToTotals(this.areas);
+    }
+  }
+
+  private parseResultsToTotals(
+    areaReports: ProjectAreaReport[]
+  ): ProjectTotalReport {
+    return areaReports.reduce(
+      (acc, value) => {
+        acc.acres += value.acres;
+        acc.estimatedCost += value.estimatedCost;
+        acc.percentTotal += value.percentTotal;
+        return acc;
+      },
+      {
+        acres: 0,
+        percentTotal: 0,
+        estimatedCost: 0,
+      }
+    );
+  }
 }

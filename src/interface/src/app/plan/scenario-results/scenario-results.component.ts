@@ -1,8 +1,5 @@
-import { Component, Input } from '@angular/core';
-import {
-  ProjectAreaReport,
-  ProjectTotalReport,
-} from '../project-areas/project-areas.component';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { ProjectAreaReport } from '../project-areas/project-areas.component';
 import { generateDummyData } from './temp-helper';
 import { ScenarioResult } from '../../types';
 
@@ -11,25 +8,20 @@ import { ScenarioResult } from '../../types';
   templateUrl: './scenario-results.component.html',
   styleUrls: ['./scenario-results.component.scss'],
 })
-export class ScenarioResultsComponent {
-  @Input()
-  results: ScenarioResult | null = null;
-  areas: ProjectAreaReport[] = [];
-  total: ProjectTotalReport = {
-    acres: 0,
-    percentTotal: 0,
-    estimatedCost: 0,
-  };
+export class ScenarioResultsComponent implements OnChanges {
+  @Input() results: ScenarioResult | null = null;
 
+  areas: ProjectAreaReport[] = [];
+
+  // TODO remove and use real `this.results`
   data = generateDummyData();
   // start with the first 4 as selected
   selectedCharts = this.data.slice(0, 4);
 
-  ngOnInit() {
-    // parse ScenarioResult into ProjectAreaReports
+  ngOnChanges(changes: SimpleChanges) {
+    // parse ScenarioResult
     if (this.results) {
       this.areas = this.parseResultsToProjectAreas(this.results);
-      this.total = this.parseResultsToTotals(this.areas);
     }
   }
 
@@ -46,16 +38,5 @@ export class ScenarioResultsComponent {
         score: props.weightedPriority,
       };
     });
-  }
-
-  private parseResultsToTotals(
-    areaReports: ProjectAreaReport[]
-  ): ProjectTotalReport {
-    return areaReports.reduce((acc, value) => {
-      acc.acres += value.acres;
-      acc.estimatedCost += value.estimatedCost;
-      acc.percentTotal += value.percentTotal;
-      return acc;
-    }, this.total);
   }
 }
