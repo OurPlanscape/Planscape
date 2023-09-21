@@ -122,23 +122,23 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         {
           budgetForm: this.fb.group({
             // Estimated cost in $ per acre
-            estimatedCost: ['', Validators.min(0)],
+            estimatedCost: [2470, Validators.min(0)],
             // Max cost of treatment for entire planning area
             // Initially disabled, estimatedCost is required as input before maxCost is enabled
-            maxCost: [{ value: '', disabled: true }, Validators.min(0.01)],
+            maxCost: ['', Validators.min(0.01)],
           }),
           physicalConstraintForm: this.fb.group({
+            // TODO Update if needed once we have confirmation if this is the correct default %
             // Maximum slope allowed for planning area
             maxSlope: [
-              '',
+              37,
               [Validators.min(0), Validators.max(100), Validators.required],
             ],
             // Minimum distance from road allowed for planning area
-            minDistanceFromRoad: ['', [Validators.min(0), Validators.required]],
+            minDistanceFromRoad: [1000, [Validators.min(0), Validators.required]],
             // Maximum area to be treated in acres
-            maxArea: ['', [Validators.min(0), Validators.required]],
+            maxArea: ['', [Validators.min(0)]],
             // Stand Size selection
-            // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
           excludedAreasForm: this.fb.group(excludedAreasChosen),
@@ -202,15 +202,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     constraintsForm: AbstractControl
   ): ValidationErrors | null {
     // Only one of budget or treatment area constraints is required.
-
-    // TODO Add maxArea input and make required, this extra validator may be deprecated
-    // const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
-    // const maxArea = constraintsForm.get('treatmentForm.maxArea');
-    const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
-    const maxDistance = constraintsForm.get(
-      'physicalConstraintForm.minDistanceFromRoad'
-    );
-    const valid = !!maxSlope?.value || !!maxDistance?.value;
+    const maxCost = constraintsForm.get('budgetForm.maxCost');
+    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    
+    const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { budgetOrAreaRequired: true };
   }
 
