@@ -58,7 +58,7 @@ class CustomLoginSerializer(LoginSerializer):
                 )
             # Re-raise the error to halt the login, and send the error to the
             # frontend.
-            raise (e)
+            raise e
 
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
