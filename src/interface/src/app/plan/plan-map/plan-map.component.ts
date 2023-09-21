@@ -36,6 +36,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() mapId?: string;
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
+  @Input() showAttributionAndZoom: boolean = false;
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
@@ -92,8 +93,18 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       zoomControl: false,
       pmIgnore: false,
       scrollWheelZoom: false,
-      attributionControl: false,
+      attributionControl: this.showAttributionAndZoom,
     });
+
+    if (this.showAttributionAndZoom) {
+      this.map.attributionControl.setPosition('topright');
+
+      // Add zoom controls to bottom right corner
+      const zoomControl = L.control.zoom({
+        position: 'bottomright',
+      });
+      zoomControl.addTo(this.map);
+    }
 
     if (this.plan) {
       this.drawPlanningArea(this.plan!);
@@ -126,10 +137,16 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
   private stadiaAlidadeTiles() {
+    var attributionString = '';
+    if (this.showAttributionAndZoom) {
+      attributionString =
+        '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+    }
     return L.tileLayer(
       'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
       {
         maxZoom: 19,
+        attribution: attributionString,
       }
     );
   }

@@ -20,7 +20,8 @@
             <app-plan-map
               [plan]="currentPlan$ | async"
               [mapId]="'planning-map'"
-              [mapPadding]="[700, 0]"></app-plan-map>
+              [mapPadding]="[700, 0]"
+              [showAttributionAndZoom]="true"></app-plan-map>
           </div>
           <div class="plan-content-panel">
             <router-outlet #outlet="outlet"></router-outlet>
