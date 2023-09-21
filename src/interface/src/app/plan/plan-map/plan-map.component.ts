@@ -82,7 +82,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-
     if (this.map != undefined) this.map.remove();
 
     this.map = L.map(this.mapId ? this.mapId : 'map', {
@@ -140,7 +139,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private stadiaAlidadeTiles() {
     var attributionString = '';
     if (this.configPage) {
-      attributionString = '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+      attributionString =
+        '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
     }
     return L.tileLayer(
       'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
