@@ -1,7 +1,11 @@
 import logging
 
+from allauth.account.models import EmailAddress
+from django.contrib.auth.models import User
+from allauth.account.utils import send_email_confirmation
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import (
+    LoginSerializer,
     PasswordChangeSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
@@ -32,6 +36,29 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = "__all__"
+
+
+class CustomLoginSerializer(LoginSerializer):
+    """Custom serializer to re-send user verification email if they are not verified."""
+
+    def validate(self, attrs):
+        print(attrs)
+        try:
+            # We want to call the parent validate function first to ensure that
+            # the username and password combination is valid.
+            return super(CustomLoginSerializer, self).validate(attrs)
+        except Exception as e:
+            error_msg = e.args[0]
+            if error_msg == "E-mail is not verified.":
+                # Send email again, respecting allauth ratelimits.
+                email_addr = attrs["email"]
+                user = User.objects.filter(email=email_addr).get()
+                send_email_confirmation(
+                    self.context["request"], user=user, email=email_addr
+                )
+            # Re-raise the error to halt the login, and send the error to the
+            # frontend.
+            raise (e)
 
 
 class CustomPasswordResetSerializer(PasswordResetSerializer):
