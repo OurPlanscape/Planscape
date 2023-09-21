@@ -1,6 +1,5 @@
 import logging
 
-from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from allauth.account.utils import send_email_confirmation
 from dj_rest_auth.registration.serializers import RegisterSerializer
