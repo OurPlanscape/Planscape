@@ -135,7 +135,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
               [Validators.min(0), Validators.max(100), Validators.required],
             ],
             // Minimum distance from road allowed for planning area
-            minDistanceFromRoad: [1000, [Validators.min(0), Validators.required]],
+            minDistanceFromRoad: [
+              1000,
+              [Validators.min(0), Validators.required],
+            ],
             // Maximum area to be treated in acres
             maxArea: ['', [Validators.min(0)]],
             // Stand Size selection
@@ -204,7 +207,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     // Only one of budget or treatment area constraints is required.
     const maxCost = constraintsForm.get('budgetForm.maxCost');
     const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
-    
     const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { budgetOrAreaRequired: true };
   }
