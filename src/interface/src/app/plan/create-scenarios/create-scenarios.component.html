@@ -1,9 +1,5 @@
-<div
-  class="create-scenarios-panel mat-elevation-z2"
-  [@expandCollapsePanel]="panelExpanded ? 'expanded' : 'collapsed'">
-  <div
-    class="create-scenarios-panel-content"
-    [@expandCollapsePanelContent]="panelExpanded ? 'opaque' : 'transparent'">
+<div class="create-scenarios-panel mat-elevation-z2">
+  <div class="create-scenarios-panel-content">
     <div class="scenario-name">
       <form [formGroup]="formGroups[0]!">
         <mat-form-field class="scenario-name-input">
@@ -64,16 +60,6 @@
           </ng-container>
         </mat-tab>
       </mat-tab-group>
-    </div>
-
-    <!-- Expand/collapse button -->
-    <div
-      class="create-scenarios-panel-expand-button"
-      [class.collapsed]="!panelExpanded"
-      [@expandCollapseButton]="panelExpanded ? 'colorA' : 'colorB'">
-      <button mat-icon-button (click)="togglePanelExpand()">
-        <mat-icon>chevron_left</mat-icon>
-      </button>
     </div>
   </div>
 </div>

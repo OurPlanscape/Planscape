@@ -1,11 +1,4 @@
 <div id="{{ mapId ? mapId : 'map' }}" class="plan-map"></div>
-<button
-  mat-raised-button
-  class="expand-panel-button"
-  *ngIf="showTogglePanelButton() | async"
-  (click)="togglePanel()">
-  {{ panelExpanded ? 'COLLAPSE PANEL' : 'EXPAND PANEL' }}
-</button>
 <div *ngIf="!showAttributionAndZoom">
   &copy;
   <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>

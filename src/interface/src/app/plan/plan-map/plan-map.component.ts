@@ -193,15 +193,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.projectAreasLayer.addTo(this.map);
   }
 
-  showTogglePanelButton(): Observable<boolean> {
-    return this.planService.planState$.pipe(
-      map(
-        (planState) =>
-          !!planState.currentConfigId || !!planState.currentScenarioId
-      )
-    );
-  }
-
   togglePanel(): void {
     this.panelExpanded = !this.panelExpanded;
     this.planService.updateStateWithPanelState(this.panelExpanded);
