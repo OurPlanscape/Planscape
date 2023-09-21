@@ -10,3 +10,19 @@
   right: 60px;
   z-index: 2;
 }
+
+:host{
+  &.small {
+    .credits {
+      position: static;
+      padding: 0;
+    }
+  }
+}
+.credits {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding: 10px;
+  z-index: 100;
+}

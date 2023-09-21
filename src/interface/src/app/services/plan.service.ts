@@ -35,7 +35,6 @@ export interface PlanState {
   currentConfigId: ProjectConfig['id'] | null;
   mapConditionLayer: string | null;
   mapShapes: any | null;
-  panelExpanded?: boolean;
 }
 
 export interface BackendPlan {
@@ -84,7 +83,6 @@ export class PlanService {
     currentConfigId: null,
     mapConditionLayer: null,
     mapShapes: null,
-    panelExpanded: true,
   });
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
@@ -656,18 +654,6 @@ export class PlanService {
         ...currentState.all,
       },
       mapShapes: shapes,
-    });
-    this.planState$.next(updatedState);
-  }
-
-  updateStateWithPanelState(panelExpanded: boolean) {
-    const currentState = Object.freeze(this.planState$.value);
-    const updatedState = Object.freeze({
-      ...currentState,
-      all: {
-        ...currentState.all,
-      },
-      panelExpanded: panelExpanded,
     });
     this.planState$.next(updatedState);
   }

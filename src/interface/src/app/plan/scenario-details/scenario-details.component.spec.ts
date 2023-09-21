@@ -53,7 +53,7 @@ describe('ScenarioDetailsComponent', () => {
       getScenario: of(fakeScenario),
       updateStateWithShapes: of(),
     });
-    fakeService.planState$ = of({ currentScenarioId: 1, panelExpanded: true });
+    fakeService.planState$ = of({ currentScenarioId: 1 });
 
     await TestBed.configureTestingModule({
       imports: [

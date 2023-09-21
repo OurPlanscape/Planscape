@@ -32,33 +32,41 @@
 .plan-content {
   display: flex;
   flex: 1;
-  flex-direction: column;
+  flex-direction: row;
 }
 
-.plan-content-inner {
-  flex: 1;
-  max-height: 100%;
-  position: relative;
+.plan-content.with-overview {
+  flex-direction: column;
 }
 
 .plan-map-container {
   height: 100%;
-  width: 100%;
+  flex: 1;
   z-index: 1;
 }
 
 .plan-content-panel {
-  left: 0;
-  height: 100%;
+  overflow: auto;
   width: 45%;
-  position: absolute;
-  top: 0;
-  z-index: 2;
+
 }
 
 .scenario-details {
   height: 100%;
   width: 100%;
+}
+
+:host {
+  ::ng-deep {
+    app-create-scenarios {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .create-scenarios-panel {
+      flex: 1;
+    }
+  }
 }
 
 
