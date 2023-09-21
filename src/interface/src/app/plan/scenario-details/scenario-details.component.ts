@@ -46,7 +46,6 @@ export class ScenarioDetailsComponent implements OnInit {
   scenarioId: string | null = null;
   plan$: Observable<Plan | null> = of(null);
   scenario$?: Observable<Scenario | null>;
-  panelExpanded: boolean = true;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -75,9 +74,6 @@ export class ScenarioDetailsComponent implements OnInit {
 
   private getScenario() {
     return this.planService.planState$.pipe(
-      tap((state) => {
-        this.panelExpanded = state.panelExpanded ?? false;
-      }),
       map((state) => state.currentScenarioId),
       filter((scenarioId) => !!scenarioId),
       switchMap((scenarioId) => {
@@ -112,10 +108,7 @@ export class ScenarioDetailsComponent implements OnInit {
     this.planService.updateStateWithConditionLayer(layer);
   }
 
-  togglePanelExpand(): void {
-    this.panelExpanded = !this.panelExpanded;
-    this.planService.updateStateWithPanelState(this.panelExpanded);
-  }
+  togglePanelExpand(): void {}
 
   private drawProjectAreas(projectAreas: ProjectArea[]): void {
     const areas: any[] = [];

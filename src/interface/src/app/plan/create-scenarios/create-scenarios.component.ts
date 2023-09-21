@@ -39,22 +39,6 @@ type ScenarioState = 'not-started' | 'pending' | 'completed';
   selector: 'app-create-scenarios',
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
-  encapsulation: ViewEncapsulation.None,
-  animations: [
-    expandCollapsePanelTrigger,
-    colorTransitionTrigger({
-      triggerName: 'expandCollapseButton',
-      colorA: 'white',
-      colorB: '#ebebeb',
-      timingA: '300ms ease-out',
-      timingB: '250ms ease-out',
-    }),
-    opacityTransitionTrigger({
-      triggerName: 'expandCollapsePanelContent',
-      timingA: '100ms ease-out',
-      timingB: '100ms 250ms ease-out',
-    }),
-  ],
 })
 export class CreateScenariosComponent implements OnInit, OnDestroy {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
@@ -68,7 +52,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   treatmentGoalGroup: FormGroup<any>;
   constraintsFormGroup: FormGroup<any>;
   projectAreaGroup: FormGroup<any>;
-  panelExpanded: boolean = true;
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
@@ -169,7 +152,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
-        this.panelExpanded = planState.panelExpanded ?? false;
         if (this.plan$.getValue()?.region) {
           this.planService.setPlanRegion(this.plan$.getValue()?.region!);
         }
@@ -435,10 +417,5 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   private drawShapes(shapes: any | null): void {
     this.planService.updateStateWithShapes(shapes);
-  }
-
-  togglePanelExpand(): void {
-    this.panelExpanded = !this.panelExpanded;
-    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }

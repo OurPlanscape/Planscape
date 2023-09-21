@@ -1,7 +1,6 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatButtonHarness } from '@angular/material/button/testing';
 import { Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
@@ -27,7 +26,6 @@ describe('PlanMapComponent', () => {
     currentScenarioId: null,
     mapConditionLayer: null,
     mapShapes: null,
-    panelExpanded: true,
   };
 
   beforeEach(async () => {
@@ -46,13 +44,9 @@ describe('PlanMapComponent', () => {
       ...emptyPlanState,
     });
 
-    fakePlanService = jasmine.createSpyObj<PlanService>(
-      'PlanService',
-      ['updateStateWithPanelState'],
-      {
-        planState$: fakePlanState$,
-      }
-    );
+    fakePlanService = jasmine.createSpyObj<PlanService>('PlanService', [], {
+      planState$: fakePlanState$,
+    });
 
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
@@ -107,42 +101,6 @@ describe('PlanMapComponent', () => {
     });
 
     expect(component.tileLayer).toBeDefined();
-  });
-
-  describe('expand panel button', () => {
-    it('hides button if no config or scenario is active', (done) => {
-      component.showTogglePanelButton().subscribe((result) => {
-        expect(result).toBeFalse();
-        done();
-      });
-    });
-
-    it('shows button if a config or scenario is active', (done) => {
-      fakePlanState$.next({
-        ...fakePlanState$.value,
-        currentConfigId: 1,
-      });
-      component.showTogglePanelButton().subscribe((result) => {
-        expect(result).toBeTrue();
-        done();
-      });
-    });
-
-    it('button updates plan state', async () => {
-      fakePlanState$.next({
-        ...fakePlanState$.value,
-        currentConfigId: 1,
-      });
-      const button = await loader.getHarness(
-        MatButtonHarness.with({ text: /COLLAPSE/ })
-      );
-
-      await button.click();
-
-      expect(
-        fakePlanService.updateStateWithPanelState
-      ).toHaveBeenCalledOnceWith(false);
-    });
   });
 
   describe('draw shapes on map', () => {

@@ -80,7 +80,6 @@ describe('CreateScenariosComponent', () => {
           currentScenarioId: '1',
           mapConditionLayer: null,
           mapShapes: null,
-          panelExpanded: true,
         }),
         setPlanRegion: () => {},
         treatmentGoalsConfig$: new BehaviorSubject<
