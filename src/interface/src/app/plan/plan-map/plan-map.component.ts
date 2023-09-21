@@ -64,8 +64,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log("init");
-    console.log(this.configPage);
     this.planService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
@@ -85,7 +83,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
 
-    console.log('in after init');
     if (this.map != undefined) this.map.remove();
 
     this.map = L.map(this.mapId ? this.mapId : 'map', {
@@ -100,8 +97,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       attributionControl: this.configPage,
     });
 
-   
-    console.log(this.configPage)
     if (this.configPage) {
       this.map.attributionControl.setPosition('topright');
 
@@ -109,11 +104,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       const zoomControl = L.control.zoom({
         position: 'bottomright',
       });
-      console.log('add zoom');
       zoomControl.addTo(this.map);
     }
 
-    console.log(this.plan);
     if (this.plan) {
       this.drawPlanningArea(this.plan!);
     }
@@ -149,7 +142,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.configPage) {
       attributionString = '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
     }
-    console.log(attributionString);
     return L.tileLayer(
       'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
       {
