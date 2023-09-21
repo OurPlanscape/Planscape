@@ -13,15 +13,28 @@ export class ConstraintsPanelComponent {
 
   constructor() {}
 
-  toggleMaxCost() {
-    if (this.constraintsForm!.get('budgetForm.estimatedCost')!.value) {
-      (this.constraintsForm!.get('budgetForm') as FormGroup).controls[
-        'maxCost'
-      ].enable();
+  togglMaxAreaAndMaxCost() {
+    console.log('in toggle')
+    console.log(this.constraintsForm!.get('budgetForm.maxCost')!.value);
+    console.log(this.constraintsForm!.get('physicalConstraintForm.maxArea')!.value);
+    if (this.constraintsForm!.get('budgetForm.maxCost')!.value) {
+    
+      (this.constraintsForm!.get('physicalConstraintForm') as FormGroup).controls[
+        'maxArea'
+      ].disable();
     } else {
+      (this.constraintsForm!.get('physicalConstraintForm') as FormGroup).controls[
+        'maxArea'
+      ].enable();
+    }
+    if (this.constraintsForm!.get('physicalConstraintForm.maxArea')!.value) {
       (this.constraintsForm!.get('budgetForm') as FormGroup).controls[
         'maxCost'
       ].disable();
+    } else {
+      (this.constraintsForm!.get('budgetForm') as FormGroup).controls[
+        'maxCost'
+      ].enable();
     }
   }
 }
