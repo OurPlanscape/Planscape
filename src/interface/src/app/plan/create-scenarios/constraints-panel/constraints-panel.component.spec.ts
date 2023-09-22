@@ -65,18 +65,18 @@ describe('ConstraintsPanelComponent', () => {
       }),
       budgetForm: fb.group({
         // Estimated cost in $ per acre
-        estimatedCost: ['', [Validators.min(0), Validators.required]],
+        estimatedCost: [2470, [Validators.min(0), Validators.required]],
         // Max cost of treatment for entire planning area
-        maxCost: [{ value: '', disabled: true }, Validators.min(0)],
+        maxCost: ['', Validators.min(0)],
       }),
       physicalConstraintForm: fb.group({
         // Maximum slope allowed for planning area
-        maxSlope: ['', Validators.min(0)],
+        maxSlope: [37, Validators.min(0)],
         // Minimum distance from road allowed for planning area
         // TODO: Update variable name to minDistanceFromRoad
-        minDistanceFromRoad: ['', Validators.min(0)],
+        minDistanceFromRoad: [1000, Validators.min(0)],
         // Maximum area to be treated in acres
-        maxArea: ['', [Validators.min(0), Validators.required]],
+        maxArea: ['', [Validators.min(0)]],
         standSize: ['Large', Validators.required],
       }),
       excludedAreasForm: fb.group(excludedAreasChosen),
@@ -91,29 +91,5 @@ describe('ConstraintsPanelComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('should disable maxCost input when no estimatedCost input is provided', async () => {
-    let estimatedCostinput = fixture.debugElement.query(
-      By.css('#estimatedCost')
-    ).nativeElement;
-    estimatedCostinput.value = null;
-    estimatedCostinput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    expect(component.constraintsForm!.get('budgetForm.maxCost')!.disabled).toBe(
-      true
-    );
-  });
-
-  it('should enable maxCost input when estimatedCost input is provided', async () => {
-    let estimatedCostinput = fixture.debugElement.query(
-      By.css('#estimatedCost')
-    ).nativeElement;
-    estimatedCostinput.value = 1;
-    estimatedCostinput.dispatchEvent(new Event('input'));
-    fixture.detectChanges();
-    expect(component.constraintsForm!.get('budgetForm.maxCost')!.enabled).toBe(
-      true
-    );
   });
 });
