@@ -514,6 +514,7 @@ export class PlanService {
       planning_area: scenario.planning_area,
       configuration: this.convertToScenarioConfig(scenario.configuration),
       notes: scenario.notes,
+      scenario_result: scenario.scenario_result,
     };
   }
 

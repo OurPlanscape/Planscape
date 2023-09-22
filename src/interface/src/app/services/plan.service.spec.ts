@@ -208,6 +208,7 @@ describe('PlanService', () => {
         notes: undefined,
         planning_area: '1',
         configuration: scenarioConfig,
+        scenario_result: undefined,
       };
 
       service.getScenario('1').subscribe((res) => {
