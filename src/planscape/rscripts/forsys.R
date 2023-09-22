@@ -81,7 +81,7 @@ priority_to_condition <- function(connection, scenario, priority) {
     .con = connection
   )
   result <- dbGetQuery(connection, query)
-  return(head(result, 1))
+  return(tibble(head(result, 1)))
 }
 
 get_stands <- function(connection, scenario_id) {
@@ -254,26 +254,15 @@ get_priorities <- function(
     priority <- priority_to_condition(connection, scenario, priority)
     return(priority)
   })
-  priorities <- priorities[-(which(
-    sapply(
-      priorities,
-      function(item) {
-        return(nrow(item) < 1)
-      }
-    ),
-    arr.ind = TRUE
-  ))]
-
-  print(priorities)
-  return(as.data.frame(priorities))
+  return(data.table::rbindlist(priorities))
 }
 
 get_stand_data <- function(connection, scenario, conditions) {
   stands <- get_stands(connection, scenario$id)
 
   for (row in seq_len(nrow(conditions))) {
-    condition_id <- conditions[row, "condition_id"]
-    condition_name <- conditions[row, "condition_name"]
+    condition_id <- conditions[row, "condition_id"]$condition_id
+    condition_name <- conditions[row, "condition_name"]$condition_name
     metric <- get_stand_metrics(
       connection,
       condition_id,
@@ -314,8 +303,9 @@ call_forsys <- function(
   # the configuration variable. This also might change due the course of the
   # project as we're not sure on how many projects we will have at the beginning
   number_of_projects <- 5
-  min_area <- configuration$max_treatment_area_ratio
-  max_area <- min_area * number_of_projects
+  min_area <- 400
+  max_area <- configuration$max_treatment_area_ratio / number_of_projects
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
@@ -333,7 +323,7 @@ call_forsys <- function(
     patchmax_SDW = 0.5,
     patchmax_EPW = 1,
     patchmax_sample_frac = 0.1,
-    annual_target_value = 100000
+    annual_target_value = configuration$max_treatment_area_ratio,
   )
   return(out)
 }
