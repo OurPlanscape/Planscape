@@ -1,6 +1,12 @@
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
@@ -10,7 +16,7 @@ import { Region } from 'src/app/types';
 
 import { SavedScenariosComponent } from './saved-scenarios.component';
 
-describe('SavedScenariosComponent', () => {
+fdescribe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
   let fakePlanService: PlanService;
@@ -71,25 +77,36 @@ describe('SavedScenariosComponent', () => {
       ownerId: '1',
       region: Region.SIERRA_NEVADA,
     };
-
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should call service for list of scenarios', () => {
+    fixture.detectChanges();
     expect(fakePlanService.getScenariosForPlan).toHaveBeenCalledOnceWith('1');
 
     expect(component.scenarios.length).toEqual(1);
   });
 
   it('should delete selected scenarios', () => {
+    fixture.detectChanges();
     component.highlightedId = '1';
 
     component.deleteSelectedScenarios();
 
     expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
   });
+
+  it('should poll for changes', fakeAsync(() => {
+    spyOn(component, 'fetchScenarios');
+    fixture.detectChanges();
+    expect(component.fetchScenarios).toHaveBeenCalledTimes(1);
+    tick(3000);
+    fixture.detectChanges();
+    expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
+    discardPeriodicTasks();
+  }));
 });
