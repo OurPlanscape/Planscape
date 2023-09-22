@@ -21,6 +21,7 @@ import {
 } from 'src/app/types';
 import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { POLLING_INTERVAL } from '../plan-helpers';
 
 @UntilDestroy()
 @Component({
@@ -166,10 +167,15 @@ export class CreateScenariosComponent implements OnInit {
     });
   }
 
-  private pollForChanges() {
-    interval(3000)
+  pollForChanges() {
+    interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
-      .subscribe(() => this.loadConfig());
+      .subscribe(() => {
+        // only poll when scenario is pending
+        if (this.scenarioState === 'PENDING') {
+          this.loadConfig();
+        }
+      });
   }
 
   private constraintsFormValidator(
@@ -182,8 +188,7 @@ export class CreateScenariosComponent implements OnInit {
     return valid ? null : { budgetOrAreaRequired: true };
   }
 
-  private loadConfig(): void {
-    console.log('loading config');
+  loadConfig(): void {
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
