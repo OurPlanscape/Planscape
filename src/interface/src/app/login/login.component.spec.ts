@@ -2,37 +2,27 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { By } from '@angular/platform-browser';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatButtonHarness } from '@angular/material/button/testing';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let fakeAuthService: jasmine.SpyObj<AuthService>;
-  let forgotPasswordButton: MatButtonHarness;
   let loader: HarnessLoader;
-
-  let dialogSpy: jasmine.Spy;
-  let dialogRefSpyObj = jasmine.createSpyObj({
-    afterClosed: of({}),
-    close: null,
-  });
-  dialogRefSpyObj.componentInstance = { body: '' }; // attach componentInstance to the spy object...
 
   beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
       'login',
-      'sendPasswordResetEmail',
     ]);
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatDialogModule],
+      imports: [FormsModule, ReactiveFormsModule],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -43,15 +33,6 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
-    forgotPasswordButton = await loader.getHarness(
-      MatButtonHarness.with({ text: 'Forgot password' })
-    );
-  });
-
-  beforeEach(() => {
-    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(
-      dialogRefSpyObj
-    );
   });
 
   it('can load instance', () => {
@@ -104,15 +85,14 @@ describe('LoginComponent', () => {
     });
   });
 
-  it('reset password succeeds', async () => {
-    const successEmitter = new BehaviorSubject<void>(undefined);
+  it('forget password navigates to reset', async () => {
+    const routerStub: Router = fixture.debugElement.injector.get(Router);
+    spyOn(routerStub, 'navigate').and.callThrough();
 
-    fakeAuthService.sendPasswordResetEmail.and.returnValue(successEmitter);
+    const forgetPasswordLink: HTMLElement = fixture.debugElement.query(
+      By.css('.forget-password-link')
+    ).nativeElement;
 
-    await forgotPasswordButton.click();
-    successEmitter.subscribe((o) => {
-      expect(o).toBe(undefined);
-    });
-    expect(dialogSpy).toHaveBeenCalled();
+    expect(forgetPasswordLink.getAttribute('href')).toEqual('reset/');
   });
 });

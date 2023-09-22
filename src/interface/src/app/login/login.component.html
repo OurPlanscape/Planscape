@@ -13,14 +13,15 @@
           <mat-label>Password</mat-label>
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
-
-        <mat-card-actions>
+        <p>
           <a
-            mat-flat-button
+            class="forget-password-link"
             i18n="Text on a button to reset password"
-            (click)="resetPassword()">
-            Forgot password
+            href="reset/">
+            Forgot password?
           </a>
+        </p>
+        <mat-card-actions>
           <button
             mat-flat-button
             color="primary"
@@ -52,27 +53,6 @@
   </div>
 
   <div class="info-text-container">
-    <h1>A new wildfire resilience planning tool</h1>
-
-    <h3>{{ text2 }}</h3>
-
-    <ul>
-      <li *ngFor="let bullet of bulletPoints">
-        <h3>{{ bullet }}</h3>
-      </li>
-    </ul>
-
-    <div class="data-info-box">
-      <p>
-        The data used is based on California's Regional Resource Kits, developed
-        by the California Wildfire & Forest Resilience Task Force. You can find
-        more detailed information about these
-        <a
-          href="https://wildfiretaskforce.org/regional-resource-kits-page/#kits">
-          here
-        </a>
-        .
-      </p>
-    </div>
+    <app-planscape-about></app-planscape-about>
   </div>
 </div>
