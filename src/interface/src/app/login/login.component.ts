@@ -42,11 +42,11 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe(
       (_) => this.router.navigate(['map']),
       (error) => {
-        const errorMsg: string = error.error.global[0]
+        const errorMsg: string = error.error.global[0];
         if (errorMsg === 'E-mail is not verified.') {
-          this.accountError = 'Please check your email to verify your account.'
+          this.accountError = 'Please check your email to verify your account.';
         } else {
-          this.accountError = errorMsg
+          this.accountError = errorMsg;
         }
       }
     );
