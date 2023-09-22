@@ -42,6 +42,7 @@ import {
   ValidationResolver,
 } from './services';
 import { SharedModule } from './shared/shared.module';
+import { AboutComponent } from './home/about/about.component';
 import { SignupComponent } from './signup/signup.component';
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { TopBarComponent } from './top-bar/top-bar.component';
@@ -54,8 +55,9 @@ import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ValidationEmailDialogComponent } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
-import { ResetPasswordDialogComponent } from './login/reset-password-dialog/reset_password_dialog';
+import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
+import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
 
 @NgModule({
@@ -86,6 +88,8 @@ import { NgChartsModule } from 'ng2-charts';
     ResetPasswordDialogComponent,
     ValidationEmailDialogComponent,
     MapConfigSummaryComponent,
+    ForgetPasswordComponent,
+    AboutComponent,
   ],
   imports: [
     AppRoutingModule,
