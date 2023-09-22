@@ -1,10 +1,4 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -13,8 +7,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -73,9 +65,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private matSnackBar: MatSnackBar,
-    private planService: PlanService,
-    private router: Router
+    private planService: PlanService
   ) {
     this.treatmentGoals = this.planService.treatmentGoalsConfig$.pipe(
       takeUntil(this.destroy$)
@@ -310,22 +300,22 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       configuration: scenarioConfig,
     };
   }
-
-  private updatePriorityWeightsFormControls(): void {
-    const priorities: string[] = this.nameFormGroup.get('priorities')?.value;
-    const priorityWeightsForm: FormGroup = this.formGroups[3].get(
-      'priorityWeightsForm'
-    ) as FormGroup;
-    priorityWeightsForm.controls = {};
-    priorities.forEach((priority) => {
-      const priorityControl = this.fb.control(1, [
-        Validators.required,
-        Validators.min(1),
-        Validators.max(5),
-      ]);
-      priorityWeightsForm.addControl(priority, priorityControl);
-    });
-  }
+  //
+  // private updatePriorityWeightsFormControls(): void {
+  //   const priorities: string[] = this.nameFormGroup.get('priorities')?.value;
+  //   const priorityWeightsForm: FormGroup = this.formGroups[3].get(
+  //     'priorityWeightsForm'
+  //   ) as FormGroup;
+  //   priorityWeightsForm.controls = {};
+  //   priorities.forEach((priority) => {
+  //     const priorityControl = this.fb.control(1, [
+  //       Validators.required,
+  //       Validators.min(1),
+  //       Validators.max(5),
+  //     ]);
+  //     priorityWeightsForm.addControl(priority, priorityControl);
+  //   });
+  // }
 
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
@@ -335,7 +325,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.planService
       .createScenario(this.formValueToScenario())
       .subscribe((_) => {
-        const planId = this.plan$.getValue()?.id;
+        // const planId = this.plan$.getValue()?.id;
         // TODO maybe this state should come as the result of creating scenario from planService
         this.scenarioState = 'PENDING';
         this.disableForms();

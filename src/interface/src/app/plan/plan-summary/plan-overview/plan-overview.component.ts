@@ -1,7 +1,6 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, concatMap, Observable, take } from 'rxjs';
-import { PlanService } from 'src/app/services';
+import { BehaviorSubject } from 'rxjs';
 import { Plan } from 'src/app/types';
 
 @Component({
@@ -13,7 +12,6 @@ export class PlanOverviewComponent {
   @Input() plan$ = new BehaviorSubject<Plan | null>(null);
 
   constructor(
-    private planService: PlanService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -26,14 +24,5 @@ export class PlanOverviewComponent {
     } else {
       this.router.navigate(['config', configId], { relativeTo: this.route });
     }
-  }
-
-  private newConfig(): Observable<number> {
-    return this.planService.planState$.pipe(
-      concatMap((planState) =>
-        this.planService.createProjectInPlan(planState.currentPlanId!)
-      ),
-      take(1)
-    );
   }
 }

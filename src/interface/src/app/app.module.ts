@@ -59,7 +59,6 @@ import { ResetPasswordDialogComponent } from './forget-password/reset-password-d
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
-import { CurrencyInKPipe } from './pipes/currency-in-k.pipe';
 
 @NgModule({
   declarations: [
