@@ -1,9 +1,8 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormGroup } from '@angular/forms';
+
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { PlanService, PlanState } from 'src/app/services';
 import {
@@ -30,7 +29,7 @@ describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanService: PlanService;
-  let fakeGeoJson: GeoJSON.GeoJSON;
+
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
@@ -47,10 +46,6 @@ describe('CreateScenariosComponent', () => {
   };
 
   beforeEach(async () => {
-    fakeGeoJson = {
-      type: 'FeatureCollection',
-      features: [],
-    };
     fakePlanService = jasmine.createSpyObj<PlanService>(
       'PlanService',
       {
