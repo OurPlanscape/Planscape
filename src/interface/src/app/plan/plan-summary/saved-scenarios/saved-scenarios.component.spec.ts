@@ -8,7 +8,7 @@ import {
   tick,
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanService } from 'src/app/services';
@@ -16,11 +16,16 @@ import { Region } from 'src/app/types';
 
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
+import { MatButtonHarness } from '@angular/material/button/testing';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { By } from '@angular/platform-browser';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
   let fakePlanService: PlanService;
+  let loader: HarnessLoader;
 
   beforeEach(async () => {
     const fakeRoute = jasmine.createSpyObj(
@@ -78,6 +83,8 @@ describe('SavedScenariosComponent', () => {
       ownerId: '1',
       region: Region.SIERRA_NEVADA,
     };
+
+    loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('should create', () => {
@@ -100,6 +107,22 @@ describe('SavedScenariosComponent', () => {
 
     expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
   });
+
+  it('clicking new configuration button should call service and navigate', fakeAsync(async () => {
+    const route = fixture.debugElement.injector.get(ActivatedRoute);
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate');
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    button.nativeElement.click();
+    expect(router.navigate).toHaveBeenCalledOnceWith(['config', ''], {
+      relativeTo: route,
+    });
+    discardPeriodicTasks();
+  }));
 
   it('should poll for changes', fakeAsync(() => {
     spyOn(component, 'fetchScenarios');
