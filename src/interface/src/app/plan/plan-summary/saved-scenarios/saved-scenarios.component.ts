@@ -5,6 +5,7 @@ import { interval, take } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import { Plan, Scenario } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { POLLING_INTERVAL } from '../../plan-helpers';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -49,7 +50,8 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   private pollForChanges() {
-    interval(3000)
+    // we might want to check if any scenario is still pending in order to poll
+    interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => this.fetchScenarios());
   }

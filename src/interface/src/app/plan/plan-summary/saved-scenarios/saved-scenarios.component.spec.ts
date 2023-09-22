@@ -15,8 +15,9 @@ import { PlanService } from 'src/app/services';
 import { Region } from 'src/app/types';
 
 import { SavedScenariosComponent } from './saved-scenarios.component';
+import { POLLING_INTERVAL } from '../../plan-helpers';
 
-fdescribe('SavedScenariosComponent', () => {
+describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
   let fakePlanService: PlanService;
@@ -104,7 +105,7 @@ fdescribe('SavedScenariosComponent', () => {
     spyOn(component, 'fetchScenarios');
     fixture.detectChanges();
     expect(component.fetchScenarios).toHaveBeenCalledTimes(1);
-    tick(3000);
+    tick(POLLING_INTERVAL);
     fixture.detectChanges();
     expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
     discardPeriodicTasks();
