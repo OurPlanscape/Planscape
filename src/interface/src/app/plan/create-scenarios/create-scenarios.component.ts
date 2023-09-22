@@ -20,20 +20,15 @@ import { takeUntil } from 'rxjs/operators';
 
 import { PlanService } from 'src/app/services';
 import {
-  colorTransitionTrigger,
-  expandCollapsePanelTrigger,
-  opacityTransitionTrigger,
-} from 'src/app/shared/animations';
-import {
   Plan,
   Scenario,
   ScenarioConfig,
+  ScenarioResult,
+  ScenarioResultStatus,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
 import features from '../../features/features.json';
-
-type ScenarioState = 'not-started' | 'pending' | 'completed';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -71,8 +66,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
 
-  // TODO This should come from somewhere
-  scenarioState: ScenarioState = 'not-started';
+  // this value gets updated once we load the scenario result.
+  scenarioState: ScenarioResultStatus = 'NOT_STARTED';
+
+  scenarioResults: ScenarioResult | null = null;
 
   constructor(
     private fb: FormBuilder,
@@ -105,23 +102,26 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
         {
           budgetForm: this.fb.group({
             // Estimated cost in $ per acre
-            estimatedCost: ['', Validators.min(0)],
+            estimatedCost: [2470, Validators.min(0)],
             // Max cost of treatment for entire planning area
             // Initially disabled, estimatedCost is required as input before maxCost is enabled
-            maxCost: [{ value: '', disabled: true }, Validators.min(0.01)],
+            maxCost: ['', Validators.min(0.01)],
           }),
           physicalConstraintForm: this.fb.group({
+            // TODO Update if needed once we have confirmation if this is the correct default %
             // Maximum slope allowed for planning area
             maxSlope: [
-              '',
+              37,
               [Validators.min(0), Validators.max(100), Validators.required],
             ],
             // Minimum distance from road allowed for planning area
-            minDistanceFromRoad: ['', [Validators.min(0), Validators.required]],
+            minDistanceFromRoad: [
+              1000,
+              [Validators.min(0), Validators.required],
+            ],
             // Maximum area to be treated in acres
-            maxArea: ['', [Validators.min(0), Validators.required]],
+            maxArea: ['', [Validators.min(0)]],
             // Stand Size selection
-            // TODO validate to make sure standSize is only 'Small', 'Medium', or 'Large'
             standSize: ['Large', Validators.required],
           }),
           excludedAreasForm: this.fb.group(excludedAreasChosen),
@@ -184,20 +184,21 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     constraintsForm: AbstractControl
   ): ValidationErrors | null {
     // Only one of budget or treatment area constraints is required.
-
-    // TODO Add maxArea input and make required, this extra validator may be deprecated
-    // const estimatedCost = constraintsForm.get('budgetForm.estimatedCost');
-    // const maxArea = constraintsForm.get('treatmentForm.maxArea');
-    const maxSlope = constraintsForm.get('physicalConstraintForm.maxSlope');
-    const maxDistance = constraintsForm.get(
-      'physicalConstraintForm.minDistanceFromRoad'
-    );
-    const valid = !!maxSlope?.value || !!maxDistance?.value;
+    const maxCost = constraintsForm.get('budgetForm.maxCost');
+    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { budgetOrAreaRequired: true };
   }
 
   private loadConfig(): void {
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
+      if (scenario.scenario_result) {
+        this.scenarioResults = scenario.scenario_result;
+        this.scenarioState = scenario.scenario_result?.status;
+        this.disableForms();
+        this.selectedTabIndex = 1;
+      }
+
       var config = scenario.configuration;
       const scenarioName = this.nameFormGroup.get('scenarioName');
       const estimatedCost = this.constraintsFormGroup.get(
@@ -335,7 +336,8 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .createScenario(this.formValueToScenario())
       .subscribe((_) => {
         const planId = this.plan$.getValue()?.id;
-        this.scenarioState = 'pending';
+        // TODO maybe this state should come as the result of creating scenario from planService
+        this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;
       });

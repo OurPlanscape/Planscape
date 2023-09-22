@@ -1,5 +1,6 @@
 {
   "login": true,
+  "scenario_constraints": false,
   "show_centralcoast": true,
   "show_future_control_panel": false,
   "show_socal": true,

@@ -15,16 +15,20 @@
   <tbody>
     <tr *ngFor="let area of areas">
       <td>{{ area.id }}</td>
-      <td>{{ area.acres }}</td>
-      <td>{{ area.percentTotal }}</td>
-      <td>{{ area.estimatedCost }}</td>
-      <td class="score">{{ area.score }}</td>
+      <td data-id="acres">{{ area.acres | number: '1.0-0' }}</td>
+      <td data-id="percentTotal">{{ area.percentTotal | percent: '1.0-2' }}</td>
+      <td data-id="estimatedCost">{{ area.estimatedCost | currencyInK }}</td>
+      <td data-id="score" class="score">{{ area.score }}</td>
     </tr>
     <tr class="total-row">
       <td></td>
-      <td>{{ total.acres }}</td>
-      <td>{{ total.percentTotal }}</td>
-      <td>{{ total.estimatedCost }}</td>
+      <td data-id="total-acres">{{ total.acres | number: '1.0-0' }}</td>
+      <td data-id="total-percent">
+        {{ total.percentTotal | percent: '1.0-2' }}
+      </td>
+      <td data-id="total-estimatedCost">
+        {{ total.estimatedCost | currencyInK }}
+      </td>
       <td></td>
     </tr>
   </tbody>

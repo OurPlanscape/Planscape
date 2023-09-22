@@ -2,29 +2,30 @@
   <!-- Form -->
   <form class="constraints-form" [formGroup]="constraintsForm!">
     <div class="constraints-content">
-      <div formGroupName="budgetForm" class="flex-column">
+      <div class="flex-column">
         <div class="top-label">
-          <label class="form-label">ESTIMATED COSTS</label>
-          <label class="optional">(optional)</label>
+          <label class="form-label">CONSTRAINTS</label>
         </div>
-        <div class="flex-row">
+      </div>
+      <div class="flex-row">
+        <div formGroupName="physicalConstraintForm">
           <div>
             <mat-form-field
               class="input-field"
               appearance="outline"
               floatLabel="always">
-              <mat-label>Treatment cost</mat-label>
+              <mat-label>Max acres to be treated</mat-label>
               <input
-                id="estimatedCost"
                 class="right-align"
-                formControlName="estimatedCost"
+                formControlName="maxArea"
                 matInput
                 type="number"
-                (input)="toggleMaxCost()" />
-              <span matPrefix>$&nbsp;</span>
-              <span matSuffix>/acre</span>
+                (input)="togglMaxAreaAndMaxCost()" />
             </mat-form-field>
           </div>
+        </div>
+        or
+        <div formGroupName="budgetForm">
           <div>
             <mat-form-field
               class="input-field"
@@ -36,19 +37,17 @@
                 class="right-align"
                 formControlName="maxCost"
                 matInput
-                type="number" />
+                type="number"
+                (input)="togglMaxAreaAndMaxCost()" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
           </div>
         </div>
       </div>
-    </div>
-    <div class="constraints-content">
-      <div formGroupName="physicalConstraintForm" class="flex-column">
-        <div class="top-label">
-          <label class="form-label">PHYSICAL CONSTRAINTS</label>
-        </div>
-        <div class="flex-row">
+      <div class="flex-row">
+        <div
+          *appFeatureFlag="'scenario_constraints'"
+          formGroupName="physicalConstraintForm">
           <div>
             <mat-form-field
               class="input-field"
@@ -59,39 +58,51 @@
                 class="right-align"
                 formControlName="maxSlope"
                 matInput
-                type="number" />
+                type="number"
+                [value]="37" />
               <span matSuffix>%</span>
             </mat-form-field>
           </div>
+        </div>
+        <div formGroupName="budgetForm">
           <div>
             <mat-form-field
               class="input-field"
               appearance="outline"
               floatLabel="always">
-              <mat-label>Distance from roads</mat-label>
+              <mat-label>Treatment cost</mat-label>
               <input
+                id="estimatedCost"
                 class="right-align"
-                formControlName="minDistanceFromRoad"
+                formControlName="estimatedCost"
                 matInput
                 type="number" />
-              <span matSuffix>yds</span>
+              <span matPrefix>$&nbsp;</span>
+              <span matSuffix>/acre</span>
             </mat-form-field>
           </div>
         </div>
-        <div class="flex-row">
-          <div>
-            <mat-form-field
-              class="input-field"
-              appearance="outline"
-              floatLabel="always">
-              <mat-label>Max acres to be treated</mat-label>
-              <input
-                class="right-align"
-                formControlName="maxArea"
-                matInput
-                type="number" />
-            </mat-form-field>
-          </div>
+      </div>
+      <div
+        *appFeatureFlag="'scenario_constraints'"
+        formGroupName="physicalConstraintForm"
+        class="flex-row">
+        <div>
+          <mat-form-field
+            class="input-field"
+            appearance="outline"
+            floatLabel="always">
+            <mat-label>Distance from roads</mat-label>
+            <input
+              class="right-align"
+              formControlName="minDistanceFromRoad"
+              matInput
+              type="number"
+              [value]="" />
+            <span matSuffix>yds</span>
+          </mat-form-field>
+        </div>
+        <div>
           <mat-form-field class="input-field" appearance="outline">
             <mat-label>Stand size</mat-label>
             <mat-select formControlName="standSize" required>

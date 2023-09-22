@@ -8,14 +8,21 @@ import { OpacitySliderComponent } from './opacity-slider/opacity-slider.componen
 import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { FeaturesModule } from '../features/features.module';
 import { RouterLinkWithHref } from '@angular/router';
+import { CurrencyInKPipe } from '../pipes/currency-in-k.pipe';
 
 @NgModule({
   declarations: [
     FileUploaderComponent,
     OpacitySliderComponent,
     NavBarComponent,
+    CurrencyInKPipe,
   ],
-  exports: [FileUploaderComponent, OpacitySliderComponent, NavBarComponent],
+  exports: [
+    FileUploaderComponent,
+    OpacitySliderComponent,
+    NavBarComponent,
+    CurrencyInKPipe,
+  ],
   imports: [
     CommonModule,
     FormsModule,

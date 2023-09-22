@@ -54,6 +54,9 @@ features that require login to use (e.g planning) when set to false. When login
 is disabled it also replaces the plans on the homepage with a message
 explaining that some buttons and features are disabled.  
 
+### scenario_constraints
+This flag will display the Max slope, Distance from roads, and Stand size inputs on the Scenario configuration page. 
+
 ### show_centralcoast
 This flag will display the option to switch to the Central Coast region,
 and therefore allow for the display of Central Coast data.
@@ -94,6 +97,7 @@ for angular tests to pass.  You can start with this, but later enable settings.
 ```
 {
   "login": true,
+  "scenario_constraints": false,
   "show_centralcoast": false,
   "show_future_control_panel": false,
   "show_socal": false,
