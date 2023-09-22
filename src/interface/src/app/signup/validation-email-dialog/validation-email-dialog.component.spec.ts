@@ -12,6 +12,8 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { AuthService } from 'src/app/services';
 
 import { ValidationEmailDialogComponent } from './validation-email-dialog.component';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ValidationEmailDialogComponent', () => {
   let component: ValidationEmailDialogComponent;
@@ -42,7 +44,8 @@ describe('ValidationEmailDialogComponent', () => {
       {}
     );
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [MaterialModule, RouterTestingModule],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [ValidationEmailDialogComponent],
       providers: [
         {
