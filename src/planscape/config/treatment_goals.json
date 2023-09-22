@@ -24,7 +24,7 @@
                 "sawtimber_biomass",
                 "costs_of_potential_treatment_moving_biomass",
                 "costs_of_potential_treatment_moving_sawlogs",
-                "california_spotted_owl"
+                "california_spotted_owl_habitat"
               ],
               "stand_thresholds": [],
               "global_thresholds": []
@@ -46,7 +46,7 @@
                 "available_standing_biomass",
                 "sawtimber_biomass",
                 "heavy_fuel_load",
-                "california_spotted_owl"
+                "california_spotted_owl_habitat"
               ],
               "stand_thresholds": [],
               "global_thresholds": []
@@ -68,7 +68,7 @@
                 "heavy_fuel_load",
                 "probability_of_fire_severity_high",
                 "probability_of_fire_severity_moderate",
-                "california_spotted_owl"
+                "california_spotted_owl_habitat"
               ],
               "stand_thresholds": [
                 "PHSF > 0.2"
@@ -93,7 +93,7 @@
                 "sawtimber_biomass",
                 "seral_stage_late",
                 "low_income_populations",
-                "california_spotted_owl"
+                "california_spotted_owl_habitat"
               ],
               "stand_thresholds": [
                 "PHSF < 0.3 & Burnable == 1"
