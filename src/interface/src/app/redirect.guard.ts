@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import {
   CanActivate,
   ActivatedRouteSnapshot,
-  Router,
   RouterStateSnapshot,
 } from '@angular/router';
 
@@ -10,7 +9,7 @@ import {
   providedIn: 'root',
 })
 export class RedirectGuard implements CanActivate {
-  constructor(private router: Router) {}
+  constructor() {}
 
   canActivate(
     route: ActivatedRouteSnapshot,
