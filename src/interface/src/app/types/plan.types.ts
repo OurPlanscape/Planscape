@@ -43,10 +43,11 @@ export interface FeatureCollection {
 }
 
 export type ScenarioResultStatus =
-  | 'PENDING'
-  | 'RUNNING'
-  | 'SUCCESS'
-  | 'FAILURE';
+  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
+  | 'PENDING' // Scenario created, in queue
+  | 'RUNNING' // Scenario created, being processed
+  | 'SUCCESS' // Run completed successfully
+  | 'FAILURE'; // Run failed;
 
 export interface ScenarioResult {
   status: ScenarioResultStatus;

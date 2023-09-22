@@ -52,7 +52,9 @@
         <mat-tab label="Results">
           <ng-container [ngSwitch]="scenarioState">
             <app-scenario-not-started
-              *ngSwitchCase="'PENDING'"></app-scenario-not-started>
+              *ngSwitchCase="'NOT_STARTED'"></app-scenario-not-started>
+            <app-scenario-pending
+              *ngSwitchCase="'PENDING'"></app-scenario-pending>
             <app-scenario-pending
               *ngSwitchCase="'RUNNING'"></app-scenario-pending>
             <app-scenario-results

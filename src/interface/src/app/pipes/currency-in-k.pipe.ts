@@ -13,7 +13,6 @@ export class CurrencyInKPipe implements PipeTransform {
   constructor(public currencyPipe: CurrencyPipe) {}
 
   transform(value: number): string | null {
-    console.log(value);
     if (!value) {
       return '$0';
     }
