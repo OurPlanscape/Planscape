@@ -41,7 +41,6 @@ class CustomLoginSerializer(LoginSerializer):
     """Custom serializer to re-send user verification email if they are not verified."""
 
     def validate(self, attrs):
-        print(attrs)
         try:
             # We want to call the parent validate function first to ensure that
             # the username and password combination is valid.

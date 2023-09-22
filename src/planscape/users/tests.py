@@ -1,9 +1,10 @@
 import re
+import time
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.core import mail
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, override_settings
 from django.urls import reverse
 
 
@@ -183,6 +184,10 @@ class PasswordChangeTest(TransactionTestCase):
             },
         )
         self.user = User.objects.filter(email="testuser@test.com").get()
+        # Mark the user as verified.
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
 
     def test_password_change_confirmation_email(self):
         # Must do a full login.
@@ -208,3 +213,53 @@ class PasswordChangeTest(TransactionTestCase):
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "[Planscape] Password Changed")
         self.assertIn("Team Planscape", mail.outbox[0].body)
+
+
+# Override the setting so that there is no cooldown time between verification
+# emails.
+@override_settings(ACCOUNT_EMAIL_CONFIRMATION_COOLDOWN=0)
+class LoginTest(TransactionTestCase):
+    def setUp(self):
+        self.client.post(
+            reverse("rest_register"),
+            {
+                "email": "testuser@test.com",
+                "password1": "ComplexPassword123",
+                "password2": "ComplexPassword123",
+                "first_name": "FirstName",
+                "last_name": "LastName",
+            },
+        )
+        self.user = User.objects.filter(email="testuser@test.com").get()
+        # Empty the outbox before trying to login in tests below.
+        mail.outbox = []
+
+    def test_login_unverified_user(self):
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "testuser@test.com", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject,
+                        "[Planscape] Please Confirm Your E-mail Address")
+
+    def test_login_verified_user(self):
+        email = EmailAddress.objects.filter(email="testuser@test.com").get()
+        email.verified = True
+        email.save()
+
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "testuser@test.com", "password": "ComplexPassword123"},
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_login_incorrect_password(self):
+        response = self.client.post(
+            reverse("rest_login"),
+            {"email": "testuser@test.com", "password": "IncorrectPassword"},
+        )
+        self.assertEqual(response.status_code, 400)
+        # No email is sent for user to verify email because login failed.
+        self.assertEqual(len(mail.outbox), 0)
