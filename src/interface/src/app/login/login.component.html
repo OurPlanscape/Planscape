@@ -21,12 +21,20 @@
             Forgot password?
           </a>
         </p>
-        <mat-card-actions>
+        <mat-card-actions class="login-form-buttons">
+          <button
+            mat-stroked-button
+            color="primary"
+            (click)="continueAsGuest()"
+            class="login-form-button">
+            Continue as Guest
+          </button>
           <button
             mat-flat-button
             color="primary"
             type="submit"
-            [disabled]="!form.valid">
+            [disabled]="!form.valid"
+            class="login-form-button">
             Sign in
           </button>
         </mat-card-actions>
@@ -34,12 +42,6 @@
           {{ accountError }}
         </mat-error>
       </form>
-
-      <mat-divider></mat-divider>
-
-      <button mat-stroked-button color="primary" (click)="continueAsGuest()">
-        Continue as Guest
-      </button>
 
       <p class="signup-text">
         <a href="signup/">Create an account</a>
