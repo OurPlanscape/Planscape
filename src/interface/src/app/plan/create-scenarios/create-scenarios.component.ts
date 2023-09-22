@@ -20,11 +20,6 @@ import { takeUntil } from 'rxjs/operators';
 
 import { PlanService } from 'src/app/services';
 import {
-  colorTransitionTrigger,
-  expandCollapsePanelTrigger,
-  opacityTransitionTrigger,
-} from 'src/app/shared/animations';
-import {
   Plan,
   Scenario,
   ScenarioConfig,
@@ -34,8 +29,6 @@ import {
   TreatmentQuestionConfig,
 } from 'src/app/types';
 import features from '../../features/features.json';
-
-type ScenarioState = 'not-started' | 'pending' | 'completed';
 
 @Component({
   selector: 'app-create-scenarios',
@@ -74,7 +67,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   project_area_upload_enabled = features.upload_project_area;
 
   // this value gets updated once we load the scenario result.
-  scenarioState: ScenarioResultStatus = 'PENDING';
+  scenarioState: ScenarioResultStatus = 'NOT_STARTED';
 
   scenarioResults: ScenarioResult | null = null;
 
@@ -346,6 +339,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       .createScenario(this.formValueToScenario())
       .subscribe((_) => {
         const planId = this.plan$.getValue()?.id;
+        // TODO maybe this state should come as the result of creating scenario from planService
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;
