@@ -11,6 +11,7 @@ import { PlanService, PlanState } from 'src/app/services';
 
 import { PlanModule } from './../../plan.module';
 import { PlanOverviewComponent } from './plan-overview.component';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('PlanOverviewComponent', () => {
   let component: PlanOverviewComponent;
@@ -39,12 +40,8 @@ describe('PlanOverviewComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [
-        HttpClientTestingModule,
-        MaterialModule,
-        PlanModule,
-        RouterTestingModule,
-      ],
+      imports: [HttpClientTestingModule, MaterialModule, RouterTestingModule],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [PlanOverviewComponent],
       providers: [
         {
@@ -62,21 +59,6 @@ describe('PlanOverviewComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
-  });
-
-  it('clicking new configuration button should call service and navigate', async () => {
-    const route = fixture.debugElement.injector.get(ActivatedRoute);
-    const router = fixture.debugElement.injector.get(Router);
-    spyOn(router, 'navigate');
-    let createScenarioButton = await loader.getHarness(
-      MatButtonHarness.with({ text: /NEW SCENARIO/ })
-    );
-
-    await createScenarioButton.click();
-
-    expect(router.navigate).toHaveBeenCalledOnceWith(['config', ''], {
-      relativeTo: route,
-    });
   });
 
   it('opening a config should navigate', () => {

@@ -8,8 +8,9 @@ import {
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
-
 import { ConstraintsPanelComponent } from './constraints-panel.component';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FeaturesModule } from '../../../features/features.module';
 //TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
 /**
  * 'marks maxCost as not required input if maxArea is provided'
@@ -27,7 +28,9 @@ describe('ConstraintsPanelComponent', () => {
         MaterialModule,
         NoopAnimationsModule,
         MatButtonToggleModule,
+        FeaturesModule,
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [ConstraintsPanelComponent],
       providers: [FormBuilder],
     }).compileComponents();
