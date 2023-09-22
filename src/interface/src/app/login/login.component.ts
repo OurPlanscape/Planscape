@@ -22,7 +22,7 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private router: Router,
+    private router: Router
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
