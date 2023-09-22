@@ -2,7 +2,13 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ApplicationRef, NO_ERRORS_SCHEMA } from '@angular/core';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  flush,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -20,7 +26,6 @@ import {
   MapService,
   PlanService,
   PlanState,
-  PopupService,
   SessionService,
 } from '../services';
 import {
@@ -335,7 +340,7 @@ describe('MapComponent', () => {
       });
     });
 
-    it('enables drawing on selected map and shows cloned layer on other maps', async () => {
+    it('enables drawing on selected map and shows cloned layer on other maps', fakeAsync(async () => {
       component.ngAfterViewInit();
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
@@ -344,7 +349,7 @@ describe('MapComponent', () => {
         })
       );
       await button.click();
-
+      tick();
       component.maps[3].instance?.fireEvent('click');
 
       expect(component.mapViewOptions$.getValue().selectedMapIndex).toBe(3);
@@ -371,7 +376,8 @@ describe('MapComponent', () => {
           ).toBeTrue();
         }
       });
-    });
+      flush();
+    }));
   });
 
   describe('Layer controls', () => {
@@ -460,7 +466,7 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
     });
 
-    it('sets up drawing', async () => {
+    it('sets up drawing', fakeAsync(async () => {
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({
@@ -469,6 +475,7 @@ describe('MapComponent', () => {
       );
 
       await button.click();
+      tick();
       const selectedMap =
         component.maps[component.mapViewOptions$.getValue().selectedMapIndex];
 
@@ -482,9 +489,9 @@ describe('MapComponent', () => {
       expect(
         selectedMap.instance?.hasLayer(mapManager.drawingLayer)
       ).toBeTrue();
-    });
+    }));
 
-    it('enables polygon tool when drawing option is selected', async () => {
+    it('enables polygon tool when drawing option is selected', fakeAsync(async () => {
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({
@@ -493,14 +500,14 @@ describe('MapComponent', () => {
       );
 
       await button.click();
-
+      tick();
       expect(component.onAreaCreationActionChange).toHaveBeenCalled();
       expect(
         component.maps[
           component.mapViewOptions$.getValue().selectedMapIndex
         ].instance?.hasLayer(mapManager.drawingLayer)
       ).toBeTrue();
-    });
+    }));
 
     it('mirrors drawn polygon in all maps', () => {
       const selectedMap =
@@ -627,7 +634,7 @@ describe('MapComponent', () => {
   });
 
   describe('Create plan', () => {
-    it('if user is signed out, opens sign in dialog', async () => {
+    it('if user is signed out, opens sign in dialog', fakeAsync(async () => {
       userSignedIn$.next(false);
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
@@ -642,14 +649,15 @@ describe('MapComponent', () => {
       );
 
       await button.click();
+      tick();
 
       expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
         SignInDialogComponent,
         { maxWidth: '560px' }
       );
-    });
+    }));
 
-    it('if user is signed in, opens create plan dialog', async () => {
+    it('if user is signed in, opens create plan dialog', fakeAsync(async () => {
       userSignedIn$.next(true);
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
@@ -665,15 +673,16 @@ describe('MapComponent', () => {
       );
 
       await button.click();
+      tick();
 
       expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
         PlanCreateDialogComponent,
         { maxWidth: '560px' }
       );
       expect(planServiceStub.createPlan).toHaveBeenCalled();
-    });
+    }));
 
-    it('dialog calls create plan with name and planning area', async () => {
+    it('dialog calls create plan with name and planning area', fakeAsync(async () => {
       userSignedIn$.next(true);
       const planServiceStub: PlanService =
         fixture.debugElement.injector.get(PlanService);
@@ -690,11 +699,12 @@ describe('MapComponent', () => {
       ).and.callThrough();
 
       fixture.componentInstance.openCreatePlanDialog();
+      tick();
 
       expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
       expect(planServiceStub.createPlan).toHaveBeenCalled();
       expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan', 'temp']);
-    });
+    }));
   });
 
   describe('Map session management', () => {
