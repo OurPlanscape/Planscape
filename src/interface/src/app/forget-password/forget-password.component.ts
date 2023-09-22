@@ -56,4 +56,8 @@ export class ForgetPasswordComponent {
       },
     });
   }
+
+  cancel() {
+    this.router.navigate(['login']);
+  }
 }

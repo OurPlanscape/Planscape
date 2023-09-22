@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BehaviorSubject, of } from 'rxjs';
@@ -17,20 +16,13 @@ describe('LoginComponent', () => {
   let fakeAuthService: jasmine.SpyObj<AuthService>;
   let loader: HarnessLoader;
 
-  let dialogSpy: jasmine.Spy;
-  let dialogRefSpyObj = jasmine.createSpyObj({
-    afterClosed: of({}),
-    close: null,
-  });
-  dialogRefSpyObj.componentInstance = { body: '' }; // attach componentInstance to the spy object...
-
   beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
       'login',
     ]);
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule, MatDialogModule],
+      imports: [FormsModule, ReactiveFormsModule],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -41,12 +33,6 @@ describe('LoginComponent', () => {
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
-  });
-
-  beforeEach(() => {
-    dialogSpy = spyOn(TestBed.get(MatDialog), 'open').and.returnValue(
-      dialogRefSpyObj
-    );
   });
 
   it('can load instance', () => {
