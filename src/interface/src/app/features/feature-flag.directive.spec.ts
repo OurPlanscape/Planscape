@@ -43,12 +43,12 @@ describe('FeatureFlagDirective', () => {
 
 @Component({
   template: `
-    <h2 *featureFlag="'not_valid'">False</h2>
-    <h2 *featureFlag="'undefined'">Undefined</h2>
-    <h2 *featureFlag="''">Nothing</h2>
-    <h2 *featureFlag="'valid'">True</h2>
-    <h3 *featureFlag="'valid'; hide: true">Hidden</h3>
-    <h4 *featureFlag="'valid'; hide: false">Visible</h4>
+    <h2 *appFeatureFlag="'not_valid'">False</h2>
+    <h2 *appFeatureFlag="'undefined'">Undefined</h2>
+    <h2 *appFeatureFlag="''">Nothing</h2>
+    <h2 *appFeatureFlag="'valid'">True</h2>
+    <h3 *appFeatureFlag="'valid'; hide: true">Hidden</h3>
+    <h4 *appFeatureFlag="'valid'; hide: false">Visible</h4>
   `,
 })
 class TestComponent {}

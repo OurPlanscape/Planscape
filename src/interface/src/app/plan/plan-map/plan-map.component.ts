@@ -36,13 +36,14 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() mapId?: string;
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
+  @Input() showAttributionAndZoom: boolean = false;
 
   private readonly destroy$ = new Subject<void>();
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
-  panelExpanded: boolean = true;
+
   // TODO grab region from planning area
   selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
@@ -74,9 +75,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
           this.shapes = state.mapShapes;
           this.drawShapes(state.mapShapes);
         }
-        if (state.panelExpanded !== this.panelExpanded) {
-          this.panelExpanded = state.panelExpanded ?? false;
-        }
       });
   }
 
@@ -92,8 +90,18 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       zoomControl: false,
       pmIgnore: false,
       scrollWheelZoom: false,
-      attributionControl: false,
+      attributionControl: this.showAttributionAndZoom,
     });
+
+    if (this.showAttributionAndZoom) {
+      this.map.attributionControl.setPosition('topright');
+
+      // Add zoom controls to bottom right corner
+      const zoomControl = L.control.zoom({
+        position: 'bottomright',
+      });
+      zoomControl.addTo(this.map);
+    }
 
     if (this.plan) {
       this.drawPlanningArea(this.plan!);
@@ -126,10 +134,16 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
   private stadiaAlidadeTiles() {
+    var attributionString = '';
+    if (this.showAttributionAndZoom) {
+      attributionString =
+        '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors';
+    }
     return L.tileLayer(
       'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
       {
         maxZoom: 19,
+        attribution: attributionString,
       }
     );
   }
@@ -174,19 +188,5 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }),
     });
     this.projectAreasLayer.addTo(this.map);
-  }
-
-  showTogglePanelButton(): Observable<boolean> {
-    return this.planService.planState$.pipe(
-      map(
-        (planState) =>
-          !!planState.currentConfigId || !!planState.currentScenarioId
-      )
-    );
-  }
-
-  togglePanel(): void {
-    this.panelExpanded = !this.panelExpanded;
-    this.planService.updateStateWithPanelState(this.panelExpanded);
   }
 }

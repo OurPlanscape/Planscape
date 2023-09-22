@@ -21,6 +21,7 @@ import {
   ProjectArea,
   ProjectConfig,
   TreatmentGoalConfig,
+  TreatmentQuestionConfig,
 } from './../types/plan.types';
 import { SessionService, MapService } from '../services';
 
@@ -34,7 +35,6 @@ export interface PlanState {
   currentConfigId: ProjectConfig['id'] | null;
   mapConditionLayer: string | null;
   mapShapes: any | null;
-  panelExpanded?: boolean;
 }
 
 export interface BackendPlan {
@@ -83,13 +83,11 @@ export class PlanService {
     currentConfigId: null,
     mapConditionLayer: null,
     mapShapes: null,
-    panelExpanded: true,
   });
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
   >(null);
-  readonly selectedRegion$ = this.sessionService.region$;
-
+  readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   constructor(
     private http: HttpClient,
     private sessionService: SessionService,
@@ -99,7 +97,7 @@ export class PlanService {
       .get<TreatmentGoalConfig[]>(
         BackendConstants.END_POINT +
           '/planning/treatment_goals_config/?region_name=' +
-          `${this.mapService.regionToString(this.selectedRegion$.getValue())}`
+          `${this.mapService.regionToString(this.planRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: TreatmentGoalConfig[]) => {
@@ -479,19 +477,33 @@ export class PlanService {
   }
 
   private convertToScenarioConfig(config: any): ScenarioConfig {
+    var selectedQuestion: TreatmentQuestionConfig | null = null;
+    this.treatmentGoalsConfig$.subscribe((goals) => {
+      goals!.forEach((goal) => {
+        goal.questions.forEach((question) => {
+          if (
+            question['scenario_priorities']?.toString() ==
+              config.scenario_priorities?.toString() &&
+            question['weights']?.toString() == config.weights?.toString()
+          ) {
+            selectedQuestion = question;
+          }
+        });
+      });
+    });
+
     return {
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
-      priorities: config.priorities,
-      weights: config.weights,
+      treatment_question: selectedQuestion,
       excluded_areas: config.excluded_areas,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
+      created_timestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
       ),
-      projectAreas: this.convertToProjectAreas(config.project_areas),
+      project_areas: this.convertToProjectAreas(config.project_areas),
     };
   }
 
@@ -542,15 +554,19 @@ export class PlanService {
     });
   }
 
-  private convertConfigToScenario(config: ProjectConfig): any {
+  private convertConfigToScenario(config: ScenarioConfig): any {
     return {
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
       max_treatment_area_ratio: config.max_treatment_area_ratio,
-      priorities: config.priorities,
-      weights: config.weights,
+      scenario_priorities: config.treatment_question!['scenario_priorities'],
+      scenario_output_fields:
+        config.treatment_question!['scenario_output_fields'],
+      stand_thresholds: config.treatment_question!['stand_thresholds'],
+      global_thresholds: config.treatment_question!['global_thresholds'],
+      weights: config.treatment_question!['weights'],
       excluded_areas: config.excluded_areas,
     };
   }
@@ -642,18 +658,6 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-  updateStateWithPanelState(panelExpanded: boolean) {
-    const currentState = Object.freeze(this.planState$.value);
-    const updatedState = Object.freeze({
-      ...currentState,
-      all: {
-        ...currentState.all,
-      },
-      panelExpanded: panelExpanded,
-    });
-    this.planState$.next(updatedState);
-  }
-
   private createPlanApi(plan: BasePlan): Observable<Plan> {
     const createPlanRequest = this.convertToDbPlan(plan);
     return this.http
@@ -674,5 +678,24 @@ export class PlanService {
           };
         })
       );
+  }
+
+  /**
+   * Updates planRegion and treatmentGoalsConfig if value is a valid Region
+   */
+  setPlanRegion(value: Region) {
+    if (Object.values(Region).includes(value)) {
+      this.planRegion$.next(value);
+      this.http
+        .get<TreatmentGoalConfig[]>(
+          BackendConstants.END_POINT +
+            '/planning/treatment_goals_config/?region_name=' +
+            `${this.mapService.regionToString(this.planRegion$.getValue())}`
+        )
+        .pipe(take(1))
+        .subscribe((config: TreatmentGoalConfig[]) => {
+          this.treatmentGoalsConfig$.next(config);
+        });
+    }
   }
 }

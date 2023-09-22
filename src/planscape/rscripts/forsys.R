@@ -14,8 +14,6 @@ library("purrr")
 
 readRenviron("src/planscape/planscape/.env")
 
-COST_PER_ACRE <- 2470
-
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -31,6 +29,8 @@ if (is.null(scenario_id)) {
   print_help(parser)
   stop("You need to specify one scenario id.")
 }
+
+DEFAULT_COST_PER_ACRE <- 2470
 
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
@@ -169,13 +169,25 @@ rename_col <- function(name) {
   return(new_name)
 }
 
+get_cost_per_acre <- function(scenario) {
+  configuration <- get_configuration(scenario)
+  user_defined_cost <- configuration[["est_cost"]]
+  if (is.null(user_defined_cost)) {
+    return(DEFAULT_COST_PER_ACRE)
+  } else {
+    return(user_defined_cost)
+  }
+}
+
 to_properties <- function(
     project_id,
     scenario,
     forsys_project_outputs) {
+  scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
-    mutate(cost_per_acre = ETrt_area_acres * COST_PER_ACRE) %>%
+    mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
+    mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
     rename_with(.fn = rename_col)
   return(as.list(project_data))
@@ -289,7 +301,7 @@ call_forsys <- function(
   # this might be configurable in the future. if it's the case, it will come in
   # the configuration variable. This also might change due the course of the
   # project as we're not sure on how many projects we will have at the beginning
-  number_of_projects <- 10
+  number_of_projects <- 5
   min_area <- configuration$max_treatment_area_ratio
   max_area <- min_area * number_of_projects
   out <- forsys::run(
@@ -309,8 +321,7 @@ call_forsys <- function(
     patchmax_SDW = 0.5,
     patchmax_EPW = 1,
     patchmax_sample_frac = 0.1,
-    annual_target_field = "area_acres",
-    annual_target = 100000
+    annual_target_value = 100000
   )
   return(out)
 }
