@@ -1,6 +1,5 @@
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Feature, Geometry } from 'geojson';
 import { MaterialModule } from 'src/app/material/material.module';
 
 import { ProjectCardComponent } from './project-card.component';
