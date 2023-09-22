@@ -249,10 +249,22 @@ get_priorities <- function(
     configuration,
     key = "scenario_priorities") {
   priorities <- list()
-  for (priority in configuration[[key]]) {
-    condition <- priority_to_condition(connection, scenario, priority)
-    priorities <- append(priorities, list(condition))
-  }
+
+  priorities <- lapply(configuration[[key]], function(priority) {
+    priority <- priority_to_condition(connection, scenario, priority)
+    return(priority)
+  })
+  priorities <- priorities[-(which(
+    sapply(
+      priorities,
+      function(item) {
+        return(nrow(item) < 1)
+      }
+    ),
+    arr.ind = TRUE
+  ))]
+
+  print(priorities)
   return(as.data.frame(priorities))
 }
 
