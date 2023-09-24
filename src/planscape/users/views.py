@@ -70,7 +70,7 @@ def verify_password_reset_token(
     # Get the UserModel
     UserModel = get_user_model()
 
-    if 'allauth' in settings.INSTALLED_APPS:
+    if "allauth" in settings.INSTALLED_APPS:
         from allauth.account.forms import default_token_generator
         from allauth.account.utils import url_str_to_user_pk as uid_decoder
     else:
@@ -82,10 +82,9 @@ def verify_password_reset_token(
         uid = force_str(uid_decoder(user_id))
         user = UserModel._default_manager.get(pk=uid)
     except (TypeError, ValueError, OverflowError, UserModel.DoesNotExist):
-        raise HttpResponseBadRequest("Invalid url.")
+        return HttpResponseBadRequest("Invalid url.")
 
     if not default_token_generator.check_token(user, token):
-        raise HttpResponseBadRequest("Invalid token.")
-    
-    return JsonResponse({"valid": True})
+        return HttpResponseBadRequest("Invalid token.")
 
+    return JsonResponse({"valid": True})
