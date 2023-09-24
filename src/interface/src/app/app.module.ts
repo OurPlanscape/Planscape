@@ -60,6 +60,7 @@ import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-s
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
 import { CurrencyInKPipe } from './pipes/currency-in-k.pipe';
+import { PasswordResetComponent } from './password-reset/password-reset.component';
 
 @NgModule({
   declarations: [
@@ -91,6 +92,7 @@ import { CurrencyInKPipe } from './pipes/currency-in-k.pipe';
     MapConfigSummaryComponent,
     ForgetPasswordComponent,
     AboutComponent,
+    PasswordResetComponent,
   ],
   imports: [
     AppRoutingModule,
