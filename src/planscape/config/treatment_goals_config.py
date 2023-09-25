@@ -73,6 +73,7 @@ class TreatmentGoalsConfig:
                         "scenario_priorities",
                         "weights",
                         "scenario_output_fields",
+                        "scenario_output_fields_paths",
                         "stand_thresholds",
                         "global_thresholds",
                     ]
@@ -82,6 +83,7 @@ class TreatmentGoalsConfig:
                 and isinstance(treatment_question["scenario_priorities"], list)
                 and isinstance(treatment_question["weights"], list)
                 and isinstance(treatment_question["scenario_output_fields"], list)
+                and isinstance(treatment_question["scenario_output_fields_paths"], list)
                 and isinstance(treatment_question["stand_thresholds"], list)
                 and isinstance(treatment_question["global_thresholds"], list)
             )
