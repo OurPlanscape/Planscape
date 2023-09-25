@@ -146,7 +146,7 @@ class PasswordResetTest(TransactionTestCase):
         # POST request to get reset password link.
         self.client.post(reverse("rest_password_reset"), {"email": "testuser@test.com"})
 
-        # Check that reset email was sink and extract reset token.
+        # Check that reset email was sent and extract reset token.
         self.assertEqual(len(mail.outbox), 1)
         token_search = re.search("/reset/([a-z0-9]+)/([a-z0-9-]+)", mail.outbox[0].body)
         self.assertIsNotNone(token_search)
@@ -191,7 +191,7 @@ class PasswordResetTest(TransactionTestCase):
         # POST request to get reset password link.
         self.client.post(reverse("rest_password_reset"), {"email": "testuser@test.com"})
 
-        # Check that reset email was sink and extract reset token.
+        # Check that reset email was sent and extract reset token.
         self.assertEqual(len(mail.outbox), 1)
         token_search = re.search("/reset/([a-z0-9]+)/([a-z0-9-]+)", mail.outbox[0].body)
         self.assertIsNotNone(token_search)
