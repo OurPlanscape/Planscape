@@ -70,6 +70,10 @@ def verify_password_reset_token(
     # Get the UserModel
     UserModel = get_user_model()
 
+    # dj-rest-auth supports both allauth and non-allauth methods of generating
+    # password reset tokens. In order to mirror the validation done on the token
+    # we also handle both methods.
+    # https://github.com/iMerica/dj-rest-auth/blob/master/dj_rest_auth/serializers.py#L276-L291
     if "allauth" in settings.INSTALLED_APPS:
         from allauth.account.forms import default_token_generator
         from allauth.account.utils import url_str_to_user_pk as uid_decoder
