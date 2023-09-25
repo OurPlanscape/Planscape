@@ -29,7 +29,7 @@ interface LogoutResponse {
   detail: string;
 }
 
-interface PasswordResetToken {
+export interface PasswordResetToken {
   userId: string;
   token: string;
 }
@@ -190,11 +190,25 @@ export class AuthService {
     );
   }
 
-  resetPassword(token: string, userId: string): Observable<boolean> {
+  resetPassword(
+    userId: string,
+    token: string,
+    password1: string,
+    password2: string
+  ): Observable<boolean> {
     return this.http
-      .get(this.API_ROOT.concat('reset/confirm/', userId, '/', token, '/'), {
-        withCredentials: true,
-      })
+      .post(
+        this.API_ROOT.concat('password/reset/confirm/'),
+        {
+          uid: userId,
+          token: token,
+          new_password1: password1,
+          new_password2: password2,
+        },
+        {
+          withCredentials: true,
+        }
+      )
       .pipe(
         map((response: any) => {
           return response.success;

@@ -61,6 +61,7 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
 import { NgChartsModule } from 'ng2-charts';
 import { CurrencyInKPipe } from './pipes/currency-in-k.pipe';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
+import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
   declarations: [
@@ -93,6 +94,7 @@ import { PasswordResetComponent } from './password-reset/password-reset.componen
     ForgetPasswordComponent,
     AboutComponent,
     PasswordResetComponent,
+    ConfirmationDialogComponent,
   ],
   imports: [
     AppRoutingModule,

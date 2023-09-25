@@ -15,7 +15,11 @@ import { MapComponent } from './map/map.component';
 import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
 import { PlanComponent } from './plan/plan.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
-import { AuthGuard, ValidationResolver, passwordResetTokenResolver } from './services';
+import {
+  AuthGuard,
+  ValidationResolver,
+  passwordResetTokenResolver,
+} from './services';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './redirect.guard';
 
