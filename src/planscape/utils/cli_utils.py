@@ -64,6 +64,7 @@ def get_forsys_call(scenario_id):
     return [
         "Rscript",
         str(settings.FORSYS_PATCHMAX_SCRIPT),
+        "--scenario",
         str(scenario_id),
     ]
 
