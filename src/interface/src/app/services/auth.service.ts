@@ -374,7 +374,6 @@ export const passwordResetTokenResolver: ResolveFn<
         return passwordResetToken;
       }),
       catchError((error: Error) => {
-        inject(Router).navigate(['reset']);
         return of(null);
       })
     );

@@ -47,6 +47,9 @@ export class PasswordResetComponent {
 
   ngOnInit() {
     this.activatedRoute.data.subscribe(({ passwordResetToken }) => {
+      if (!passwordResetToken) {
+        this.router.navigate(['reset']);
+      }
       this.passwordResetToken = passwordResetToken;
     });
   }
