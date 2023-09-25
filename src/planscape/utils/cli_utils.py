@@ -62,7 +62,7 @@ def psql_pipe(command, head_stdin, env=None):
 
 def get_forsys_call(scenario_id):
     return [
-        "RScript",
+        "Rscript",
         str(settings.FORSYS_PATCHMAX_SCRIPT),
         str(scenario_id),
     ]
