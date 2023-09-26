@@ -11,9 +11,7 @@ describe('SummaryPanelComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [SummaryPanelComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [
-        HttpClientTestingModule,
-      ],
+      imports: [HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SummaryPanelComponent);

@@ -669,7 +669,6 @@ export class PlanService {
     planningAreaConfig: BasePlan,
     planId: string
   ): Observable<number> {
-    
     const url = BackendConstants.END_POINT.concat(
       '/planning/update_planning_area/'
     );
