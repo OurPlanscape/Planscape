@@ -440,6 +440,7 @@ export class PlanService {
       name: plan.name,
       region_name: plan.region,
       geometry: plan.planningArea,
+      notes: plan.notes,
     };
   }
 
@@ -679,6 +680,30 @@ export class PlanService {
           };
         })
       );
+  }
+
+  /** Updates a planning area with new parameters. */
+  updatePlanningArea(
+    planningAreaConfig: BasePlan,
+    planId: string
+  ): Observable<number> {
+
+    const updatePlanRequest = this.convertToDbPlan(planningAreaConfig);
+    const url = BackendConstants.END_POINT.concat(
+      '/planning/update_planning_area/'
+    );
+    return this.http
+      .patch<number>(
+        url,
+        {
+          id: planId,
+          notes: planningAreaConfig.notes,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(take(1));
   }
 
   /**

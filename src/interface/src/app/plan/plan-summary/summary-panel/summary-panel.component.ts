@@ -1,6 +1,8 @@
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
-import { calculateAcres } from '../../plan-helpers';
+import { calculateAcres, NOTE_SAVE_INTERVAL } from '../../plan-helpers';
+import { Subject, interval, takeUntil } from 'rxjs';
+import { PlanService } from 'src/app/services';
 
 export interface SummaryInput {
   id?: string;
@@ -40,7 +42,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   templateUrl: './summary-panel.component.html',
   styleUrls: ['./summary-panel.component.scss'],
 })
-export class SummaryPanelComponent implements OnChanges {
+export class SummaryPanelComponent implements OnInit, OnChanges {
   @Input() plan: Plan | null = null;
   @Input() owner: User | null = null;
 
@@ -48,7 +50,15 @@ export class SummaryPanelComponent implements OnChanges {
   conditionScore: ConditionName = ConditionName.POOR;
   futureConditionScore: ConditionName = ConditionName.LEANING_GOOD;
   conditionScoreColorMap = conditionScoreColorMap;
+  private readonly destroy$ = new Subject<void>();
+  notes: string = '';
 
+  constructor(private planService: PlanService) {}
+
+  ngOnInit(): void {
+    this.notes = this.plan?.notes ? this.plan?.notes : '';
+    this.autoSaveNotes();
+  }
   ngOnChanges(): void {
     if (!!this.plan) {
       this.summaryInput = {
@@ -69,5 +79,18 @@ export class SummaryPanelComponent implements OnChanges {
         status: 'In progress',
       };
     }
+  }
+
+  autoSaveNotes(): void {
+    interval(NOTE_SAVE_INTERVAL)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        if (this.plan && this.plan.notes !== this.notes) {
+          this.plan.notes = this.notes;
+          this.planService
+            .updatePlanningArea(this.plan, this.plan.id)
+            .subscribe();
+        }
+      });
   }
 }

@@ -69,7 +69,7 @@
 
 .notes {
   width: 100%;
-  height: 80px;
+  height: 100%;
   resize: none;
 }
 
@@ -87,5 +87,13 @@
 
   ::ng-deep .mat-form-field-flex {
     height: 200px;
+  }
+
+  ::ng-deep .mat-form-field-infix {
+    height: 90%
+  }
+
+  ::ng-deep .mat-form-field-underline {
+    display: none;
   }
 }
