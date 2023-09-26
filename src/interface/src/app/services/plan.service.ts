@@ -669,8 +669,7 @@ export class PlanService {
     planningAreaConfig: BasePlan,
     planId: string
   ): Observable<number> {
-
-    const updatePlanRequest = this.convertToDbPlan(planningAreaConfig);
+    
     const url = BackendConstants.END_POINT.concat(
       '/planning/update_planning_area/'
     );
