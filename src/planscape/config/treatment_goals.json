@@ -33,8 +33,8 @@
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "scenario_priorities": [
-                "structure_exposure_score",
-                "wui_damage_potential"
+                "structure_exposure",
+                "damage_potential_wui"
               ],
               "weights": [],
               "scenario_output_fields": [
