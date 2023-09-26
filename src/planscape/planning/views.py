@@ -386,9 +386,6 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         scenario_result = ScenarioResult.objects.create(scenario=scenario)
         scenario_result.save()
 
-        # async popen call
-        call_forsys(scenario.pk)
-
         return HttpResponse(
             json.dumps({"id": scenario.pk}), content_type="application/json"
         )

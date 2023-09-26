@@ -1,5 +1,4 @@
 import json
-from unittest import mock
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TransactionTestCase
@@ -716,30 +715,28 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         self.assertEqual(planning_area["geometry"], self.internal_geometry)
 
         # create a scenario
-        with mock.patch("planning.views.call_forsys", return_value=True) as call_forsys:
-            response = self.client.post(
-                reverse("planning:create_scenario"),
-                {
-                    "planning_area": listed_planning_area["id"],
-                    "configuration": json.dumps(self.scenario_configuration),
-                    "name": "test scenario",
-                    "notes": "test notes",
-                },
-                content_type="application/json",
-            )
-            self.assertEqual(response.status_code, 200)
-            output = json.loads(response.content)
-            scenario_id = output["id"]
-            self.assertEqual(Scenario.objects.count(), 1)
-            self.assertEqual(ScenarioResult.objects.count(), 1)
-            scenario = Scenario.objects.get(pk=scenario_id)
-            self.assertEqual(scenario.planning_area.pk, listed_planning_area["id"])
-            self.assertEqual(
-                scenario.configuration, json.dumps(self.scenario_configuration)
-            )
-            self.assertEqual(scenario.name, "test scenario")
-            self.assertEqual(scenario.notes, "test notes")
-            call_forsys.assert_called_with(scenario_id)
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            {
+                "planning_area": listed_planning_area["id"],
+                "configuration": json.dumps(self.scenario_configuration),
+                "name": "test scenario",
+                "notes": "test notes",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        output = json.loads(response.content)
+        scenario_id = output["id"]
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(ScenarioResult.objects.count(), 1)
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertEqual(scenario.planning_area.pk, listed_planning_area["id"])
+        self.assertEqual(
+            scenario.configuration, json.dumps(self.scenario_configuration)
+        )
+        self.assertEqual(scenario.name, "test scenario")
+        self.assertEqual(scenario.notes, "test notes")
 
         # check that scenario metadata shows up in the plan details.
         response = self.client.get(
@@ -837,53 +834,49 @@ class CreateScenarioTest(TransactionTestCase):
         }
 
     def test_create_scenario(self):
-        with mock.patch("planning.views.call_forsys", return_value=True) as call_forsys:
-            self.client.force_login(self.user)
-            response = self.client.post(
-                reverse("planning:create_scenario"),
-                {
-                    "planning_area": self.planning_area.pk,
-                    "configuration": json.dumps(self.configuration),
-                    "name": "test scenario",
-                    "notes": "test notes",
-                },
-                content_type="application/json",
-            )
-            self.assertEqual(response.status_code, 200)
-            output = json.loads(response.content)
-            scenario_id = output["id"]
-            self.assertEqual(Scenario.objects.count(), 1)
-            self.assertEqual(ScenarioResult.objects.count(), 1)
-            scenario = Scenario.objects.get(pk=scenario_id)
-            self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
-            self.assertEqual(scenario.configuration, json.dumps(self.configuration))
-            self.assertEqual(scenario.name, "test scenario")
-            self.assertEqual(scenario.notes, "test notes")
-            call_forsys.assert_called_with(scenario_id)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            {
+                "planning_area": self.planning_area.pk,
+                "configuration": json.dumps(self.configuration),
+                "name": "test scenario",
+                "notes": "test notes",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        output = json.loads(response.content)
+        scenario_id = output["id"]
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(ScenarioResult.objects.count(), 1)
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
+        self.assertEqual(scenario.configuration, json.dumps(self.configuration))
+        self.assertEqual(scenario.name, "test scenario")
+        self.assertEqual(scenario.notes, "test notes")
 
     def test_create_scenario_no_notes(self):
-        with mock.patch("planning.views.call_forsys", return_value=True) as call_forsys:
-            self.client.force_login(self.user)
-            response = self.client.post(
-                reverse("planning:create_scenario"),
-                {
-                    "planning_area": self.planning_area.pk,
-                    "configuration": json.dumps(self.configuration),
-                    "name": "test scenario",
-                },
-                content_type="application/json",
-            )
-            self.assertEqual(response.status_code, 200)
-            output = json.loads(response.content)
-            scenario_id = output["id"]
-            self.assertEqual(Scenario.objects.count(), 1)
-            self.assertEqual(ScenarioResult.objects.count(), 1)
-            scenario = Scenario.objects.get(pk=scenario_id)
-            self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
-            self.assertEqual(scenario.configuration, json.dumps(self.configuration))
-            self.assertEqual(scenario.name, "test scenario")
-            self.assertEqual(scenario.notes, None)
-            call_forsys.assert_called_with(scenario_id)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            {
+                "planning_area": self.planning_area.pk,
+                "configuration": json.dumps(self.configuration),
+                "name": "test scenario",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        output = json.loads(response.content)
+        scenario_id = output["id"]
+        self.assertEqual(Scenario.objects.count(), 1)
+        self.assertEqual(ScenarioResult.objects.count(), 1)
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
+        self.assertEqual(scenario.configuration, json.dumps(self.configuration))
+        self.assertEqual(scenario.name, "test scenario")
+        self.assertEqual(scenario.notes, None)
 
     def test_create_scenario_missing_planning_area(self):
         self.client.force_login(self.user)

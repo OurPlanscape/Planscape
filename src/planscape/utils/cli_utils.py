@@ -74,4 +74,4 @@ def call_forsys(scenario_id, env=None):
     if env:
         environment = {**environment, **env}
     forsys_call = get_forsys_call(scenario_id)
-    return subprocess.Popen(forsys_call, env=env)
+    return subprocess.run(forsys_call, env=env, check=True)
