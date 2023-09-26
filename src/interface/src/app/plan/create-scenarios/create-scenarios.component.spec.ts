@@ -1,6 +1,11 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
@@ -17,6 +22,7 @@ import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
+import { POLLING_INTERVAL } from '../plan-helpers';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -111,14 +117,17 @@ describe('CreateScenariosComponent', () => {
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    spyOn(component, 'pollForChanges');
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should load existing scenario', () => {
+    spyOn(component, 'pollForChanges');
+    fixture.detectChanges();
     expect(fakePlanService.getScenario).toHaveBeenCalledOnceWith('1');
     component.formGroups[2].valueChanges.subscribe((_) => {
       expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
@@ -127,62 +136,78 @@ describe('CreateScenariosComponent', () => {
     });
   });
 
-  it('should emit create scenario event on Generate button click', async () => {
-    spyOn(component, 'createScenario');
-    component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
-    component.formGroups[1]
-      .get('selectedQuestion')
-      ?.setValue(defaultSelectedQuestion);
-    component.formGroups[2].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[2]
-      .get('physicalConstraintForm.minDistanceFromRoad')
-      ?.setValue(1);
-    component.formGroups[2].get('physicalConstraintForm.maxArea')?.setValue(1);
-    fixture.detectChanges();
+  describe('generate button', () => {
+    beforeEach(() => {
+      // spy on polling to avoid dealing with async and timeouts
+      spyOn(component, 'pollForChanges');
+      fixture.detectChanges();
+    });
 
-    const buttonHarness: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: /GENERATE/ })
-    );
+    it('should emit create scenario event on Generate button click', async () => {
+      spyOn(component, 'createScenario');
+      component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
+      component.formGroups[1]
+        .get('selectedQuestion')
+        ?.setValue(defaultSelectedQuestion);
+      component.formGroups[2]
+        .get('physicalConstraintForm.maxSlope')
+        ?.setValue(1);
+      component.formGroups[2]
+        .get('physicalConstraintForm.minDistanceFromRoad')
+        ?.setValue(1);
+      component.formGroups[2]
+        .get('physicalConstraintForm.maxArea')
+        ?.setValue(1);
+      fixture.detectChanges();
 
-    // Click on "GENERATE SCENARIO" button
-    await buttonHarness.click();
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
 
-    expect(component.createScenario).toHaveBeenCalled();
-  });
+      // Click on "GENERATE SCENARIO" button
+      await buttonHarness.click();
 
-  it('should disable Generate button if form is invalid', async () => {
-    const buttonHarness: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: /GENERATE/ })
-    );
-    component.formGroups[1].markAsDirty();
-    component.formGroups[2]
-      .get('physicalConstraintForm.minDistanceFromRoad')
-      ?.setValue(-1);
-    fixture.detectChanges();
+      expect(component.createScenario).toHaveBeenCalled();
+    });
 
-    // Click on "GENERATE SCENARIO" button
-    await buttonHarness.click();
+    it('should disable Generate button if form is invalid', async () => {
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      component.formGroups[1].markAsDirty();
+      component.formGroups[2]
+        .get('physicalConstraintForm.minDistanceFromRoad')
+        ?.setValue(-1);
+      fixture.detectChanges();
 
-    expect(await buttonHarness.isDisabled()).toBeTrue();
-  });
+      // Click on "GENERATE SCENARIO" button
+      await buttonHarness.click();
 
-  it('should enable Generate button if form is valid', async () => {
-    const buttonHarness: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: /GENERATE/ })
-    );
-    component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
-    component.formGroups[1]
-      .get('selectedQuestion')
-      ?.setValue(defaultSelectedQuestion);
-    component.formGroups[2].get('physicalConstraintForm.maxSlope')?.setValue(1);
-    component.formGroups[2]
-      .get('physicalConstraintForm.minDistanceFromRoad')
-      ?.setValue(1);
-    component.formGroups[2].get('physicalConstraintForm.maxArea')?.setValue(1);
-    component.generatingScenario = false;
-    fixture.detectChanges();
+      expect(await buttonHarness.isDisabled()).toBeTrue();
+    });
 
-    expect(await buttonHarness.isDisabled()).toBeFalse();
+    it('should enable Generate button if form is valid', async () => {
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
+      component.formGroups[1]
+        .get('selectedQuestion')
+        ?.setValue(defaultSelectedQuestion);
+      component.formGroups[2]
+        .get('physicalConstraintForm.maxSlope')
+        ?.setValue(1);
+      component.formGroups[2]
+        .get('physicalConstraintForm.minDistanceFromRoad')
+        ?.setValue(1);
+      component.formGroups[2]
+        .get('physicalConstraintForm.maxArea')
+        ?.setValue(1);
+      component.generatingScenario = false;
+      fixture.detectChanges();
+
+      expect(await buttonHarness.isDisabled()).toBeFalse();
+    });
   });
 
   // TODO Re-enable when support for uploading project areas in implemented
@@ -205,6 +230,12 @@ describe('CreateScenariosComponent', () => {
   // });
 
   describe('convertSingleGeoJsonToGeoJsonArray', () => {
+    beforeEach(() => {
+      // spy on polling to avoid dealing with async and timeouts
+      spyOn(component, 'pollForChanges');
+      fixture.detectChanges();
+    });
+
     it('converts a geojson with multiple multipolygons into geojsons', () => {
       const testMultiGeoJson: GeoJSON.GeoJSON = {
         type: 'FeatureCollection',
@@ -332,5 +363,29 @@ describe('CreateScenariosComponent', () => {
         },
       ]);
     });
+  });
+
+  describe('polling', () => {
+    it('should poll for changes if status is pending', fakeAsync(() => {
+      spyOn(component, 'loadConfig');
+      component.scenarioState = 'PENDING';
+      fixture.detectChanges();
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+      expect(component.loadConfig).toHaveBeenCalledTimes(2);
+      discardPeriodicTasks();
+    }));
+
+    it('should not poll for changes if status is not pending', fakeAsync(() => {
+      spyOn(component, 'loadConfig');
+      component.scenarioState = 'NOT_STARTED';
+      fixture.detectChanges();
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+      tick(POLLING_INTERVAL);
+      fixture.detectChanges();
+      expect(component.loadConfig).toHaveBeenCalledTimes(1);
+      discardPeriodicTasks();
+    }));
   });
 });

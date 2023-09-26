@@ -1,14 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { take } from 'rxjs';
+import { interval, take } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import { Plan, Scenario } from 'src/app/types';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { POLLING_INTERVAL } from '../../plan-helpers';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
 }
-
+@UntilDestroy()
 @Component({
   selector: 'app-saved-scenarios',
   templateUrl: './saved-scenarios.component.html',
@@ -44,6 +46,14 @@ export class SavedScenariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchScenarios();
+    this.pollForChanges();
+  }
+
+  private pollForChanges() {
+    // we might want to check if any scenario is still pending in order to poll
+    interval(POLLING_INTERVAL)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.fetchScenarios());
   }
 
   fetchScenarios(): void {
