@@ -1,10 +1,5 @@
-import {
-  Component,
-  OnDestroy,
-  OnInit,
-  ViewChild,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+
 import {
   AbstractControl,
   FormBuilder,
@@ -13,11 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
-import { BehaviorSubject, Subject, Observable } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
-
+import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import {
   Plan,
@@ -29,13 +20,16 @@ import {
   TreatmentQuestionConfig,
 } from 'src/app/types';
 import features from '../../features/features.json';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { POLLING_INTERVAL } from '../plan-helpers';
 
+@UntilDestroy()
 @Component({
   selector: 'app-create-scenarios',
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
 })
-export class CreateScenariosComponent implements OnInit, OnDestroy {
+export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTabIndex = 0;
   generatingScenario: boolean = false;
@@ -63,7 +57,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     'Tribal Lands',
   ];
 
-  private readonly destroy$ = new Subject<void>();
   project_area_upload_enabled = features.upload_project_area;
 
   // this value gets updated once we load the scenario result.
@@ -73,12 +66,10 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private matSnackBar: MatSnackBar,
-    private planService: PlanService,
-    private router: Router
+    private planService: PlanService
   ) {
     this.treatmentGoals = this.planService.treatmentGoalsConfig$.pipe(
-      takeUntil(this.destroy$)
+      untilDestroyed(this)
     );
 
     var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
@@ -148,7 +139,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Get plan details and current config ID from plan state, then load the config.
     this.planService.planState$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
@@ -160,6 +151,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     if (this.scenarioId) {
       // Has to be outside of service subscription or else will cause infinite loop
       this.loadConfig();
+      this.pollForChanges();
     }
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -175,9 +167,18 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+  pollForChanges() {
+    interval(POLLING_INTERVAL)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        // only poll when scenario is pending or running
+        if (
+          this.scenarioState === 'PENDING' ||
+          this.scenarioState === 'RUNNING'
+        ) {
+          this.loadConfig();
+        }
+      });
   }
 
   private constraintsFormValidator(
@@ -190,7 +191,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     return valid ? null : { budgetOrAreaRequired: true };
   }
 
-  private loadConfig(): void {
+  loadConfig(): void {
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
@@ -271,7 +272,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     let scenarioNameConfig: string = '';
     let plan_id: string = '';
     this.planService.planState$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((planState) => {
         plan_id = planState.currentPlanId!;
       });
@@ -311,22 +312,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     };
   }
 
-  private updatePriorityWeightsFormControls(): void {
-    const priorities: string[] = this.nameFormGroup.get('priorities')?.value;
-    const priorityWeightsForm: FormGroup = this.formGroups[3].get(
-      'priorityWeightsForm'
-    ) as FormGroup;
-    priorityWeightsForm.controls = {};
-    priorities.forEach((priority) => {
-      const priorityControl = this.fb.control(1, [
-        Validators.required,
-        Validators.min(1),
-        Validators.max(5),
-      ]);
-      priorityWeightsForm.addControl(priority, priorityControl);
-    });
-  }
-
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
@@ -335,7 +320,7 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
     this.planService
       .createScenario(this.formValueToScenario())
       .subscribe((_) => {
-        const planId = this.plan$.getValue()?.id;
+        // const planId = this.plan$.getValue()?.id;
         // TODO maybe this state should come as the result of creating scenario from planService
         this.scenarioState = 'PENDING';
         this.disableForms();

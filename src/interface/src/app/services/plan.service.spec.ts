@@ -14,7 +14,6 @@ import {
 } from '../types';
 import {
   PlanPreview,
-  ProjectConfig,
   Scenario,
   ScenarioConfig,
   TreatmentGoalConfig,

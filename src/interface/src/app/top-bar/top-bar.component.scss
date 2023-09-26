@@ -70,9 +70,13 @@
 }
 
 @media print {
-  .nav-link, .username, .mat-menu-trigger , .avatar {
+  .nav-link, .username, .mat-menu-trigger , .avatar , .help{
     display: none;
   }
+  .mat-toolbar {
+    background-color: white;
+  }
+
   .mat-toolbar .site-link {
     color: black;
   }

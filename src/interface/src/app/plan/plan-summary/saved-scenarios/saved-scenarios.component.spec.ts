@@ -1,14 +1,22 @@
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  discardPeriodicTasks,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanService } from 'src/app/services';
 import { Region } from 'src/app/types';
 
 import { SavedScenariosComponent } from './saved-scenarios.component';
+import { POLLING_INTERVAL } from '../../plan-helpers';
+import { By } from '@angular/platform-browser';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -71,25 +79,52 @@ describe('SavedScenariosComponent', () => {
       ownerId: '1',
       region: Region.SIERRA_NEVADA,
     };
-
-    fixture.detectChanges();
   });
 
   it('should create', () => {
+    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
   it('should call service for list of scenarios', () => {
+    fixture.detectChanges();
     expect(fakePlanService.getScenariosForPlan).toHaveBeenCalledOnceWith('1');
 
     expect(component.scenarios.length).toEqual(1);
   });
 
   it('should delete selected scenarios', () => {
+    fixture.detectChanges();
     component.highlightedId = '1';
 
     component.deleteSelectedScenarios();
 
     expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
   });
+
+  it('clicking new configuration button should call service and navigate', fakeAsync(async () => {
+    const route = fixture.debugElement.injector.get(ActivatedRoute);
+    const router = fixture.debugElement.injector.get(Router);
+    spyOn(router, 'navigate');
+    fixture.detectChanges();
+
+    const button = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    button.nativeElement.click();
+    expect(router.navigate).toHaveBeenCalledOnceWith(['config', ''], {
+      relativeTo: route,
+    });
+    discardPeriodicTasks();
+  }));
+
+  it('should poll for changes', fakeAsync(() => {
+    spyOn(component, 'fetchScenarios');
+    fixture.detectChanges();
+    expect(component.fetchScenarios).toHaveBeenCalledTimes(1);
+    tick(POLLING_INTERVAL);
+    fixture.detectChanges();
+    expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
+    discardPeriodicTasks();
+  }));
 });

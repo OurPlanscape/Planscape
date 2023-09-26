@@ -1,5 +1,3 @@
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
@@ -14,7 +12,6 @@ import { PlanMapComponent } from './plan-map.component';
 describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
   let fixture: ComponentFixture<PlanMapComponent>;
-  let loader: HarnessLoader;
   let fakePlanService: PlanService;
   let fakePlanState$: BehaviorSubject<PlanState>;
   let fakePlan: Plan;
@@ -64,7 +61,6 @@ describe('PlanMapComponent', () => {
 
     fixture = TestBed.createComponent(PlanMapComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
