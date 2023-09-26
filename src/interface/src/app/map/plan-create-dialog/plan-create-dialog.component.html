@@ -1,17 +1,19 @@
 <h1 mat-dialog-title>Name your plan</h1>
-<mat-dialog-content>
-  <div class="info">
-    <mat-icon>info</mat-icon>
-    <span>Boundaries cannot be modified after the plan is saved.</span>
-  </div>
-  <mat-form-field>
-    <mat-label>Name</mat-label>
-    <input matInput [formControl]="planNameControl" />
-  </mat-form-field>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button color="primary" (click)="cancel()">CANCEL</button>
-  <button mat-button type="submit" color="primary" (click)="submit()">
-    SAVE
-  </button>
-</mat-dialog-actions>
+<form [formGroup]="planForm" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <div class="info">
+      <mat-icon>info</mat-icon>
+      <span>Boundaries cannot be modified after the plan is saved.</span>
+    </div>
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="planName" />
+    </mat-form-field>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button color="primary" type="button" (click)="cancel()">
+      CANCEL
+    </button>
+    <button mat-button type="submit" color="primary">SAVE</button>
+  </mat-dialog-actions>
+</form>
