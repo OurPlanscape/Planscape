@@ -3,6 +3,8 @@ import { FeatureCollection } from 'geojson';
 
 export const NOTE_SAVE_INTERVAL = 5000;
 
+export const POLLING_INTERVAL = 3000;
+
 const SQUARE_METERS_PER_ACRE = 0.0002471054;
 
 export function calculateAcres(planningArea: GeoJSON.GeoJSON) {

@@ -17,13 +17,12 @@ import {
   ScenarioConfig,
   PlanConditionScores,
   PlanPreview,
-  Priority,
   ProjectArea,
   ProjectConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from './../types/plan.types';
-import { SessionService, MapService } from '../services';
+import { MapService } from './map.service';
 
 // TODO Remove Config
 export interface PlanState {
@@ -90,7 +89,6 @@ export class PlanService {
   readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   constructor(
     private http: HttpClient,
-    private sessionService: SessionService,
     private mapService: MapService
   ) {
     this.http
@@ -538,22 +536,6 @@ export class PlanService {
     });
 
     return projectAreas;
-  }
-
-  private convertToPriorities(scenarioPriorities: {
-    [name: string]: number;
-  }): Priority[] {
-    if (!scenarioPriorities) {
-      return [];
-    }
-
-    return Object.entries(scenarioPriorities).map(([priority, weight]) => {
-      return {
-        id: priority,
-        name: priority.replace(/_/g, ' '),
-        weight: weight,
-      };
-    });
   }
 
   private convertConfigToScenario(config: ScenarioConfig): any {

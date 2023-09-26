@@ -3,9 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
@@ -14,7 +12,6 @@ describe('LoginComponent', () => {
   let component: LoginComponent;
   let fixture: ComponentFixture<LoginComponent>;
   let fakeAuthService: jasmine.SpyObj<AuthService>;
-  let loader: HarnessLoader;
 
   beforeEach(async () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
@@ -32,7 +29,6 @@ describe('LoginComponent', () => {
     });
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('can load instance', () => {

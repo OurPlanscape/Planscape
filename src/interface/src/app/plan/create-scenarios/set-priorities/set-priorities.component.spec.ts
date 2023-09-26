@@ -1,32 +1,19 @@
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  FormBuilder,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import {
-  Plan,
-  Region,
-  TreatmentQuestionConfig,
-  TreatmentGoalConfig,
-} from 'src/app/types';
+import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import { ColormapConfig } from './../../../types/legend.types';
-import {
-  ScoreColumn,
-  SetPrioritiesComponent,
-} from './set-priorities.component';
+import { SetPrioritiesComponent } from './set-priorities.component';
 
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
