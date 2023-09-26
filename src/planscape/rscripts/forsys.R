@@ -289,14 +289,24 @@ call_forsys <- function(
   forsys_inputs <- rbind(priorities, outputs)
   stand_data <- get_stand_data(connection, scenario, forsys_inputs)
 
+  if (length((configuration$weights)) == 0) {
+    print("using generated weights")
+    weights <- rep(1, length(priorities$condition_name))
+  } else {
+    print("using provided weights")
+    weights <- configuration$weights
+  }
+
   if (length(priorities$condition_name) > 1) {
+    print("combining priorities into `priority` field")
     stand_data <- stand_data %>% forsys::combine_priorities(
       fields = priorities$condition_name,
-      weights = configuration$weights,
+      weights = weights,
       new_field = "priority"
     )
     scenario_priorities <- c("priority")
   } else {
+    print("single priority")
     scenario_priorities <- first(priorities$condition_name)
   }
   # this might be configurable in the future. if it's the case, it will come in
