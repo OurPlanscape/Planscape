@@ -12,7 +12,7 @@ library("sf")
 library("dplyr")
 library("purrr")
 
-readRenviron("src/planscape/planscape/.env")
+readRenviron("planscape/.env")
 
 options <- list(
   make_option(
