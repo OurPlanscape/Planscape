@@ -405,16 +405,39 @@ main <- function(scenario_id) {
     key = "scenario_output_fields"
   )
 
-  forsys_output <- call_forsys(
-    connection,
-    scenario,
-    configuration,
-    priorities,
-    outputs
+  tryCatch(
+    expr = {
+      forsys_output <- call_forsys(
+        connection,
+        scenario,
+        configuration,
+        priorities,
+        outputs
+      )
+      result <- to_projects(connection, scenario, forsys_output)
+      upsert_scenario_result(
+        connection,
+        now,
+        scenario_id,
+        "SUCCESS",
+        result
+      )
+      log_info(paste("[OK] Forsys succeeeded for scenario", scenario_id))
+    },
+    error = function(e) {
+      log_error(paste("[FAIL] Forsys failed.", e))
+      upsert_scenario_result(
+        connection,
+        now,
+        scenario_id,
+        "FAILURE",
+        list(type = "FeatureCollection", features = list())
+      )
+    },
+    finally = {
+      log_info(paste("[DONE] Forsys execution finished."))
+    }
   )
-
-  result <- to_projects(connection, scenario, forsys_output)
-  upsert_scenario_result(connection, now, scenario_id, "SUCCESS", result)
 }
 
 main(scenario_id)
