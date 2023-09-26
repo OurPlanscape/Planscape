@@ -16,16 +16,12 @@ import { Region } from 'src/app/types';
 
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
-import { MatButtonHarness } from '@angular/material/button/testing';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { By } from '@angular/platform-browser';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
   let fakePlanService: PlanService;
-  let loader: HarnessLoader;
 
   beforeEach(async () => {
     const fakeRoute = jasmine.createSpyObj(
@@ -83,8 +79,6 @@ describe('SavedScenariosComponent', () => {
       ownerId: '1',
       region: Region.SIERRA_NEVADA,
     };
-
-    loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('should create', () => {

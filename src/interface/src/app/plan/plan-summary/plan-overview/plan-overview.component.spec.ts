@@ -1,22 +1,16 @@
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatButtonHarness } from '@angular/material/button/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanService, PlanState } from 'src/app/services';
-
-import { PlanModule } from './../../plan.module';
 import { PlanOverviewComponent } from './plan-overview.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('PlanOverviewComponent', () => {
   let component: PlanOverviewComponent;
   let fixture: ComponentFixture<PlanOverviewComponent>;
-  let loader: HarnessLoader;
   let fakePlanService: PlanService;
 
   beforeEach(async () => {
@@ -53,7 +47,6 @@ describe('PlanOverviewComponent', () => {
 
     fixture = TestBed.createComponent(PlanOverviewComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
