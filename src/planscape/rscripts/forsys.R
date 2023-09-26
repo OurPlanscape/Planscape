@@ -2,6 +2,7 @@
 ## From the planscape repo root, do:
 ## Rscript src/planscape/rscripts/forsys.R --scenario <scenario_id>
 ## Replace `<scenario_id>` with an integer, corresponding with the scenario id
+library("logger")
 library("DBI")
 library("RPostgreSQL")
 library("optparse")
@@ -285,23 +286,23 @@ get_weights <- function(priorities, configuration) {
   weight_count <- length(configuration$weights)
 
   if (weight_count == 0) {
-    print("generating weights")
+    log_info("generating weights")
     return(rep(1, length(priorities$condition_name)))
   }
 
   if (weight_count < condition_count) {
-    print("padding weights")
+    log_info("padding weights")
     return(
       c(configuration$weights, rep(1, condition_count - weight_count))
     )
   }
 
   if (weight_count > condition_count) {
-    print("trimming weights")
+    log_info("trimming weights")
     return(configuration$weights[1:condition_count])
   }
 
-  print("using configured weights")
+  log_info("using configured weights")
   return(configuration$weights)
 }
 
@@ -316,7 +317,7 @@ call_forsys <- function(
 
   if (length(priorities$condition_name) > 1) {
     weights <- get_weights(priorities, configuration)
-    print("combining priorities")
+    log_info("combining priorities")
     stand_data <- stand_data %>% forsys::combine_priorities(
       fields = priorities$condition_name,
       weights = weights,
@@ -324,7 +325,7 @@ call_forsys <- function(
     )
     scenario_priorities <- c("priority")
   } else {
-    print("single priority")
+    log_info("running with single priority")
     scenario_priorities <- first(priorities$condition_name)
   }
   # this might be configurable in the future. if it's the case, it will come in
