@@ -5,17 +5,10 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Router } from '@angular/router';
 import * as L from 'leaflet';
-import {
-  BehaviorSubject,
-  combineLatest,
-  Observable,
-  Subject,
-  takeUntil,
-} from 'rxjs';
+import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { SessionService } from 'src/app/services';
-import { distinctUntilChanged, filter, map } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
   FrontendConstants,
@@ -57,8 +50,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private planService: PlanService,
-    private session: SessionService,
-    private router: Router
+    private session: SessionService
   ) {
     this.selectedRegion$ = this.session.region$;
   }
