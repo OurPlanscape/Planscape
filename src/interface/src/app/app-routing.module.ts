@@ -16,7 +16,7 @@ import { CreateScenariosComponent } from './plan/create-scenarios/create-scenari
 import { PlanComponent } from './plan/plan.component';
 import { AuthGuard, ValidationResolver } from './services';
 import { SignupComponent } from './signup/signup.component';
-import { RedirectGuard } from './redirect.guard';
+import { RedirectGuard } from './services/redirect.guard';
 
 const routes: Routes = [
   {

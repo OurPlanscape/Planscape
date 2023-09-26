@@ -191,9 +191,9 @@ export class SetPrioritiesComponent implements OnInit {
     priority: PriorityRow,
     event: MatCheckboxChange
   ): void {
-    const selectedPriorities: string[] = this.datasource.data
-      .filter((row) => row.selected)
-      .map((row) => row.conditionName);
+    // const selectedPriorities: string[] = this.datasource.data
+    //   .filter((row) => row.selected)
+    //   .map((row) => row.conditionName);
 
     if (event.checked) {
       this.disableDescendants(priority);

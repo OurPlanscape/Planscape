@@ -1,5 +1,3 @@
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -36,7 +34,6 @@ describe('PlanTableComponent', () => {
 
   let component: PlanTableComponent;
   let fixture: ComponentFixture<PlanTableComponent>;
-  let loader: HarnessLoader;
   let fakeAuthService: AuthService;
   let loggedInStatus$: BehaviorSubject<boolean>;
   let fakePlanService: PlanService;
@@ -76,7 +73,6 @@ describe('PlanTableComponent', () => {
 
     fixture = TestBed.createComponent(PlanTableComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   });
 
