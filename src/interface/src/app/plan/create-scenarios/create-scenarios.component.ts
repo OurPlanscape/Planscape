@@ -171,8 +171,11 @@ export class CreateScenariosComponent implements OnInit {
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
       .subscribe(() => {
-        // only poll when scenario is pending
-        if (this.scenarioState === 'PENDING') {
+        // only poll when scenario is pending or running
+        if (
+          this.scenarioState === 'PENDING' ||
+          this.scenarioState === 'RUNNING'
+        ) {
           this.loadConfig();
         }
       });
