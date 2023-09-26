@@ -1,18 +1,11 @@
-import datetime
 import json
 import os
 
-import boto3
-from base.condition_types import ConditionScoreType
 from base.region_name import display_name_to_region, region_to_display_name
-from conditions.models import BaseCondition, Condition
-from conditions.raster_utils import fetch_or_compute_condition_stats
-from config.treatment_goals_config import TreatmentGoalsConfig
 from django.conf import settings as djangoSettings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, Max
-from django.db.models.query import QuerySet
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -25,9 +18,8 @@ from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResu
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
-    ScenarioResultSerializer,
 )
-from planscape import settings
+from utils.cli_utils import call_forsys
 
 
 # Retrieve the logged in user from the HTTP request.

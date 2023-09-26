@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from dj_rest_auth.registration.views import VerifyEmailView
+from users import views as user_views
 
 urlpatterns = [
     path("planscape-backend/admin/", admin.site.urls),
@@ -27,6 +28,11 @@ urlpatterns = [
     path("planscape-backend/projects/", include("existing_projects.urls")),
     # Auth URLs
     path("planscape-backend/users/", include("users.urls")),
+    path(
+        "planscape-backend/dj-rest-auth/password/reset/<slug:user_id>/<slug:token>",
+        user_views.verify_password_reset_token,
+        name="verify_password_reset_token",
+    ),
     path("planscape-backend/dj-rest-auth/", include("dj_rest_auth.urls")),
     path(
         "planscape-backend/dj-rest-auth/registration/",

@@ -224,7 +224,9 @@
     flex-direction: column;
   }
 
-  app-map-control-panel, app-nav-bar, .map-actions-bar {
+  app-map-control-panel,
+  app-nav-bar,
+  .map-actions-bar {
     display: none;
   }
   .map-box.selected {

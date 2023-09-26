@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { Region, RegionOption, regionOptions } from '../types';
 import { MapService, SessionService } from '../services';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-region-dropdown',
@@ -13,7 +12,6 @@ export class RegionDropdownComponent {
   readonly selectedRegion$ = this.sessionService.region$;
 
   constructor(
-    private router: Router,
     private sessionService: SessionService,
     private mapService: MapService
   ) {}

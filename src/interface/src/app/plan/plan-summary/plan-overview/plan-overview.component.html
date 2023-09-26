@@ -1,8 +1,6 @@
 <div class="plan-overview-container">
   <mat-divider></mat-divider>
   <div class="plan-scenario-panel">
-    <app-saved-scenarios
-      [plan]="plan$ | async"
-      (createScenarioEvent)="openConfig()"></app-saved-scenarios>
+    <app-saved-scenarios [plan]="plan$ | async"></app-saved-scenarios>
   </div>
 </div>

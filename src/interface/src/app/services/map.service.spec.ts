@@ -3,17 +3,9 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-
 import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
-import { of, Observable } from 'rxjs';
-import {
-  BoundaryConfig,
-  ColormapConfig,
-  ConditionsConfig,
-  Region,
-} from '../types';
-import * as L from 'leaflet';
+import { ColormapConfig, ConditionsConfig } from '../types';
 import 'leaflet.vectorgrid';
 
 // TODO Make more robust for new boundary vector tile
@@ -21,9 +13,7 @@ describe('MapService', () => {
   let httpTestingController: HttpTestingController;
   let service: MapService;
   let fakeGeoJson: GeoJSON.GeoJSON;
-  let fakeVector: Observable<L.Layer>;
-
-  const boundaryConfigs: BoundaryConfig[] = [];
+  // let fakeVector: Observable<L.Layer>;
 
   const conditionsConfig: ConditionsConfig = {
     pillars: [
@@ -39,28 +29,28 @@ describe('MapService', () => {
       type: 'FeatureCollection',
       features: [],
     };
-    fakeVector = of(
-      L.vectorGrid.protobuf(
-        'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
-        {
-          vectorTileLayerStyles: {
-            vector_huc12: {
-              // To set style value for every layer name (which is the value after '<region>:' in vectorName)
-              weight: 1,
-              fillOpacity: 0,
-              color: '#0000ff',
-              fill: true,
-            },
-          },
-          interactive: true,
-          zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
-          getFeatureId: function (f: any) {
-            return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
-          },
-          maxZoom: 13,
-        }
-      )
-    );
+    // fakeVector = of(
+    //   L.vectorGrid.protobuf(
+    //     'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
+    //     {
+    //       vectorTileLayerStyles: {
+    //         vector_huc12: {
+    //           // To set style value for every layer name (which is the value after '<region>:' in vectorName)
+    //           weight: 1,
+    //           fillOpacity: 0,
+    //           color: '#0000ff',
+    //           fill: true,
+    //         },
+    //       },
+    //       interactive: true,
+    //       zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
+    //       getFeatureId: function (f: any) {
+    //         return f.properties.OBJECTID; // Every boundary feature must have a unique value OBJECTID in order to for hover info to properly work
+    //       },
+    //       maxZoom: 13,
+    //     }
+    //   )
+    // );
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [MapService],

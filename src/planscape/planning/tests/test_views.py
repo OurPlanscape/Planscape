@@ -1,16 +1,9 @@
-import datetime
 import json
-from dumper import dump
-
-from base.condition_types import ConditionLevel, ConditionScoreType
-from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.db import connection
 from django.test import TransactionTestCase
 from django.urls import reverse
 
-from planscape import settings
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 
 # Yes, we are pulling in an internal just for testing that a geometry write happened.
@@ -1528,7 +1521,7 @@ class GetScenarioTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
-            {"id": self.scenario.pk},
+            {"id": self.scenario.pk, "show_results": True},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)

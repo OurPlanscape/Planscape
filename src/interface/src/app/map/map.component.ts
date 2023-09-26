@@ -183,11 +183,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     );
 
     this.mapManager = new MapManager(
-      matSnackBar,
+      this.matSnackBar,
       this.maps,
       this.mapViewOptions$,
-      popupService,
-      sessionService,
+      this.popupService,
+      this.sessionService,
       this.startLoadingLayerCallback.bind(this),
       this.doneLoadingLayerCallback.bind(this),
       this.http
@@ -547,18 +547,18 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  /** Gets the selected region geojson and renders it on the map.
-   * Currently unused.
-   * */
-  private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
-    if (!selectedRegion) return;
-    if (!map.instance) return;
-    this.mapService
-      .getRegionBoundary(selectedRegion)
-      .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.mapManager.maskOutsideRegion(map, boundary);
-      });
-  }
+  // /** Gets the selected region geojson and renders it on the map.
+  //  * Currently unused.
+  //  * */
+  // private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
+  //   if (!selectedRegion) return;
+  //   if (!map.instance) return;
+  //   this.mapService
+  //     .getRegionBoundary(selectedRegion)
+  //     .subscribe((boundary: GeoJSON.GeoJSON) => {
+  //       this.mapManager.maskOutsideRegion(map, boundary);
+  //     });
+  // }
 
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {

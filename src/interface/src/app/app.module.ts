@@ -31,7 +31,7 @@ import { SignInDialogComponent } from './map/sign-in-dialog/sign-in-dialog.compo
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
-import { RedirectGuard } from './redirect.guard';
+
 import {
   AuthGuard,
   AuthService,
@@ -59,7 +59,7 @@ import { ResetPasswordDialogComponent } from './forget-password/reset-password-d
 import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
-import { CurrencyInKPipe } from './pipes/currency-in-k.pipe';
+import { RedirectGuard } from './services/redirect.guard';
 
 @NgModule({
   declarations: [

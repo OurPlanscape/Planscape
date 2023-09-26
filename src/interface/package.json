@@ -26,6 +26,7 @@
     "@angular/platform-browser-dynamic": "^14.2.0",
     "@angular/router": "^14.2.0",
     "@geoman-io/leaflet-geoman-free": "^2.13.1",
+    "@ngneat/until-destroy": "^10.0.0",
     "@turf/area": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
     "@turf/boolean-within": "^6.5.0",

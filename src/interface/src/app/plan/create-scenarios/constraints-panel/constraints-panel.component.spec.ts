@@ -1,26 +1,16 @@
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import {
-  ComponentFixture,
-  TestBed,
-  fakeAsync,
-  tick,
-} from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import {
   FormBuilder,
   FormsModule,
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MatButtonHarness } from '@angular/material/button/testing';
-import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
-
 import { ConstraintsPanelComponent } from './constraints-panel.component';
-import { By } from '@angular/platform-browser';
-import { MatFormField } from '@angular/material/form-field';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { FeaturesModule } from '../../../features/features.module';
 //TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
 /**
  * 'marks maxCost as not required input if maxArea is provided'
@@ -29,7 +19,6 @@ import { MatFormField } from '@angular/material/form-field';
 describe('ConstraintsPanelComponent', () => {
   let component: ConstraintsPanelComponent;
   let fixture: ComponentFixture<ConstraintsPanelComponent>;
-  let loader: HarnessLoader;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -39,13 +28,14 @@ describe('ConstraintsPanelComponent', () => {
         MaterialModule,
         NoopAnimationsModule,
         MatButtonToggleModule,
+        FeaturesModule,
       ],
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [ConstraintsPanelComponent],
       providers: [FormBuilder],
     }).compileComponents();
     fixture = TestBed.createComponent(ConstraintsPanelComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
 
     var excludedAreasOptions = [
       'Private Land',
