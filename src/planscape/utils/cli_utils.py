@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from django.conf import settings
+
 
 def raster2pgpsql(
     raster_path,
@@ -56,3 +58,20 @@ def psql_pipe(command, head_stdin, env=None):
     if env:
         environment = {**environment, **env}
     return subprocess.check_output(command, stdin=head_stdin, env=environment)
+
+
+def get_forsys_call(scenario_id):
+    return [
+        "Rscript",
+        str(settings.FORSYS_PATCHMAX_SCRIPT),
+        "--scenario",
+        str(scenario_id),
+    ]
+
+
+def call_forsys(scenario_id, env=None):
+    environment = os.environ.copy()
+    if env:
+        environment = {**environment, **env}
+    forsys_call = get_forsys_call(scenario_id)
+    return subprocess.Popen(forsys_call, env=env)
