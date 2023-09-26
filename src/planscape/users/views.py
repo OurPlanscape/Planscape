@@ -1,8 +1,11 @@
 import json
 
 from allauth.account.utils import has_verified_email
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.utils.encoding import force_str
 from users.serializers import UserSerializer
 
 
@@ -59,3 +62,33 @@ def is_verified_user(request: HttpRequest) -> HttpResponse:
         return JsonResponse({"verified": True})
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def verify_password_reset_token(
+    request: HttpRequest, user_id: str, token: str
+) -> HttpResponse:
+    # Get the UserModel
+    UserModel = get_user_model()
+
+    # dj-rest-auth supports both allauth and non-allauth methods of generating
+    # password reset tokens. In order to mirror the validation done on the token
+    # we also handle both methods.
+    # https://github.com/iMerica/dj-rest-auth/blob/master/dj_rest_auth/serializers.py#L276-L291
+    if "allauth" in settings.INSTALLED_APPS:
+        from allauth.account.forms import default_token_generator
+        from allauth.account.utils import url_str_to_user_pk as uid_decoder
+    else:
+        from django.contrib.auth.tokens import default_token_generator
+        from django.utils.http import urlsafe_base64_decode as uid_decoder
+
+    # Decode the uidb64 (allauth use base36) to uid to get User object
+    try:
+        uid = force_str(uid_decoder(user_id))
+        user = UserModel._default_manager.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, UserModel.DoesNotExist):
+        return HttpResponseBadRequest("Invalid url.")
+
+    if not default_token_generator.check_token(user, token):
+        return HttpResponseBadRequest("Invalid token.")
+
+    return JsonResponse({"valid": True})

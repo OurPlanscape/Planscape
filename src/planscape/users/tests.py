@@ -146,12 +146,20 @@ class PasswordResetTest(TransactionTestCase):
         # POST request to get reset password link.
         self.client.post(reverse("rest_password_reset"), {"email": "testuser@test.com"})
 
-        # Check that reset email was sink and extract reset token.
+        # Check that reset email was sent and extract reset token.
         self.assertEqual(len(mail.outbox), 1)
         token_search = re.search("/reset/([a-z0-9]+)/([a-z0-9-]+)", mail.outbox[0].body)
         self.assertIsNotNone(token_search)
         uid = token_search.group(1)
         token = token_search.group(2)
+
+        # Verifying the token is valid.
+        response = self.client.get(
+            reverse(
+                "verify_password_reset_token", kwargs={"user_id": uid, "token": token}
+            )
+        )
+        self.assertEqual(response.status_code, 200)
 
         # POST request to set new password with token.
         response = self.client.post(
@@ -169,6 +177,43 @@ class PasswordResetTest(TransactionTestCase):
         self.assertEqual(len(mail.outbox), 2)
         self.assertEqual(mail.outbox[1].subject, "[Planscape] Password Reset")
         self.assertIn("Team Planscape", mail.outbox[1].body)
+
+    def test_verify_with_invalid_password_reset_token(self):
+        # Invalid uid and token
+        response = self.client.get(
+            reverse(
+                "verify_password_reset_token",
+                kwargs={"user_id": "1b", "token": "abcdefg"},
+            )
+        )
+        self.assertEqual(response.status_code, 400)
+
+        # POST request to get reset password link.
+        self.client.post(reverse("rest_password_reset"), {"email": "testuser@test.com"})
+
+        # Check that reset email was sent and extract reset token.
+        self.assertEqual(len(mail.outbox), 1)
+        token_search = re.search("/reset/([a-z0-9]+)/([a-z0-9-]+)", mail.outbox[0].body)
+        self.assertIsNotNone(token_search)
+        uid = token_search.group(1)
+        token = token_search.group(2)
+
+        # Valid uid, but invalid token.
+        response = self.client.get(
+            reverse(
+                "verify_password_reset_token",
+                kwargs={"user_id": uid, "token": "abcdefg"},
+            )
+        )
+        self.assertEqual(response.status_code, 400)
+
+        # Valid token, but not the right uid.
+        response = self.client.get(
+            reverse(
+                "verify_password_reset_token", kwargs={"user_id": "1b", "token": token}
+            )
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 class PasswordChangeTest(TransactionTestCase):
