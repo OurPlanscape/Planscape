@@ -33,3 +33,19 @@ export const regionOptions = regions.map((region) => {
     available: availableRegions.has(region),
   };
 });
+
+/* Note: these are the names used by the configurations and backend
+* Defaults to Sierra Nevada. */
+export function regionToString(region: Region | null): string {
+  switch (region) {
+    case Region.SIERRA_NEVADA:
+      return 'sierra-nevada';
+    case Region.CENTRAL_COAST:
+      return 'central-coast';
+    case Region.NORTHERN_CALIFORNIA:
+      return 'northern-california';
+    case Region.SOUTHERN_CALIFORNIA:
+      return 'southern-california';
+  }
+  return 'sierra-nevada';
+}
