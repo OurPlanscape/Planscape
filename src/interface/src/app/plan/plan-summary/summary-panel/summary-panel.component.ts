@@ -1,8 +1,9 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
 import { calculateAcres, NOTE_SAVE_INTERVAL } from '../../plan-helpers';
-import { Subject, interval, takeUntil } from 'rxjs';
+import { interval } from 'rxjs';
 import { PlanService } from 'src/app/services';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 export interface SummaryInput {
   id?: string;
@@ -37,6 +38,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   [ConditionName.POOR]: '#fdd853',
 };
 
+@UntilDestroy()
 @Component({
   selector: 'app-summary-panel',
   templateUrl: './summary-panel.component.html',
@@ -50,7 +52,6 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
   conditionScore: ConditionName = ConditionName.POOR;
   futureConditionScore: ConditionName = ConditionName.LEANING_GOOD;
   conditionScoreColorMap = conditionScoreColorMap;
-  private readonly destroy$ = new Subject<void>();
   notes: string = '';
 
   constructor(private planService: PlanService) {}
@@ -83,7 +84,7 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
 
   autoSaveNotes(): void {
     interval(NOTE_SAVE_INTERVAL)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe(() => {
         if (this.plan && this.plan.notes !== this.notes) {
           this.plan.notes = this.notes;
