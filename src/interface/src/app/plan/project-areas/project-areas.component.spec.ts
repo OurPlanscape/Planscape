@@ -38,7 +38,7 @@ describe('ProjectAreasComponent', () => {
       {
         id: 1,
         percentTotal: 0.2234,
-        score: 2,
+        score: 2.1223123123,
         estimatedCost: 1231.22,
         acres: 120.23,
       },
@@ -71,11 +71,11 @@ describe('ProjectAreasComponent', () => {
     expect(queryElement.innerHTML).toBe('$1.23K');
   });
 
-  it('should show `score` as number', () => {
+  it('should show `score` as number with two decimals', () => {
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="score"]')
     ).nativeElement;
-    expect(queryElement.innerHTML).toBe('2');
+    expect(queryElement.innerHTML).toBe('2.12');
   });
 
   it('should calculate totals based on provided areas', () => {
