@@ -300,22 +300,6 @@ export class CreateScenariosComponent implements OnInit, OnDestroy {
       configuration: scenarioConfig,
     };
   }
-  //
-  // private updatePriorityWeightsFormControls(): void {
-  //   const priorities: string[] = this.nameFormGroup.get('priorities')?.value;
-  //   const priorityWeightsForm: FormGroup = this.formGroups[3].get(
-  //     'priorityWeightsForm'
-  //   ) as FormGroup;
-  //   priorityWeightsForm.controls = {};
-  //   priorities.forEach((priority) => {
-  //     const priorityControl = this.fb.control(1, [
-  //       Validators.required,
-  //       Validators.min(1),
-  //       Validators.max(5),
-  //     ]);
-  //     priorityWeightsForm.addControl(priority, priorityControl);
-  //   });
-  // }
 
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
