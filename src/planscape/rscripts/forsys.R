@@ -280,6 +280,31 @@ get_configuration <- function(scenario) {
   return(configuration)
 }
 
+get_weights <- function(priorities, configuration) {
+  condition_count <- length(priorities$condition_name)
+  weight_count <- length(configuration$weights)
+
+  if (weight_count == 0) {
+    print("generating weights")
+    return(rep(1, length(priorities$condition_name)))
+  }
+
+  if (weight_count < condition_count) {
+    print("padding weights")
+    return(
+      c(configuration$weights, rep(1, condition_count - weight_count))
+    )
+  }
+
+  if (weight_count > condition_count) {
+    print("trimming weights")
+    return(configuration$weights[1:condition_count])
+  }
+
+  print("using configured weights")
+  return(configuration$weights)
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -289,16 +314,9 @@ call_forsys <- function(
   forsys_inputs <- rbind(priorities, outputs)
   stand_data <- get_stand_data(connection, scenario, forsys_inputs)
 
-  if (length((configuration$weights)) == 0) {
-    print("using generated weights")
-    weights <- rep(1, length(priorities$condition_name))
-  } else {
-    print("using provided weights")
-    weights <- configuration$weights
-  }
-
   if (length(priorities$condition_name) > 1) {
-    print("combining priorities into `priority` field")
+    weights <- get_weights(priorities, configuration)
+    print("combining priorities")
     stand_data <- stand_data %>% forsys::combine_priorities(
       fields = priorities$condition_name,
       weights = weights,
