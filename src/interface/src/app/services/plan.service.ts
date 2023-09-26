@@ -11,7 +11,7 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region } from '../types';
+import { BasePlan, Plan, Region, regionToString } from '../types';
 import {
   Scenario,
   ScenarioConfig,
@@ -690,8 +690,8 @@ export class PlanService {
       this.http
         .get<TreatmentGoalConfig[]>(
           BackendConstants.END_POINT +
-            '/planning/treatment_goals_config/?region_name=' +
-            `${this.mapService.regionToString(this.planRegion$.getValue())}`
+          '/planning/treatment_goals_config/?region_name=' +
+          `${regionToString(this.planRegion$.getValue())}`
         )
         .pipe(take(1))
         .subscribe((config: TreatmentGoalConfig[]) => {
