@@ -11,7 +11,7 @@ import {
   ColormapConfig,
   ConditionsConfig,
   Region,
-  regionToString
+  regionToString,
 } from '../types';
 
 import features from '../features/features.json';

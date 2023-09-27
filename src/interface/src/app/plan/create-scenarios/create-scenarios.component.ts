@@ -61,7 +61,7 @@ export class CreateScenariosComponent implements OnInit {
 
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
-
+  scenario: Scenario | null = null;
   scenarioResults: ScenarioResult | null = null;
 
   constructor(
@@ -193,6 +193,7 @@ export class CreateScenariosComponent implements OnInit {
 
   loadConfig(): void {
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
+      this.scenario = scenario;
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
         this.scenarioState = scenario.scenario_result?.status;

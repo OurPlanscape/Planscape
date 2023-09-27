@@ -35,7 +35,7 @@ export const regionOptions = regions.map((region) => {
 });
 
 /* Note: these are the names used by the configurations and backend
-* Defaults to Sierra Nevada. */
+ * Defaults to Sierra Nevada. */
 export function regionToString(region: Region | null): string {
   switch (region) {
     case Region.SIERRA_NEVADA:
