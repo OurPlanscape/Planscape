@@ -45,7 +45,7 @@ export class CreateScenariosComponent implements OnInit {
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
     scenario_priorities: [''],
-    scenario_output_fields: [''],
+    scenario_output_fields_paths: {},
     stand_thresholds: [''],
     global_thresholds: [''],
     weights: [0],
@@ -197,7 +197,8 @@ export class CreateScenariosComponent implements OnInit {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
         this.scenarioState = scenario.scenario_result?.status;
-        this.disableForms();
+        // TODO Implement a different method of disabling the forms if there is a scenario result — this wipes out the radio button selection for treatment question
+        // this.disableForms();
         this.selectedTabIndex = 1;
       }
 
