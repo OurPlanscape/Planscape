@@ -33,6 +33,7 @@ export interface PlanState {
   currentConfigId: ProjectConfig['id'] | null;
   mapConditionLayer: string | null;
   mapShapes: any | null;
+  legendUnits: string | null;
 }
 
 export interface BackendPlan {
@@ -81,6 +82,7 @@ export class PlanService {
     currentConfigId: null,
     mapConditionLayer: null,
     mapShapes: null,
+    legendUnits: null,
   });
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
@@ -475,6 +477,7 @@ export class PlanService {
   }
 
   private convertToScenarioConfig(config: any): ScenarioConfig {
+    console.log(config);
     var selectedQuestion: TreatmentQuestionConfig | null = null;
     this.treatmentGoalsConfig$.subscribe((goals) => {
       goals!.forEach((goal) => {
@@ -484,7 +487,10 @@ export class PlanService {
             config.scenario_priorities?.toString() &&
             question['weights']?.toString() == config.weights?.toString()
           ) {
+            console.log(question['scenario_priorities']?.toString());
+            console.log(config.scenario_priorities?.toString());
             selectedQuestion = question;
+            console.log(selectedQuestion);
           }
         });
       });
@@ -505,7 +511,7 @@ export class PlanService {
     };
   }
 
-  private convertBackendScenarioToScenario(scenario: any): Scenario {
+  public convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
       name: scenario.name,
@@ -546,7 +552,7 @@ export class PlanService {
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       scenario_priorities: config.treatment_question!['scenario_priorities'],
       scenario_output_fields:
-        config.treatment_question!['scenario_output_fields'],
+        config.treatment_question!['scenario_output_fields_paths']!['metrics'],
       stand_thresholds: config.treatment_question!['stand_thresholds'],
       global_thresholds: config.treatment_question!['global_thresholds'],
       weights: config.treatment_question!['weights'],
@@ -588,6 +594,8 @@ export class PlanService {
 
     this.planState$.next(updatedState);
   }
+
+
 
   updateStateWithScenario(scenarioId: string | null) {
     const currentState = Object.freeze(this.planState$.value);
@@ -638,6 +646,19 @@ export class PlanService {
       },
       mapShapes: shapes,
     });
+    this.planState$.next(updatedState);
+  }
+
+  updateStateWithLegendUnits(legendUnits: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      legendUnits: legendUnits,
+    });
+
     this.planState$.next(updatedState);
   }
 
