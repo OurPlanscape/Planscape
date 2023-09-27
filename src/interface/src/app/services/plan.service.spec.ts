@@ -9,8 +9,6 @@ import {
   BasePlan,
   Plan,
   Region,
-  BoundaryConfig,
-  ConditionsConfig,
 } from '../types';
 import {
   PlanPreview,
@@ -33,17 +31,6 @@ describe('PlanService', () => {
   let fakeGeoJson: GeoJSON.GeoJSON;
 
   const treatmentGoalConfigs: TreatmentGoalConfig[] = [];
-
-  const boundaryConfigs: BoundaryConfig[] = [];
-
-  const conditionsConfig: ConditionsConfig = {
-    pillars: [
-      {
-        pillar_name: 'pillar',
-        display_name: 'pillar_display',
-      },
-    ],
-  };
   beforeEach(() => {
     fakeGeoJson = {
       type: 'FeatureCollection',
@@ -68,15 +55,6 @@ describe('PlanService', () => {
         '/planning/treatment_goals_config/?region_name=sierra-nevada'
     );
     req1.flush(treatmentGoalConfigs);
-    const req2 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra-nevada'
-    );
-    req2.flush(boundaryConfigs);
-    const req3 = httpTestingController.expectOne(
-      BackendConstants.END_POINT +
-        '/conditions/config/?region_name=sierra-nevada'
-    );
-    req3.flush(conditionsConfig);
   });
 
   describe('deletePlan', () => {
@@ -225,7 +203,7 @@ describe('PlanService', () => {
     let defaultSelectedQuestion: TreatmentQuestionConfig = {
       short_question_text: '',
       long_question_text: '',
-      scenario_output_fields: [''],
+      scenario_output_fields_paths: {metrics: ['']},
       scenario_priorities: [''],
       stand_thresholds: [''],
       global_thresholds: [''],
