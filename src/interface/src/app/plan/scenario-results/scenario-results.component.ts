@@ -23,6 +23,7 @@ export class ScenarioResultsComponent implements OnChanges {
   selectedCharts: any[] = [];
 
   constructor(private planService: PlanService) {}
+  
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
     if (this.scenario?.scenario_result) {
@@ -40,19 +41,27 @@ export class ScenarioResultsComponent implements OnChanges {
               this.scenarioOutputFieldsConfigs[metric]['display_name'];
             var dataUnits =
               this.scenarioOutputFieldsConfigs[metric]['data_units'];
-            this.labels.push([displayName, dataUnits]);
+            var metricLayer =
+              this.scenarioOutputFieldsConfigs[metric]['raw_layer'];
+            var metricData: string[] = [];
+
+            this.scenario?.scenario_result?.result.features.map((featureCollection) => {
+              const props = featureCollection.properties;
+              metricData.push(props[metric])
+            });
+            this.labels.push([displayName, dataUnits, metricLayer, metricData]);
+
           }
-          // TODO Replace values with real scenario result values
           this.data = this.labels.map((label, i) => ({
             label: label[0],
             measurement: label[1],
-            values: Array.from({ length: 5 }, () =>
-              Math.floor(Math.random() * 10)
-            ),
+            metric_layer: label[2],
+            values: label[3],
           }));
           // start with the first 4 as selected
           this.selectedCharts = this.data.slice(0, 4);
         });
+      this.planService.updateStateWithShapes(this.scenario.scenario_result?.result.features)
     }
   }
 
