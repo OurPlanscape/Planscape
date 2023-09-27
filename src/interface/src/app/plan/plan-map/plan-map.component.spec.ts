@@ -8,6 +8,7 @@ import { PlanService, PlanState } from 'src/app/services';
 import { Plan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
@@ -23,6 +24,7 @@ describe('PlanMapComponent', () => {
     currentScenarioId: null,
     mapConditionLayer: null,
     mapShapes: null,
+    legendUnits: null,
   };
 
   beforeEach(async () => {
@@ -43,12 +45,13 @@ describe('PlanMapComponent', () => {
 
     fakePlanService = jasmine.createSpyObj<PlanService>('PlanService', [], {
       planState$: fakePlanState$,
+      planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA)
     });
 
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [MaterialModule, HttpClientTestingModule],
       declarations: [PlanMapComponent],
       providers: [
         {

@@ -39,7 +39,7 @@ describe('CreateScenariosComponent', () => {
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    scenario_output_fields: [''],
+    scenario_output_fields_paths: {},
     scenario_priorities: [''],
     stand_thresholds: [''],
     global_thresholds: [''],
@@ -81,6 +81,7 @@ describe('CreateScenariosComponent', () => {
           currentScenarioId: '1',
           mapConditionLayer: null,
           mapShapes: null,
+          legendUnits: null
         }),
         setPlanRegion: () => {},
         treatmentGoalsConfig$: new BehaviorSubject<
@@ -91,7 +92,7 @@ describe('CreateScenariosComponent', () => {
             questions: [
               {
                 short_question_text: 'test_question',
-                scenario_output_fields: [''],
+                scenario_output_fields_paths: {},
                 scenario_priorities: [''],
                 stand_thresholds: [''],
                 global_thresholds: [''],

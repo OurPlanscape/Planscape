@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
@@ -70,6 +70,9 @@ describe('PlanComponent', () => {
       updateStateWithConfig: of(),
       getScenariosForPlan: of([]),
       updateStateWithShapes: of([]),
+    }, 
+    { 
+      planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA) 
     });
     fakeService.planState$ = of({});
 
