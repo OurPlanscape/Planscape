@@ -86,7 +86,7 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
     interval(NOTE_SAVE_INTERVAL)
       .pipe(
         untilDestroyed(this),
-        filter((_) => (this.plan !== null && this.plan.notes !== this.notes)),
+        filter((_) => this.plan !== null && this.plan.notes !== this.notes),
         tap((_) => (this.plan!.notes = this.notes)),
         switchMap((_) =>
           this.planService.updatePlanningArea(this.plan!, this.plan!.id)
