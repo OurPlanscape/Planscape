@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
 import { calculateAcres, NOTE_SAVE_INTERVAL } from '../../plan-helpers';
-import { interval } from 'rxjs';
+import { filter, interval, switchMap, tap } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
@@ -84,14 +84,14 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
 
   autoSaveNotes(): void {
     interval(NOTE_SAVE_INTERVAL)
-      .pipe(untilDestroyed(this))
-      .subscribe(() => {
-        if (this.plan && this.plan.notes !== this.notes) {
-          this.plan.notes = this.notes;
-          this.planService
-            .updatePlanningArea(this.plan, this.plan.id)
-            .subscribe();
-        }
-      });
+      .pipe(
+        untilDestroyed(this),
+        filter((_) => (this.plan !== null && this.plan.notes !== this.notes)),
+        tap((_) => (this.plan!.notes = this.notes)),
+        switchMap((_) =>
+          this.planService.updatePlanningArea(this.plan!, this.plan!.id)
+        )
+      )
+      .subscribe();
   }
 }
