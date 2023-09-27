@@ -22,7 +22,6 @@ import {
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from './../types/plan.types';
-import { MapService } from './map.service';
 
 // TODO Remove Config
 export interface PlanState {
@@ -86,10 +85,10 @@ export class PlanService {
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
   >(null);
+
   readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   constructor(
     private http: HttpClient,
-    private mapService: MapService
   ) {
     this.http
       .get<TreatmentGoalConfig[]>(
@@ -102,6 +101,7 @@ export class PlanService {
         this.treatmentGoalsConfig$.next(config);
       });
   }
+
 
   // TODO clean up requests with string interpolation
   /**  TODO Reimplement:
@@ -481,7 +481,7 @@ export class PlanService {
         goal.questions.forEach((question) => {
           if (
             question['scenario_priorities']?.toString() ==
-              config.scenario_priorities?.toString() &&
+            config.scenario_priorities?.toString() &&
             question['weights']?.toString() == config.weights?.toString()
           ) {
             selectedQuestion = question;
@@ -661,6 +661,18 @@ export class PlanService {
           };
         })
       );
+  }
+
+  /** Gets Metric Data For Scenario Output Fields */
+  getMetricData(metric_paths: any): Observable<any> {
+    const url = BackendConstants.END_POINT.concat('/conditions/metrics/?region_name=' +
+      `${regionToString(this.planRegion$.getValue())}` + '&metric_paths=' + JSON.stringify(metric_paths));
+    // var region_name= regionToString(this.planRegion$.getValue())
+    return this.http
+      .get<any>(
+        url
+      )
+      .pipe(take(1));
   }
 
   /**
