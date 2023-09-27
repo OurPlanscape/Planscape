@@ -10,3 +10,94 @@
   right: 60px;
   z-index: 2;
 }
+
+:host {
+
+// Styling for legend on mousehover
+::ng-deep .legend:hover {
+  width: 100%;
+  overflow-y:scroll;
+  text-overflow: ellipsis;
+  height: auto;
+  max-width: auto;
+  max-height: 80%;
+  opacity: 1;
+  transition-duration: 0.8s;
+}
+
+// Setting heights for built-in leaflet styles to be able to configure relative max-height
+::ng-deep .leaflet-left  .leaflet-control {
+  height:auto;
+  max-height:75%;
+}
+// Setting heights for built-in leaflet styles to be able to configure relative max-height
+::ng-deep .leaflet-top {
+  height:100%;
+}
+
+// Default styling for legend
+::ng-deep .legend {
+  top: 40px;
+  bottom: 40px;
+  margin: 10px;
+  font-weight: bold;
+  color: solid #2491FF;
+  text-align: left;
+  height: auto;
+  width:65px;
+  text-overflow: ellipsis;
+  overflow-x:hidden;
+  line-height: 18px;
+  background: white;
+  white-space: nowrap;
+  opacity: 0.7;
+  display: inline-block;
+  border: 2px #AAA solid;
+  border-radius: 5px;
+  transition: width 0.8s;
+}
+
+// Parent legend class
+::ng-deep .parentlegend {
+  display: flex;
+  flex-direction: column;
+  height:100%;
+}
+
+// Legend line
+::ng-deep .legendline {
+  white-space: nowrap;
+  display: inline-block;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: auto;
+}
+
+// // Legend color entry
+::ng-deep .legend i {
+  margin-left: 8px;
+}
+
+// Legend text entry
+::ng-deep .legend label {
+  opacity: 0.7;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  flex:1;
+  white-space: nowrap;
+  max-width: 65px;
+}
+
+// Legend header
+::ng-deep .legend b {
+  text-align: center;
+  font-size: small;
+  margin: 10px;
+  margin-top: 6px;
+  width: auto;
+  height: 10px;
+  display: flex;
+  flex-direction: row;
+}
+
+}
