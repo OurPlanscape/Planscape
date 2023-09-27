@@ -1,0 +1,29 @@
+<mat-dialog-content class="validation-email-dialog">
+  <img src="{{ checkUrl }}" alt="" />
+  <h3
+    class="gmat-headline-3"
+    i18n="
+      Title text for dialog confirming that the user's password was reset
+      successfully.
+    ">
+    Password reset successfully.
+  </h3>
+  <p
+    class="gmat-body-1"
+    i18n="
+      Text indicating that the user successfully reset their password, and will
+      need to login again.
+    ">
+    You password has been updated successfully. Please login to continue using
+    planscape.
+  </p>
+</mat-dialog-content>
+<mat-dialog-actions class="dialog-button-container">
+  <button
+    mat-raised-button
+    color="primary"
+    (click)="close()"
+    i18n="Button to acknowledge and close the confirmation dialog">
+    OK
+  </button>
+</mat-dialog-actions>

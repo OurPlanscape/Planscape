@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   ActivatedRouteSnapshot,
@@ -7,6 +7,7 @@ import {
   Resolve,
   Router,
   RouterStateSnapshot,
+  ResolveFn,
 } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
@@ -26,6 +27,11 @@ import { User } from '../types';
 
 interface LogoutResponse {
   detail: string;
+}
+
+export interface PasswordResetToken {
+  userId: string;
+  token: string;
 }
 
 @Injectable({
@@ -184,11 +190,25 @@ export class AuthService {
     );
   }
 
-  resetPassword(token: string, userId: string): Observable<boolean> {
+  resetPassword(
+    userId: string,
+    token: string,
+    password1: string,
+    password2: string
+  ): Observable<boolean> {
     return this.http
-      .get(this.API_ROOT.concat('reset/confirm/', userId, '/', token, '/'), {
-        withCredentials: true,
-      })
+      .post(
+        this.API_ROOT.concat('password/reset/confirm/'),
+        {
+          uid: userId,
+          token: token,
+          new_password1: password1,
+          new_password2: password2,
+        },
+        {
+          withCredentials: true,
+        }
+      )
       .pipe(
         map((response: any) => {
           return response.success;
@@ -273,6 +293,17 @@ export class AuthService {
         })
       );
   }
+
+  validatePasswordResetToken(tokenDetails: PasswordResetToken) {
+    return this.http.get(
+      this.API_ROOT.concat(
+        'password/reset/',
+        tokenDetails.userId,
+        '/',
+        tokenDetails.token
+      )
+    );
+  }
 }
 
 /** An AuthGuard used to prevent access to pages that require sign-in. If the user is not signed
@@ -296,7 +327,7 @@ export class AuthGuard implements CanActivate {
   }
 }
 
-/** The ValidateGuard validates the email address of a new account, and logs the user in while at it.
+/** The ValidateGuard validates the email address of a new account, and bring users to the login page.
  */
 @Injectable()
 export class ValidationResolver implements Resolve<boolean> {
@@ -322,3 +353,28 @@ export class ValidationResolver implements Resolve<boolean> {
     );
   }
 }
+
+/** Resolver to validate the password reset token. */
+export const passwordResetTokenResolver: ResolveFn<
+  PasswordResetToken | null
+> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+  const userId = route.paramMap.get('userId');
+  const token = route.paramMap.get('token');
+  if (!userId || !token) {
+    inject(Router).navigate(['reset']);
+  }
+  const passwordResetToken = {
+    userId: userId || '',
+    token: token || '',
+  };
+  return inject(AuthService)
+    .validatePasswordResetToken(passwordResetToken)
+    .pipe(
+      map((_) => {
+        return passwordResetToken;
+      }),
+      catchError((error: Error) => {
+        return of(null);
+      })
+    );
+};

@@ -60,6 +60,8 @@ import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-s
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
 import { RedirectGuard } from './services/redirect.guard';
+import { PasswordResetComponent } from './password-reset/password-reset.component';
+import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
 
 @NgModule({
   declarations: [
@@ -91,6 +93,8 @@ import { RedirectGuard } from './services/redirect.guard';
     MapConfigSummaryComponent,
     ForgetPasswordComponent,
     AboutComponent,
+    PasswordResetComponent,
+    ConfirmationDialogComponent,
   ],
   imports: [
     AppRoutingModule,
