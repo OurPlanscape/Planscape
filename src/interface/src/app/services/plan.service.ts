@@ -477,7 +477,6 @@ export class PlanService {
   }
 
   private convertToScenarioConfig(config: any): ScenarioConfig {
-    console.log(config);
     var selectedQuestion: TreatmentQuestionConfig | null = null;
     this.treatmentGoalsConfig$.subscribe((goals) => {
       goals!.forEach((goal) => {
@@ -487,10 +486,7 @@ export class PlanService {
             config.scenario_priorities?.toString() &&
             question['weights']?.toString() == config.weights?.toString()
           ) {
-            console.log(question['scenario_priorities']?.toString());
-            console.log(config.scenario_priorities?.toString());
             selectedQuestion = question;
-            console.log(selectedQuestion);
           }
         });
       });
@@ -511,7 +507,7 @@ export class PlanService {
     };
   }
 
-  public convertBackendScenarioToScenario(scenario: any): Scenario {
+  private convertBackendScenarioToScenario(scenario: any): Scenario {
     return {
       id: scenario.id,
       name: scenario.name,
