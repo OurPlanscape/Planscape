@@ -60,6 +60,9 @@
             <app-scenario-results
               *ngSwitchCase="'SUCCESS'"
               [results]="scenarioResults"></app-scenario-results>
+            <app-scenario-failure
+              *ngSwitchCase="'FAILURE'"
+              (goBack)="goBackToPlanning()"></app-scenario-failure>
           </ng-container>
         </mat-tab>
       </mat-tab-group>
