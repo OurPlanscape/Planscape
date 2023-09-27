@@ -89,21 +89,18 @@ export class PlanService {
   >(null);
 
   readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
-  constructor(
-    private http: HttpClient,
-  ) {
+  constructor(private http: HttpClient) {
     this.http
       .get<TreatmentGoalConfig[]>(
         BackendConstants.END_POINT +
-        '/planning/treatment_goals_config/?region_name=' +
-        `${regionToString(this.planRegion$.getValue())}`
+          '/planning/treatment_goals_config/?region_name=' +
+          `${regionToString(this.planRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: TreatmentGoalConfig[]) => {
         this.treatmentGoalsConfig$.next(config);
       });
   }
-
 
   // TODO clean up requests with string interpolation
   /**  TODO Reimplement:
@@ -483,7 +480,7 @@ export class PlanService {
         goal.questions.forEach((question) => {
           if (
             question['scenario_priorities']?.toString() ==
-            config.scenario_priorities?.toString() &&
+              config.scenario_priorities?.toString() &&
             question['weights']?.toString() == config.weights?.toString()
           ) {
             selectedQuestion = question;
@@ -591,8 +588,6 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
-
-
   updateStateWithScenario(scenarioId: string | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
@@ -682,14 +677,13 @@ export class PlanService {
 
   /** Gets Metric Data For Scenario Output Fields */
   getMetricData(metric_paths: any): Observable<any> {
-    const url = BackendConstants.END_POINT.concat('/conditions/metrics/?region_name=' +
-      `${regionToString(this.planRegion$.getValue())}` + '&metric_paths=' + JSON.stringify(metric_paths));
-    // var region_name= regionToString(this.planRegion$.getValue())
-    return this.http
-      .get<any>(
-        url
-      )
-      .pipe(take(1));
+    const url = BackendConstants.END_POINT.concat(
+      '/conditions/metrics/?region_name=' +
+        `${regionToString(this.planRegion$.getValue())}` +
+        '&metric_paths=' +
+        JSON.stringify(metric_paths)
+    );
+    return this.http.get<any>(url).pipe(take(1));
   }
 
   /**
@@ -701,8 +695,8 @@ export class PlanService {
       this.http
         .get<TreatmentGoalConfig[]>(
           BackendConstants.END_POINT +
-          '/planning/treatment_goals_config/?region_name=' +
-          `${regionToString(this.planRegion$.getValue())}`
+            '/planning/treatment_goals_config/?region_name=' +
+            `${regionToString(this.planRegion$.getValue())}`
         )
         .pipe(take(1))
         .subscribe((config: TreatmentGoalConfig[]) => {

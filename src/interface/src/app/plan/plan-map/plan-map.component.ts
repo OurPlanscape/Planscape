@@ -14,13 +14,13 @@ import {
   regionMapCenters,
   Plan,
   Region,
-  regionToString, 
+  regionToString,
 } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-// Needed to keep reference to legend div element to remove 
+// Needed to keep reference to legend div element to remove
 export interface MapRef {
   legend?: HTMLElement | undefined;
 }
@@ -43,10 +43,10 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
 
-  mapRef:  MapRef = {
-    legend: undefined
+  mapRef: MapRef = {
+    legend: undefined,
   };
-  
+
   selectedRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
     map(({ currentScenarioId }) => currentScenarioId),
@@ -164,7 +164,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     var region = regionToString(this.planService.planRegion$.getValue());
     this.tileLayer = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT + region  + '/wms?',
+      BackendConstants.TILES_END_POINT + region + '/wms?',
       {
         layers: region + filepath,
         minZoom: 7,
@@ -180,8 +180,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     // Map legend request
     var dataUnit = '';
     this.planService.planState$.pipe(take(1)).subscribe((state) => {
-      if (state.legendUnits){
-       dataUnit = state.legendUnits;
+      if (state.legendUnits) {
+        dataUnit = state.legendUnits;
       }
     });
     const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
@@ -261,7 +261,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       mapRef.legend = div;
       return div;
     };
-  
+
     legend.addTo(map);
   }
 

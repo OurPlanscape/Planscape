@@ -22,7 +22,7 @@ export function generateDummyData(): ChartData[] {
     label: label[0],
     measurement: label[1],
     values: Array.from({ length: 5 }, () => Math.floor(Math.random() * 10)),
-    metric_layer: ''
+    metric_layer: '',
   }));
 }
 
