@@ -7,17 +7,23 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
-import { SessionService } from 'src/app/services';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { distinctUntilChanged, map, take } from 'rxjs/operators';
 import { PlanService } from 'src/app/services';
 import {
   FrontendConstants,
   regionMapCenters,
   Plan,
   Region,
+  regionToString, 
 } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
+import { HttpClient, HttpParams } from '@angular/common/http';
+
+// Needed to keep reference to legend div element to remove 
+export interface MapRef {
+  legend?: HTMLElement | undefined;
+}
 
 @Component({
   selector: 'app-plan-map',
@@ -37,8 +43,11 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   projectAreasLayer: L.GeoJSON | undefined;
   tileLayer: L.TileLayer | undefined;
 
-  // TODO grab region from planning area
-  selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
+  mapRef:  MapRef = {
+    legend: undefined
+  };
+  
+  selectedRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
   currentScenarioId$ = this.planService.planState$.pipe(
     map(({ currentScenarioId }) => currentScenarioId),
     distinctUntilChanged(),
@@ -50,9 +59,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private planService: PlanService,
-    private session: SessionService
+    private http: HttpClient
   ) {
-    this.selectedRegion$ = this.session.region$;
+    this.selectedRegion$ = this.planService.planRegion$;
   }
 
   ngOnInit(): void {
@@ -153,16 +162,107 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (filepath?.length === 0 || !filepath) return;
 
-    this.tileLayer = L.tileLayer(
-      BackendConstants.TILES_END_POINT + filepath + '/{z}/{x}/{y}.png',
+    var region = regionToString(this.planService.planRegion$.getValue());
+    this.tileLayer = L.tileLayer.wms(
+      BackendConstants.TILES_END_POINT + region  + '/wms?',
       {
+        layers: region + filepath,
         minZoom: 7,
         maxZoom: 13,
+        format: 'image/png',
+        transparent: true,
         opacity: 0.7,
       }
     );
 
     this.map.addLayer(this.tileLayer);
+
+    // Map legend request
+    var dataUnit = '';
+    this.planService.planState$.pipe(take(1)).subscribe((state) => {
+      if (state.legendUnits){
+       dataUnit = state.legendUnits;
+      }
+    });
+    const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
+    let queryParams = new HttpParams();
+    queryParams = queryParams.append('request', 'GetLegendGraphic');
+    queryParams = queryParams.append('layer', filepath);
+    queryParams = queryParams.append('format', 'application/json');
+    var legendJson = this.http.get<string>(legendUrl, { params: queryParams });
+    legendJson.pipe(take(1)).subscribe((value: any) => {
+      var colorMap =
+        value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
+      this.addLegend(colorMap, dataUnit, this.map);
+    });
+  }
+
+  addLegend(colormap: any, dataUnit: string | undefined, map: L.Map) {
+    var entries = colormap['entries'];
+    const legend = new (L.Control.extend({
+      options: { position: 'topleft' },
+    }))();
+    const mapRef = this.mapRef;
+    legend.onAdd = function (map) {
+      // Remove any pre-existing legend on map
+      if (mapRef && mapRef.legend) {
+        L.DomUtil.remove(mapRef.legend);
+      }
+
+      const div = L.DomUtil.create('div', 'legend');
+      // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
+      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation
+      // (otherwise div tags are automatically closed before they should be)
+      var htmlContent = '';
+      htmlContent += '<div class=parentlegend>';
+      if (dataUnit && colormap['type'] == 'ramp') {
+        // For legends with numerical labels make header the corresponding data units
+        htmlContent += '<div><b>' + dataUnit + '</b></div>';
+      } else {
+        // For legends with categorical labels make header 'Legend'
+        htmlContent += '<div><b>Legend</b></div>';
+      }
+      // Reversing order to present legend values from high to low (default is low to high)
+      for (let i = entries.length - 1; i >= 0; i--) {
+        var entry = entries[i];
+        // Add a margin-bottom to only the last entry in the legend
+        var lastChild = '';
+        if (i == 0) {
+          lastChild = 'style="margin-bottom: 6px;"';
+        }
+        if (entry['label']) {
+          // Filter out 'nodata' entries
+          if (entry['color'] != '#000000') {
+            htmlContent +=
+              '<div class="legendline" ' +
+              lastChild +
+              '><i style="background:' +
+              entry['color'] +
+              '"> &emsp; &hairsp;</i> &nbsp;<label>' +
+              entry['label'] +
+              '<br/></label></div>';
+          } else if (lastChild != '') {
+            htmlContent += '<div class="legendline"' + lastChild + '></div>';
+          }
+        } else {
+          htmlContent +=
+            '<div class="legendline" ' +
+            lastChild +
+            '><i style="background:' +
+            entry['color'] +
+            '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
+        }
+      }
+      htmlContent += '</div>';
+      div.innerHTML = htmlContent;
+      // Needed to allow for scrolling on the legend
+      L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
+      // Set reference to legend for later deletion
+      mapRef.legend = div;
+      return div;
+    };
+  
+    legend.addTo(map);
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
