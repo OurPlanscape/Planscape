@@ -144,7 +144,7 @@ describe('MapComponent', () => {
           currentConfigId: null,
           mapConditionLayer: null,
           mapShapes: null,
-          legendUnits: null
+          legendUnits: null,
         }),
       }
     );

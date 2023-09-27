@@ -5,11 +5,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import {
-  BasePlan,
-  Plan,
-  Region,
-} from '../types';
+import { BasePlan, Plan, Region } from '../types';
 import {
   PlanPreview,
   Scenario,
@@ -203,7 +199,7 @@ describe('PlanService', () => {
     let defaultSelectedQuestion: TreatmentQuestionConfig = {
       short_question_text: '',
       long_question_text: '',
-      scenario_output_fields_paths: {metrics: ['']},
+      scenario_output_fields_paths: { metrics: [''] },
       scenario_priorities: [''],
       stand_thresholds: [''],
       global_thresholds: [''],

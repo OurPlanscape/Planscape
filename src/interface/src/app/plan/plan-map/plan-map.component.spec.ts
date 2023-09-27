@@ -45,7 +45,7 @@ describe('PlanMapComponent', () => {
 
     fakePlanService = jasmine.createSpyObj<PlanService>('PlanService', [], {
       planState$: fakePlanState$,
-      planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA)
+      planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA),
     });
 
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });

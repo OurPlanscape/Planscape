@@ -11,16 +11,19 @@ import { PlanService } from 'src/app/services';
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
   @Input() selectedCharts: ChartData[] = [];
-  
-  constructor(
-    private planService: PlanService) {}
+
+  constructor(private planService: PlanService) {}
   selectDataPoint(e: MatSelectChange, i: number) {
     this.selectedCharts[i] = e.value;
   }
 
   toggleMapLayer(i: number) {
-    this.planService.updateStateWithLegendUnits(this.selectedCharts[i]['measurement'])
-    this.planService.updateStateWithConditionLayer(this.selectedCharts[i]['metric_layer'])
+    this.planService.updateStateWithLegendUnits(
+      this.selectedCharts[i]['measurement']
+    );
+    this.planService.updateStateWithConditionLayer(
+      this.selectedCharts[i]['metric_layer']
+    );
   }
   filterData(
     data: ChartData[],

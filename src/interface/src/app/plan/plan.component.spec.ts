@@ -62,18 +62,21 @@ describe('PlanComponent', () => {
 
     mockAuthService = {};
 
-    const fakeService = jasmine.createSpyObj('PlanService', {
-      getPlan: of(fakePlan),
-      getProjectsForPlan: of([]),
-      updateStateWithPlan: of(),
-      updateStateWithScenario: of(),
-      updateStateWithConfig: of(),
-      getScenariosForPlan: of([]),
-      updateStateWithShapes: of([]),
-    }, 
-    { 
-      planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA) 
-    });
+    const fakeService = jasmine.createSpyObj(
+      'PlanService',
+      {
+        getPlan: of(fakePlan),
+        getProjectsForPlan: of([]),
+        updateStateWithPlan: of(),
+        updateStateWithScenario: of(),
+        updateStateWithConfig: of(),
+        getScenariosForPlan: of([]),
+        updateStateWithShapes: of([]),
+      },
+      {
+        planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA),
+      }
+    );
     fakeService.planState$ = of({});
 
     await TestBed.configureTestingModule({

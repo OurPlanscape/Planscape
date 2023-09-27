@@ -1,11 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
-// import { generateDummyData } from './temp-helper';
 import { Scenario, ScenarioResult } from '../../types';
 import { PlanService } from 'src/app/services';
 import { take } from 'rxjs';
-// import { BehaviorSubject, take } from 'rxjs';
-// import { ChartData } from 'chart.js';
 
 @Component({
   selector: 'app-scenario-results',
@@ -23,11 +20,13 @@ export class ScenarioResultsComponent implements OnChanges {
   selectedCharts: any[] = [];
 
   constructor(private planService: PlanService) {}
-  
+
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
     if (this.scenario?.scenario_result) {
-      this.areas = this.parseResultsToProjectAreas(this.scenario?.scenario_result);
+      this.areas = this.parseResultsToProjectAreas(
+        this.scenario?.scenario_result
+      );
       var scenario_output_fields_paths =
         this.scenario.configuration.treatment_question
           ?.scenario_output_fields_paths!;
@@ -45,12 +44,13 @@ export class ScenarioResultsComponent implements OnChanges {
               this.scenarioOutputFieldsConfigs[metric]['raw_layer'];
             var metricData: string[] = [];
 
-            this.scenario?.scenario_result?.result.features.map((featureCollection) => {
-              const props = featureCollection.properties;
-              metricData.push(props[metric])
-            });
+            this.scenario?.scenario_result?.result.features.map(
+              (featureCollection) => {
+                const props = featureCollection.properties;
+                metricData.push(props[metric]);
+              }
+            );
             this.labels.push([displayName, dataUnits, metricLayer, metricData]);
-
           }
           this.data = this.labels.map((label, i) => ({
             label: label[0],
@@ -61,7 +61,9 @@ export class ScenarioResultsComponent implements OnChanges {
           // start with the first 4 as selected
           this.selectedCharts = this.data.slice(0, 4);
         });
-      this.planService.updateStateWithShapes(this.scenario.scenario_result?.result.features)
+      this.planService.updateStateWithShapes(
+        this.scenario.scenario_result?.result.features
+      );
     }
   }
 
