@@ -278,6 +278,11 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         fillOpacity: 0.1,
         weight: 5,
       }),
+      onEachFeature: function (feature, layer) {
+        
+        // TODO Find a better way to center this — could see if it's possible ot add an actual center coordinate to the properties 
+        layer.bindTooltip(String(feature.properties.proj_id), {permanent: true, direction: 'center', className: "project-area-label"}).openTooltip();
+      }
     });
     this.projectAreasLayer.addTo(this.map);
   }
