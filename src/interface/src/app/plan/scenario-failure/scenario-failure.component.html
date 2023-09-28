@@ -1,6 +1,10 @@
 <mat-icon class="material-symbols-outlined">error</mat-icon>
 
 <h2>There was an error generating your scenario.</h2>
+<div class="error">
+  It may be that your constraints are preventing the generation of a valid
+  scenario. Please review your constraints and try again.
+</div>
 <div class="actions">
   <a mat-raised-button color="primary" (click)="goBack.emit()" class="return">
     RETURN TO SCENARIOS
