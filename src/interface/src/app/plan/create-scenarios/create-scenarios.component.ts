@@ -319,12 +319,13 @@ export class CreateScenariosComponent implements OnInit {
     // TODO Add error catching for failed scenario creation
     this.planService
       .createScenario(this.formValueToScenario())
-      .subscribe((_) => {
-        // const planId = this.plan$.getValue()?.id;
+      .subscribe((result) => {
+        this.planService.updateStateWithScenario(result.id.toString());
         // TODO maybe this state should come as the result of creating scenario from planService
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;
+        this.pollForChanges();
       });
 
     // this.createUploadedProjectAreas()
