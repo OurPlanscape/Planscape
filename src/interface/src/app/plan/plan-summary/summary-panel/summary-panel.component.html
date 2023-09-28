@@ -26,11 +26,10 @@
       </div>
     </div>
     <div>
-      <!-- TODO Add ability to save notes and load in existing notes -->
       <div class="notes-title">Notes</div>
       <mat-form-field class="notes-wrapper" appearance="fill">
         <mat-label>Type notes here</mat-label>
-        <textarea class="notes" matInput></textarea>
+        <textarea class="notes" matInput [(ngModel)]="notes"></textarea>
       </mat-form-field>
     </div>
 
