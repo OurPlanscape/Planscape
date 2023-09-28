@@ -42,6 +42,7 @@ export class CreateScenariosComponent implements OnInit {
   treatmentGoalGroup: FormGroup<any>;
   constraintsFormGroup: FormGroup<any>;
   projectAreaGroup: FormGroup<any>;
+
   treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
@@ -198,8 +199,7 @@ export class CreateScenariosComponent implements OnInit {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
         this.scenarioState = scenario.scenario_result?.status;
-        // TODO Implement a different method of disabling the forms if there is a scenario result — this wipes out the radio button selection for treatment question
-        // this.disableForms();
+        this.disableForms();
         this.selectedTabIndex = 1;
         if (this.scenarioState == 'SUCCESS') {
           this.processScenarioResults(scenario);
@@ -367,9 +367,9 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   disableForms() {
-    this.formGroups.forEach((form) => {
-      form.disable();
-    });
+    this.formGroups[0].disable();
+    this.formGroups[1].disable();
+    this.formGroups[2].disable();
   }
 
   // createUploadedProjectAreas() {
