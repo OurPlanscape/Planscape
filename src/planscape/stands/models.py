@@ -9,6 +9,16 @@ class StandSizeChoices(models.TextChoices):
     MEDIUM = "MEDIUM", "Medium"
     LARGE = "LARGE", "Large"
 
+    STAND_SIZE_LENGTH = {
+        LARGE: 877.38267558,
+        MEDIUM: 392.377463,
+        SMALL: 124.0806483,
+    }
+
+    @classmethod
+    def length_from_size(cls, size):
+        return cls.STAND_SIZE_LENGTH[size]
+
 
 HEX_LENGTH = {
     StandSizeChoices.LARGE: 877.38267558,
