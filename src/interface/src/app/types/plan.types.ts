@@ -51,6 +51,7 @@ export type ScenarioResultStatus =
 
 export interface ScenarioResult {
   status: ScenarioResultStatus;
+  completed_at: string;
   result: {
     features: FeatureCollection[];
     type: string;
