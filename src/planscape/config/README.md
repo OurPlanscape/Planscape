@@ -58,7 +58,7 @@ This file configures the options that populate the Conditions menu in the map co
     }
 
 ### treatment_goals
-This file configures the treatment goal options which populate the Scenario configurations page. Each region has its own set of treatment goals. Each treatment goal has its own set of categories, which in turn have their own set of questions. Each question has a text, priorities, and weights. The priorities are metrics and each weight in a list for a question corresponds to the priority with the same index. (e.g for priority: ['priority_1', 'priority_2'], weight: [1,2], 'priority_1' has weight 1 and 'priority_2' has weight 2). The name for each metric must be unique, as there is no pillar/element information stored here. Each entry has the following structure:
+This file configures the treatment goal options which populate the Scenario configurations page. Each region has its own set of treatment goals. Each treatment goal has its own set of categories, which in turn have their own set of questions. Each question has a text, priorities, and weights. The priorities are metrics and each weight in a list for a question corresponds to the priority with the same index. (e.g for priority: ['priority_1', 'priority_2'], weight: [1,2], 'priority_1' has weight 1 and 'priority_2' has weight 2). The name for each metric must be unique in the region. "scenario_output_fields_paths" is a dictionary with a list of the metrics that forsys will generate outputs for (used to populate the charts in the scenario results tab), as well as a list of the corresponding pillars and elements for those metrics. This is used to get the information for these metrics (e.g display_name, data_units) without needing to check every single metric for a region. scenario_output_fields_paths["metrics"] is used to populate the scenario_output_fields value for a scenario configuration on the backend. Each entry has the following structure:
 
     {
     "regions": [
@@ -68,15 +68,29 @@ This file configures the treatment goal options which populate the Scenario conf
           {
             "category_name": "The name of the category",
             "questions": [
-                {
-                 "question_text": "The text of the question",
-                 "priorities": [
-                   "The priorities (metrics) which are used to answer the question",
-                  ],
-                 "weights": [
-                   "The weights for the priorities associated with the question",
-                  ]
-                },
+                  {
+              "long_question_text": "Long form of question that appears on mouse hover in scenario configuration page",
+              "short_question_text": "Short form of text that appears by default in scenario configuration page",
+              "scenario_priorities": [
+                "The priorities used as inputs for forsys to answer the treatment goal question"
+              ],
+              "weights": ["The weights for the scenario_priorities associated with the question" ],
+              "scenario_output_fields_paths":  {
+                "pillars": [
+                  "The pillars of the metrics"
+                ],
+                "elements": [
+                  "The elements of the metrics"
+                ],
+                "metrics": [
+                  "The metrics that the forsys results will provide data for"
+                ]
+              },
+              "stand_thresholds": [
+                "Strings that can be fed directly into forsys to represent certain thresholds"
+              ],
+              "global_thresholds": [ "Strings that can be fed directly into forsys to represent certain thresholds"]
+            },
               ]
             },
           ]

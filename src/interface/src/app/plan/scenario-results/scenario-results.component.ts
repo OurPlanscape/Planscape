@@ -1,6 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
-import { generateDummyData } from './temp-helper';
 import { ScenarioResult } from '../../types';
 
 @Component({
@@ -10,18 +9,19 @@ import { ScenarioResult } from '../../types';
 })
 export class ScenarioResultsComponent implements OnChanges {
   @Input() results: ScenarioResult | null = null;
+  @Input() scenarioChartData: any[] = [];
 
   areas: ProjectAreaReport[] = [];
-
-  // TODO remove and use real `this.results`
-  data = generateDummyData();
-  // start with the first 4 as selected
-  selectedCharts = this.data.slice(0, 4);
+  scenarioOutputFieldsConfigs: any = {};
+  data: any[] = [];
+  selectedCharts: any[] = [];
 
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
     if (this.results) {
       this.areas = this.parseResultsToProjectAreas(this.results);
+      this.data = this.scenarioChartData;
+      this.selectedCharts = this.data.slice(0, 4);
     }
   }
 

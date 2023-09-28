@@ -8,7 +8,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, interval, Observable } from 'rxjs';
+import { BehaviorSubject, interval, Observable, take } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import {
   Plan,
@@ -46,7 +46,7 @@ export class CreateScenariosComponent implements OnInit {
   defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
     scenario_priorities: [''],
-    scenario_output_fields: [''],
+    scenario_output_fields_paths: {},
     stand_thresholds: [''],
     global_thresholds: [''],
     weights: [0],
@@ -62,8 +62,8 @@ export class CreateScenariosComponent implements OnInit {
 
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
-
   scenarioResults: ScenarioResult | null = null;
+  scenarioChartData: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -198,8 +198,12 @@ export class CreateScenariosComponent implements OnInit {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
         this.scenarioState = scenario.scenario_result?.status;
-        this.disableForms();
+        // TODO Implement a different method of disabling the forms if there is a scenario result — this wipes out the radio button selection for treatment question
+        // this.disableForms();
         this.selectedTabIndex = 1;
+        if (this.scenarioState == 'SUCCESS') {
+          this.processScenarioResults(scenario);
+        }
       }
 
       var config = scenario.configuration;
@@ -379,6 +383,41 @@ export class CreateScenariosComponent implements OnInit {
   //   return of(null);
   // }
 
+  /**
+   * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
+   */
+  processScenarioResults(scenario: Scenario) {
+    var scenario_output_fields_paths =
+      scenario?.configuration.treatment_question?.scenario_output_fields_paths!;
+    var labels: string[][] = [];
+    if (scenario && this.scenarioResults) {
+      this.planService
+        .getMetricData(scenario_output_fields_paths)
+        .pipe(take(1))
+        .subscribe((metric_data) => {
+          for (let metric in metric_data) {
+            var displayName = metric_data[metric]['display_name'];
+            var dataUnits = metric_data[metric]['data_units'];
+            var metricLayer = metric_data[metric]['raw_layer'];
+            var metricData: string[] = [];
+            this.scenarioResults?.result.features.map((featureCollection) => {
+              const props = featureCollection.properties;
+              metricData.push(props[metric]);
+            });
+            labels.push([displayName, dataUnits, metricLayer, metricData]);
+          }
+          this.scenarioChartData = labels.map((label, _) => ({
+            label: label[0],
+            measurement: label[1],
+            metric_layer: label[2],
+            values: label[3],
+          }));
+        });
+      this.planService.updateStateWithShapes(
+        this.scenarioResults?.result.features
+      );
+    }
+  }
   /**
    * Converts each feature found in a GeoJSON into individual GeoJSONs, else
    * returns the original GeoJSON, which may result in an error upon project area creation.
