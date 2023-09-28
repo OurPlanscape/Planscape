@@ -19,6 +19,7 @@ import { AuthGuard, ValidationResolver } from './services';
 import { passwordResetTokenResolver } from './services/password-reset.resolver';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
+import { ExploreComponent } from './plan/explore/explore/explore.component';
 
 const routes: Routes = [
   {
@@ -95,7 +96,18 @@ const routes: Routes = [
             title: 'Scenario Configuration',
             component: CreateScenariosComponent,
           },
+          {
+            path: 'explore',
+            title: 'Explore',
+            component: ExploreComponent,
+          },
         ],
+      },
+      {
+        path: 'explore/:id',
+        title: 'Explore Plan',
+        component: ExploreComponent,
+        canActivate: [AuthGuard],
       },
       { path: '**', redirectTo: 'home' },
     ],
