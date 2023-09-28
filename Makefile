@@ -4,6 +4,7 @@
 
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape
+FORSYS_QUEUE=forsys-queue
 
 # Directory which NGINX serves up for planscape
 PUBLIC_WWW_DIR=/var/www/html/planscape/
@@ -52,6 +53,15 @@ deploy-backend: install-dependencies-backend migrate load-conditions restart
 
 deploy-all: deploy-backend deploy-frontend
 
+start-forsys:
+	${SYS_CTL} start ${FORSYS_QUEUE}
+
+stop-forsys:
+	${SYS_CTL} stop ${FORSYS_QUEUE}
+
+status-forsys:
+	${SYS_CTL} status ${FORSYS_QUEUE}
+
 start:
 	${SYS_CTL} start ${SERVICE}
 
@@ -64,7 +74,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop start
+restart: reload stop stop-forsys start start-forsys
 
 nginx-restart:
 	sudo service nginx restart

@@ -22,6 +22,7 @@ import {
 import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
+import { Router } from '@angular/router';
 
 @UntilDestroy()
 @Component({
@@ -66,7 +67,8 @@ export class CreateScenariosComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private planService: PlanService
+    private planService: PlanService,
+    private router: Router
   ) {
     this.treatmentGoals = this.planService.treatmentGoalsConfig$.pipe(
       untilDestroyed(this)
@@ -323,12 +325,13 @@ export class CreateScenariosComponent implements OnInit {
     // TODO Add error catching for failed scenario creation
     this.planService
       .createScenario(this.formValueToScenario())
-      .subscribe((_) => {
-        // const planId = this.plan$.getValue()?.id;
+      .subscribe((result) => {
+        this.planService.updateStateWithScenario(result.id.toString());
         // TODO maybe this state should come as the result of creating scenario from planService
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;
+        this.pollForChanges();
       });
 
     // this.createUploadedProjectAreas()
@@ -443,5 +446,9 @@ export class CreateScenariosComponent implements OnInit {
 
   private drawShapes(shapes: any | null): void {
     this.planService.updateStateWithShapes(shapes);
+  }
+
+  goBackToPlanning() {
+    this.router.navigate(['plan', this.plan$.value?.id]);
   }
 }
