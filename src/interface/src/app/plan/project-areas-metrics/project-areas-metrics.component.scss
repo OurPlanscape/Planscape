@@ -32,6 +32,17 @@
   position: relative;
 }
 
-mat-form-field {
+.mat-form-field {
   width: 100%;
+}
+
+.map-selector {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.map-button {
+  display: block;
+  margin-bottom: 2%;
 }

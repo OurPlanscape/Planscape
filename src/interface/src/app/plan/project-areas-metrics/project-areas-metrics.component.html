@@ -5,10 +5,12 @@
 <div class="chart-holder">
   <div *ngFor="let chart of selectedCharts; index as i">
     <!-- TODO Add styling class -->
-    <div style="display: flex; flex-direction: row">
+    <div class="map-selector">
+      <div class="map-button">
       <button mat-button (click)="toggleMapLayer(i)">
         <mat-icon>map</mat-icon>
       </button>
+    </div>
       <mat-form-field>
         <mat-select
           [value]="chart"
