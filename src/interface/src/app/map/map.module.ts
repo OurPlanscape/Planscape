@@ -14,6 +14,7 @@ import { RegionDropdownComponent } from './region-dropdown/region-dropdown.compo
 import { MapConfigSummaryComponent } from './map-config-summary/map-config-summary.component';
 import { ConditionTreeComponent } from './map-control-panel/condition-tree/condition-tree.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FeaturesModule } from '../features/features.module';
 
 @NgModule({
   declarations: [
@@ -35,6 +36,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     MaterialModule,
     FormsModule,
     ReactiveFormsModule,
+    FeaturesModule,
   ],
   exports: [MapComponent],
 })
