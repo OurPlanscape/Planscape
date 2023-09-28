@@ -48,7 +48,8 @@
 .plan-content-panel {
   overflow: auto;
   width: 45%;
-
+  min-width: 450px;
+  max-width: 800px;
 }
 
 .scenario-details {
