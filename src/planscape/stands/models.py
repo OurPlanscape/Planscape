@@ -9,19 +9,6 @@ class StandSizeChoices(models.TextChoices):
     MEDIUM = "MEDIUM", "Medium"
     LARGE = "LARGE", "Large"
 
-    STAND_SIZE_LENGTH = {
-        # 200 ha / 500ac
-        LARGE: 877.38267558,
-        # 40 ha / 100ac
-        MEDIUM: 392.377463,
-        # 4ha / 10ac
-        SMALL: 124.0806483,
-    }
-
-    @classmethod
-    def length_from_size(cls, size):
-        return cls.STAND_SIZE_LENGTH[size]
-
 
 HEX_LENGTH = {
     StandSizeChoices.LARGE: 877.38267558,
@@ -29,6 +16,18 @@ HEX_LENGTH = {
     StandSizeChoices.MEDIUM: 500,
     StandSizeChoices.SMALL: 250,
 }
+STAND_SIZE_LENGTH = {
+    # 200 ha / 500ac
+    StandSizeChoices.LARGE: 877.38267558,
+    # 40 ha / 100ac
+    StandSizeChoices.MEDIUM: 392.377463,
+    # 4ha / 10ac
+    StandSizeChoices.SMALL: 124.0806483,
+}
+
+
+def length_from_size(size):
+    return StandSizeChoices.STAND_SIZE_LENGTH[size]
 
 
 class Stand(CreatedAtMixin, models.Model):
