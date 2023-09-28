@@ -59,7 +59,8 @@
               *ngSwitchCase="'RUNNING'"></app-scenario-pending>
             <app-scenario-results
               *ngSwitchCase="'SUCCESS'"
-              [scenario]="scenario"></app-scenario-results>
+              [scenario]="scenario"
+              [scenarioChartData]="scenarioChartData"></app-scenario-results>
           </ng-container>
         </mat-tab>
       </mat-tab-group>
