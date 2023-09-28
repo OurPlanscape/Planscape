@@ -1,4 +1,5 @@
 import { Component, Input, OnChanges } from '@angular/core';
+import { parseResultsToTotals } from '../plan-helpers';
 
 export interface ProjectAreaReport {
   id: number;
@@ -34,25 +35,7 @@ export class ProjectAreasComponent implements OnChanges {
 
   private calculateTotal() {
     if (this.areas) {
-      this.total = this.parseResultsToTotals(this.areas);
+      this.total = parseResultsToTotals(this.areas);
     }
-  }
-
-  private parseResultsToTotals(
-    areaReports: ProjectAreaReport[]
-  ): ProjectTotalReport {
-    return areaReports.reduce(
-      (acc, value) => {
-        acc.acres += value.acres;
-        acc.estimatedCost += value.estimatedCost;
-        acc.percentTotal += value.percentTotal;
-        return acc;
-      },
-      {
-        acres: 0,
-        percentTotal: 0,
-        estimatedCost: 0,
-      }
-    );
   }
 }
