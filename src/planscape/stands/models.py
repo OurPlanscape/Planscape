@@ -10,8 +10,11 @@ class StandSizeChoices(models.TextChoices):
     LARGE = "LARGE", "Large"
 
     STAND_SIZE_LENGTH = {
+        # 200 ha / 500ac
         LARGE: 877.38267558,
+        # 40 ha / 100ac
         MEDIUM: 392.377463,
+        # 4ha / 10ac
         SMALL: 124.0806483,
     }
 
