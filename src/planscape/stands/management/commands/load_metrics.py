@@ -14,6 +14,13 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--size",
+            type=str,
+            default=None,
+            help="determines stand size",
+        )
+
+        parser.add_argument(
             "--clear",
             default=True,
             action="store_true",
@@ -22,6 +29,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         condition_ids = options.get("condition_ids")
+        size = options.get("size")
         clear = options.get("clear")
         if condition_ids:
             conditions = Condition.objects.filter(id__in=condition_ids)
@@ -29,7 +37,7 @@ class Command(BaseCommand):
             conditions = Condition.objects.all()
 
         results = list(
-            [self.handle_condition(condition, clear) for condition in conditions]
+            [self.handle_condition(condition, clear, size) for condition in conditions]
         )
         total = len(results)
         success = len([result for result in results if result[0]])
@@ -39,13 +47,19 @@ class Command(BaseCommand):
             f"Stand Metrics Loaded: {success}.\nStand Metrics Failed: {failure}"
         )
 
-    def handle_condition(self, condition, clear=True):
+    def handle_condition(self, condition, clear=True, size=None):
         try:
             with connection.cursor() as cursor:
-                cursor.execute(
-                    "SELECT * FROM generate_stand_metrics(%s, %s)",
-                    [condition.pk, clear],
-                )
+                if not size:
+                    cursor.execute(
+                        "SELECT * FROM generate_stand_metrics(%s, %s)",
+                        [condition.pk, clear],
+                    )
+                else:
+                    cursor.execute(
+                        "SELECT * FROM generate_stand_metrics(%s, %s, %s)",
+                        [condition.pk, size, clear],
+                    )
                 self.stdout.write(
                     f"[OK] Generated metrics for {condition.pk} {condition.raster_name}"
                 )
