@@ -61,7 +61,6 @@ export class CreateScenariosComponent implements OnInit {
 
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
-  scenario: Scenario | null = null;
   scenarioResults: ScenarioResult | null = null;
   scenarioChartData: any[] = [];
 
@@ -194,15 +193,14 @@ export class CreateScenariosComponent implements OnInit {
 
   loadConfig(): void {
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
-      this.scenario = scenario;
-      if (this.scenario.scenario_result) {
-        this.scenarioResults = this.scenario.scenario_result;
-        this.scenarioState = this.scenario.scenario_result?.status;
+      if (scenario.scenario_result) {
+        this.scenarioResults = scenario.scenario_result;
+        this.scenarioState = scenario.scenario_result?.status;
         // TODO Implement a different method of disabling the forms if there is a scenario result — this wipes out the radio button selection for treatment question
         // this.disableForms();
         this.selectedTabIndex = 1;
         if (this.scenarioState == 'SUCCESS') {
-          this.processScenarioResults();
+          this.processScenarioResults(scenario);
         }
       }
 
@@ -385,12 +383,11 @@ export class CreateScenariosComponent implements OnInit {
   /**
    * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
    */
-  processScenarioResults() {
+  processScenarioResults(scenario: Scenario) {
     var scenario_output_fields_paths =
-      this.scenario?.configuration.treatment_question
-        ?.scenario_output_fields_paths!;
+      scenario?.configuration.treatment_question?.scenario_output_fields_paths!;
     var labels: string[][] = [];
-    if (this.scenario) {
+    if (scenario && this.scenarioResults) {
       this.planService
         .getMetricData(scenario_output_fields_paths)
         .pipe(take(1))
@@ -400,12 +397,10 @@ export class CreateScenariosComponent implements OnInit {
             var dataUnits = metric_data[metric]['data_units'];
             var metricLayer = metric_data[metric]['raw_layer'];
             var metricData: string[] = [];
-            this.scenario?.scenario_result?.result.features.map(
-              (featureCollection) => {
-                const props = featureCollection.properties;
-                metricData.push(props[metric]);
-              }
-            );
+            this.scenarioResults?.result.features.map((featureCollection) => {
+              const props = featureCollection.properties;
+              metricData.push(props[metric]);
+            });
             labels.push([displayName, dataUnits, metricLayer, metricData]);
           }
           this.scenarioChartData = labels.map((label, _) => ({
@@ -416,7 +411,7 @@ export class CreateScenariosComponent implements OnInit {
           }));
         });
       this.planService.updateStateWithShapes(
-        this.scenario.scenario_result?.result.features
+        this.scenarioResults?.result.features
       );
     }
   }

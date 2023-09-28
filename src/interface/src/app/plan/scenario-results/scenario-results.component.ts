@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
-import { Scenario, ScenarioResult } from '../../types';
+import { ScenarioResult } from '../../types';
 
 @Component({
   selector: 'app-scenario-results',
@@ -8,7 +8,7 @@ import { Scenario, ScenarioResult } from '../../types';
   styleUrls: ['./scenario-results.component.scss'],
 })
 export class ScenarioResultsComponent implements OnChanges {
-  @Input() scenario: Scenario | null = null;
+  @Input() results: ScenarioResult | null = null;
   @Input() scenarioChartData: any[] = [];
 
   areas: ProjectAreaReport[] = [];
@@ -18,10 +18,8 @@ export class ScenarioResultsComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     // parse ScenarioResult
-    if (this.scenario?.scenario_result) {
-      this.areas = this.parseResultsToProjectAreas(
-        this.scenario?.scenario_result
-      );
+    if (this.results) {
+      this.areas = this.parseResultsToProjectAreas(this.results);
       this.data = this.scenarioChartData;
       this.selectedCharts = this.data.slice(0, 4);
     }
