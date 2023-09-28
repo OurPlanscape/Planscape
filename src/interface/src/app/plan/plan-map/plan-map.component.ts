@@ -280,7 +280,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }),
       onEachFeature: function (feature, layer) {
         
-        // TODO Find a better way to center this — could see if it's possible ot add an actual center coordinate to the properties 
+        // TODO Find a better way to center this — could see if it's possible to add an actual center coordinate to the properties and use that to set tooltip location
+        // This currently is a bit off if the centroid of the project area isn't within it (https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc)
         layer.bindTooltip(String(feature.properties.proj_id), {permanent: true, direction: 'center', className: "project-area-label"}).openTooltip();
       }
     });
