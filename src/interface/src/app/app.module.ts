@@ -21,8 +21,6 @@ import { PlanTableComponent } from './home/plan-table/plan-table.component';
 import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import { LoginComponent } from './login/login.component';
 
-import { ConditionTreeComponent } from './map/map-control-panel/condition-tree/condition-tree.component';
-
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { PlanModule } from './plan/plan.module';
@@ -42,7 +40,6 @@ import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
 import { environment } from 'src/environments/environment';
-import { RegionDropdownComponent } from './region-dropdown/region-dropdown.component';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
@@ -50,7 +47,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { ValidationEmailDialogComponent } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
-import { MapConfigSummaryComponent } from './map/map-config-summary/map-config-summary.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
 import { RedirectGuard } from './services/redirect.guard';
@@ -69,17 +65,14 @@ import { MapModule } from './map/map.module';
     AccountDialogComponent,
     RegionSelectionComponent,
 
-    ConditionTreeComponent,
     HomeComponent,
     PlanTableComponent,
     DeleteAccountDialogComponent,
-    RegionDropdownComponent,
     WelcomeComponent,
     PlanningAreasComponent,
     PreviewComponent,
     ResetPasswordDialogComponent,
     ValidationEmailDialogComponent,
-    MapConfigSummaryComponent,
     ForgetPasswordComponent,
     AboutComponent,
     PasswordResetComponent,

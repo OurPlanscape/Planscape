@@ -32,6 +32,7 @@ import { ReportChartComponent } from './report-chart/report-chart.component';
 import { NgChartsModule } from 'ng2-charts';
 import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.component';
 import { ExploreComponent } from './explore/explore/explore.component';
+import { MapModule } from '../map/map.module';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -74,6 +75,7 @@ import { ExploreComponent } from './explore/explore/explore.component';
     SharedModule,
     FeaturesModule,
     NgChartsModule,
+    MapModule,
   ],
 })
 export class PlanModule {}
