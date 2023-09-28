@@ -201,8 +201,9 @@ export class CreateScenariosComponent implements OnInit {
         // TODO Implement a different method of disabling the forms if there is a scenario result — this wipes out the radio button selection for treatment question
         // this.disableForms();
         this.selectedTabIndex = 1;
-        if (this.scenarioState == 'SUCCESS') { this.processScenarioResults(); }
-
+        if (this.scenarioState == 'SUCCESS') {
+          this.processScenarioResults();
+        }
       }
 
       var config = scenario.configuration;
@@ -388,19 +389,16 @@ export class CreateScenariosComponent implements OnInit {
     var scenario_output_fields_paths =
       this.scenario?.configuration.treatment_question
         ?.scenario_output_fields_paths!;
-    var labels: string[][] = []
+    var labels: string[][] = [];
     if (this.scenario) {
       this.planService
         .getMetricData(scenario_output_fields_paths)
         .pipe(take(1))
         .subscribe((metric_data) => {
           for (let metric in metric_data) {
-            var displayName =
-              metric_data[metric]['display_name'];
-            var dataUnits =
-              metric_data[metric]['data_units'];
-            var metricLayer =
-              metric_data[metric]['raw_layer'];
+            var displayName = metric_data[metric]['display_name'];
+            var dataUnits = metric_data[metric]['data_units'];
+            var metricLayer = metric_data[metric]['raw_layer'];
             var metricData: string[] = [];
             this.scenario?.scenario_result?.result.features.map(
               (featureCollection) => {
