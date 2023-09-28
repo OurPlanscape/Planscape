@@ -29,6 +29,7 @@ describe('PlanOverviewComponent', () => {
           currentScenarioId: null,
           mapConditionLayer: null,
           mapShapes: null,
+          legendUnits: null,
         }),
       }
     );

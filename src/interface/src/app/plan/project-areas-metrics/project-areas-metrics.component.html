@@ -4,17 +4,25 @@
 </div>
 <div class="chart-holder">
   <div *ngFor="let chart of selectedCharts; index as i">
-    <mat-form-field>
-      <mat-select
-        [value]="chart"
-        (selectionChange)="selectDataPoint($event, i)">
-        <mat-option
-          *ngFor="let dataSet of filterData(data, selectedCharts, chart)"
-          [value]="dataSet">
-          {{ dataSet.label }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+    <!-- TODO Add styling class -->
+    <div class="map-selector">
+      <div class="map-button">
+        <button mat-button (click)="toggleMapLayer(i)">
+          <mat-icon>map</mat-icon>
+        </button>
+      </div>
+      <mat-form-field>
+        <mat-select
+          [value]="chart"
+          (selectionChange)="selectDataPoint($event, i)">
+          <mat-option
+            *ngFor="let dataSet of filterData(data, selectedCharts, chart)"
+            [value]="dataSet">
+            {{ dataSet.label }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
     <app-report-chart
       [measurement]="chart.measurement"
       [values]="chart.values"></app-report-chart>

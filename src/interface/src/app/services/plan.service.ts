@@ -11,7 +11,7 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { BasePlan, Plan, Region } from '../types';
+import { BasePlan, Plan, Region, regionToString } from '../types';
 import {
   Scenario,
   ScenarioConfig,
@@ -22,7 +22,6 @@ import {
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from './../types/plan.types';
-import { MapService } from './map.service';
 
 // TODO Remove Config
 export interface PlanState {
@@ -34,6 +33,7 @@ export interface PlanState {
   currentConfigId: ProjectConfig['id'] | null;
   mapConditionLayer: string | null;
   mapShapes: any | null;
+  legendUnits: string | null;
 }
 
 export interface BackendPlan {
@@ -82,20 +82,19 @@ export class PlanService {
     currentConfigId: null,
     mapConditionLayer: null,
     mapShapes: null,
+    legendUnits: null,
   });
   readonly treatmentGoalsConfig$ = new BehaviorSubject<
     TreatmentGoalConfig[] | null
   >(null);
+
   readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
-  constructor(
-    private http: HttpClient,
-    private mapService: MapService
-  ) {
+  constructor(private http: HttpClient) {
     this.http
       .get<TreatmentGoalConfig[]>(
         BackendConstants.END_POINT +
           '/planning/treatment_goals_config/?region_name=' +
-          `${this.mapService.regionToString(this.planRegion$.getValue())}`
+          `${regionToString(this.planRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: TreatmentGoalConfig[]) => {
@@ -547,7 +546,7 @@ export class PlanService {
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       scenario_priorities: config.treatment_question!['scenario_priorities'],
       scenario_output_fields:
-        config.treatment_question!['scenario_output_fields'],
+        config.treatment_question!['scenario_output_fields_paths']!['metrics'],
       stand_thresholds: config.treatment_question!['stand_thresholds'],
       global_thresholds: config.treatment_question!['global_thresholds'],
       weights: config.treatment_question!['weights'],
@@ -642,6 +641,19 @@ export class PlanService {
     this.planState$.next(updatedState);
   }
 
+  updateStateWithLegendUnits(legendUnits: string | null) {
+    const currentState = Object.freeze(this.planState$.value);
+    const updatedState = Object.freeze({
+      ...currentState,
+      all: {
+        ...currentState.all,
+      },
+      legendUnits: legendUnits,
+    });
+
+    this.planState$.next(updatedState);
+  }
+
   private createPlanApi(plan: BasePlan): Observable<Plan> {
     const createPlanRequest = this.convertToDbPlan(plan);
     return this.http
@@ -686,6 +698,17 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  /** Gets Metric Data For Scenario Output Fields */
+  getMetricData(metric_paths: any): Observable<any> {
+    const url = BackendConstants.END_POINT.concat(
+      '/conditions/metrics/?region_name=' +
+        `${regionToString(this.planRegion$.getValue())}` +
+        '&metric_paths=' +
+        JSON.stringify(metric_paths)
+    );
+    return this.http.get<any>(url).pipe(take(1));
+  }
+
   /**
    * Updates planRegion and treatmentGoalsConfig if value is a valid Region
    */
@@ -696,7 +719,7 @@ export class PlanService {
         .get<TreatmentGoalConfig[]>(
           BackendConstants.END_POINT +
             '/planning/treatment_goals_config/?region_name=' +
-            `${this.mapService.regionToString(this.planRegion$.getValue())}`
+            `${regionToString(this.planRegion$.getValue())}`
         )
         .pipe(take(1))
         .subscribe((config: TreatmentGoalConfig[]) => {

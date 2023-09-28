@@ -13,19 +13,36 @@
                 "probability_of_fire_severity_high"
               ],
               "weights": [],
-              "scenario_output_fields": [
-                "high_severity_potential_smoke_emissions",
-                "total_fuel_exposed_to_fire",
-                "dead_and_down_carbon",
-                "structure_exposure",
-                "damage_potential_wui",
-                "standing_dead_and_ladder_fuels",
-                "available_standing_biomass",
-                "sawtimber_biomass",
-                "costs_of_potential_treatment_moving_biomass",
-                "costs_of_potential_treatment_moving_sawlogs",
-                "california_spotted_owl_habitat"
-              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "air_quality",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "biodiversity_conservation"
+                ],
+                "elements": [
+                  "particulate_matter",
+                  "carbon_stability",
+                  "hazard",
+                  "severity",
+                  "wood_product_industry",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "total_fuel_exposed_to_fire",
+                  "dead_and_down_carbon",
+                  "structure_exposure",
+                  "damage_potential_wui",
+                  "standing_dead_and_ladder_fuels",
+                  "available_standing_biomass",
+                  "sawtimber_biomass",
+                  "costs_of_potential_treatment_moving_biomass",
+                  "costs_of_potential_treatment_moving_sawlogs",
+                  "california_spotted_owl_habitat"
+                ]
+              },
               "stand_thresholds": [],
               "global_thresholds": []
             },
@@ -37,17 +54,33 @@
                 "damage_potential_wui"
               ],
               "weights": [],
-              "scenario_output_fields": [
-                "high_severity_potential_smoke_emissions",
-                "moderate_severity_potential_smoke_emissions",
-                "total_fuel_exposed_to_fire",
-                "dead_and_down_carbon",
-                "standing_dead_and_ladder_fuels",
-                "available_standing_biomass",
-                "sawtimber_biomass",
-                "heavy_fuel_load",
-                "california_spotted_owl_habitat"
-              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "air_quality",
+                  "carbon_sequestration",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "biodiversity_conservation"
+                ],
+                "elements": [
+                  "particulate_matter",
+                  "carbon_stability",
+                  "severity",
+                  "wood_product_industry",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "high_severity_potential_smoke_emissions",
+                  "moderate_severity_potential_smoke_emissions",
+                  "total_fuel_exposed_to_fire",
+                  "dead_and_down_carbon",
+                  "standing_dead_and_ladder_fuels",
+                  "available_standing_biomass",
+                  "sawtimber_biomass",
+                  "heavy_fuel_load",
+                  "california_spotted_owl_habitat"
+                ]
+              },
               "stand_thresholds": [],
               "global_thresholds": []
             },
@@ -58,18 +91,36 @@
                 "total_fuel_exposed_to_fire"
               ],
               "weights": [],
-              "scenario_output_fields": [
-                "high_severity_potential_smoke_emissions",
-                "moderate_severity_potential_smoke_emissions",
-                "dead_and_down_carbon",
-                "standing_dead_and_ladder_fuels",
-                "available_standing_biomass",
-                "sawtimber_biomass",
-                "heavy_fuel_load",
-                "probability_of_fire_severity_high",
-                "probability_of_fire_severity_moderate",
-                "california_spotted_owl_habitat"
-              ],
+              "scenario_output_fields_paths":
+              {
+                "pillars": [
+                  "air_quality",
+                  "carbon_sequestration",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "biodiversity_conservation"
+                ],
+                "elements": [
+                  "particulate_matter",
+                  "carbon_stability",
+                  "severity",
+                  "wood_product_industry",
+                  "functional_fire",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "high_severity_potential_smoke_emissions",
+                  "moderate_severity_potential_smoke_emissions",
+                  "dead_and_down_carbon",
+                  "standing_dead_and_ladder_fuels",
+                  "available_standing_biomass",
+                  "sawtimber_biomass",
+                  "heavy_fuel_load",
+                  "probability_of_fire_severity_high",
+                  "probability_of_fire_severity_moderate",
+                  "california_spotted_owl_habitat"
+                ]
+              },
               "stand_thresholds": [
                 "PHSF > 0.2"
               ],
@@ -83,18 +134,38 @@
                 "standing_dead_and_ladder_fuels"
               ],
               "weights": [],
-              "scenario_output_fields": [
-                "costs_of_potential_treatment_moving_biomass",
-                "costs_of_potential_treatment_moving_sawlogs",
-                "moderate_severity_potential_smoke_emissions",
-                "structure_exposure",
-                "damage_potential_wui",
-                "available_standing_biomass",
-                "sawtimber_biomass",
-                "seral_stage_late",
-                "low_income_populations",
-                "california_spotted_owl_habitat"
-              ],
+              "scenario_output_fields_paths":  {
+                "pillars": [
+                  "economic_diversity",
+                  "air_quality",
+                  "fire_adapted_communities",
+                  "economic_diversity",
+                  "forest_resilience",
+                  "social_cultural_wellbeing",
+                  "biodiversity_conservation"
+                ],
+                "elements": [
+                  "wood_product_industry",
+                  "particulate_matter",
+                  "carbon_stability",
+                  "severity",
+                  "forest_composition",
+                  "environmental_justice",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "costs_of_potential_treatment_moving_biomass",
+                  "costs_of_potential_treatment_moving_sawlogs",
+                  "moderate_severity_potential_smoke_emissions",
+                  "structure_exposure",
+                  "damage_potential_wui",
+                  "available_standing_biomass",
+                  "sawtimber_biomass",
+                  "seral_stage_late",
+                  "low_income_populations",
+                  "california_spotted_owl_habitat"
+                ]
+              },
               "stand_thresholds": [
                 "PHSF < 0.3 & Burnable == 1"
               ],

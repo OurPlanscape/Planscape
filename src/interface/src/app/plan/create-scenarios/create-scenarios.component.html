@@ -59,7 +59,8 @@
               *ngSwitchCase="'RUNNING'"></app-scenario-pending>
             <app-scenario-results
               *ngSwitchCase="'SUCCESS'"
-              [results]="scenarioResults"></app-scenario-results>
+              [results]="scenarioResults"
+              [scenarioChartData]="scenarioChartData"></app-scenario-results>
             <app-scenario-failure
               *ngSwitchCase="'FAILURE'"
               (goBack)="goBackToPlanning()"></app-scenario-failure>

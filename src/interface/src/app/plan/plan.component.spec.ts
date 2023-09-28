@@ -2,7 +2,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
@@ -62,15 +62,21 @@ describe('PlanComponent', () => {
 
     mockAuthService = {};
 
-    const fakeService = jasmine.createSpyObj('PlanService', {
-      getPlan: of(fakePlan),
-      getProjectsForPlan: of([]),
-      updateStateWithPlan: of(),
-      updateStateWithScenario: of(),
-      updateStateWithConfig: of(),
-      getScenariosForPlan: of([]),
-      updateStateWithShapes: of([]),
-    });
+    const fakeService = jasmine.createSpyObj(
+      'PlanService',
+      {
+        getPlan: of(fakePlan),
+        getProjectsForPlan: of([]),
+        updateStateWithPlan: of(),
+        updateStateWithScenario: of(),
+        updateStateWithConfig: of(),
+        getScenariosForPlan: of([]),
+        updateStateWithShapes: of([]),
+      },
+      {
+        planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA),
+      }
+    );
     fakeService.planState$ = of({});
 
     await TestBed.configureTestingModule({

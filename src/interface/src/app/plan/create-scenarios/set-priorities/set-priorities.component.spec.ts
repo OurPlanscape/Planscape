@@ -25,7 +25,7 @@ describe('SetPrioritiesComponent', () => {
 
   const defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    scenario_output_fields: [''],
+    scenario_output_fields_paths: {},
     scenario_priorities: [''],
     global_thresholds: [''],
     stand_thresholds: [''],
@@ -34,7 +34,7 @@ describe('SetPrioritiesComponent', () => {
   const testQuestion: TreatmentQuestionConfig = {
     short_question_text: 'test_question',
     scenario_priorities: ['test_priority'],
-    scenario_output_fields: [''],
+    scenario_output_fields_paths: {},
     global_thresholds: [''],
     stand_thresholds: [''],
     weights: [1],
