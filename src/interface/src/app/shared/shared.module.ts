@@ -9,6 +9,7 @@ import { NavBarComponent } from './nav-bar/nav-bar.component';
 import { FeaturesModule } from '../features/features.module';
 import { RouterLinkWithHref } from '@angular/router';
 import { CurrencyInKPipe } from '../pipes/currency-in-k.pipe';
+import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.directive';
 
 @NgModule({
   declarations: [
@@ -16,12 +17,14 @@ import { CurrencyInKPipe } from '../pipes/currency-in-k.pipe';
     OpacitySliderComponent,
     NavBarComponent,
     CurrencyInKPipe,
+    TypeSafeMatCellDef,
   ],
   exports: [
     FileUploaderComponent,
     OpacitySliderComponent,
     NavBarComponent,
     CurrencyInKPipe,
+    TypeSafeMatCellDef,
   ],
   imports: [
     CommonModule,

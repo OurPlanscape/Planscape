@@ -3,9 +3,18 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { interval, take } from 'rxjs';
 import { PlanService } from 'src/app/services';
-import { Plan, Scenario } from 'src/app/types';
+import {
+  Plan,
+  Scenario,
+  ScenarioResult,
+  ScenarioResultStatus,
+} from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { POLLING_INTERVAL } from '../../plan-helpers';
+import {
+  parseResultsToProjectAreas,
+  parseResultsToTotals,
+  POLLING_INTERVAL,
+} from '../../plan-helpers';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -36,6 +45,14 @@ export class SavedScenariosComponent implements OnInit {
     'status',
     'completedTimestamp',
   ];
+
+  statusLabels: Record<ScenarioResultStatus, string> = {
+    NOT_STARTED: 'Not Started',
+    PENDING: 'Running',
+    RUNNING: 'Running',
+    SUCCESS: 'Done',
+    FAILURE: 'Failed',
+  };
 
   constructor(
     private planService: PlanService,
@@ -97,5 +114,11 @@ export class SavedScenariosComponent implements OnInit {
         this.snackbar.open(`Error: ${err}`);
       },
     });
+  }
+
+  calculateTotals(results: ScenarioResult) {
+    const projectAreas = parseResultsToProjectAreas(results);
+    const total = parseResultsToTotals(projectAreas);
+    return total;
   }
 }
