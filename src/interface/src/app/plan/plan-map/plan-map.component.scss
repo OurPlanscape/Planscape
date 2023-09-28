@@ -12,7 +12,6 @@
 }
 
 :host {
-
 // Styling for legend on mousehover
 ::ng-deep .legend:hover {
   width: 100%;
@@ -100,4 +99,8 @@
   flex-direction: row;
 }
 
+::ng-deep .leaflet-tooltip.project-area-label {
+  border: transparent;
+  box-shadow: none;
+  }
 }
