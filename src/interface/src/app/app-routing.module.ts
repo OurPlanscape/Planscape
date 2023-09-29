@@ -14,7 +14,9 @@ import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
 import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
 import { PlanComponent } from './plan/plan.component';
+import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { AuthGuard, ValidationResolver } from './services';
+import { passwordResetTokenResolver } from './services/password-reset.resolver';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
 
@@ -28,6 +30,13 @@ const routes: Routes = [
         path: 'login',
         title: 'Login',
         component: LoginComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'reset/:userId/:token',
+        title: 'Password reset',
+        resolve: { passwordResetToken: passwordResetTokenResolver },
+        component: PasswordResetComponent,
         canActivate: [createFeatureGuard('login')],
       },
       {
