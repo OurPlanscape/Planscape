@@ -9,6 +9,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
+    "format:styles": "prettier --write \"**/*.scss\"",
     "build:prod": "ng build --configuration production",
     "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage"
   },

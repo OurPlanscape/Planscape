@@ -1,4 +1,3 @@
-
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
@@ -82,20 +81,27 @@
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
 $planscape-frontend-primary: mat.define-palette(mat.$indigo-palette);
-$planscape-frontend-accent: mat.define-palette(mat.$pink-palette, A200, A100, A400);
+$planscape-frontend-accent: mat.define-palette(
+  mat.$pink-palette,
+  A200,
+  A100,
+  A400
+);
 
 // The warn palette is optional (defaults to red).
 $planscape-frontend-warn: mat.define-palette(mat.$red-palette);
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
-$planscape-frontend-theme: mat.define-light-theme((
-  color: (
-    primary: $planscape-frontend-primary,
-    accent: $planscape-frontend-accent,
-    warn: $planscape-frontend-warn,
+$planscape-frontend-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $planscape-frontend-primary,
+      accent: $planscape-frontend-accent,
+      warn: $planscape-frontend-warn,
+    ),
   )
-));
+);
 
 // Include theme styles for core and each component used in your app.
 // Alternatively, you can import and @include the theme mixins for each component
@@ -103,10 +109,16 @@ $planscape-frontend-theme: mat.define-light-theme((
 @include mat.all-component-themes($planscape-frontend-theme);
 
 /* You can add global styles to this file, and also import other style files */
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined");
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined');
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
 
 .is-hidden {
   display: none !important;
@@ -135,12 +147,12 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 // Geoman drawing vertex styling
 .marker-icon,
- .marker-icon:focus {
-    border: 3px solid #3367D6;
-    margin: -5px 0 0 -5px !important;
-    width: 5px !important;
-    height: 5px !important;
- }
+.marker-icon:focus {
+  border: 3px solid #3367d6;
+  margin: -5px 0 0 -5px !important;
+  width: 5px !important;
+  height: 5px !important;
+}
 
 // Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
 @import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';

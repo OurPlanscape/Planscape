@@ -1,4 +1,4 @@
-@import "../shared/_variables.scss";
+@import '../shared/_variables.scss';
 
 // Region select dropdown arrow
 @mixin arrow {
@@ -15,16 +15,18 @@
   pointer-events: none;
 }
 
-
 // styles for the dropdown on the map controls
 .region-wrapper {
   height: 32px;
-  box-shadow: 0 1px 1px 0 #00000024, 0 2px 2px 0 #00000033, 0 1px 5px 0 #0000001F;
+  box-shadow:
+    0 1px 1px 0 #00000024,
+    0 2px 2px 0 #00000033,
+    0 1px 5px 0 #0000001f;
 
   overflow: hidden;
   border-radius: 6px;
   position: relative;
-  &::before{
+  &::before {
     content: '';
     width: 1px;
     height: 100%;
@@ -44,7 +46,7 @@
     height: 0;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
-    border-top: 5px solid #3367D6;
+    border-top: 5px solid #3367d6;
     pointer-events: none;
   }
 }
@@ -54,17 +56,15 @@
     display: none; /* IE */
   }
 
-  -moz-appearance:none; /* Firefox */
-  -webkit-appearance:none; /* Safari and Chrome */
-  appearance:none;
+  -moz-appearance: none; /* Firefox */
+  -webkit-appearance: none; /* Safari and Chrome */
+  appearance: none;
   font-weight: 500;
   border: none;
   text-transform: uppercase;
-  color: #3367D6;
+  color: #3367d6;
   padding: 10px;
   padding-right: 36px;
   border-right: 1px solid #eeeeee;
   text-align: center;
 }
-
-
