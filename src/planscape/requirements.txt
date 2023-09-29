@@ -26,3 +26,4 @@ scipy
 sentry-sdk
 django-password-policies-validator>=1.0.2
 black==23.7.0
+humanize==4.8.0
