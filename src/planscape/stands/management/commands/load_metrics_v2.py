@@ -104,9 +104,6 @@ class Command(BaseCommand):
             qs = qs.filter(id__in=condition_ids)
         return qs.values_list("id", flat=True)
 
-    def get_total_time_minutes(self, delta):
-        return round(delta / 60, 2)
-
     def handle(self, *args, **options):
         max_workers = options.get("max_workers")
         condition_ids = options.get("condition_ids")
