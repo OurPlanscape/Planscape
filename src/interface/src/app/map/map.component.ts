@@ -9,6 +9,7 @@ import {
   OnInit,
   ChangeDetectorRef,
   DoCheck,
+  Input,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -123,6 +124,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private readonly destroy$ = new Subject<void>();
   login_enabled = this.featureService.isFeatureEnabled('login');
 
+  @Input() planId: string | null = null;
+
   constructor(
     public applicationRef: ApplicationRef,
     private authService: AuthService,
@@ -211,6 +214,19 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           this.maps.map((map: Map) => map.config)
         );
       });
+
+    if (this.planId) {
+      const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
+
+      plan$.subscribe({
+        next: (plan) => {
+          console.log('the plan', plan);
+        },
+        error: (error) => {
+          // this.planNotFound = true;
+        },
+      });
+    }
   }
 
   ngDoCheck(): void {
