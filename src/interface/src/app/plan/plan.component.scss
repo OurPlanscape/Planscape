@@ -1,4 +1,4 @@
-@import "../shared/_variables";
+@import '../shared/_variables';
 
 .root-container {
   display: flex;
@@ -71,8 +71,6 @@
   }
 }
 
-
-
 @media print {
   app-nav-bar {
     display: none;
@@ -87,7 +85,7 @@
       display: none;
     }
 
-    app-scenario-configurations .configurations-wrapper .no-configs-overlay{
+    app-scenario-configurations .configurations-wrapper .no-configs-overlay {
       display: none;
     }
 
@@ -99,10 +97,8 @@
       display: none;
     }
 
-    ::ng-deep .mat-column-select{
+    ::ng-deep .mat-column-select {
       display: none;
     }
-
-
   }
 }

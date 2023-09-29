@@ -19,14 +19,14 @@
 }
 
 .summary-title {
-  font-family: "Google Sans";
+  font-family: 'Google Sans';
   font-size: 24px;
   margin: 20px 0 10px;
 }
 
 .summary-subtitle {
-  color: #5F6368;
-  font-family: "Google Sans";
+  color: #5f6368;
+  font-family: 'Google Sans';
   font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.25px;
@@ -34,7 +34,7 @@
 }
 
 .summary-content {
-  color: #5F6368;
+  color: #5f6368;
   font-size: 12px;
   letter-spacing: 0.3px;
   gap: 50px;
@@ -90,7 +90,7 @@
   }
 
   ::ng-deep .mat-form-field-infix {
-    height: 90%
+    height: 90%;
   }
 
   ::ng-deep .mat-form-field-underline {

@@ -1,10 +1,9 @@
-@import "../../shared/_variables";
+@import '../../shared/_variables';
 
 :host {
   overflow: scroll;
   width: 100%;
   flex: 1;
-
 }
 
 .planning {
@@ -18,7 +17,7 @@
   max-width: 80%;
   box-sizing: border-box;
   margin: 20px auto;
-  flex:1;
+  flex: 1;
   min-height: calc(100% - $toolbar-height);
 }
 
@@ -34,7 +33,7 @@ h3 {
   margin: 0;
 }
 
-.help{
+.help {
   margin-left: auto;
 }
 
@@ -42,7 +41,6 @@ h3 {
   margin-right: 10px;
 }
 
-app-plan-table{
+app-plan-table {
   margin-top: 20px;
 }
-

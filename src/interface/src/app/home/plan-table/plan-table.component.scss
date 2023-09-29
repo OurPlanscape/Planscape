@@ -1,4 +1,4 @@
-:host{
+:host {
   display: block;
 }
 
@@ -13,7 +13,7 @@
 
 .no-saved-plans {
   align-items: center;
-  color: #000000A8;
+  color: #000000a8;
   display: flex;
   flex-direction: row;
   height: 220px;
@@ -28,7 +28,7 @@
 }
 
 h2 {
-  color: #5F6368;
+  color: #5f6368;
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
@@ -38,16 +38,18 @@ h2 {
   cursor: pointer;
 }
 
-.selected .mat-column-name , .selected{
-  background-color: #F1F5FD;
-  border-left-color: #3B78E7;
+.selected .mat-column-name,
+.selected {
+  background-color: #f1f5fd;
+  border-left-color: #3b78e7;
 }
 
 mat-header-row {
   min-height: 80px;
 }
 
-mat-header-row , mat-row{
+mat-header-row,
+mat-row {
   gap: 20px;
 }
 
@@ -72,27 +74,26 @@ mat-header-row , mat-row{
 }
 
 .primary {
-  color: #3B78E7;
+  color: #3b78e7;
 }
-
 
 .mat-column-lastUpdated {
   flex-basis: 10%;
   position: relative;
   overflow: visible;
 
-  &::after{
+  &::after {
     left: -20px;
     background: linear-gradient(90deg, #d5d5d5, transparent);
     position: absolute;
     display: block;
-    content: "";
+    content: '';
     width: 5px;
     height: 100%;
   }
 }
 
-.mat-header-cell:not(.mat-column-name ) {
+.mat-header-cell:not(.mat-column-name) {
   border-right: 1px solid rgb(0 0 0 / 12%);
 }
 

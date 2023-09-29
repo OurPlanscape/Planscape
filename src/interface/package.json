@@ -11,7 +11,8 @@
     "lint:fix": "ng lint --fix",
     "build:prod": "ng build --configuration production",
     "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage",
-    "stylelint" : "stylelint --fix  \"**/*.scss\""
+    "stylelint" : "stylelint --fix  \"**/*.scss\"",
+    "format:styles": "prettier --write \"**/*.scss\""
   },
   "private": true,
   "dependencies": {

@@ -1,15 +1,16 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-@import "../../../../styles";
+@import '../../../../styles';
 
 $color-config: mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
 .name-column {
-  justify-content:left;
+  justify-content: left;
 }
 
-mat-header-cell, mat-cell {
+mat-header-cell,
+mat-cell {
   justify-content: center;
 }
 
@@ -22,7 +23,10 @@ mat-header-cell, mat-cell {
 }
 
 .highlight {
-  background-color: transparentize($color: mat.get-color-from-palette($primary-palette, 500), $amount: 0.9);
+  background-color: transparentize(
+    $color: mat.get-color-from-palette($primary-palette, 500),
+    $amount: 0.9
+  );
 }
 
 .mat-card-content {
@@ -55,8 +59,8 @@ mat-header-cell, mat-cell {
   }
 }
 
-.new-scenario-button{
-  right:5px;
+.new-scenario-button {
+  right: 5px;
   margin-left: auto;
 }
 
@@ -70,7 +74,10 @@ mat-header-cell, mat-cell {
   cursor: pointer;
 
   &:hover {
-    background-color: transparentize($color: mat.get-color-from-palette($primary-palette, 500), $amount: 0.9);
+    background-color: transparentize(
+      $color: mat.get-color-from-palette($primary-palette, 500),
+      $amount: 0.9
+    );
 
     mat-cell div.hover-indicator {
       background-color: mat.get-color-from-palette($primary-palette, 500);

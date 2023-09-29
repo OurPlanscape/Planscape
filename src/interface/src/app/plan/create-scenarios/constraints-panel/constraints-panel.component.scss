@@ -65,7 +65,7 @@
   width: 180px;
 
   &.disabled {
-    opacity: .60;
+    opacity: 0.6;
   }
 }
 
@@ -74,7 +74,7 @@
 }
 
 .subtext {
-  color: #5F6368;
+  color: #5f6368;
   font-size: 12px;
 }
 
@@ -154,14 +154,12 @@
 }
 
 .mat-button-toggle-checked {
-  background-color: #E6e9f4;
-
+  background-color: #e6e9f4;
 }
 
 .mat-button-toggle-group {
   width: fit-content;
   margin-right: 60px;
-
 }
 
 .mat-button-toggle-group-appearance-standard {
@@ -171,19 +169,20 @@
 }
 
 :host {
-  ::ng-deep .mat-button-toggle-appearance-standard .mat-button-toggle-label-content {
+  ::ng-deep
+    .mat-button-toggle-appearance-standard
+    .mat-button-toggle-label-content {
     line-height: 20px;
     top: 5px;
     width: 60px;
   }
 
-  ::ng-deep .mat-select-value, ::ng-deep .mat-option-text {
+  ::ng-deep .mat-select-value,
+  ::ng-deep .mat-option-text {
     text-align: center;
   }
 }
 
-
 .mat-grid-tile-content {
   width: fit-content;
 }
-

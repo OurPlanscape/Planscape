@@ -1,4 +1,4 @@
-@import "../../shared/_variables";
+@import '../../shared/_variables';
 
 .nav-bar {
   display: flex;
@@ -29,7 +29,7 @@
 }
 
 .action-button {
-  color: #3367D6;
+  color: #3367d6;
   text-transform: uppercase;
 
   &::ng-deep .mat-button-wrapper {
