@@ -1,8 +1,11 @@
 import json
+import os
+from django.conf import settings as djangoSettings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TransactionTestCase
 from django.urls import reverse
+
 
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 
@@ -1530,6 +1533,97 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(
             result["scenario_result"]["status"], ScenarioResultStatus.PENDING
         )
+
+
+class GetScenarioDownloadTest(TransactionTestCase):
+    def setUp(self):
+        super().setUp()
+        self.set_verbose = True
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.planning_area = _create_planning_area(
+            self.user, "test plan", self.storable_geometry
+        )
+        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
+
+        # generate fake data in a directory that corresponds to this scenario name
+        self.mock_project_path = str(djangoSettings.OUTPUT_DIR) + "/" + "test scenario"
+        os.mkdir(self.mock_project_path)
+        self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
+        with open(self.mock_project_file, "w") as handle:
+            print("Just test data", file=handle)
+
+        # create a second scenario with a different user
+
+        self.user2 = User.objects.create(username="testuser2")
+        self.user2.set_password("12345")
+        self.user2.save()
+        self.planning_area2 = _create_planning_area(
+            self.user2, "test plan2", self.storable_geometry
+        )
+        self.scenario2 = _create_scenario(self.planning_area2, "test scenario2", "{}")
+
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    def tearDown(self):
+        os.remove(self.mock_project_file)
+        os.rmdir(self.mock_project_path)
+        return super().tearDown()
+
+    def test_get_scenario_with_zip(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse("planning:get_scenario_download_by_id"), {"id": self.scenario.pk}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["Content-Type"], "application/zip")
+        self.assertIsInstance(response.content, bytes)
+
+    def test_get_scenario_not_logged_in(self):
+        response = self.client.get(
+            reverse("planning:get_scenario_download_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r"User must be logged in")
+
+    def test_get_scenario_wrong_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse("planning:get_scenario_download_by_id"),
+            {"id": self.scenario2.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r"does not exist")
+
+    def test_get_scenario_without_project_data(self):
+        self.client.force_login(self.user2)
+        response = self.client.get(
+            reverse("planning:get_scenario_download_by_id"),
+            {"id": self.scenario2.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r"Scenario files cannot be read")
+
+    def test_get_scenario_nonexistent_scenario(self):
+        self.client.force_login(self.user)
+        response = self.client.get(
+            reverse("planning:get_scenario_download_by_id"),
+            {"id": 99999},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r"does not exist")
 
 
 class DeleteScenarioTest(TransactionTestCase):
