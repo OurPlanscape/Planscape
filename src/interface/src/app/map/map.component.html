@@ -23,7 +23,7 @@
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="maps-container">
     <!-- Actions bar above the maps -->
-    <div class="map-actions-bar">
+    <div class="map-actions-bar" *ngIf="!this.planId">
       <div class="actions-bar-text">START PLANNING:</div>
 
       <!-- Draw a planning area -->
