@@ -12,12 +12,12 @@ export class CurrencyInKPipe implements PipeTransform {
   readonly denominator = 'K';
   constructor(public currencyPipe: CurrencyPipe) {}
 
-  transform(value: number): string | null {
+  transform(value: number, digits = '1.0-2'): string | null {
     if (!value) {
       return '$0';
     }
     return (
-      this.currencyPipe.transform(value / 1000, 'USD', 'symbol', '1.0-2') +
+      this.currencyPipe.transform(value / 1000, 'USD', 'symbol', digits) +
       this.denominator
     );
   }
