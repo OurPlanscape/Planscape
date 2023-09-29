@@ -28,7 +28,7 @@ def handle_stand_condition(stand_id, condition_id):
                         stats.count,
                         stats.condition_id,
                         stats.stand_id
-                    FROM compute_stand_stats(%s, %s) as stats
+                    FROM compute_stand_stats(%s, %s) AS stats
                     WHERE
                         stats.condition_id IS NOT NULL AND
                         stats.count > 0
@@ -78,7 +78,7 @@ class Command(BaseCommand):
             cursor.execute(
                 """
                 SELECT
-                    ST_Envelope(ST_Collect(ST_Envelope(raster)))  as "geometry"
+                    ST_Envelope(ST_Collect(ST_Envelope(raster))) AS "geometry"
                 FROM conditions_conditionraster cc 
                 WHERE condition_id = %s""",
                 [condition_id],
