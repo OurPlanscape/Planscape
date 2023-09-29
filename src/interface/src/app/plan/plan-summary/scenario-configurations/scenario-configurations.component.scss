@@ -1,9 +1,8 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
+@import "../../../../styles";
 
-@import "../../../../styles.scss";
-
-$color-config:    mat.get-color-config($planscape-frontend-theme);
+$color-config: mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
 .configurations-wrapper {
@@ -29,7 +28,7 @@ $primary-palette: map.get($color-config, 'primary');
 .no-configs-overlay {
   align-items: center;
   backdrop-filter: blur(2px);
-  background: rgba(79, 79, 79, 0.8);
+  background: rgb(79 79 79 / 80%);
   border-radius: 16px;
   box-sizing: border-box;
   display: flex;

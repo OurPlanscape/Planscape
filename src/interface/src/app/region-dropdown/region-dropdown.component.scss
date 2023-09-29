@@ -1,9 +1,11 @@
-@import "../shared/_variables.scss";
+@import "../shared/_variables";
 
 // Region select dropdown arrow
 @mixin arrow {
   content: '';
+
   $arrow-size: 5px;
+
   position: relative;
   right: 12px;
   top: 15px;
@@ -11,7 +13,7 @@
   height: 0;
   border-left: $arrow-size solid transparent;
   border-right: $arrow-size solid transparent;
-  border-top: $arrow-size solid #ffffff;
+  border-top: $arrow-size solid #fff;
   pointer-events: none;
 }
 
@@ -19,11 +21,11 @@
 // styles for the dropdown on the map controls
 .region-wrapper {
   height: 32px;
-  box-shadow: 0 1px 1px 0 #00000024, 0 2px 2px 0 #00000033, 0 1px 5px 0 #0000001F;
-
+  box-shadow: 0 1px 1px 0 #00000024, 0 2px 2px 0 #0003, 0 1px 5px 0 #0000001F;
   overflow: hidden;
   border-radius: 6px;
   position: relative;
+
   &::before{
     content: '';
     width: 1px;
@@ -36,7 +38,9 @@
 
   &::after {
     content: '';
+
     $arrow-size: 5px;
+
     position: absolute;
     right: 10px;
     top: 14px;
@@ -52,10 +56,7 @@
 .region {
   &::-ms-expand {
     display: none; /* IE */
-  }
-
-  -moz-appearance:none; /* Firefox */
-  -webkit-appearance:none; /* Safari and Chrome */
+  } /* Firefox */ /* Safari and Chrome */
   appearance:none;
   font-weight: 500;
   border: none;
@@ -63,7 +64,7 @@
   color: #3367D6;
   padding: 10px;
   padding-right: 36px;
-  border-right: 1px solid #eeeeee;
+  border-right: 1px solid #eee;
   text-align: center;
 }
 

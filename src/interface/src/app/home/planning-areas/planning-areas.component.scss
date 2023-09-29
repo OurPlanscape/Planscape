@@ -1,4 +1,4 @@
-@import "../../shared/_variables.scss";
+@import "../../shared/_variables";
 
 :host {
   overflow: scroll;
@@ -10,9 +10,7 @@
 .planning {
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0px 3px 1px -2px #0000001F;
-  box-shadow: 0px 2px 2px 0px #00000024;
-  box-shadow: 0px 1px 5px 0px #00000033;
+  box-shadow: 0 1px 5px 0 #0003;
   padding: 16px 26px;
   display: flex;
   flex-direction: column;
@@ -23,11 +21,13 @@
   flex:1;
   min-height: calc(100% - $toolbar-height);
 }
+
 .title-nav {
   display: flex;
   gap: 10px;
   align-items: center;
 }
+
 h3 {
   font-size: 18px;
   line-height: 24px;

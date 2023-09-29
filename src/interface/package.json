@@ -10,7 +10,8 @@
     "lint": "ng lint",
     "lint:fix": "ng lint --fix",
     "build:prod": "ng build --configuration production",
-    "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage"
+    "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage",
+    "stylelint" : "stylelint --fix  \"**/*.scss\""
   },
   "private": true,
   "dependencies": {
@@ -75,6 +76,8 @@
     "karma-jasmine-html-reporter": "~2.0.0",
     "prettier": "^3.0.2",
     "prettier-eslint": "^15.0.1",
+    "stylelint": "^15.10.3",
+    "stylelint-config-standard-scss": "^11.0.0",
     "typescript": "~4.7.2"
   }
 }

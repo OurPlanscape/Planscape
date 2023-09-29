@@ -5,11 +5,11 @@
 
 .file-uploader-wrapper {
   align-items: flex-start;
-  background-color: #ffffff;
+  background-color: #fff;
   display: flex;
   flex-direction: column;
   height: 120px;
-  padding: 0px 20px 0px 20px;
+  padding: 0 20px;
   z-index: 2;
 }
 
@@ -17,7 +17,7 @@
   color: #575757;
   font-size: 13px;
   font-weight: 500;
-  padding: 10px 0px 10px 0px;
+  padding: 10px 0;
 }
 
 .upload-outline {
@@ -27,7 +27,7 @@
   color: #575757;
   display: flex;
   height: 36px;
-  padding: 0px 0px 0px 10px;
+  padding: 0 0 0 10px;
   width: 240px;
 }
 

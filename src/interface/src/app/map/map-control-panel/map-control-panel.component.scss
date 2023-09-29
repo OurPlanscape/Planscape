@@ -1,9 +1,8 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
+@import "../../../styles";
 
-@import "../../../styles.scss";
-
-$color-config:    mat.get-color-config($planscape-frontend-theme);
+$color-config: mat.get-color-config($planscape-frontend-theme);
 $primary-palette: map.get($color-config, 'primary');
 
 .controls-container {
@@ -18,7 +17,7 @@ $primary-palette: map.get($color-config, 'primary');
 
 .title-container {
   margin-bottom: 24px;
-  padding: 0px 24px 0px 24px;
+  padding: 0 24px;
 }
 
 h1 {
@@ -31,7 +30,7 @@ h2 {
   font-size: 14px;
   font-weight: 600;
   line-height: 40px;
-  margin: 0px;
+  margin: 0;
   text-align: center;
 }
 
@@ -39,7 +38,7 @@ h3 {
   font-size: 12px;
   font-weight: 400;
   line-height: 15px;
-  margin: 0px;
+  margin: 0;
   text-align: center;
 }
 
@@ -147,7 +146,7 @@ h3 {
 }
 
 ::ng-deep .mat-expansion-panel-body {
-  padding-bottom: 0px !important;
+  padding-bottom: 0 !important;
 }
 
 // Workaround for unresolved Angular bug re: tab width on desktop

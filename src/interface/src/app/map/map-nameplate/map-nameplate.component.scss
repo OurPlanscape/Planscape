@@ -12,18 +12,18 @@
 
 .map-nameplate {
   align-items: center;
-  background-color: #ffffff;
-  bottom: 0px;
+  background-color: #fff;
+  bottom: 0;
   box-sizing: border-box;
   display: flex;
   height: 30px;
   min-width: 0;
-  opacity: 50%;
+  opacity: 0.5;
   padding-right: 16px;
   position: absolute;
   z-index: 10;
 }
 
 .map-nameplate.selected {
-  opacity: 80%;
+  opacity: 0.8;
 }

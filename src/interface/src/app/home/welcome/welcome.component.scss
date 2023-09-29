@@ -6,9 +6,7 @@
 .welcome {
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0px 3px 1px -2px #0000001F;
-  box-shadow: 0px 2px 2px 0px #00000024;
-  box-shadow: 0px 1px 5px 0px #00000033;
+  box-shadow: 0 1px 5px 0 #0003;
   padding: 40px 60px;
   display: flex;
   flex-direction: column;
@@ -34,6 +32,7 @@ h1 {
 p {
   margin-bottom: 16px;
 }
+
 .flex {
   display: flex;
   align-items: flex-start;
@@ -45,6 +44,7 @@ p {
 .explore {
   text-transform: uppercase;
 }
+
 .disclaimer {
 font-size: 13px;
 }

@@ -23,11 +23,10 @@
 
 .button-row {
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
   gap: 40px;
 }
 
 .mat-button-disabled {
-  background-color: rgba(gray, 0.6) !important;
+  background-color: rgb(gray 0.6) !important;
 }

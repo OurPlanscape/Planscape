@@ -1,9 +1,9 @@
-@import "../shared/_variables.scss";
+@import "../shared/_variables";
 
 .root-container {
   display: flex;
   flex-direction: row;
-  height: calc(100%  - $navbar-height);
+  height: calc(100% - $navbar-height);
   width: 100%;
 }
 
@@ -64,6 +64,7 @@
       flex-direction: column;
       height: 100%;
     }
+
     .create-scenarios-panel {
       flex: 1;
     }
@@ -89,6 +90,7 @@
     app-scenario-configurations .configurations-wrapper .no-configs-overlay{
       display: none;
     }
+
     summary-panel .summary-content .grid-container {
       display: block;
     }

@@ -2,6 +2,7 @@
 // Custom Theming for Angular Material
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
+
 // @import '~angular/material/theming';
 // @import 'super-styles';
 // Plus imports for other components in your app.
@@ -9,7 +10,7 @@
 // Include the common styles for Angular Material. We include this here so that you only
 // have to load a single css file for Angular Material in your app.
 // Be sure that you only ever include this mixin once!
-@include mat.core();
+@include mat.core;
 
 // CUSTOM
 // $primary-palette: (
@@ -103,7 +104,7 @@ $planscape-frontend-theme: mat.define-light-theme((
 @include mat.all-component-themes($planscape-frontend-theme);
 
 /* You can add global styles to this file, and also import other style files */
-@import url("https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined");
+@import "https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined";
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
@@ -118,8 +119,9 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .snackbar-error {
   background: #b00020;
+
   button {
-    color: #ffffff;
+    color: #fff;
   }
 }
 

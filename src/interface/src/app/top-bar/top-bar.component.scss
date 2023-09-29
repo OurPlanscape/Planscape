@@ -1,4 +1,4 @@
-@import "../shared/_variables.scss";
+@import "../shared/_variables";
 
 // Top-bar styling
 .mat-toolbar {
@@ -9,7 +9,7 @@
   z-index: 2;
 
   .site-link {
-    color: #ffffff;
+    color: #fff;
     font-family: "Google Sans", "Open Sans", sans-serif;
     font-size: 19px;
     font-style: normal;
@@ -17,6 +17,7 @@
     letter-spacing: 0.5px;
     text-decoration: none;
   }
+
   .logo-center {
     display: flex;
     align-items: center;
@@ -52,6 +53,7 @@
 
 .nav-link {
   text-decoration: none;
+
   &:visited, &:active {
     color: white;
   }
@@ -73,6 +75,7 @@
   .nav-link, .username, .mat-menu-trigger , .avatar , .help{
     display: none;
   }
+
   .mat-toolbar {
     background-color: white;
   }
