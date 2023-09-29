@@ -1,5 +1,5 @@
 import { MatDialogRef } from '@angular/material/dialog';
-import { FormControl, Validators } from '@angular/forms';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component } from '@angular/core';
 
 @Component({
@@ -8,12 +8,16 @@ import { Component } from '@angular/core';
   styleUrls: ['./plan-create-dialog.component.scss'],
 })
 export class PlanCreateDialogComponent {
-  planNameControl = new FormControl('', Validators.required);
+  planForm = new FormGroup({
+    planName: new FormControl('', Validators.required),
+  });
 
   constructor(private dialogRef: MatDialogRef<PlanCreateDialogComponent>) {}
 
   submit() {
-    this.dialogRef.close(this.planNameControl);
+    if (this.planForm.valid) {
+      this.dialogRef.close(this.planForm.get('planName'));
+    }
   }
 
   cancel(): void {

@@ -11,6 +11,7 @@ import {
   ColormapConfig,
   ConditionsConfig,
   Region,
+  regionToString,
 } from '../types';
 
 import features from '../features/features.json';
@@ -53,7 +54,7 @@ export class MapService {
       .get<BoundaryConfig[]>(
         BackendConstants.END_POINT +
           '/boundary/config/?region_name=' +
-          `${this.regionToString(this.selectedRegion$.getValue())}`
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
@@ -63,7 +64,7 @@ export class MapService {
       .get<ConditionsConfig>(
         BackendConstants.END_POINT +
           '/conditions/config/?region_name=' +
-          `${this.regionToString(this.selectedRegion$.getValue())}`
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -99,7 +100,7 @@ export class MapService {
       .get<BoundaryConfig[]>(
         BackendConstants.END_POINT +
           '/boundary/config/?region_name=' +
-          `${this.regionToString(this.selectedRegion$.getValue())}`
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
@@ -109,28 +110,13 @@ export class MapService {
       .get<ConditionsConfig>(
         BackendConstants.END_POINT +
           '/conditions/config/?region_name=' +
-          `${this.regionToString(this.selectedRegion$.getValue())}`
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
         this.conditionsConfig$.next(config);
         this.populateConditionNameMap(config);
       });
-  }
-  /* Note: these are the names used by the configurations and backend
-   * Defaults to Sierra Nevada. */
-  regionToString(region: Region | null): string {
-    switch (region) {
-      case Region.SIERRA_NEVADA:
-        return 'sierra-nevada';
-      case Region.CENTRAL_COAST:
-        return 'central-coast';
-      case Region.NORTHERN_CALIFORNIA:
-        return 'northern-california';
-      case Region.SOUTHERN_CALIFORNIA:
-        return 'southern-california';
-    }
-    return 'sierra-nevada';
   }
 
   /** Get shapes for a boundary from assets, if possible.  Fall back to the

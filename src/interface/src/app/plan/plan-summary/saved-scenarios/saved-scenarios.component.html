@@ -20,9 +20,10 @@
         <!-- Name Column -->
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
-          <mat-cell class="name-column" *matCellDef="let element">
+          <mat-cell
+            class="name-column"
+            *matCellDef="let element; dataSource: scenarios">
             <div class="hover-indicator"></div>
-
             {{ element.name }}
           </mat-cell>
         </ng-container>
@@ -30,34 +31,66 @@
         <!-- Project Areas Column -->
         <ng-container matColumnDef="projectAreas">
           <mat-header-cell *matHeaderCellDef>Areas</mat-header-cell>
-          <mat-cell *matCellDef="let element"></mat-cell>
+          <mat-cell *matCellDef="let element; dataSource: scenarios">
+            {{
+              element.scenario_result &&
+              element.scenario_result.result.features.length
+                ? element.scenario_result.result.features.length
+                : '--'
+            }}
+          </mat-cell>
         </ng-container>
 
         <!-- Acres Treated Column -->
         <ng-container matColumnDef="acresTreated">
           <mat-header-cell *matHeaderCellDef>Acres</mat-header-cell>
-          <mat-cell *matCellDef="let element"></mat-cell>
+          <mat-cell *matCellDef="let element; dataSource: scenarios">
+            {{
+              element.scenario_result &&
+              element.scenario_result.result.features.length
+                ? (calculateTotals(element.scenario_result).acres | number)
+                : '--'
+            }}
+          </mat-cell>
         </ng-container>
 
         <!-- Estimated Cost Column -->
         <ng-container matColumnDef="estimatedCost">
           <mat-header-cell *matHeaderCellDef>Budget</mat-header-cell>
-          <mat-cell class="data-cell" *matCellDef="let element">
-            {{ element.configuration.est_cost }}
+          <mat-cell
+            class="data-cell"
+            *matCellDef="let element; dataSource: scenarios">
+            {{
+              element.scenario_result &&
+              element.scenario_result.result.features.length
+                ? (calculateTotals(element.scenario_result).estimatedCost
+                  | currencyInK)
+                : '--'
+            }}
           </mat-cell>
         </ng-container>
 
         <!-- Status Column -->
         <ng-container matColumnDef="status">
           <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-          <mat-cell *matCellDef="let element">In Progress</mat-cell>
+          <mat-cell *matCellDef="let element; dataSource: scenarios">
+            {{
+              element.scenario_result
+                ? statusLabels[element.scenario_result.status]
+                : '--'
+            }}
+          </mat-cell>
         </ng-container>
 
         <!-- Timestamp Column -->
         <ng-container matColumnDef="completedTimestamp">
           <mat-header-cell *matHeaderCellDef>Completed</mat-header-cell>
-          <mat-cell *matCellDef="let element">
-            {{ element.createdTimestamp | date: 'medium' }}
+          <mat-cell *matCellDef="let element; dataSource: scenarios">
+            {{
+              element.scenario_result?.completed_at
+                ? (element.scenario_result?.completed_at | date: 'short')
+                : '--'
+            }}
           </mat-cell>
         </ng-container>
 

@@ -1,7 +1,7 @@
 import time
 from typing import Any
 from django.core.management.base import BaseCommand
-from planning.models import Scenario
+from planning.models import Scenario, ScenarioResultStatus
 from utils.cli_utils import call_forsys
 
 
@@ -26,8 +26,12 @@ class Command(BaseCommand):
                     f"[OK] Forsys succeeded for scenario id: {scenario.pk}"
                 )
             except Exception as ex:
+                # this might be a duplicate from what we have in R,
+                # but in reality, the script might fail before booting up.
+                scenario.results.status = ScenarioResultStatus.FAILURE
+                scenario.results.save()
                 self.stderr.write(
-                    f"[FAIL] Failed to run forsys for scenario id: {scenario.pk}"
+                    f"[FAIL] Failed to run forsys for scenario id: {scenario.pk} - {str(ex)}"
                 )
 
             time.sleep(busy_cooldown)

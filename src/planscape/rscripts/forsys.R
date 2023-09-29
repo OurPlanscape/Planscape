@@ -1,6 +1,6 @@
 ## How to run this script?
 ## From the planscape repo root, do:
-## Rscript src/planscape/rscripts/forsys.R --scenario <scenario_id>
+## Rscript rscripts/forsys.R --scenario <scenario_id>
 ## Replace `<scenario_id>` with an integer, corresponding with the scenario id
 library("logger")
 library("DBI")
@@ -360,18 +360,24 @@ call_forsys <- function(
 upsert_scenario_result <- function(
     connection,
     timestamp,
+    started_at,
+    completed_at,
     scenario_id,
     status,
     geojson_result) {
   query <- glue_sql("INSERT into planning_scenarioresult (
     created_at,
     updated_at,
+    started_at,
+    completed_at,
     scenario_id,
     status,
     result
   ) VALUES (
     {created_at},
     {updated_at},
+    {started_at},
+    {completed_at},
     {scenario_id},
     {status},
     {geojson_result}::jsonb
@@ -379,11 +385,15 @@ upsert_scenario_result <- function(
   ON CONFLICT (scenario_id) DO UPDATE
   SET
     updated_at = EXCLUDED.updated_at,
+    started_at = EXCLUDED.started_at,
+    completed_at = EXCLUDED.completed_at,
     result = EXCLUDED.result,
     status = EXCLUDED.status;
   ",
     created_at = timestamp,
     updated_at = timestamp,
+    started_at = started_at,
+    completed_at = completed_at,
     scenario_id = scenario_id,
     status = status,
     geojson_result = toJSON(geojson_result),
@@ -414,10 +424,13 @@ main <- function(scenario_id) {
         priorities,
         outputs
       )
+      completed_at <- now_utc()
       result <- to_projects(connection, scenario, forsys_output)
       upsert_scenario_result(
         connection,
         now,
+        started_at = now,
+        completed_at = completed_at,
         scenario_id,
         "SUCCESS",
         result
@@ -426,9 +439,12 @@ main <- function(scenario_id) {
     },
     error = function(e) {
       log_error(paste("[FAIL] Forsys failed.", e))
+      completed_at <- now_utc()
       upsert_scenario_result(
         connection,
         now,
+        started_at = now,
+        completed_at = completed_at,
         scenario_id,
         "FAILURE",
         list(type = "FeatureCollection", features = list())

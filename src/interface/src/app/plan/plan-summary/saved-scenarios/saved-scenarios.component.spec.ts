@@ -4,6 +4,7 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
+  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -17,6 +18,8 @@ import { Region } from 'src/app/types';
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
+import { CurrencyInKPipe } from '../../../pipes/currency-in-k.pipe';
+import { CurrencyPipe } from '@angular/common';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -63,8 +66,9 @@ describe('SavedScenariosComponent', () => {
         MaterialModule,
         NoopAnimationsModule,
       ],
-      declarations: [SavedScenariosComponent],
+      declarations: [SavedScenariosComponent, CurrencyInKPipe],
       providers: [
+        CurrencyPipe,
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: PlanService, useValue: fakePlanService },
       ],
@@ -115,6 +119,7 @@ describe('SavedScenariosComponent', () => {
     expect(router.navigate).toHaveBeenCalledOnceWith(['config', ''], {
       relativeTo: route,
     });
+    flush();
     discardPeriodicTasks();
   }));
 

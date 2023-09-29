@@ -51,6 +51,7 @@ export type ScenarioResultStatus =
 
 export interface ScenarioResult {
   status: ScenarioResultStatus;
+  completed_at: string;
   result: {
     features: FeatureCollection[];
     type: string;
@@ -86,7 +87,7 @@ export interface TreatmentGoalConfig {
 export interface TreatmentQuestionConfig {
   global_thresholds?: string[];
   long_question_text?: string;
-  scenario_output_fields?: string[];
+  scenario_output_fields_paths?: { [key: string]: string[] };
   scenario_priorities?: string[];
   short_question_text?: string;
   stand_thresholds?: string[];
