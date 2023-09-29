@@ -7,7 +7,7 @@ import { MatDialogRef } from '@angular/material/dialog';
   templateUrl: './confirmation-dialog.component.html',
 })
 export class ConfirmationDialogComponent {
-  protected readonly checkUrl = '/assets/png/gm_done_gm_grey_24dp.png';
+  protected readonly checkImageUrl = '/assets/png/gm_done_gm_grey_24dp.png';
 
   constructor(
     private readonly dialogRef: MatDialogRef<ConfirmationDialogComponent>,

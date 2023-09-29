@@ -1,4 +1,4 @@
-import { Component, NgZone, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,10 +8,12 @@ import {
 import { ActivatedRoute, Data, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 import { AuthService, PasswordResetToken } from '../services';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 
+@UntilDestroy()
 @Component({
   selector: 'app-password-reset',
   templateUrl: './password-reset.component.html',
@@ -29,7 +31,6 @@ export class PasswordResetComponent implements OnInit {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private ngZone: NgZone,
     private readonly dialog: MatDialog
   ) {
     this.form = this.formBuilder.group(
@@ -47,19 +48,17 @@ export class PasswordResetComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.activatedRoute.data.subscribe((data: Data) => {
-      console.log(data);
-      if (!data || data['passwordResetToken'] === null) {
-        console.log('here.');
-        this.ngZone.run(() => {
+    this.activatedRoute.data
+      .pipe(untilDestroyed(this))
+      .subscribe((data: Data) => {
+        if (!data || data['passwordResetToken'] === null) {
           this.router.navigate(['reset']);
-        });
-        return;
-      }
-      const userId = data['passwordResetToken']['userId'];
-      const token = data['passwordResetToken']['token'];
-      this.passwordResetToken = { userId, token };
-    });
+          return;
+        }
+        const userId = data['passwordResetToken']['userId'];
+        const token = data['passwordResetToken']['token'];
+        this.passwordResetToken = { userId, token };
+      });
   }
 
   submit() {

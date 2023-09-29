@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import {
   ActivatedRouteSnapshot,
@@ -7,7 +7,6 @@ import {
   Resolve,
   Router,
   RouterStateSnapshot,
-  ResolveFn,
 } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
@@ -353,28 +352,3 @@ export class ValidationResolver implements Resolve<boolean> {
     );
   }
 }
-
-/** Resolver to validate the password reset token. */
-export const passwordResetTokenResolver: ResolveFn<
-  PasswordResetToken | null
-> = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
-  const userId = route.paramMap.get('userId');
-  const token = route.paramMap.get('token');
-  if (!userId || !token) {
-    inject(Router).navigate(['reset']);
-  }
-  const passwordResetToken = {
-    userId: userId || '',
-    token: token || '',
-  };
-  return inject(AuthService)
-    .validatePasswordResetToken(passwordResetToken)
-    .pipe(
-      map((_) => {
-        return passwordResetToken;
-      }),
-      catchError((error: Error) => {
-        return of(null);
-      })
-    );
-};

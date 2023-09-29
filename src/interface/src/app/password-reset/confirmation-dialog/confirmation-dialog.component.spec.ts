@@ -15,22 +15,10 @@ describe('ConfirmationDialogComponent', () => {
   let fixture: ComponentFixture<ConfirmationDialogComponent>;
   let loader: HarnessLoader;
   const routerStub = () => ({ navigate: (_: string[]) => ({}) });
+  const fakeDialog = () => ({ open: () => {} });
+  const fakeDialogRef = () => ({ close: () => {} });
 
   beforeEach(async () => {
-    const fakeDialog = jasmine.createSpyObj(
-      'MatDialog',
-      {
-        open: undefined,
-      },
-      {}
-    );
-    const fakeDialogRef = jasmine.createSpyObj(
-      'MatDialogRef',
-      {
-        close: undefined,
-      },
-      {}
-    );
     await TestBed.configureTestingModule({
       imports: [MaterialModule, RouterTestingModule],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -39,11 +27,11 @@ describe('ConfirmationDialogComponent', () => {
         { provide: Router, useFactory: routerStub },
         {
           provide: MatDialog,
-          useValue: fakeDialog,
+          useFactory: fakeDialog,
         },
         {
           provide: MatDialogRef<ConfirmationDialogComponent>,
-          useValue: fakeDialogRef,
+          useFactory: fakeDialogRef,
         },
       ],
     }).compileComponents();
@@ -63,13 +51,14 @@ describe('ConfirmationDialogComponent', () => {
     spyOn(router, 'navigate').and.callThrough();
 
     const dialogRef = fixture.debugElement.injector.get(MatDialogRef);
+    spyOn(dialogRef, 'close').and.callThrough();
     const okButton: MatButtonHarness = await loader.getHarness(
       MatButtonHarness.with({ text: /OK/ })
     );
 
     await okButton.click();
 
-    expect(dialogRef.close).toHaveBeenCalledOnceWith();
+    expect(dialogRef.close).toHaveBeenCalledTimes(1);
     expect(router.navigate).toHaveBeenCalledOnceWith(['login']);
   });
 });
