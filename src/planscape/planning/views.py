@@ -1,5 +1,7 @@
 import json
 import os
+import zipfile
+import logging
 
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings as djangoSettings
@@ -343,6 +345,64 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         return JsonResponse(_serialize_scenario(scenario), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
+    """
+    Generates a new Zip file for a scenario based on ID.
+
+    Requires a logged in user.  Users can only access a scenarios belonging to their own planning areas.
+
+    Returns: a Zip file generated with the CSVs ad JSON file for this particular scenario
+
+    Required params:
+      id (int): The scenario ID to be retrieved.
+
+    TODO: maybe generate a unique key and store that for each output dir name when we create it?
+    """
+    try:
+        # Ensure that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        scenario = Scenario.objects.select_related("planning_area__user").get(
+            id=request.GET["id"]
+        )
+        # Ensure that current user is associated with this scenario
+        if scenario.planning_area.user.pk != user.pk:
+            raise ValueError("Scenario matching query does not exist.")
+
+        # ERROR Condition -- no scenario access -- What else do we have to do for this?
+        if user is None:  ## TODO: if user doesnt have access...
+            raise ValueError("User does not have access to this Scenario.")
+
+        output_dir = str(djangoSettings.OUTPUT_DIR)
+        source_dir: str = output_dir + "/" + scenario.name
+        output_zip_name: str = scenario.name + ".zip"
+
+        # if a zip file already exists, should we overwrite it or create a new one?
+        if os.path.exists(source_dir) == False:
+            raise ValueError("Scenario files cannot be read.")
+
+        response = HttpResponse(content_type="application/zip")
+        #  here we're just writing directly to the response obj.
+        # Do we want to write this locally -- either to (effectively) cache it, or to reduce server memory load?
+        # Note that we don't close this, because `response` gets destroyed on its own
+        with zipfile.ZipFile(response, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(source_dir):
+                for file in files:
+                    zipf.write(
+                        os.path.join(root, file),
+                        os.path.relpath(
+                            os.path.join(root, file), os.path.join(source_dir, "..")
+                        ),
+                    )
+        response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
+        return response
+
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
 
 
 def create_scenario(request: HttpRequest) -> HttpResponse:
