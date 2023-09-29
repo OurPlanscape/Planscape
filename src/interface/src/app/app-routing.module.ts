@@ -16,7 +16,7 @@ import { CreateScenariosComponent } from './plan/create-scenarios/create-scenari
 import { PlanComponent } from './plan/plan.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { AuthGuard, ValidationResolver } from './services';
-import { passwordResetTokenResolver } from './services/password-reset';
+import { passwordResetTokenResolver } from './services/password-reset.resolver';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
 
