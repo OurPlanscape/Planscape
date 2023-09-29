@@ -1,23 +1,34 @@
 
 :host {
+  overflow: scroll;
+}
+
+.welcome {
   background-color: white;
   border-radius: 16px;
   box-shadow: 0px 3px 1px -2px #0000001F;
   box-shadow: 0px 2px 2px 0px #00000024;
   box-shadow: 0px 1px 5px 0px #00000033;
-  padding: 80px 100px;
+  padding: 40px 60px;
   display: flex;
   flex-direction: column;
   max-width: 70%;
   box-sizing: border-box;
   color: #000000A8;
-  margin-bottom: 20px;
-  position: relative;
-  align-self: center;
+  margin: 20px auto;
+}
+
+
+
+.link, .link:visited {
+  color: #000000A8;
 }
 
 h1 {
-  padding-bottom: 50px;
+  padding-bottom: 20px;
+  color: black;
+  font-weight: 700;
+
 }
 
 p {
@@ -26,8 +37,14 @@ p {
 .flex {
   display: flex;
   align-items: flex-start;
+  gap:20px;
+  padding-top: 10px;
+  padding-bottom: 35px;
 }
 
 .explore {
-  margin-left: auto;
+  text-transform: uppercase;
+}
+.disclaimer {
+font-size: 13px;
 }
