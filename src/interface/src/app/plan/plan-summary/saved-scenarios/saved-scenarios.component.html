@@ -56,7 +56,7 @@
 
         <!-- Estimated Cost Column -->
         <ng-container matColumnDef="estimatedCost">
-          <mat-header-cell *matHeaderCellDef>Budget</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>Est. Budget</mat-header-cell>
           <mat-cell
             class="data-cell"
             *matCellDef="let element; dataSource: scenarios">
@@ -64,7 +64,7 @@
               element.scenario_result &&
               element.scenario_result.result.features.length
                 ? (calculateTotals(element.scenario_result).estimatedCost
-                  | currencyInK)
+                  | currencyInK: '1.0-0')
                 : '--'
             }}
           </mat-cell>
