@@ -1,4 +1,13 @@
+@import "../../shared/_variables.scss";
+
 :host {
+  overflow: scroll;
+  width: 100%;
+  flex: 1;
+
+}
+
+.planning {
   background-color: white;
   border-radius: 16px;
   box-shadow: 0px 3px 1px -2px #0000001F;
@@ -10,8 +19,9 @@
   min-width: 70%;
   max-width: 80%;
   box-sizing: border-box;
-  margin: 20px;
+  margin: 20px auto;
   flex:1;
+  min-height: calc(100% - $toolbar-height);
 }
 .title-nav {
   display: flex;
