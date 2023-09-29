@@ -1,5 +1,9 @@
 
 :host {
+  overflow: scroll;
+}
+
+.welcome {
   background-color: white;
   border-radius: 16px;
   box-shadow: 0px 3px 1px -2px #0000001F;
@@ -11,12 +15,10 @@
   max-width: 70%;
   box-sizing: border-box;
   color: #000000A8;
-  margin-bottom: 20px;
-  position: relative;
-  align-self: center;
-
-
+  margin: 20px auto;
 }
+
+
 
 .link, .link:visited {
   color: #000000A8;
