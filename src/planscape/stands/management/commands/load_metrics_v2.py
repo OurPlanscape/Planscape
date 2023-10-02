@@ -85,7 +85,10 @@ class Command(BaseCommand):
             )
 
             row = cursor.fetchone()
-            return GEOSGeometry(row[0])
+            geometry = row[0]
+            if geometry:
+                return GEOSGeometry(row[0])
+            return None
 
     def get_stand_ids(self, condition_id=None, size=None):
         qs = Stand.objects.all()
@@ -94,7 +97,8 @@ class Command(BaseCommand):
 
         if condition_id:
             extent = self.get_condition_extent(condition_id)
-            qs = qs.filter(geometry__intersects=extent)
+            if extent:
+                qs = qs.filter(geometry__intersects=extent)
 
         return qs.values_list("id", flat=True)
 
@@ -118,8 +122,14 @@ class Command(BaseCommand):
         for condition_id in condition_ids:
             start_time = datetime.now()
             stand_ids = self.get_stand_ids(condition_id, size)
-
+            if stand_ids.count() <= 0:
+                self.stdout.write(
+                    f"[OK] Finished {condition_id}: 0 seconds - no raster data."
+                )
+                continue
             db.connections.close_all()
+
+            self.stdout.write(f"[START] Condition {condition_id}")
 
             with multiprocessing.Pool(max_workers) as pool:
                 pool.starmap(
