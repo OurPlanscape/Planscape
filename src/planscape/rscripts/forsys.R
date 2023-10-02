@@ -85,7 +85,7 @@ priority_to_condition <- function(connection, scenario, priority) {
   return(tibble(head(result, 1)))
 }
 
-get_stands <- function(connection, scenario_id) {
+get_stands <- function(connection, scenario_id, stand_size) {
   query_text <- "
   WITH plan_scenario AS (
     SELECT
@@ -103,6 +103,7 @@ get_stands <- function(connection, scenario_id) {
       ST_Area(ss.geometry::geography, TRUE) / 4047 as \"area_acres\"
   FROM stands_stand ss, plan_scenario
   WHERE
+      ss.\"size\" = {stand_size} AND
       ss.geometry && plan_scenario.geometry AND
       ST_Intersects(ss.geometry, plan_scenario.geometry)"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
@@ -258,8 +259,9 @@ get_priorities <- function(
   return(data.table::rbindlist(priorities))
 }
 
-get_stand_data <- function(connection, scenario, conditions) {
-  stands <- get_stands(connection, scenario$id)
+get_stand_data <- function(connection, scenario, configuration, conditions) {
+  stand_size <- get_stand_size(configuration)
+  stands <- get_stands(connection, scenario$id, stand_size)
 
   for (row in seq_len(nrow(conditions))) {
     condition_id <- conditions[row, "condition_id"]$condition_id
@@ -279,6 +281,15 @@ get_stand_data <- function(connection, scenario, conditions) {
 get_configuration <- function(scenario) {
   configuration <- fromJSON(toString(scenario[["configuration"]]))
   return(configuration)
+}
+
+get_stand_size <- function(configuration) {
+  stand_size <- configuration$stand_size
+  if (is.null(stand_size)) {
+    return("LARGE")
+  }
+
+  return(stand_size)
 }
 
 get_weights <- function(priorities, configuration) {
@@ -313,7 +324,12 @@ call_forsys <- function(
     priorities,
     outputs) {
   forsys_inputs <- rbind(priorities, outputs)
-  stand_data <- get_stand_data(connection, scenario, forsys_inputs)
+  stand_data <- get_stand_data(
+    connection,
+    scenario,
+    configuration,
+    forsys_inputs
+  )
 
   if (length(priorities$condition_name) > 1) {
     weights <- get_weights(priorities, configuration)
