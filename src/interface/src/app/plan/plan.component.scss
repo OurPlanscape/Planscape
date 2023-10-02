@@ -1,9 +1,9 @@
-@import "../shared/_variables.scss";
+@import '../shared/_variables.scss';
 
 .root-container {
   display: flex;
   flex-direction: row;
-  height: calc(100%  - $navbar-height);
+  height: calc(100% - $navbar-height);
   width: 100%;
 }
 
@@ -70,8 +70,6 @@
   }
 }
 
-
-
 @media print {
   app-nav-bar {
     display: none;
@@ -86,7 +84,7 @@
       display: none;
     }
 
-    app-scenario-configurations .configurations-wrapper .no-configs-overlay{
+    app-scenario-configurations .configurations-wrapper .no-configs-overlay {
       display: none;
     }
     summary-panel .summary-content .grid-container {
@@ -97,10 +95,8 @@
       display: none;
     }
 
-    ::ng-deep .mat-column-select{
+    ::ng-deep .mat-column-select {
       display: none;
     }
-
-
   }
 }

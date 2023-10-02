@@ -62,7 +62,7 @@ h4 {
 
 .goal-category {
   font-size: 15px;
-  font-weight:500;
+  font-weight: 500;
   margin-bottom: 2px;
   margin-top: 10px;
 }
@@ -86,7 +86,7 @@ h4 {
   box-shadow: none;
 }
 
-.mat-radio-group{
+.mat-radio-group {
   gap: 1px;
   margin-left: 10px;
 }
@@ -204,8 +204,8 @@ h5 {
 }
 
 ::-webkit-scrollbar-thumb {
-  -webkit-box-shadow: 0 0 1px rgba(255,255,255,.5);
-  background-color: rgba(0,0,0,.5);
+  -webkit-box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   border-radius: 4px;
 }
 
@@ -226,17 +226,16 @@ h5 {
 }
 
 .short-question:hover {
-  background-color:  #00000012;
+  background-color: #00000012;
 }
 
 ::ng-deep {
   .long-question-tooltip.mat-tooltip {
     border: 1px solid #979797;
     border-radius: 11px;
-    background-color: #E6E9F4;
+    background-color: #e6e9f4;
     color: black;
     font-size: 14px;
     padding: 8px;
   }
 }
-

@@ -13,8 +13,8 @@
 
 .title {
   font-size: 15px;
-  font-weight:500;
-  margin:0;
+  font-weight: 500;
+  margin: 0;
   text-transform: uppercase;
 }
 
@@ -40,9 +40,9 @@ td {
   font-weight: bold;
 }
 
-tr:nth-child(even):not(.total-row){
+tr:nth-child(even):not(.total-row) {
   background-color: #e3e5e8;
 }
-.total-row{
+.total-row {
   border-top: 1px solid black;
 }
