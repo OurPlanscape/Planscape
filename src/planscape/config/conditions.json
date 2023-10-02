@@ -11,6 +11,31 @@
       "future_data": false,
       "pillars": [
         {
+          "pillar_name": "forsys",
+          "display": false,
+          "elements": [
+            {
+              "element_name": "Topographic",
+              "display": false,
+              "metrics": [
+                {
+                  "display_name": "Slope",
+                  "data_provider": "LANDFIRE",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/forsys/slope.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "Landscape Fire and Resource Management Planning Tools",
+                  "source_link": "https://landfire.gov/version_download.php"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "air_quality",
           "display": true,
           "display_name": "Air Quality",
@@ -1101,6 +1126,31 @@
       "future_data": false,
       "pillars": [
         {
+          "pillar_name": "forsys",
+          "display": false,
+          "elements": [
+            {
+              "element_name": "Topographic",
+              "display": false,
+              "metrics": [
+                {
+                  "display_name": "Slope",
+                  "data_provider": "LANDFIRE",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forsys/slope.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "Landscape Fire and Resource Management Planning Tools",
+                  "source_link": "https://landfire.gov/version_download.php"
+                }
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "biodiversity_conservation",
           "display": true,
           "display_name": "Biodiversity Conservation",
@@ -2163,6 +2213,31 @@
       "translated_data": true,
       "future_data": true,
       "pillars": [
+        {
+          "pillar_name": "forsys",
+          "display": false,
+          "elements": [
+            {
+              "element_name": "Topographic",
+              "display": false,
+              "metrics": [
+                {
+                  "display_name": "Slope",
+                  "data_provider": "LANDFIRE",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/forsys/slope.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "Landscape Fire and Resource Management Planning Tools",
+                  "source_link": "https://landfire.gov/version_download.php"
+                }
+              ]
+            }
+          ]
+        },
         {
           "pillar_name": "air_quality",
           "display": true,
