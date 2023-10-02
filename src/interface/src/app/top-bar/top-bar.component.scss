@@ -1,4 +1,4 @@
-@import "../shared/_variables.scss";
+@import '../shared/_variables.scss';
 
 // Top-bar styling
 .mat-toolbar {
@@ -10,7 +10,7 @@
 
   .site-link {
     color: #ffffff;
-    font-family: "Google Sans", "Open Sans", sans-serif;
+    font-family: 'Google Sans', 'Open Sans', sans-serif;
     font-size: 19px;
     font-style: normal;
     font-weight: 400;
@@ -35,13 +35,13 @@
   margin: 2px 6px 0 18px;
 }
 
-
 // The space between left and right elements on the top-bar
 .spacer {
   flex: 1 1 auto;
 }
 
-.username , .nav-link{
+.username,
+.nav-link {
   color: white;
   font-size: 18px;
   font-weight: 400;
@@ -52,7 +52,8 @@
 
 .nav-link {
   text-decoration: none;
-  &:visited, &:active {
+  &:visited,
+  &:active {
     color: white;
   }
 }
@@ -70,7 +71,11 @@
 }
 
 @media print {
-  .nav-link, .username, .mat-menu-trigger , .avatar , .help{
+  .nav-link,
+  .username,
+  .mat-menu-trigger,
+  .avatar,
+  .help {
     display: none;
   }
   .mat-toolbar {
