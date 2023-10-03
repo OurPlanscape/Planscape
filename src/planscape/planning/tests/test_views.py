@@ -1,6 +1,6 @@
 import json
 import os
-from django.conf import settings as djangoSettings
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TransactionTestCase
@@ -1552,8 +1552,18 @@ class GetScenarioDownloadTest(TransactionTestCase):
         )
         self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
 
+        # set scenario result status to success
+        self.scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
+        self.scenario_result.status = ScenarioResultStatus.SUCCESS
+        self.scenario_result.save()
+
         # generate fake data in a directory that corresponds to this scenario name
-        self.mock_project_path = str(djangoSettings.OUTPUT_DIR) + "/" + "test scenario"
+        self.mock_project_path = str(settings.OUTPUT_DIR) + "/" + "test scenario"
+        
+        # output path may not exist in test runner environment
+        if os.path.isdir(str(settings.OUTPUT_DIR)) == False:
+            os.mkdir(str(settings.OUTPUT_DIR) )
+            
         os.mkdir(self.mock_project_path)
         self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
         with open(self.mock_project_file, "w") as handle:
@@ -1568,6 +1578,10 @@ class GetScenarioDownloadTest(TransactionTestCase):
             self.user2, "test plan2", self.storable_geometry
         )
         self.scenario2 = _create_scenario(self.planning_area2, "test scenario2", "{}")
+        # set scenario result status to success
+        self.scenario2_result = ScenarioResult.objects.get(scenario__id=self.scenario2.pk)
+        self.scenario2_result.status = ScenarioResultStatus.SUCCESS
+        self.scenario2_result.save()
 
         self.assertEqual(Scenario.objects.count(), 2)
         self.assertEqual(ScenarioResult.objects.count(), 2)
@@ -1592,8 +1606,8 @@ class GetScenarioDownloadTest(TransactionTestCase):
             {"id": self.scenario.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertRegex(str(response.content), r"Unauthorized. User is not logged in.")
 
     def test_get_scenario_wrong_user(self):
         self.client.force_login(self.user)
@@ -1607,6 +1621,10 @@ class GetScenarioDownloadTest(TransactionTestCase):
 
     def test_get_scenario_without_project_data(self):
         self.client.force_login(self.user2)
+        self.scenario_result.status = ScenarioResultStatus.SUCCESS
+        self.scenario_result.save()
+    
+        self.client.force_login(self.user2)
         response = self.client.get(
             reverse("planning:get_scenario_download_by_id"),
             {"id": self.scenario2.pk},
@@ -1614,6 +1632,19 @@ class GetScenarioDownloadTest(TransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"Scenario files cannot be read")
+
+    def test_get_scenario_without_success_status(self):
+        self.client.force_login(self.user)
+        self.scenario_result.status = ScenarioResultStatus.FAILURE
+        self.scenario_result.save()
+
+        response = self.client.get(
+            reverse("planning:get_scenario_download_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertRegex(str(response.content), r"Scenario was not successful, data cannot be downloaded.")
 
     def test_get_scenario_nonexistent_scenario(self):
         self.client.force_login(self.user)
