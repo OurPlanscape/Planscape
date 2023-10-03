@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
+import { STAND_SIZES } from '../../plan-helpers';
 
 @Component({
   selector: 'app-constraints-panel',
@@ -9,7 +10,7 @@ import { FormGroup } from '@angular/forms';
 export class ConstraintsPanelComponent {
   @Input() constraintsForm: FormGroup | undefined;
   @Input() excludedAreasOptions: Array<string> | undefined;
-  standSizeOptions = ['SMALL', 'MEDIUM', 'LARGE'];
+  standSizeOptions = STAND_SIZES;
 
   constructor() {}
 
