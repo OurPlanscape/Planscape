@@ -551,6 +551,7 @@ export class PlanService {
       global_thresholds: config.treatment_question!['global_thresholds'],
       weights: config.treatment_question!['weights'],
       excluded_areas: config.excluded_areas,
+      stand_size: config.stand_size,
     };
   }
 

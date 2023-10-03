@@ -67,7 +67,7 @@ describe('ConstraintsPanelComponent', () => {
         minDistanceFromRoad: [1000, Validators.min(0)],
         // Maximum area to be treated in acres
         maxArea: ['', [Validators.min(0)]],
-        standSize: ['Large', Validators.required],
+        standSize: ['LARGE', Validators.required],
       }),
       excludedAreasForm: fb.group(excludedAreasChosen),
       excludeAreasByDegrees: [false],
