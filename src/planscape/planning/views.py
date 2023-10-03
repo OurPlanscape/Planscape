@@ -365,7 +365,9 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         # Ensure that the user is logged in.
         user = _get_user(request)
         if user is None:
-            return HttpResponseBadRequest("Unauthorized. User is not logged in.", status=401)
+            return HttpResponseBadRequest(
+                "Unauthorized. User is not logged in.", status=401
+            )
 
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
