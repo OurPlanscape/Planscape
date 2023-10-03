@@ -1559,11 +1559,11 @@ class GetScenarioDownloadTest(TransactionTestCase):
 
         # generate fake data in a directory that corresponds to this scenario name
         self.mock_project_path = str(settings.OUTPUT_DIR) + "/" + "test scenario"
-        
+
         # output path may not exist in test runner environment
         if os.path.isdir(str(settings.OUTPUT_DIR)) == False:
-            os.mkdir(str(settings.OUTPUT_DIR) )
-            
+            os.mkdir(str(settings.OUTPUT_DIR))
+
         os.mkdir(self.mock_project_path)
         self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
         with open(self.mock_project_file, "w") as handle:
@@ -1579,7 +1579,9 @@ class GetScenarioDownloadTest(TransactionTestCase):
         )
         self.scenario2 = _create_scenario(self.planning_area2, "test scenario2", "{}")
         # set scenario result status to success
-        self.scenario2_result = ScenarioResult.objects.get(scenario__id=self.scenario2.pk)
+        self.scenario2_result = ScenarioResult.objects.get(
+            scenario__id=self.scenario2.pk
+        )
         self.scenario2_result.status = ScenarioResultStatus.SUCCESS
         self.scenario2_result.save()
 
@@ -1623,7 +1625,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.client.force_login(self.user2)
         self.scenario_result.status = ScenarioResultStatus.SUCCESS
         self.scenario_result.save()
-    
+
         self.client.force_login(self.user2)
         response = self.client.get(
             reverse("planning:get_scenario_download_by_id"),
@@ -1644,7 +1646,10 @@ class GetScenarioDownloadTest(TransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"Scenario was not successful, data cannot be downloaded.")
+        self.assertRegex(
+            str(response.content),
+            r"Scenario was not successful, data cannot be downloaded.",
+        )
 
     def test_get_scenario_nonexistent_scenario(self):
         self.client.force_login(self.user)
