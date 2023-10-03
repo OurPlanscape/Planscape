@@ -9,7 +9,7 @@ from base.region_name import display_name_to_region, region_to_display_name
 from conditions.models import BaseCondition, Condition
 from conditions.raster_utils import fetch_or_compute_condition_stats
 from config.treatment_goals_config import TreatmentGoalsConfig
-from django.conf import settings as djangoSettings
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
@@ -47,7 +47,7 @@ logger = logging.getLogger(__name__)
 
 # Global variable for the BoundaryConfig, so that the configuration file is read once.
 treatment_goals_config = TreatmentGoalsConfig(
-    os.path.join(djangoSettings.BASE_DIR, "config/treatment_goals.json")
+    os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
 )
 
 
@@ -614,7 +614,7 @@ def get_treatment_goals_config_for_region(params: QueryDict):
     region_name = params["region_name"]
 
     # Read from treatment_goals config
-    config_path = os.path.join(djangoSettings.BASE_DIR, "config/treatment_goals.json")
+    config_path = os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
     treatment_goals_config = json.load(open(config_path, "r"))
 
     for region in treatment_goals_config["regions"]:

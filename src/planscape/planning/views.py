@@ -1,10 +1,11 @@
 import json
 import os
-import zipfile
+
 import logging
+from planning.services import zip_directory
 
 from base.region_name import display_name_to_region, region_to_display_name
-from django.conf import settings as djangoSettings
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, Max
@@ -364,7 +365,7 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         # Ensure that the user is logged in.
         user = _get_user(request)
         if user is None:
-            raise ValueError("User must be logged in.")
+            return HttpResponseBadRequest("Unauthorized. User is not logged in.", status=401)
 
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
@@ -373,11 +374,11 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         if scenario.planning_area.user.pk != user.pk:
             raise ValueError("Scenario matching query does not exist.")
 
-        # ERROR Condition -- no scenario access -- What else do we have to do for this?
-        if user is None:  ## TODO: if user doesnt have access...
-            raise ValueError("User does not have access to this Scenario.")
+        scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+        if scenario_result.status != ScenarioResultStatus.SUCCESS:
+            raise ValueError("Scenario was not successful, data cannot be downloaded.")
 
-        output_dir = str(djangoSettings.OUTPUT_DIR)
+        output_dir = str(settings.OUTPUT_DIR)
         source_dir: str = output_dir + "/" + scenario.name
         output_zip_name: str = scenario.name + ".zip"
 
@@ -389,15 +390,8 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         #  here we're just writing directly to the response obj.
         # Do we want to write this locally -- either to (effectively) cache it, or to reduce server memory load?
         # Note that we don't close this, because `response` gets destroyed on its own
-        with zipfile.ZipFile(response, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for root, _, files in os.walk(source_dir):
-                for file in files:
-                    zipf.write(
-                        os.path.join(root, file),
-                        os.path.relpath(
-                            os.path.join(root, file), os.path.join(source_dir, "..")
-                        ),
-                    )
+        zip_directory(response, source_dir)
+
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
         return response
 
@@ -664,7 +658,7 @@ def get_treatment_goals_config_for_region(params: QueryDict):
     region_name = params["region_name"]
 
     # Read from treatment_goals config
-    config_path = os.path.join(djangoSettings.BASE_DIR, "config/treatment_goals.json")
+    config_path = os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
     treatment_goals_config = json.load(open(config_path, "r"))
     for region in treatment_goals_config["regions"]:
         if region_name == region["region_name"]:
