@@ -214,6 +214,7 @@ describe('PlanService', () => {
         excluded_areas: undefined,
         max_budget: 200,
         treatment_question: defaultSelectedQuestion,
+        stand_size: 'LARGE',
       };
       const scenario: Scenario = {
         name: 'name',
@@ -233,6 +234,7 @@ describe('PlanService', () => {
         stand_thresholds: [''],
         global_thresholds: [''],
         weights: [0],
+        stand_size: 'LARGE',
       };
 
       service.createScenario(scenario).subscribe((res) => {

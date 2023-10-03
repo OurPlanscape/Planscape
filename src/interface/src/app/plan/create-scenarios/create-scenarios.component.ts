@@ -116,7 +116,7 @@ export class CreateScenariosComponent implements OnInit {
             // Maximum area to be treated in acres
             maxArea: ['', [Validators.min(0)]],
             // Stand Size selection
-            standSize: ['Large', Validators.required],
+            standSize: ['LARGE', Validators.required],
           }),
           excludedAreasForm: this.fb.group(excludedAreasChosen),
           excludeAreasByDegrees: [true],
@@ -283,6 +283,10 @@ export class CreateScenariosComponent implements OnInit {
         plan_id = planState.currentPlanId!;
       });
     let scenarioConfig: ScenarioConfig = {};
+
+    scenarioConfig.stand_size = this.constraintsFormGroup.get(
+      'physicalConstraintForm.standSize'
+    )?.value;
     scenarioConfig.excluded_areas = [];
     this.excludedAreasOptions.forEach((area: string) => {
       if (
