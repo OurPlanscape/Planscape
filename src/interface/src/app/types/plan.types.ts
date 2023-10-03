@@ -77,6 +77,7 @@ export interface ScenarioConfig {
   project_areas?: ProjectArea[];
   treatment_question?: TreatmentQuestionConfig | null;
   excluded_areas?: string[];
+  stand_size?: string;
 }
 
 export interface TreatmentGoalConfig {
