@@ -48,6 +48,7 @@ import {
   MapViewOptions,
   NONE_BOUNDARY_CONFIG,
   NONE_COLORMAP,
+  Plan,
   Region,
   regionMapCenters,
 } from '../types';
@@ -56,12 +57,7 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
-
-export enum AreaCreationAction {
-  NONE = 0,
-  DRAW = 1,
-  UPLOAD = 2,
-}
+import { AreaCreationAction, LEGEND } from './map.constants';
 
 @Component({
   selector: 'app-map',
@@ -92,28 +88,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     existing_projects: true,
   };
 
-  legend: Legend = {
-    labels: [
-      'Highest',
-      'Higher',
-      'High',
-      'Mid-high',
-      'Mid-low',
-      'Low',
-      'Lower',
-      'Lowest',
-    ],
-    colors: [
-      '#f65345',
-      '#e9884f',
-      '#e5ab64',
-      '#e6c67a',
-      '#cccfa7',
-      '#a5c5a6',
-      '#74afa5',
-      '#508295',
-    ],
-  };
+  legend: Legend = LEGEND;
 
   /** Actions bar variables */
   readonly AreaCreationAction = AreaCreationAction;
@@ -123,6 +98,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   private readonly destroy$ = new Subject<void>();
   login_enabled = this.featureService.isFeatureEnabled('login');
+  drawingLayer: L.GeoJSON | undefined;
 
   @Input() planId: string | null = null;
 
@@ -214,19 +190,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           this.maps.map((map: Map) => map.config)
         );
       });
-
-    if (this.planId) {
-      const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
-
-      plan$.subscribe({
-        next: (plan) => {
-          console.log('the plan', plan);
-        },
-        error: (error) => {
-          // this.planNotFound = true;
-        },
-      });
-    }
   }
 
   ngDoCheck(): void {
@@ -271,6 +234,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.initMap(map, map.id);
     });
     this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
+  }
+
+  private loadPlanAndDrawPlanningArea() {
+    // if planID is provided load planning area
+    if (this.planId) {
+      const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
+
+      plan$.subscribe({
+        next: (plan) => {
+          this.drawPlanningArea(plan);
+        },
+        error: (error) => {
+          // this.planNotFound = true;
+        },
+      });
+    }
   }
 
   ngOnDestroy(): void {
@@ -338,6 +317,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
       // Region highlighting disabled for now
       // this.displayRegionBoundary(map, selectedRegion);
+      this.loadPlanAndDrawPlanningArea();
     });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
@@ -563,19 +543,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  // /** Gets the selected region geojson and renders it on the map.
-  //  * Currently unused.
-  //  * */
-  // private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
-  //   if (!selectedRegion) return;
-  //   if (!map.instance) return;
-  //   this.mapService
-  //     .getRegionBoundary(selectedRegion)
-  //     .subscribe((boundary: GeoJSON.GeoJSON) => {
-  //       this.mapManager.maskOutsideRegion(map, boundary);
-  //     });
-  // }
-
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
     this.mapManager.changeBaseLayer(map);
@@ -658,10 +625,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     const mapViewOptions = this.mapViewOptions$.getValue();
     mapViewOptions.numVisibleMaps = mapCount;
     this.mapViewOptions$.next(mapViewOptions);
+
     this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
     setTimeout(() => {
       this.maps.forEach((map: Map) => {
         map.instance?.invalidateSize();
+        if (this.drawingLayer && this.maps[0].instance) {
+          this.maps[0].instance.fitBounds(this.drawingLayer.getBounds());
+        }
         // Recalculate the map nameplate size.
         this.updateMapNameplateWidth(map);
       });
@@ -746,5 +717,29 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   backHome() {
     this.router.navigate(['home']);
+  }
+
+  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
+    if (!plan.planningArea) return;
+
+    if (!!this.drawingLayer) {
+      this.drawingLayer.remove();
+    }
+
+    this.maps.forEach((map) => {
+      if (map.instance) {
+        this.drawingLayer = L.geoJSON(plan.planningArea, {
+          pane: 'overlayPane',
+          style: {
+            color: color ?? '#3367D6',
+            fillColor: color ?? '#3367D6',
+            fillOpacity: opacity ?? 0.1,
+            weight: 7,
+          },
+        }).addTo(map.instance);
+        map.instance.fitBounds(this.drawingLayer.getBounds());
+        map.instance.invalidateSize();
+      }
+    });
   }
 }
