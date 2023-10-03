@@ -272,6 +272,20 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
       condition_name,
       stands$stand_id
     )
+
+    if (nrow(metric) <= 0) {
+      log_warn(
+        paste0(
+          "Condition ",
+          condition_name,
+          " with id ",
+          condition_id,
+          " yielded an empty result. check underlying data!"
+        )
+      )
+      metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
+      names(metric) <- c("stand_id", condition_name)
+    }
     stands <- merge_data(stands, metric)
   }
 
