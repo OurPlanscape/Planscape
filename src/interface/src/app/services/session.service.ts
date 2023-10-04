@@ -95,14 +95,14 @@ export class SessionService {
     for (var regionConfig of Object.values(configs)) {
       for (var mapConfig of Object.values(regionConfig)) {
         if (!this.instanceOfMapConfig(mapConfig)) {
-          console.log('not valid config ' + JSON.stringify(mapConfig));
+          console.error('not valid config ' + JSON.stringify(mapConfig));
           return false;
         }
       }
     }
     for (var region of Object.keys(configs)) {
       if (!Object.values(Region).includes(region as unknown as Region)) {
-        console.log('Config key not valid Region ' + region);
+        console.error('Config key not valid Region ' + region);
         return false;
       }
     }
