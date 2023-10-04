@@ -158,7 +158,7 @@ describe('CreateScenariosComponent', () => {
         ?.setValue(1);
       component.formGroups[2]
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(1);
+        ?.setValue(5300);
       fixture.detectChanges();
 
       const buttonHarness: MatButtonHarness = await loader.getHarness(
@@ -203,7 +203,7 @@ describe('CreateScenariosComponent', () => {
         ?.setValue(1);
       component.formGroups[2]
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(1);
+        ?.setValue(1122);
       component.generatingScenario = false;
       fixture.detectChanges();
 
