@@ -77,7 +77,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   boundaryConfig$: Observable<BoundaryConfig[] | null>;
   conditionsConfig$: Observable<ConditionsConfig | null>;
-  regionRecord$: string = '';
+  regionRecord: string = '';
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
   selectedMap$: Observable<Map | undefined>;
@@ -102,7 +102,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   @Input() planId: string | null = null;
 
-  breadcrumbs$ = new BehaviorSubject(['']);
+  breadcrumbs$ = new BehaviorSubject(['New Plan']);
 
   constructor(
     public applicationRef: ApplicationRef,
@@ -180,7 +180,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   ngOnInit(): void {
     this.selectedRegion$.pipe(take(1)).subscribe((region) => {
-      this.regionRecord$ = region!;
+      this.regionRecord = region!;
     });
     this.restoreSession();
     /** Save map configurations in the user's session every X ms. */
@@ -196,8 +196,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   ngDoCheck(): void {
     this.selectedRegion$.pipe(take(1)).subscribe((region) => {
-      if (this.regionRecord$ != region) {
-        this.regionRecord$ = region!;
+      if (this.regionRecord != region) {
+        this.regionRecord = region!;
         this.sessionService.mapConfigs$
           .pipe(take(1))
           .subscribe((mapConfigs: Record<Region, MapConfig[]> | null) => {
@@ -245,6 +245,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
       plan$.subscribe({
         next: (plan) => {
+          if (this.regionRecord != plan.region) {
+            this.sessionService.setRegion(plan.region);
+            this.mapService.setConfigs();
+          }
+
           this.drawPlanningArea(plan);
           this.breadcrumbs$.next([plan.name]);
         },
@@ -252,9 +257,31 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           // this.planNotFound = true;
         },
       });
-    } else {
-      this.breadcrumbs$.next(['New Plan']);
     }
+  }
+
+  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
+    if (!plan.planningArea) return;
+
+    if (!!this.drawingLayer) {
+      this.drawingLayer.remove();
+    }
+
+    this.maps.forEach((map) => {
+      if (map.instance) {
+        this.drawingLayer = L.geoJSON(plan.planningArea, {
+          pane: 'overlayPane',
+          style: {
+            color: color ?? '#3367D6',
+            fillColor: color ?? '#3367D6',
+            fillOpacity: opacity ?? 0.1,
+            weight: 7,
+          },
+        }).addTo(map.instance);
+        map.instance.fitBounds(this.drawingLayer.getBounds());
+        map.instance.invalidateSize();
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -315,6 +342,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.createDetailCardCallback.bind(this),
       this.getBoundaryLayerVector.bind(this)
     );
+    this.loadPlanAndDrawPlanningArea();
 
     // Renders the selected region on the map.
     this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
@@ -322,7 +350,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
       // Region highlighting disabled for now
       // this.displayRegionBoundary(map, selectedRegion);
-      this.loadPlanAndDrawPlanningArea();
     });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
@@ -722,29 +749,5 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   backHome() {
     this.router.navigate(['home']);
-  }
-
-  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
-    if (!plan.planningArea) return;
-
-    if (!!this.drawingLayer) {
-      this.drawingLayer.remove();
-    }
-
-    this.maps.forEach((map) => {
-      if (map.instance) {
-        this.drawingLayer = L.geoJSON(plan.planningArea, {
-          pane: 'overlayPane',
-          style: {
-            color: color ?? '#3367D6',
-            fillColor: color ?? '#3367D6',
-            fillOpacity: opacity ?? 0.1,
-            weight: 7,
-          },
-        }).addTo(map.instance);
-        map.instance.fitBounds(this.drawingLayer.getBounds());
-        map.instance.invalidateSize();
-      }
-    });
   }
 }
