@@ -10,7 +10,16 @@
       </mat-icon>
       <mat-menu #popoverMenu="matMenu">
         <div [ngSwitch]="area" class="tooltip">
-          <div *ngSwitchCase="'SCENARIO'">Tooltip content TBD</div>
+          <div *ngSwitchCase="'SCENARIO'">
+            <p>
+              Start planning your scenario to generate your project areas. Enter
+              a name for your scenario at the top left, select your management
+              question, enter your constraints and select Generate. You can only
+              select one management question per run. Note that the run will
+              take longer if you select Medium or Small stand sizes, and we
+              recommend that you start with Large to review your outputs.
+            </p>
+          </div>
 
           <div *ngSwitchCase="'SCENARIOS'">
             <p>
