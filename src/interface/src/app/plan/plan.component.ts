@@ -33,6 +33,10 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   showOverview$ = new BehaviorSubject<boolean>(false);
 
+  area$ = this.showOverview$.pipe(
+    map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
+  );
+
   scenario$ = this.planService.planState$.pipe(
     switchMap((state) => {
       if (state.currentScenarioId) {
