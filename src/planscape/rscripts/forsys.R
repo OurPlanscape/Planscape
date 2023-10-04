@@ -331,6 +331,68 @@ get_weights <- function(priorities, configuration) {
   return(configuration$weights)
 }
 
+get_number_of_projects <- function(scenario) {
+  # this is hardcoded for now. in the future it
+  # might come from the configuration JSON
+  return(5)
+}
+
+get_min_project_area <- function(scenario) {
+  configuration <- get_configuration(scenario)
+  stand_size <- configuration$stand_size
+  min_area <- 10
+  if (stand_size == "LARGE") {
+    min_area <- 500
+  }
+
+  if (stand_size == "MEDIUM") {
+    min_area <- 100
+  }
+
+  log_info(paste0(stand_size, " chosen. Minimum project area is ", min_area))
+  return(min_area)
+}
+
+get_max_treatment_area <- function(scenario) {
+  configuration <- get_configuration(scenario)
+  print(configuration)
+  budget <- configuration$max_budget
+
+  if (is.null(budget)) {
+    log_info(
+      paste0(
+        "Budget is null, using max acres to be treated. Total area: ",
+        configuration$max_treatment_area_ratio
+      )
+    )
+    return(configuration$max_treatment_area_ratio)
+  }
+
+  if (!is.null(budget)) {
+    cost_per_acre <- get_cost_per_acre(scenario)
+    max_acres <- budget / cost_per_acre
+    log_info(
+      paste0(
+        "Budget is configured for ",
+        budget,
+        ". Total acres: ",
+        max_acres
+      )
+    )
+    return(max_acres)
+  }
+
+  max_acres <- get_min_project_area(configuration$stand_size) * 5
+  log_warn(
+    paste0(
+      "There is no information to properly calculate the max area. Using ",
+      max_acres,
+      "."
+    )
+  )
+  return(max_acres)
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -361,9 +423,14 @@ call_forsys <- function(
   # this might be configurable in the future. if it's the case, it will come in
   # the configuration variable. This also might change due the course of the
   # project as we're not sure on how many projects we will have at the beginning
-  number_of_projects <- 5
-  min_area <- 400
-  max_area <- configuration$max_treatment_area_ratio / number_of_projects
+  max_treatment_area <- get_max_treatment_area(scenario)
+  number_of_projects <- get_number_of_projects(scenario)
+  min_area_project <- get_min_project_area(scenario)
+  max_area_project <- max_treatment_area / number_of_projects
+  print(max_treatment_area)
+  print(number_of_projects)
+  print(min_area_project)
+  print(max_area_project)
 
   out <- forsys::run(
     return_outputs = TRUE,
@@ -376,13 +443,13 @@ call_forsys <- function(
     stand_area_field = "area_acres",
     stand_id_field = "stand_id",
     run_with_patchmax = TRUE,
-    patchmax_proj_size = max_area,
-    patchmax_proj_size_min = min_area,
+    patchmax_proj_size_min = min_area_project,
+    patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
     patchmax_SDW = 0.5,
     patchmax_EPW = 1,
     patchmax_sample_frac = 0.1,
-    annual_target_value = configuration$max_treatment_area_ratio,
+    annual_target_value = max_treatment_area,
   )
   return(out)
 }
