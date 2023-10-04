@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
+import area from '@turf/area';
 
 @Component({
   selector: 'app-constraints-panel',
@@ -13,6 +14,11 @@ export class ConstraintsPanelComponent {
   standSizeOptions = STAND_SIZES;
 
   constructor() {}
+
+  get maxArea() {
+    const area = this.constraintsForm?.get('physicalConstraintForm.maxArea');
+    return area;
+  }
 
   togglMaxAreaAndMaxCost() {
     if (this.constraintsForm!.get('budgetForm.maxCost')!.value) {
@@ -34,4 +40,6 @@ export class ConstraintsPanelComponent {
       ].enable();
     }
   }
+
+  protected readonly area = area;
 }

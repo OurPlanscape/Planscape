@@ -114,7 +114,8 @@ export class CreateScenariosComponent implements OnInit {
               [Validators.min(0), Validators.required],
             ],
             // Maximum area to be treated in acres
-            maxArea: ['', [Validators.min(0)]],
+            // Using 500 as minimum for now. Ideally the minimum should be based on stand size.
+            maxArea: ['', [Validators.min(500)]],
             // Stand Size selection
             standSize: ['LARGE', Validators.required],
           }),

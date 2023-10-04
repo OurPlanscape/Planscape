@@ -23,6 +23,9 @@
                 (input)="togglMaxAreaAndMaxCost()" />
             </mat-form-field>
           </div>
+          <div class="error-text" *ngIf="maxArea?.invalid && maxArea?.touched">
+            Max acres needs to be at least 500 acres
+          </div>
         </div>
         or
         <div formGroupName="budgetForm">
