@@ -97,8 +97,13 @@ class Command(BaseCommand):
 
         if condition_id:
             extent = self.get_condition_extent(condition_id)
-            if extent:
-                qs = qs.filter(geometry__intersects=extent)
+            if not extent:
+                self.stdout.write(
+                    f"[WARN] Empty extent for condition {condition_id}. No metrics to load."
+                )
+                return Stand.objects.empty()
+
+            qs = qs.filter(geometry__intersects=extent)
 
         return qs.values_list("id", flat=True)
 
@@ -127,9 +132,10 @@ class Command(BaseCommand):
                     f"[OK] Finished {condition_id}: 0 seconds - no raster data."
                 )
                 continue
+            self.stdout.write(
+                f"[OK] Processing {condition_id} with {stand_ids.count()} stands."
+            )
             db.connections.close_all()
-
-            self.stdout.write(f"[START] Condition {condition_id}")
 
             with multiprocessing.Pool(max_workers) as pool:
                 pool.starmap(
