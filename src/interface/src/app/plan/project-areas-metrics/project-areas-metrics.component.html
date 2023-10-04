@@ -1,6 +1,28 @@
 <div class="flex-row">
   <h3 class="title">Metrics per Project area</h3>
-  <mat-icon class="material-symbols-outlined" color="primary">info</mat-icon>
+  <button mat-icon-button class="help" [matMenuTriggerFor]="tooltipMenu">
+    <mat-icon class="material-symbols-outlined" color="primary">
+      info_outline
+    </mat-icon>
+    <mat-menu #tooltipMenu="matMenu">
+      <div class="tooltip">
+        <p>
+          Each Treatment Goal has associated output metrics. These metrics come
+          directly from the Regional Resource Kits. While the reporting page
+          shows four graphs, there is a dropdown menu at the top of each graph
+          that allows you to change the metric that you’re viewing. You can also
+          tap on the map icon and the RRK layer will be displayed on the map
+          under your scenario. 
+        </p>
+
+        <p>
+          If you want access to all of the metrics data, you can download that
+          data in a .csv file and export it to your computer. You can also
+          choose to download a shapefile of your project areas.
+        </p>
+      </div>
+    </mat-menu>
+  </button>
 </div>
 <div class="chart-holder">
   <div *ngFor="let chart of selectedCharts; index as i">

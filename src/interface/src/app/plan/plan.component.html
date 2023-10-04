@@ -1,6 +1,7 @@
 <app-nav-bar
   (goBack)="goBack()"
-  [breadcrumbs]="(breadcrumbs$ | async) || []"></app-nav-bar>
+  [breadcrumbs]="(breadcrumbs$ | async) || []"
+  [area]="(area$ | async) || 'SCENARIOS'"></app-nav-bar>
 <div class="root-container">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
   <ng-container *ngIf="currentPlan$ | async">
