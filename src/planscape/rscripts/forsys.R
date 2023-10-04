@@ -355,7 +355,6 @@ get_min_project_area <- function(scenario) {
 
 get_max_treatment_area <- function(scenario) {
   configuration <- get_configuration(scenario)
-  print(configuration)
   budget <- configuration$max_budget
 
   if (is.null(budget)) {
@@ -427,10 +426,6 @@ call_forsys <- function(
   number_of_projects <- get_number_of_projects(scenario)
   min_area_project <- get_min_project_area(scenario)
   max_area_project <- max_treatment_area / number_of_projects
-  print(max_treatment_area)
-  print(number_of_projects)
-  print(min_area_project)
-  print(max_area_project)
 
   out <- forsys::run(
     return_outputs = TRUE,
