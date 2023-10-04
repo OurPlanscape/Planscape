@@ -6,7 +6,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
 import { RouterModule } from '@angular/router';
 import { HttpClientXsrfModule } from '@angular/common/http';
-
 import { SharedModule } from './../shared/shared.module';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
@@ -33,6 +32,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.component';
 import { ExploreComponent } from './explore/explore/explore.component';
 import { MapModule } from '../map/map.module';
+import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -58,6 +58,7 @@ import { MapModule } from '../map/map.module';
     ReportChartComponent,
     ScenarioFailureComponent,
     ExploreComponent,
+    ScenarioTooltipComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
