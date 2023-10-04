@@ -1,20 +1,23 @@
-install.packages("dplyr")
-install.packages("textshaping")
-install.packages("stringi")
-install.packages("ggnewscale")
-install.packages("udunits2")
-install.packages("sf")
-install.packages("ragg")
-install.packages("pkgdown")
-install.packages("devtools")
-install.packages("DBI")
-install.packages("RPostgreSQL")
-install.packages("optparse")
-install.packages("rjson")
-install.packages("glue")
-install.packages("purrr")
-install.packages("dplyr")
-install.packages("logger")
+packages <- c(
+  "dplyr",
+  "textshaping",
+  "stringi",
+  "ggnewscale",
+  "udunits2",
+  "sf",
+  "ragg",
+  "pkgdown",
+  "devtools",
+  "DBI",
+  "RPostgreSQL",
+  "optparse",
+  "rjson",
+  "glue",
+  "purrr",
+  "logger",
+)
+
+install.packages(packages)
 
 library("devtools")
 
