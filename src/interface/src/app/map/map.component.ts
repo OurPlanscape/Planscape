@@ -102,6 +102,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   @Input() planId: string | null = null;
 
+  breadcrumbs$ = new BehaviorSubject(['']);
+
   constructor(
     public applicationRef: ApplicationRef,
     private authService: AuthService,
@@ -244,11 +246,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       plan$.subscribe({
         next: (plan) => {
           this.drawPlanningArea(plan);
+          this.breadcrumbs$.next([plan.name]);
         },
         error: (error) => {
           // this.planNotFound = true;
         },
       });
+    } else {
+      this.breadcrumbs$.next(['New Plan']);
     }
   }
 
