@@ -357,16 +357,6 @@ get_max_treatment_area <- function(scenario) {
   configuration <- get_configuration(scenario)
   budget <- configuration$max_budget
 
-  if (is.null(budget)) {
-    log_info(
-      paste0(
-        "Budget is null, using max acres to be treated. Total area: ",
-        configuration$max_treatment_area_ratio
-      )
-    )
-    return(configuration$max_treatment_area_ratio)
-  }
-
   if (!is.null(budget)) {
     cost_per_acre <- get_cost_per_acre(scenario)
     max_acres <- budget / cost_per_acre
@@ -379,6 +369,16 @@ get_max_treatment_area <- function(scenario) {
       )
     )
     return(max_acres)
+  }
+
+  if (is.null(budget)) {
+    log_info(
+      paste0(
+        "Budget is null, using max acres to be treated. Total area: ",
+        configuration$max_treatment_area_ratio
+      )
+    )
+    return(configuration$max_treatment_area_ratio)
   }
 
   max_acres <- get_min_project_area(configuration$stand_size) * 5
