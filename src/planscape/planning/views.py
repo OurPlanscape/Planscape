@@ -17,6 +17,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
+from pathlib import Path
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -380,11 +381,9 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         if scenario_result.status != ScenarioResultStatus.SUCCESS:
             raise ValueError("Scenario was not successful, data cannot be downloaded.")
 
-        output_dir = str(settings.OUTPUT_DIR)
-        source_dir: str = output_dir + "/" + scenario.name
+        source_dir = Path(settings.OUTPUT_DIR) / Path(scenario.name)
         output_zip_name: str = scenario.name + ".zip"
 
-        # if a zip file already exists, should we overwrite it or create a new one?
         if os.path.exists(source_dir) == False:
             raise ValueError("Scenario files cannot be read.")
 

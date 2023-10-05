@@ -1560,9 +1560,6 @@ class GetScenarioDownloadTest(TransactionTestCase):
         # generate fake data in a directory that corresponds to this scenario name
         self.mock_project_path = str(settings.OUTPUT_DIR) + "/" + "test scenario"
 
-        # output path may not exist in test runner environment
-        if os.path.isdir(str(settings.OUTPUT_DIR)) == False:
-            os.mkdir(str(settings.OUTPUT_DIR))
 
         os.mkdir(self.mock_project_path)
         self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
@@ -1623,8 +1620,8 @@ class GetScenarioDownloadTest(TransactionTestCase):
 
     def test_get_scenario_without_project_data(self):
         self.client.force_login(self.user2)
-        self.scenario_result.status = ScenarioResultStatus.SUCCESS
-        self.scenario_result.save()
+        self.scenario2_result.status = ScenarioResultStatus.SUCCESS
+        self.scenario2_result.save()
 
         self.client.force_login(self.user2)
         response = self.client.get(
