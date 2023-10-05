@@ -340,13 +340,14 @@ get_number_of_projects <- function(scenario) {
 get_min_project_area <- function(scenario) {
   configuration <- get_configuration(scenario)
   stand_size <- configuration$stand_size
-  min_area <- 10
-  if (stand_size == "LARGE") {
-    min_area <- 500
-  }
+  min_area <- 500
 
   if (stand_size == "MEDIUM") {
     min_area <- 100
+  }
+
+  if (stand_size == "SMALL") {
+    min_area <- 10
   }
 
   log_info(paste0(stand_size, " chosen. Minimum project area is ", min_area))
@@ -356,9 +357,9 @@ get_min_project_area <- function(scenario) {
 get_max_treatment_area <- function(scenario) {
   configuration <- get_configuration(scenario)
   budget <- configuration$max_budget
+  cost_per_acre <- get_cost_per_acre(scenario)
 
-  if (!is.null(budget)) {
-    cost_per_acre <- get_cost_per_acre(scenario)
+  if (!is.null(budget) & cost_per_acre != 0) {
     max_acres <- budget / cost_per_acre
     log_info(
       paste0(
@@ -371,7 +372,7 @@ get_max_treatment_area <- function(scenario) {
     return(max_acres)
   }
 
-  if (is.null(budget)) {
+  if (!is.null(configuration$max_treatment_area_ratio)) {
     log_info(
       paste0(
         "Budget is null, using max acres to be treated. Total area: ",
@@ -381,7 +382,7 @@ get_max_treatment_area <- function(scenario) {
     return(configuration$max_treatment_area_ratio)
   }
 
-  max_acres <- get_min_project_area(configuration$stand_size) * 5
+  max_acres <- get_min_project_area(configuration$stand_size) * get_number_of_projects(scenario)
   log_warn(
     paste0(
       "There is no information to properly calculate the max area. Using ",
