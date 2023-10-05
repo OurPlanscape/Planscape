@@ -1,11 +1,6 @@
 import os
 import zipfile
-from pathlib import Path
 from django.conf import settings
-
-# output_dir = Path(settings.OUTPUT_DIR)
-# source_dir = output_dir / Path(scenario.name)
-
 
 def zip_directory(file_obj, source_dir):
     with zipfile.ZipFile(file_obj, "w", zipfile.ZIP_DEFLATED) as zipf:
