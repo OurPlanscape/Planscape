@@ -45,7 +45,7 @@ export interface BackendPlan {
   geometry?: GeoJSON.GeoJSON;
   scenario_count?: number;
   projects?: number;
-  creation_timestamp?: number; // in seconds since epoch
+  created_at?: string;
   latest_updated?: string;
 }
 
@@ -422,9 +422,7 @@ export class PlanService {
       scenarios: plan.scenario_count ?? 0,
       notes: plan.notes ?? '',
       configs: plan.projects ?? 0,
-      createdTimestamp: this.convertBackendTimestamptoFrontendTimestamp(
-        plan.creation_timestamp
-      ),
+      createdTimestamp: plan.created_at ? new Date(plan.created_at) : undefined,
       lastUpdated: plan.latest_updated
         ? new Date(plan.latest_updated)
         : undefined,
