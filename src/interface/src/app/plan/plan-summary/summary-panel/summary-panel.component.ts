@@ -13,7 +13,7 @@ export interface SummaryInput {
   region: Region;
   area: GeoJSON.GeoJSON;
   status?: string;
-  createdTime?: number;
+  createdTime?: Date;
   scenarios?: number;
   configs?: number;
   lastUpdated: Date;
