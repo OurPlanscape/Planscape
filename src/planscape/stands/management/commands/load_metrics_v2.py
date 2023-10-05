@@ -101,7 +101,7 @@ class Command(BaseCommand):
                 self.stdout.write(
                     f"[WARN] Empty extent for condition {condition_id}. No metrics to load."
                 )
-                return Stand.objects.empty()
+                return Stand.objects.none()
 
             qs = qs.filter(geometry__intersects=extent)
 
