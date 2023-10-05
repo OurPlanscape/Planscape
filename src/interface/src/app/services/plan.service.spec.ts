@@ -174,6 +174,7 @@ describe('PlanService', () => {
         created_timestamp: undefined,
         project_areas: [],
         excluded_areas: undefined,
+        stand_size: 'MEDIUM',
       };
       const scenario: Scenario = {
         id: '1',

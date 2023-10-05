@@ -222,6 +222,9 @@ export class CreateScenariosComponent implements OnInit {
       const maxSlope = this.constraintsFormGroup.get(
         'physicalConstraintForm.maxSlope'
       );
+      const standSize = this.constraintsFormGroup.get(
+        'physicalConstraintForm.standSize'
+      );
       this.excludedAreasOptions.forEach((area: string) => {
         if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
           this.constraintsFormGroup
@@ -255,6 +258,10 @@ export class CreateScenariosComponent implements OnInit {
       }
       if (config.treatment_question) {
         selectedQuestion?.setValue(config.treatment_question);
+      }
+      console.log(config);
+      if (config.stand_size) {
+        standSize?.setValue(config.stand_size);
       }
     });
   }
