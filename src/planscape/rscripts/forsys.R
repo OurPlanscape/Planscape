@@ -473,6 +473,8 @@ call_forsys <- function(
 
   stand_thresholds <- get_stand_thresholds(scenario)
 
+  log_info(paste("Thresholds configured:", stand_thresholds))
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
