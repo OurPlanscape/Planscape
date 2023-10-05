@@ -366,7 +366,7 @@ get_max_treatment_area <- function(scenario) {
   budget <- configuration$max_budget
   cost_per_acre <- get_cost_per_acre(scenario)
 
-  if (!is.null(budget) & cost_per_acre != 0) {
+  if (!is.null(budget) && cost_per_acre != 0) {
     max_acres <- budget / cost_per_acre
     log_info(
       paste0(
