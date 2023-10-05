@@ -2,6 +2,7 @@ import os
 import zipfile
 from django.conf import settings
 
+
 def zip_directory(file_obj, source_dir):
     with zipfile.ZipFile(file_obj, "w", zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(source_dir):
