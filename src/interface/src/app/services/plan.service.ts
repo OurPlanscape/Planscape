@@ -496,6 +496,7 @@ export class PlanService {
       max_treatment_area_ratio: config.max_treatment_area_ratio,
       treatment_question: selectedQuestion,
       excluded_areas: config.excluded_areas,
+      stand_size: config.stand_size,
       created_timestamp: this.convertBackendTimestamptoFrontendTimestamp(
         config.creation_timestamp
       ),
