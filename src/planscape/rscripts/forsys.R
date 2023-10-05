@@ -350,7 +350,14 @@ get_min_project_area <- function(scenario) {
     min_area <- 10
   }
 
-  log_info(paste0(stand_size, " chosen. Minimum project area is ", min_area))
+  log_info(
+    paste0(
+      "Stand size ",
+      stand_size,
+      " chosen. Minimum project area is ",
+      min_area
+    )
+  )
   return(min_area)
 }
 
