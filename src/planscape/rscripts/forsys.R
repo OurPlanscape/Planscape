@@ -561,7 +561,6 @@ main <- function(scenario_id) {
     scenario,
     c("slope", "distance_to_roads")
   )
-  print(restrictions)
   tryCatch(
     expr = {
       forsys_output <- call_forsys(
