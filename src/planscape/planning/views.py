@@ -1,8 +1,11 @@
 import json
 import os
 
+import logging
+from planning.services import zip_directory
+
 from base.region_name import display_name_to_region, region_to_display_name
-from django.conf import settings as djangoSettings
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, Max
@@ -14,6 +17,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
+from pathlib import Path
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -345,6 +349,57 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
+    """
+    Generates a new Zip file for a scenario based on ID.
+
+    Requires a logged in user.  Users can only access a scenarios belonging to their own planning areas.
+
+    Returns: a Zip file generated with the CSVs ad JSON file for this particular scenario
+
+    Required params:
+      id (int): The scenario ID to be retrieved.
+
+    TODO: maybe generate a unique key and store that for each output dir name when we create it?
+    """
+    try:
+        # Ensure that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            return HttpResponseBadRequest(
+                "Unauthorized. User is not logged in.", status=401
+            )
+
+        scenario = Scenario.objects.select_related("planning_area__user").get(
+            id=request.GET["id"]
+        )
+        # Ensure that current user is associated with this scenario
+        if scenario.planning_area.user.pk != user.pk:
+            raise ValueError("Scenario matching query does not exist.")
+
+        scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+        if scenario_result.status != ScenarioResultStatus.SUCCESS:
+            raise ValueError("Scenario was not successful, data cannot be downloaded.")
+
+        source_dir = Path(settings.OUTPUT_DIR) / Path(scenario.name)
+        output_zip_name: str = scenario.name + ".zip"
+
+        if os.path.exists(source_dir) == False:
+            raise ValueError("Scenario files cannot be read.")
+
+        response = HttpResponse(content_type="application/zip")
+        #  here we're just writing directly to the response obj.
+        # Do we want to write this locally -- either to (effectively) cache it, or to reduce server memory load?
+        # Note that we don't close this, because `response` gets destroyed on its own
+        zip_directory(response, source_dir)
+
+        response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
+        return response
+
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
+
+
 def create_scenario(request: HttpRequest) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
@@ -604,7 +659,7 @@ def get_treatment_goals_config_for_region(params: QueryDict):
     region_name = params["region_name"]
 
     # Read from treatment_goals config
-    config_path = os.path.join(djangoSettings.BASE_DIR, "config/treatment_goals.json")
+    config_path = os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
     treatment_goals_config = json.load(open(config_path, "r"))
     for region in treatment_goals_config["regions"]:
         if region_name == region["region_name"]:
