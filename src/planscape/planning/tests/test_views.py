@@ -1560,8 +1560,8 @@ class GetScenarioDownloadTest(TransactionTestCase):
         # generate fake data in a directory that corresponds to this scenario name
         self.mock_project_path = str(settings.OUTPUT_DIR) + "/" + "test scenario"
 
-
-        os.mkdir(self.mock_project_path)
+        # this will also make the output directory that we currently don't commit
+        os.makedirs(self.mock_project_path, exist_ok=True)
         self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
         with open(self.mock_project_file, "w") as handle:
             print("Just test data", file=handle)
