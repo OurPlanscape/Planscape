@@ -19,6 +19,7 @@ import { AuthGuard, ValidationResolver } from './services';
 import { passwordResetTokenResolver } from './services/password-reset.resolver';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
+import { AccountValidationComponent } from './account-validation/account-validation.component';
 
 const routes: Routes = [
   {
@@ -57,9 +58,15 @@ const routes: Routes = [
         canActivate: [createFeatureGuard('login')],
       },
       {
+        path: 'validate',
+       // resolve: { validated: ValidationResolver },
+        component: AccountValidationComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
         path: 'validate/:id',
         resolve: { validated: ValidationResolver },
-        component: LoginComponent,
+        component: AccountValidationComponent,
         canActivate: [createFeatureGuard('login')],
       },
       {

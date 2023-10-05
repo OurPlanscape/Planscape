@@ -62,6 +62,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { RedirectGuard } from './services/redirect.guard';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
+import { AccountValidationComponent } from './account-validation/account-validation.component';
 
 @NgModule({
   declarations: [
@@ -95,6 +96,7 @@ import { ConfirmationDialogComponent } from './password-reset/confirmation-dialo
     AboutComponent,
     PasswordResetComponent,
     ConfirmationDialogComponent,
+    AccountValidationComponent,
   ],
   imports: [
     AppRoutingModule,
