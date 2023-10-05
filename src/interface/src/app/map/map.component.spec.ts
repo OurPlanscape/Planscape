@@ -343,6 +343,9 @@ describe('MapComponent', () => {
 
     it('enables drawing on selected map and shows cloned layer on other maps', fakeAsync(async () => {
       component.ngAfterViewInit();
+      const auth = TestBed.inject(AuthService);
+      auth.loggedInStatus$.next(true);
+
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({
@@ -464,11 +467,16 @@ describe('MapComponent', () => {
     (drawnPolygon as any)._leaflet_id = TEST_ID;
 
     beforeEach(() => {
+
       component.ngAfterViewInit();
     });
 
     it('sets up drawing', fakeAsync(async () => {
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+
+      const auth = TestBed.inject(AuthService);
+      auth.loggedInStatus$.next(true);
+
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.draw-area-button',
