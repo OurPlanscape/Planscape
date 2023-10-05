@@ -12,6 +12,8 @@ library("forsys")
 library("sf")
 library("dplyr")
 library("purrr")
+library("stringi")
+library("glue")
 
 readRenviron("planscape/.env")
 
@@ -248,11 +250,10 @@ now_utc <- function() {
 get_priorities <- function(
     connection,
     scenario,
-    configuration,
-    key = "scenario_priorities") {
+    conditions) {
   priorities <- list()
 
-  priorities <- lapply(configuration[[key]], function(priority) {
+  priorities <- lapply(conditions, function(priority) {
     priority <- priority_to_condition(connection, scenario, priority)
     return(priority)
   })
@@ -262,7 +263,6 @@ get_priorities <- function(
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
   stands <- get_stands(connection, scenario$id, stand_size)
-
   for (row in seq_len(nrow(conditions))) {
     condition_id <- conditions[row, "condition_id"]$condition_id
     condition_name <- conditions[row, "condition_name"]$condition_name
@@ -400,13 +400,49 @@ get_max_treatment_area <- function(scenario) {
   return(max_acres)
 }
 
+get_distance_to_roads <- function(configuration) {
+  if (stri_isempty(configuration$min_distance_from_road)) {
+    distance <- 0
+  } else {
+    distance <- configuration$min_distance_from_road
+  }
+  return(glue("distance_to_roads >= {distance}"))
+}
+
+get_max_slope <- function(configuration) {
+  if (stri_isempty(configuration$max_slope)) {
+    max_slope <- 0
+  } else {
+    max_slope <- configuration$max_slope
+  }
+  return(glue("slope <= {max_slope}"))
+}
+
+get_stand_thresholds <- function(scenario) {
+  configuration <- get_configuration(scenario)
+
+  max_slope <- get_max_slope(configuration)
+  distance_to_roads <- get_distance_to_roads(configuration)
+
+  all_thresholds <- c(max_slope, distance_to_roads)
+  if (length(configuration$stand_thresholds) > 0) {
+    all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
+  }
+
+  return(paste(all_thresholds, collapse = " & "))
+}
+
 call_forsys <- function(
     connection,
     scenario,
     configuration,
     priorities,
-    outputs) {
-  forsys_inputs <- rbind(priorities, outputs)
+    outputs,
+    restrictions) {
+  forsys_inputs <- data.table::rbindlist(
+    list(priorities, outputs, restrictions)
+  )
+
   stand_data <- get_stand_data(
     connection,
     scenario,
@@ -435,6 +471,8 @@ call_forsys <- function(
   min_area_project <- get_min_project_area(scenario)
   max_area_project <- max_treatment_area / number_of_projects
 
+  stand_thresholds <- get_stand_thresholds(scenario)
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
@@ -445,6 +483,7 @@ call_forsys <- function(
     stand_data = stand_data,
     stand_area_field = "area_acres",
     stand_id_field = "stand_id",
+    stand_threshold = stand_thresholds,
     run_with_patchmax = TRUE,
     patchmax_proj_size_min = min_area_project,
     patchmax_proj_size = max_area_project,
@@ -507,14 +546,22 @@ main <- function(scenario_id) {
   connection <- get_connection()
   scenario <- get_scenario_data(connection, scenario_id)
   configuration <- get_configuration(scenario)
-  priorities <- get_priorities(connection, scenario, configuration)
+  priorities <- get_priorities(
+    connection,
+    scenario,
+    configuration$scenario_priorities
+  )
   outputs <- get_priorities(
     connection,
     scenario,
-    configuration,
-    key = "scenario_output_fields"
+    configuration$scenario_output_fields
   )
-
+  restrictions <- get_priorities(
+    connection,
+    scenario,
+    c("slope", "distance_to_roads")
+  )
+  print(restrictions)
   tryCatch(
     expr = {
       forsys_output <- call_forsys(
@@ -522,7 +569,8 @@ main <- function(scenario_id) {
         scenario,
         configuration,
         priorities,
-        outputs
+        outputs,
+        restrictions
       )
       completed_at <- now_utc()
       result <- to_projects(connection, scenario, forsys_output)
