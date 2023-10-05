@@ -259,7 +259,6 @@ export class CreateScenariosComponent implements OnInit {
       if (config.treatment_question) {
         selectedQuestion?.setValue(config.treatment_question);
       }
-      console.log(config);
       if (config.stand_size) {
         standSize?.setValue(config.stand_size);
       }
