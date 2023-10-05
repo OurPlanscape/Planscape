@@ -406,7 +406,7 @@ get_distance_to_roads <- function(configuration) {
   } else {
     distance <- configuration$min_distance_from_road
   }
-  return(glue("distance_to_roads >= {distance}"))
+  return(glue("distance_to_roads <= {distance}"))
 }
 
 get_max_slope <- function(configuration) {
