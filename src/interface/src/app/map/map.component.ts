@@ -467,7 +467,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
     this.selectedAreaCreationAction = option;
     if (option === AreaCreationAction.DRAW) {
-
       if (!this.authService.loggedInStatus$.value) {
         this.cancelAreaCreationAction();
         this.openSignInDialog();

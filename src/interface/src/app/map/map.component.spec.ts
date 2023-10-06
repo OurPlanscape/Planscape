@@ -368,7 +368,6 @@ describe('MapComponent', () => {
       component.ngAfterViewInit();
       userSignedIn$.next(true);
 
-
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({
@@ -490,7 +489,6 @@ describe('MapComponent', () => {
     (drawnPolygon as any)._leaflet_id = TEST_ID;
 
     beforeEach(() => {
-
       component.ngAfterViewInit();
     });
 
