@@ -8,11 +8,11 @@
     [boundaryConfig]="boundaryConfig$ | async"
     [conditionsConfig$]="conditionsConfig$"
     [loadingIndicators]="loadingIndicators"
-    [mapHasDataLayer]="mapHasDataLayer() | async"
+    [mapHasDataLayer]="mapHasDataLayer$ | async"
     [maps]="maps"
     [mapViewOptions]="mapViewOptions$ | async"
     [selectedMap]="selectedMap$ | async"
-    [selectedMapOpacity]="getOpacityForSelectedMap() | async"
+    [selectedMapOpacity]="getOpacityForSelectedMap$ | async"
     [disableRegion]="
       !!planId || selectedAreaCreationAction !== AreaCreationAction.NONE
     "
@@ -170,7 +170,7 @@
     [boundaryConfig]="boundaryConfig$ | async"
     [conditionsConfig$]="conditionsConfig$"
     [loadingIndicators]="loadingIndicators"
-    [mapHasDataLayer]="mapHasDataLayer() | async"
+    [mapHasDataLayer]="mapHasDataLayer$ | async"
     [maps]="maps"
     [mapViewOptions]="mapViewOptions$ | async"></app-map-config-summary>
 </div>

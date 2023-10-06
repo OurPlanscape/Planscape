@@ -16,7 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
-import { BehaviorSubject, map, Observable, take, of } from 'rxjs';
+import { BehaviorSubject, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
@@ -93,6 +93,18 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   selectedMap$ = this.mapViewOptions$.pipe(
     map((options) => this.maps[options.selectedMapIndex])
+  );
+  getOpacityForSelectedMap$ = this.selectedMap$.pipe(
+    map(
+      (selectedMap) =>
+        selectedMap.config.dataLayerConfig.opacity ||
+        this.mapManager.defaultOpacity
+    )
+  );
+
+  /** Whether the currently selected map has a data layer active. */
+  mapHasDataLayer$ = this.selectedMap$.pipe(
+    map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
   );
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
@@ -602,30 +614,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       map.config.dataLayerConfig.opacity = opacity;
       this.mapManager.changeOpacity(map);
     });
-  }
-
-  /** Return the selected map's data layer opacity. */
-  getOpacityForSelectedMap(): Observable<number | undefined> {
-    var dataLayerConfigOpacityDefined = true;
-    this.selectedMap$.pipe(take(1)).subscribe((selectedMap: any) => {
-      if (selectedMap?.config.dataLayerConfig.opacity == null) {
-        dataLayerConfigOpacityDefined = false;
-      }
-    });
-    if (dataLayerConfigOpacityDefined) {
-      return this.selectedMap$.pipe(
-        map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
-      );
-    } else {
-      return of(this.mapManager.defaultOpacity);
-    }
-  }
-
-  /** Whether the currently selected map has a data layer active. */
-  mapHasDataLayer(): Observable<boolean> {
-    return this.selectedMap$.pipe(
-      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
-    );
   }
 
   /** Change how many maps are displayed in the viewport. */
