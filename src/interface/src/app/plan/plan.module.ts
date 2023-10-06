@@ -31,6 +31,8 @@ import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-ar
 import { ReportChartComponent } from './report-chart/report-chart.component';
 import { NgChartsModule } from 'ng2-charts';
 import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.component';
+import { ExploreComponent } from './explore/explore/explore.component';
+import { MapModule } from '../map/map.module';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -55,6 +57,7 @@ import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.co
     ProjectAreasMetricsComponent,
     ReportChartComponent,
     ScenarioFailureComponent,
+    ExploreComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
@@ -72,6 +75,7 @@ import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.co
     SharedModule,
     FeaturesModule,
     NgChartsModule,
+    MapModule,
   ],
 })
 export class PlanModule {}

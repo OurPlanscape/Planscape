@@ -2,12 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RegionDropdownComponent } from './region-dropdown.component';
 import { By } from '@angular/platform-browser';
-import { AuthService, SessionService } from '../services';
+
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MaterialModule } from '../material/material.module';
+
 import { BehaviorSubject } from 'rxjs';
-import { Region, User } from '../types';
-import { FeaturesModule } from '../features/features.module';
+import { AuthService, SessionService } from '../../services';
+import { Region, User } from '../../types';
+import { MaterialModule } from '../../material/material.module';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('RegionDropdownComponent', () => {
   let component: RegionDropdownComponent;

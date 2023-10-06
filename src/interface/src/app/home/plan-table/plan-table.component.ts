@@ -95,7 +95,12 @@ export class PlanTableComponent implements OnInit {
     this.selectedPlan = plan;
   }
 
-  viewMap() {}
+  viewMap() {
+    if (!this.selectedPlan) {
+      return;
+    }
+    this.router.navigate(['explore', this.selectedPlan.id]);
+  }
 
   goToScenario() {
     if (!this.selectedPlan) {

@@ -1,4 +1,6 @@
-<app-nav-bar (goBack)="backHome()" [breadcrumbs]="['New Plan']"></app-nav-bar>
+<app-nav-bar
+  (goBack)="backHome()"
+  [breadcrumbs]="(breadcrumbs$ | async) || ['']"></app-nav-bar>
 <div class="root-container">
   <!-- Map control panel -->
   <app-map-control-panel
@@ -10,6 +12,7 @@
     [mapViewOptions]="mapViewOptions$ | async"
     [selectedMap]="selectedMap$ | async"
     [selectedMapOpacity]="getOpacityForSelectedMap() | async"
+    [showRegion]="!planId"
     (changeBaseLayer)="changeBaseLayer($event)"
     (changeBoundaryLayer)="toggleBoundaryLayer($event)"
     (changeConditionLayer)="changeConditionsLayer($event)"
@@ -23,7 +26,7 @@
   <!-- Display containers for leaflet maps (up to 4) -->
   <div class="maps-container">
     <!-- Actions bar above the maps -->
-    <div class="map-actions-bar">
+    <div class="map-actions-bar" *ngIf="!this.planId">
       <div class="actions-bar-text">START PLANNING:</div>
 
       <!-- Draw a planning area -->

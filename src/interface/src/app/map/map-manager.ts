@@ -480,7 +480,7 @@ export class MapManager {
   private setUpZoomHandler(map: L.Map) {
     if (!this.mapViewOptions$.getValue().zoom) return;
 
-    map.setZoom(this.mapViewOptions$.getValue().zoom);
+    // map.setZoom(this.mapViewOptions$.getValue().zoom);
 
     map.addEventListener('zoomend', (e) => {
       const mapViewOptions = this.mapViewOptions$.getValue();
