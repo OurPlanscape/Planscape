@@ -106,7 +106,11 @@
     </div>
 
     <!-- Maps (1, 2, or 4) -->
-    <div class="map-row" [ngStyle]="{ height: mapRowHeight(0) }">
+    <div
+      class="map-grid"
+      [ngClass]="{
+        'one-column': mapViewOptions$.getValue().numVisibleMaps === 1
+      }">
       <div
         class="map-box"
         [ngClass]="{
@@ -133,8 +137,7 @@
           [width$]="mapNameplateWidths[1]"></app-map-nameplate>
         <div id="map2" class="map"></div>
       </div>
-    </div>
-    <div class="map-row" [ngStyle]="{ height: mapRowHeight(1) }">
+
       <div
         class="map-box"
         [ngClass]="{

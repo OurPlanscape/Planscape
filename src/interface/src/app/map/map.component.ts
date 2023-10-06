@@ -690,27 +690,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
   }
 
-  /** Computes the height for the map row at given index (0%, 50%, or 100%).
-   *
-   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
-   */
-  mapRowHeight(index: number): string {
-    switch (this.mapViewOptions$.getValue().numVisibleMaps) {
-      case 4:
-        return '50%';
-      case 2:
-      case 1:
-      default:
-        if (
-          Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
-          index
-        ) {
-          return '100%';
-        }
-        return '0%';
-    }
-  }
-
   backHome() {
     this.router.navigate(['home']);
   }
