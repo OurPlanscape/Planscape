@@ -34,16 +34,9 @@
   display: inline-block;
   height: auto;
   width: auto;
-  box-shadow: 0px 3px 0px 0px #aeb0b8;
+  box-shadow: 0 3px 0 0#aeb0b8;
   background-color: white;
-  margin-top: 10px;
-  border: 1px #a4aae0 solid;
-  border-radius: 10px;
-  display: inline-block;
-  height: auto;
-  width: auto;
-  box-shadow: 0px 3px 0px 0px #aeb0b8;
-  background-color: white;
+  padding-left: 10px;
 }
 
 .constraints-form {
@@ -52,29 +45,27 @@
   width: auto;
 }
 
-.form-label {
-  display: block;
-  font-size: 15px;
-  font-weight: 500;
-  margin-bottom: 5px;
-  margin-top: 10px;
-  margin-right: 10px;
-}
-
 .flex-row {
   display: flex;
   flex-direction: row;
+  gap: 10px;
+  align-items: center;
   justify-content: center;
-  gap: 40px;
   position: relative;
+
+  &.space-evenly {
+    gap: 0;
+    justify-content: space-evenly;
+    margin-bottom: 10px;
+  }
+
 }
+
 
 .input-field {
   padding-top: 4px;
   width: 180px;
   border: black;
-  padding-top: 4px;
-  width: 180px;
 
   &.disabled {
     opacity: 0.6;
@@ -116,7 +107,6 @@
 
 .flex-column {
   display: flex;
-  margin-left: 20px;
   flex-direction: column;
 }
 
@@ -147,11 +137,7 @@
   font-size: 10px;
 }
 
-.top-label {
-  flex-direction: row;
-  display: inline-flex;
-  align-items: center;
-}
+
 
 .button-wrapper {
   display: flex;

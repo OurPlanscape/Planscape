@@ -1,6 +1,7 @@
 <app-nav-bar
   (goBack)="backHome()"
-  [breadcrumbs]="(breadcrumbs$ | async) || ['']"></app-nav-bar>
+  [breadcrumbs]="(breadcrumbs$ | async) || ['']"
+  area="EXPLORE"></app-nav-bar>
 <div class="root-container">
   <!-- Map control panel -->
   <app-map-control-panel
