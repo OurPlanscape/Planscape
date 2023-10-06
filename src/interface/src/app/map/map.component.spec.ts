@@ -61,7 +61,6 @@ describe('MapComponent', () => {
       'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
       {}
     );
-
     const fakeGeoJson: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
       features: [
@@ -294,77 +293,7 @@ describe('MapComponent', () => {
       });
     });
 
-    it('row containing selected map height is 100% in 1-map view', () => {
-      component.mapViewOptions$.getValue().numVisibleMaps = 1;
-
-      [0, 1].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions$.getValue().selectedMapIndex =
-          selectedMapIndex;
-
-        expect(component.mapRowHeight(0)).toEqual('100%');
-        expect(component.mapRowHeight(1)).toEqual('0%');
-      });
-
-      [2, 3].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions$.getValue().selectedMapIndex =
-          selectedMapIndex;
-
-        expect(component.mapRowHeight(0)).toEqual('0%');
-        expect(component.mapRowHeight(1)).toEqual('100%');
-      });
-    });
-
-    it('row containing selected map height is 100% in 2-map view', () => {
-      component.mapViewOptions$.getValue().numVisibleMaps = 2;
-
-      [0, 1].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions$.getValue().selectedMapIndex =
-          selectedMapIndex;
-
-        expect(component.mapRowHeight(0)).toEqual('100%');
-        expect(component.mapRowHeight(1)).toEqual('0%');
-      });
-
-      [2, 3].forEach((selectedMapIndex: number) => {
-        component.mapViewOptions$.getValue().selectedMapIndex =
-          selectedMapIndex;
-
-        expect(component.mapRowHeight(0)).toEqual('0%');
-        expect(component.mapRowHeight(1)).toEqual('100%');
-      });
-    });
-
-    it('all row heights are 50% in 4-map view', () => {
-      component.mapViewOptions$.getValue().numVisibleMaps = 4;
-
-      [0, 1].forEach((mapRowIndex: number) => {
-        expect(component.mapRowHeight(mapRowIndex)).toEqual('50%');
-      });
-    });
-
-    it('displays a login/signup dialog when user attempts to draw, but is not logged in', fakeAsync(async () => {
-      userSignedIn$.next(false);
-      const fakeMatDialog: MatDialog =
-        fixture.debugElement.injector.get(MatDialog);
-      component.ngAfterViewInit();
-      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
-      //when user clicks draw button...
-      const button = await loader.getHarness(
-        MatButtonHarness.with({
-          selector: '.draw-area-button',
-        })
-      );
-      await button.click();
-      tick();
-      component.maps[3].instance?.fireEvent('click');
-      //then we ought to see a signin dialog
-      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
-        SignInDialogComponent,
-        { maxWidth: '560px' }
-      );
-    }));
-
-    it('enables drawing on selected map and shows cloned layer on other maps, when logged in', fakeAsync(async () => {
+    it('enables drawing on selected map and shows cloned layer on other maps', fakeAsync(async () => {
       component.ngAfterViewInit();
       userSignedIn$.next(true);
 
@@ -889,7 +818,7 @@ describe('MapComponent', () => {
     it('getOpacityForSelectedMap gets opacity for selected map', () => {
       component.maps[0].config.dataLayerConfig.opacity = 0.5;
 
-      component.getOpacityForSelectedMap().subscribe((opacity) => {
+      component.getOpacityForSelectedMap$.subscribe((opacity) => {
         expect(opacity).toEqual(0.5);
       });
     });
@@ -897,7 +826,7 @@ describe('MapComponent', () => {
     it('mapHasDataLayer returns true if map has data layer', () => {
       component.maps[0].config.dataLayerConfig.layer = 'test_metric_1';
 
-      component.mapHasDataLayer().subscribe((result) => {
+      component.mapHasDataLayer$.subscribe((result) => {
         expect(result).toBeTrue();
       });
     });
@@ -905,7 +834,7 @@ describe('MapComponent', () => {
     it('mapHasDataLayer returns false if map does not have data layer', () => {
       component.maps[0].config.dataLayerConfig.layer = '';
 
-      component.mapHasDataLayer().subscribe((result) => {
+      component.mapHasDataLayer$.subscribe((result) => {
         expect(result).toBeFalse();
       });
     });

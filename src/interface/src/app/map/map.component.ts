@@ -46,7 +46,11 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
-import { AreaCreationAction, LEGEND } from './map.constants';
+import {
+  AreaCreationAction,
+  ERROR_SNACK_CONFIG,
+  LEGEND,
+} from './map.constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 @UntilDestroy()
 @Component({
@@ -55,12 +59,12 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
-  // props
+  @Input() planId: string | null = null;
+
   readonly AreaCreationAction = AreaCreationAction;
   readonly legend: Legend = LEGEND;
   readonly login_enabled = this.featureService.isFeatureEnabled('login');
-
-  maps: Map[] = ['map1', 'map2', 'map3', 'map4'].map(
+  readonly maps: Map[] = ['map1', 'map2', 'map3', 'map4'].map(
     (id: string, index: number) => {
       return {
         id: id,
@@ -70,15 +74,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
   );
 
-  private mapManager: MapManager;
-
+  mapManager: MapManager;
   regionRecord: string = '';
   loadingIndicators: { [layerName: string]: boolean } = {
     existing_projects: true,
   };
-
   selectedAreaCreationAction = AreaCreationAction.NONE;
   showUploader = false;
+  drawingLayer: L.GeoJSON | undefined;
 
   mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
     defaultMapViewOptions()
@@ -101,20 +104,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.mapManager.defaultOpacity
     )
   );
-
   /** Whether the currently selected map has a data layer active. */
   mapHasDataLayer$ = this.selectedMap$.pipe(
     map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
   );
-
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-
   showConfirmAreaButton$ = new BehaviorSubject(false);
-
-  drawingLayer: L.GeoJSON | undefined;
-
-  @Input() planId: string | null = null;
-
   breadcrumbs$ = new BehaviorSubject(['New Plan']);
 
   constructor(
@@ -438,11 +433,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private createPlan(name: string, shape: GeoJSON.GeoJSON) {
     this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
       if (!selectedRegion) {
-        this.matSnackBar.open('[Error] Please select a region!', 'Dismiss', {
-          duration: 10000,
-          panelClass: ['snackbar-error'],
-          verticalPosition: 'top',
-        });
+        this.matSnackBar.open(
+          '[Error] Please select a region!',
+          'Dismiss',
+          ERROR_SNACK_CONFIG
+        );
         return;
       }
 
@@ -462,11 +457,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
             this.matSnackBar.open(
               '[Error] Unable to create plan due to backend error.',
               'Dismiss',
-              {
-                duration: 10000,
-                panelClass: ['snackbar-error'],
-                verticalPosition: 'top',
-              }
+              ERROR_SNACK_CONFIG
             );
           },
         });
@@ -556,11 +547,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   private showUploadError() {
-    this.matSnackBar.open('[Error] Not a valid shapefile!', 'Dismiss', {
-      duration: 10000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
+    this.matSnackBar.open(
+      '[Error] Not a valid shapefile!',
+      'Dismiss',
+      ERROR_SNACK_CONFIG
+    );
   }
 
   /** Toggles which base layer is shown. */
