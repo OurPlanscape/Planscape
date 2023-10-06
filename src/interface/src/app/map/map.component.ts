@@ -24,13 +24,10 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanState,
   PopupService,
   SessionService,
 } from '../services';
 import {
-  BoundaryConfig,
-  ConditionsConfig,
   DEFAULT_COLORMAP,
   defaultMapConfig,
   defaultMapViewOptions,
@@ -59,40 +56,49 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   // props
-  mapManager: MapManager;
-  maps: Map[];
+  readonly AreaCreationAction = AreaCreationAction;
+  readonly legend: Legend = LEGEND;
+  readonly login_enabled = this.featureService.isFeatureEnabled('login');
+
+  maps: Map[] = ['map1', 'map2', 'map3', 'map4'].map(
+    (id: string, index: number) => {
+      return {
+        id: id,
+        name: `${index + 1}`,
+        config: defaultMapConfig(),
+      };
+    }
+  );
+
+  private mapManager: MapManager;
+
   regionRecord: string = '';
   loadingIndicators: { [layerName: string]: boolean } = {
     existing_projects: true,
   };
-  readonly AreaCreationAction = AreaCreationAction;
-  showUploader = false;
 
-  selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
-  readonly legend: Legend = LEGEND;
-  // async
+  selectedAreaCreationAction = AreaCreationAction.NONE;
+  showUploader = false;
 
   mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
     defaultMapViewOptions()
   );
-  mapNameplateWidths: BehaviorSubject<number | null>[] = Array(4)
+  mapNameplateWidths = Array(4)
     .fill(null)
     .map((_) => new BehaviorSubject<number | null>(null));
 
-  boundaryConfig$: Observable<BoundaryConfig[] | null>;
-  conditionsConfig$: Observable<ConditionsConfig | null>;
+  boundaryConfig$ = this.mapService.boundaryConfig$.asObservable();
+  conditionsConfig$ = this.mapService.conditionsConfig$.asObservable();
+  selectedRegion$ = this.sessionService.region$.asObservable();
 
-  selectedRegion$: Observable<Region | null>;
-  planState$: Observable<PlanState>;
-  selectedMap$: Observable<Map | undefined>;
+  selectedMap$ = this.mapViewOptions$.pipe(
+    map((options) => this.maps[options.selectedMapIndex])
+  );
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
-  /** Actions bar variables */
-
   showConfirmAreaButton$ = new BehaviorSubject(false);
 
-  login_enabled = this.featureService.isFeatureEnabled('login');
   drawingLayer: L.GeoJSON | undefined;
 
   @Input() planId: string | null = null;
@@ -114,15 +120,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private cdr: ChangeDetectorRef,
     private featureService: FeatureService
   ) {
-    this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
-      untilDestroyed(this)
-    );
-    this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
-      untilDestroyed(this)
-    );
-    this.selectedRegion$ = this.sessionService.region$.pipe(
-      untilDestroyed(this)
-    );
     this.sessionService.mapViewOptions$
       .pipe(take(1))
       .subscribe((mapViewOptions: MapViewOptions | null) => {
@@ -131,8 +128,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         }
       });
 
-    this.planState$ = this.planService.planState$.pipe(untilDestroyed(this));
-
     this.mapService
       .getExistingProjects()
       .pipe(untilDestroyed(this))
@@ -140,21 +135,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.existingProjectsGeoJson$.next(projects);
         this.loadingIndicators['existing_projects'] = false;
       });
-
-    this.maps = ['map1', 'map2', 'map3', 'map4'].map(
-      (id: string, index: number) => {
-        return {
-          id: id,
-          name: `${index + 1}`,
-          config: defaultMapConfig(),
-        };
-      }
-    );
-
-    this.selectedMap$ = this.mapViewOptions$.pipe(
-      untilDestroyed(this),
-      map((mapViewOptions) => this.maps[mapViewOptions.selectedMapIndex])
-    );
 
     this.mapManager = new MapManager(
       this.matSnackBar,
