@@ -495,12 +495,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
     this.selectedAreaCreationAction = option;
     if (option === AreaCreationAction.DRAW) {
-      this.addDrawingControlToAllMaps();
-      this.mapManager.enablePolygonDrawingTool(
-        this.maps[selectedMapIndex].instance!
-      );
-      this.showUploader = false;
-      this.changeMapCount(1);
+      if (!this.authService.loggedInStatus$.value) {
+        this.cancelAreaCreationAction();
+        this.openSignInDialog();
+      } else {
+        this.addDrawingControlToAllMaps();
+        this.mapManager.enablePolygonDrawingTool(
+          this.maps[selectedMapIndex].instance!
+        );
+        this.showUploader = false;
+        this.changeMapCount(1);
+      }
     }
     if (option === AreaCreationAction.UPLOAD) {
       if (!this.showConfirmAreaButton$.value) {
