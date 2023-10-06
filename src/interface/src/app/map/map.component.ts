@@ -16,15 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
-import {
-  BehaviorSubject,
-  map,
-  Observable,
-  Subject,
-  take,
-  takeUntil,
-  of,
-} from 'rxjs';
+import { BehaviorSubject, map, Observable, take, of } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
@@ -58,16 +50,28 @@ import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
 import { AreaCreationAction, LEGEND } from './map.constants';
-
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+@UntilDestroy()
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
+  // props
   mapManager: MapManager;
-
   maps: Map[];
+  regionRecord: string = '';
+  loadingIndicators: { [layerName: string]: boolean } = {
+    existing_projects: true,
+  };
+  readonly AreaCreationAction = AreaCreationAction;
+  showUploader = false;
+
+  selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
+  readonly legend: Legend = LEGEND;
+  // async
+
   mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
     defaultMapViewOptions()
   );
@@ -77,26 +81,17 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   boundaryConfig$: Observable<BoundaryConfig[] | null>;
   conditionsConfig$: Observable<ConditionsConfig | null>;
-  regionRecord: string = '';
+
   selectedRegion$: Observable<Region | null>;
   planState$: Observable<PlanState>;
   selectedMap$: Observable<Map | undefined>;
 
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
 
-  loadingIndicators: { [layerName: string]: boolean } = {
-    existing_projects: true,
-  };
-
-  legend: Legend = LEGEND;
-
   /** Actions bar variables */
-  readonly AreaCreationAction = AreaCreationAction;
-  showUploader = false;
-  selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
+
   showConfirmAreaButton$ = new BehaviorSubject(false);
 
-  private readonly destroy$ = new Subject<void>();
   login_enabled = this.featureService.isFeatureEnabled('login');
   drawingLayer: L.GeoJSON | undefined;
 
@@ -120,13 +115,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private featureService: FeatureService
   ) {
     this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
-      takeUntil(this.destroy$)
+      untilDestroyed(this)
     );
     this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
-      takeUntil(this.destroy$)
+      untilDestroyed(this)
     );
     this.selectedRegion$ = this.sessionService.region$.pipe(
-      takeUntil(this.destroy$)
+      untilDestroyed(this)
     );
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -136,13 +131,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         }
       });
 
-    this.planState$ = this.planService.planState$.pipe(
-      takeUntil(this.destroy$)
-    );
+    this.planState$ = this.planService.planState$.pipe(untilDestroyed(this));
 
     this.mapService
       .getExistingProjects()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((projects: GeoJSON.GeoJSON) => {
         this.existingProjectsGeoJson$.next(projects);
         this.loadingIndicators['existing_projects'] = false;
@@ -159,7 +152,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     );
 
     this.selectedMap$ = this.mapViewOptions$.pipe(
-      takeUntil(this.destroy$),
+      untilDestroyed(this),
       map((mapViewOptions) => this.maps[mapViewOptions.selectedMapIndex])
     );
 
@@ -174,7 +167,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.http
     );
     this.mapManager.polygonsCreated$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe(this.showConfirmAreaButton$);
   }
 
@@ -185,7 +178,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.restoreSession();
     /** Save map configurations in the user's session every X ms. */
     this.sessionService.sessionInterval$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((_) => {
         this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
         this.sessionService.setMapConfigs(
@@ -287,8 +280,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   ngOnDestroy(): void {
     this.maps.forEach((map: Map) => map.instance?.remove());
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   private restoreSession() {
