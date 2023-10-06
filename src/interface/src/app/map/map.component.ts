@@ -90,7 +90,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     .fill(null)
     .map((_) => new BehaviorSubject<number | null>(null));
 
-  boundaryConfig$ = this.mapService.boundaryConfig$.asObservable();
+  boundaryConfig$ = this.mapService.boundaryConfig$
+    .asObservable()
+    .pipe(untilDestroyed(this));
   conditionsConfig$ = this.mapService.conditionsConfig$.asObservable();
   selectedRegion$ = this.sessionService.region$.asObservable();
 
@@ -323,12 +325,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.loadPlanAndDrawPlanningArea();
 
     // Renders the selected region on the map.
-    this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
-      var centerCoords = regionMapCenters(selectedRegion!);
-      map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
-      // Region highlighting disabled for now
-      // this.displayRegionBoundary(map, selectedRegion);
-    });
+    this.selectedRegion$
+      .pipe(untilDestroyed(this))
+      .subscribe((selectedRegion: Region | null) => {
+        var centerCoords = regionMapCenters(selectedRegion!);
+        map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
+        // Region highlighting disabled for now
+        // this.displayRegionBoundary(map, selectedRegion);
+      });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
       if (
