@@ -7,7 +7,9 @@
         class="layer-radio-group"
         color="primary"
         formControlName="selectedQuestion">
-        <div class="goal-category">TREATMENT GOALS</div>
+        <app-scenario-tooltip
+          area="TREATMENT_GOALS"
+          title="TREATMENT GOALS"></app-scenario-tooltip>
         <div
           *ngFor="let treatmentGoal of treatmentGoals$"
           class="goal-control-container">

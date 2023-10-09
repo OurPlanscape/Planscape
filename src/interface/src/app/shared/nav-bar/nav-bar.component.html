@@ -4,6 +4,68 @@
   </button>
   <span class="title">Planning Areas / {{ breadcrumbs.join(' / ') }}</span>
   <div class="actions">
+    <button mat-icon-button class="help" [matMenuTriggerFor]="popoverMenu">
+      <mat-icon class="material-symbols-outlined" color="primary">
+        info_outline
+      </mat-icon>
+      <mat-menu #popoverMenu="matMenu">
+        <div [ngSwitch]="area" class="tooltip">
+          <div *ngSwitchCase="'SCENARIO'">
+            <p>
+              Start planning your scenario to generate your project areas. Enter
+              a name for your scenario at the top left, select your management
+              question, enter your constraints and select Generate. You can only
+              select one management question per run. Note that the run will
+              take longer if you select Medium or Small stand sizes, and we
+              recommend that you start with Large to review your outputs.
+            </p>
+          </div>
+
+          <div *ngSwitchCase="'SCENARIOS'">
+            <p>
+              The scenario page lists all the scenarios that you have created
+              for a planning area. You will likely have numerous scenarios for
+              any planning area. The scenario list provides detail about the
+              status of each scenario, including any that are currently running.
+              Note that the planning area is shown in the upper left of the
+              navigation bar.
+            </p>
+            <p>
+              The left panel gives you information about the entire planning
+              area in which the scenario is running: an overview of the planning
+              area in the map, total available acres, number of scenarios, the
+              region, the plan owner, the date the plan was originally created
+              and when it was last updated.
+            </p>
+            <p>
+              There is also a Notes field in the left panel. If there are notes
+              you want to put in about your scenarios or other outputs, they can
+              be entered here.
+            </p>
+          </div>
+          <div *ngSwitchCase="'EXPLORE'">
+            <p>
+              This page allows you to explore all the data in the RRKs for your
+              region. You can select a region from the dropdown menu, and then
+              use the selectors below to set up your map(s). You can look at 1,
+              2 or 4 maps simultaneously, and select a different set of data and
+              layers to visualize for each map. The map area remains constant
+              for all maps.
+            </p>
+            <p>
+              See
+              <a
+                href="https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide#exploring-maps"
+                target="_blank">
+                exploring maps
+              </a>
+              for more info.
+            </p>
+          </div>
+        </div>
+      </mat-menu>
+    </button>
+
     <button mat-button class="action-button" (click)="print()" data-id="print">
       <mat-icon class="material-symbols-outlined" color="primary">
         print

@@ -8,6 +8,7 @@ import { WINDOW } from '../../services/window.service';
 })
 export class NavBarComponent {
   @Input() breadcrumbs: string[] = [];
+  @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' = 'EXPLORE';
   @Output() goBack = new EventEmitter<void>();
 
   constructor(@Inject(WINDOW) private window: Window) {}

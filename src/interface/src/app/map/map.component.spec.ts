@@ -61,6 +61,7 @@ describe('MapComponent', () => {
       'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
       {}
     );
+
     const fakeGeoJson: GeoJSON.GeoJSON = {
       type: 'FeatureCollection',
       features: [
@@ -341,8 +342,32 @@ describe('MapComponent', () => {
       });
     });
 
-    it('enables drawing on selected map and shows cloned layer on other maps', fakeAsync(async () => {
+    it('displays a login/signup dialog when user attempts to draw, but is not logged in', fakeAsync(async () => {
+      userSignedIn$.next(false);
+      const fakeMatDialog: MatDialog =
+        fixture.debugElement.injector.get(MatDialog);
       component.ngAfterViewInit();
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      //when user clicks draw button...
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
+      await button.click();
+      tick();
+      component.maps[3].instance?.fireEvent('click');
+      //then we ought to see a signin dialog
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
+        SignInDialogComponent,
+        { maxWidth: '560px' }
+      );
+    }));
+
+    it('enables drawing on selected map and shows cloned layer on other maps, when logged in', fakeAsync(async () => {
+      component.ngAfterViewInit();
+      userSignedIn$.next(true);
+
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({
@@ -469,6 +494,10 @@ describe('MapComponent', () => {
 
     it('sets up drawing', fakeAsync(async () => {
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+
+      const auth = TestBed.inject(AuthService);
+      auth.loggedInStatus$.next(true);
+
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.draw-area-button',
@@ -492,7 +521,27 @@ describe('MapComponent', () => {
       ).toBeTrue();
     }));
 
-    it('enables polygon tool when drawing option is selected', fakeAsync(async () => {
+    it('disallows drawing when drawing option is selected and user is not logged in', fakeAsync(async () => {
+      userSignedIn$.next(false);
+      const fakeMatDialog: MatDialog =
+        fixture.debugElement.injector.get(MatDialog);
+
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.draw-area-button',
+        })
+      );
+      await button.click();
+      tick();
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
+        SignInDialogComponent,
+        { maxWidth: '560px' }
+      );
+    }));
+
+    it('enables polygon tool when drawing option is selected and user is logged in', fakeAsync(async () => {
+      userSignedIn$.next(true);
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
         MatButtonHarness.with({

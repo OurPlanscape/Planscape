@@ -5,6 +5,7 @@ import { CurrencyInKPipe } from '../../pipes/currency-in-k.pipe';
 import { CurrencyPipe } from '@angular/common';
 import { By } from '@angular/platform-browser';
 import { Component } from '@angular/core';
+import { MaterialModule } from '../../material/material.module';
 
 @Component({
   template: '<app-project-areas [areas]="areas"></app-project-areas>',
@@ -29,6 +30,7 @@ describe('ProjectAreasComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ProjectAreasComponent, CurrencyInKPipe, TestHostComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      imports: [MaterialModule],
       providers: [CurrencyPipe],
     }).compileComponents();
 

@@ -2,12 +2,10 @@
   <!-- Form -->
   <form class="constraints-form" [formGroup]="constraintsForm!">
     <div class="constraints-content">
-      <div class="flex-column">
-        <div class="top-label">
-          <label class="form-label">CONSTRAINTS</label>
-        </div>
-      </div>
-      <div class="flex-row">
+      <app-scenario-tooltip
+        area="CONSTRAINTS"
+        title="CONSTRAINTS"></app-scenario-tooltip>
+      <div class="flex-row space-evenly">
         <div formGroupName="physicalConstraintForm">
           <div>
             <mat-form-field
@@ -119,9 +117,9 @@
     </div>
     <div class="constraints-content">
       <div formGroupName="excludedAreasForm" class="flex-column">
-        <div class="top-label">
-          <label class="form-label">EXCLUDE AREAS</label>
-        </div>
+        <app-scenario-tooltip
+          area="EXCLUDE_AREAS"
+          title="EXCLUDE AREAS"></app-scenario-tooltip>
         <section class="area-selection">
           <div class="checkbox-column">
             <mat-checkbox
