@@ -46,7 +46,7 @@ export class MapControlPanelComponent implements OnInit {
   @Input() mapViewOptions: MapViewOptions | null = null;
   @Input() selectedMap?: Map | null;
   @Input() selectedMapOpacity?: number | null = null;
-  @Input() showRegion = true;
+  @Input() disableRegion = true;
 
   @Output() changeBaseLayer = new EventEmitter<Map>();
   @Output() changeBoundaryLayer = new EventEmitter<Map>();
