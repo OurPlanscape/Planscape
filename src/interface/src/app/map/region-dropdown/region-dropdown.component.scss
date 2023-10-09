@@ -18,14 +18,14 @@
 // styles for the dropdown on the map controls
 .region-wrapper {
   height: 32px;
-  box-shadow:
-    0 1px 1px 0 #00000024,
-    0 2px 2px 0 #00000033,
-    0 1px 5px 0 #0000001f;
+  box-shadow: 0 1px 1px 0 #00000024,
+  0 2px 2px 0 #00000033,
+  0 1px 5px 0 #0000001f;
 
   overflow: hidden;
   border-radius: 6px;
   position: relative;
+
   &::before {
     content: '';
     width: 1px;
@@ -49,6 +49,10 @@
     border-top: 5px solid #3367d6;
     pointer-events: none;
   }
+
+  &.disabled::after {
+    border-top-color: gray;
+  }
 }
 
 .region {
@@ -67,4 +71,8 @@
   padding-right: 36px;
   border-right: 1px solid #eeeeee;
   text-align: center;
+
+  &:disabled {
+    color: gray;
+  }
 }
