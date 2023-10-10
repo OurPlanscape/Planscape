@@ -89,6 +89,7 @@ export class PlanService {
   >(null);
 
   readonly planRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
+
   constructor(private http: HttpClient) {
     this.http
       .get<TreatmentGoalConfig[]>(
@@ -100,6 +101,12 @@ export class PlanService {
       .subscribe((config: TreatmentGoalConfig[]) => {
         this.treatmentGoalsConfig$.next(config);
       });
+  }
+
+  planNameExists(planName: string) {
+    return this.listPlansByUser().pipe(
+      map((plans) => plans.some((plan) => plan.name === planName))
+    );
   }
 
   // TODO clean up requests with string interpolation
@@ -163,13 +170,11 @@ export class PlanService {
   /** Makes a request to the backend for a list of all plans owned by a user.
    *  If the user is not provided, return all plans with owner=null.
    */
-  listPlansByUser(userId: string | null): Observable<PlanPreview[]> {
+  listPlansByUser(): Observable<PlanPreview[]> {
     let url = BackendConstants.END_POINT.concat(
       '/planning/list_planning_areas'
     );
-    if (userId) {
-      url = url.concat('/?owner=', userId);
-    }
+
     return this.http
       .get<BackendPlanPreview[]>(url, {
         withCredentials: true,
@@ -670,6 +675,7 @@ export class PlanService {
           return {
             ...plan,
             id: result['id'].toString(),
+            ownerId: result.ownerId,
             savedScenarios: 0,
           };
         })

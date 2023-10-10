@@ -16,7 +16,7 @@ export interface Plan extends BasePlan {
 export interface BasePlan {
   id?: string;
   name: string;
-  ownerId: string;
+  ownerId?: string;
   region: Region;
   scenarios?: number;
   lastUpdated?: Date;
