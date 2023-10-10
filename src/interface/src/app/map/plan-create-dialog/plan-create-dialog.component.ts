@@ -27,7 +27,7 @@ export class PlanCreateDialogComponent {
         )
       );
       if (planExists) {
-        this.planForm.setErrors({ notValid: planExists });
+        this.planForm.setErrors({ planNameExists: planExists });
         return;
       }
       this.dialogRef.close(this.planForm.get('planName'));
