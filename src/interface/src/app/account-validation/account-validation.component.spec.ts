@@ -3,8 +3,9 @@ import { AccountValidationComponent } from './account-validation.component';
 import { AuthService } from '../services';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { HttpErrorResponse } from '@angular/common/http';
 
 describe('AccountValidationComponent', () => {
   let component: AccountValidationComponent;
@@ -38,13 +39,13 @@ describe('AccountValidationComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
-
   describe('different tokens should display valid responses', () => {
     it('should show confirmation when token is valid', () => {
+      fakeAuthService.validateAccount.and.returnValue(of({ details: 'ok' }));
       component.checkValidation();
+
+      fixture.detectChanges();
+
       const validBlurb = fixture.debugElement.query(By.css('.valid-token'));
       expect(validBlurb).not.toBeNull();
 
@@ -53,12 +54,22 @@ describe('AccountValidationComponent', () => {
     });
 
     it('should show failure when token is not valid', () => {
+      const errorResponse = new HttpErrorResponse({
+        error: new Error('Not Found'),
+        status: 404,
+      });
+      const observable = throwError(() => {
+        errorResponse;
+      });
+      fakeAuthService.validateAccount.and.returnValue(observable);
       component.checkValidation();
+
+      fixture.detectChanges();
       const validBlurb = fixture.debugElement.query(By.css('.valid-token'));
-      expect(validBlurb).not.toBeNull();
+      expect(validBlurb).toBeNull();
 
       const invalidBlurb = fixture.debugElement.query(By.css('.invalid-token'));
-      expect(invalidBlurb).toBeNull();
+      expect(invalidBlurb).not.toBeNull();
     });
   });
 });
