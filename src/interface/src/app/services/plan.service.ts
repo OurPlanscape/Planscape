@@ -675,6 +675,7 @@ export class PlanService {
           return {
             ...plan,
             id: result['id'].toString(),
+            ownerId: result.ownerId,
             savedScenarios: 0,
           };
         })

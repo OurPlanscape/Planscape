@@ -405,6 +405,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private startLoadingLayerCallback(layerName: string) {
     this.loadingIndicators[layerName] = true;
   }
+
   private doneLoadingLayerCallback(layerName: string) {
     this.loadingIndicators[layerName] = false;
   }
@@ -466,7 +467,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.planService
         .createPlan({
           name: name,
-          ownerId: 'tempUserId',
           region: selectedRegion,
           planningArea: shape,
         })

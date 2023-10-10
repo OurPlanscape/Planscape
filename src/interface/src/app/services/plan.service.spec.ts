@@ -99,6 +99,7 @@ describe('PlanService', () => {
         configs: 0,
         createdTimestamp: undefined,
         lastUpdated: undefined,
+        ownerId: '2',
       };
 
       const backendPlan: BackendPlan = {
