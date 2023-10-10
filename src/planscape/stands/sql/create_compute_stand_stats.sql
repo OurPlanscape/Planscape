@@ -24,19 +24,16 @@ CREATE OR REPLACE FUNCTION compute_stand_stats(_stand_id BIGINT, _condition_id I
 
     stats AS (
       SELECT
-        s.id AS "stand_id",
         (ST_SummaryStats(ST_Clip(cc.raster, s.geometry))).*
       FROM conditions_conditionraster cc, stand s
       WHERE
         cc.condition_id = _condition_id AND
         s.geometry && cc.raster AND
         ST_Intersects(s.geometry, cc.raster)
-      ORDER BY
-        s.id
     )
 
     SELECT 
-      stand_id,
+      _stand_id,
       _condition_id,
       min(ss.min) AS min,
       max(ss.max) AS max,
@@ -45,8 +42,6 @@ CREATE OR REPLACE FUNCTION compute_stand_stats(_stand_id BIGINT, _condition_id I
       sum(ss.count) AS count
     FROM
       stats ss
-    GROUP BY
-      stand_id
 
 $$ LANGUAGE sql
 IMMUTABLE
