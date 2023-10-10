@@ -4,5 +4,7 @@
   [selectedCharts]="selectedCharts"></app-project-areas-metrics>
 
 <div class="actions">
-  <button mat-raised-button>Download CSV data</button>
+  <button mat-raised-button (click)="downloadCsv.emit()">
+    Download CSV data
+  </button>
 </div>
