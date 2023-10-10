@@ -27,6 +27,7 @@ export class RegionSelectionComponent implements OnInit {
 
   /** We assume that Sierra Nevada is always enabled.  */
   multiple_regions_enabled = features.show_socal || features.show_centralcoast;
+
   constructor(
     private authService: AuthService,
     private planService: PlanService,
@@ -36,9 +37,8 @@ export class RegionSelectionComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    let user$ = this.authService.loggedInUser$;
     this.planService
-      .listPlansByUser(user$.value?.username ? user$.value.username : null)
+      .listPlansByUser()
       .pipe(take(1))
       .subscribe((plans) => (this.hasPlans = plans.length !== 0));
   }
