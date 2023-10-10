@@ -13,7 +13,7 @@ describe('AccountValidationComponent', () => {
 
   const fakeAuthService = jasmine.createSpyObj<AuthService>(
     'AuthService',
-    { validateAccount: of({ details: 'ok' }) },
+    { validateAccount: of(true) },
     {}
   );
   beforeEach(async () => {
@@ -41,7 +41,7 @@ describe('AccountValidationComponent', () => {
 
   describe('different tokens should display valid responses', () => {
     it('should show confirmation when token is valid', () => {
-      fakeAuthService.validateAccount.and.returnValue(of({ details: 'ok' }));
+      fakeAuthService.validateAccount.and.returnValue(of(true));
       component.checkValidation();
 
       fixture.detectChanges();
@@ -54,14 +54,14 @@ describe('AccountValidationComponent', () => {
     });
 
     it('should show failure when token is not valid', () => {
-      const errorResponse = new HttpErrorResponse({
+      const notFoundError = new HttpErrorResponse({
         error: new Error('Not Found'),
         status: 404,
       });
-      const observable = throwError(() => {
-        errorResponse;
+      const resultWithHttpError = throwError(() => {
+        notFoundError;
       });
-      fakeAuthService.validateAccount.and.returnValue(observable);
+      fakeAuthService.validateAccount.and.returnValue(resultWithHttpError);
       component.checkValidation();
 
       fixture.detectChanges();

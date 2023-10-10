@@ -2,7 +2,7 @@
   <div class="validation-result-container">
     <div class="validation-result-card">
       <div>
-        <div *ngIf="isValidated$" class="valid-token">
+        <div *ngIf="isValidated" class="valid-token">
           <h1>Your email address was validated.</h1>
           <h3>
             Please
@@ -10,7 +10,7 @@
             to login.
           </h3>
         </div>
-        <div *ngIf="!isValidated$" class="invalid-token">
+        <div *ngIf="!isValidated" class="invalid-token">
           <h1>This validation token was not recognized.</h1>
         </div>
       </div>
