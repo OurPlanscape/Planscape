@@ -32,7 +32,6 @@ import {
   PlanService,
   PopupService,
   SessionService,
-  ValidationResolver,
 } from './services';
 import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './home/about/about.component';
@@ -113,7 +112,6 @@ import { MapModule } from './map/map.module';
     CookieService,
     SessionService,
     RedirectGuard,
-    ValidationResolver,
     WINDOW_PROVIDERS,
     CurrencyPipe,
   ],

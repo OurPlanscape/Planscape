@@ -15,7 +15,7 @@ import { MapComponent } from './map/map.component';
 import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
 import { PlanComponent } from './plan/plan.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
-import { AuthGuard, ValidationResolver } from './services';
+import { AuthGuard } from './services';
 import { passwordResetTokenResolver } from './services/password-reset.resolver';
 import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
@@ -59,16 +59,10 @@ const routes: Routes = [
         canActivate: [createFeatureGuard('login')],
       },
       {
-        path: 'validate',
-       // resolve: { validated: ValidationResolver },
+        path: 'validate/:token',
+        title: 'Account E-mail Validation',
         component: AccountValidationComponent,
-        canActivate: [createFeatureGuard('login')],
-      },
-      {
-        path: 'validate/:id',
-        resolve: { validated: ValidationResolver },
-        component: AccountValidationComponent,
-        canActivate: [createFeatureGuard('login')],
+      //  canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'map',
