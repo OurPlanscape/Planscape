@@ -1,10 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import {
-  CanActivate,
-  Router,
-} from '@angular/router';
+import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import {
   BehaviorSubject,
@@ -101,8 +98,7 @@ export class AuthService {
       );
   }
 
-  validateAccount(token: string) {
-    console.log("now we're calling something?: ", token);
+  validateAccount(token: string): Observable<any> {
     return this.http.post(
       this.API_ROOT.concat('registration/account-confirm-email/'),
       {
