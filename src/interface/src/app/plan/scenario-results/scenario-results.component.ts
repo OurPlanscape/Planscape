@@ -1,4 +1,11 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
 import { ScenarioResult } from '../../types';
 import { parseResultsToProjectAreas } from '../plan-helpers';
@@ -11,6 +18,7 @@ import { parseResultsToProjectAreas } from '../plan-helpers';
 export class ScenarioResultsComponent implements OnChanges {
   @Input() results: ScenarioResult | null = null;
   @Input() scenarioChartData: any[] = [];
+  @Output() downloadCsv = new EventEmitter();
 
   areas: ProjectAreaReport[] = [];
   scenarioOutputFieldsConfigs: any = {};

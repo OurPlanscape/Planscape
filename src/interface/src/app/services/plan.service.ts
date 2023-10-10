@@ -733,4 +733,15 @@ export class PlanService {
         });
     }
   }
+
+  downloadCsvData(scenarioId: string): Observable<any> {
+    return this.http.get(
+      BackendConstants.END_POINT +
+        `/planning/get_scenario_download_by_id?id=${scenarioId}`,
+      {
+        withCredentials: true,
+        responseType: 'arraybuffer',
+      }
+    );
+  }
 }
