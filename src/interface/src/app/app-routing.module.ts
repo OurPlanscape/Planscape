@@ -62,7 +62,7 @@ const routes: Routes = [
         path: 'validate/:token',
         title: 'Account E-mail Validation',
         component: AccountValidationComponent,
-      //  canActivate: [createFeatureGuard('login')],
+        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'map',
