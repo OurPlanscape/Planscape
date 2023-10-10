@@ -9,6 +9,9 @@
       <mat-label>Name</mat-label>
       <input matInput formControlName="planName" />
     </mat-form-field>
+    <mat-error *ngIf="planForm.hasError('notValid')">
+      There is already a planning area with that name.
+    </mat-error>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button color="primary" type="button" (click)="cancel()">

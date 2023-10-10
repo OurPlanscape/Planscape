@@ -1,6 +1,8 @@
 import { MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component } from '@angular/core';
+import { PlanService } from '../../services';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-plan-create-dialog',
@@ -12,10 +14,22 @@ export class PlanCreateDialogComponent {
     planName: new FormControl('', Validators.required),
   });
 
-  constructor(private dialogRef: MatDialogRef<PlanCreateDialogComponent>) {}
+  constructor(
+    private dialogRef: MatDialogRef<PlanCreateDialogComponent>,
+    private planService: PlanService
+  ) {}
 
-  submit() {
+  async submit() {
     if (this.planForm.valid) {
+      const planExists = await firstValueFrom(
+        this.planService.planNameExists(
+          this.planForm.get('planName')?.value || ''
+        )
+      );
+      if (planExists) {
+        this.planForm.setErrors({ notValid: planExists });
+        return;
+      }
       this.dialogRef.close(this.planForm.get('planName'));
     }
   }

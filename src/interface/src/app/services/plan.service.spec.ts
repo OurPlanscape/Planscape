@@ -149,7 +149,7 @@ describe('PlanService', () => {
         notes: '',
       };
 
-      service.listPlansByUser(null).subscribe((res) => {
+      service.listPlansByUser().subscribe((res) => {
         expect(res).toEqual([expectedPlan]);
       });
 
