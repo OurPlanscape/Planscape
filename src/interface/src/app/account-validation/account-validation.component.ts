@@ -9,7 +9,7 @@ import { take } from 'rxjs';
   styleUrls: ['./account-validation.component.scss'],
 })
 export class AccountValidationComponent implements OnInit {
-  protected isValidated$ = false;
+  protected isValidated = false;
 
   constructor(
     private authService: AuthService,
@@ -30,10 +30,10 @@ export class AccountValidationComponent implements OnInit {
       .pipe(take(1))
       .subscribe(
         (data) => {
-          this.isValidated$ = true;
+          this.isValidated = true;
         },
         (err) => {
-          this.isValidated$ = false;
+          this.isValidated = false;
         }
       );
   }
