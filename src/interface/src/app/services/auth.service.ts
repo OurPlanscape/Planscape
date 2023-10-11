@@ -99,18 +99,16 @@ export class AuthService {
   }
 
   validateAccount(token: string): Observable<boolean> {
-    return this.http.post(
-      this.API_ROOT.concat('registration/account-confirm-email/'),
-      {
+    return this.http
+      .post(this.API_ROOT.concat('registration/account-confirm-email/'), {
         key: token,
-      }
-    ).pipe(
-      take(1),
-      map((result: any) => {
-        return result;
       })
-    );
-    
+      .pipe(
+        take(1),
+        map((result: any) => {
+          return result;
+        })
+      );
   }
 
   private refreshToken() {
@@ -172,7 +170,7 @@ export class AuthService {
         new_password2: newPassword2,
       },
       {
-        withCredentials: true, 
+        withCredentials: true,
       }
     );
   }
