@@ -32,7 +32,6 @@ import {
   PlanService,
   PopupService,
   SessionService,
-  ValidationResolver,
 } from './services';
 import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './home/about/about.component';
@@ -52,6 +51,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { RedirectGuard } from './services/redirect.guard';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
+import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { MapModule } from './map/map.module';
 
 @NgModule({
@@ -77,6 +77,7 @@ import { MapModule } from './map/map.module';
     AboutComponent,
     PasswordResetComponent,
     ConfirmationDialogComponent,
+    AccountValidationComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -111,7 +112,6 @@ import { MapModule } from './map/map.module';
     CookieService,
     SessionService,
     RedirectGuard,
-    ValidationResolver,
     WINDOW_PROVIDERS,
     CurrencyPipe,
   ],
