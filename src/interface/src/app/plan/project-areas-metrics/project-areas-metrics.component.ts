@@ -20,7 +20,14 @@ export class ProjectAreasMetricsComponent {
   constructor(private planService: PlanService) {}
 
   selectDataPoint(e: MatSelectChange, i: number) {
+    const showingThisLayer =
+      this.planService.planState$.value.mapConditionLayer ===
+      this.selectedCharts[i]['metric_layer'];
+
     this.selectedCharts[i] = e.value;
+    if (showingThisLayer) {
+      this.toggleMapLayer(i);
+    }
   }
 
   toggleMapLayer(i: number) {
