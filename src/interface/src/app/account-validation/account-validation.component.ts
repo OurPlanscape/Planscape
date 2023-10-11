@@ -28,13 +28,8 @@ export class AccountValidationComponent implements OnInit {
     this.authService
       .validateAccount(validationToken!)
       .pipe(take(1))
-      .subscribe(
-        (data) => {
-          this.isValidated = true;
-        },
-        (err) => {
-          this.isValidated = false;
-        }
-      );
+      .subscribe((res) => {
+        this.isValidated = res;
+      });
   }
 }
