@@ -23,3 +23,4 @@ library("devtools")
 
 devtools::install_github("forsys-sp/forsysr")
 devtools::install_github("forsys-sp/patchmax")
+devtools::install_github("milesmcbain/friendlyeval")
