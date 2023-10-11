@@ -3,9 +3,8 @@ import { AccountValidationComponent } from './account-validation.component';
 import { AuthService } from '../services';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
-import { HttpErrorResponse } from '@angular/common/http';
 
 describe('AccountValidationComponent', () => {
   let component: AccountValidationComponent;
@@ -54,14 +53,7 @@ describe('AccountValidationComponent', () => {
     });
 
     it('should show failure when token is not valid', () => {
-      const notFoundError = new HttpErrorResponse({
-        error: new Error('Not Found'),
-        status: 404,
-      });
-      const resultWithHttpError = throwError(() => {
-        notFoundError;
-      });
-      fakeAuthService.validateAccount.and.returnValue(resultWithHttpError);
+      fakeAuthService.validateAccount.and.returnValue(of(false));
       component.checkValidation();
 
       fixture.detectChanges();
