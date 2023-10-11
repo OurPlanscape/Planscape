@@ -60,7 +60,8 @@
             <app-scenario-results
               *ngSwitchCase="'SUCCESS'"
               [results]="scenarioResults"
-              [scenarioChartData]="scenarioChartData"></app-scenario-results>
+              [scenarioChartData]="scenarioChartData"
+              (downloadCsv)="downloadCsv()"></app-scenario-results>
             <app-scenario-failure
               *ngSwitchCase="'FAILURE'"
               (goBack)="goBackToPlanning()"></app-scenario-failure>

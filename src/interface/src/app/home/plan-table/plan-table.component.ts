@@ -51,7 +51,7 @@ export class PlanTableComponent implements OnInit {
 
   getPlansFromService(): void {
     this.planService
-      .listPlansByUser(null)
+      .listPlansByUser()
       .pipe(take(1))
       .subscribe((plans) => {
         this.loading = false;
@@ -91,6 +91,7 @@ export class PlanTableComponent implements OnInit {
   refresh(): void {
     this.getPlansFromService();
   }
+
   selectPlan(plan: PlanRow) {
     this.selectedPlan = plan;
   }

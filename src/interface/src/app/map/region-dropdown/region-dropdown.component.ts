@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { Region, RegionOption, regionOptions } from '../../types';
 import { MapService, SessionService } from '../../services';
 
@@ -10,6 +10,7 @@ import { MapService, SessionService } from '../../services';
 export class RegionDropdownComponent {
   readonly regionOptions: RegionOption[] = regionOptions;
   readonly selectedRegion$ = this.sessionService.region$;
+  @Input() disabled = false;
 
   constructor(
     private sessionService: SessionService,

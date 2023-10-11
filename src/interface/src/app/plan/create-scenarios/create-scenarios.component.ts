@@ -23,6 +23,7 @@ import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
+import FileSaver from 'file-saver';
 
 @UntilDestroy()
 @Component({
@@ -461,5 +462,19 @@ export class CreateScenariosComponent implements OnInit {
 
   goBackToPlanning() {
     this.router.navigate(['plan', this.plan$.value?.id]);
+  }
+
+  downloadCsv() {
+    const filename =
+      (this.nameFormGroup.get('scenarioName')?.value || 'scenario_results') +
+      '.zip';
+    if (this.scenarioId) {
+      this.planService.downloadCsvData(this.scenarioId).subscribe((data) => {
+        const blob = new Blob([data], {
+          type: 'application/zip',
+        });
+        FileSaver.saveAs(blob, filename);
+      });
+    }
   }
 }

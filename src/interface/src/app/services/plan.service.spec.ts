@@ -99,6 +99,7 @@ describe('PlanService', () => {
         configs: 0,
         createdTimestamp: undefined,
         lastUpdated: undefined,
+        ownerId: '2',
       };
 
       const backendPlan: BackendPlan = {
@@ -149,7 +150,7 @@ describe('PlanService', () => {
         notes: '',
       };
 
-      service.listPlansByUser(null).subscribe((res) => {
+      service.listPlansByUser().subscribe((res) => {
         expect(res).toEqual([expectedPlan]);
       });
 
