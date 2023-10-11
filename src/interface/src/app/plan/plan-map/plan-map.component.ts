@@ -159,6 +159,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
    *  string is empty, remove rendered tiles). */
   private setCondition(filepath: string): void {
     this.tileLayer?.remove();
+    this.mapRef.legend?.remove();
 
     if (filepath?.length === 0 || !filepath) return;
 
