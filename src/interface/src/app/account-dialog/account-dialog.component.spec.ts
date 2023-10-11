@@ -92,6 +92,7 @@ describe('AccountDialogComponent', () => {
       firstName: 'Foo',
       lastName: 'Bar',
       email: 'test@test.com',
+      currentPassword: '',
     });
   });
 
@@ -106,13 +107,17 @@ describe('AccountDialogComponent', () => {
 
   it('saving user changes calls AuthService', () => {
     component.editAccount();
+    component.editAccountForm.get('currentPassword')?.setValue('password');
     component.saveEdits();
 
-    expect(fakeAuthService.updateUser).toHaveBeenCalledOnceWith({
-      firstName: 'Foo',
-      lastName: 'Bar',
-      email: 'test@test.com',
-    });
+    expect(fakeAuthService.updateUser).toHaveBeenCalledOnceWith(
+      {
+        firstName: 'Foo',
+        lastName: 'Bar',
+        email: 'test@test.com',
+      },
+      'password'
+    );
   });
 
   it('saving new password calls AuthService', () => {
