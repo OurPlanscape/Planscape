@@ -4,6 +4,8 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
+  ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -47,7 +49,7 @@ export class AccountDialogComponent implements OnInit {
         newPassword2: this.fb.control('', [Validators.required]),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validators: [crossFieldValidators],
       }
     );
     this.editAccountForm = this.fb.group({
@@ -139,11 +141,16 @@ export class AccountDialogComponent implements OnInit {
       );
   }
 
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('newPassword1')?.value;
-    const password2 = group.get('newPassword2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
-  }
+  // private passwordsMatchValidator(group: AbstractControl) {
+  //   console.log('is this even being called?');
+  //   const password1 = group.get('newPassword1')?.value;
+  //   const password2 = group.get('newPassword2')?.value;
+  //   if (password1 === password2 ) {
+  //     this.changePasswordForm.setErrors({validationError: "passwords dont match"})
+  //   }
+
+  //   return password1 === password2 ? null : { passwordsNotEqual: true };
+  // }
 
   openDeleteAccountDialog(): void {
     this.dialog
@@ -161,3 +168,46 @@ export class AccountDialogComponent implements OnInit {
       });
   }
 }
+
+//  const passwordsMatchValidator: ValidatorFn = ( formControls: AbstractControl): ValidationErrors | null => {
+//   const password1 = formControls.value.currentPassword;
+//   const password2 = formControls.value.newPassword1;
+
+//   console.log("what is group?", formControls);
+//   console.log("what is pw1?", password1);
+//   console.log("what is pw2?", password2);
+//   console.log("what is pw1?", password1);
+
+//   return password1 === password2 ?  null : { passwordsDontMatch: true };
+// };
+
+const crossFieldValidators: ValidatorFn = (
+  formControls: AbstractControl
+): ValidationErrors | null => {
+  const currentPassword = formControls.value.currentPassword;
+  const password1 = formControls.value.newPassword1;
+  const password2 = formControls.value.newPassword2;
+
+  const allTheErrors = {
+    newPasswordMustBeNew: false,
+    newPaswordsMustMatch: false,
+    mustContainSymbol: false,
+    mustContainNumber: false,
+  };
+
+  if (currentPassword.length > 0 && 
+    password1.length > 0 &&
+    password2.length > 0) {
+
+  if (currentPassword === password1) {
+    allTheErrors.newPasswordMustBeNew = true;
+  }
+
+  if (password1 !== password2) {
+    allTheErrors.newPaswordsMustMatch = true;
+  }
+}
+  console.log('group?:', formControls);
+  console.log('all the errors:', allTheErrors);
+  return allTheErrors;
+};
