@@ -29,7 +29,12 @@
     <!-- TODO Add styling class -->
     <div class="map-selector">
       <div class="map-button">
-        <button mat-button (click)="toggleMapLayer(i)">
+        <button
+          mat-button
+          (click)="toggleMapLayer(i)"
+          [ngClass]="{
+            ' selected': chart.metric_layer === (mapConditionLayer$ | async)
+          }">
           <mat-icon>map</mat-icon>
         </button>
       </div>
