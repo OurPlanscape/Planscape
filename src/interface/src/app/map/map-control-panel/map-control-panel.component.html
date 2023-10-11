@@ -1,8 +1,8 @@
 <div class="controls-container">
   <h1><b>Map Control Panel</b></h1>
-  <div class="region-wrapper" *ngIf="showRegion">
+  <div class="region-wrapper">
     <div>Region</div>
-    <app-region-dropdown></app-region-dropdown>
+    <app-region-dropdown [disabled]="disableRegion"></app-region-dropdown>
   </div>
 
   <div *ngIf="mapHasDataLayer" class="title-container">

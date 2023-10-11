@@ -13,7 +13,9 @@
     [mapViewOptions]="mapViewOptions$ | async"
     [selectedMap]="selectedMap$ | async"
     [selectedMapOpacity]="getOpacityForSelectedMap() | async"
-    [showRegion]="!planId"
+    [disableRegion]="
+      !!planId || selectedAreaCreationAction !== AreaCreationAction.NONE
+    "
     (changeBaseLayer)="changeBaseLayer($event)"
     (changeBoundaryLayer)="toggleBoundaryLayer($event)"
     (changeConditionLayer)="changeConditionsLayer($event)"
