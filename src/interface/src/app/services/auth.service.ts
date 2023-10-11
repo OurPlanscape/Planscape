@@ -104,9 +104,9 @@ export class AuthService {
         key: token,
       })
       .pipe(
-        take(1),
-        map((result: any) => {
-          return result;
+        map((_) => true),
+        catchError((error: Error) => {
+          return of(false);
         })
       );
   }
