@@ -90,7 +90,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
-      scrollWheelZoom: false,
+      scrollWheelZoom: true,
       attributionControl: this.showAttributionAndZoom,
     });
 
