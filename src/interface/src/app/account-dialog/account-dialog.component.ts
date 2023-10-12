@@ -109,7 +109,6 @@ export class AccountDialogComponent implements OnInit {
         },
         (err: any) => {
           this.error = Object.values(err.error);
-          console.log("this error is what...?", this.error);
           this.disableChangeButton = false;
         }
       );
