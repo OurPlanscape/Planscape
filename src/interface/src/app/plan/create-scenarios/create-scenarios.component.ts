@@ -111,7 +111,7 @@ export class CreateScenariosComponent implements OnInit {
             ],
             // Minimum distance from road allowed for planning area
             minDistanceFromRoad: [
-              1000,
+              800,
               [Validators.min(0), Validators.required],
             ],
             // Maximum area to be treated in acres
@@ -430,6 +430,7 @@ export class CreateScenariosComponent implements OnInit {
       );
     }
   }
+
   /**
    * Converts each feature found in a GeoJSON into individual GeoJSONs, else
    * returns the original GeoJSON, which may result in an error upon project area creation.
