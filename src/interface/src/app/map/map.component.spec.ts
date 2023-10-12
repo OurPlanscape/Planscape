@@ -818,7 +818,7 @@ describe('MapComponent', () => {
     it('getOpacityForSelectedMap gets opacity for selected map', () => {
       component.maps[0].config.dataLayerConfig.opacity = 0.5;
 
-      component.getOpacityForSelectedMap$.subscribe((opacity) => {
+      component.selectedMapOpacity$.subscribe((opacity) => {
         expect(opacity).toEqual(0.5);
       });
     });
