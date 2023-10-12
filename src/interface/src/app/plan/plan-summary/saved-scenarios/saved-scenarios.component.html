@@ -32,12 +32,7 @@
         <ng-container matColumnDef="projectAreas">
           <mat-header-cell *matHeaderCellDef>Areas</mat-header-cell>
           <mat-cell *matCellDef="let element; dataSource: scenarios">
-            {{
-              element.scenario_result &&
-              element.scenario_result.result.features.length
-                ? element.scenario_result.result.features.length
-                : '--'
-            }}
+            {{ element?.scenario_result?.result?.features?.length || '--' }}
           </mat-cell>
         </ng-container>
 
@@ -47,7 +42,7 @@
           <mat-cell *matCellDef="let element; dataSource: scenarios">
             {{
               element.scenario_result &&
-              element.scenario_result.result.features.length
+              element.scenario_result.result?.features?.length
                 ? (calculateTotals(element.scenario_result).acres | number)
                 : '--'
             }}
@@ -62,7 +57,7 @@
             *matCellDef="let element; dataSource: scenarios">
             {{
               element.scenario_result &&
-              element.scenario_result.result.features.length
+              element.scenario_result.result?.features?.length
                 ? (calculateTotals(element.scenario_result).estimatedCost
                   | currencyInK: '1.0-0')
                 : '--'
