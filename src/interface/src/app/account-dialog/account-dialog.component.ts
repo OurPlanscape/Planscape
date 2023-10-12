@@ -86,11 +86,6 @@ export class AccountDialogComponent implements OnInit {
     this.authService.logout().pipe(take(1)).subscribe();
   }
 
-  rewriteBackendError(resp: any): void {
-    // rewrite raw error from backend...?
-
-  }
-
   savePassword(): void {
     if (this.changePasswordForm.invalid) return;
 
@@ -108,11 +103,13 @@ export class AccountDialogComponent implements OnInit {
           this.disableChangeButton = false;
           this.error = null;
           this.snackbar.open('Updated password successfully', undefined, {
-            duration: 3000,
+            duration: 10000,
+            verticalPosition: 'top',
           });
         },
         (err: any) => {
-          this.error = this.rewriteBackendError(err);;
+          this.error = Object.values(err.error);
+          console.log("this error is what...?", this.error);
           this.disableChangeButton = false;
         }
       );
@@ -147,17 +144,6 @@ export class AccountDialogComponent implements OnInit {
       );
   }
 
-  // private passwordsMatchValidator(group: AbstractControl) {
-  //   console.log('is this even being called?');
-  //   const password1 = group.get('newPassword1')?.value;
-  //   const password2 = group.get('newPassword2')?.value;
-  //   if (password1 === password2 ) {
-  //     this.changePasswordForm.setErrors({validationError: "passwords dont match"})
-  //   }
-
-  //   return password1 === password2 ? null : { passwordsNotEqual: true };
-  // }
-
   openDeleteAccountDialog(): void {
     this.dialog
       .open(DeleteAccountDialogComponent, {
@@ -175,18 +161,6 @@ export class AccountDialogComponent implements OnInit {
   }
 }
 
-//  const passwordsMatchValidator: ValidatorFn = ( formControls: AbstractControl): ValidationErrors | null => {
-//   const password1 = formControls.value.currentPassword;
-//   const password2 = formControls.value.newPassword1;
-
-//   console.log("what is group?", formControls);
-//   console.log("what is pw1?", password1);
-//   console.log("what is pw2?", password2);
-//   console.log("what is pw1?", password1);
-
-//   return password1 === password2 ?  null : { passwordsDontMatch: true };
-// };
-
 const crossFieldValidators: ValidatorFn = (
   formControls: AbstractControl
 ): ValidationErrors | null => {
@@ -197,8 +171,9 @@ const crossFieldValidators: ValidatorFn = (
   const allTheErrors = {
     newPasswordMustBeNew: false,
     newPaswordsMustMatch: false,
-    mustContainSymbol: false,
     mustContainNumber: false,
+    mustContainUpper: false,
+    mustContainLower: false,
   };
 
   if (
@@ -209,18 +184,21 @@ const crossFieldValidators: ValidatorFn = (
     if (currentPassword === password1) {
       allTheErrors.newPasswordMustBeNew = true;
     }
-
     if (password1 !== password2) {
       allTheErrors.newPaswordsMustMatch = true;
     }
+    if (!/[0-9]+/.test(password1)) {
+      allTheErrors.mustContainNumber = true;
+    }
+    if (!/[A-Z]+/.test(password1)) {
+      allTheErrors.mustContainUpper = true;
+    }
+    if (!/[a-z]+/.test(password1)) {
+      allTheErrors.mustContainLower = true;
+    }
   }
-  console.log('group?:', formControls);
-  console.log('all the errors:', allTheErrors);
-
   if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {
-    console.log('any not false?:', allTheErrors);
     return allTheErrors;
   }
-  console.log("no errors found in multivalidator");
   return null;
 };
