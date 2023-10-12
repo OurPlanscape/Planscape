@@ -107,5 +107,4 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
             body=content,
             to=[user.email],
         )
-        if settings.DISABLE_EMAIL is not True:
-            email.send()
+        email.send()
