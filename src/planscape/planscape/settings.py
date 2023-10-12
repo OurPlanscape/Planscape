@@ -351,3 +351,4 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
+DISABLE_EMAIL = True

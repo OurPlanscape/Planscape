@@ -86,10 +86,15 @@ export class AccountDialogComponent implements OnInit {
     this.authService.logout().pipe(take(1)).subscribe();
   }
 
+  convertError(e: any): void {
+    // potentiall rewrite raw error from backend
+    console.log('The error was: ', e);
+  }
+
   savePassword(): void {
     if (this.changePasswordForm.invalid) return;
 
-    this.disableChangeButton = true;
+    this.disableChangeButton = true; // momentarily disable button
     this.authService
       .changePassword(
         this.changePasswordForm.get('currentPassword')?.value,
@@ -106,7 +111,8 @@ export class AccountDialogComponent implements OnInit {
             duration: 3000,
           });
         },
-        (err) => {
+        (err: any) => {
+          this.convertError(err);
           this.error = err;
           this.disableChangeButton = false;
         }
@@ -195,19 +201,25 @@ const crossFieldValidators: ValidatorFn = (
     mustContainNumber: false,
   };
 
-  if (currentPassword.length > 0 && 
+  if (
+    currentPassword.length > 0 &&
     password1.length > 0 &&
-    password2.length > 0) {
+    password2.length > 0
+  ) {
+    if (currentPassword === password1) {
+      allTheErrors.newPasswordMustBeNew = true;
+    }
 
-  if (currentPassword === password1) {
-    allTheErrors.newPasswordMustBeNew = true;
+    if (password1 !== password2) {
+      allTheErrors.newPaswordsMustMatch = true;
+    }
   }
-
-  if (password1 !== password2) {
-    allTheErrors.newPaswordsMustMatch = true;
-  }
-}
   console.log('group?:', formControls);
   console.log('all the errors:', allTheErrors);
-  return allTheErrors;
+
+  if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {
+    console.log('any not false?:', allTheErrors);
+    return allTheErrors;
+  }
+  return null;
 };
