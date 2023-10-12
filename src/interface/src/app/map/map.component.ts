@@ -16,15 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Feature, Geometry } from 'geojson';
-import {
-  BehaviorSubject,
-  map,
-  Observable,
-  Subject,
-  take,
-  takeUntil,
-  of,
-} from 'rxjs';
+import { BehaviorSubject, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
@@ -32,13 +24,10 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanState,
   PopupService,
   SessionService,
 } from '../services';
 import {
-  BoundaryConfig,
-  ConditionsConfig,
   DEFAULT_COLORMAP,
   defaultMapConfig,
   defaultMapViewOptions,
@@ -57,51 +46,73 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
-import { AreaCreationAction, LEGEND } from './map.constants';
+import {
+  AreaCreationAction,
+  ERROR_SNACK_CONFIG,
+  LEGEND,
+} from './map.constants';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
 export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
-  mapManager: MapManager;
+  @Input() planId: string | null = null;
 
-  maps: Map[];
-  mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
-    defaultMapViewOptions()
+  readonly AreaCreationAction = AreaCreationAction;
+  readonly legend: Legend = LEGEND;
+  readonly login_enabled = this.featureService.isFeatureEnabled('login');
+  readonly maps: Map[] = ['map1', 'map2', 'map3', 'map4'].map(
+    (id: string, index: number) => {
+      return {
+        id: id,
+        name: `${index + 1}`,
+        config: defaultMapConfig(),
+      };
+    }
   );
-  mapNameplateWidths: BehaviorSubject<number | null>[] = Array(4)
-    .fill(null)
-    .map((_) => new BehaviorSubject<number | null>(null));
 
-  boundaryConfig$: Observable<BoundaryConfig[] | null>;
-  conditionsConfig$: Observable<ConditionsConfig | null>;
+  mapManager: MapManager;
   regionRecord: string = '';
-  selectedRegion$: Observable<Region | null>;
-  planState$: Observable<PlanState>;
-  selectedMap$: Observable<Map | undefined>;
-
-  existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
-
   loadingIndicators: { [layerName: string]: boolean } = {
     existing_projects: true,
   };
-
-  legend: Legend = LEGEND;
-
-  /** Actions bar variables */
-  readonly AreaCreationAction = AreaCreationAction;
+  selectedAreaCreationAction = AreaCreationAction.NONE;
   showUploader = false;
-  selectedAreaCreationAction: AreaCreationAction = AreaCreationAction.NONE;
-  showConfirmAreaButton$ = new BehaviorSubject(false);
-
-  private readonly destroy$ = new Subject<void>();
-  login_enabled = this.featureService.isFeatureEnabled('login');
   drawingLayer: L.GeoJSON | undefined;
 
-  @Input() planId: string | null = null;
+  mapViewOptions$ = new BehaviorSubject<MapViewOptions>(
+    defaultMapViewOptions()
+  );
+  mapNameplateWidths = Array(4)
+    .fill(null)
+    .map((_) => new BehaviorSubject<number | null>(null));
 
+  boundaryConfig$ = this.mapService.boundaryConfig$
+    .asObservable()
+    .pipe(untilDestroyed(this));
+  conditionsConfig$ = this.mapService.conditionsConfig$.asObservable();
+  selectedRegion$ = this.sessionService.region$.asObservable();
+
+  selectedMap$ = this.mapViewOptions$.pipe(
+    map((options) => this.maps[options.selectedMapIndex])
+  );
+  selectedMapOpacity$ = this.selectedMap$.pipe(
+    map(
+      (selectedMap) =>
+        selectedMap.config.dataLayerConfig.opacity ||
+        this.mapManager.defaultOpacity
+    )
+  );
+  /** Whether the currently selected map has a data layer active. */
+  mapHasDataLayer$ = this.selectedMap$.pipe(
+    map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
+  );
+  existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
+  showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject(['New Plan']);
 
   constructor(
@@ -119,15 +130,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private cdr: ChangeDetectorRef,
     private featureService: FeatureService
   ) {
-    this.boundaryConfig$ = this.mapService.boundaryConfig$.pipe(
-      takeUntil(this.destroy$)
-    );
-    this.conditionsConfig$ = this.mapService.conditionsConfig$.pipe(
-      takeUntil(this.destroy$)
-    );
-    this.selectedRegion$ = this.sessionService.region$.pipe(
-      takeUntil(this.destroy$)
-    );
     this.sessionService.mapViewOptions$
       .pipe(take(1))
       .subscribe((mapViewOptions: MapViewOptions | null) => {
@@ -136,32 +138,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         }
       });
 
-    this.planState$ = this.planService.planState$.pipe(
-      takeUntil(this.destroy$)
-    );
-
     this.mapService
       .getExistingProjects()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((projects: GeoJSON.GeoJSON) => {
         this.existingProjectsGeoJson$.next(projects);
         this.loadingIndicators['existing_projects'] = false;
       });
-
-    this.maps = ['map1', 'map2', 'map3', 'map4'].map(
-      (id: string, index: number) => {
-        return {
-          id: id,
-          name: `${index + 1}`,
-          config: defaultMapConfig(),
-        };
-      }
-    );
-
-    this.selectedMap$ = this.mapViewOptions$.pipe(
-      takeUntil(this.destroy$),
-      map((mapViewOptions) => this.maps[mapViewOptions.selectedMapIndex])
-    );
 
     this.mapManager = new MapManager(
       this.matSnackBar,
@@ -174,7 +157,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.http
     );
     this.mapManager.polygonsCreated$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe(this.showConfirmAreaButton$);
   }
 
@@ -185,7 +168,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.restoreSession();
     /** Save map configurations in the user's session every X ms. */
     this.sessionService.sessionInterval$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(untilDestroyed(this))
       .subscribe((_) => {
         this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
         this.sessionService.setMapConfigs(
@@ -287,8 +270,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   ngOnDestroy(): void {
     this.maps.forEach((map: Map) => map.instance?.remove());
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   private restoreSession() {
@@ -345,12 +326,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.loadPlanAndDrawPlanningArea();
 
     // Renders the selected region on the map.
-    this.selectedRegion$.subscribe((selectedRegion: Region | null) => {
-      var centerCoords = regionMapCenters(selectedRegion!);
-      map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
-      // Region highlighting disabled for now
-      // this.displayRegionBoundary(map, selectedRegion);
-    });
+    this.selectedRegion$
+      .pipe(untilDestroyed(this))
+      .subscribe((selectedRegion: Region | null) => {
+        var centerCoords = regionMapCenters(selectedRegion!);
+        map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
+        // Region highlighting disabled for now
+        // this.displayRegionBoundary(map, selectedRegion);
+      });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
       if (
@@ -456,11 +439,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private createPlan(name: string, shape: GeoJSON.GeoJSON) {
     this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
       if (!selectedRegion) {
-        this.matSnackBar.open('[Error] Please select a region!', 'Dismiss', {
-          duration: 10000,
-          panelClass: ['snackbar-error'],
-          verticalPosition: 'top',
-        });
+        this.matSnackBar.open(
+          '[Error] Please select a region!',
+          'Dismiss',
+          ERROR_SNACK_CONFIG
+        );
         return;
       }
 
@@ -479,11 +462,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
             this.matSnackBar.open(
               '[Error] Unable to create plan due to backend error.',
               'Dismiss',
-              {
-                duration: 10000,
-                panelClass: ['snackbar-error'],
-                verticalPosition: 'top',
-              }
+              ERROR_SNACK_CONFIG
             );
           },
         });
@@ -573,11 +552,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   private showUploadError() {
-    this.matSnackBar.open('[Error] Not a valid shapefile!', 'Dismiss', {
-      duration: 10000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
+    this.matSnackBar.open(
+      '[Error] Not a valid shapefile!',
+      'Dismiss',
+      ERROR_SNACK_CONFIG
+    );
   }
 
   /** Toggles which base layer is shown. */
@@ -631,30 +610,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       map.config.dataLayerConfig.opacity = opacity;
       this.mapManager.changeOpacity(map);
     });
-  }
-
-  /** Return the selected map's data layer opacity. */
-  getOpacityForSelectedMap(): Observable<number | undefined> {
-    var dataLayerConfigOpacityDefined = true;
-    this.selectedMap$.pipe(take(1)).subscribe((selectedMap: any) => {
-      if (selectedMap?.config.dataLayerConfig.opacity == null) {
-        dataLayerConfigOpacityDefined = false;
-      }
-    });
-    if (dataLayerConfigOpacityDefined) {
-      return this.selectedMap$.pipe(
-        map((selectedMap) => selectedMap?.config.dataLayerConfig.opacity)
-      );
-    } else {
-      return of(this.mapManager.defaultOpacity);
-    }
-  }
-
-  /** Whether the currently selected map has a data layer active. */
-  mapHasDataLayer(): Observable<boolean> {
-    return this.selectedMap$.pipe(
-      map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
-    );
   }
 
   /** Change how many maps are displayed in the viewport. */
@@ -728,27 +683,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
           Math.floor(index / 2)
         );
-    }
-  }
-
-  /** Computes the height for the map row at given index (0%, 50%, or 100%).
-   *
-   *  WARNING: This function is run constantly and shouldn't do any heavy lifting!
-   */
-  mapRowHeight(index: number): string {
-    switch (this.mapViewOptions$.getValue().numVisibleMaps) {
-      case 4:
-        return '50%';
-      case 2:
-      case 1:
-      default:
-        if (
-          Math.floor(this.mapViewOptions$.getValue().selectedMapIndex / 2) ===
-          index
-        ) {
-          return '100%';
-        }
-        return '0%';
     }
   }
 
