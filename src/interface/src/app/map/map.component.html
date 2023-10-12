@@ -12,7 +12,7 @@
     [maps]="maps"
     [mapViewOptions]="mapViewOptions$ | async"
     [selectedMap]="selectedMap$ | async"
-    [selectedMapOpacity]="getOpacityForSelectedMap$ | async"
+    [selectedMapOpacity]="selectedMapOpacity$ | async"
     [disableRegion]="
       !!planId || selectedAreaCreationAction !== AreaCreationAction.NONE
     "

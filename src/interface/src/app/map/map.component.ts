@@ -52,6 +52,7 @@ import {
   LEGEND,
 } from './map.constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+
 @UntilDestroy()
 @Component({
   selector: 'app-map',
@@ -99,7 +100,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   selectedMap$ = this.mapViewOptions$.pipe(
     map((options) => this.maps[options.selectedMapIndex])
   );
-  getOpacityForSelectedMap$ = this.selectedMap$.pipe(
+  selectedMapOpacity$ = this.selectedMap$.pipe(
     map(
       (selectedMap) =>
         selectedMap.config.dataLayerConfig.opacity ||
@@ -387,6 +388,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private startLoadingLayerCallback(layerName: string) {
     this.loadingIndicators[layerName] = true;
   }
+
   private doneLoadingLayerCallback(layerName: string) {
     this.loadingIndicators[layerName] = false;
   }
