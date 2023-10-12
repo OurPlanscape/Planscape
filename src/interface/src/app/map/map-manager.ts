@@ -26,6 +26,7 @@ import {
   Region,
   regionMapCenters,
 } from '../types';
+import { ERROR_SNACK_CONFIG } from './map.constants';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -398,11 +399,11 @@ export class MapManager {
   }
 
   private showDrawingError() {
-    this.matSnackBar.open('[Error] Planning areas cannot overlap!', 'Dismiss', {
-      duration: 10000,
-      panelClass: ['snackbar-error'],
-      verticalPosition: 'top',
-    });
+    this.matSnackBar.open(
+      '[Error] Planning areas cannot overlap!',
+      'Dismiss',
+      ERROR_SNACK_CONFIG
+    );
   }
 
   private setUpClickHandler(

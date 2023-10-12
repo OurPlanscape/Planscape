@@ -19,6 +19,7 @@ import {
 interface ScenarioRow extends Scenario {
   selected?: boolean;
 }
+
 @UntilDestroy()
 @Component({
   selector: 'app-saved-scenarios',
@@ -81,6 +82,7 @@ export class SavedScenariosComponent implements OnInit {
         this.scenarios = scenarios;
       });
   }
+
   openConfig(configId?: number): void {
     if (!configId) {
       this.router.navigate(['config', ''], {
@@ -90,6 +92,7 @@ export class SavedScenariosComponent implements OnInit {
       this.router.navigate(['config', configId], { relativeTo: this.route });
     }
   }
+
   viewScenario(): void {
     this.router.navigate(['config', this.highlightedId], {
       relativeTo: this.route,

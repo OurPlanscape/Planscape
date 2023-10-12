@@ -1,3 +1,5 @@
+import { MatSnackBarConfig } from '@angular/material/snack-bar';
+
 export enum AreaCreationAction {
   NONE = 0,
   DRAW = 1,
@@ -25,4 +27,10 @@ export const LEGEND = {
     '#74afa5',
     '#508295',
   ],
+};
+
+export const ERROR_SNACK_CONFIG: MatSnackBarConfig<any> = {
+  duration: 10000,
+  panelClass: ['snackbar-error'],
+  verticalPosition: 'top',
 };
