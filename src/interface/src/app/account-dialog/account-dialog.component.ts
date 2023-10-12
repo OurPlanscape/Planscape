@@ -86,9 +86,9 @@ export class AccountDialogComponent implements OnInit {
     this.authService.logout().pipe(take(1)).subscribe();
   }
 
-  convertError(e: any): void {
-    // potentiall rewrite raw error from backend
-    console.log('The error was: ', e);
+  rewriteBackendError(resp: any): void {
+    // rewrite raw error from backend...?
+
   }
 
   savePassword(): void {
@@ -112,8 +112,7 @@ export class AccountDialogComponent implements OnInit {
           });
         },
         (err: any) => {
-          this.convertError(err);
-          this.error = err;
+          this.error = this.rewriteBackendError(err);;
           this.disableChangeButton = false;
         }
       );
@@ -136,8 +135,9 @@ export class AccountDialogComponent implements OnInit {
           this.editingAccount = false;
           this.disableEditButton = false;
           this.error = null;
-          this.snackbar.open('Updated account successfully', undefined, {
-            duration: 3000,
+
+          this.snackbar.open('Successfully updated password', undefined, {
+            duration: 6000,
           });
         },
         (err) => {
@@ -221,5 +221,6 @@ const crossFieldValidators: ValidatorFn = (
     console.log('any not false?:', allTheErrors);
     return allTheErrors;
   }
+  console.log("no errors found in multivalidator");
   return null;
 };

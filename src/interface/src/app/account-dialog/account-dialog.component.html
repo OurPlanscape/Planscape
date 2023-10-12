@@ -90,18 +90,23 @@
           </button>
         </div>
 
-        <div *ngIf="changePasswordForm.errors?.['newPaswordsMustMatch']">
-          Passwords don't match.
-        </div>
-        <div *ngIf="changePasswordForm.errors?.['newPasswordMustBeNew']">
-          New password should not be the same as the old password.
-        </div>
-        <div *ngIf="changePasswordForm.errors?.['mustContainSymbol']">
-          Passwords should have a symbol.
-        </div>
-        <div *ngIf="changePasswordForm.errors?.['mustContainNumber']">
-          Passwords should contain a number.
-        </div>
+        <mat-error *ngIf="changePasswordForm.errors">
+          <p>Please correct the following errors:</p>
+          <ul>
+            <li *ngIf="changePasswordForm.errors?.['newPaswordsMustMatch']">
+              The new passwords you entered do not match.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['newPasswordMustBeNew']">
+              Your new password should not be the same as your current password.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['mustContainSymbol']">
+              Passwords should have a symbol.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['mustContainNumber']">
+              Passwords should contain a number.
+            </li>
+          </ul>
+        </mat-error>
       </form>
     </ng-container>
 

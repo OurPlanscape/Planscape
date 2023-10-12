@@ -243,6 +243,7 @@ REST_AUTH = {
     "PASSWORD_CHANGE_SERIALIZER": "users.serializers.CustomPasswordChangeSerializer",
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
+    "LANGUAGE_CODE": "en-us",
 }
 
 AUTHENTICATION_BACKENDS = [
