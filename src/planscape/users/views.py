@@ -106,7 +106,6 @@ class CustomUserDetailsView(UserDetailsView):
             current_password = body.get("current_password", None)
             if logged_in_user is None:
                 raise ValueError("Must be logged in")
-
             if not logged_in_user.check_password(current_password):
                 raise ValueError("Invalid password")
             return super().patch(request, *args, **kwargs)
