@@ -237,7 +237,7 @@ export class AuthService {
       );
   }
 
-  updateUser(newUser: User): Observable<User> {
+  updateUser(newUser: User, currentPassword: string): Observable<User> {
     return this.http
       .patch(
         this.API_ROOT.concat('user/'),
@@ -246,6 +246,7 @@ export class AuthService {
           username: newUser.username,
           first_name: newUser.firstName,
           last_name: newUser.lastName,
+          current_password: currentPassword,
         },
         {
           withCredentials: true,

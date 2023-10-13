@@ -338,7 +338,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
       };
 
-      service.updateUser(frontendUser).subscribe((res) => {
+      service.updateUser(frontendUser, 'currentpassword').subscribe((res) => {
         expect(res).toEqual(frontendUser);
         done();
       });
@@ -347,7 +347,10 @@ describe('AuthService', () => {
         BackendConstants.END_POINT + '/dj-rest-auth/user/'
       );
       expect(req.request.method).toEqual('PATCH');
-      expect(req.request.body).toEqual(backendUser);
+      expect(req.request.body).toEqual({
+        ...backendUser,
+        current_password: 'currentpassword',
+      });
       req.flush(backendUser);
       httpTestingController.verify();
     });
@@ -366,7 +369,7 @@ describe('AuthService', () => {
         email: 'test@test.com',
       };
 
-      service.updateUser(frontendUser).subscribe((_) => {
+      service.updateUser(frontendUser, 'currentpassword').subscribe((_) => {
         expect(service.loggedInUser$.value).toEqual(frontendUser);
         done();
       });
