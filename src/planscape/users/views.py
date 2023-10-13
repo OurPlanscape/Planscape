@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
+from dj_rest_auth.views import UserDetailsView
 from users.serializers import UserSerializer
 
 
@@ -92,3 +93,23 @@ def verify_password_reset_token(
         return HttpResponseBadRequest("Invalid token.")
 
     return JsonResponse({"valid": True})
+
+
+# This class exists only to override the PATCH call in dj-rest-auth's UserDetailsView
+class CustomUserDetailsView(UserDetailsView):
+    # require a password validation in addition to checking that the user is logged in
+    # then proceeds with calling the existing method
+    def patch(self, request, *args, **kwargs):
+        try:
+            logged_in_user = get_user(request)
+            body = json.loads(request.body)
+            current_password = body.get("current_password", None)
+            if logged_in_user is None:
+                raise ValueError("Must be logged in")
+
+            if not logged_in_user.check_password(current_password):
+                raise ValueError("Invalid password")
+            return super().patch(request, *args, **kwargs)
+
+        except Exception as e:
+            return HttpResponseBadRequest("Ill-formed request: " + str(e))

@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from dj_rest_auth.registration.views import VerifyEmailView
 from users import views as user_views
+from users.views import CustomUserDetailsView
 
 urlpatterns = [
     path("planscape-backend/admin/", admin.site.urls),
@@ -41,5 +42,10 @@ urlpatterns = [
     path(
         "planscape-backend/dj-rest-auth/registration/account-confirm-email/",
         VerifyEmailView.as_view(),
+    ),
+    path(
+        "planscape-backend/dj-rest-auth/user/",
+        CustomUserDetailsView.as_view(),
+        name="user-details",
     ),
 ]
