@@ -139,9 +139,9 @@
             CANCEL
           </button>
         </div>
-
-        <p>{{ error?.message }}</p>
-        <p *ngIf="error">{{ error?.error | json }}</p>
+        <mat-error>
+          <p *ngIf="error">{{ error?.message }}</p>
+        </mat-error>
       </form>
     </ng-container>
   </ng-template>

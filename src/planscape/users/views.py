@@ -105,9 +105,11 @@ class CustomUserDetailsView(UserDetailsView):
             body = json.loads(request.body)
             current_password = body.get("current_password", None)
             if logged_in_user is None:
-                raise ValueError("Must be logged in")
+                return HttpResponseBadRequest("User is not logged in.", status=401)
             if not logged_in_user.check_password(current_password):
-                raise ValueError("Invalid password")
+                return HttpResponseBadRequest(
+                    "The password was not correct.", status=403
+                )
             return super().patch(request, *args, **kwargs)
 
         except Exception as e:
