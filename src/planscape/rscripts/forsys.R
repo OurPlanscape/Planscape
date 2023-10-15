@@ -14,6 +14,7 @@ library("dplyr")
 library("purrr")
 library("stringi")
 library("glue")
+library("friendlyeval")
 
 readRenviron("planscape/.env")
 
@@ -34,6 +35,21 @@ if (is.null(scenario_id)) {
 }
 
 DEFAULT_COST_PER_ACRE <- 2470
+SHORT_TONS_ACRE_TO_SHORT_TONS_CELL <- 0.2224
+MGC_HA_TO_MGC_CELL <- 0.09
+PREPROCESSING_MULTIPLIERS <- list(
+    total_fuel_exposed_to_fire = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    dead_and_down_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    standing_dead_and_ladder_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    available_standing_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    sawtimber_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    costs_of_potential_treatment_moving_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    costs_of_potential_treatment_moving_sawlogs = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    heavy_fuel_load = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    live_tree_density_30in_dbh = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+    aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
+  )
+
 
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
@@ -119,6 +135,25 @@ get_stands <- function(connection, scenario_id, stand_size) {
   return(result)
 }
 
+preprocess_metrics <- function(metrics, condition_name) {
+  if (condition_name %in% names(PREPROCESSING_MULTIPLIERS)) {
+    multiplier <- PREPROCESSING_MULTIPLIERS[[condition_name]]
+    expr <- glue("{condition_name} * {multiplier}")
+    log_info(
+      paste(
+        condition_name,
+        "is being preprocessed with expr",
+        expr
+      )
+    )
+    metrics <- metrics %>%
+      mutate(
+        !!treat_string_as_col(condition_name) := !!treat_string_as_expr(expr)
+      )
+  }
+  return(metrics)
+}
+
 get_stand_metrics <- function(
     connection,
     condition_id,
@@ -138,7 +173,7 @@ get_stand_metrics <- function(
     stand_ids = stand_ids,
     .con = connection
   )
-  result <- dbGetQuery(connection, query)
+  result <- dbGetQuery(connection, query) %>% preprocess_metrics(condition_name)
   return(result)
 }
 
@@ -275,12 +310,12 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
 
     if (nrow(metric) <= 0) {
       log_warn(
-        paste0(
-          "Condition ",
+        paste(
+          "Condition",
           condition_name,
-          " with id ",
+          "with id",
           condition_id,
-          " yielded an empty result. check underlying data!"
+          "yielded an empty result. check underlying data!"
         )
       )
       metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
@@ -351,10 +386,10 @@ get_min_project_area <- function(scenario) {
   }
 
   log_info(
-    paste0(
-      "Stand size ",
+    paste(
+      "Stand size",
       stand_size,
-      " chosen. Minimum project area is ",
+      "chosen. Minimum project area is",
       min_area
     )
   )
@@ -369,10 +404,10 @@ get_max_treatment_area <- function(scenario) {
   if (!is.null(budget) && cost_per_acre != 0) {
     max_acres <- budget / cost_per_acre
     log_info(
-      paste0(
-        "Budget is configured for ",
+      paste(
+        "Budget is configured for",
         budget,
-        ". Total acres: ",
+        ".Total acres:",
         max_acres
       )
     )
@@ -381,8 +416,8 @@ get_max_treatment_area <- function(scenario) {
 
   if (!is.null(configuration$max_treatment_area_ratio)) {
     log_info(
-      paste0(
-        "Budget is null, using max acres to be treated. Total area: ",
+      paste(
+        "Budget is null, using max acres to be treated. Total area:",
         configuration$max_treatment_area_ratio
       )
     )
