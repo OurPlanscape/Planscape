@@ -137,7 +137,13 @@ export class AccountDialogComponent implements OnInit {
           });
         },
         (err) => {
-          this.error = err;
+          if (err.status == 401) {
+            this.error = {
+              message: 'Your credentials were not entered correctly.',
+            };
+          } else {
+            this.error = { message: 'An unexpected error occured.' };
+          }
           this.disableEditButton = false;
         }
       );
