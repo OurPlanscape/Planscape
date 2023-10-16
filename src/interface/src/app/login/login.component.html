@@ -23,13 +23,6 @@
         </p>
         <mat-card-actions class="login-form-buttons">
           <button
-            mat-stroked-button
-            color="primary"
-            (click)="continueAsGuest()"
-            class="login-form-button">
-            Continue as Guest
-          </button>
-          <button
             mat-flat-button
             color="primary"
             type="submit"
@@ -38,15 +31,26 @@
             Sign in
           </button>
         </mat-card-actions>
+        <div class="login-form-buttons">
+          <button
+            mat-stroked-button
+            color="primary"
+            [routerLink]="'/map'"
+            class="login-form-button">
+            Explore
+          </button>
+          <button
+            mat-stroked-button
+            color="primary"
+            [routerLink]="'/signup'"
+            class="login-form-button">
+            Create an Account
+          </button>
+        </div>
         <mat-error class="mat-error" *ngIf="accountError">
           {{ accountError }}
         </mat-error>
       </form>
-
-      <p class="signup-text">
-        <a href="signup/">Create an account</a>
-        to save your work & collaborate with others
-      </p>
     </div>
 
     <div class="disclaimer-text">
