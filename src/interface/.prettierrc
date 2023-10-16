@@ -1,4 +1,6 @@
-bracketSameLine: true
-htmlWhitespaceSensitivity: "ignore"
-trailingComma: "es5"
-singleQuote: true
+{
+  "bracketSameLine": true,
+  "htmlWhitespaceSensitivity": "css",
+  "trailingComma": "es5",
+  "singleQuote": true
+}
