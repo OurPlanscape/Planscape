@@ -265,8 +265,9 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
 PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
-
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_BACKEND = config(
+    "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
+)
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
