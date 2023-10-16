@@ -117,6 +117,15 @@
             matInput />
         </mat-form-field>
 
+        <mat-form-field>
+          <mat-label>Current password</mat-label>
+          <input
+            type="password"
+            required
+            formControlName="currentPassword"
+            matInput />
+        </mat-form-field>
+
         <div class="button-row">
           <button
             mat-raised-button
@@ -130,9 +139,9 @@
             CANCEL
           </button>
         </div>
-
-        <p>{{ error?.message }}</p>
-        <p *ngIf="error">{{ error?.error | json }}</p>
+        <mat-error>
+          <p *ngIf="error">{{ error?.message }}</p>
+        </mat-error>
       </form>
     </ng-container>
   </ng-template>
