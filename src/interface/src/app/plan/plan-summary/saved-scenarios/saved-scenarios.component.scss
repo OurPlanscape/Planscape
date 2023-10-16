@@ -1,10 +1,6 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-
-@import '../../../../styles.scss';
-
-$color-config: mat.get-color-config($planscape-frontend-theme);
-$primary-palette: map.get($color-config, 'primary');
+@import "../../../../theme";
 
 .name-column {
   justify-content: left;
@@ -14,6 +10,7 @@ mat-header-cell,
 mat-cell {
   justify-content: center;
 }
+
 .saved-scenarios-wrapper {
   position: relative;
 }
@@ -27,7 +24,12 @@ mat-cell {
     $color: mat.get-color-from-palette($primary-palette, 500),
     $amount: 0.9
   );
+
+  mat-cell div.hover-indicator {
+    background-color: mat.get-color-from-palette($primary-palette, 500);
+  }
 }
+
 .mat-card-content {
   padding: 8px;
 }
@@ -77,10 +79,6 @@ mat-cell {
       $color: mat.get-color-from-palette($primary-palette, 500),
       $amount: 0.9
     );
-
-    mat-cell div.hover-indicator {
-      background-color: mat.get-color-from-palette($primary-palette, 500);
-    }
   }
 }
 
