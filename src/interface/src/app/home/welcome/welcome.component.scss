@@ -31,17 +31,19 @@ h1 {
 p {
   margin-bottom: 16px;
 }
+
 .flex {
   display: flex;
   align-items: flex-start;
   gap: 20px;
   padding-top: 10px;
-  padding-bottom: 35px;
+  padding-bottom: 15px;
 }
 
 .explore {
   text-transform: uppercase;
 }
+
 .disclaimer {
   font-size: 13px;
 }
