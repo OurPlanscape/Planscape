@@ -54,6 +54,7 @@ export class AccountDialogComponent implements OnInit {
       firstName: this.fb.control('', Validators.required),
       lastName: this.fb.control('', Validators.required),
       email: this.fb.control('', [Validators.required, Validators.email]),
+      currentPassword: this.fb.control('', [Validators.required]),
     });
   }
 
@@ -117,11 +118,14 @@ export class AccountDialogComponent implements OnInit {
     this.disableEditButton = true;
 
     this.authService
-      .updateUser({
-        firstName: this.editAccountForm.get('firstName')?.value,
-        lastName: this.editAccountForm.get('lastName')?.value,
-        email: this.editAccountForm.get('email')?.value,
-      })
+      .updateUser(
+        {
+          firstName: this.editAccountForm.get('firstName')?.value,
+          lastName: this.editAccountForm.get('lastName')?.value,
+          email: this.editAccountForm.get('email')?.value,
+        },
+        this.editAccountForm.get('currentPassword')?.value
+      )
       .pipe(take(1))
       .subscribe(
         (_) => {
@@ -133,7 +137,13 @@ export class AccountDialogComponent implements OnInit {
           });
         },
         (err) => {
-          this.error = err;
+          if (err.status == 401) {
+            this.error = {
+              message: 'Your credentials were not entered correctly.',
+            };
+          } else {
+            this.error = { message: 'An unexpected error occured.' };
+          }
           this.disableEditButton = false;
         }
       );
