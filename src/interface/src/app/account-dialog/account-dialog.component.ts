@@ -4,6 +4,8 @@ import {
   FormBuilder,
   FormGroup,
   Validators,
+  ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -47,7 +49,7 @@ export class AccountDialogComponent implements OnInit {
         newPassword2: this.fb.control('', [Validators.required]),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validators: [crossFieldValidators],
       }
     );
     this.editAccountForm = this.fb.group({
@@ -88,7 +90,7 @@ export class AccountDialogComponent implements OnInit {
   savePassword(): void {
     if (this.changePasswordForm.invalid) return;
 
-    this.disableChangeButton = true;
+    this.disableChangeButton = true; // momentarily disable button
     this.authService
       .changePassword(
         this.changePasswordForm.get('currentPassword')?.value,
@@ -102,11 +104,12 @@ export class AccountDialogComponent implements OnInit {
           this.disableChangeButton = false;
           this.error = null;
           this.snackbar.open('Updated password successfully', undefined, {
-            duration: 3000,
+            duration: 10000,
+            verticalPosition: 'top',
           });
         },
-        (err) => {
-          this.error = err;
+        (err: any) => {
+          this.error = Object.values(err.error);
           this.disableChangeButton = false;
         }
       );
@@ -132,8 +135,9 @@ export class AccountDialogComponent implements OnInit {
           this.editingAccount = false;
           this.disableEditButton = false;
           this.error = null;
-          this.snackbar.open('Updated account successfully', undefined, {
-            duration: 3000,
+
+          this.snackbar.open('Successfully updated password', undefined, {
+            duration: 6000,
           });
         },
         (err) => {
@@ -147,12 +151,6 @@ export class AccountDialogComponent implements OnInit {
           this.disableEditButton = false;
         }
       );
-  }
-
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('newPassword1')?.value;
-    const password2 = group.get('newPassword2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
   }
 
   openDeleteAccountDialog(): void {
@@ -171,3 +169,45 @@ export class AccountDialogComponent implements OnInit {
       });
   }
 }
+
+const crossFieldValidators: ValidatorFn = (
+  formControls: AbstractControl
+): ValidationErrors | null => {
+  const currentPassword = formControls.value.currentPassword;
+  const password1 = formControls.value.newPassword1;
+  const password2 = formControls.value.newPassword2;
+
+  const allTheErrors = {
+    newPasswordMustBeNew: false,
+    newPaswordsMustMatch: false,
+    mustContainNumber: false,
+    mustContainUpper: false,
+    mustContainLower: false,
+  };
+
+  if (
+    currentPassword.length > 0 &&
+    password1.length > 0 &&
+    password2.length > 0
+  ) {
+    if (currentPassword === password1) {
+      allTheErrors.newPasswordMustBeNew = true;
+    }
+    if (password1 !== password2) {
+      allTheErrors.newPaswordsMustMatch = true;
+    }
+    if (!/[0-9]+/.test(password1)) {
+      allTheErrors.mustContainNumber = true;
+    }
+    if (!/[A-Z]+/.test(password1)) {
+      allTheErrors.mustContainUpper = true;
+    }
+    if (!/[a-z]+/.test(password1)) {
+      allTheErrors.mustContainLower = true;
+    }
+  }
+  if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {
+    return allTheErrors;
+  }
+  return null;
+};

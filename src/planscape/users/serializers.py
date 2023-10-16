@@ -9,6 +9,7 @@ from dj_rest_auth.serializers import (
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
 )
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.template import Context

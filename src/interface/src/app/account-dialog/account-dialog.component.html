@@ -56,12 +56,6 @@
             required
             formControlName="newPassword1"
             matInput />
-          <mat-error
-            *ngIf="
-              changePasswordForm.get('newPassword1')?.hasError('minlength')
-            ">
-            Password must contain at least 8 characters.
-          </mat-error>
         </mat-form-field>
 
         <mat-form-field>
@@ -71,9 +65,6 @@
             required
             formControlName="newPassword2"
             matInput />
-          <mat-error *ngIf="changePasswordForm.hasError('passwordsNotEqual')">
-            Passwords must match.
-          </mat-error>
         </mat-form-field>
 
         <div class="button-row">
@@ -89,9 +80,36 @@
             CANCEL
           </button>
         </div>
-
-        <p>{{ error?.message }}</p>
-        <p *ngIf="error">{{ error?.error | json }}</p>
+        <!-- Unified error output -->
+        <mat-error *ngIf="changePasswordForm.errors || error">
+          <p>Please correct the following errors:</p>
+          <ul>
+            <li *ngFor="let e of error">
+              {{ e }}
+            </li>
+            <li
+              *ngIf="
+                changePasswordForm.get('newPassword1')?.hasError('minlength')
+              ">
+              Password must contain at least 8 characters.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['newPaswordsMustMatch']">
+              The new passwords you entered do not match.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['newPasswordMustBeNew']">
+              Your new password should not be the same as your current password.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['mustContainNumber']">
+              Your new password must contain a number.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['mustContainUpper']">
+              Your new password must contain at least one uppercase character.
+            </li>
+            <li *ngIf="changePasswordForm.errors?.['mustContainLower']">
+              Your new password must contain at least one lowercase character.
+            </li>
+          </ul>
+        </mat-error>
       </form>
     </ng-container>
 
