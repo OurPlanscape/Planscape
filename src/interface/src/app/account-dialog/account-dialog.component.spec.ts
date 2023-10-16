@@ -131,6 +131,42 @@ describe('AccountDialogComponent', () => {
     );
   });
 
+  // Password Validations
+  it('valid new passwords displays no error', () => {
+    console.log("what does the element ref provide?:", fixture.elementRef);
+    component.changePasswordForm.setValue({
+      currentPassword: 'someOldPassword',
+      newPassword1: 'TestPass1234',
+      newPassword2: 'TestPass1234',
+    });
+    fixture.detectChanges();
+    expect(component.changePasswordForm.invalid).toBeFalsy(); 
+    expect(component.changePasswordForm.errors).toBeNull();
+  });
+  it('a new password matching current password registers an error', () => {
+    component.changePasswordForm.setValue({
+      currentPassword: 'TestPass1234',
+      newPassword1: 'TestPass1234',
+      newPassword2: 'TestPass1234',
+    });
+    fixture.detectChanges();
+    expect(component.changePasswordForm.invalid).toBeTruthy();
+    expect(component.changePasswordForm.errors).toBeTruthy();
+    expect(component.changePasswordForm.errors?.['newPasswordMustBeNew']).toBeTrue();
+  });
+  it('a password without numbers or uppercase letters registers multiple error', () => {
+    component.changePasswordForm.setValue({
+      currentPassword: 'TestPass1234',
+      newPassword1: 'abcdefghi',
+      newPassword2: 'abcdefghi',
+    });
+    fixture.detectChanges();
+    expect(component.changePasswordForm.invalid).toBeTruthy();
+    expect(component.changePasswordForm.errors).toBeTruthy();
+    expect(component.changePasswordForm.errors?.['mustContainNumber']).toBeTrue();
+    expect(component.changePasswordForm.errors?.['mustContainUpper']).toBeTrue();
+  });
+
   it('deleting account opens dialog', () => {
     const dialog = fixture.debugElement.injector.get(MatDialog);
     const router = fixture.debugElement.injector.get(Router);
