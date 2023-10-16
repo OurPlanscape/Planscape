@@ -36,11 +36,16 @@ h2 {
 
 .table-row {
   cursor: pointer;
+
+  &:hover {
+    background-color: #f1f5fd;
+  }
+
 }
 
 .selected .mat-column-name,
 .selected {
-  background-color: #f1f5fd;
+
   border-left-color: #3b78e7;
 }
 
