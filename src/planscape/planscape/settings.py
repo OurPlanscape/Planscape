@@ -167,7 +167,7 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
     {
-        "NAME": "password_policies.password_validation.ReusedPasswordValidator",
+        "NAME": "users.reused_password_validator.CustomReusedPasswordValidator",
         "OPTIONS": {
             "record_length": 10,
         },
@@ -243,6 +243,7 @@ REST_AUTH = {
     "PASSWORD_CHANGE_SERIALIZER": "users.serializers.CustomPasswordChangeSerializer",
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
+    "LANGUAGE_CODE": "en-us",
 }
 
 AUTHENTICATION_BACKENDS = [
