@@ -10,7 +10,7 @@ export const NOTE_SAVE_INTERVAL = 5000;
 
 export const POLLING_INTERVAL = 3000;
 
-export const STAND_SIZES = ['MEDIUM', 'LARGE'];
+export const STAND_SIZES = ['SMALL', 'MEDIUM', 'LARGE'];
 
 const SQUARE_METERS_PER_ACRE = 0.0002471054;
 
@@ -19,6 +19,7 @@ export function calculateAcres(planningArea: GeoJSON.GeoJSON) {
   const acres = squareMeters * SQUARE_METERS_PER_ACRE;
   return Math.round(acres);
 }
+
 export function parseResultsToProjectAreas(
   results: ScenarioResult
 ): ProjectAreaReport[] {
