@@ -1,12 +1,19 @@
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
-import { BehaviorSubject } from 'rxjs';
 
 import { AuthService } from '../services';
 import { LoginComponent } from './login.component';
+import { RouterTestingModule } from '@angular/router/testing';
+import { of } from 'rxjs';
+import { Location } from '@angular/common';
+
+@Component({
+  template: '',
+})
+class DummyComponent {}
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -14,18 +21,22 @@ describe('LoginComponent', () => {
   let fakeAuthService: jasmine.SpyObj<AuthService>;
 
   beforeEach(async () => {
-    const routerStub = () => ({ navigate: (array: string[]) => ({}) });
     fakeAuthService = jasmine.createSpyObj<AuthService>('AuthService', [
       'login',
     ]);
     TestBed.configureTestingModule({
-      imports: [FormsModule, ReactiveFormsModule],
+      imports: [
+        FormsModule,
+        ReactiveFormsModule,
+        RouterTestingModule.withRoutes([
+          { path: 'home', component: DummyComponent },
+          { path: 'map', component: DummyComponent },
+          { path: 'signup', component: DummyComponent },
+        ]),
+      ],
       declarations: [LoginComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [
-        { provide: Router, useFactory: routerStub },
-        { provide: AuthService, useValue: fakeAuthService },
-      ],
+      providers: [{ provide: AuthService, useValue: fakeAuthService }],
     });
     fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
@@ -45,11 +56,7 @@ describe('LoginComponent', () => {
     it('calls auth service if form is valid', () => {
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password')?.setValue('password');
-
-      const successEmitter = new BehaviorSubject<any>({});
-
-      fakeAuthService.login.and.returnValue(successEmitter);
-
+      fakeAuthService.login.and.returnValue(of(true));
       component.login();
 
       expect(fakeAuthService.login).toHaveBeenCalledOnceWith(
@@ -62,7 +69,7 @@ describe('LoginComponent', () => {
   describe('signup', () => {
     it('navigates to signup page', () => {
       const routerStub: Router = fixture.debugElement.injector.get(Router);
-      spyOn(routerStub, 'navigate').and.callThrough();
+      spyOn(routerStub, 'navigate');
 
       component.signup();
 
@@ -70,20 +77,36 @@ describe('LoginComponent', () => {
     });
   });
 
-  describe('continue as guest', () => {
-    it('navigates to home page', () => {
-      const routerStub: Router = fixture.debugElement.injector.get(Router);
-      spyOn(routerStub, 'navigate').and.callThrough();
+  describe('explore', () => {
+    it('navigates to map', async () => {
+      fixture.detectChanges();
+      const button = fixture.debugElement.query(By.css('[data-id="explore"]'));
+      await button.nativeElement.click();
 
-      component.continueAsGuest();
+      // check current URL
+      const location = TestBed.inject(Location);
+      fixture.detectChanges();
+      expect(location.path()).toEqual('/map');
+    });
+  });
+  describe('create account', () => {
+    it('navigates to signup', async () => {
+      fixture.detectChanges();
+      const button = fixture.debugElement.query(
+        By.css('[data-id="create-account"]')
+      );
+      await button.nativeElement.click();
 
-      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['home']);
+      // check current URL
+      const location = TestBed.inject(Location);
+      fixture.detectChanges();
+      expect(location.path()).toEqual('/signup');
     });
   });
 
   it('forget password navigates to reset', async () => {
     const routerStub: Router = fixture.debugElement.injector.get(Router);
-    spyOn(routerStub, 'navigate').and.callThrough();
+    spyOn(routerStub, 'navigate');
 
     const forgetPasswordLink: HTMLElement = fixture.debugElement.query(
       By.css('.forget-password-link')
