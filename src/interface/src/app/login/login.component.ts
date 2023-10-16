@@ -55,8 +55,4 @@ export class LoginComponent {
   signup() {
     this.router.navigate(['signup']);
   }
-
-  continueAsGuest() {
-    this.router.navigate(['home']);
-  }
 }
