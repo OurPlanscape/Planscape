@@ -7,9 +7,9 @@ import { AuthService } from 'src/app/services';
 
 import { PlanService } from '../../services/plan.service';
 import { PlanPreview } from '../../types/plan.types';
-import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 import { calculateAcres } from '../../plan/plan-helpers';
 import { Router } from '@angular/router';
+import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 
 interface PlanRow extends PlanPreview {
   totalAcres: number;
@@ -70,10 +70,12 @@ export class PlanTableComponent implements OnInit {
       return;
     }
     const planIdsToDelete: string[] = [String(this.selectedPlan.id)];
-    const dialogRef: MatDialogRef<DeletePlanDialogComponent> = this.dialog.open(
-      DeletePlanDialogComponent,
+    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
+      DeleteDialogComponent,
       {
-        data: planIdsToDelete,
+        data: {
+          item: '"' + this.selectedPlan.name + '"',
+        },
       }
     );
     dialogRef

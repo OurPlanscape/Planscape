@@ -17,7 +17,6 @@ import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overvie
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { ScenarioConfigurationsComponent } from './plan-summary/scenario-configurations/scenario-configurations.component';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
-import { DeletePlanDialogComponent } from '../home/plan-table/delete-plan-dialog/delete-plan-dialog.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { FeaturesModule } from '../features/features.module';
@@ -43,7 +42,6 @@ import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-t
     SummaryPanelComponent,
     ScenarioConfigurationsComponent,
     PlanUnavailableComponent,
-    DeletePlanDialogComponent,
     PlanOverviewComponent,
     CreateScenariosComponent,
     PlanNavigationBarComponent,
