@@ -14,12 +14,15 @@ import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanService } from 'src/app/services';
 import { Region } from 'src/app/types';
-
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
 import { CurrencyInKPipe } from '../../../pipes/currency-in-k.pipe';
 import { CurrencyPipe } from '@angular/common';
+import { MatCell } from '@angular/material/table';
+
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -69,6 +72,7 @@ describe('SavedScenariosComponent', () => {
       declarations: [SavedScenariosComponent, CurrencyInKPipe],
       providers: [
         CurrencyPipe,
+        MatCell,
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: PlanService, useValue: fakePlanService },
       ],
@@ -99,9 +103,22 @@ describe('SavedScenariosComponent', () => {
 
   it('should delete selected scenarios', () => {
     fixture.detectChanges();
-    component.highlightedId = '1';
+    component.highlightedScenarioRow = {
+      id: '1',
+      name: 'name',
+      planning_area: '1',
+      configuration: {
+        max_budget: 200,
+      },
+    };
 
-    component.deleteSelectedScenarios();
+    const dialog = TestBed.inject(MatDialog);
+    spyOn(dialog, 'open').and.returnValue({
+      afterClosed: () => of(true),
+    } as MatDialogRef<DeleteDialogComponent>);
+
+    component.confirmDeleteScenario();
+    fixture.detectChanges();
 
     expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
   });

@@ -9,8 +9,8 @@ import { PlanPreview, Region } from 'src/app/types';
 
 import { AuthService } from '../../services/auth.service';
 import { PlanService } from '../../services/plan.service';
-import { DeletePlanDialogComponent } from './delete-plan-dialog/delete-plan-dialog.component';
 import { PlanTableComponent } from './plan-table.component';
+import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: PlanPreview = {
@@ -104,12 +104,9 @@ describe('PlanTableComponent', () => {
       component.selectedPlan = { ...fakePlan1, totalAcres: 100 };
       component.deletePlan();
 
-      expect(dialogSpy.open).toHaveBeenCalledOnceWith(
-        DeletePlanDialogComponent,
-        {
-          data: ['1'],
-        }
-      );
+      expect(dialogSpy.open).toHaveBeenCalledOnceWith(DeleteDialogComponent, {
+        data: { item: '"somePlan"' },
+      });
     });
   });
 
