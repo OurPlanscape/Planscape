@@ -42,3 +42,7 @@ form {
   gap: 12px;
   justify-content: start;
 }
+
+.no-user {
+  margin-top: -20px; // to reduce the gap by flex .account-dialog
+}
