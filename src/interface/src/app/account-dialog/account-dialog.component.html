@@ -16,7 +16,7 @@
       <h2>••••••••••••••••••••••••••</h2>
     </div>
 
-    <div class="button-row" *ngIf="user$ | async">
+    <div class="button-row" *ngIf="user$ | async; else noUser">
       <button mat-raised-button color="primary" (click)="editAccount()">
         EDIT ACCOUNT
       </button>
@@ -34,6 +34,14 @@
 
       <button mat-raised-button (click)="logout()">SIGN OUT</button>
     </div>
+    <ng-template #noUser>
+      <p class="no-user">
+        Already have an account? Click
+        <a routerLink="/login">here</a>
+        to login or
+        <a routerLink="/signup">create an account.</a>
+      </p>
+    </ng-template>
   </ng-container>
 
   <ng-template #form>
