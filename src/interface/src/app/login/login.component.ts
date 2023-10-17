@@ -40,7 +40,7 @@ export class LoginComponent {
     const password: string = this.form.get('password')?.value;
 
     this.authService.login(email, password).subscribe(
-      (_) => this.router.navigate(['map']),
+      (_) => this.router.navigate(['home']),
       (error) => {
         const errorMsg: string = error.error.global[0];
         if (errorMsg === 'E-mail is not verified.') {
@@ -54,9 +54,5 @@ export class LoginComponent {
 
   signup() {
     this.router.navigate(['signup']);
-  }
-
-  continueAsGuest() {
-    this.router.navigate(['home']);
   }
 }

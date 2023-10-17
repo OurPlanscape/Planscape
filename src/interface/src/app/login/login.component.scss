@@ -55,9 +55,6 @@ p {
   line-height: 20px;
   text-align: center;
 
-  &.signup-text {
-    margin-top: 14px;
-  }
 }
 
 .disclaimer-text {
@@ -86,11 +83,11 @@ p {
 
 .info-text-container {
   box-sizing: border-box;
-  display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 145px 120px 120px 82px;
+  padding: 70px 120px 50px 82px;
   width: 50%;
+  overflow: scroll;
 }
 
 h3 {
