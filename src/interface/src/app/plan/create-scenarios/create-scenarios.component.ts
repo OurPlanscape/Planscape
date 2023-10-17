@@ -333,6 +333,10 @@ export class CreateScenariosComponent implements OnInit {
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
+    this.formGroups.forEach((form) => form.markAllAsTouched());
+    if (this.formGroups.some((form) => form.invalid)) {
+      return;
+    }
     this.generatingScenario = true;
     // TODO Add error catching for failed scenario creation
     this.planService
