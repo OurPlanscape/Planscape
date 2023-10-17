@@ -64,6 +64,16 @@ describe('LoginComponent', () => {
         'password'
       );
     });
+
+    it('redirects to `home` if login successful', () => {
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+      component.form.get('email')?.setValue('test@test.com');
+      component.form.get('password')?.setValue('password');
+      fakeAuthService.login.and.returnValue(of(true));
+      component.login();
+      expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
+    });
   });
 
   describe('signup', () => {
