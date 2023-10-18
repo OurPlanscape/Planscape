@@ -53,6 +53,7 @@ import { PasswordResetComponent } from './password-reset/password-reset.componen
 import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { MapModule } from './map/map.module';
+import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
 
 @NgModule({
   declarations: [
@@ -78,6 +79,7 @@ import { MapModule } from './map/map.module';
     PasswordResetComponent,
     ConfirmationDialogComponent,
     AccountValidationComponent,
+    DeleteDialogComponent,
   ],
   imports: [
     AppRoutingModule,
