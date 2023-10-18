@@ -15,6 +15,8 @@ import {
   parseResultsToTotals,
   POLLING_INTERVAL,
 } from '../../plan-helpers';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -36,7 +38,7 @@ export class SavedScenariosComponent implements OnInit {
     this planning area can also view all the scenarios within it.
   `;
 
-  highlightedId: string | null = null;
+  highlightedScenarioRow: ScenarioRow | null = null;
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
     'name',
@@ -59,7 +61,8 @@ export class SavedScenariosComponent implements OnInit {
     private planService: PlanService,
     private route: ActivatedRoute,
     private router: Router,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -94,19 +97,36 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   viewScenario(): void {
-    this.router.navigate(['config', this.highlightedId], {
+    this.router.navigate(['config', this.highlightedScenarioRow?.id], {
       relativeTo: this.route,
     });
   }
 
-  highlightScenario(id: string): void {
-    this.highlightedId = id;
+  highlightScenario(row: ScenarioRow): void {
+    this.highlightedScenarioRow = row;
   }
 
-  deleteSelectedScenarios(): void {
-    // Bulk scenario deletion isn't possible with the current UI,
-    // but logic to make 'scenario' plural if more than one scenario is deleted was kept from legacy code
-    this.planService.deleteScenarios([this.highlightedId!]).subscribe({
+  confirmDeleteScenario(): void {
+    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
+      DeleteDialogComponent,
+      {
+        data: {
+          name: '"' + this.highlightedScenarioRow?.name + '"',
+        },
+      }
+    );
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.deleteScenario([this.highlightedScenarioRow?.id!]);
+        }
+      });
+  }
+
+  private deleteScenario(ids: string[]) {
+    this.planService.deleteScenarios(ids).subscribe({
       next: (deletedIds) => {
         this.snackbar.open(
           `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`
