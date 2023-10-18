@@ -14,6 +14,10 @@ import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import { ColormapConfig } from './../../../types/legend.types';
 import { SetPrioritiesComponent } from './set-priorities.component';
+import { Component } from '@angular/core';
+
+@Component({ selector: 'app-scenario-tooltip', template: '' })
+class ScenarioTooltipMockComponent {}
 
 describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
@@ -120,7 +124,7 @@ describe('SetPrioritiesComponent', () => {
         ReactiveFormsModule,
         SharedModule,
       ],
-      declarations: [SetPrioritiesComponent],
+      declarations: [SetPrioritiesComponent, ScenarioTooltipMockComponent],
       providers: [
         FormBuilder,
         {
