@@ -74,7 +74,7 @@ export class PlanTableComponent implements OnInit {
       DeleteDialogComponent,
       {
         data: {
-          item: '"' + this.selectedPlan.name + '"',
+          name: '"' + this.selectedPlan.name + '"',
         },
       }
     );

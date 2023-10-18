@@ -105,7 +105,7 @@ describe('PlanTableComponent', () => {
       component.deletePlan();
 
       expect(dialogSpy.open).toHaveBeenCalledOnceWith(DeleteDialogComponent, {
-        data: { item: '"somePlan"' },
+        data: { name: '"somePlan"' },
       });
     });
   });
