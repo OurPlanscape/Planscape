@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { AuthService } from './../services';
 import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
+import { timeout } from 'rxjs';
 
 @Component({
   selector: 'app-signup',
@@ -52,6 +53,8 @@ export class SignupComponent {
   signup() {
     if (this.submitted) return;
 
+    this.submitted = true;
+
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
@@ -59,18 +62,27 @@ export class SignupComponent {
     const lastName: string = this.form.get('lastName')?.value;
     this.authService
       .signup(email, password1, password2, firstName, lastName)
+      .pipe(timeout(10000))
       .subscribe({
         next: () => {
-          this.submitted = true;
-          this.router.navigate(['home']);
           const dialogConfig = {
             data: email,
           };
           this.dialog.open(ValidationEmailDialogComponent, dialogConfig);
+
+          this.router.navigate(['home']);
         },
         error: (error: HttpErrorResponse) => {
-          this.errors = Object.values(error.error);
           this.submitted = false;
+          if (error.status == 400) {
+            this.errors = Object.values(error.error);
+          } else if (error.status == 500) {
+            this.errors = Object.values([
+              'An unepxected server error has occured.',
+            ]);
+          } else {
+            this.errors = Object.values(['An unepxected error has occured.']);
+          }
         },
       });
   }
