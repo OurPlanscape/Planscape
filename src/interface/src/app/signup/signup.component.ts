@@ -78,10 +78,10 @@ export class SignupComponent {
             this.errors = Object.values(error.error);
           } else if (error.status == 500) {
             this.errors = Object.values([
-              'An unepxected server error has occured.',
+              'An unexpected server error has occured.',
             ]);
           } else {
-            this.errors = Object.values(['An unepxected error has occured.']);
+            this.errors = Object.values(['An unexpected error has occured.']);
           }
         },
       });
