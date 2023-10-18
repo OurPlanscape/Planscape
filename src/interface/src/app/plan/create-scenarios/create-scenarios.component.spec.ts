@@ -142,10 +142,12 @@ describe('CreateScenariosComponent', () => {
       // spy on polling to avoid dealing with async and timeouts
       spyOn(component, 'pollForChanges');
       fixture.detectChanges();
+      component.selectedTabIndex = 0;
     });
 
     it('should emit create scenario event on Generate button click', async () => {
       spyOn(component, 'createScenario');
+
       component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
       component.formGroups[1]
         .get('selectedQuestion')

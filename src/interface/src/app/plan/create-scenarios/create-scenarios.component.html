@@ -14,7 +14,9 @@
       </div>
     </div>
     <div class="tab-container">
-      <mat-tab-group [selectedIndex]="selectedTabIndex">
+      <mat-tab-group
+        [selectedIndex]="selectedTabIndex"
+        [animationDuration]="tabAnimation">
         <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
@@ -54,6 +56,7 @@
         </mat-tab>
         <mat-tab label="Results">
           <ng-container [ngSwitch]="scenarioState">
+            <ng-container *ngSwitchCase="'LOADING'"></ng-container>
             <app-scenario-not-started
               *ngSwitchCase="'NOT_STARTED'"></app-scenario-not-started>
             <app-scenario-pending
