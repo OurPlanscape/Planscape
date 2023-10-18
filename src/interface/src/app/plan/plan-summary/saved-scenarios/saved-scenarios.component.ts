@@ -111,7 +111,7 @@ export class SavedScenariosComponent implements OnInit {
       DeleteDialogComponent,
       {
         data: {
-          item: '"' + this.highlightedScenarioRow?.name + '"',
+          name: '"' + this.highlightedScenarioRow?.name + '"',
         },
       }
     );

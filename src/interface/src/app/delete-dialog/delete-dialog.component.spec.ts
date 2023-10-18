@@ -14,7 +14,7 @@ describe('DeleteDialogComponent', () => {
 
     await TestBed.configureTestingModule({
       providers: [
-        { provide: MAT_DIALOG_DATA, useValue: { data: { item: 'one' } } },
+        { provide: MAT_DIALOG_DATA, useValue: { data: { name: 'one' } } },
         { provide: MatDialogRef, useValue: fakeDialogRef },
       ],
 
