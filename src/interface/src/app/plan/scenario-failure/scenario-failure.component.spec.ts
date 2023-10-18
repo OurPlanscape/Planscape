@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ScenarioFailureComponent } from './scenario-failure.component';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('ScenarioFailureComponent', () => {
   let component: ScenarioFailureComponent;
@@ -9,6 +9,7 @@ describe('ScenarioFailureComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ScenarioFailureComponent],
+      imports: [MatIconModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioFailureComponent);

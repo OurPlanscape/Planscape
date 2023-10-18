@@ -19,10 +19,11 @@ import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
 import { CurrencyInKPipe } from '../../../pipes/currency-in-k.pipe';
 import { CurrencyPipe } from '@angular/common';
-import { MatCell } from '@angular/material/table';
+import { MatTableModule } from '@angular/material/table';
 
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
+import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -67,12 +68,17 @@ describe('SavedScenariosComponent', () => {
         FormsModule,
         HttpClientTestingModule,
         MaterialModule,
+        MatTableModule,
         NoopAnimationsModule,
       ],
-      declarations: [SavedScenariosComponent, CurrencyInKPipe],
+      declarations: [
+        SavedScenariosComponent,
+        CurrencyInKPipe,
+        TypeSafeMatCellDef,
+      ],
       providers: [
         CurrencyPipe,
-        MatCell,
+
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: PlanService, useValue: fakePlanService },
       ],
