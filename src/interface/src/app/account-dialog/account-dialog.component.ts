@@ -84,7 +84,7 @@ export class AccountDialogComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout().pipe(take(1)).subscribe();
+    this.authService.logout().pipe(take(1)).subscribe((_) => this.close());
   }
 
   savePassword(): void {
