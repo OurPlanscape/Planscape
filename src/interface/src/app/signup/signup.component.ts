@@ -11,7 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { AuthService } from './../services';
 import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
-import { timeout } from 'rxjs';
+import { TimeoutError, timeout } from 'rxjs';
 
 @Component({
   selector: 'app-signup',
@@ -80,7 +80,7 @@ export class SignupComponent {
             this.errors = Object.values([
               'An unexpected server error has occured.',
             ]);
-          } else if (error.message && error.message == 'Timeout has occurred') {
+          } else if (error instanceof TimeoutError) {
             this.errors = Object.values([
               'The server was not able to send a validation email at this time.',
             ]);
