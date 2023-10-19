@@ -23,7 +23,6 @@ import * as shp from 'shpjs';
 import {
   AuthService,
   MapService,
-  PlanService,
   PopupService,
   SessionService,
 } from '../services';
@@ -57,6 +56,7 @@ import {
   hideRegionLayer,
   showRegionLayer,
 } from './map.layers';
+import { PlanStateService } from '../services/plan-state.service';
 
 @UntilDestroy()
 @Component({
@@ -129,7 +129,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planService: PlanService,
+    private planStateService: PlanStateService,
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -229,7 +229,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private loadPlanAndDrawPlanningArea() {
     // if planID is provided load planning area
     if (this.planId) {
-      const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
+      const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
 
       plan$.subscribe({
         next: (plan) => {

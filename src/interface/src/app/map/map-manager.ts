@@ -22,7 +22,6 @@ import {
 } from '../types';
 
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
-
 import {
   BOUNDARY_LAYER_HOVER_STYLES,
   BOUNDARY_LAYER_NORMAL_STYLES,

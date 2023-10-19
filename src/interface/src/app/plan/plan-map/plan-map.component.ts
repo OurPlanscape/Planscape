@@ -7,8 +7,7 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
-import { distinctUntilChanged, map, take } from 'rxjs/operators';
-import { PlanService } from 'src/app/services';
+import { take } from 'rxjs/operators';
 import {
   FrontendConstants,
   regionMapCenters,
@@ -19,6 +18,7 @@ import {
 
 import { BackendConstants } from './../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { PlanStateService } from '../../services/plan-state.service';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {
@@ -48,24 +48,19 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   selectedRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
-  currentScenarioId$ = this.planService.planState$.pipe(
-    map(({ currentScenarioId }) => currentScenarioId),
-    distinctUntilChanged(),
-    takeUntil(this.destroy$)
-  );
 
   private layer: string = '';
   private shapes: any | null = null;
 
   constructor(
-    private planService: PlanService,
+    private planStateService: PlanStateService,
     private http: HttpClient
   ) {
-    this.selectedRegion$ = this.planService.planRegion$;
+    this.selectedRegion$ = this.planStateService.planRegion$;
   }
 
   ngOnInit(): void {
-    this.planService.planState$
+    this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
         if (state.mapConditionLayer !== this.layer) {
@@ -163,7 +158,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (filepath?.length === 0 || !filepath) return;
 
-    var region = regionToString(this.planService.planRegion$.getValue());
+    var region = regionToString(this.planStateService.planRegion$.getValue());
     this.tileLayer = L.tileLayer.wms(
       BackendConstants.TILES_END_POINT + region + '/wms?',
       {
@@ -180,7 +175,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Map legend request
     var dataUnit = '';
-    this.planService.planState$.pipe(take(1)).subscribe((state) => {
+    this.planStateService.planState$.pipe(take(1)).subscribe((state) => {
       if (state.legendUnits) {
         dataUnit = state.legendUnits;
       }

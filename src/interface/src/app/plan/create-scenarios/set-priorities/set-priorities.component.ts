@@ -9,11 +9,11 @@ import { Plan } from 'src/app/types';
 import { MapService } from './../../../services/map.service';
 import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
+import { PlanConditionScores } from './../../../types/plan.types';
 import {
-  PlanConditionScores,
-  TreatmentQuestionConfig,
   TreatmentGoalConfig,
-} from './../../../types/plan.types';
+  TreatmentQuestionConfig,
+} from '../../../types/scenario.types';
 
 export interface ScoreColumn {
   label: string;

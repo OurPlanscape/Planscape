@@ -8,8 +8,15 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, interval, Observable, take } from 'rxjs';
-import { PlanService } from 'src/app/services';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  interval,
+  Observable,
+  of,
+  take,
+} from 'rxjs';
 import {
   Plan,
   Scenario,
@@ -17,13 +24,16 @@ import {
   ScenarioResult,
   ScenarioResultStatus,
   TreatmentGoalConfig,
-  TreatmentQuestionConfig,
 } from 'src/app/types';
 import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
 import FileSaver from 'file-saver';
+import { ERROR_SNACK_CONFIG } from '../../constants';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { ScenarioService } from '../../services/scenario.service';
+import { PlanStateService } from '../../services/plan-state.service';
 
 @UntilDestroy()
 @Component({
@@ -44,15 +54,8 @@ export class CreateScenariosComponent implements OnInit {
   constraintsFormGroup: FormGroup<any>;
   projectAreaGroup: FormGroup<any>;
 
-  treatmentGoals: Observable<TreatmentGoalConfig[] | null>;
-  defaultSelectedQuestion: TreatmentQuestionConfig = {
-    short_question_text: '',
-    scenario_priorities: [''],
-    scenario_output_fields_paths: {},
-    stand_thresholds: [''],
-    global_thresholds: [''],
-    weights: [0],
-  };
+  treatmentGoals$: Observable<TreatmentGoalConfig[] | null>;
+
   excludedAreasOptions: Array<string> = [
     'Private Land',
     'National Forests and Parks',
@@ -75,10 +78,12 @@ export class CreateScenariosComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private planService: PlanService,
-    private router: Router
+    private planStateService: PlanStateService,
+    private router: Router,
+    private matSnackBar: MatSnackBar,
+    private scenarioService: ScenarioService
   ) {
-    this.treatmentGoals = this.planService.treatmentGoalsConfig$.pipe(
+    this.treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
       untilDestroyed(this)
     );
 
@@ -143,18 +148,18 @@ export class CreateScenariosComponent implements OnInit {
 
   ngOnInit(): void {
     // Get plan details and current config ID from plan state, then load the config.
-    this.planService.planState$
+    this.planStateService.planState$
       .pipe(untilDestroyed(this))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
         if (this.plan$.getValue()?.region) {
-          this.planService.setPlanRegion(this.plan$.getValue()?.region!);
+          this.planStateService.setPlanRegion(this.plan$.getValue()?.region!);
         }
       });
 
     if (this.scenarioId) {
-      // Has to be outside of service subscription or else will cause infinite loop
+      // Has to be outside service subscription or else will cause infinite loop
       this.loadConfig();
       this.pollForChanges();
       // if we have an id go to the results tab.
@@ -203,7 +208,11 @@ export class CreateScenariosComponent implements OnInit {
 
   loadConfig(): void {
     this.scenarioState = 'LOADING';
-    this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
+
+    combineLatest([
+      this.scenarioService.getScenario(this.scenarioId!),
+      this.treatmentGoals$,
+    ]).subscribe(([scenario, goals]) => {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
         this.scenarioState = scenario.scenario_result?.status;
@@ -217,23 +226,7 @@ export class CreateScenariosComponent implements OnInit {
       }
 
       var config = scenario.configuration;
-      const scenarioName = this.nameFormGroup.get('scenarioName');
-      const estimatedCost = this.constraintsFormGroup.get(
-        'budgetForm.estimatedCost'
-      );
-      const maxCost = this.constraintsFormGroup.get('budgetForm.maxCost');
-      const maxArea = this.constraintsFormGroup.get(
-        'physicalConstraintForm.maxArea'
-      );
-      const minDistanceFromRoad = this.constraintsFormGroup.get(
-        'physicalConstraintForm.minDistanceFromRoad'
-      );
-      const maxSlope = this.constraintsFormGroup.get(
-        'physicalConstraintForm.maxSlope'
-      );
-      const standSize = this.constraintsFormGroup.get(
-        'physicalConstraintForm.standSize'
-      );
+
       this.excludedAreasOptions.forEach((area: string) => {
         if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
           this.constraintsFormGroup
@@ -245,31 +238,58 @@ export class CreateScenariosComponent implements OnInit {
             ?.setValue(false);
         }
       });
-      const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
+
+      if (goals) {
+        goals.forEach((goal) => {
+          goal.questions.forEach((question) => {
+            if (
+              question['scenario_priorities']?.toString() ==
+              config.scenario_priorities?.toString()
+            ) {
+              config.treatment_question = question;
+            }
+          });
+        });
+      }
 
       if (scenario.name) {
-        scenarioName?.setValue(scenario.name);
+        this.nameFormGroup.get('scenarioName')?.setValue(scenario.name);
       }
       if (config.est_cost) {
-        estimatedCost?.setValue(config.est_cost);
+        this.constraintsFormGroup
+          .get('budgetForm.estimatedCost')
+          ?.setValue(config.est_cost);
       }
       if (config.max_budget) {
-        maxCost?.setValue(config.max_budget);
+        this.constraintsFormGroup
+          .get('budgetForm.maxCost')
+          ?.setValue(config.max_budget);
       }
       if (config.max_treatment_area_ratio) {
-        maxArea?.setValue(config.max_treatment_area_ratio);
+        this.constraintsFormGroup
+          .get('physicalConstraintForm.maxArea')
+          ?.setValue(config.max_treatment_area_ratio);
       }
       if (config.min_distance_from_road) {
-        minDistanceFromRoad?.setValue(config.min_distance_from_road);
+        this.constraintsFormGroup
+          .get('physicalConstraintForm.minDistanceFromRoad')
+          ?.setValue(config.min_distance_from_road);
       }
       if (config.max_slope) {
-        maxSlope?.setValue(config.max_slope);
+        this.constraintsFormGroup
+          .get('physicalConstraintForm.maxSlope')
+          ?.setValue(config.max_slope);
       }
       if (config.treatment_question) {
-        selectedQuestion?.setValue(config.treatment_question);
+        this.treatmentGoalGroup
+          .get('selectedQuestion')
+          ?.setValue(config.treatment_question);
       }
+
       if (config.stand_size) {
-        standSize?.setValue(config.stand_size);
+        this.constraintsFormGroup
+          .get('physicalConstraintForm.standSize')
+          ?.setValue(config.stand_size);
       }
     });
   }
@@ -293,7 +313,7 @@ export class CreateScenariosComponent implements OnInit {
 
     let scenarioNameConfig: string = '';
     let plan_id: string = '';
-    this.planService.planState$
+    this.planStateService.planState$
       .pipe(untilDestroyed(this))
       .subscribe((planState) => {
         plan_id = planState.currentPlanId!;
@@ -347,11 +367,15 @@ export class CreateScenariosComponent implements OnInit {
     }
     this.generatingScenario = true;
     // TODO Add error catching for failed scenario creation
-    this.planService
+    this.planStateService
       .createScenario(this.formValueToScenario())
-      .subscribe((result) => {
-        this.planService.updateStateWithScenario(result.id.toString());
-        // TODO maybe this state should come as the result of creating scenario from planService
+      .pipe(
+        catchError((error) => {
+          this.matSnackBar.open(error.message, 'Dismiss', ERROR_SNACK_CONFIG);
+          return of(false);
+        })
+      )
+      .subscribe(() => {
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;
@@ -415,7 +439,7 @@ export class CreateScenariosComponent implements OnInit {
       scenario?.configuration.treatment_question?.scenario_output_fields_paths!;
     var labels: string[][] = [];
     if (scenario && this.scenarioResults) {
-      this.planService
+      this.planStateService
         .getMetricData(scenario_output_fields_paths)
         .pipe(take(1))
         .subscribe((metric_data) => {
@@ -437,7 +461,7 @@ export class CreateScenariosComponent implements OnInit {
             values: label[3],
           }));
         });
-      this.planService.updateStateWithShapes(
+      this.planStateService.updateStateWithShapes(
         this.scenarioResults?.result.features
       );
     }
@@ -466,11 +490,11 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   changeCondition(layer: string): void {
-    this.planService.updateStateWithConditionLayer(layer);
+    this.planStateService.updateStateWithConditionLayer(layer);
   }
 
   private drawShapes(shapes: any | null): void {
-    this.planService.updateStateWithShapes(shapes);
+    this.planStateService.updateStateWithShapes(shapes);
   }
 
   goBackToPlanning() {
@@ -482,12 +506,14 @@ export class CreateScenariosComponent implements OnInit {
       (this.nameFormGroup.get('scenarioName')?.value || 'scenario_results') +
       '.zip';
     if (this.scenarioId) {
-      this.planService.downloadCsvData(this.scenarioId).subscribe((data) => {
-        const blob = new Blob([data], {
-          type: 'application/zip',
+      this.scenarioService
+        .downloadCsvData(this.scenarioId)
+        .subscribe((data) => {
+          const blob = new Blob([data], {
+            type: 'application/zip',
+          });
+          FileSaver.saveAs(blob, filename);
         });
-        FileSaver.saveAs(blob, filename);
-      });
     }
   }
 }
