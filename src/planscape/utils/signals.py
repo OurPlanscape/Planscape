@@ -13,7 +13,7 @@ class SignalHandler:
         for s in self.watching_signals:
             signal.signal(s, self.handle)
 
-    def handle(self, signal, _frame):
+    def handle(self, signal, frame):
         self.caught_signal = signal
 
     @property
