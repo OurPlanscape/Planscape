@@ -46,11 +46,8 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 
 # Application definition
 planscape_apps = [
-    "attributes",
-    "boundary",
     "conditions",
     "existing_projects",
-    "plan",
     "planning",
     "stands",
     "users",
@@ -69,7 +66,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
-    "forsys",
     "leaflet",
     "lockdown",
     "password_policies",
