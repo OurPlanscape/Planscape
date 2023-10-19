@@ -1,8 +1,11 @@
 import time
+from signal import SIGINT, SIGTERM
 from typing import Any
+
 from django.core.management.base import BaseCommand
 from planning.models import Scenario, ScenarioResultStatus
 from utils.cli_utils import call_forsys
+from utils.signals import SignalHandler
 
 
 class Command(BaseCommand):
@@ -10,9 +13,16 @@ class Command(BaseCommand):
         parser.add_argument("--busy-cooldown", type=int, default=1)
         parser.add_argument("--idle-cooldown", type=int, default=5)
 
+    def setup_signals(self):
+        signals = [SIGINT, SIGTERM]
+        self.handler = SignalHandler(signals)
+
     def handle(self, *args: Any, **options: Any) -> str | None:
         idle_cooldown = options.get("idle_cooldown")
         busy_cooldown = options.get("busy_cooldown")
+
+        self.setup_signals()
+
         while True:
             self.stdout.write("[OK] Polling for new scenario...")
             scenario = self.get_scenario()
@@ -33,6 +43,12 @@ class Command(BaseCommand):
                 self.stderr.write(
                     f"[FAIL] Failed to run forsys for scenario id: {scenario.pk} - {str(ex)}"
                 )
+
+            if self.handler.caught_signal:
+                self.stdout.stdout(
+                    f"Shutting down. Caught {self.handler.caught_signal}"
+                )
+                break
 
             time.sleep(busy_cooldown)
 
