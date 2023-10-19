@@ -45,9 +45,7 @@ class Command(BaseCommand):
                 )
 
             if self.handler.caught_signal:
-                self.stdout.stdout(
-                    f"Shutting down. Caught {self.handler.caught_signal}"
-                )
+                self.stdout.write(f"Shutting down. Caught {self.handler.caught_signal}")
                 break
 
             time.sleep(busy_cooldown)
