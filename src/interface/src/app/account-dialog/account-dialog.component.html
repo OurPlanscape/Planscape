@@ -37,9 +37,9 @@
     <ng-template #noUser>
       <p class="no-user">
         Already have an account? Click
-        <a routerLink="/login">here</a>
+        <a routerLink="/login" (click)="close()">here</a>
         to login or
-        <a routerLink="/signup">create an account.</a>
+        <a routerLink="/signup" (click)="close()">create an account.</a>
       </p>
     </ng-template>
   </ng-container>
