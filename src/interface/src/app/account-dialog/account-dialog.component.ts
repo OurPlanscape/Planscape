@@ -168,6 +168,10 @@ export class AccountDialogComponent implements OnInit {
         }
       });
   }
+
+  close() {
+    this.dialogRef.close();
+  }
 }
 
 const crossFieldValidators: ValidatorFn = (
