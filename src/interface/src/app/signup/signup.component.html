@@ -87,8 +87,8 @@
           mat-flat-button
           type="submit"
           color="primary"
-          [disabled]="!form.valid || submitted">
-          {{ submitted ? 'Please wait...' : 'Create account' }}
+          [disabled]="!form.valid || submitting">
+          {{ submitting ? 'Please wait...' : 'Create account' }}
         </button>
       </form>
     </div>

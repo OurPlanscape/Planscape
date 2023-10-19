@@ -22,7 +22,7 @@ export class SignupComponent {
   errors: string[] = [];
 
   form: FormGroup;
-  submitted: boolean = false;
+  submitting: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -51,9 +51,9 @@ export class SignupComponent {
   }
 
   signup() {
-    if (this.submitted) return;
+    if (this.submitting) return;
 
-    this.submitted = true;
+    this.submitting = true;
 
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
@@ -73,14 +73,16 @@ export class SignupComponent {
           this.router.navigate(['home']);
         },
         error: (error: HttpErrorResponse) => {
-          this.submitted = false;
+          this.submitting = false;
           if (error.status == 400) {
             this.errors = Object.values(error.error);
           } else if (error.status == 500) {
             this.errors = Object.values([
               'An unexpected server error has occured.',
             ]);
-          } else {
+          } else if (error.message && error.message == "Timeout has occurred"){
+            this.errors = Object.values(['The server was not able to send a validation email at this time.']);
+          }else {
             this.errors = Object.values(['An unexpected error has occured.']);
           }
         },
