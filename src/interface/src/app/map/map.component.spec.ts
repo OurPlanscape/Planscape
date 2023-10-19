@@ -468,7 +468,24 @@ describe('MapComponent', () => {
         { maxWidth: '560px' }
       );
     }));
+    it('disallows drawing when upload option is selected and user is not logged in', fakeAsync(async () => {
+      userSignedIn$.next(false);
+      const fakeMatDialog: MatDialog =
+        fixture.debugElement.injector.get(MatDialog);
 
+      spyOn(component, 'onAreaCreationActionChange').and.callThrough();
+      const button = await loader.getHarness(
+        MatButtonHarness.with({
+          selector: '.upload-area-button',
+        })
+      );
+      await button.click();
+      tick();
+      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
+        SignInDialogComponent,
+        { maxWidth: '560px' }
+      );
+    }));
     it('enables polygon tool when drawing option is selected and user is logged in', fakeAsync(async () => {
       userSignedIn$.next(true);
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
