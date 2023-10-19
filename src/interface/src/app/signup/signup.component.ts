@@ -80,9 +80,11 @@ export class SignupComponent {
             this.errors = Object.values([
               'An unexpected server error has occured.',
             ]);
-          } else if (error.message && error.message == "Timeout has occurred"){
-            this.errors = Object.values(['The server was not able to send a validation email at this time.']);
-          }else {
+          } else if (error.message && error.message == 'Timeout has occurred') {
+            this.errors = Object.values([
+              'The server was not able to send a validation email at this time.',
+            ]);
+          } else {
             this.errors = Object.values(['An unexpected error has occured.']);
           }
         },
