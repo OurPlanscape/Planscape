@@ -9,6 +9,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, Max
+from django.db.models.functions import Coalesce
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -295,7 +296,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         planning_areas = (
             PlanningArea.objects.filter(user=user_id)
             .annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(scenario_latest_updated_at=Max("scenarios__updated_at"))
+            .annotate(scenario_latest_updated_at=Coalesce(Max("scenarios__updated_at"),"updated_at"))
             .order_by("-scenario_latest_updated_at")
         )
         return JsonResponse(
