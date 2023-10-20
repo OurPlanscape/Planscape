@@ -659,41 +659,46 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.assertIsNotNone(planning_areas[0]["created_at"])
 
     def test_list_planning_areas_ordered(self):
-        ## This tests the logic for ordering areas by most recent scenario date, 
+        ## This tests the logic for ordering areas by most recent scenario date,
         #   or by the plan's most recent update, if it has no scenario
 
-
         ## Results follow this logic:
-            # plan4 - 2010-12-01 00:01:01-05 -- from most recent scenario 
-            # plan5 - 2010-11-01 00:01:01-05 -- no scenarios
-            # plan3 - 2010-10-01 00:01:01-05 -- from most recent scenario 
-            # plan1 - 2010-09-01 00:01:01-05 -- from most recent scenario 
-            # plan2 - 2010-02-01 00:01:01-05 -- no scenarios
+        # plan4 - 2010-12-01 00:01:01-05 -- from most recent scenario
+        # plan5 - 2010-11-01 00:01:01-05 -- no scenarios
+        # plan3 - 2010-10-01 00:01:01-05 -- from most recent scenario
+        # plan1 - 2010-09-01 00:01:01-05 -- from most recent scenario
+        # plan2 - 2010-02-01 00:01:01-05 -- no scenarios
 
-        scenario_update_overrides = [["2010-07-01 00:01:01-05", self.scenario1_1.id], 
-                                     ["2010-08-01 00:01:01-05", self.scenario1_2.id], 
-                                     ["2010-09-01 00:01:01-05", self.scenario1_3.id], 
-                                     ["2010-10-01 00:01:01-05", self.scenario3_1.id], 
-                                     ["2010-11-01 00:01:01-05", self.scenario4_1.id],
-                                     ["2010-12-01 00:01:01-05", self.scenario4_2.id],
-                                     ["2010-04-03 00:01:01-05", self.scenario4_3.id]]
+        scenario_update_overrides = [
+            ["2010-07-01 00:01:01-05", self.scenario1_1.id],
+            ["2010-08-01 00:01:01-05", self.scenario1_2.id],
+            ["2010-09-01 00:01:01-05", self.scenario1_3.id],
+            ["2010-10-01 00:01:01-05", self.scenario3_1.id],
+            ["2010-11-01 00:01:01-05", self.scenario4_1.id],
+            ["2010-12-01 00:01:01-05", self.scenario4_2.id],
+            ["2010-04-03 00:01:01-05", self.scenario4_3.id],
+        ]
         # using raw updates here, to override django's autoupdate of updated_at field
         with connection.cursor() as cursor:
             for so in scenario_update_overrides:
-                cursor.execute("UPDATE planning_scenario SET updated_at = %s WHERE id = %s", 
-                           so)
-                
-        planning_area_update_overrides = [["2010-01-01 00:01:01-05", self.planning_area1.id],
-                                     ["2010-02-01 00:01:01-05", self.planning_area2.id], 
-                                     ["2010-03-01 00:01:01-05", self.planning_area3.id], 
-                                     ["2010-04-01 00:01:01-05", self.planning_area4.id],
-                                     ["2010-11-01 00:01:01-05", self.planning_area5.id],
-                                     ["2010-06-01 00:01:01-05", self.planning_area6.id]]
+                cursor.execute(
+                    "UPDATE planning_scenario SET updated_at = %s WHERE id = %s", so
+                )
+
+        planning_area_update_overrides = [
+            ["2010-01-01 00:01:01-05", self.planning_area1.id],
+            ["2010-02-01 00:01:01-05", self.planning_area2.id],
+            ["2010-03-01 00:01:01-05", self.planning_area3.id],
+            ["2010-04-01 00:01:01-05", self.planning_area4.id],
+            ["2010-11-01 00:01:01-05", self.planning_area5.id],
+            ["2010-06-01 00:01:01-05", self.planning_area6.id],
+        ]
         # using raw updates here, to override django's autoupdate of updated_at field
         with connection.cursor() as cursor:
             for p in planning_area_update_overrides:
-                cursor.execute("UPDATE planning_planningarea SET updated_at = %s WHERE id = %s", 
-                           p)
+                cursor.execute(
+                    "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s", p
+                )
 
         self.client.force_login(self.user)
         response = self.client.get(
@@ -701,11 +706,16 @@ class ListPlanningAreaTest(TransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         updates_list = [(pa["name"], pa["latest_updated"]) for pa in planning_areas]
-        self.assertEqual(updates_list, [('test plan4', '2010-12-01T05:01:01Z'), 
-                                        ('test plan5', '2010-11-01T05:01:01Z'), 
-                                        ('test plan3', '2010-10-01T05:01:01Z'), 
-                                        ('test plan1', '2010-09-01T05:01:01Z'),
-                                        ('test plan2', '2010-02-01T05:01:01Z')])
+        self.assertEqual(
+            updates_list,
+            [
+                ("test plan4", "2010-12-01T05:01:01Z"),
+                ("test plan5", "2010-11-01T05:01:01Z"),
+                ("test plan3", "2010-10-01T05:01:01Z"),
+                ("test plan1", "2010-09-01T05:01:01Z"),
+                ("test plan2", "2010-02-01T05:01:01Z"),
+            ],
+        )
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(
@@ -721,6 +731,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
+
 
 # EndtoEnd test that lists, creates a planning_area, creates a scenario,
 # tests what was stored, and then deletes everything.
