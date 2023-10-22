@@ -1,4 +1,3 @@
-/// <reference types="cypress"/>
 // ***********************************************
 // This example namespace declaration will help
 // with Intellisense and code completion in your
@@ -13,7 +12,6 @@ declare namespace Cypress {
   }
 }
 
-//NOTE: You can use it like so:
 Cypress.Commands.add('login', () => {
   cy.visit(LOGIN_URL);
   cy.get('[formControlName="email"]').type('plopez+test@sig-gis.com');

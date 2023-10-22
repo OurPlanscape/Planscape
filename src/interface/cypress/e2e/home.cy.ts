@@ -1,4 +1,4 @@
-import { BASE_URLZ } from './urls';
+import { BASE_URL } from './urls';
 
 describe('Home', () => {
   it('Shows welcome page', () => {
@@ -10,5 +10,12 @@ describe('Home', () => {
     cy.visit(BASE_URL);
     cy.get('.explore').click();
     cy.location('pathname').should('eq', '/map');
+  });
+
+  describe('logged in', () => {
+    it('should show planning areas', () => {
+      cy.login();
+      cy.get('.planning .mat-row').should('have.length.at.least', 1);
+    });
   });
 });
