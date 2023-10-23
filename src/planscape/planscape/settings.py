@@ -46,6 +46,7 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 
 # Application definition
 planscape_apps = [
+    "attributes",
     "conditions",
     "existing_projects",
     "planning",
