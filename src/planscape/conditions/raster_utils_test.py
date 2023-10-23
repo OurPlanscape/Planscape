@@ -9,7 +9,6 @@ from conditions.raster_utils import (
     get_condition_values_from_raster,
 )
 from django.contrib.gis.geos import MultiPolygon, Polygon
-#from plan.models import ConditionScores, Plan
 
 
 class ConditionStatsTest(RasterConditionRetrievalTestCase):
@@ -66,6 +65,7 @@ class ConditionStatsTest(RasterConditionRetrievalTestCase):
             str(context.exception),
             "no rasters available for raster_name, nonexistent_raster_name",
         )
+
 
 class ConditionPixelsTest(RasterConditionRetrievalTestCase):
     def setUp(self) -> None:

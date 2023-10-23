@@ -4,7 +4,6 @@ from conditions.models import BaseCondition, Condition, ConditionRaster
 from django.contrib.gis.gdal import CoordTransform, SpatialReference
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import connection
-# from plan.models import ConditionScores, Plan
 from planscape import settings
 from typing import TypedDict
 
