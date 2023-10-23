@@ -1,0 +1,23 @@
+{
+    "regions": [
+      {
+        "region_name": "sierra-nevada",
+        "display_name": "Sierra Nevada",
+        "boundaries": [
+        
+            {
+                "boundary_name": "california",
+                "display_name": "California",
+                "vector_name": "sierra-nevada:California",
+                "region_name": "none",
+                "filepath": "boundary/california/CA_State_TIGER2016.shp",
+                "source_srs": 3857,
+                "geometry_type": "MULTIPOLYGON",
+                "shape_name": "NAME"
+                
+            }
+    ]
+    }
+]
+
+}
