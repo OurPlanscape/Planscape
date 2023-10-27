@@ -1,6 +1,7 @@
 from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
 from core.models import CreatedAtMixin, UpdatedAtMixin
+import uuid
 
 User = get_user_model()
 
@@ -54,6 +55,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     notes = models.TextField(null=True)
 
     configuration = models.JSONField(default=dict)
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
     class Meta:
         constraints = [
