@@ -457,9 +457,14 @@ get_stand_thresholds <- function(scenario) {
   configuration <- get_configuration(scenario)
 
   max_slope <- get_max_slope(configuration)
-  distance_to_roads <- get_distance_to_roads(configuration)
 
-  all_thresholds <- c(max_slope, distance_to_roads)
+  if (is.null(configuration$min_distance_from_road)) {
+    all_thresholds <- c(max_slope)
+  } else {
+    distance_to_roads <- get_distance_to_roads(configuration)
+    all_thresholds <- c(max_slope, distance_to_roads)
+  }
+
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
