@@ -452,8 +452,7 @@ describe('MapComponent', () => {
 
     it('disallows drawing when drawing option is selected and user is not logged in', fakeAsync(async () => {
       userSignedIn$.next(false);
-      const fakeMatDialog: MatDialog =
-        fixture.debugElement.injector.get(MatDialog);
+      const fakeMatDialog = TestBed.inject(MatDialog);
 
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
@@ -470,8 +469,7 @@ describe('MapComponent', () => {
     }));
     it('disallows drawing when upload option is selected and user is not logged in', fakeAsync(async () => {
       userSignedIn$.next(false);
-      const fakeMatDialog: MatDialog =
-        fixture.debugElement.injector.get(MatDialog);
+      const fakeMatDialog = TestBed.inject(MatDialog);
 
       spyOn(component, 'onAreaCreationActionChange').and.callThrough();
       const button = await loader.getHarness(
@@ -579,6 +577,8 @@ describe('MapComponent', () => {
     });
 
     it('upload area button opens the file uploader', async () => {
+      userSignedIn$.next(true);
+
       const button = await loader.getHarness(
         MatButtonHarness.with({
           selector: '.upload-area-button',
