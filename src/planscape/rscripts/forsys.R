@@ -436,20 +436,12 @@ get_max_treatment_area <- function(scenario) {
 }
 
 get_distance_to_roads <- function(configuration) {
-  if (stri_isempty(configuration$min_distance_from_road)) {
-    distance <- 1000
-  } else {
-    distance <- configuration$min_distance_from_road
-  }
+  distance <- configuration$min_distance_from_road
   return(glue("distance_to_roads <= {distance}"))
 }
 
 get_max_slope <- function(configuration) {
-  if (stri_isempty(configuration$max_slope)) {
-    max_slope <- 37
-  } else {
-    max_slope <- configuration$max_slope
-  }
+  max_slope <- configuration$max_slope
   return(glue("slope <= {max_slope}"))
 }
 
