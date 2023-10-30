@@ -66,6 +66,12 @@ export class CreateScenariosComponent implements OnInit {
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
   scenarioChartData: any[] = [];
+  tabAnimationOptions: Record<'on' | 'off', string> = {
+    on: '500ms',
+    off: '0ms',
+  };
+
+  tabAnimation = this.tabAnimationOptions.off;
 
   constructor(
     private fb: FormBuilder,
@@ -157,6 +163,11 @@ export class CreateScenariosComponent implements OnInit {
       // Has to be outside of service subscription or else will cause infinite loop
       this.loadConfig();
       this.pollForChanges();
+      // if we have an id go to the results tab.
+      this.selectedTabIndex = 1;
+    } else {
+      // enable animation
+      this.tabAnimation = this.tabAnimationOptions.on;
     }
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -197,6 +208,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
+    this.scenarioState = 'LOADING';
     this.planService.getScenario(this.scenarioId!).subscribe((scenario) => {
       if (scenario.scenario_result) {
         this.scenarioResults = scenario.scenario_result;
@@ -206,6 +218,8 @@ export class CreateScenariosComponent implements OnInit {
         if (this.scenarioState == 'SUCCESS') {
           this.processScenarioResults(scenario);
         }
+        // enable animation
+        this.tabAnimation = this.tabAnimationOptions.on;
       }
 
       var config = scenario.configuration;
@@ -333,6 +347,10 @@ export class CreateScenariosComponent implements OnInit {
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
+    this.formGroups.forEach((form) => form.markAllAsTouched());
+    if (this.formGroups.some((form) => form.invalid)) {
+      return;
+    }
     this.generatingScenario = true;
     // TODO Add error catching for failed scenario creation
     this.planService
