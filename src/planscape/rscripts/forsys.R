@@ -454,22 +454,27 @@ get_max_slope <- function(configuration) {
 }
 
 get_stand_thresholds <- function(scenario) {
+  all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
-  max_slope <- get_max_slope(configuration)
+  if (!is.null(configuration$max_slope)) {
+    max_slope <- get_max_slope(configuration)
+    all_thresholds <- c(all_thresholds, max_slope)
+  }
 
-  if (is.null(configuration$min_distance_from_road)) {
-    all_thresholds <- c(max_slope)
-  } else {
+  if (!is.null(configuration$min_distance_from_road)) {
     distance_to_roads <- get_distance_to_roads(configuration)
-    all_thresholds <- c(max_slope, distance_to_roads)
+    all_thresholds <- c(all_thresholds, distance_to_roads)
   }
 
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
 
-  return(paste(all_thresholds, collapse = " & "))
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
 }
 
 call_forsys <- function(
