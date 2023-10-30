@@ -473,18 +473,20 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   onAreaCreationActionChange(option: AreaCreationAction) {
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
     this.selectedAreaCreationAction = option;
+
+    if (!this.authService.loggedInStatus$.value) {
+      this.cancelAreaCreationAction();
+      this.openSignInDialog();
+      return;
+    }
+
     if (option === AreaCreationAction.DRAW) {
-      if (!this.authService.loggedInStatus$.value) {
-        this.cancelAreaCreationAction();
-        this.openSignInDialog();
-      } else {
-        this.addDrawingControlToAllMaps();
-        this.mapManager.enablePolygonDrawingTool(
-          this.maps[selectedMapIndex].instance!
-        );
-        this.showUploader = false;
-        this.changeMapCount(1);
-      }
+      this.addDrawingControlToAllMaps();
+      this.mapManager.enablePolygonDrawingTool(
+        this.maps[selectedMapIndex].instance!
+      );
+      this.showUploader = false;
+      this.changeMapCount(1);
     }
     if (option === AreaCreationAction.UPLOAD) {
       if (!this.showConfirmAreaButton$.value) {
