@@ -2,6 +2,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
@@ -34,6 +35,7 @@ describe('PasswordResetComponent', () => {
           ReactiveFormsModule,
           MatDialogModule,
           NoopAnimationsModule,
+          MatMenuModule,
         ],
         declarations: [PasswordResetComponent],
         schemas: [CUSTOM_ELEMENTS_SCHEMA],
@@ -122,6 +124,7 @@ describe('PasswordResetComponent', () => {
           ReactiveFormsModule,
           MatDialogModule,
           NoopAnimationsModule,
+          MatMenuModule,
         ],
         declarations: [PasswordResetComponent],
         schemas: [CUSTOM_ELEMENTS_SCHEMA],
