@@ -6,12 +6,17 @@
           <input
             formControlName="scenarioName"
             matInput
-            placeholder="Scenario Name" />
+            placeholder="Scenario Name:" />
         </mat-form-field>
       </form>
+      <div *ngIf="formGroups[0].invalid && formGroups[0].touched" class="error">
+        Please enter scenario name above
+      </div>
     </div>
     <div class="tab-container">
-      <mat-tab-group [selectedIndex]="selectedTabIndex">
+      <mat-tab-group
+        [selectedIndex]="selectedTabIndex"
+        [animationDuration]="tabAnimation">
         <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
@@ -33,8 +38,8 @@
               <button
                 mat-raised-button
                 color="primary"
+                type="submit"
                 [disabled]="
-                  !formGroups[0].valid ||
                   !formGroups[1].valid ||
                   !formGroups[2].valid ||
                   !formGroups[3].valid ||
@@ -51,6 +56,7 @@
         </mat-tab>
         <mat-tab label="Results">
           <ng-container [ngSwitch]="scenarioState">
+            <ng-container *ngSwitchCase="'LOADING'"></ng-container>
             <app-scenario-not-started
               *ngSwitchCase="'NOT_STARTED'"></app-scenario-not-started>
             <app-scenario-pending
