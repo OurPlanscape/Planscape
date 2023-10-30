@@ -111,7 +111,7 @@ export class CreateScenariosComponent implements OnInit {
           physicalConstraintForm: this.fb.group({
             // TODO Update if needed once we have confirmation if this is the correct default %
             // Maximum slope allowed for planning area
-            maxSlope: [37, [Validators.min(0), Validators.max(100)]],
+            maxSlope: [, [Validators.min(0), Validators.max(100)]],
             // Minimum distance from road allowed for planning area
             minDistanceFromRoad: [, [Validators.min(0)]],
             // Maximum area to be treated in acres
