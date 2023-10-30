@@ -57,6 +57,8 @@ describe('LoginComponent', () => {
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password')?.setValue('password');
       fakeAuthService.login.and.returnValue(of(true));
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
       component.login();
 
       expect(fakeAuthService.login).toHaveBeenCalledOnceWith(
