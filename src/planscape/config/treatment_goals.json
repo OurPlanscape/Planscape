@@ -125,7 +125,7 @@
                 ]
               },
               "stand_thresholds": [
-                "PHSF > 0.2"
+                "probability_of_fire_severity_high > 0.2"
               ],
               "global_thresholds": []
             },
@@ -175,7 +175,7 @@
                 ]
               },
               "stand_thresholds": [
-                "PHSF < 0.3 & Burnable == 1"
+                "probability_of_fire_severity_high < 0.3"
               ],
               "global_thresholds": []
             }
@@ -225,7 +225,11 @@
                   "sawtimber_biomass",
                   "costs_of_potential_treatment_moving_biomass",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_territory",
+                  "pacific_fisher",
+                  "northern_goshawk_habitat",
+                  "american_pacific_marten_habitat",
+                  "band_tailed_pigeon_habitat"
                 ]
               },
               "stand_thresholds": [
