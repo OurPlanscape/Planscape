@@ -9,6 +9,11 @@
   width: 700px;
 }
 
+::ng-deep .password-reqs-menu {
+  margin-top: 1em;
+  padding: 1em;
+}
+
 h1 {
   font-family: 'Roboto';
   font-size: 24px;
