@@ -161,6 +161,7 @@
                   "environmental_justice"
                 ],
                 "metrics": [
+                  "probability_of_fire_severity_high",
                   "costs_of_potential_treatment_moving_biomass",
                   "costs_of_potential_treatment_moving_sawlogs",
                   "moderate_severity_potential_smoke_emissions",
