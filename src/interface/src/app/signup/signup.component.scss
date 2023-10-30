@@ -3,6 +3,11 @@
   height: 100%;
 }
 
+::ng-deep .password-reqs-menu {
+  margin-top: 1em;
+  padding: 1em;
+}
+
 .info-card-container {
   background-image: url('/assets/png/planscape_signin_bg.png');
   background-repeat: no-repeat;
@@ -64,6 +69,7 @@ h1 {
 mat-form-field {
   width: 100%;
 }
+
 
 button {
   margin-bottom: 5px;

@@ -8,7 +8,6 @@ import {
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
-
 import { AuthService } from './../services';
 import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
 import { TimeoutError, timeout } from 'rxjs';
@@ -20,7 +19,6 @@ import { TimeoutError, timeout } from 'rxjs';
 })
 export class SignupComponent {
   errors: string[] = [];
-
   form: FormGroup;
   submitting: boolean = false;
 

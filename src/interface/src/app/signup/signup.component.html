@@ -56,6 +56,10 @@
         <mat-form-field appearance="fill">
           <mat-label>Create password</mat-label>
           <input
+            #changePassword="matMenuTrigger"
+            [matMenuTriggerFor]="popoverMenu"
+            (focus)="changePassword.openMenu()"
+            (blur)="changePassword.closeMenu()"
             type="password"
             required
             formControlName="password1"
@@ -64,24 +68,18 @@
             Password must contain at least 8 characters.
           </mat-error>
         </mat-form-field>
-
-        <button mat-icon-button class="help" [matMenuTriggerFor]="popoverMenu">
-          <mat-icon class="material-symbols-outlined" color="primary">
-            info_outline
-          </mat-icon>
-          <mat-menu #popoverMenu="matMenu">
-            <div class="tooltip" style="padding: 1em">
-              <div>
-                <p>Password requirements:</p>
-                <ul>
-                  <li>Must be at least 8 characters.</li>
-                  <li>Cannot be a password that you've used before.</li>
-                  <li>Cannot be similar to your name or email address.</li>
-                </ul>
-              </div>
+        <mat-menu class="password-reqs-menu" #popoverMenu="matMenu">
+          <div class="tooltip">
+            <div>
+              <p>Password requirements:</p>
+              <ul>
+                <li>Must be at least 8 characters.</li>
+                <li>Cannot be a password that you've used before.</li>
+                <li>Cannot be similar to your name or email address.</li>
+              </ul>
             </div>
-          </mat-menu>
-        </button>
+          </div>
+        </mat-menu>
 
         <mat-form-field appearance="fill">
           <mat-label>Confirm password</mat-label>
