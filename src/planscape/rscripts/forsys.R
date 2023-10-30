@@ -436,8 +436,9 @@ get_max_treatment_area <- function(scenario) {
 }
 
 get_distance_to_roads <- function(configuration) {
-  distance <- configuration$min_distance_from_road
-  return(glue("distance_to_roads <= {distance}"))
+  # converts specified distance to roads in yards to meters
+  distance_in_meters <- configuration$min_distance_from_road / 1.094
+  return(glue("distance_to_roads <= {distance_in_meters}"))
 }
 
 get_max_slope <- function(configuration) {
