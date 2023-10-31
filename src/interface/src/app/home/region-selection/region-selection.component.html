@@ -1,7 +1,7 @@
 <div class="center-block">
   <!-- Content text -->
   <section class="content-section">
-    <span *ngIf="!hasPlans || !(loggedIn$ | async)">
+    <span *ngIf="!hasPlans || (loggedIn$ | async) === false">
       Welcome to Planscape preview!
     </span>
     <span *ngIf="multiple_regions_enabled; else singleRegionEnabled">
