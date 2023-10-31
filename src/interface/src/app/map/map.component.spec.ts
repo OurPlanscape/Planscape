@@ -164,10 +164,7 @@ describe('MapComponent', () => {
       'MatDialog',
       {
         open: {
-          afterClosed: () =>
-            of({
-              value: 'test name',
-            }),
+          afterClosed: () => of('temp'),
         } as MatDialogRef<any>,
       },
       {}
@@ -657,8 +654,6 @@ describe('MapComponent', () => {
       userSignedIn$.next(true);
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
-      const planServiceStub: PlanService =
-        fixture.debugElement.injector.get(PlanService);
       component.selectedAreaCreationAction = component.AreaCreationAction.DRAW;
       fixture.componentInstance.showConfirmAreaButton$ =
         new BehaviorSubject<boolean>(true);
@@ -673,32 +668,23 @@ describe('MapComponent', () => {
 
       expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
         PlanCreateDialogComponent,
-        { maxWidth: '560px' }
+        {
+          maxWidth: '560px',
+          data: {
+            shape: { type: 'FeatureCollection', features: [] },
+          },
+        }
       );
-      expect(planServiceStub.createPlan).toHaveBeenCalled();
     }));
 
     it('dialog calls create plan with name and planning area', fakeAsync(async () => {
       userSignedIn$.next(true);
-      const planServiceStub: PlanService =
-        fixture.debugElement.injector.get(PlanService);
+
       const routerStub: Router = fixture.debugElement.injector.get(Router);
       spyOn(routerStub, 'navigate').and.callThrough();
 
-      const emptyGeoJson: GeoJSON.GeoJSON = {
-        type: 'FeatureCollection',
-        features: [],
-      };
-      const createPlanSpy = spyOn<any>(
-        component,
-        'createPlan'
-      ).and.callThrough();
-
       fixture.componentInstance.openCreatePlanDialog();
       tick();
-
-      expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
-      expect(planServiceStub.createPlan).toHaveBeenCalled();
       expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan', 'temp']);
     }));
   });
