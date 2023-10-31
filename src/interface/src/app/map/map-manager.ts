@@ -28,7 +28,21 @@ import {
 } from '../types';
 
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
-import { checkIfAreaInBoundaries, createLegendHtmlElement } from './map.helper';
+
+import {
+  DRAWING_STYLES,
+  GEOMAN_DRAW_OPTIONS,
+  HOVER_STYLES,
+  NORMAL_STYLES,
+} from './map.constants';
+import {
+  areaOverlaps,
+  checkIfAreaInBoundaries,
+  createLegendHtmlElement,
+  satelliteTiles,
+  stadiaAlidadeTiles,
+  terrainTiles,
+} from './map.helper';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -59,20 +73,6 @@ export class MapManager {
     this.selectedRegion$ = this.session.region$;
   }
 
-  getGeomanDrawOptions(): L.PM.ToolbarOptions {
-    return {
-      cutPolygon: false,
-      drawCircle: false,
-      drawMarker: false,
-      drawCircleMarker: false,
-      drawPolyline: false,
-      drawRectangle: false,
-      drawText: false,
-      rotateMode: false,
-      position: 'bottomright',
-    };
-  }
-
   /** Initializes the map with controls and the layer options specified in its config. */
   initLeafletMap(
     map: Map,
@@ -87,11 +87,11 @@ export class MapManager {
     if (map.instance != undefined) map.instance.remove();
 
     if (map.config.baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = this.stadiaAlidadeTiles();
+      map.baseLayerRef = stadiaAlidadeTiles();
     } else if (map.config.baseLayerType == BaseLayerType.Terrain) {
-      map.baseLayerRef = this.terrainTiles();
+      map.baseLayerRef = terrainTiles();
     } else {
-      map.baseLayerRef = this.satelliteTiles();
+      map.baseLayerRef = satelliteTiles();
     }
 
     map.instance = L.map(mapId, {
@@ -144,66 +144,15 @@ export class MapManager {
       },
       layerGroup: this.drawingLayer,
     });
-    map.instance!.pm.setPathOptions({
-      color: '#3367D6',
-      fillColor: '#3367D6',
-      fillOpacity: 0.1,
-      weight: 5,
-    });
+    map.instance!.pm.setPathOptions(DRAWING_STYLES);
 
     this.setUpEventHandlers(map, createDetailCardCallback);
   }
 
-  /** Creates a basemap layer using the Esri.WorldTerrain tiles. */
-  private terrainTiles() {
-    return L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
-      {
-        maxZoom: 13,
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-        zIndex: 0,
-      }
-    );
-  }
-
-  /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
-  private stadiaAlidadeTiles() {
-    return L.tileLayer(
-      'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
-      {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-        zIndex: 0,
-      }
-    );
-  }
-
-  /** Creates a basemap layer using the Esri.WorldImagery tiles. */
-  private satelliteTiles() {
-    return L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zIndex: 0,
-      }
-    );
-  }
-
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
   private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
-    const normalStyle: L.PathOptions = {
-      color: '#000000',
-      weight: 1,
-      opacity: 0.5,
-    };
-    const hoverStyle: L.PathOptions = {
-      color: '#ff0000',
-      weight: 5,
-      opacity: 0.9,
-    };
+    const normalStyle = NORMAL_STYLES;
+    const hoverStyle: L.PathOptions = HOVER_STYLES;
 
     // [elsieling] This step makes the map less responsive
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
@@ -261,12 +210,7 @@ export class MapManager {
    */
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
     L.geoJSON(area, {
-      style: (_) => ({
-        color: '#3367D6',
-        fillColor: '#3367D6',
-        fillOpacity: 0.1,
-        weight: 5,
-      }),
+      style: (_) => DRAWING_STYLES,
       pmIgnore: false,
       onEachFeature: (_, layer) => {
         layer.addTo(this.drawingLayer);
@@ -380,15 +324,7 @@ export class MapManager {
       const existingPolygon = feature as L.Polygon;
       // Skip feature with same latlng because that is what's being edited
       if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
-        const isOverlapping = booleanWithin(
-          editedLayer.toGeoJSON(),
-          existingPolygon.toGeoJSON()
-        );
-        const isIntersecting = booleanIntersects(
-          editedLayer.toGeoJSON(),
-          existingPolygon.toGeoJSON()
-        );
-        overlaps = isOverlapping || isIntersecting;
+        overlaps = areaOverlaps(editedLayer, existingPolygon);
       }
     });
     if (overlaps) {
@@ -511,7 +447,7 @@ export class MapManager {
   /** Adds drawing control and drawing layer to the map. */
   addDrawingControl(map: L.Map) {
     map.addLayer(this.drawingLayer);
-    map.pm.addControls(this.getGeomanDrawOptions());
+    map.pm.addControls(GEOMAN_DRAW_OPTIONS);
   }
 
   /** Clears all drawings and cloned drawings. */
@@ -618,11 +554,11 @@ export class MapManager {
     let baseLayerType = map.config.baseLayerType;
     map.baseLayerRef?.remove();
     if (baseLayerType === BaseLayerType.Terrain) {
-      map.baseLayerRef = this.terrainTiles();
+      map.baseLayerRef = terrainTiles();
     } else if (baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = this.stadiaAlidadeTiles();
+      map.baseLayerRef = stadiaAlidadeTiles();
     } else if (baseLayerType === BaseLayerType.Satellite) {
-      map.baseLayerRef = this.satelliteTiles();
+      map.baseLayerRef = satelliteTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
   }

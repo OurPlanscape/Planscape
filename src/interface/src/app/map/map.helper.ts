@@ -1,16 +1,8 @@
 import { Feature, FeatureCollection } from 'geojson';
 import * as L from 'leaflet';
 import booleanWithin from '@turf/boolean-within';
+import booleanIntersects from '@turf/boolean-intersects';
 
-/**
- * todo update with
- * booleanWithin(feature1: Feature<any> | Geometry, feature2: Feature<any> | Geometry): boolean;
- *
- * @param area
- * @param boundaries
- *
- * feature1: Feature<any> | Geometry, feature2: Feature<any> | Geometry
- */
 export function checkIfAreaInBoundaries(
   area: FeatureCollection,
   boundaries: Feature
@@ -19,6 +11,21 @@ export function checkIfAreaInBoundaries(
     return !booleanWithin(feature, boundaries);
   });
   return !overlappingAreas.some((overlap) => overlap);
+}
+
+export function areaOverlaps(
+  editedLayer: L.Polygon,
+  existingPolygon: L.Polygon
+) {
+  const isOverlapping = booleanWithin(
+    editedLayer.toGeoJSON(),
+    existingPolygon.toGeoJSON()
+  );
+  const isIntersecting = booleanIntersects(
+    editedLayer.toGeoJSON(),
+    existingPolygon.toGeoJSON()
+  );
+  return isOverlapping || isIntersecting;
 }
 
 export function createLegendHtmlElement(
@@ -73,4 +80,42 @@ export function createLegendHtmlElement(
   htmlContent += '</div>';
   div.innerHTML = htmlContent;
   return div;
+}
+
+/** Creates a basemap layer using the Esri.WorldTerrain tiles. */
+export function terrainTiles() {
+  return L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
+    {
+      maxZoom: 13,
+      attribution:
+        'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+      zIndex: 0,
+    }
+  );
+}
+
+/** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
+export function stadiaAlidadeTiles() {
+  return L.tileLayer(
+    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+    {
+      maxZoom: 19,
+      attribution:
+        '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+      zIndex: 0,
+    }
+  );
+}
+
+/** Creates a basemap layer using the Esri.WorldImagery tiles. */
+export function satelliteTiles() {
+  return L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    {
+      attribution:
+        'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      zIndex: 0,
+    }
+  );
 }
