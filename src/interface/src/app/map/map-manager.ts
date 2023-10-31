@@ -26,7 +26,11 @@ import {
   Region,
   regionMapCenters,
 } from '../types';
+
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
+
+import { ROAD_TILES, SATELLITE_TILES, TERRAIN_TILES } from './map.constants';
+import { checkIfAreaInBoundaries, createLegendHtmlElement } from './map.helper';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -85,11 +89,11 @@ export class MapManager {
     if (map.instance != undefined) map.instance.remove();
 
     if (map.config.baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = this.stadiaAlidadeTiles();
+      map.baseLayerRef = ROAD_TILES;
     } else if (map.config.baseLayerType == BaseLayerType.Terrain) {
-      map.baseLayerRef = this.terrainTiles();
+      map.baseLayerRef = TERRAIN_TILES;
     } else {
-      map.baseLayerRef = this.satelliteTiles();
+      map.baseLayerRef = SATELLITE_TILES;
     }
 
     map.instance = L.map(mapId, {
@@ -150,44 +154,6 @@ export class MapManager {
     });
 
     this.setUpEventHandlers(map, createDetailCardCallback);
-  }
-
-  /** Creates a basemap layer using the Esri.WorldTerrain tiles. */
-  private terrainTiles() {
-    return L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
-      {
-        maxZoom: 13,
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-        zIndex: 0,
-      }
-    );
-  }
-
-  /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
-  private stadiaAlidadeTiles() {
-    return L.tileLayer(
-      'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
-      {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-        zIndex: 0,
-      }
-    );
-  }
-
-  /** Creates a basemap layer using the Esri.WorldImagery tiles. */
-  private satelliteTiles() {
-    return L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zIndex: 0,
-      }
-    );
   }
 
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
@@ -522,6 +488,40 @@ export class MapManager {
     this.polygonsCreated$.next(false);
   }
 
+  checkIfDrawingInRegion(boundaries: FeatureCollection) {
+    const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;
+    return checkIfAreaInBoundaries(drawnGeoJson, boundaries.features[0]);
+  }
+
+  /**
+   * Darkens everything outside of the region boundary.
+   * Type 'any' is used in order to access coordinates.
+   * Currently unused.
+   */
+  maskOutsideRegion(map: Map, boundary: any) {
+    // Add corners of the map to invert the polygon
+    if (map.regionLayerRef) {
+      map.regionLayerRef?.remove();
+    }
+    // this is used to mask "inverted"
+    // boundary.features[0].geometry.coordinates[0].unshift([
+    //   [180, -90],
+    //   [180, 90],
+    //   [-180, 90],
+    //   [-180, -90],
+    // ]);
+    map.regionLayerRef = L.geoJSON(boundary, {
+      style: (_) => ({
+        color: '#ffffff',
+        weight: 2,
+        opacity: 1,
+        fillColor: '#000000',
+        fillOpacity: 0.4,
+      }),
+    });
+    map.regionLayerRef.addTo(map.instance!);
+  }
+
   /**
    * Converts drawingLayer to GeoJSON. If there are multiple polygons drawn,
    * creates and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon
@@ -564,34 +564,6 @@ export class MapManager {
     map.pm.disableDraw();
   }
 
-  /**
-   * Darkens everything outside of the region boundary.
-   * Type 'any' is used in order to access coordinates.
-   * Currently unused.
-   */
-  maskOutsideRegion(map: Map, boundary: any) {
-    // Add corners of the map to invert the polygon
-    if (map.regionLayerRef) {
-      map.regionLayerRef?.remove();
-    }
-    boundary.features[0].geometry.coordinates[0].unshift([
-      [180, -90],
-      [180, 90],
-      [-180, 90],
-      [-180, -90],
-    ]);
-    map.regionLayerRef = L.geoJSON(boundary, {
-      style: (_) => ({
-        color: '#ffffff',
-        weight: 2,
-        opacity: 1,
-        fillColor: '#000000',
-        fillOpacity: 0.4,
-      }),
-    });
-    map.regionLayerRef.addTo(map.instance!);
-  }
-
   /** Sync pan, zoom, etc. between all maps visible onscreen. */
   syncVisibleMaps(isMapVisible: (index: number) => boolean) {
     this.maps.forEach((mapA, indexA) => {
@@ -610,11 +582,11 @@ export class MapManager {
     let baseLayerType = map.config.baseLayerType;
     map.baseLayerRef?.remove();
     if (baseLayerType === BaseLayerType.Terrain) {
-      map.baseLayerRef = this.terrainTiles();
+      map.baseLayerRef = TERRAIN_TILES;
     } else if (baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = this.stadiaAlidadeTiles();
+      map.baseLayerRef = ROAD_TILES;
     } else if (baseLayerType === BaseLayerType.Satellite) {
-      map.baseLayerRef = this.satelliteTiles();
+      map.baseLayerRef = SATELLITE_TILES;
     }
     map.instance?.addLayer(map.baseLayerRef!);
   }
@@ -702,7 +674,6 @@ export class MapManager {
   }
 
   addLegend(colormap: any, dataUnit: string | undefined, map: Map) {
-    var entries = colormap['entries'];
     const legend = new (L.Control.extend({
       options: { position: 'topleft' },
     }))();
@@ -713,52 +684,7 @@ export class MapManager {
         L.DomUtil.remove(mapRef.legend);
       }
 
-      const div = L.DomUtil.create('div', 'legend');
-      // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
-      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation
-      // (otherwise div tags are automatically closed before they should be)
-      var htmlContent = '';
-      htmlContent += '<div class=parentlegend>';
-      if (dataUnit && colormap['type'] == 'ramp') {
-        // For legends with numerical labels make header the corresponding data units
-        htmlContent += '<div><b>' + dataUnit + '</b></div>';
-      } else {
-        // For legends with categorical labels make header 'Legend'
-        htmlContent += '<div><b>Legend</b></div>';
-      }
-      // Reversing order to present legend values from high to low (default is low to high)
-      for (let i = entries.length - 1; i >= 0; i--) {
-        var entry = entries[i];
-        // Add a margin-bottom to only the last entry in the legend
-        var lastChild = '';
-        if (i == 0) {
-          lastChild = 'style="margin-bottom: 6px;"';
-        }
-        if (entry['label']) {
-          // Filter out 'nodata' entries
-          if (entry['color'] != '#000000') {
-            htmlContent +=
-              '<div class="legendline" ' +
-              lastChild +
-              '><i style="background:' +
-              entry['color'] +
-              '"> &emsp; &hairsp;</i> &nbsp;<label>' +
-              entry['label'] +
-              '<br/></label></div>';
-          } else if (lastChild != '') {
-            htmlContent += '<div class="legendline"' + lastChild + '></div>';
-          }
-        } else {
-          htmlContent +=
-            '<div class="legendline" ' +
-            lastChild +
-            '><i style="background:' +
-            entry['color'] +
-            '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
-        }
-      }
-      htmlContent += '</div>';
-      div.innerHTML = htmlContent;
+      const div = createLegendHtmlElement(colormap, dataUnit);
       // Needed to allow for scrolling on the legend
       L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
       // Set reference to legend for later deletion

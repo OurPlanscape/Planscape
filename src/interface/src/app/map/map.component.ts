@@ -112,6 +112,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject(['New Plan']);
 
+  regionBoundary: any;
+
   constructor(
     public applicationRef: ApplicationRef,
     private authService: AuthService,
@@ -329,7 +331,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         var centerCoords = regionMapCenters(selectedRegion!);
         map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
         // Region highlighting disabled for now
-        // this.displayRegionBoundary(map, selectedRegion);
+        this.displayRegionBoundary(map, selectedRegion);
       });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
@@ -415,6 +417,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.openSignInDialog();
       return;
     }
+
+    const inRegion = this.mapManager.checkIfDrawingInRegion(
+      this.regionBoundary
+    );
+    console.log('in region?', inRegion);
 
     const openedDialog = this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
@@ -526,6 +533,20 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       'Dismiss',
       SNACK_ERROR_CONFIG
     );
+  }
+
+  /** Gets the selected region geojson and renders it on the map.
+   * Currently unused.
+   * */
+  private displayRegionBoundary(map: Map, selectedRegion: Region | null) {
+    if (!selectedRegion) return;
+    if (!map.instance) return;
+    this.mapService
+      .getRegionBoundary(selectedRegion)
+      .subscribe((boundary: GeoJSON.GeoJSON) => {
+        this.mapManager.maskOutsideRegion(map, boundary);
+        this.regionBoundary = boundary;
+      });
   }
 
   /** Toggles which base layer is shown. */
