@@ -17,7 +17,7 @@
       <app-plan-overview
         [plan$]="currentPlan$"
         *ngIf="showOverview$ | async"></app-plan-overview>
-      <ng-container *ngIf="!(showOverview$ | async)">
+      <ng-container *ngIf="(showOverview$ | async) === false">
         <div class="plan-content-panel">
           <router-outlet #outlet="outlet"></router-outlet>
         </div>
