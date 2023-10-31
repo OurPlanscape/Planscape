@@ -56,25 +56,11 @@
         <mat-form-field appearance="fill">
           <mat-label>Create password</mat-label>
           <input
-            (focus)="showPolicy()"
-            (blur)="hidePolicy()"
             type="password"
             required
             formControlName="password1"
             matInput />
         </mat-form-field>
-        <div #policyBox id="policyBox" style="display: block">
-          <div class="tooltip">
-            <div>
-              <p>Password requirements:</p>
-              <ul>
-                <li>Must be at least 8 characters.</li>
-                <li>Cannot be a password that you've used before.</li>
-                <li>Cannot be similar to your name or email address.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
 
         <mat-form-field appearance="fill">
           <mat-label>Confirm password</mat-label>
@@ -85,32 +71,86 @@
             matInput />
         </mat-form-field>
 
-        <mat-error *ngIf="form.errors || errors.length > 0">
-          <p>Please correct the following errors:</p>
-          <ul>
-            <li *ngFor="let e of errors">
+        <div></div>
+
+        <div #policyBox id="policyBox">
+          <div>
+            <div>
+              Password Requirements
+              <div
+                *ngIf="form.errors?.['mustBe8Characters']"
+                style="color: red">
+                <mat-icon class="warning-icon">warning</mat-icon>
+                Password must contain at least 8 characters.
+              </div>
+              <div
+                *ngIf="form.errors?.['mustBe8Characters'] === false"
+                style="color: green">
+                <mat-icon class="done-icon">done</mat-icon>
+                Password must contain at least 8 characters.
+              </div>
+              <div *ngIf="form.errors?.['mustBe8Characters'] === null">
+                - Password must contain at least 8 characters.
+              </div>
+
+              <div
+                *ngIf="form.errors?.['mustContainNumber']"
+                style="color: red">
+                <mat-icon class="warning-icon">warning</mat-icon>
+                Your new password must contain a number.
+              </div>
+              <div
+                *ngIf="form.errors?.['mustContainNumber'] === false"
+                style="color: green">
+                <mat-icon class="done-icon">done</mat-icon>
+                Your new password must contain a number.
+              </div>
+              <div *ngIf="form.errors?.['mustContainNumber'] === null">
+                - Your new password must contain a number.
+              </div>
+
+              <div *ngIf="form.errors?.['mustContainUpper']" style="color: red">
+                <mat-icon class="warning-icon">warning</mat-icon>
+                Your new password must contain at least one uppercase character.
+              </div>
+              <div
+                *ngIf="form.errors?.['mustContainUpper'] === false"
+                style="color: green">
+                <mat-icon class="done-icon">done</mat-icon>
+                Your new password must contain at least one uppercase character.
+              </div>
+              <div *ngIf="form.errors?.['mustContainUpper'] === null">
+                - Your new password must contain at least one uppercase
+                character.
+              </div>
+
+              <div *ngIf="form.errors?.['mustContainLower']" style="color: red">
+                <mat-icon class="warning-icon">warning</mat-icon>
+                Your new password must contain at least one uppercase character.
+              </div>
+              <div
+                *ngIf="form.errors?.['mustContainLower'] === false"
+                style="color: green">
+                <mat-icon class="done-icon">done</mat-icon>
+                Your new password must contain at least one lowercase character.
+              </div>
+              <div *ngIf="form.errors?.['mustContainLower'] === null">
+                - Your new password must contain at least one lowercase
+                character.
+              </div>
+            </div>
+          </div>
+          <mat-error *ngIf="form.errors || errors.length > 0">
+            <p>Please correct the following errors:</p>
+            <div *ngFor="let e of errors">
+              <mat-icon class="warning-icon">warning</mat-icon>
               {{ e }}
-            </li>
-            <li *ngIf="form.errors?.['mustBe8Characters']">
-              Password must contain at least 8 characters.
-            </li>
-            <li *ngIf="form.errors?.['newPaswordsMustMatch']">
+            </div>
+            <div *ngIf="form.errors?.['newPaswordsMustMatch']">
               The new passwords you entered do not match.
-            </li>
-            <li *ngIf="form.errors?.['newPasswordMustBeNew']">
-              Your new password should not be the same as your current password.
-            </li>
-            <li *ngIf="form.errors?.['mustContainNumber']">
-              Your new password must contain a number.
-            </li>
-            <li *ngIf="form.errors?.['mustContainUpper']">
-              Your new password must contain at least one uppercase character.
-            </li>
-            <li *ngIf="form.errors?.['mustContainLower']">
-              Your new password must contain at least one lowercase character.
-            </li>
-          </ul>
-        </mat-error>
+            </div>
+          </mat-error>
+        </div>
 
         <button
           mat-flat-button
