@@ -1,3 +1,5 @@
+import * as L from 'leaflet';
+
 export enum AreaCreationAction {
   NONE = 0,
   DRAW = 1,
@@ -55,3 +57,34 @@ export const SATELLITE_TILES = L.tileLayer(
     zIndex: 0,
   }
 );
+
+export const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
+  cutPolygon: false,
+  drawCircle: false,
+  drawMarker: false,
+  drawCircleMarker: false,
+  drawPolyline: false,
+  drawRectangle: false,
+  drawText: false,
+  rotateMode: false,
+  position: 'bottomright',
+};
+
+export const NORMAL_STYLES: L.PathOptions = {
+  color: '#000000',
+  weight: 1,
+  opacity: 0.5,
+};
+
+export const HOVER_STYLES: L.PathOptions = {
+  color: '#ff0000',
+  weight: 5,
+  opacity: 0.9,
+};
+
+export const DRAWING_STYLES: L.PathOptions = {
+  color: '#3367D6',
+  fillColor: '#3367D6',
+  fillOpacity: 0.1,
+  weight: 5,
+};
