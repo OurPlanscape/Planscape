@@ -1,13 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild} from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
   FormGroup,
   Validators,
+  ValidationErrors,
+  ValidatorFn
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenu } from '@angular/material/menu';
 import { AuthService } from './../services';
 import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
 import { TimeoutError, timeout } from 'rxjs';
@@ -18,6 +21,8 @@ import { TimeoutError, timeout } from 'rxjs';
   styleUrls: ['./signup.component.scss'],
 })
 export class SignupComponent {
+  @ViewChild('policyMenu') policyMenu : MatMenu | undefined;
+
   errors: string[] = [];
   form: FormGroup;
   submitting: boolean = false;
@@ -28,30 +33,56 @@ export class SignupComponent {
     private formBuilder: FormBuilder,
     private router: Router
   ) {
+
     this.form = this.formBuilder.group(
       {
         firstName: this.formBuilder.control('', Validators.required),
         lastName: this.formBuilder.control('', Validators.required),
         email: this.formBuilder.control('', [
-          Validators.required,
+         // Validators.required,
           Validators.email,
         ]),
         password1: this.formBuilder.control('', [
-          Validators.required,
-          Validators.minLength(8),
+         // Validators.required,
+          //Validators.minLength(8),
         ]),
-        password2: this.formBuilder.control('', Validators.required),
+        password2: this.formBuilder.control('',
+        // Validators.required
+        ),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validator: this.crossFieldValidators,
       }
     );
+  }
+
+  showPolicy() {
+    console.log('we are shwoing it...');
+    const policyBox = document.getElementById('policyBox');
+    console.log('do we have a thing?', policyBox);
+    if (policyBox !== null) {
+      policyBox.style.display = "block";
+      console.log('we are showing?...', policyBox.style.display);
+    }
+    }
+
+  hidePolicy() {
+    console.log('we are hiding it...');
+    const policyBox = document.getElementById('policyBox');
+    if (policyBox !== null) {
+      policyBox.style.display = 'none';
+      console.log('we are hiding?...', policyBox.style);
+    }
   }
 
   signup() {
     if (this.submitting) return;
 
     this.submitting = true;
+
+    console.log('Form after submission:', this.form);
+
+    console.log('is it dirty?', this.form.dirty);
 
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
@@ -89,9 +120,51 @@ export class SignupComponent {
       });
   }
 
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('password1')?.value;
-    const password2 = group.get('password2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
-  }
+
+  private crossFieldValidators: ValidatorFn = (
+    formControls: AbstractControl
+  ): ValidationErrors | null => {
+    const password1 = formControls.value.password1;
+    const password2 = formControls.value.password2;
+  
+    const allTheErrors = {
+      newPaswordsMustMatch: false,
+      mustContainNumber: false,
+      mustContainUpper: false,
+      mustContainLower: false,
+      mustBe8Characters: false
+    };
+  
+    console.log('Here is the group: ', formControls);
+
+    if ( password1.length > 0 &&  password2.length > 0
+    ) {
+      if (password1.length < 8) {
+        allTheErrors.mustBe8Characters = true;
+      }
+      if (password1 !== password2) {
+        allTheErrors.newPaswordsMustMatch = true;
+      }
+      if (!/[0-9]+/.test(password1)) {
+        allTheErrors.mustContainNumber = true;
+      }
+      if (!/[A-Z]+/.test(password1)) {
+        allTheErrors.mustContainUpper = true;
+      }
+      if (!/[a-z]+/.test(password1)) {
+        allTheErrors.mustContainLower = true;
+      }
+    }
+    if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {
+      return allTheErrors;
+    }
+    return null;
+  };
+
+  // private passwordsMatchValidator(group: AbstractControl) {
+  //   const password1 = group.get('password1')?.value;
+  //   const password2 = group.get('password2')?.value;
+  //   console.log("Here is the group now:", group);
+  //   return password1 === password2 ? null : { passwordsNotEqual: true };
+  // }
 }

@@ -56,19 +56,14 @@
         <mat-form-field appearance="fill">
           <mat-label>Create password</mat-label>
           <input
-            #changePassword="matMenuTrigger"
-            [matMenuTriggerFor]="popoverMenu"
-            (focus)="changePassword.openMenu()"
-            (blur)="changePassword.closeMenu()"
+            (focus)="showPolicy()"
+            (blur)="hidePolicy()"
             type="password"
             required
             formControlName="password1"
             matInput />
-          <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
-            Password must contain at least 8 characters.
-          </mat-error>
         </mat-form-field>
-        <mat-menu class="password-reqs-menu" #popoverMenu="matMenu">
+        <div #policyBox id="policyBox" style="display: block">
           <div class="tooltip">
             <div>
               <p>Password requirements:</p>
@@ -79,7 +74,7 @@
               </ul>
             </div>
           </div>
-        </mat-menu>
+        </div>
 
         <mat-form-field appearance="fill">
           <mat-label>Confirm password</mat-label>
@@ -88,14 +83,32 @@
             required
             formControlName="password2"
             matInput />
-          <mat-error *ngIf="form.hasError('passwordsNotEqual')">
-            Passwords must match.
-          </mat-error>
         </mat-form-field>
 
-        <mat-error *ngIf="errors.length > 0">
+        <mat-error *ngIf="form.errors || errors.length > 0">
+          <p>Please correct the following errors:</p>
           <ul>
-            <li *ngFor="let error of errors">{{ error }}</li>
+            <li *ngFor="let e of errors">
+              {{ e }}
+            </li>
+            <li *ngIf="form.errors?.['mustBe8Characters']">
+              Password must contain at least 8 characters.
+            </li>
+            <li *ngIf="form.errors?.['newPaswordsMustMatch']">
+              The new passwords you entered do not match.
+            </li>
+            <li *ngIf="form.errors?.['newPasswordMustBeNew']">
+              Your new password should not be the same as your current password.
+            </li>
+            <li *ngIf="form.errors?.['mustContainNumber']">
+              Your new password must contain a number.
+            </li>
+            <li *ngIf="form.errors?.['mustContainUpper']">
+              Your new password must contain at least one uppercase character.
+            </li>
+            <li *ngIf="form.errors?.['mustContainLower']">
+              Your new password must contain at least one lowercase character.
+            </li>
           </ul>
         </mat-error>
 
