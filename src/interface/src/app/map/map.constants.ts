@@ -1,6 +1,3 @@
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
-import * as L from 'leaflet';
-
 export enum AreaCreationAction {
   NONE = 0,
   DRAW = 1,

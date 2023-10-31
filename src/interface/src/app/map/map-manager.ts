@@ -28,8 +28,6 @@ import {
 } from '../types';
 
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
-
-import { ROAD_TILES, SATELLITE_TILES, TERRAIN_TILES } from './map.constants';
 import { checkIfAreaInBoundaries, createLegendHtmlElement } from './map.helper';
 
 // Set to true so that layers are not editable by default
@@ -89,11 +87,11 @@ export class MapManager {
     if (map.instance != undefined) map.instance.remove();
 
     if (map.config.baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = ROAD_TILES;
+      map.baseLayerRef = this.stadiaAlidadeTiles();
     } else if (map.config.baseLayerType == BaseLayerType.Terrain) {
-      map.baseLayerRef = TERRAIN_TILES;
+      map.baseLayerRef = this.terrainTiles();
     } else {
-      map.baseLayerRef = SATELLITE_TILES;
+      map.baseLayerRef = this.satelliteTiles();
     }
 
     map.instance = L.map(mapId, {
@@ -154,6 +152,44 @@ export class MapManager {
     });
 
     this.setUpEventHandlers(map, createDetailCardCallback);
+  }
+
+  /** Creates a basemap layer using the Esri.WorldTerrain tiles. */
+  private terrainTiles() {
+    return L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
+      {
+        maxZoom: 13,
+        attribution:
+          'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
+        zIndex: 0,
+      }
+    );
+  }
+
+  /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
+  private stadiaAlidadeTiles() {
+    return L.tileLayer(
+      'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
+        zIndex: 0,
+      }
+    );
+  }
+
+  /** Creates a basemap layer using the Esri.WorldImagery tiles. */
+  private satelliteTiles() {
+    return L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      {
+        attribution:
+          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        zIndex: 0,
+      }
+    );
   }
 
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
@@ -582,11 +618,11 @@ export class MapManager {
     let baseLayerType = map.config.baseLayerType;
     map.baseLayerRef?.remove();
     if (baseLayerType === BaseLayerType.Terrain) {
-      map.baseLayerRef = TERRAIN_TILES;
+      map.baseLayerRef = this.terrainTiles();
     } else if (baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = ROAD_TILES;
+      map.baseLayerRef = this.stadiaAlidadeTiles();
     } else if (baseLayerType === BaseLayerType.Satellite) {
-      map.baseLayerRef = SATELLITE_TILES;
+      map.baseLayerRef = this.satelliteTiles();
     }
     map.instance?.addLayer(map.baseLayerRef!);
   }
