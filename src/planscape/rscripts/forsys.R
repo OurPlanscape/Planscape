@@ -50,6 +50,10 @@ PREPROCESSING_MULTIPLIERS <- list(
     aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
   )
 
+METRIC_COLUMNS <- list(
+  distance_to_roads = "min"
+)
+
 
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
@@ -154,20 +158,29 @@ preprocess_metrics <- function(metrics, condition_name) {
   return(metrics)
 }
 
+get_metric_column <- function(condition_name) {
+  column <- METRIC_COLUMNS[[condition_name]]
+  if (is.null(column)) {
+    return("avg")
+  }
+  return(column)
+}
+
 get_stand_metrics <- function(
     connection,
     condition_id,
     condition_name,
     stand_ids) {
+  metric_column <- get_metric_column(condition_name)
   query <- glue_sql(
     "SELECT
       stand_id,
-      avg as {`condition_name`}
+      {`metric_column`} as {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
        stand_id IN ({stand_ids*}) AND
-       avg is NOT NULL",
+       {`metric_column`} is NOT NULL",
     condition_id = condition_id,
     condition_name = condition_name,
     stand_ids = stand_ids,
@@ -194,6 +207,7 @@ get_project_geometry <- function(connection, stand_ids) {
   result <- dbGetQuery(connection, query)
   return(fromJSON(result$st_asgeojson))
 }
+
 
 get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
@@ -480,7 +494,6 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
-
   stand_data <- get_stand_data(
     connection,
     scenario,
