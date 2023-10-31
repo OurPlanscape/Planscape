@@ -159,11 +159,10 @@ preprocess_metrics <- function(metrics, condition_name) {
 }
 
 get_metric_column <- function(condition_name) {
-  column <- METRIC_COLUMNS[[condition_name]]
-  if (is.null(column)) {
-    return("avg")
+  if (exists(condition_name, METRIC_COLUMNS)) {
+    return(METRIC_COLUMNS[[condition_name]])
   }
-  return(column)
+  return("avg")
 }
 
 get_stand_metrics <- function(
