@@ -154,17 +154,10 @@ export class SignupComponent {
       if (!/[a-z]+/.test(password1)) {
         allTheErrors.mustContainLower = true;
       }
+    } else {
+     return  null;
     }
-    if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {
-      return allTheErrors;
-    }
-    return null;
+    return allTheErrors;
   };
 
-  // private passwordsMatchValidator(group: AbstractControl) {
-  //   const password1 = group.get('password1')?.value;
-  //   const password2 = group.get('password2')?.value;
-  //   console.log("Here is the group now:", group);
-  //   return password1 === password2 ? null : { passwordsNotEqual: true };
-  // }
 }
