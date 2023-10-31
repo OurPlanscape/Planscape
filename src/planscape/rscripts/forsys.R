@@ -436,35 +436,38 @@ get_max_treatment_area <- function(scenario) {
 }
 
 get_distance_to_roads <- function(configuration) {
-  if (stri_isempty(configuration$min_distance_from_road)) {
-    distance <- 1000
-  } else {
-    distance <- configuration$min_distance_from_road
-  }
-  return(glue("distance_to_roads <= {distance}"))
+  # converts specified distance to roads in yards to meters
+  distance_in_meters <- configuration$min_distance_from_road / 1.094
+  return(glue("distance_to_roads <= {distance_in_meters}"))
 }
 
 get_max_slope <- function(configuration) {
-  if (stri_isempty(configuration$max_slope)) {
-    max_slope <- 37
-  } else {
-    max_slope <- configuration$max_slope
-  }
+  max_slope <- configuration$max_slope
   return(glue("slope <= {max_slope}"))
 }
 
 get_stand_thresholds <- function(scenario) {
+  all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
-  max_slope <- get_max_slope(configuration)
-  distance_to_roads <- get_distance_to_roads(configuration)
+  if (!is.null(configuration$max_slope)) {
+    max_slope <- get_max_slope(configuration)
+    all_thresholds <- c(all_thresholds, max_slope)
+  }
 
-  all_thresholds <- c(max_slope, distance_to_roads)
+  if (!is.null(configuration$min_distance_from_road)) {
+    distance_to_roads <- get_distance_to_roads(configuration)
+    all_thresholds <- c(all_thresholds, distance_to_roads)
+  }
+
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
 
-  return(paste(all_thresholds, collapse = " & "))
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
 }
 
 call_forsys <- function(

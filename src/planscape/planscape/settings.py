@@ -54,6 +54,7 @@ planscape_apps = [
     "planning",
     "stands",
     "users",
+    "utils",
 ]
 INSTALLED_APPS = [
     "allauth",
