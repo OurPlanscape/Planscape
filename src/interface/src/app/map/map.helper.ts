@@ -1,7 +1,16 @@
-import { Feature, FeatureCollection } from 'geojson';
+import { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
 import * as L from 'leaflet';
 import booleanWithin from '@turf/boolean-within';
 import booleanIntersects from '@turf/boolean-intersects';
+import {
+  BaseLayerType,
+  Map,
+  MapConfig,
+  MapViewOptions,
+  NONE_BOUNDARY_CONFIG,
+  NONE_DATA_LAYER_CONFIG,
+  Region,
+} from '../types';
 
 export function checkIfAreaInBoundaries(
   area: FeatureCollection,
@@ -28,94 +37,185 @@ export function areaOverlaps(
   return isOverlapping || isIntersecting;
 }
 
-export function createLegendHtmlElement(
-  colormap: any,
-  dataUnit: string | undefined
+export function createDrawingLayer(
+  planningAreaData: GeoJSON.GeoJSON,
+  color?: string,
+  opacity?: number
 ) {
-  var entries = colormap['entries'];
-  const div = L.DomUtil.create('div', 'legend');
-  // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
-  // Creating a string and then assigning to div.innerHTML to allow for class encapsulation
-  // (otherwise div tags are automatically closed before they should be)
-  var htmlContent = '';
-  htmlContent += '<div class=parentlegend>';
-  if (dataUnit && colormap['type'] == 'ramp') {
-    // For legends with numerical labels make header the corresponding data units
-    htmlContent += '<div><b>' + dataUnit + '</b></div>';
-  } else {
-    // For legends with categorical labels make header 'Legend'
-    htmlContent += '<div><b>Legend</b></div>';
+  return L.geoJSON(planningAreaData, {
+    pane: 'overlayPane',
+    style: {
+      color: color ?? '#3367D6',
+      fillColor: color ?? '#3367D6',
+      fillOpacity: opacity ?? 0.1,
+      weight: 7,
+    },
+  });
+}
+
+export function addGeoJSONToMap(lGeoJson: L.GeoJSON, mapInstance: L.Map) {
+  lGeoJson.addTo(mapInstance);
+  mapInstance.fitBounds(lGeoJson.getBounds());
+  mapInstance.invalidateSize();
+}
+
+export function getMapNameplateWidth(map: Map): number | null {
+  const mapElement = document.getElementById(map.id);
+  const attribution = mapElement
+    ?.getElementsByClassName('leaflet-control-attribution')
+    ?.item(0);
+  const mapWidth = !!mapElement ? mapElement.clientWidth : null;
+  const attributionWidth = !!attribution ? attribution.clientWidth : null;
+  // The maximum width of the nameplate is equal to the width of the map minus the width
+  // of Leaflet's attribution control. Additional padding/margins may be applied in the
+  // nameplate component, but are not considered for this width.
+  const nameplateWidth =
+    !!mapWidth && !!attributionWidth ? mapWidth - attributionWidth : null;
+  return nameplateWidth;
+}
+
+export function createMultiPolygonFeatureCollection(
+  featureCollection: FeatureCollection
+) {
+  const newFeature: GeoJSON.Feature = {
+    type: 'Feature',
+    geometry: {
+      type: 'MultiPolygon',
+      coordinates: [],
+    },
+    properties: {},
+  };
+  featureCollection.features.forEach((feature) => {
+    (newFeature.geometry as MultiPolygon).coordinates.push(
+      (feature.geometry as Polygon).coordinates
+    );
+  });
+
+  return {
+    type: 'FeatureCollection',
+    features: [newFeature],
+  } as FeatureCollection;
+}
+
+export function addClonedLayerToMap(map: Map, layer: L.Layer) {
+  const originalId = L.Util.stamp(layer);
+
+  // Hacky way to clone, but it removes the reference to the origin layer
+  const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
+    color: '#ffde9e',
+    fillColor: '#ffde9e',
+    weight: 5,
+  });
+  map.clonedDrawingRef?.addLayer(clonedLayer);
+  map.drawnPolygonLookup![originalId] = clonedLayer;
+}
+
+export function removeClonedLayer(
+  map: Map,
+  layer: L.Layer,
+  deleteOriginal: boolean
+) {
+  const originalPolygonKey = L.Util.stamp(layer);
+  const clonedPolygon = map.drawnPolygonLookup![originalPolygonKey];
+  map.clonedDrawingRef!.removeLayer(clonedPolygon);
+  if (deleteOriginal) {
+    delete map.drawnPolygonLookup![originalPolygonKey];
   }
-  // Reversing order to present legend values from high to low (default is low to high)
-  for (let i = entries.length - 1; i >= 0; i--) {
-    var entry = entries[i];
-    // Add a margin-bottom to only the last entry in the legend
-    var lastChild = '';
-    if (i == 0) {
-      lastChild = 'style="margin-bottom: 6px;"';
-    }
-    if (entry['label']) {
-      // Filter out 'nodata' entries
-      if (entry['color'] != '#000000') {
-        htmlContent +=
-          '<div class="legendline" ' +
-          lastChild +
-          '><i style="background:' +
-          entry['color'] +
-          '"> &emsp; &hairsp;</i> &nbsp;<label>' +
-          entry['label'] +
-          '<br/></label></div>';
-      } else if (lastChild != '') {
-        htmlContent += '<div class="legendline"' + lastChild + '></div>';
-      }
-    } else {
-      htmlContent +=
-        '<div class="legendline" ' +
-        lastChild +
-        '><i style="background:' +
-        entry['color'] +
-        '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
-    }
+}
+
+export function addRegionLayer(map: Map, boundary: any) {
+  // Add corners of the map to invert the polygon
+  if (map.regionLayerRef) {
+    map.regionLayerRef?.remove();
   }
-  htmlContent += '</div>';
-  div.innerHTML = htmlContent;
-  return div;
+  map.regionLayerRef = createRegionLayer(boundary);
+  map.regionLayerRef.addTo(map.instance!);
 }
 
-/** Creates a basemap layer using the Esri.WorldTerrain tiles. */
-export function terrainTiles() {
-  return L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
-    {
-      maxZoom: 13,
-      attribution:
-        'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-      zIndex: 0,
-    }
-  );
+export function showRegionLayer(map: Map) {
+  if (map.regionLayerRef) {
+    map.regionLayerRef.setStyle({ opacity: 1 });
+  }
 }
 
-/** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
-export function stadiaAlidadeTiles() {
-  return L.tileLayer(
-    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
-    {
-      maxZoom: 19,
-      attribution:
-        '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-      zIndex: 0,
-    }
-  );
+export function hideRegionLayer(map: Map) {
+  if (map.regionLayerRef) {
+    map.regionLayerRef.setStyle({ opacity: 0 });
+  }
 }
 
-/** Creates a basemap layer using the Esri.WorldImagery tiles. */
-export function satelliteTiles() {
-  return L.tileLayer(
-    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    {
-      attribution:
-        'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-      zIndex: 0,
-    }
-  );
+function createRegionLayer(boundaries: GeoJSON.GeoJSON) {
+  return L.geoJSON(boundaries, {
+    style: (_) => ({
+      color: '#ffffff',
+      weight: 2,
+      opacity: 0,
+      fillColor: '#000000',
+      fillOpacity: 0,
+    }),
+  });
+}
+
+export function regionMapCenters(region: Region): L.LatLngTuple {
+  // TODO Confirm center coordinates for new regions (northern, central, southern)
+  switch (region) {
+    case Region.SIERRA_NEVADA:
+      return [38.646, -120.548];
+    case Region.NORTHERN_CALIFORNIA:
+      return [39.703, -123.313];
+    case Region.CENTRAL_COAST:
+      return [36.598, -121.896];
+    case Region.SOUTHERN_CALIFORNIA:
+      return [34.0522, -118.243];
+    default:
+      // Defaults to Sierra Nevada center
+      return [38.646, -120.548];
+  }
+}
+
+export function defaultMapConfig(): MapConfig {
+  return {
+    baseLayerType: BaseLayerType.Road,
+    boundaryLayerConfig: NONE_BOUNDARY_CONFIG,
+    dataLayerConfig: NONE_DATA_LAYER_CONFIG,
+    showExistingProjectsLayer: false,
+  };
+}
+
+export function defaultMapViewOptions(): MapViewOptions {
+  return {
+    selectedMapIndex: 0,
+    numVisibleMaps: 4,
+    zoom: 9,
+    center: [38.646, -120.548],
+  };
+}
+
+export function defaultMapConfigsDictionary(): Record<Region, MapConfig[]> {
+  return {
+    [Region.SIERRA_NEVADA]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+    [Region.SOUTHERN_CALIFORNIA]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+    [Region.NORTHERN_CALIFORNIA]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+    [Region.CENTRAL_COAST]: [
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+      defaultMapConfig(),
+    ],
+  };
 }

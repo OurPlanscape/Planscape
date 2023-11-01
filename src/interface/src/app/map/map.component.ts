@@ -49,6 +49,13 @@ import { FeatureService } from '../features/feature.service';
 import { AreaCreationAction, LEGEND } from './map.constants';
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import {
+  addGeoJSONToMap,
+  addRegionLayer,
+  createDrawingLayer,
+  getMapNameplateWidth,
+} from './map.helper';
+import { changeMapBaseStyle } from './map.tiles';
 
 @UntilDestroy()
 @Component({
@@ -250,18 +257,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
 
     this.maps.forEach((map) => {
-      if (map.instance) {
-        this.drawingLayer = L.geoJSON(plan.planningArea, {
-          pane: 'overlayPane',
-          style: {
-            color: color ?? '#3367D6',
-            fillColor: color ?? '#3367D6',
-            fillOpacity: opacity ?? 0.1,
-            weight: 7,
-          },
-        }).addTo(map.instance);
-        map.instance.fitBounds(this.drawingLayer.getBounds());
-        map.instance.invalidateSize();
+      if (map.instance && plan.planningArea) {
+        this.drawingLayer = createDrawingLayer(
+          plan.planningArea,
+          color,
+          opacity
+        );
+        addGeoJSONToMap(this.drawingLayer, map.instance);
       }
     });
   }
@@ -365,23 +367,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   private updateMapNameplateWidth(map: Map) {
     this.mapNameplateWidths[this.maps.indexOf(map)].next(
-      this.getMapNameplateWidth(map)
+      getMapNameplateWidth(map)
     );
-  }
-
-  private getMapNameplateWidth(map: Map): number | null {
-    const mapElement = document.getElementById(map.id);
-    const attribution = mapElement
-      ?.getElementsByClassName('leaflet-control-attribution')
-      ?.item(0);
-    const mapWidth = !!mapElement ? mapElement.clientWidth : null;
-    const attributionWidth = !!attribution ? attribution.clientWidth : null;
-    // The maximum width of the nameplate is equal to the width of the map minus the width
-    // of Leaflet's attribution control. Additional padding/margins may be applied in the
-    // nameplate component, but are not considered for this width.
-    const nameplateWidth =
-      !!mapWidth && !!attributionWidth ? mapWidth - attributionWidth : null;
-    return nameplateWidth;
   }
 
   private startLoadingLayerCallback(layerName: string) {
@@ -544,14 +531,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.mapService
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
-        this.mapManager.maskOutsideRegion(map, boundary);
+        addRegionLayer(map, boundary);
         this.regionBoundary = boundary;
       });
   }
 
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
-    this.mapManager.changeBaseLayer(map);
+    changeMapBaseStyle(map);
 
     // Changing the base layer may change the attribution, so the map nameplate
     // width should be recalculated.

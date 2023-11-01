@@ -88,3 +88,23 @@ export const DRAWING_STYLES: L.PathOptions = {
   fillOpacity: 0.1,
   weight: 5,
 };
+
+export const BOUNDARY_LAYER_NORMAL_STYLES: L.PathOptions = {
+  weight: 1,
+  color: '#0000ff',
+  fillOpacity: 0,
+  fill: true,
+};
+
+export const BOUNDARY_LAYER_HOVER_STYLES: L.PathOptions = {
+  weight: 5,
+  color: '#0000ff',
+  fillOpacity: 0.5,
+  fill: true,
+};
+export const FrontendConstants = {
+  MAP_INITIAL_ZOOM: 9,
+  MAP_MIN_ZOOM: 7,
+  MAP_MAX_ZOOM: 13,
+  MAP_DATA_LAYER_OPACITY: 0.7,
+} as const;

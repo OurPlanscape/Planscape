@@ -5,3 +5,8 @@ export * from './map.types';
 export * from './plan.types';
 export * from './region.types';
 export * from './user.types';
+export { regionMapCenters } from '../map/map.helper';
+export { defaultMapConfigsDictionary } from '../map/map.helper';
+export { defaultMapViewOptions } from '../map/map.helper';
+export { defaultMapConfig } from '../map/map.helper';
+export { FrontendConstants } from '../map/map.constants';
