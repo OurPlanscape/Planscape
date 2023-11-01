@@ -14,11 +14,22 @@
     </mat-error>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
-    <button mat-button color="primary" type="button" (click)="cancel()">
+    <button
+      mat-button
+      color="primary"
+      type="button"
+      (click)="cancel()"
+      [disabled]="submitting">
       CANCEL
     </button>
-    <button mat-button type="submit" color="primary" data-id="save">
-      SAVE
+    <button
+      mat-button
+      type="submit"
+      color="primary"
+      data-id="save"
+      [disabled]="submitting">
+      <mat-spinner *ngIf="submitting" diameter="24"></mat-spinner>
+      <span *ngIf="!submitting">SAVE</span>
     </button>
   </mat-dialog-actions>
 </form>
