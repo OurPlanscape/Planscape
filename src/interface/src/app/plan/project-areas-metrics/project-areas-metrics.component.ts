@@ -47,7 +47,6 @@ export class ProjectAreasMetricsComponent {
     dataToFilter: ChartData[],
     currentChart: ChartData
   ): ChartData[] {
-    console.log(data);
     return data.filter((d) => d === currentChart || !dataToFilter.includes(d));
   }
 }
