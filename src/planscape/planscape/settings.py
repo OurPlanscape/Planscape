@@ -356,3 +356,5 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
+
+DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
