@@ -53,10 +53,8 @@ export class SignupComponent {
 
   resendEmail() {
     const email: string = this.form.get('email')?.value;
-    console.log("is there an email?", email);
     this.authService.resendValidationEmail(email).subscribe();
     this.offerResend = false;
-
   }
 
   signup() {
@@ -85,10 +83,12 @@ export class SignupComponent {
           this.submitting = false;
           if (error.status == 400) {
             this.errors = Object.values(error.error);
-            // offer to resend emails if the user exists. 
-            this.offerResend = (this.errors.filter(s => s[0].includes("already registered")).length > 0);
+            // offer to resend emails if the user exists.
+            this.offerResend =
+              this.errors.filter((s) => s[0].includes('already registered'))
+                .length > 0;
             // TODO: we should probably check to see if their email needs validation or a reset here.
-
+            //  or conversely, just let them reset their password and consider this to be email validation
           } else if (error.status == 500) {
             this.errors = Object.values([
               'An unexpected server error has occured.',
