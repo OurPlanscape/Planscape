@@ -11,6 +11,7 @@ import { map } from 'rxjs';
 })
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
+  @Input() priorities: string[] = [];
   @Input() selectedCharts: ChartData[] = [];
 
   mapConditionLayer$ = this.planService.planState$.pipe(
@@ -46,6 +47,7 @@ export class ProjectAreasMetricsComponent {
     dataToFilter: ChartData[],
     currentChart: ChartData
   ): ChartData[] {
+    console.log(data);
     return data.filter((d) => d === currentChart || !dataToFilter.includes(d));
   }
 }
