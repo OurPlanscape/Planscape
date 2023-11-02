@@ -167,8 +167,6 @@
                   "forest_composition",
                   "disturbance",
                   "environmental_justice",
-                  "total_fuel_exposed_to_fire",
-                  "standing_dead_and_ladder_fuels",
                   "severity"
                 ],
                 "metrics": [
@@ -184,7 +182,8 @@
                   "low_income_populations",
                   "california_spotted_owl_habitat",
                   "california_spotted_owl_territory",
-                  "total_fuel_exposed_to_fire"
+                  "total_fuel_exposed_to_fire",
+                  "standing_dead_and_ladder_fuels"
                 ]
               },
               "stand_thresholds": [
@@ -322,7 +321,7 @@
                   "biodiversity_conservation",
                   "fire_dynamics",
                   "forest_resilience",
-                  "carbon_stability"
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "community_integrity",
