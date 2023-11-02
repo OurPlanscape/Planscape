@@ -55,9 +55,11 @@ export class CreateScenariosComponent implements OnInit {
   };
   excludedAreasOptions: Array<string> = [
     'Private Land',
-    'National Forests and Parks',
+    'National Forests',
+    'National Parks',
     'Wilderness Area',
     'Tribal Lands',
+    'State Parks'
   ];
 
   project_area_upload_enabled = features.upload_project_area;
