@@ -45,7 +45,6 @@
           <mat-option
             *ngFor="let dataSet of filterData(data, selectedCharts, chart)"
             [value]="dataSet">
-            {{ priorities.includes(dataSet.key) ? '*' : '' }}
             {{ dataSet.label }}
           </mat-option>
         </mat-select>

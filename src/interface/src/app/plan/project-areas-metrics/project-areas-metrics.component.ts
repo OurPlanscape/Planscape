@@ -11,7 +11,6 @@ import { map } from 'rxjs';
 })
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
-  @Input() priorities: string[] = [];
   @Input() selectedCharts: ChartData[] = [];
 
   mapConditionLayer$ = this.planService.planState$.pipe(
