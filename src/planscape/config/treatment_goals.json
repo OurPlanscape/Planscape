@@ -23,6 +23,7 @@
                   "biodiversity_conservation"
                 ],
                 "elements": [
+                  "functional_fire",
                   "particulate_matter",
                   "carbon_stability",
                   "hazard",
@@ -31,6 +32,7 @@
                   "focal_species"
                 ],
                 "metrics": [
+                  "probability_of_fire_severity_high",
                   "high_severity_potential_smoke_emissions",
                   "total_fuel_exposed_to_fire",
                   "dead_and_down_carbon",
