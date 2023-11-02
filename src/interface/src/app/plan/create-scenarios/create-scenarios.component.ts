@@ -59,7 +59,7 @@ export class CreateScenariosComponent implements OnInit {
     'National Parks',
     'Wilderness Area',
     'Tribal Lands',
-    'State Parks'
+    'State Parks',
   ];
 
   project_area_upload_enabled = features.upload_project_area;
