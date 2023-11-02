@@ -1,5 +1,6 @@
 from io import StringIO
 import json
+from typing import Any, Dict
 
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
@@ -30,7 +31,9 @@ def _create_planning_area(
 # Blindly create a scenario and a scenario result in its default (pending) state.
 # Note that this does no deduplication, which our APIs may eventually do.
 def _create_scenario(
-    planning_area: PlanningArea, scenario_name: str, configuration: str
+    planning_area: PlanningArea,
+    scenario_name: str,
+    configuration: Dict[str, Any],
 ) -> Scenario:
     scenario = Scenario.objects.create(
         planning_area=planning_area, name=scenario_name, configuration=configuration
@@ -62,9 +65,23 @@ class EvaluateScenarioTest(TestCase):
         self.planning_area = _create_planning_area(
             self.user, "test plan", self.storable_geometry
         )
-        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
-        self.scenario2 = _create_scenario(self.planning_area, "test scenario2", "{}")
-        self.scenario3 = _create_scenario(self.planning_area, "test scenario3", "{}")
+        conf = {
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.scenario = _create_scenario(self.planning_area, "test scenario", conf)
+        self.scenario2 = _create_scenario(self.planning_area, "test scenario2", conf)
+        self.scenario3 = _create_scenario(self.planning_area, "test scenario3", conf)
 
         self.user2 = User.objects.create(username="testuser2")
         self.user2.set_password("12345")
