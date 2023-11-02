@@ -913,14 +913,18 @@ class CreateScenarioTest(TransactionTestCase):
         )
 
         self.configuration = {
-            "est_cost": 0,
-            "max_budget": 0,
-            "max_road_distance": 0,
-            "max_slope": 0,
-            "priorities": ["priority1"],
-            "weights": [0],
-            "stand_size": "Large",
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
             "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
         }
 
     def test_create_scenario(self):
@@ -929,20 +933,20 @@ class CreateScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": self.planning_area.pk,
-                "configuration": json.dumps(self.configuration),
+                "configuration": self.configuration,
                 "name": "test scenario",
                 "notes": "test notes",
             },
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        output = json.loads(response.content)
+        output = response.json()
         scenario_id = output["id"]
         self.assertEqual(Scenario.objects.count(), 1)
         self.assertEqual(ScenarioResult.objects.count(), 1)
         scenario = Scenario.objects.get(pk=scenario_id)
         self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
-        self.assertEqual(scenario.configuration, json.dumps(self.configuration))
+        self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, "test notes")
 
@@ -952,7 +956,7 @@ class CreateScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": self.planning_area.pk,
-                "configuration": json.dumps(self.configuration),
+                "configuration": self.configuration,
                 "name": "test scenario",
             },
             content_type="application/json",
@@ -964,7 +968,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 1)
         scenario = Scenario.objects.get(pk=scenario_id)
         self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
-        self.assertEqual(scenario.configuration, json.dumps(self.configuration))
+        self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, None)
 
@@ -972,7 +976,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse("planning:create_scenario"),
-            {"configuration": json.dumps(self.configuration), "name": "test scenario"},
+            {"configuration": self.configuration, "name": "test scenario"},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
@@ -994,7 +998,7 @@ class CreateScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": self.planning_area.pk,
-                "configuration": json.dumps(self.configuration),
+                "configuration": self.configuration,
             },
             content_type="application/json",
         )
@@ -1006,7 +1010,7 @@ class CreateScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": self.planning_area.pk,
-                "configuration": json.dumps(self.configuration),
+                "configuration": self.configuration,
                 "name": "test scenario",
             },
             content_type="application/json",
@@ -1020,7 +1024,7 @@ class CreateScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": 999999,
-                "configuration": json.dumps(self.configuration),
+                "configuration": self.configuration,
                 "name": "test scenario",
             },
             content_type="application/json",
@@ -1034,7 +1038,7 @@ class CreateScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": self.planning_area2.pk,
-                "configuration": json.dumps(self.configuration),
+                "configuration": self.configuration,
                 "name": "test scenario",
             },
             content_type="application/json",
