@@ -541,7 +541,7 @@ call_forsys <- function(
     patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
     patchmax_SDW = 0.5,
-    patchmax_EPW = 1,
+    patchmax_EPW = 0.5,
     patchmax_sample_frac = 0.1,
     annual_target_value = max_treatment_area,
   )
