@@ -81,6 +81,19 @@
           <ul>
             <li *ngFor="let error of errors">{{ error }}</li>
           </ul>
+          <div *ngIf="offerResend">
+            <div>Would you like a resend?</div>
+            <a clickable [routerLink]="[]" (click)="resendEmail()"
+              >Resend a validation email.</a
+            >
+            <div>Or would you like to reset your password?</div>
+            <a
+              class="forget-password-link"
+              i18n="Text on a button to reset password"
+              href="reset/">
+              Forgot password?
+            </a>
+          </div>
         </mat-error>
 
         <button
