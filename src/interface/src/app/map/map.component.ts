@@ -54,6 +54,7 @@ import { updateLegendWithColorMap } from './map.legends';
 import {
   addRegionLayer,
   createDrawingLayer,
+  hideRegionLayer,
   showRegionLayer,
 } from './map.layers';
 
@@ -470,6 +471,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       );
       this.showUploader = !this.showUploader;
     }
+    showRegionLayer(this.maps[selectedMapIndex]);
   }
 
   cancelAreaCreationAction() {
@@ -479,6 +481,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.maps[selectedMapIndex].instance!
     );
     this.mapManager.clearAllDrawings();
+    hideRegionLayer(this.maps[selectedMapIndex]);
     this.selectedAreaCreationAction = AreaCreationAction.NONE;
     this.showUploader = false;
   }
