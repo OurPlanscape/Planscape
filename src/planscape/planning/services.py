@@ -51,7 +51,6 @@ def validate_scenario_treatment_ratio(
         configuration.get("stand_size"),
     )
     stand_count = stands.count()
-
     ratio = max_treatable_stands / stand_count
 
     if ratio <= 0.2:
