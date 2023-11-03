@@ -1,15 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-outside-region-dialog',
   templateUrl: './outside-region-dialog.component.html',
-  styleUrls: ['./outside-region-dialog.component.scss']
+  styleUrls: ['./outside-region-dialog.component.scss'],
 })
-export class OutsideRegionDialogComponent implements OnInit {
+export class OutsideRegionDialogComponent {
+  constructor(private dialogRef: MatDialogRef<OutsideRegionDialogComponent>) {}
 
-  constructor() { }
-
-  ngOnInit(): void {
+  cancel(): void {
+    this.dialogRef.close();
   }
-
 }

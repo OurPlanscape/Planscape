@@ -443,7 +443,7 @@ export class MapManager {
     this.polygonsCreated$.next(false);
   }
 
-  checkIfDrawingInRegion(boundaries: FeatureCollection) {
+  checkIfDrawingInRegion(boundaries: GeoJSON.FeatureCollection) {
     const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;
     return checkIfAreaInBoundaries(drawnGeoJson, boundaries.features[0]);
   }

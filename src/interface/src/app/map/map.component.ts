@@ -15,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Feature, Geometry } from 'geojson';
+import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { BehaviorSubject, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
@@ -28,7 +28,6 @@ import {
   SessionService,
 } from '../services';
 import {
-  DEFAULT_COLORMAP,
   defaultMapConfig,
   defaultMapViewOptions,
   Legend,
@@ -36,7 +35,6 @@ import {
   MapConfig,
   MapViewOptions,
   NONE_BOUNDARY_CONFIG,
-  NONE_COLORMAP,
   Plan,
   Region,
   regionMapCenters,
@@ -58,6 +56,7 @@ import {
 } from './map.helper';
 import { changeMapBaseStyle } from './map.tiles';
 import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
+import { updateLegendWithColorMap } from './map.legends';
 
 @UntilDestroy()
 @Component({
@@ -121,7 +120,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject(['New Plan']);
 
-  regionBoundary: any;
+  // TODO  dont really need this one should remove
+  regionBoundary: GeoJSON.FeatureCollection | null = null;
 
   constructor(
     public applicationRef: ApplicationRef,
@@ -358,7 +358,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
 
     // Initialize the legend with colormap values.
-    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap, [
+    updateLegendWithColorMap(map, map.config.dataLayerConfig.colormap, [
       map.config.dataLayerConfig.min_value,
       map.config.dataLayerConfig.max_value,
     ]);
@@ -406,34 +406,40 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.openSignInDialog();
       return;
     }
-
-    const inRegion = this.mapManager.checkIfDrawingInRegion(
-      this.regionBoundary
-    );
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
-    if (!inRegion) {
-      showRegionLayer(this.maps[selectedMapIndex]);
-      this.dialog.open(OutsideRegionDialogComponent);
-      return;
+    if (this.regionBoundary) {
+      const inRegion = this.mapManager.checkIfDrawingInRegion(
+        this.regionBoundary
+      );
+
+      if (!inRegion) {
+        showRegionLayer(this.maps[selectedMapIndex]);
+        this.dialog.open(OutsideRegionDialogComponent, { maxWidth: '560px' });
+        return;
+      }
     }
 
-    const openedDialog = this.dialog.open(PlanCreateDialogComponent, {
+    this.openPlanCreateDialog()
+      .afterClosed()
+      .subscribe((id) => {
+        if (id) {
+          this.router.navigate(['plan', id]);
+        }
+      });
+  }
+
+  private openSignInDialog() {
+    return this.dialog.open(SignInDialogComponent, {
+      maxWidth: '560px',
+    });
+  }
+
+  private openPlanCreateDialog() {
+    return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
         shape: this.mapManager.convertToPlanningArea(),
       },
-    });
-
-    openedDialog.afterClosed().subscribe((id) => {
-      if (id) {
-        this.router.navigate(['plan', id]);
-      }
-    });
-  }
-
-  private openSignInDialog() {
-    this.dialog.open(SignInDialogComponent, {
-      maxWidth: '560px',
     });
   }
 
@@ -539,7 +545,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
         addRegionLayer(map, boundary);
-        this.regionBoundary = boundary;
+        this.regionBoundary = boundary as FeatureCollection;
       });
   }
 
@@ -568,23 +574,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     this.mapManager.changeConditionsLayer(map);
-    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap, [
+    updateLegendWithColorMap(map, map.config.dataLayerConfig.colormap, [
       map.config.dataLayerConfig.min_value,
       map.config.dataLayerConfig.max_value,
     ]);
-  }
-
-  private updateLegendWithColormap(
-    map: Map,
-    colormap?: string,
-    minMaxValues?: (number | undefined)[]
-  ) {
-    if (colormap == undefined) {
-      colormap = DEFAULT_COLORMAP;
-    } else if (colormap == NONE_COLORMAP) {
-      map.legend = undefined;
-      return;
-    }
   }
 
   /** Change the opacity of the currently shown data layer on all maps (if any). */
