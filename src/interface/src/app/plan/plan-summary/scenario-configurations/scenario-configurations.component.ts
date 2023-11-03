@@ -7,7 +7,7 @@ import { Plan, ProjectConfig } from 'src/app/types';
 import { MapService } from './../../../services/map.service';
 import {
   SNACK_ERROR_CONFIG,
-  SNACK_SUCCESS_CONFIG,
+  SNACK_NOTICE_CONFIG,
 } from '../../../../app/shared/constants';
 
 interface ProjectConfigRow extends ProjectConfig {
@@ -79,7 +79,7 @@ export class ScenarioConfigurationsComponent implements OnInit {
               deletedIds.length > 1 ? 's' : ''
             }`,
             'Dismiss',
-            SNACK_SUCCESS_CONFIG
+            SNACK_NOTICE_CONFIG
           );
           this.fetchProjects();
         },

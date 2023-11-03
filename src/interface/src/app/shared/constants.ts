@@ -7,9 +7,9 @@ import { MatSnackBarConfig } from '@angular/material/snack-bar';
 export const MSG_RESET_PASSWORD_ERROR =
   'Unable to reset your password at this time. Please try again later.';
 
-export const SNACK_SUCCESS_CONFIG: MatSnackBarConfig<any> = {
+export const SNACK_NOTICE_CONFIG: MatSnackBarConfig<any> = {
   duration: 4000,
-  panelClass: ['snackbar-success'],
+  panelClass: ['snackbar-notice'],
   verticalPosition: 'top',
 };
 
