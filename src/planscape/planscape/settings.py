@@ -54,6 +54,7 @@ planscape_apps = [
     "planning",
     "stands",
     "users",
+    "utils",
 ]
 INSTALLED_APPS = [
     "allauth",
@@ -335,9 +336,11 @@ if SENTRY_DSN is not None:
         integrations=[
             DjangoIntegration(),
         ],
-        traces_sample_rate=0.05,
         send_default_pii=True,
         environment=ENV,
+        enable_tracing=True,
+        profiles_sample_rate=0.1,
+        traces_sample_rate=0.05,
     )
 
 DEFAULT_CONDITIONS_FILE = config(

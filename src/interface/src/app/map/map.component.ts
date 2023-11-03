@@ -421,11 +421,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
     const openedDialog = this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
+      data: {
+        shape: this.mapManager.convertToPlanningArea(),
+      },
     });
 
-    openedDialog.afterClosed().subscribe((result) => {
-      if (result) {
-        this.createPlan(result.value, this.mapManager.convertToPlanningArea());
+    openedDialog.afterClosed().subscribe((id) => {
+      if (id) {
+        this.router.navigate(['plan', id]);
       }
     });
   }
@@ -436,55 +439,24 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  private createPlan(name: string, shape: GeoJSON.GeoJSON) {
-    this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
-      if (!selectedRegion) {
-        this.matSnackBar.open(
-          '[Error] Please select a region!',
-          'Dismiss',
-          ERROR_SNACK_CONFIG
-        );
-        return;
-      }
-
-      this.planService
-        .createPlan({
-          name: name,
-          region: selectedRegion,
-          planningArea: shape,
-        })
-        .pipe(take(1))
-        .subscribe({
-          next: (result) => {
-            this.router.navigate(['plan', result.result!.id]);
-          },
-          error: (e) => {
-            this.matSnackBar.open(
-              '[Error] Unable to create plan due to backend error.',
-              'Dismiss',
-              ERROR_SNACK_CONFIG
-            );
-          },
-        });
-    });
-  }
-
   /** Handles the area creation action change. */
   onAreaCreationActionChange(option: AreaCreationAction) {
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
     this.selectedAreaCreationAction = option;
+
+    if (!this.authService.loggedInStatus$.value) {
+      this.cancelAreaCreationAction();
+      this.openSignInDialog();
+      return;
+    }
+
     if (option === AreaCreationAction.DRAW) {
-      if (!this.authService.loggedInStatus$.value) {
-        this.cancelAreaCreationAction();
-        this.openSignInDialog();
-      } else {
-        this.addDrawingControlToAllMaps();
-        this.mapManager.enablePolygonDrawingTool(
-          this.maps[selectedMapIndex].instance!
-        );
-        this.showUploader = false;
-        this.changeMapCount(1);
-      }
+      this.addDrawingControlToAllMaps();
+      this.mapManager.enablePolygonDrawingTool(
+        this.maps[selectedMapIndex].instance!
+      );
+      this.showUploader = false;
+      this.changeMapCount(1);
     }
     if (option === AreaCreationAction.UPLOAD) {
       if (!this.showConfirmAreaButton$.value) {

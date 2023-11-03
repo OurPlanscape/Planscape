@@ -51,6 +51,7 @@ export class SavedScenariosComponent implements OnInit {
   ];
 
   statusLabels: Record<ScenarioResultStatus, string> = {
+    LOADING: 'Loading',
     NOT_STARTED: 'Not Started',
     PENDING: 'Running',
     RUNNING: 'Running',

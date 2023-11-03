@@ -50,6 +50,10 @@ PREPROCESSING_MULTIPLIERS <- list(
     aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
   )
 
+METRIC_COLUMNS <- list(
+  distance_to_roads = "min"
+)
+
 
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
@@ -154,20 +158,28 @@ preprocess_metrics <- function(metrics, condition_name) {
   return(metrics)
 }
 
+get_metric_column <- function(condition_name) {
+  if (exists(condition_name, METRIC_COLUMNS)) {
+    return(METRIC_COLUMNS[[condition_name]])
+  }
+  return("avg")
+}
+
 get_stand_metrics <- function(
     connection,
     condition_id,
     condition_name,
     stand_ids) {
+  metric_column <- get_metric_column(condition_name)
   query <- glue_sql(
     "SELECT
       stand_id,
-      avg as {`condition_name`}
+      {`metric_column`} as {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
        stand_id IN ({stand_ids*}) AND
-       avg is NOT NULL",
+       {`metric_column`} is NOT NULL",
     condition_id = condition_id,
     condition_name = condition_name,
     stand_ids = stand_ids,
@@ -194,6 +206,7 @@ get_project_geometry <- function(connection, stand_ids) {
   result <- dbGetQuery(connection, query)
   return(fromJSON(result$st_asgeojson))
 }
+
 
 get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
@@ -436,35 +449,38 @@ get_max_treatment_area <- function(scenario) {
 }
 
 get_distance_to_roads <- function(configuration) {
-  if (stri_isempty(configuration$min_distance_from_road)) {
-    distance <- 1000
-  } else {
-    distance <- configuration$min_distance_from_road
-  }
-  return(glue("distance_to_roads <= {distance}"))
+  # converts specified distance to roads in yards to meters
+  distance_in_meters <- configuration$min_distance_from_road / 1.094
+  return(glue("distance_to_roads <= {distance_in_meters}"))
 }
 
 get_max_slope <- function(configuration) {
-  if (stri_isempty(configuration$max_slope)) {
-    max_slope <- 37
-  } else {
-    max_slope <- configuration$max_slope
-  }
+  max_slope <- configuration$max_slope
   return(glue("slope <= {max_slope}"))
 }
 
 get_stand_thresholds <- function(scenario) {
+  all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
-  max_slope <- get_max_slope(configuration)
-  distance_to_roads <- get_distance_to_roads(configuration)
+  if (!is.null(configuration$max_slope)) {
+    max_slope <- get_max_slope(configuration)
+    all_thresholds <- c(all_thresholds, max_slope)
+  }
 
-  all_thresholds <- c(max_slope, distance_to_roads)
+  if (!is.null(configuration$min_distance_from_road)) {
+    distance_to_roads <- get_distance_to_roads(configuration)
+    all_thresholds <- c(all_thresholds, distance_to_roads)
+  }
+
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
 
-  return(paste(all_thresholds, collapse = " & "))
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
 }
 
 call_forsys <- function(
@@ -477,7 +493,6 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
-
   stand_data <- get_stand_data(
     connection,
     scenario,
