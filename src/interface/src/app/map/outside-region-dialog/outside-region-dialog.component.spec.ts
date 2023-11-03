@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { OutsideRegionDialogComponent } from './outside-region-dialog.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MaterialModule } from '../../material/material.module';
+import { DialogModule } from '@angular/cdk/dialog';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatDialogRef } from '@angular/material/dialog';
 
 describe('OutsideRegionDialogComponent', () => {
   let component: OutsideRegionDialogComponent;
@@ -8,9 +13,22 @@ describe('OutsideRegionDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ OutsideRegionDialogComponent ]
-    })
-    .compileComponents();
+      imports: [
+        ReactiveFormsModule,
+        MaterialModule,
+        DialogModule,
+        NoopAnimationsModule,
+      ],
+      declarations: [OutsideRegionDialogComponent],
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: () => {},
+          },
+        },
+      ],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(OutsideRegionDialogComponent);
     component = fixture.componentInstance;
