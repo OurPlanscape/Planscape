@@ -119,3 +119,15 @@ mat-row {
   margin: auto;
   padding-top: 20px;
 }
+
+
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.table-scroll {
+  flex: 1;
+  overflow: scroll;
+}
