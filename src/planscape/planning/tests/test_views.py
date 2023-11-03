@@ -748,14 +748,18 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         }
         self.geometry = {"features": [{"geometry": self.internal_geometry}]}
         self.scenario_configuration = {
-            "est_cost": 0,
-            "max_budget": 0,
-            "max_road_distance": 0,
-            "max_slope": 0,
-            "priorities": ["priority1"],
-            "weights": [0],
-            "stand_size": "Large",
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
             "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
         }
 
     def test_end_to_end(self):
@@ -809,21 +813,21 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
             reverse("planning:create_scenario"),
             {
                 "planning_area": listed_planning_area["id"],
-                "configuration": json.dumps(self.scenario_configuration),
+                "configuration": self.scenario_configuration,
                 "name": "test scenario",
                 "notes": "test notes",
             },
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        output = json.loads(response.content)
+        output = response.json()
         scenario_id = output["id"]
         self.assertEqual(Scenario.objects.count(), 1)
         self.assertEqual(ScenarioResult.objects.count(), 1)
         scenario = Scenario.objects.get(pk=scenario_id)
         self.assertEqual(scenario.planning_area.pk, listed_planning_area["id"])
         self.assertEqual(
-            scenario.configuration, json.dumps(self.scenario_configuration)
+            scenario.configuration.keys(), self.scenario_configuration.keys()
         )
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, "test notes")
@@ -1468,9 +1472,29 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
         self.planning_area = _create_planning_area(
             self.user, "test plan", self.storable_geometry
         )
-        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
-        self.scenario2 = _create_scenario(self.planning_area, "test scenario2", "{}")
-        self.scenario3 = _create_scenario(self.planning_area, "test scenario3", "{}")
+        self.configuration = {
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.scenario = _create_scenario(
+            self.planning_area, "test scenario", self.configuration
+        )
+        self.scenario2 = _create_scenario(
+            self.planning_area, "test scenario2", self.configuration
+        )
+        self.scenario3 = _create_scenario(
+            self.planning_area, "test scenario3", self.configuration
+        )
         self.empty_planning_area = _create_planning_area(
             self.user, "empty test plan", self.storable_geometry
         )
@@ -1553,11 +1577,27 @@ class GetScenarioTest(TransactionTestCase):
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
+        self.configuration = {
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
             self.user, "test plan", self.storable_geometry
         )
-        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
+        self.scenario = _create_scenario(
+            self.planning_area, "test scenario", self.configuration
+        )
 
         self.user2 = User.objects.create(username="testuser2")
         self.user2.set_password("12345")
@@ -1565,7 +1605,9 @@ class GetScenarioTest(TransactionTestCase):
         self.planning_area2 = _create_planning_area(
             self.user2, "test plan2", self.storable_geometry
         )
-        self.scenario2 = _create_scenario(self.planning_area2, "test scenario2", "{}")
+        self.scenario2 = _create_scenario(
+            self.planning_area2, "test scenario2", self.configuration
+        )
 
         self.assertEqual(Scenario.objects.count(), 2)
         self.assertEqual(ScenarioResult.objects.count(), 2)
@@ -1578,7 +1620,7 @@ class GetScenarioTest(TransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response_json = json.loads(response.content)
+        response_json = response.json()
         self.assertIsNotNone(response_json["created_at"])
         self.assertIsNotNone(response_json["updated_at"])
 
