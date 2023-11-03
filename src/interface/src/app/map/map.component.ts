@@ -120,9 +120,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject(['New Plan']);
 
-  // TODO  dont really need this one should remove
-  regionBoundary: GeoJSON.FeatureCollection | null = null;
-
   constructor(
     public applicationRef: ApplicationRef,
     private authService: AuthService,
@@ -407,10 +404,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       return;
     }
     const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
-    if (this.regionBoundary) {
-      const inRegion = this.mapManager.checkIfDrawingInRegion(
-        this.regionBoundary
-      );
+    const regionBoundary = this.maps[
+      selectedMapIndex
+    ].regionLayerRef?.toGeoJSON() as FeatureCollection;
+    if (regionBoundary) {
+      const inRegion = this.mapManager.checkIfDrawingInRegion(regionBoundary);
 
       if (!inRegion) {
         showRegionLayer(this.maps[selectedMapIndex]);
@@ -547,7 +545,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       .getRegionBoundary(selectedRegion)
       .subscribe((boundary: GeoJSON.GeoJSON) => {
         addRegionLayer(map, boundary);
-        this.regionBoundary = boundary as FeatureCollection;
       });
   }
 
