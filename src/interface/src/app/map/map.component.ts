@@ -47,16 +47,15 @@ import { FeatureService } from '../features/feature.service';
 import { AreaCreationAction, LEGEND } from './map.constants';
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import {
-  addGeoJSONToMap,
-  addRegionLayer,
-  createDrawingLayer,
-  getMapNameplateWidth,
-  showRegionLayer,
-} from './map.helper';
+import { addGeoJSONToMap, getMapNameplateWidth } from './map.helper';
 import { changeMapBaseStyle } from './map.tiles';
 import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
 import { updateLegendWithColorMap } from './map.legends';
+import {
+  addRegionLayer,
+  createDrawingLayer,
+  showRegionLayer,
+} from './map.layers';
 
 @UntilDestroy()
 @Component({

@@ -37,22 +37,6 @@ export function areaOverlaps(
   return isOverlapping || isIntersecting;
 }
 
-export function createDrawingLayer(
-  planningAreaData: GeoJSON.GeoJSON,
-  color?: string,
-  opacity?: number
-) {
-  return L.geoJSON(planningAreaData, {
-    pane: 'overlayPane',
-    style: {
-      color: color ?? '#3367D6',
-      fillColor: color ?? '#3367D6',
-      fillOpacity: opacity ?? 0.1,
-      weight: 7,
-    },
-  });
-}
-
 export function addGeoJSONToMap(lGeoJson: L.GeoJSON, mapInstance: L.Map) {
   lGeoJson.addTo(mapInstance);
   mapInstance.fitBounds(lGeoJson.getBounds());
@@ -95,65 +79,6 @@ export function createMultiPolygonFeatureCollection(
     type: 'FeatureCollection',
     features: [newFeature],
   } as FeatureCollection;
-}
-
-export function addClonedLayerToMap(map: Map, layer: L.Layer) {
-  const originalId = L.Util.stamp(layer);
-
-  // Hacky way to clone, but it removes the reference to the origin layer
-  const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
-    color: '#ffde9e',
-    fillColor: '#ffde9e',
-    weight: 5,
-  });
-  map.clonedDrawingRef?.addLayer(clonedLayer);
-  map.drawnPolygonLookup![originalId] = clonedLayer;
-}
-
-export function removeClonedLayer(
-  map: Map,
-  layer: L.Layer,
-  deleteOriginal: boolean
-) {
-  const originalPolygonKey = L.Util.stamp(layer);
-  const clonedPolygon = map.drawnPolygonLookup![originalPolygonKey];
-  map.clonedDrawingRef!.removeLayer(clonedPolygon);
-  if (deleteOriginal) {
-    delete map.drawnPolygonLookup![originalPolygonKey];
-  }
-}
-
-export function addRegionLayer(map: Map, boundary: any) {
-  // Add corners of the map to invert the polygon
-  if (map.regionLayerRef) {
-    map.regionLayerRef?.remove();
-  }
-  map.regionLayerRef = createRegionLayer(boundary);
-  map.regionLayerRef.addTo(map.instance!);
-}
-
-export function showRegionLayer(map: Map) {
-  if (map.regionLayerRef) {
-    map.regionLayerRef.setStyle({ opacity: 1 });
-  }
-}
-
-export function hideRegionLayer(map: Map) {
-  if (map.regionLayerRef) {
-    map.regionLayerRef.setStyle({ opacity: 0 });
-  }
-}
-
-function createRegionLayer(boundaries: GeoJSON.GeoJSON) {
-  return L.geoJSON(boundaries, {
-    style: (_) => ({
-      color: '#ffffff',
-      weight: 2,
-      opacity: 0,
-      fillColor: '#000000',
-      fillOpacity: 0,
-    }),
-  });
 }
 
 export function regionMapCenters(region: Region): L.LatLngTuple {
