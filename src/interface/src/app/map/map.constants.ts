@@ -1,5 +1,3 @@
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
-
 export enum AreaCreationAction {
   NONE = 0,
   DRAW = 1,
