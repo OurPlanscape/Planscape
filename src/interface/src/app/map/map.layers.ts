@@ -28,7 +28,6 @@ export function removeClonedLayer(
 }
 
 export function addRegionLayer(map: Map, boundary: any) {
-  // Add corners of the map to invert the polygon
   if (map.regionLayerRef) {
     map.regionLayerRef?.remove();
   }
