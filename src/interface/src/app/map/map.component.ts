@@ -54,8 +54,10 @@ import {
   addRegionLayer,
   createDrawingLayer,
   getMapNameplateWidth,
+  showRegionLayer,
 } from './map.helper';
 import { changeMapBaseStyle } from './map.tiles';
+import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -408,7 +410,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     const inRegion = this.mapManager.checkIfDrawingInRegion(
       this.regionBoundary
     );
-    console.log('in region?', inRegion);
+    const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+    if (!inRegion) {
+      showRegionLayer(this.maps[selectedMapIndex]);
+      this.dialog.open(OutsideRegionDialogComponent);
+      return;
+    }
 
     const openedDialog = this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
