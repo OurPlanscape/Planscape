@@ -1,5 +1,5 @@
 import * as L from 'leaflet';
-import { Map } from '../types';
+import { DEFAULT_COLORMAP, Map, NONE_COLORMAP } from '../types';
 
 export function createLegendHtmlElement(
   colormap: any,
@@ -78,4 +78,17 @@ export function createAndAddLegend(
     return div;
   };
   legend.addTo(map.instance!);
+}
+
+export function updateLegendWithColorMap(
+  map: Map,
+  colormap?: string,
+  minMaxValues?: (number | undefined)[]
+) {
+  if (colormap == undefined) {
+    colormap = DEFAULT_COLORMAP;
+  } else if (colormap == NONE_COLORMAP) {
+    map.legend = undefined;
+    return;
+  }
 }
