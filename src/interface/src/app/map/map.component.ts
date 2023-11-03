@@ -46,11 +46,8 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
-import {
-  AreaCreationAction,
-  ERROR_SNACK_CONFIG,
-  LEGEND,
-} from './map.constants';
+import { AreaCreationAction, LEGEND } from './map.constants';
+import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()
@@ -527,7 +524,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.matSnackBar.open(
       '[Error] Not a valid shapefile!',
       'Dismiss',
-      ERROR_SNACK_CONFIG
+      SNACK_ERROR_CONFIG
     );
   }
 

@@ -8,7 +8,7 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { SNACKBAR_SUCCESS_CONFIG } from '../../app/shared/constants';
+import { SNACK_SUCCESS_CONFIG } from '../../app/shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
@@ -110,7 +110,7 @@ export class AccountDialogComponent implements OnInit {
           this.snackbar.open(
             'Updated password successfully',
             'Dismiss',
-            SNACKBAR_SUCCESS_CONFIG
+            SNACK_SUCCESS_CONFIG
           );
         },
         (err: any) => {
@@ -144,7 +144,7 @@ export class AccountDialogComponent implements OnInit {
           this.snackbar.open(
             'Successfully updated password',
             'Dismiss',
-            SNACKBAR_SUCCESS_CONFIG
+            SNACK_SUCCESS_CONFIG
           );
         },
         (err) => {

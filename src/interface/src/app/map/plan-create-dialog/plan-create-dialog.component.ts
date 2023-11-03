@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component, Inject } from '@angular/core';
 import { PlanService, SessionService } from '../../services';
 import { firstValueFrom } from 'rxjs';
-import { ERROR_SNACK_CONFIG } from '../map.constants';
+import { SNACK_ERROR_CONFIG } from '../../../app/shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Region } from '../../types';
 
@@ -51,7 +51,7 @@ export class PlanCreateDialogComponent {
         this.matSnackBar.open(
           '[Error] Please select a region!',
           'Dismiss',
-          ERROR_SNACK_CONFIG
+          SNACK_ERROR_CONFIG
         );
         this.submitting = false;
         return;
@@ -76,7 +76,7 @@ export class PlanCreateDialogComponent {
           this.matSnackBar.open(
             '[Error] Unable to create plan due to backend error.',
             'Dismiss',
-            ERROR_SNACK_CONFIG
+            SNACK_ERROR_CONFIG
           );
           this.submitting = false;
         },

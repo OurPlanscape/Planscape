@@ -17,7 +17,10 @@ import {
 } from '../../plan-helpers';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
-import { SNACKBAR_SUCCESS_CONFIG } from '../../../../app/shared/constants';
+import {
+  SNACK_ERROR_CONFIG,
+  SNACK_SUCCESS_CONFIG,
+} from '../../../../app/shared/constants';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -133,12 +136,12 @@ export class SavedScenariosComponent implements OnInit {
         this.snackbar.open(
           `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`,
           'Dismiss',
-          SNACKBAR_SUCCESS_CONFIG
+          SNACK_SUCCESS_CONFIG
         );
         this.fetchScenarios();
       },
       error: (err) => {
-        this.snackbar.open(`Error: ${err}`, 'Dismiss');
+        this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });
   }

@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { SNACKBAR_SUCCESS_CONFIG } from '../../app/shared/constants';
+import { SNACK_SUCCESS_CONFIG } from '../../app/shared/constants';
 import {
   BehaviorSubject,
   catchError,
@@ -94,11 +94,7 @@ export class AuthService {
         tap((response) => {
           this.loggedInStatus$.next(false);
           this.loggedInUser$.next(null);
-          this.snackbar.open(
-            response.detail,
-            'Dismiss',
-            SNACKBAR_SUCCESS_CONFIG
-          );
+          this.snackbar.open(response.detail, 'Dismiss', SNACK_SUCCESS_CONFIG);
         })
       );
   }
