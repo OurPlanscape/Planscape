@@ -1,5 +1,6 @@
 import json
 import os
+from unittest import mock
 from django.db import connection
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -762,7 +763,11 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
 
-    def test_end_to_end(self):
+    @mock.patch(
+        "planning.views.validate_scenario_treatment_ratio",
+        return_value=(True, "all good"),
+    )
+    def test_end_to_end(self, validation):
         self.client.force_login(self.user)
 
         # List - returns 0
@@ -931,7 +936,11 @@ class CreateScenarioTest(TransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
 
-    def test_create_scenario(self):
+    @mock.patch(
+        "planning.views.validate_scenario_treatment_ratio",
+        return_value=(True, "all good"),
+    )
+    def test_create_scenario(self, validation):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse("planning:create_scenario"),
@@ -954,7 +963,11 @@ class CreateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, "test notes")
 
-    def test_create_scenario_no_notes(self):
+    @mock.patch(
+        "planning.views.validate_scenario_treatment_ratio",
+        return_value=(True, "all good"),
+    )
+    def test_create_scenario_no_notes(self, validation):
         self.client.force_login(self.user)
         response = self.client.post(
             reverse("planning:create_scenario"),
