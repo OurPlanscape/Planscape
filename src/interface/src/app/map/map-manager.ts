@@ -32,14 +32,13 @@ import {
   NORMAL_STYLES,
 } from './map.constants';
 import {
-  addClonedLayerToMap,
   areaOverlaps,
   checkIfAreaInBoundaries,
   createMultiPolygonFeatureCollection,
-  removeClonedLayer,
 } from './map.helper';
 import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
 import { createAndAddLegend } from './map.legends';
+import { addClonedLayerToMap, removeClonedLayer } from './map.layers';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
