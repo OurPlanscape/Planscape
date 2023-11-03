@@ -46,7 +46,10 @@ def validate_scenario_treatment_ratio(
         max_treatable_area,
         configuration.get("stand_size"),
     )
-    stands = Stand.objects.overlapping(planning_area.geometry)
+    stands = Stand.objects.overlapping(
+        planning_area.geometry,
+        configuration.get("stand_size"),
+    )
     stand_count = stands.count()
 
     ratio = max_treatable_stands / stand_count
