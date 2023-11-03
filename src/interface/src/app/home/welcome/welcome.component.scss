@@ -1,5 +1,7 @@
 :host {
-  overflow: scroll;
+  flex: 1;
+  overflow: hidden;
+  display: flex;
 }
 
 .welcome {
@@ -15,6 +17,7 @@
   box-sizing: border-box;
   color: #000000a8;
   margin: 20px auto;
+  overflow: auto;
 }
 
 .link,

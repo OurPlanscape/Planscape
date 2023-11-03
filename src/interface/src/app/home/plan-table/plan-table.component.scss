@@ -64,6 +64,10 @@ h2 {
 
 mat-header-row {
   min-height: 80px;
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
 }
 
 mat-header-row,
