@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CanActivate, Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
+import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
 import {
   BehaviorSubject,
   catchError,
@@ -93,7 +94,7 @@ export class AuthService {
         tap((response) => {
           this.loggedInStatus$.next(false);
           this.loggedInUser$.next(null);
-          this.snackbar.open(response.detail);
+          this.snackbar.open(response.detail, 'Dismiss', SNACK_NOTICE_CONFIG);
         })
       );
   }
