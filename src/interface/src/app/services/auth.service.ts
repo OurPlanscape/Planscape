@@ -94,7 +94,11 @@ export class AuthService {
         tap((response) => {
           this.loggedInStatus$.next(false);
           this.loggedInUser$.next(null);
-          this.snackbar.open(response.detail, 'Dismiss', SNACKBAR_SUCCESS_CONFIG);
+          this.snackbar.open(
+            response.detail,
+            'Dismiss',
+            SNACKBAR_SUCCESS_CONFIG
+          );
         })
       );
   }

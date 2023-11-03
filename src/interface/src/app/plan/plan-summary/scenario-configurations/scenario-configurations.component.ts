@@ -74,7 +74,8 @@ export class ScenarioConfigurationsComponent implements OnInit {
           this.snackbar.open(
             `Deleted ${deletedIds.length} configuration${
               deletedIds.length > 1 ? 's' : ''
-            }`,'Dismiss',
+            }`,
+            'Dismiss',
             SNACKBAR_SUCCESS_CONFIG
           );
           this.fetchProjects();

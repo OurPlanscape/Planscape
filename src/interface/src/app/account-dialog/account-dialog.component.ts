@@ -85,7 +85,10 @@ export class AccountDialogComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout().pipe(take(1)).subscribe((_) => this.close());
+    this.authService
+      .logout()
+      .pipe(take(1))
+      .subscribe((_) => this.close());
   }
 
   savePassword(): void {
@@ -104,9 +107,11 @@ export class AccountDialogComponent implements OnInit {
           this.changingPassword = false;
           this.disableChangeButton = false;
           this.error = null;
-          this.snackbar.open('Updated password successfully',
-           'Dismiss', 
-           SNACKBAR_SUCCESS_CONFIG);
+          this.snackbar.open(
+            'Updated password successfully',
+            'Dismiss',
+            SNACKBAR_SUCCESS_CONFIG
+          );
         },
         (err: any) => {
           this.error = Object.values(err.error);
@@ -136,7 +141,11 @@ export class AccountDialogComponent implements OnInit {
           this.disableEditButton = false;
           this.error = null;
 
-          this.snackbar.open('Successfully updated password', 'Dismiss', SNACKBAR_SUCCESS_CONFIG);
+          this.snackbar.open(
+            'Successfully updated password',
+            'Dismiss',
+            SNACKBAR_SUCCESS_CONFIG
+          );
         },
         (err) => {
           if (err.status == 401) {
