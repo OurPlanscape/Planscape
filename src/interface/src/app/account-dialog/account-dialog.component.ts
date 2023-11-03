@@ -8,6 +8,7 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { SNACKBAR_SUCCESS_CONFIG } from '../../app/shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
@@ -103,10 +104,9 @@ export class AccountDialogComponent implements OnInit {
           this.changingPassword = false;
           this.disableChangeButton = false;
           this.error = null;
-          this.snackbar.open('Updated password successfully', undefined, {
-            duration: 10000,
-            verticalPosition: 'top',
-          });
+          this.snackbar.open('Updated password successfully',
+           'Dismiss', 
+           SNACKBAR_SUCCESS_CONFIG);
         },
         (err: any) => {
           this.error = Object.values(err.error);
@@ -136,9 +136,7 @@ export class AccountDialogComponent implements OnInit {
           this.disableEditButton = false;
           this.error = null;
 
-          this.snackbar.open('Successfully updated password', undefined, {
-            duration: 6000,
-          });
+          this.snackbar.open('Successfully updated password', 'Dismiss', SNACKBAR_SUCCESS_CONFIG);
         },
         (err) => {
           if (err.status == 401) {

@@ -5,6 +5,7 @@ import { PlanService } from 'src/app/services';
 import { Plan, ProjectConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
+import { SNACKBAR_SUCCESS_CONFIG } from '../../../../app/shared/constants';
 
 interface ProjectConfigRow extends ProjectConfig {
   selected?: boolean;
@@ -73,7 +74,8 @@ export class ScenarioConfigurationsComponent implements OnInit {
           this.snackbar.open(
             `Deleted ${deletedIds.length} configuration${
               deletedIds.length > 1 ? 's' : ''
-            }`
+            }`,'Dismiss',
+            SNACKBAR_SUCCESS_CONFIG
           );
           this.fetchProjects();
         },
