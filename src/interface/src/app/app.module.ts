@@ -54,6 +54,8 @@ import { ConfirmationDialogComponent } from './password-reset/confirmation-dialo
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { MapModule } from './map/map.module';
 import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
+import { ChangePasswordComponent } from './change-password/change-password.component';
+import { EditAccountComponent } from './edit-account/edit-account.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +82,8 @@ import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
     ConfirmationDialogComponent,
     AccountValidationComponent,
     DeleteDialogComponent,
+    ChangePasswordComponent,
+    EditAccountComponent,
   ],
   imports: [
     AppRoutingModule,
