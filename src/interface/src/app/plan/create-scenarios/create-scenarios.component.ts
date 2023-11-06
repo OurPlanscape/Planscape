@@ -1,5 +1,4 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-
 import {
   AbstractControl,
   FormBuilder,
@@ -13,8 +12,8 @@ import {
   catchError,
   combineLatest,
   interval,
+  NEVER,
   Observable,
-  of,
   take,
 } from 'rxjs';
 import {
@@ -30,10 +29,10 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
 import FileSaver from 'file-saver';
-import { ERROR_SNACK_CONFIG } from '../../constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ScenarioService } from '../../services/scenario.service';
 import { PlanStateService } from '../../services/plan-state.service';
+import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 
 @UntilDestroy()
 @Component({
@@ -371,8 +370,9 @@ export class CreateScenariosComponent implements OnInit {
       .createScenario(this.formValueToScenario())
       .pipe(
         catchError((error) => {
-          this.matSnackBar.open(error.message, 'Dismiss', ERROR_SNACK_CONFIG);
-          return of(false);
+          this.generatingScenario = false;
+          this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
+          return NEVER;
         })
       )
       .subscribe(() => {
