@@ -81,10 +81,7 @@
           <ul>
             <li *ngFor="let error of errors">{{ error }}</li>
           </ul>
-          <div *ngIf="offerResend">
-            <a clickable [routerLink]="[]" (click)="resendEmail()"
-              >Resend a validation email.
-            </a>
+          <div *ngIf="emailAlreadyExists">
             <a
               class="forget-password-link"
               i18n="Text on a button to reset password"
