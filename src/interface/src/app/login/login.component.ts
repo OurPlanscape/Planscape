@@ -3,7 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../services';
-import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
+import {
+  SNACK_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from '../../app/shared/constants';
 
 @Component({
   selector: 'app-login',
@@ -37,14 +40,20 @@ export class LoginComponent {
   }
 
   resendVerification() {
-    const email: string = this.form.get('email')?.value;
-    this.authService.resendValidationEmail(email).subscribe();
-    this.offerReverify = false;
-    this.snackbar.open(
-      'Sent verification email.',
-      'Dismiss',
-      SNACK_NOTICE_CONFIG
-    );
+    const email = this.form.get('email')?.value;
+    this.authService.resendValidationEmail(email).subscribe({
+      next: () => {
+        this.offerReverify = false;
+        this.snackbar.open(
+          'Sent verification email.',
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        );
+      },
+      error: (err: String) => {
+        this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
+      },
+    });
   }
 
   login() {
