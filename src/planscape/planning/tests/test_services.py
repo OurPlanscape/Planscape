@@ -56,7 +56,7 @@ class ValidateScenarioTreatmentRatio(TransactionTestCase):
         }
         result, reason = validate_scenario_treatment_ratio(planning_area, conf)
         self.assertTrue(result)
-        self.assertEqual("all good", reason)
+        self.assertEqual("Treatment ratio is valid.", reason)
 
     def test_validate_scenario_false_below_20(self):
         unit_poly = GEOSGeometry("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", srid=4269)
