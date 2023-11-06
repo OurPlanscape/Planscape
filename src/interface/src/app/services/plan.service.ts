@@ -94,19 +94,6 @@ export class PlanService {
       );
   }
 
-  // TODO REMOVE
-  /** Makes a request to the backend for the average condition scores in a planning area. */
-  getConditionScoresForPlanningArea(
-    planId: string
-  ): Observable<PlanConditionScores> {
-    const url = BackendConstants.END_POINT.concat('/plan/scores/?id=', planId);
-    return this.http
-      .get<PlanConditionScores>(url, {
-        withCredentials: true,
-      })
-      .pipe(take(1));
-  }
-
   private convertToPlan(plan: BackendPlan): Plan {
     return {
       id: String(plan.id),
