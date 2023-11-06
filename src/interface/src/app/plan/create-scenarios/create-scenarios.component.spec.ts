@@ -36,7 +36,7 @@ import { PlanState, PlanStateService } from '../../services/plan-state.service';
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
-  let fakePlanService: PlanStateService;
+  let fakePlanStateService: PlanStateService;
   let fakeScenarioService: ScenarioService;
 
   let loader: HarnessLoader;
@@ -62,9 +62,11 @@ describe('CreateScenariosComponent', () => {
         getScenario: of(fakeScenario),
       }
     );
-    fakePlanService = jasmine.createSpyObj<PlanStateService>(
+    fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
       'PlanStateService',
-      {},
+      {
+        getScenario: of(fakeScenario),
+      },
       {
         planState$: new BehaviorSubject<PlanState>({
           all: {
@@ -111,7 +113,7 @@ describe('CreateScenariosComponent', () => {
       ],
       declarations: [CreateScenariosComponent],
       providers: [
-        { provide: PlanStateService, useValue: fakePlanService },
+        { provide: PlanStateService, useValue: fakePlanStateService },
         { provide: ScenarioService, useValue: fakeScenarioService },
       ],
     }).compileComponents();
@@ -130,7 +132,7 @@ describe('CreateScenariosComponent', () => {
   it('should load existing scenario', () => {
     spyOn(component, 'pollForChanges');
     fixture.detectChanges();
-    expect(fakeScenarioService.getScenario).toHaveBeenCalledOnceWith('1');
+    expect(fakePlanStateService.getScenario).toHaveBeenCalledOnceWith('1');
     component.formGroups[2].valueChanges.subscribe((_) => {
       expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
         100

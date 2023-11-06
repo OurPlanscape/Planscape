@@ -3,13 +3,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import {
-  BackendPlan,
-  BackendPlanPreview,
-  BasePlan,
-  Plan,
-  PlanConditionScores,
-} from '../types';
+import { BackendPlan, BackendPlanPreview, BasePlan, Plan } from '../types';
 import { PlanPreview } from './../types/plan.types';
 
 @Injectable({

@@ -50,7 +50,6 @@ describe('ScenarioService', () => {
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
         treatment_question: null,
-        created_timestamp: undefined,
         project_areas: [],
         excluded_areas: undefined,
         stand_size: 'MEDIUM',
@@ -147,7 +146,6 @@ describe('ScenarioService', () => {
         min_distance_from_road: undefined,
         max_slope: undefined,
         max_treatment_area_ratio: undefined,
-        created_timestamp: undefined,
         treatment_question: undefined,
       };
       const scenario: Scenario = {
