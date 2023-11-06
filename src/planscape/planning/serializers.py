@@ -103,12 +103,12 @@ class ConfigurationSerializer(serializers.Serializer):
 
         if budget and max_area:
             raise serializers.ValidationError(
-                "You should only provide max_budget or max_treatment_area_ratio"
+                "You should only provide `max_budget` or `max_treatment_area_ratio`."
             )
 
         if not budget and not max_area:
             raise serializers.ValidationError(
-                "You should provide one of `budget` or `max_treatment_area_ratio`"
+                "You should provide one of `max_budget` or `max_treatment_area_ratio`."
             )
         return data
 
