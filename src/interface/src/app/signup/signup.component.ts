@@ -20,7 +20,6 @@ import { TimeoutError, timeout } from 'rxjs';
 })
 export class SignupComponent {
   errors: string[] = [];
-  testedEmail: string = '';
   form: FormGroup;
   submitting: boolean = false;
   emailAlreadyExists: boolean = false;
