@@ -54,7 +54,10 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
 class ConfigurationSerializer(serializers.Serializer):
     weights = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
     est_cost = serializers.FloatField(min_value=1)
-    max_budget = serializers.FloatField(allow_null=True)
+    max_budget = serializers.FloatField(
+        allow_null=True,
+        required=False,
+    )
     max_slope = serializers.FloatField(
         min_value=1,
         max_value=100,
@@ -91,7 +94,23 @@ class ConfigurationSerializer(serializers.Serializer):
     )
     max_treatment_area_ratio = serializers.FloatField(
         min_value=500,
+        required=False,
     )
+
+    def validate(self, data):
+        budget = data.get("max_budget")
+        max_area = data.get("max_treatment_area_ratio")
+
+        if budget and max_area:
+            raise serializers.ValidationError(
+                "You should only provide max_budget or max_treatment_area_ratio"
+            )
+
+        if not budget and not max_area:
+            raise serializers.ValidationError(
+                "You should provide one of `budget` or `max_treatment_area_ratio`"
+            )
+        return data
 
 
 class ScenarioSerializer(serializers.ModelSerializer):
