@@ -49,33 +49,6 @@
           ]
         },
         {
-          "pillar_name": "air_quality",
-          "display": true,
-          "display_name": "Air Quality",
-          "elements": [
-            {
-              "element_name": "particulate_matter",
-              "display": true,
-              "display_name": "Particulate Matter",
-              "metrics": [
-                {
-                  "display_name": "Potential Smoke Emissions - High Severity Fire",
-                  "data_provider": "San Diego State University, Rocky Mountain Research Station",
-                  "data_units": "pounds PM2.5/acre",
-                  "max_value": 9000,
-                  "metric_name": "potential_smoke_emissions_high_severity_fire",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/airQuality/Tier1/Vulner_PM25_Severe_2022.tif",
-                  "raw_layer": ":airQuality_Tier1_Vulner_PM25_Severe_2022",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=57",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                }
-              ]
-            }
-          ]
-        },
-        {
           "pillar_name": "biodiversity",
           "display": true,
           "display_name": "Biodiversity",
@@ -2295,44 +2268,6 @@
               "normalized_data_download_path": "sierra-nevada/airQualityTranslate/partMatter.tif",
               "display_name": "Particulate Matter",
               "metrics": [
-                {
-                  "metric_name": "moderate_severity_potential_smoke_emissions",
-                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeModerateSeverity_2021_300m",
-                  "raw_layer": ":airQuality_Tier2_PotentialSmokeModerateSeverity_2021",
-                  "raw_data_download_path": "sierra-nevada/airQuality/Tier2/PotentialSmokeModerateSeverity_2021.tif",
-                  "normalized_layer": ":airQualityTranslate_Tier2_PotentialSmokeModerateSeverity_2021_scored",
-                  "normalized_data_download_path": "sierra-nevada/airQualityTranslate/Tier2/PotentialSmokeModerateSeverity_2021_scored.tif",
-                  "display_name": "Potential Smoke Emissions - Moderate Severity Fire",
-                  "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
-                  "data_provider": "USDA Forest Service, Region 5",
-                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
-                  "data_year": "2021",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=61",
-                  "min_value": 0,
-                  "max_value": 0.5,
-                  "invert_raw": true,
-                  "data_units": "Short Tons of PM2.5"
-                },
-                {
-                  "metric_name": "high_severity_potential_smoke_emissions",
-                  "filepath": "sierra_nevada/air_quality/particulate_matter/PotentialSmokeHighSeverity_2021_300m",
-                  "raw_layer": ":airQuality_Tier2_PotentialSmokeHighSeverity_2021",
-                  "raw_data_download_path": "sierra-nevada/airQuality/Tier2/PotentialSmokeHighSeverity_2021.tif",
-                  "normalized_layer": ":airQualityTranslate_Tier2_PotentialSmokeHighSeverity_2021_scored",
-                  "normalized_data_download_path": "sierra-nevada/airQualityTranslate/Tier2/PotentialSmokeHighSeverity_2021_scored.tif",
-                  "display_name": "Potential Smoke Emissions - High Severity Fire",
-                  "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
-                  "data_provider": "USDA Forest Service, Region 5",
-                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
-                  "data_year": "2021",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=60",
-                  "min_value": 0,
-                  "max_value": 1,
-                  "invert_raw": true,
-                  "data_units": "Short Tons of PM2.5"
-                },
                 {
                   "display_name": "Heavy Fuel Load",
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
