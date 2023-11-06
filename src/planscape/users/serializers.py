@@ -37,6 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = "__all__"
 
+
 class CustomPasswordResetSerializer(PasswordResetSerializer):
     """Custom serializer to tailor the password reset email url."""
 
