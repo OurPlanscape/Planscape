@@ -24,11 +24,6 @@ export class PlanService {
     );
   }
 
-  // TODO clean up requests with string interpolation
-  /**  TODO Reimplement:
-   * bulkCreateProjectAreas
-   * */
-
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(basePlan: BasePlan): Observable<{
     success: boolean;

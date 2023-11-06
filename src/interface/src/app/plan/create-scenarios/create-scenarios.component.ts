@@ -10,7 +10,6 @@ import { MatStepper } from '@angular/material/stepper';
 import {
   BehaviorSubject,
   catchError,
-  combineLatest,
   interval,
   NEVER,
   Observable,
@@ -207,90 +206,78 @@ export class CreateScenariosComponent implements OnInit {
 
   loadConfig(): void {
     this.scenarioState = 'LOADING';
-
-    combineLatest([
-      this.scenarioService.getScenario(this.scenarioId!),
-      this.treatmentGoals$,
-    ]).subscribe(([scenario, goals]) => {
-      if (scenario.scenario_result) {
-        this.scenarioResults = scenario.scenario_result;
-        this.scenarioState = scenario.scenario_result?.status;
-        this.disableForms();
-        this.selectedTabIndex = 1;
-        if (this.scenarioState == 'SUCCESS') {
-          this.processScenarioResults(scenario);
+    this.planStateService
+      .getScenario(this.scenarioId!)
+      .subscribe((scenario) => {
+        if (scenario.scenario_result) {
+          this.scenarioResults = scenario.scenario_result;
+          this.scenarioState = scenario.scenario_result?.status;
+          this.disableForms();
+          this.selectedTabIndex = 1;
+          if (this.scenarioState == 'SUCCESS') {
+            this.processScenarioResults(scenario);
+          }
+          // enable animation
+          this.tabAnimation = this.tabAnimationOptions.on;
         }
-        // enable animation
-        this.tabAnimation = this.tabAnimationOptions.on;
-      }
 
-      var config = scenario.configuration;
+        var config = scenario.configuration;
 
-      this.excludedAreasOptions.forEach((area: string) => {
-        if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
+        this.excludedAreasOptions.forEach((area: string) => {
+          if (
+            config.excluded_areas &&
+            config.excluded_areas.indexOf(area) > -1
+          ) {
+            this.constraintsFormGroup
+              .get('excludedAreasForm.' + area)
+              ?.setValue(true);
+          } else {
+            this.constraintsFormGroup
+              .get('excludedAreasForm.' + area)
+              ?.setValue(false);
+          }
+        });
+
+        if (scenario.name) {
+          this.nameFormGroup.get('scenarioName')?.setValue(scenario.name);
+        }
+        if (config.est_cost) {
           this.constraintsFormGroup
-            .get('excludedAreasForm.' + area)
-            ?.setValue(true);
-        } else {
+            .get('budgetForm.estimatedCost')
+            ?.setValue(config.est_cost);
+        }
+        if (config.max_budget) {
           this.constraintsFormGroup
-            .get('excludedAreasForm.' + area)
-            ?.setValue(false);
+            .get('budgetForm.maxCost')
+            ?.setValue(config.max_budget);
+        }
+        if (config.max_treatment_area_ratio) {
+          this.constraintsFormGroup
+            .get('physicalConstraintForm.maxArea')
+            ?.setValue(config.max_treatment_area_ratio);
+        }
+        if (config.min_distance_from_road) {
+          this.constraintsFormGroup
+            .get('physicalConstraintForm.minDistanceFromRoad')
+            ?.setValue(config.min_distance_from_road);
+        }
+        if (config.max_slope) {
+          this.constraintsFormGroup
+            .get('physicalConstraintForm.maxSlope')
+            ?.setValue(config.max_slope);
+        }
+        if (config.treatment_question) {
+          this.treatmentGoalGroup
+            .get('selectedQuestion')
+            ?.setValue(config.treatment_question);
+        }
+
+        if (config.stand_size) {
+          this.constraintsFormGroup
+            .get('physicalConstraintForm.standSize')
+            ?.setValue(config.stand_size);
         }
       });
-
-      if (goals) {
-        goals.forEach((goal) => {
-          goal.questions.forEach((question) => {
-            if (
-              question['scenario_priorities']?.toString() ==
-              config.scenario_priorities?.toString()
-            ) {
-              config.treatment_question = question;
-            }
-          });
-        });
-      }
-
-      if (scenario.name) {
-        this.nameFormGroup.get('scenarioName')?.setValue(scenario.name);
-      }
-      if (config.est_cost) {
-        this.constraintsFormGroup
-          .get('budgetForm.estimatedCost')
-          ?.setValue(config.est_cost);
-      }
-      if (config.max_budget) {
-        this.constraintsFormGroup
-          .get('budgetForm.maxCost')
-          ?.setValue(config.max_budget);
-      }
-      if (config.max_treatment_area_ratio) {
-        this.constraintsFormGroup
-          .get('physicalConstraintForm.maxArea')
-          ?.setValue(config.max_treatment_area_ratio);
-      }
-      if (config.min_distance_from_road) {
-        this.constraintsFormGroup
-          .get('physicalConstraintForm.minDistanceFromRoad')
-          ?.setValue(config.min_distance_from_road);
-      }
-      if (config.max_slope) {
-        this.constraintsFormGroup
-          .get('physicalConstraintForm.maxSlope')
-          ?.setValue(config.max_slope);
-      }
-      if (config.treatment_question) {
-        this.treatmentGoalGroup
-          .get('selectedQuestion')
-          ?.setValue(config.treatment_question);
-      }
-
-      if (config.stand_size) {
-        this.constraintsFormGroup
-          .get('physicalConstraintForm.standSize')
-          ?.setValue(config.stand_size);
-      }
-    });
   }
 
   private formValueToScenario(): Scenario {
@@ -376,6 +363,7 @@ export class CreateScenariosComponent implements OnInit {
         })
       )
       .subscribe(() => {
+        this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTabIndex = 1;

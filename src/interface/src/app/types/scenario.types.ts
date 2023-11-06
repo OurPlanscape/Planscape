@@ -8,7 +8,6 @@ export interface Scenario {
 }
 
 export interface ScenarioConfig {
-  created_timestamp?: number;
   est_cost?: number;
   max_budget?: number;
   max_slope?: number;

@@ -3,13 +3,17 @@ import { PlanService } from './plan.service';
 import { ScenarioService } from './scenario.service';
 import { TreatmentGoalsService } from './treatment-goals.service';
 import {
+  BackendProjectArea,
   BasePlan,
   Plan,
+  ProjectArea,
   Region,
   Scenario,
+  ScenarioConfig,
   TreatmentGoalConfig,
+  TreatmentQuestionConfig,
 } from '../types';
-import { BehaviorSubject, tap } from 'rxjs';
+import { BehaviorSubject, map, switchMap, take, tap } from 'rxjs';
 
 // TODO Remove Config
 export interface PlanState {
@@ -66,6 +70,82 @@ export class PlanStateService {
     return this.planService
       .getPlan(planId)
       .pipe(tap((plan) => this.addPlanToState(plan)));
+  }
+
+  getScenario(scenarioId: string) {
+    return this.scenarioService.getScenario(scenarioId).pipe(
+      switchMap((scenario) => {
+        // TODO this is pretty bad, why do we need to pull stuff from another endpoint for this?
+        return this.getSelectedQuestionFromConfig(scenario.configuration).pipe(
+          take(1),
+          map((selectedQuestion) => {
+            return {
+              ...scenario,
+              ...{
+                configuration: this.convertToScenarioConfig(
+                  scenario.configuration,
+                  selectedQuestion
+                ),
+              },
+            };
+          })
+        );
+      })
+    );
+  }
+
+  getSelectedQuestionFromConfig(config: any) {
+    var selectedQuestion: TreatmentQuestionConfig | null = null;
+    return this.treatmentGoalsConfig$.pipe(
+      map((goals) => {
+        goals!.forEach((goal) => {
+          goal.questions.forEach((question) => {
+            if (
+              question['scenario_priorities']?.toString() ==
+                config.scenario_priorities?.toString() &&
+              question['weights']?.toString() == config.weights?.toString()
+            ) {
+              selectedQuestion = question;
+            }
+          });
+        });
+        return selectedQuestion;
+      })
+    );
+  }
+
+  private convertToScenarioConfig(
+    config: any,
+    selectedQuestion: any
+  ): ScenarioConfig {
+    return {
+      ...config,
+      ...{
+        treatment_question: selectedQuestion,
+        project_areas: this.convertToProjectAreas(config.project_areas),
+      },
+    };
+  }
+
+  private convertToProjectAreas(scenarioProjectAreas: {
+    [id: number]: BackendProjectArea;
+  }): ProjectArea[] {
+    if (!scenarioProjectAreas) {
+      return [];
+    }
+
+    let projectAreas: ProjectArea[] = [];
+    Object.values(scenarioProjectAreas).forEach((projectArea) => {
+      projectAreas.push({
+        id: projectArea.id.toString(),
+        projectId: projectArea.properties?.project?.toString(),
+        projectArea: projectArea.geometry,
+        owner: projectArea.properties?.owner?.toString(),
+        estimatedAreaTreated: projectArea.properties?.estimated_area_treated,
+      });
+    });
+
+    return projectAreas;
   }
 
   createScenario(scenarioParameters: any) {
