@@ -62,4 +62,4 @@ def validate_scenario_treatment_ratio(
             "Too many treatable stands for the selected area and stand size.",
         )
 
-    return (True, "all good")
+    return (True, "Treatment ratio is valid.")
