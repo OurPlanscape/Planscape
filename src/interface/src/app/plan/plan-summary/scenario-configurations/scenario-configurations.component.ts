@@ -5,6 +5,10 @@ import { PlanService } from 'src/app/services';
 import { Plan, ProjectConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
+import {
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '../../../../app/shared/constants';
 
 interface ProjectConfigRow extends ProjectConfig {
   selected?: boolean;
@@ -73,12 +77,14 @@ export class ScenarioConfigurationsComponent implements OnInit {
           this.snackbar.open(
             `Deleted ${deletedIds.length} configuration${
               deletedIds.length > 1 ? 's' : ''
-            }`
+            }`,
+            'Dismiss',
+            SNACK_NOTICE_CONFIG
           );
           this.fetchProjects();
         },
         error: (err) => {
-          this.snackbar.open(`Error: ${err}`);
+          this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
         },
       });
   }
