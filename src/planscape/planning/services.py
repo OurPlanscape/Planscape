@@ -1,4 +1,3 @@
-from functools import reduce
 import math
 import os
 from datetime import date, time, datetime
