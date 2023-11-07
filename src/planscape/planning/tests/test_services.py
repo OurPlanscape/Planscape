@@ -1,12 +1,15 @@
+from datetime import date, datetime
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 
 from planning.services import (
+    export_to_shapefile,
     get_max_treatable_area,
     get_max_treatable_stand_count,
+    get_schema,
     validate_scenario_treatment_ratio,
 )
-from planning.models import PlanningArea
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices
 
 
@@ -33,7 +36,7 @@ class MaxTreatableAreaTest(TestCase):
         self.assertEqual(2, stand_count)
 
 
-class ValidateScenarioTreatmentRatio(TransactionTestCase):
+class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
     def test_validate_scenario_between_20_and_80(self):
         unit_poly = GEOSGeometry("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", srid=4269)
         planning_area = PlanningArea.objects.create(
@@ -109,3 +112,74 @@ class ValidateScenarioTreatmentRatio(TransactionTestCase):
         self.assertEqual(
             "Too many treatable stands for the selected area and stand size.", reason
         )
+
+
+class GetSchemaTest(TestCase):
+    def test_get_schema_returns_first_feature(self):
+        geojson = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "properties": {
+                        "foo": "abc",
+                        "bar": 1,
+                        "baz": 1.2,
+                        "now": datetime.now(),
+                        "today": date.today(),
+                    },
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                    },
+                }
+            ],
+        }
+        schema = get_schema(geojson)
+        self.assertIsNotNone(schema)
+        self.assertIn("geometry", schema)
+        self.assertIn("properties", schema)
+        self.assertEqual(5, len(schema["properties"]))
+
+
+class ExportToShapefileTest(TransactionTestCase):
+    def test_export_raises_value_error_failure(self):
+        unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        planning = PlanningArea.objects.create(
+            name="foo", region_name="sierra-nevada", geometry=unit_poly
+        )
+        scenario = Scenario.objects.create(planning_area=planning, name="s1")
+        _ = ScenarioResult.objects.create(
+            scenario=scenario, status=ScenarioResultStatus.FAILURE
+        )
+        with self.assertRaises(ValueError):
+            export_to_shapefile(scenario)
+
+    def test_export_raises_value_error_pending(self):
+        unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        planning = PlanningArea.objects.create(
+            name="foo", region_name="sierra-nevada", geometry=unit_poly
+        )
+        scenario = Scenario.objects.create(planning_area=planning, name="s1")
+        _ = ScenarioResult.objects.create(
+            scenario=scenario, status=ScenarioResultStatus.PENDING
+        )
+        with self.assertRaises(ValueError):
+            export_to_shapefile(scenario)
+
+    def test_export_raises_value_error_running(self):
+        unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        planning = PlanningArea.objects.create(
+            name="foo", region_name="sierra-nevada", geometry=unit_poly
+        )
+        scenario = Scenario.objects.create(planning_area=planning, name="s1")
+        _ = ScenarioResult.objects.create(
+            scenario=scenario, status=ScenarioResultStatus.RUNNING
+        )
+        with self.assertRaises(ValueError):
+            export_to_shapefile(scenario)

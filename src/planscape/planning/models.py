@@ -1,5 +1,7 @@
+from pathlib import Path
 from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from core.models import CreatedAtMixin, UpdatedAtMixin
 
 User = get_user_model()
@@ -54,6 +56,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     notes = models.TextField(null=True)
 
     configuration = models.JSONField(default=dict)
+
+    def get_shapefile_folder(self):
+        return Path(settings.OUTPUT_DIR) / "shapefile" / Path(self.name)
+
+    def get_forsys_folder(self):
+        return Path(settings.OUTPUT_DIR) / Path(self.name)
 
     class Meta:
         constraints = [

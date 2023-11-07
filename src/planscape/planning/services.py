@@ -1,10 +1,14 @@
+from functools import reduce
 import math
 import os
+from datetime import date, time, datetime
+from pathlib import Path
 from typing import Any, Dict, Tuple
 import zipfile
 from django.conf import settings
+import fiona
 
-from planning.models import PlanningArea, Scenario
+from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices, area_from_size
 
 
@@ -63,3 +67,58 @@ def validate_scenario_treatment_ratio(
         )
 
     return (True, "Treatment ratio is valid.")
+
+
+def map_property(key_value_pair):
+    key, value = key_value_pair
+    type = ""
+    match value:
+        case int() as v:
+            type = "int"
+        case str() as v:
+            type = "str:128"
+        case float() as v:
+            type = "float"
+        case datetime() as v:
+            type = "datetime"
+        case date() as v:
+            type = "date"
+        case time() as v:
+            type = "time"
+    return {key: type}
+
+
+def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
+    features = geojson.get("features", [])
+    first = features[0]
+    field_type_pairs = list(map(map_property, first.get("properties", {}).items()))
+    schema = {
+        "geometry": first.get("geometry", {}).get("type", "Polygon") or "Polygon",
+        "properties": reduce(
+            lambda x, y: {**x, **y},
+            field_type_pairs,
+            {},
+        ),
+    }
+    return schema
+
+
+def export_to_shapefile(scenario: Scenario) -> Path:
+    """Given a scenario, export it to shapefile
+    and return the path of the folder containing all files.
+    """
+
+    if scenario.results.status != ScenarioResultStatus.SUCCESS:
+        raise ValueError("Cannot export a scenario if it's result failed.")
+    geojson = scenario.results.result
+    schema = get_schema(geojson)
+    shapefile_folder = scenario.get_shapefile_folder()
+    shapefile_file = f"{scenario.name}.shp"
+    shapefile_path = shapefile_folder / shapefile_file
+    if not shapefile_folder.exists():
+        shapefile_folder.mkdir(parents=True)
+    with fiona.open(str(shapefile_path), "w", "ESRI Shapefile", schema) as c:
+        for feature in geojson.get("features", []):
+            c.write(feature)
+
+    return shapefile_folder

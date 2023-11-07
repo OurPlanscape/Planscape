@@ -22,7 +22,11 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
 )
-from planning.services import validate_scenario_treatment_ratio, zip_directory
+from planning.services import (
+    export_to_shapefile,
+    validate_scenario_treatment_ratio,
+    zip_directory,
+)
 from utils.cli_utils import call_forsys
 
 
@@ -385,17 +389,58 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         if scenario_result.status != ScenarioResultStatus.SUCCESS:
             raise ValueError("Scenario was not successful, data cannot be downloaded.")
 
-        source_dir = Path(settings.OUTPUT_DIR) / Path(scenario.name)
         output_zip_name: str = scenario.name + ".zip"
 
-        if os.path.exists(source_dir) == False:
+        if scenario.get_forsys_folder().exists() == False:
             raise ValueError("Scenario files cannot be read.")
 
         response = HttpResponse(content_type="application/zip")
         #  here we're just writing directly to the response obj.
         # Do we want to write this locally -- either to (effectively) cache it, or to reduce server memory load?
         # Note that we don't close this, because `response` gets destroyed on its own
-        zip_directory(response, source_dir)
+        zip_directory(response, scenario.get_forsys_folder())
+
+        response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
+        return response
+
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
+
+
+def download_shapefile(request: HttpRequest) -> HttpResponse:
+    """
+    Generates a new Zip file of the shapefile for a scenario based on ID.
+
+    Requires a logged in user.  Users can only access a scenarios belonging to their own planning areas.
+
+    Returns: a Zip file generated with the shapefiles
+
+    Required params:
+      id (int): The scenario ID to be retrieved.
+    """
+    try:
+        # Ensure that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            return HttpResponseBadRequest(
+                "Unauthorized. User is not logged in.", status=401
+            )
+
+        scenario = Scenario.objects.select_related("planning_area__user").get(
+            id=request.GET["id"]
+        )
+        # Ensure that current user is associated with this scenario
+        if scenario.planning_area.user.pk != user.pk:
+            raise ValueError("Scenario matching query does not exist.")
+
+        scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+        if scenario_result.status != ScenarioResultStatus.SUCCESS:
+            raise ValueError("Scenario was not successful, data cannot be downloaded.")
+
+        output_zip_name = f"{scenario.name}.zip"
+        export_to_shapefile(scenario)
+        response = HttpResponse(content_type="application/zip")
+        zip_directory(response, scenario.get_shapefile_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
         return response

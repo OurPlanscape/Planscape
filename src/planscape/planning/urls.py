@@ -46,6 +46,7 @@ urlpatterns = [
         get_scenario_download_by_id,
         name="get_scenario_download_by_id",
     ),
+    path("download_shapefile", download_shapefile, name="download_shapefile"),
     path(
         "list_scenarios_for_planning_area/",
         list_scenarios_for_planning_area,
