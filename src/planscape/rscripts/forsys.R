@@ -181,8 +181,7 @@ get_stand_metrics <- function(
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
-       stand_id IN ({stand_ids*}) AND
-       {`metric_column`} is NOT NULL",
+       stand_id IN ({stand_ids*})",
     condition_id = condition_id,
     condition_name = condition_name,
     stand_ids = stand_ids,
