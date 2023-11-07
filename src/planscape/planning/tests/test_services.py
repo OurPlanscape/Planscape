@@ -1,6 +1,8 @@
 from datetime import date, datetime
+import shutil
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
+import fiona
 
 from planning.services import (
     export_to_shapefile,
@@ -183,3 +185,40 @@ class ExportToShapefileTest(TransactionTestCase):
         )
         with self.assertRaises(ValueError):
             export_to_shapefile(scenario)
+
+    def test_export_creates_file(self):
+        unit_poly = GEOSGeometry(
+            "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
+        )
+        planning = PlanningArea.objects.create(
+            name="foo", region_name="sierra-nevada", geometry=unit_poly
+        )
+        scenario = Scenario.objects.create(planning_area=planning, name="s1")
+        result = ScenarioResult.objects.create(
+            scenario=scenario,
+            status=ScenarioResultStatus.SUCCESS,
+            result={
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "properties": {
+                            "foo": "abc",
+                            "bar": 1,
+                            "baz": 1.2,
+                            "now": str(datetime.now()),
+                            "today": date.today(),
+                        },
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                        },
+                    }
+                ],
+            },
+        )
+        output = export_to_shapefile(scenario)
+        self.assertIsNotNone(output)
+        path = output / "s1.shp"
+        with fiona.open(path, "r", "ESRI Shapefile") as source:
+            self.assertEqual(1, len(source))
+            shutil.rmtree(str(output))

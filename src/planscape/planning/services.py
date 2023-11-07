@@ -80,7 +80,7 @@ def map_property(key_value_pair):
         case float() as v:
             type = "float"
         case datetime() as v:
-            type = "datetime"
+            type = "str:64"
         case date() as v:
             type = "date"
         case time() as v:
