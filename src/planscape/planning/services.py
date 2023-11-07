@@ -85,7 +85,7 @@ def map_property(key_value_pair):
             type = "date"
         case time() as v:
             type = "time"
-    return {key: type}
+    return (key, type)
 
 
 def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
@@ -94,11 +94,7 @@ def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
     field_type_pairs = list(map(map_property, first.get("properties", {}).items()))
     schema = {
         "geometry": first.get("geometry", {}).get("type", "Polygon") or "Polygon",
-        "properties": reduce(
-            lambda x, y: {**x, **y},
-            field_type_pairs,
-            {},
-        ),
+        "properties": field_type_pairs,
     }
     return schema
 
