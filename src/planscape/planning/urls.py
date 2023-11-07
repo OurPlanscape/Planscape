@@ -5,6 +5,7 @@ from planning.views import (
     delete_planning_area,
     get_planning_area_by_id,
     get_scenario_download_by_id,
+    download_shapefile,
     list_planning_areas,
     update_planning_area,
     create_scenario,
