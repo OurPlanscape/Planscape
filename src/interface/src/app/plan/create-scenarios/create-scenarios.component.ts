@@ -205,10 +205,14 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
-    this.scenarioState = 'LOADING';
+    this.scenarioState = this.scenarioId ? 'PENDING' : 'LOADING';
     this.planStateService
       .getScenario(this.scenarioId!)
       .subscribe((scenario) => {
+        // if we have the same state do nothing.
+        if (this.scenarioState === scenario.scenario_result?.status) {
+          return;
+        }
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
