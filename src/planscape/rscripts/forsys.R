@@ -174,10 +174,7 @@ get_stand_metrics <- function(
   query <- glue_sql(
     "SELECT
       stand_id,
-      CASE
-        WHEN {`metric_column`} IS NULL THEN 0
-        ELSE {`metric_column`}
-      END as {`condition_name`}
+      COALESCE({`metric_column`}, 0) AS {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
