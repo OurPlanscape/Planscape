@@ -35,20 +35,6 @@ export interface PlanPreview {
   geometry?: GeoJSON.GeoJSON;
 }
 
-// TODO is this the right type?
-export interface FeatureCollection extends GeoJSON.FeatureCollection {
-  properties: any;
-}
-
-export interface PlanConditionScores {
-  conditions: PlanConditionScore[];
-}
-
-export interface PlanConditionScore {
-  condition: string;
-  mean_score: number;
-}
-
 export interface BackendPlan {
   id?: number;
   name: string;

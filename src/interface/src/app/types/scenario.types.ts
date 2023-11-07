@@ -42,11 +42,9 @@ export interface TreatmentGoalConfig {
   questions: TreatmentQuestionConfig[];
 }
 
-// TODO add types to this!
-export interface FeatureCollection {
-  geometry: any;
+// TODO is this the right type?
+export interface FeatureCollection extends GeoJSON.FeatureCollection {
   properties: any;
-  type: string;
 }
 
 export interface TreatmentQuestionConfig {
