@@ -5,17 +5,5 @@ export * from './map.types';
 export * from './plan.types';
 export * from './region.types';
 export * from './user.types';
-
-export { regionMapCenters } from '../map/map.helper';
-export { defaultMapConfigsDictionary } from '../map/map.helper';
-export { defaultMapViewOptions } from '../map/map.helper';
-export { defaultMapConfig } from '../map/map.helper';
+export * from './scenario.types';
 export { FrontendConstants } from '../map/map.constants';
-export { ScenarioConfig } from './scenario.types';
-export { Scenario } from './scenario.types';
-export { ScenarioResult } from './scenario.types';
-export { ProjectArea } from './scenario.types';
-export { TreatmentQuestionConfig } from './scenario.types';
-export { ScenarioResultStatus } from './scenario.types';
-export { FeatureCollection } from './scenario.types';
-export { TreatmentGoalConfig } from './scenario.types';

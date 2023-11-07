@@ -15,7 +15,6 @@ import {
 } from '../types';
 import { BehaviorSubject, map, switchMap, take, tap } from 'rxjs';
 
-// TODO Remove Config
 export interface PlanState {
   all: {
     [planId: string]: Plan;

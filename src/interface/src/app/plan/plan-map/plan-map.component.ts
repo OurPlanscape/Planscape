@@ -8,17 +8,12 @@ import {
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
-import {
-  FrontendConstants,
-  regionMapCenters,
-  Plan,
-  Region,
-  regionToString,
-} from 'src/app/types';
+import { FrontendConstants, Plan, Region, regionToString } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanStateService } from '../../services/plan-state.service';
+import { regionMapCenters } from '../../map/map.helper';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {

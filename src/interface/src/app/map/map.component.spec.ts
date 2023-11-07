@@ -31,15 +31,12 @@ import {
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
-  defaultMapConfig,
-  defaultMapViewOptions,
-  defaultMapConfigsDictionary,
   Map,
   MapConfig,
   MapViewOptions,
   Plan,
   Region,
-} from './../types';
+} from '../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
@@ -47,6 +44,11 @@ import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeaturesModule } from '../features/features.module';
 import { PlanState, PlanStateService } from '../services/plan-state.service';
+import {
+  defaultMapConfig,
+  defaultMapConfigsDictionary,
+  defaultMapViewOptions,
+} from './map.helper';
 
 describe('MapComponent', () => {
   let component: MapComponent;

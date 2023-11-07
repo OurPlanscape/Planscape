@@ -18,7 +18,6 @@ import {
   Map,
   MapViewOptions,
   Region,
-  regionMapCenters,
 } from '../types';
 
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
@@ -34,6 +33,7 @@ import {
   areaOverlaps,
   checkIfAreaInBoundaries,
   createMultiPolygonFeatureCollection,
+  regionMapCenters,
 } from './map.helper';
 import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
 import { createAndAddLegend } from './map.legends';
