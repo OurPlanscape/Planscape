@@ -174,7 +174,10 @@ get_stand_metrics <- function(
   query <- glue_sql(
     "SELECT
       stand_id,
-      {`metric_column`} as {`condition_name`}
+      CASE
+        WHEN {`metric_column`} IS NULL THEN 0
+        ELSE {`metric_column`}
+      END as {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
@@ -331,6 +334,17 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
           "yielded an empty result. check underlying data!"
         )
       )
+
+      if (any(is.na(metric[,condition_name]))) {
+        log_warn(
+          paste(
+            "Condition",
+            condition_name,
+            "contains NA/NULL values."
+          )
+        )
+      }
+
       metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
       names(metric) <- c("stand_id", condition_name)
     }
