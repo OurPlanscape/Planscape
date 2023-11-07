@@ -3,8 +3,8 @@
 </div>
 
 <ng-template #dataLoaded>
-  <div *ngIf="datasource.data.length; else noplans">
-    <mat-table [dataSource]="datasource" matSort>
+  <div *ngIf="datasource.data.length; else noplans" class="table-wrapper">
+    <mat-table [dataSource]="datasource" matSort class="table-scroll">
       <!-- Name Column -->
       <ng-container matColumnDef="name">
         <mat-header-cell *matHeaderCellDef mat-sort-header>
