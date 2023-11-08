@@ -455,7 +455,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
     scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
     if scenario_result.status != ScenarioResultStatus.SUCCESS:
         return HttpResponse(
-            "Scenario was not successfull, can't download data.",
+            "Scenario was not successful, can't download data.",
             status=409,
         )
 
