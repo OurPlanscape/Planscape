@@ -493,6 +493,10 @@ get_stand_thresholds <- function(scenario) {
   return(NULL)
 }
 
+remove_duplicates <- function(dataframe) {
+  return(dataframe[!duplicated(dataframe), ])
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -503,6 +507,10 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
+  # we use this to drop priorities, that are repeated in here - we need those
+  # so front-end can show data from priorities as well
+  forsys_inputs <- remove_duplicates(forsys_inputs)
+
   stand_data <- get_stand_data(
     connection,
     scenario,
@@ -615,9 +623,7 @@ main <- function(scenario_id) {
     scenario,
     configuration$scenario_output_fields
   )
-  # we use this to drop priorities, that are repeated in here - we need those
-  # so front-end can show data from priorities as well
-  outputs <- outputs[! outputs$condition_id %in% priorities$condition_id]
+
   restrictions <- get_priorities(
     connection,
     scenario,
