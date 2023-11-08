@@ -615,12 +615,9 @@ main <- function(scenario_id) {
     scenario,
     configuration$scenario_output_fields
   )
-  
-  if (nrow(priorities) == 1) {
-    # we use this to drop priorities, that are repeated in here - we need those
-    # so front-end can show data from priorities as well
-    outputs <- outputs[! outputs$condition_id %in% priorities$condition_id]
-  }
+  # we use this to drop priorities, that are repeated in here - we need those
+  # so front-end can show data from priorities as well
+  outputs <- outputs[! outputs$condition_id %in% priorities$condition_id]
   restrictions <- get_priorities(
     connection,
     scenario,
