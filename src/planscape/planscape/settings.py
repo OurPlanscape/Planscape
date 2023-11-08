@@ -50,7 +50,6 @@ planscape_apps = [
     "boundary",
     "conditions",
     "existing_projects",
-    "plan",
     "planning",
     "stands",
     "users",
@@ -70,7 +69,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
-    "forsys",
     "leaflet",
     "lockdown",
     "password_policies",
@@ -356,3 +354,5 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
+
+DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)

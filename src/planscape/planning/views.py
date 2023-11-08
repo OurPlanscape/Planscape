@@ -1,8 +1,6 @@
 import json
 import os
 
-import logging
-from planning.services import zip_directory
 
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
@@ -24,6 +22,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
 )
+from planning.services import validate_scenario_treatment_ratio, zip_directory
 from utils.cli_utils import call_forsys
 
 
@@ -437,6 +436,17 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         planning_area = get_object_or_404(user.planning_areas, id=body["planning_area"])
 
         # TODO: Parse configuration field into further components.
+        result, reason = validate_scenario_treatment_ratio(
+            planning_area,
+            serializer.validated_data.get("configuration"),
+        )
+
+        if not result:
+            return HttpResponse(
+                json.dumps({"reason": reason}),
+                content_type="application/json",
+                status=400,
+            )
 
         scenario = serializer.save()
 

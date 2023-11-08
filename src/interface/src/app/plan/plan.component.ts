@@ -20,7 +20,9 @@ import {
 } from 'rxjs';
 
 import { Plan, User } from '../types';
-import { AuthService, PlanService } from '../services';
+import { AuthService } from '../services';
+import { ScenarioService } from '../services/scenario.service';
+import { PlanStateService } from '../services/plan-state.service';
 
 @Component({
   selector: 'app-plan',
@@ -37,10 +39,10 @@ export class PlanComponent implements OnInit, OnDestroy {
     map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
   );
 
-  scenario$ = this.planService.planState$.pipe(
+  scenario$ = this.planStateService.planState$.pipe(
     switchMap((state) => {
       if (state.currentScenarioId) {
-        return this.planService.getScenario(state.currentScenarioId);
+        return this.scenarioService.getScenario(state.currentScenarioId);
       }
       return of(null);
     })
@@ -69,9 +71,10 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
-    private planService: PlanService,
+    private planStateService: PlanStateService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private scenarioService: ScenarioService
   ) {
     // TODO: Move everything in the constructor to ngOnInit
 
@@ -79,7 +82,7 @@ export class PlanComponent implements OnInit, OnDestroy {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
+    const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
 
     plan$.subscribe({
       next: (plan) => {
@@ -99,14 +102,10 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const path = this.getPathFromSnapshot();
-    this.planService.planState$
+    this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
-        if (
-          state.currentScenarioId ||
-          state.currentConfigId ||
-          path === 'config'
-        ) {
+        if (state.currentScenarioId || path === 'config') {
           this.showOverview$.next(false);
         } else {
           this.showOverview$.next(true);
@@ -132,18 +131,17 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   private updatePlanStateFromRoute() {
-    this.planService.updateStateWithPlan(this.planId);
+    this.planStateService.updateStateWithPlan(this.planId);
     const routeChild = this.route.snapshot.firstChild;
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;
 
     if (path === 'config') {
-      this.planService.updateStateWithScenario(id);
-      this.planService.updateStateWithShapes(null);
+      this.planStateService.updateStateWithScenario(id);
+      this.planStateService.updateStateWithShapes(null);
     } else {
-      this.planService.updateStateWithConfig(null);
-      this.planService.updateStateWithScenario(null);
-      this.planService.updateStateWithShapes(null);
+      this.planStateService.updateStateWithScenario(null);
+      this.planStateService.updateStateWithShapes(null);
     }
   }
 

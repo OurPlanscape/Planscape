@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { interval, take } from 'rxjs';
-import { PlanService } from 'src/app/services';
 import {
   Plan,
   Scenario,
@@ -17,6 +16,12 @@ import {
 } from '../../plan-helpers';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
+import {
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
+} from '../../../../app/shared/constants';
+
+import { ScenarioService } from '../../../services/scenario.service';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -59,11 +64,11 @@ export class SavedScenariosComponent implements OnInit {
   };
 
   constructor(
-    private planService: PlanService,
     private route: ActivatedRoute,
     private router: Router,
     private snackbar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private scenarioService: ScenarioService
   ) {}
 
   ngOnInit(): void {
@@ -79,7 +84,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   fetchScenarios(): void {
-    this.planService
+    this.scenarioService
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
       .subscribe((scenarios) => {
@@ -127,15 +132,17 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   private deleteScenario(ids: string[]) {
-    this.planService.deleteScenarios(ids).subscribe({
+    this.scenarioService.deleteScenarios(ids).subscribe({
       next: (deletedIds) => {
         this.snackbar.open(
-          `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`
+          `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`,
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
         );
         this.fetchScenarios();
       },
       error: (err) => {
-        this.snackbar.open(`Error: ${err}`);
+        this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });
   }

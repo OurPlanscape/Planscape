@@ -3,13 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import booleanIntersects from '@turf/boolean-intersects';
 import booleanWithin from '@turf/boolean-within';
 import { point } from '@turf/helpers';
-import {
-  Feature,
-  FeatureCollection,
-  Geometry,
-  MultiPolygon,
-  Polygon,
-} from 'geojson';
+import { Feature, FeatureCollection, Geometry } from 'geojson';
 import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet.sync';
@@ -24,9 +18,26 @@ import {
   Map,
   MapViewOptions,
   Region,
-  regionMapCenters,
 } from '../types';
-import { ERROR_SNACK_CONFIG } from './map.constants';
+
+import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
+import {
+  BOUNDARY_LAYER_HOVER_STYLES,
+  BOUNDARY_LAYER_NORMAL_STYLES,
+  DRAWING_STYLES,
+  GEOMAN_DRAW_OPTIONS,
+  HOVER_STYLES,
+  NORMAL_STYLES,
+} from './map.constants';
+import {
+  areaOverlaps,
+  checkIfAreaInBoundaries,
+  createMultiPolygonFeatureCollection,
+  regionMapCenters,
+} from './map.helper';
+import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
+import { createAndAddLegend } from './map.legends';
+import { addClonedLayerToMap, removeClonedLayer } from './map.layers';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -57,20 +68,6 @@ export class MapManager {
     this.selectedRegion$ = this.session.region$;
   }
 
-  getGeomanDrawOptions(): L.PM.ToolbarOptions {
-    return {
-      cutPolygon: false,
-      drawCircle: false,
-      drawMarker: false,
-      drawCircleMarker: false,
-      drawPolyline: false,
-      drawRectangle: false,
-      drawText: false,
-      rotateMode: false,
-      position: 'bottomright',
-    };
-  }
-
   /** Initializes the map with controls and the layer options specified in its config. */
   initLeafletMap(
     map: Map,
@@ -85,11 +82,11 @@ export class MapManager {
     if (map.instance != undefined) map.instance.remove();
 
     if (map.config.baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = this.stadiaAlidadeTiles();
+      map.baseLayerRef = stadiaAlidadeTiles();
     } else if (map.config.baseLayerType == BaseLayerType.Terrain) {
-      map.baseLayerRef = this.terrainTiles();
+      map.baseLayerRef = terrainTiles();
     } else {
-      map.baseLayerRef = this.satelliteTiles();
+      map.baseLayerRef = satelliteTiles();
     }
 
     map.instance = L.map(mapId, {
@@ -142,66 +139,15 @@ export class MapManager {
       },
       layerGroup: this.drawingLayer,
     });
-    map.instance!.pm.setPathOptions({
-      color: '#3367D6',
-      fillColor: '#3367D6',
-      fillOpacity: 0.1,
-      weight: 5,
-    });
+    map.instance!.pm.setPathOptions(DRAWING_STYLES);
 
     this.setUpEventHandlers(map, createDetailCardCallback);
   }
 
-  /** Creates a basemap layer using the Esri.WorldTerrain tiles. */
-  private terrainTiles() {
-    return L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
-      {
-        maxZoom: 13,
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
-        zIndex: 0,
-      }
-    );
-  }
-
-  /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
-  private stadiaAlidadeTiles() {
-    return L.tileLayer(
-      'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
-      {
-        maxZoom: 19,
-        attribution:
-          '&copy; <a href="https://stadiamaps.com/" target="_blank" rel="noreferrer">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/" target="_blank" rel="noreferrer">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org" target="_blank" rel="noreferrer">OpenStreetMap</a> contributors',
-        zIndex: 0,
-      }
-    );
-  }
-
-  /** Creates a basemap layer using the Esri.WorldImagery tiles. */
-  private satelliteTiles() {
-    return L.tileLayer(
-      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        attribution:
-          'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
-        zIndex: 0,
-      }
-    );
-  }
-
   /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
   private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
-    const normalStyle: L.PathOptions = {
-      color: '#000000',
-      weight: 1,
-      opacity: 0.5,
-    };
-    const hoverStyle: L.PathOptions = {
-      color: '#ff0000',
-      weight: 5,
-      opacity: 0.9,
-    };
+    const normalStyle = NORMAL_STYLES;
+    const hoverStyle: L.PathOptions = HOVER_STYLES;
 
     // [elsieling] This step makes the map less responsive
     map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
@@ -259,12 +205,7 @@ export class MapManager {
    */
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
     L.geoJSON(area, {
-      style: (_) => ({
-        color: '#3367D6',
-        fillColor: '#3367D6',
-        fillOpacity: 0.1,
-        weight: 5,
-      }),
+      style: (_) => DRAWING_STYLES,
       pmIgnore: false,
       onEachFeature: (_, layer) => {
         layer.addTo(this.drawingLayer);
@@ -281,16 +222,7 @@ export class MapManager {
    */
   private addClonedPolygons(layer: L.Layer) {
     this.maps.forEach((currMap) => {
-      const originalId = L.Util.stamp(layer);
-
-      // Hacky way to clone, but it removes the reference to the origin layer
-      const clonedLayer = L.geoJson((layer as L.Polygon).toGeoJSON()).setStyle({
-        color: '#ffde9e',
-        fillColor: '#ffde9e',
-        weight: 5,
-      });
-      currMap.clonedDrawingRef?.addLayer(clonedLayer);
-      currMap.drawnPolygonLookup![originalId] = clonedLayer;
+      addClonedLayerToMap(currMap, layer);
     });
   }
 
@@ -300,12 +232,7 @@ export class MapManager {
    */
   private removeClonedPolygons(layer: L.Layer, deleteOriginal: boolean) {
     this.maps.forEach((currMap) => {
-      const originalPolygonKey = L.Util.stamp(layer);
-      const clonedPolygon = currMap.drawnPolygonLookup![originalPolygonKey];
-      currMap.clonedDrawingRef!.removeLayer(clonedPolygon);
-      if (deleteOriginal) {
-        delete currMap.drawnPolygonLookup![originalPolygonKey];
-      }
+      removeClonedLayer(currMap, layer, deleteOriginal);
     });
   }
 
@@ -378,15 +305,7 @@ export class MapManager {
       const existingPolygon = feature as L.Polygon;
       // Skip feature with same latlng because that is what's being edited
       if (existingPolygon.getLatLngs() != editedLayer.getLatLngs()) {
-        const isOverlapping = booleanWithin(
-          editedLayer.toGeoJSON(),
-          existingPolygon.toGeoJSON()
-        );
-        const isIntersecting = booleanIntersects(
-          editedLayer.toGeoJSON(),
-          existingPolygon.toGeoJSON()
-        );
-        overlaps = isOverlapping || isIntersecting;
+        overlaps = areaOverlaps(editedLayer, existingPolygon);
       }
     });
     if (overlaps) {
@@ -402,7 +321,7 @@ export class MapManager {
     this.matSnackBar.open(
       '[Error] Planning areas cannot overlap!',
       'Dismiss',
-      ERROR_SNACK_CONFIG
+      SNACK_ERROR_CONFIG
     );
   }
 
@@ -509,7 +428,7 @@ export class MapManager {
   /** Adds drawing control and drawing layer to the map. */
   addDrawingControl(map: L.Map) {
     map.addLayer(this.drawingLayer);
-    map.pm.addControls(this.getGeomanDrawOptions());
+    map.pm.addControls(GEOMAN_DRAW_OPTIONS);
   }
 
   /** Clears all drawings and cloned drawings. */
@@ -520,6 +439,11 @@ export class MapManager {
       currMap.drawnPolygonLookup = {};
     });
     this.polygonsCreated$.next(false);
+  }
+
+  checkIfDrawingInRegion(boundaries: GeoJSON.FeatureCollection) {
+    const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;
+    return checkIfAreaInBoundaries(drawnGeoJson, boundaries.features[0]);
   }
 
   /**
@@ -533,24 +457,7 @@ export class MapManager {
     if (drawnGeoJson.features.length <= 1) return drawnGeoJson;
 
     // Case: Multipolygon
-    const newFeature: GeoJSON.Feature = {
-      type: 'Feature',
-      geometry: {
-        type: 'MultiPolygon',
-        coordinates: [],
-      },
-      properties: {},
-    };
-    drawnGeoJson.features.forEach((feature) => {
-      (newFeature.geometry as MultiPolygon).coordinates.push(
-        (feature.geometry as Polygon).coordinates
-      );
-    });
-
-    return {
-      type: 'FeatureCollection',
-      features: [newFeature],
-    } as FeatureCollection;
+    return createMultiPolygonFeatureCollection(drawnGeoJson);
   }
 
   /** Enables the polygon drawing tool on a map. */
@@ -564,34 +471,6 @@ export class MapManager {
     map.pm.disableDraw();
   }
 
-  /**
-   * Darkens everything outside of the region boundary.
-   * Type 'any' is used in order to access coordinates.
-   * Currently unused.
-   */
-  maskOutsideRegion(map: Map, boundary: any) {
-    // Add corners of the map to invert the polygon
-    if (map.regionLayerRef) {
-      map.regionLayerRef?.remove();
-    }
-    boundary.features[0].geometry.coordinates[0].unshift([
-      [180, -90],
-      [180, 90],
-      [-180, 90],
-      [-180, -90],
-    ]);
-    map.regionLayerRef = L.geoJSON(boundary, {
-      style: (_) => ({
-        color: '#ffffff',
-        weight: 2,
-        opacity: 1,
-        fillColor: '#000000',
-        fillOpacity: 0.4,
-      }),
-    });
-    map.regionLayerRef.addTo(map.instance!);
-  }
-
   /** Sync pan, zoom, etc. between all maps visible onscreen. */
   syncVisibleMaps(isMapVisible: (index: number) => boolean) {
     this.maps.forEach((mapA, indexA) => {
@@ -603,20 +482,6 @@ export class MapManager {
         }
       });
     });
-  }
-
-  /** Toggles which base layer is shown. */
-  changeBaseLayer(map: Map) {
-    let baseLayerType = map.config.baseLayerType;
-    map.baseLayerRef?.remove();
-    if (baseLayerType === BaseLayerType.Terrain) {
-      map.baseLayerRef = this.terrainTiles();
-    } else if (baseLayerType === BaseLayerType.Road) {
-      map.baseLayerRef = this.stadiaAlidadeTiles();
-    } else if (baseLayerType === BaseLayerType.Satellite) {
-      map.baseLayerRef = this.satelliteTiles();
-    }
-    map.instance?.addLayer(map.baseLayerRef!);
   }
 
   /** Toggles which boundary layer is shown. */
@@ -654,18 +519,6 @@ export class MapManager {
     shapeName: string,
     map: L.Map
   ): L.Layer {
-    const normalStyle: L.PathOptions = {
-      weight: 1,
-      color: '#0000ff',
-      fillOpacity: 0,
-      fill: true,
-    };
-    const hoverStyle: L.PathOptions = {
-      weight: 5,
-      color: '#0000ff',
-      fillOpacity: 0.5,
-      fill: true,
-    };
     return boundary
       .on('mouseover', function (e) {
         var featureName = e.propagatedFrom.properties[shapeName];
@@ -679,13 +532,13 @@ export class MapManager {
         e.propagatedFrom.bindTooltip(pops);
         (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(
           e.propagatedFrom.properties.OBJECTID,
-          hoverStyle
+          BOUNDARY_LAYER_HOVER_STYLES
         );
       })
       .on('mouseout', function (e) {
         (boundary as unknown as typeof L.vectorGrid).setFeatureStyle(
           e.propagatedFrom.properties.OBJECTID,
-          normalStyle
+          BOUNDARY_LAYER_NORMAL_STYLES
         );
       });
   }
@@ -699,73 +552,6 @@ export class MapManager {
     } else {
       map.existingProjectsLayerRef?.remove();
     }
-  }
-
-  addLegend(colormap: any, dataUnit: string | undefined, map: Map) {
-    var entries = colormap['entries'];
-    const legend = new (L.Control.extend({
-      options: { position: 'topleft' },
-    }))();
-    const mapRef = map;
-    legend.onAdd = function (map) {
-      // Remove any pre-existing legend on map
-      if (mapRef.legend) {
-        L.DomUtil.remove(mapRef.legend);
-      }
-
-      const div = L.DomUtil.create('div', 'legend');
-      // htmlContent of HTMLDivElement must be directly added here to add to leaflet map
-      // Creating a string and then assigning to div.innerHTML to allow for class encapsulation
-      // (otherwise div tags are automatically closed before they should be)
-      var htmlContent = '';
-      htmlContent += '<div class=parentlegend>';
-      if (dataUnit && colormap['type'] == 'ramp') {
-        // For legends with numerical labels make header the corresponding data units
-        htmlContent += '<div><b>' + dataUnit + '</b></div>';
-      } else {
-        // For legends with categorical labels make header 'Legend'
-        htmlContent += '<div><b>Legend</b></div>';
-      }
-      // Reversing order to present legend values from high to low (default is low to high)
-      for (let i = entries.length - 1; i >= 0; i--) {
-        var entry = entries[i];
-        // Add a margin-bottom to only the last entry in the legend
-        var lastChild = '';
-        if (i == 0) {
-          lastChild = 'style="margin-bottom: 6px;"';
-        }
-        if (entry['label']) {
-          // Filter out 'nodata' entries
-          if (entry['color'] != '#000000') {
-            htmlContent +=
-              '<div class="legendline" ' +
-              lastChild +
-              '><i style="background:' +
-              entry['color'] +
-              '"> &emsp; &hairsp;</i> &nbsp;<label>' +
-              entry['label'] +
-              '<br/></label></div>';
-          } else if (lastChild != '') {
-            htmlContent += '<div class="legendline"' + lastChild + '></div>';
-          }
-        } else {
-          htmlContent +=
-            '<div class="legendline" ' +
-            lastChild +
-            '><i style="background:' +
-            entry['color'] +
-            '"> &emsp; &hairsp;</i> &nbsp; <br/></div>';
-        }
-      }
-      htmlContent += '</div>';
-      div.innerHTML = htmlContent;
-      // Needed to allow for scrolling on the legend
-      L.DomEvent.on(div, 'mousewheel', L.DomEvent.stopPropagation);
-      // Set reference to legend for later deletion
-      mapRef.legend = div;
-      return div;
-    };
-    legend.addTo(map.instance!);
   }
 
   /** Changes which condition scores layer (if any) is shown. */
@@ -814,7 +600,7 @@ export class MapManager {
     legendJson.pipe(take(1)).subscribe((value: any) => {
       var colorMap =
         value['Legend'][0]['rules'][0]['symbolizers'][0]['Raster']['colormap'];
-      this.addLegend(colorMap, dataUnit, map);
+      createAndAddLegend(colorMap, dataUnit, map);
     });
   }
 

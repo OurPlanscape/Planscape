@@ -1,12 +1,11 @@
 import { Region } from '../types/region.types';
 import { TestBed } from '@angular/core/testing';
-
 import { SessionService } from './session.service';
+import { MapViewOptions } from '../types';
 import {
-  defaultMapViewOptions,
-  MapViewOptions,
   defaultMapConfigsDictionary,
-} from '../types';
+  defaultMapViewOptions,
+} from '../map/map.helper';
 
 class LocalStorageMock {
   store: { [key: string]: string } = {};
@@ -14,6 +13,7 @@ class LocalStorageMock {
   get length() {
     return Object.keys(this.store).length;
   }
+
   key = (index: number) => {
     return Object.keys(this.store)[index] ?? null;
   };
