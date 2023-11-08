@@ -55,10 +55,12 @@ export class CreateScenariosComponent implements OnInit {
   treatmentGoals$: Observable<TreatmentGoalConfig[] | null>;
 
   excludedAreasOptions: Array<string> = [
+    'National Forests',
+    'National Parks',
     'Private Land',
-    'National Forests and Parks',
-    'Wilderness Area',
+    'State Parks',
     'Tribal Lands',
+    'Wilderness Area',
   ];
 
   project_area_upload_enabled = features.upload_project_area;
