@@ -357,7 +357,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
+def download_csv(request: HttpRequest) -> HttpResponse:
     """
     Generates a new Zip file for a scenario based on ID.
 
@@ -370,28 +370,44 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
 
     TODO: maybe generate a unique key and store that for each output dir name when we create it?
     """
-    try:
-        # Ensure that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            return HttpResponseBadRequest(
-                "Unauthorized. User is not logged in.", status=401
-            )
-
-        scenario = Scenario.objects.select_related("planning_area__user").get(
-            id=request.GET["id"]
+    # Ensure that the user is logged in.
+    user = _get_user(request)
+    if user is None:
+        return HttpResponse(
+            "Unauthorized. User is not logged in.",
+            status=401,
         )
-        # Ensure that current user is associated with this scenario
-        if scenario.planning_area.user.pk != user.pk:
-            raise ValueError("Scenario matching query does not exist.")
 
-        scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
-        if scenario_result.status != ScenarioResultStatus.SUCCESS:
-            raise ValueError("Scenario was not successful, data cannot be downloaded.")
+    scenario = (
+        Scenario.objects.select_related("planning_area__user")
+        .filter(id=request.GET["id"])
+        .first()
+    )
 
+    if not scenario:
+        return HttpResponse(
+            "Scenario matching query does not exist.",
+            status=404,
+        )
+
+    # Ensure that current user is associated with this scenario
+    if scenario.planning_area.user.pk != user.pk:
+        return HttpResponse(
+            "Scenario matching query does not exist.",
+            status=404,
+        )
+
+    scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+    if scenario_result.status != ScenarioResultStatus.SUCCESS:
+        return HttpResponse(
+            "Scenario was not successful, data cannot be downloaded.",
+            status=409,
+        )
+
+    try:
         output_zip_name: str = scenario.name + ".zip"
 
-        if scenario.get_forsys_folder().exists() == False:
+        if not scenario.get_forsys_folder().exists():
             raise ValueError("Scenario files cannot be read.")
 
         response = HttpResponse(content_type="application/zip")
@@ -418,25 +434,32 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
     Required params:
       id (int): The scenario ID to be retrieved.
     """
-    try:
-        # Ensure that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            return HttpResponseBadRequest(
-                "Unauthorized. User is not logged in.", status=401
-            )
-
-        scenario = Scenario.objects.select_related("planning_area__user").get(
-            id=request.GET["id"]
+    # Ensure that the user is logged in.
+    user = _get_user(request)
+    if user is None:
+        return HttpResponse(
+            "Unauthorized. User is not logged in.",
+            status=401,
         )
-        # Ensure that current user is associated with this scenario
-        if scenario.planning_area.user.pk != user.pk:
-            raise ValueError("Scenario matching query does not exist.")
 
-        scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
-        if scenario_result.status != ScenarioResultStatus.SUCCESS:
-            raise ValueError("Scenario was not successful, data cannot be downloaded.")
+    scenario = Scenario.objects.select_related("planning_area__user").get(
+        id=request.GET["id"]
+    )
+    # Ensure that current user is associated with this scenario
+    if scenario.planning_area.user.pk != user.pk:
+        return HttpResponse(
+            "Scenario does not exist.",
+            status=404,
+        )
 
+    scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+    if scenario_result.status != ScenarioResultStatus.SUCCESS:
+        return HttpResponse(
+            "Scenario was not successfull, can't download data.",
+            status=409,
+        )
+
+    try:
         output_zip_name = f"{scenario.name}.zip"
         export_to_shapefile(scenario)
         response = HttpResponse(content_type="application/zip")
