@@ -213,7 +213,7 @@ get_project_ids <- function(forsys_output) {
 
 rename_col <- function(name) {
   new_name <- gsub(
-    "^(Pr_[0-9]+_|ETrt_)",
+    "^(ETrt_)",
     "",
     name
   )
@@ -237,6 +237,7 @@ to_properties <- function(
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
+    select(-contains("Pr_1")) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
