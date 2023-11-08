@@ -1,13 +1,11 @@
 import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
+import { MapConfig, MapViewOptions, Region } from '../types';
 import {
   defaultMapConfig,
-  defaultMapViewOptions,
-  MapConfig,
-  MapViewOptions,
-  Region,
   defaultMapConfigsDictionary,
-} from '../types';
+  defaultMapViewOptions,
+} from '../map/map.helper';
 
 /** How often the user's session should be saved to local storage (in ms). */
 const SESSION_SAVE_INTERVAL = 60000;

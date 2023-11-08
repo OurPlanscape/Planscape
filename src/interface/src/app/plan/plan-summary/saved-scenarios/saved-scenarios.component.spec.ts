@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { PlanService } from 'src/app/services';
 import { Region } from 'src/app/types';
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
@@ -20,15 +19,15 @@ import { By } from '@angular/platform-browser';
 import { CurrencyInKPipe } from '../../../pipes/currency-in-k.pipe';
 import { CurrencyPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
-
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
+import { ScenarioService } from '../../../services/scenario.service';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
   let fixture: ComponentFixture<SavedScenariosComponent>;
-  let fakePlanService: PlanService;
+  let fakeScenarioService: ScenarioService;
 
   beforeEach(async () => {
     const fakeRoute = jasmine.createSpyObj(
@@ -41,7 +40,7 @@ describe('SavedScenariosComponent', () => {
       }
     );
 
-    fakePlanService = jasmine.createSpyObj<PlanService>(
+    fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
       'PlanService',
       {
         getScenariosForPlan: of([
@@ -57,8 +56,6 @@ describe('SavedScenariosComponent', () => {
           },
         ]),
         deleteScenarios: of(['1']),
-        favoriteScenario: of({ favorited: true }),
-        unfavoriteScenario: of({ favorited: false }),
       },
       {}
     );
@@ -80,7 +77,7 @@ describe('SavedScenariosComponent', () => {
         CurrencyPipe,
 
         { provide: ActivatedRoute, useValue: fakeRoute },
-        { provide: PlanService, useValue: fakePlanService },
+        { provide: ScenarioService, useValue: fakeScenarioService },
       ],
     }).compileComponents();
 
@@ -102,7 +99,9 @@ describe('SavedScenariosComponent', () => {
 
   it('should call service for list of scenarios', () => {
     fixture.detectChanges();
-    expect(fakePlanService.getScenariosForPlan).toHaveBeenCalledOnceWith('1');
+    expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(
+      '1'
+    );
 
     expect(component.scenarios.length).toEqual(1);
   });
@@ -126,7 +125,7 @@ describe('SavedScenariosComponent', () => {
     component.confirmDeleteScenario();
     fixture.detectChanges();
 
-    expect(fakePlanService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
+    expect(fakeScenarioService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
   });
 
   it('clicking new configuration button should call service and navigate', fakeAsync(async () => {

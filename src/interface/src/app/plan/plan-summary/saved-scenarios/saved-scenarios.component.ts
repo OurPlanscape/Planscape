@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { interval, take } from 'rxjs';
-import { PlanService } from 'src/app/services';
 import {
   Plan,
   Scenario,
@@ -21,6 +20,8 @@ import {
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
 } from '../../../../app/shared/constants';
+
+import { ScenarioService } from '../../../services/scenario.service';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -63,11 +64,11 @@ export class SavedScenariosComponent implements OnInit {
   };
 
   constructor(
-    private planService: PlanService,
     private route: ActivatedRoute,
     private router: Router,
     private snackbar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private scenarioService: ScenarioService
   ) {}
 
   ngOnInit(): void {
@@ -83,7 +84,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   fetchScenarios(): void {
-    this.planService
+    this.scenarioService
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
       .subscribe((scenarios) => {
@@ -131,7 +132,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   private deleteScenario(ids: string[]) {
-    this.planService.deleteScenarios(ids).subscribe({
+    this.scenarioService.deleteScenarios(ids).subscribe({
       next: (deletedIds) => {
         this.snackbar.open(
           `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`,

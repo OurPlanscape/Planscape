@@ -22,7 +22,7 @@
             <app-set-priorities
               [plan$]="plan$"
               [formGroup]="formGroups[1]"
-              [treatmentGoals$]="treatmentGoals | async"
+              [treatmentGoals$]="treatmentGoals$ | async"
               (changeConditionEvent)="
                 changeCondition($event)
               "></app-set-priorities>

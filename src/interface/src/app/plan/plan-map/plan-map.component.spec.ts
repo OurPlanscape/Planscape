@@ -4,16 +4,16 @@ import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { PlanService, PlanState } from 'src/app/services';
 import { Plan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { PlanState, PlanStateService } from '../../services/plan-state.service';
 
 describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
   let fixture: ComponentFixture<PlanMapComponent>;
-  let fakePlanService: PlanService;
+  let fakePlanService: PlanStateService;
   let fakePlanState$: BehaviorSubject<PlanState>;
   let fakePlan: Plan;
 
@@ -43,10 +43,14 @@ describe('PlanMapComponent', () => {
       ...emptyPlanState,
     });
 
-    fakePlanService = jasmine.createSpyObj<PlanService>('PlanService', [], {
-      planState$: fakePlanState$,
-      planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA),
-    });
+    fakePlanService = jasmine.createSpyObj<PlanStateService>(
+      'PlanStateService',
+      [],
+      {
+        planState$: fakePlanState$,
+        planRegion$: new BehaviorSubject<Region>(Region.SIERRA_NEVADA),
+      }
+    );
 
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
@@ -55,7 +59,7 @@ describe('PlanMapComponent', () => {
       declarations: [PlanMapComponent],
       providers: [
         {
-          provide: PlanService,
+          provide: PlanStateService,
           useValue: fakePlanService,
         },
         { provide: Router, useFactory: routerStub },
