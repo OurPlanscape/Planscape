@@ -49,6 +49,20 @@
           ]
         },
         {
+          "pillar_name": "air_quality",
+          "display": false,
+          "display_name": "Air Quality",
+          "elements": [
+            {
+              "element_name": "particulate_matter",
+              "display": false,
+              "display_name": "Particulate Matter",
+              "metrics": [
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "biodiversity",
           "display": true,
           "display_name": "Biodiversity",
