@@ -401,7 +401,7 @@ def download_csv(request: HttpRequest) -> HttpResponse:
     if scenario_result.status != ScenarioResultStatus.SUCCESS:
         return HttpResponse(
             "Scenario was not successful, data cannot be downloaded.",
-            status=409,
+            status=424,
         )
 
     try:
@@ -456,7 +456,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
     if scenario_result.status != ScenarioResultStatus.SUCCESS:
         return HttpResponse(
             "Scenario was not successful, can't download data.",
-            status=409,
+            status=424,
         )
 
     try:
