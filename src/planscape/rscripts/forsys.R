@@ -50,6 +50,10 @@ PREPROCESSING_MULTIPLIERS <- list(
     aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
   )
 
+METRIC_COLUMNS <- list(
+  distance_to_roads = "min"
+)
+
 
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
@@ -154,20 +158,27 @@ preprocess_metrics <- function(metrics, condition_name) {
   return(metrics)
 }
 
+get_metric_column <- function(condition_name) {
+  if (exists(condition_name, METRIC_COLUMNS)) {
+    return(METRIC_COLUMNS[[condition_name]])
+  }
+  return("avg")
+}
+
 get_stand_metrics <- function(
     connection,
     condition_id,
     condition_name,
     stand_ids) {
+  metric_column <- get_metric_column(condition_name)
   query <- glue_sql(
     "SELECT
       stand_id,
-      avg as {`condition_name`}
+      COALESCE({`metric_column`}, 0) AS {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
-       stand_id IN ({stand_ids*}) AND
-       avg is NOT NULL",
+       stand_id IN ({stand_ids*})",
     condition_id = condition_id,
     condition_name = condition_name,
     stand_ids = stand_ids,
@@ -195,13 +206,14 @@ get_project_geometry <- function(connection, stand_ids) {
   return(fromJSON(result$st_asgeojson))
 }
 
+
 get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
 }
 
 rename_col <- function(name) {
   new_name <- gsub(
-    "^(Pr_[0-9]+_|ETrt_)",
+    "^(ETrt_)",
     "",
     name
   )
@@ -225,6 +237,7 @@ to_properties <- function(
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
+    select(-contains("Pr_1")) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
@@ -318,6 +331,17 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
           "yielded an empty result. check underlying data!"
         )
       )
+
+      if (any(is.na(metric[,condition_name]))) {
+        log_warn(
+          paste(
+            "Condition",
+            condition_name,
+            "contains NA/NULL values."
+          )
+        )
+      }
+
       metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
       names(metric) <- c("stand_id", condition_name)
     }
@@ -436,35 +460,42 @@ get_max_treatment_area <- function(scenario) {
 }
 
 get_distance_to_roads <- function(configuration) {
-  if (stri_isempty(configuration$min_distance_from_road)) {
-    distance <- 1000
-  } else {
-    distance <- configuration$min_distance_from_road
-  }
-  return(glue("distance_to_roads <= {distance}"))
+  # converts specified distance to roads in yards to meters
+  distance_in_meters <- configuration$min_distance_from_road / 1.094
+  return(glue("distance_to_roads <= {distance_in_meters}"))
 }
 
 get_max_slope <- function(configuration) {
-  if (stri_isempty(configuration$max_slope)) {
-    max_slope <- 37
-  } else {
-    max_slope <- configuration$max_slope
-  }
+  max_slope <- configuration$max_slope
   return(glue("slope <= {max_slope}"))
 }
 
 get_stand_thresholds <- function(scenario) {
+  all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
-  max_slope <- get_max_slope(configuration)
-  distance_to_roads <- get_distance_to_roads(configuration)
+  if (!is.null(configuration$max_slope)) {
+    max_slope <- get_max_slope(configuration)
+    all_thresholds <- c(all_thresholds, max_slope)
+  }
 
-  all_thresholds <- c(max_slope, distance_to_roads)
+  if (!is.null(configuration$min_distance_from_road)) {
+    distance_to_roads <- get_distance_to_roads(configuration)
+    all_thresholds <- c(all_thresholds, distance_to_roads)
+  }
+
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
 
-  return(paste(all_thresholds, collapse = " & "))
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
+}
+
+remove_duplicates <- function(dataframe) {
+  return(dataframe[!duplicated(dataframe), ])
 }
 
 call_forsys <- function(
@@ -477,6 +508,9 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
+  # we use this to drop priorities, that are repeated in here - we need those
+  # so front-end can show data from priorities as well
+  forsys_inputs <- remove_duplicates(forsys_inputs)
 
   stand_data <- get_stand_data(
     connection,
@@ -525,10 +559,6 @@ call_forsys <- function(
     patchmax_proj_size_min = min_area_project,
     patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
-    patchmax_SDW = 0.5,
-    patchmax_EPW = 1,
-    patchmax_sample_frac = 0.1,
-    annual_target_value = max_treatment_area,
   )
   return(out)
 }
@@ -588,11 +618,13 @@ main <- function(scenario_id) {
     scenario,
     configuration$scenario_priorities
   )
+
   outputs <- get_priorities(
     connection,
     scenario,
     configuration$scenario_output_fields
   )
+
   restrictions <- get_priorities(
     connection,
     scenario,

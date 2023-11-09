@@ -1,4 +1,4 @@
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
+import * as L from 'leaflet';
 
 export enum AreaCreationAction {
   NONE = 0,
@@ -29,8 +29,53 @@ export const LEGEND = {
   ],
 };
 
-export const ERROR_SNACK_CONFIG: MatSnackBarConfig<any> = {
-  duration: 10000,
-  panelClass: ['snackbar-error'],
-  verticalPosition: 'top',
+export const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
+  cutPolygon: false,
+  drawCircle: false,
+  drawMarker: false,
+  drawCircleMarker: false,
+  drawPolyline: false,
+  drawRectangle: false,
+  drawText: false,
+  rotateMode: false,
+  position: 'bottomright',
 };
+
+export const NORMAL_STYLES: L.PathOptions = {
+  color: '#000000',
+  weight: 1,
+  opacity: 0.5,
+};
+
+export const HOVER_STYLES: L.PathOptions = {
+  color: '#ff0000',
+  weight: 5,
+  opacity: 0.9,
+};
+
+export const DRAWING_STYLES: L.PathOptions = {
+  color: '#3367D6',
+  fillColor: '#3367D6',
+  fillOpacity: 0.1,
+  weight: 5,
+};
+
+export const BOUNDARY_LAYER_NORMAL_STYLES: L.PathOptions = {
+  weight: 1,
+  color: '#0000ff',
+  fillOpacity: 0,
+  fill: true,
+};
+
+export const BOUNDARY_LAYER_HOVER_STYLES: L.PathOptions = {
+  weight: 5,
+  color: '#0000ff',
+  fillOpacity: 0.5,
+  fill: true,
+};
+export const FrontendConstants = {
+  MAP_INITIAL_ZOOM: 9,
+  MAP_MIN_ZOOM: 7,
+  MAP_MAX_ZOOM: 13,
+  MAP_DATA_LAYER_OPACITY: 0.7,
+} as const;

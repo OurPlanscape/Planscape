@@ -1,14 +1,13 @@
 import json
 import os
 
-import logging
-from planning.services import zip_directory
 
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Count, Max
+from django.db.models.functions import Coalesce
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -23,6 +22,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
 )
+from planning.services import validate_scenario_treatment_ratio, zip_directory
 from utils.cli_utils import call_forsys
 
 
@@ -295,7 +295,11 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         planning_areas = (
             PlanningArea.objects.filter(user=user_id)
             .annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(scenario_latest_updated_at=Max("scenarios__updated_at"))
+            .annotate(
+                scenario_latest_updated_at=Coalesce(
+                    Max("scenarios__updated_at"), "updated_at"
+                )
+            )
             .order_by("-scenario_latest_updated_at")
         )
         return JsonResponse(
@@ -432,6 +436,17 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         planning_area = get_object_or_404(user.planning_areas, id=body["planning_area"])
 
         # TODO: Parse configuration field into further components.
+        result, reason = validate_scenario_treatment_ratio(
+            planning_area,
+            serializer.validated_data.get("configuration"),
+        )
+
+        if not result:
+            return HttpResponse(
+                json.dumps({"reason": reason}),
+                content_type="application/json",
+                status=400,
+            )
 
         scenario = serializer.save()
 

@@ -6,11 +6,12 @@ import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
-import { AuthService, PlanService } from '../services';
+import { AuthService } from '../services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
+import { PlanStateService } from '../services/plan-state.service';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -63,13 +64,12 @@ describe('PlanComponent', () => {
     mockAuthService = {};
 
     const fakeService = jasmine.createSpyObj(
-      'PlanService',
+      'PlanStateService',
       {
         getPlan: of(fakePlan),
         getProjectsForPlan: of([]),
         updateStateWithPlan: of(),
         updateStateWithScenario: of(),
-        updateStateWithConfig: of(),
         getScenariosForPlan: of([]),
         updateStateWithShapes: of([]),
       },
@@ -90,7 +90,7 @@ describe('PlanComponent', () => {
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: PlanService, useValue: fakeService },
+        { provide: PlanStateService, useValue: fakeService },
       ],
     }).compileComponents();
 
@@ -104,9 +104,10 @@ describe('PlanComponent', () => {
   });
 
   it('calls service to update plan state based on route', () => {
-    const planService = fixture.debugElement.injector.get(PlanService);
+    const planStateService =
+      fixture.debugElement.injector.get(PlanStateService);
 
-    expect(planService.updateStateWithPlan).toHaveBeenCalledOnceWith('24');
+    expect(planStateService.updateStateWithPlan).toHaveBeenCalledOnceWith('24');
     expect(component.showOverview$.value).toBeTrue();
   });
 

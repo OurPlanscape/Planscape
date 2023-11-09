@@ -50,10 +50,10 @@ planscape_apps = [
     "boundary",
     "conditions",
     "existing_projects",
-    "plan",
     "planning",
     "stands",
     "users",
+    "utils",
 ]
 INSTALLED_APPS = [
     "allauth",
@@ -69,7 +69,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
-    "forsys",
     "leaflet",
     "lockdown",
     "password_policies",
@@ -335,9 +334,11 @@ if SENTRY_DSN is not None:
         integrations=[
             DjangoIntegration(),
         ],
-        traces_sample_rate=0.05,
         send_default_pii=True,
         environment=ENV,
+        enable_tracing=True,
+        profiles_sample_rate=0.1,
+        traces_sample_rate=0.05,
     )
 
 DEFAULT_CONDITIONS_FILE = config(
@@ -353,3 +354,5 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
+
+DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
