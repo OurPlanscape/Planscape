@@ -23,6 +23,7 @@
                   "biodiversity_conservation"
                 ],
                 "elements": [
+                  "functional_fire",
                   "particulate_matter",
                   "carbon_stability",
                   "hazard",
@@ -31,6 +32,7 @@
                   "focal_species"
                 ],
                 "metrics": [
+                  "probability_of_fire_severity_high",
                   "high_severity_potential_smoke_emissions",
                   "total_fuel_exposed_to_fire",
                   "dead_and_down_carbon",
@@ -62,14 +64,16 @@
                   "carbon_sequestration",
                   "fire_dynamics",
                   "economic_diversity",
-                  "biodiversity_conservation"
+                  "biodiversity_conservation",
+                  "fire_adapted_communities"
                 ],
                 "elements": [
                   "particulate_matter",
                   "carbon_stability",
                   "severity",
                   "wood_product_industry",
-                  "focal_species"
+                  "focal_species",
+                  "hazard"
                 ],
                 "metrics": [
                   "high_severity_potential_smoke_emissions",
@@ -81,7 +85,9 @@
                   "sawtimber_biomass",
                   "heavy_fuel_load",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_territory",
+                  "structure_exposure",
+                  "damage_potential_wui"
                 ]
               },
               "stand_thresholds": [],
@@ -121,7 +127,8 @@
                   "probability_of_fire_severity_high",
                   "probability_of_fire_severity_moderate",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_territory",
+                  "total_fuel_exposed_to_fire"
                 ]
               },
               "stand_thresholds": [
@@ -144,7 +151,8 @@
                   "economic_diversity",
                   "fire_adapted_communities",
                   "forest_resilience",
-                  "social_cultural_wellbeing"
+                  "social_cultural_wellbeing",
+                  "fire_dynamics"
                 ],
                 "elements": [
                   "particulate_matter",
@@ -158,7 +166,8 @@
                   "forest_structure",
                   "forest_composition",
                   "disturbance",
-                  "environmental_justice"
+                  "environmental_justice",
+                  "severity"
                 ],
                 "metrics": [
                   "probability_of_fire_severity_high",
@@ -172,7 +181,9 @@
                   "seral_stage_late",
                   "low_income_populations",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_territory",
+                  "total_fuel_exposed_to_fire",
+                  "standing_dead_and_ladder_fuels"
                 ]
               },
               "stand_thresholds": [
@@ -230,7 +241,9 @@
                   "pacific_fisher",
                   "northern_goshawk_habitat",
                   "american_pacific_marten_habitat",
-                  "band_tailed_pigeon_habitat"
+                  "band_tailed_pigeon_habitat",
+                  "probability_of_fire_severity_high",
+                  "probability_of_fire_severity_moderate"
                 ]
               },
               "stand_thresholds": [
@@ -286,7 +299,9 @@
                   "costs_of_potential_treatment_moving_biomass",
                   "costs_of_potential_treatment_moving_sawlogs",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_territory",
+                  "probability_of_fire_severity_high",
+                  "probability_of_fire_severity_moderate"
                 ]
               },
               "stand_thresholds": [
@@ -310,7 +325,8 @@
                 "pillars": [
                   "biodiversity_conservation",
                   "fire_dynamics",
-                  "forest_resilience"
+                  "forest_resilience",
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "community_integrity",
@@ -321,7 +337,8 @@
                   "severity",
                   "forest_structure",
                   "forest_composition",
-                  "disturbance"
+                  "disturbance",
+                  "carbon_storage"
                 ],
                 "metrics": [
                   "probability_of_fire_severity_high",
@@ -333,7 +350,8 @@
                   "live_tree_density_30in_dbh",
                   "california_spotted_owl_habitat",
                   "california_spotted_owl_territory",
-                  "wildlife_species_richness"
+                  "wildlife_species_richness",
+                  "aboveground_live_tree_carbon"
                 ]
               },
               "stand_thresholds": [],
