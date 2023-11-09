@@ -1788,7 +1788,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
             {"id": self.scenario.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.status_code, 424)
         self.assertRegex(
             str(response.content),
             r"Scenario was not successful, data cannot be downloaded.",
