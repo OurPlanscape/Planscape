@@ -99,7 +99,9 @@
         mat-button
         type="button"
         class="done-button"
-        [disabled]="!(showConfirmAreaButton$ | async) || !login_enabled"
+        [disabled]="
+          (showConfirmAreaButton$ | async) === false || !login_enabled
+        "
         (click)="openCreatePlanDialog()">
         DONE
       </button>

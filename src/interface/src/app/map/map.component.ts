@@ -15,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
-import { Feature, Geometry } from 'geojson';
+import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { BehaviorSubject, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
@@ -23,35 +23,43 @@ import * as shp from 'shpjs';
 import {
   AuthService,
   MapService,
-  PlanService,
   PopupService,
   SessionService,
 } from '../services';
 import {
-  DEFAULT_COLORMAP,
-  defaultMapConfig,
-  defaultMapViewOptions,
   Legend,
   Map,
   MapConfig,
   MapViewOptions,
   NONE_BOUNDARY_CONFIG,
-  NONE_COLORMAP,
   Plan,
   Region,
-  regionMapCenters,
 } from '../types';
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
-import {
-  AreaCreationAction,
-  ERROR_SNACK_CONFIG,
-  LEGEND,
-} from './map.constants';
+import { AreaCreationAction, LEGEND } from './map.constants';
+import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import {
+  addGeoJSONToMap,
+  defaultMapConfig,
+  defaultMapViewOptions,
+  getMapNameplateWidth,
+  regionMapCenters,
+} from './map.helper';
+import { changeMapBaseStyle } from './map.tiles';
+import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
+import { updateLegendWithColorMap } from './map.legends';
+import {
+  addRegionLayer,
+  createDrawingLayer,
+  hideRegionLayer,
+  showRegionLayer,
+} from './map.layers';
+import { PlanStateService } from '../services/plan-state.service';
 
 @UntilDestroy()
 @Component({
@@ -124,7 +132,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planService: PlanService,
+    private planStateService: PlanStateService,
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -224,7 +232,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private loadPlanAndDrawPlanningArea() {
     // if planID is provided load planning area
     if (this.planId) {
-      const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
+      const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
 
       plan$.subscribe({
         next: (plan) => {
@@ -251,18 +259,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
 
     this.maps.forEach((map) => {
-      if (map.instance) {
-        this.drawingLayer = L.geoJSON(plan.planningArea, {
-          pane: 'overlayPane',
-          style: {
-            color: color ?? '#3367D6',
-            fillColor: color ?? '#3367D6',
-            fillOpacity: opacity ?? 0.1,
-            weight: 7,
-          },
-        }).addTo(map.instance);
-        map.instance.fitBounds(this.drawingLayer.getBounds());
-        map.instance.invalidateSize();
+      if (map.instance && plan.planningArea) {
+        this.drawingLayer = createDrawingLayer(
+          plan.planningArea,
+          color,
+          opacity
+        );
+        addGeoJSONToMap(this.drawingLayer, map.instance);
       }
     });
   }
@@ -332,7 +335,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         var centerCoords = regionMapCenters(selectedRegion!);
         map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
         // Region highlighting disabled for now
-        // this.displayRegionBoundary(map, selectedRegion);
+        this.setRegionBoundaryOnMap(map, selectedRegion);
       });
 
     this.showConfirmAreaButton$.subscribe((value: boolean) => {
@@ -355,7 +358,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
 
     // Initialize the legend with colormap values.
-    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap, [
+    updateLegendWithColorMap(map, map.config.dataLayerConfig.colormap, [
       map.config.dataLayerConfig.min_value,
       map.config.dataLayerConfig.max_value,
     ]);
@@ -366,23 +369,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   private updateMapNameplateWidth(map: Map) {
     this.mapNameplateWidths[this.maps.indexOf(map)].next(
-      this.getMapNameplateWidth(map)
+      getMapNameplateWidth(map)
     );
-  }
-
-  private getMapNameplateWidth(map: Map): number | null {
-    const mapElement = document.getElementById(map.id);
-    const attribution = mapElement
-      ?.getElementsByClassName('leaflet-control-attribution')
-      ?.item(0);
-    const mapWidth = !!mapElement ? mapElement.clientWidth : null;
-    const attributionWidth = !!attribution ? attribution.clientWidth : null;
-    // The maximum width of the nameplate is equal to the width of the map minus the width
-    // of Leaflet's attribution control. Additional padding/margins may be applied in the
-    // nameplate component, but are not considered for this width.
-    const nameplateWidth =
-      !!mapWidth && !!attributionWidth ? mapWidth - attributionWidth : null;
-    return nameplateWidth;
   }
 
   private startLoadingLayerCallback(layerName: string) {
@@ -418,54 +406,41 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.openSignInDialog();
       return;
     }
+    const selectedMapIndex = this.mapViewOptions$.getValue().selectedMapIndex;
+    const regionBoundary = this.maps[
+      selectedMapIndex
+    ].regionLayerRef?.toGeoJSON() as FeatureCollection;
+    if (regionBoundary) {
+      const inRegion = this.mapManager.checkIfDrawingInRegion(regionBoundary);
 
-    const openedDialog = this.dialog.open(PlanCreateDialogComponent, {
-      maxWidth: '560px',
-    });
-
-    openedDialog.afterClosed().subscribe((result) => {
-      if (result) {
-        this.createPlan(result.value, this.mapManager.convertToPlanningArea());
+      if (!inRegion) {
+        showRegionLayer(this.maps[selectedMapIndex]);
+        this.dialog.open(OutsideRegionDialogComponent, { maxWidth: '560px' });
+        return;
       }
-    });
+    }
+
+    this.openPlanCreateDialog()
+      .afterClosed()
+      .subscribe((id) => {
+        if (id) {
+          this.router.navigate(['plan', id]);
+        }
+      });
   }
 
   private openSignInDialog() {
-    this.dialog.open(SignInDialogComponent, {
+    return this.dialog.open(SignInDialogComponent, {
       maxWidth: '560px',
     });
   }
 
-  private createPlan(name: string, shape: GeoJSON.GeoJSON) {
-    this.selectedRegion$.pipe(take(1)).subscribe((selectedRegion) => {
-      if (!selectedRegion) {
-        this.matSnackBar.open(
-          '[Error] Please select a region!',
-          'Dismiss',
-          ERROR_SNACK_CONFIG
-        );
-        return;
-      }
-
-      this.planService
-        .createPlan({
-          name: name,
-          region: selectedRegion,
-          planningArea: shape,
-        })
-        .pipe(take(1))
-        .subscribe({
-          next: (result) => {
-            this.router.navigate(['plan', result.result!.id]);
-          },
-          error: (e) => {
-            this.matSnackBar.open(
-              '[Error] Unable to create plan due to backend error.',
-              'Dismiss',
-              ERROR_SNACK_CONFIG
-            );
-          },
-        });
+  private openPlanCreateDialog() {
+    return this.dialog.open(PlanCreateDialogComponent, {
+      maxWidth: '560px',
+      data: {
+        shape: this.mapManager.convertToPlanningArea(),
+      },
     });
   }
 
@@ -497,6 +472,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       );
       this.showUploader = !this.showUploader;
     }
+    showRegionLayer(this.maps[selectedMapIndex]);
   }
 
   cancelAreaCreationAction() {
@@ -506,6 +482,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       this.maps[selectedMapIndex].instance!
     );
     this.mapManager.clearAllDrawings();
+    hideRegionLayer(this.maps[selectedMapIndex]);
     this.selectedAreaCreationAction = AreaCreationAction.NONE;
     this.showUploader = false;
   }
@@ -557,13 +534,23 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.matSnackBar.open(
       '[Error] Not a valid shapefile!',
       'Dismiss',
-      ERROR_SNACK_CONFIG
+      SNACK_ERROR_CONFIG
     );
+  }
+
+  private setRegionBoundaryOnMap(map: Map, selectedRegion: Region | null) {
+    if (!selectedRegion) return;
+    if (!map.instance) return;
+    this.mapService
+      .getRegionBoundary(selectedRegion)
+      .subscribe((boundary: GeoJSON.GeoJSON) => {
+        addRegionLayer(map, boundary);
+      });
   }
 
   /** Toggles which base layer is shown. */
   changeBaseLayer(map: Map) {
-    this.mapManager.changeBaseLayer(map);
+    changeMapBaseStyle(map);
 
     // Changing the base layer may change the attribution, so the map nameplate
     // width should be recalculated.
@@ -586,23 +573,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     this.mapManager.changeConditionsLayer(map);
-    this.updateLegendWithColormap(map, map.config.dataLayerConfig.colormap, [
+    updateLegendWithColorMap(map, map.config.dataLayerConfig.colormap, [
       map.config.dataLayerConfig.min_value,
       map.config.dataLayerConfig.max_value,
     ]);
-  }
-
-  private updateLegendWithColormap(
-    map: Map,
-    colormap?: string,
-    minMaxValues?: (number | undefined)[]
-  ) {
-    if (colormap == undefined) {
-      colormap = DEFAULT_COLORMAP;
-    } else if (colormap == NONE_COLORMAP) {
-      map.legend = undefined;
-      return;
-    }
   }
 
   /** Change the opacity of the currently shown data layer on all maps (if any). */

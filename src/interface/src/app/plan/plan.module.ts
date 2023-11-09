@@ -15,7 +15,6 @@ import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanNavigationBarComponent } from './plan-navigation-bar/plan-navigation-bar.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
-import { ScenarioConfigurationsComponent } from './plan-summary/scenario-configurations/scenario-configurations.component';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
@@ -40,7 +39,6 @@ import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-t
     PlanMapComponent,
     SavedScenariosComponent,
     SummaryPanelComponent,
-    ScenarioConfigurationsComponent,
     PlanUnavailableComponent,
     PlanOverviewComponent,
     CreateScenariosComponent,

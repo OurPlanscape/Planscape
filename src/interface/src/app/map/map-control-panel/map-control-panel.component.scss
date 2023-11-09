@@ -94,6 +94,10 @@ h3 {
 }
 
 .clear-all-button-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #FFF;
   display: flex;
   justify-content: center;
   padding: 12px;

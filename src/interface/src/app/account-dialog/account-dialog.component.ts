@@ -8,6 +8,7 @@ import {
   ValidatorFn,
 } from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
@@ -84,7 +85,10 @@ export class AccountDialogComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout().pipe(take(1)).subscribe();
+    this.authService
+      .logout()
+      .pipe(take(1))
+      .subscribe((_) => this.close());
   }
 
   savePassword(): void {
@@ -103,10 +107,11 @@ export class AccountDialogComponent implements OnInit {
           this.changingPassword = false;
           this.disableChangeButton = false;
           this.error = null;
-          this.snackbar.open('Updated password successfully', undefined, {
-            duration: 10000,
-            verticalPosition: 'top',
-          });
+          this.snackbar.open(
+            'Updated password successfully',
+            'Dismiss',
+            SNACK_NOTICE_CONFIG
+          );
         },
         (err: any) => {
           this.error = Object.values(err.error);
@@ -136,9 +141,11 @@ export class AccountDialogComponent implements OnInit {
           this.disableEditButton = false;
           this.error = null;
 
-          this.snackbar.open('Successfully updated password', undefined, {
-            duration: 6000,
-          });
+          this.snackbar.open(
+            'Successfully updated password',
+            'Dismiss',
+            SNACK_NOTICE_CONFIG
+          );
         },
         (err) => {
           if (err.status == 401) {

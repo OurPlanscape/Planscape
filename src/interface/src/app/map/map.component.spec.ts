@@ -25,28 +25,30 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanState,
   SessionService,
 } from '../services';
 import {
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
-  defaultMapConfig,
-  defaultMapViewOptions,
-  defaultMapConfigsDictionary,
   Map,
   MapConfig,
   MapViewOptions,
   Plan,
   Region,
-} from './../types';
+} from '../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeaturesModule } from '../features/features.module';
+import { PlanState, PlanStateService } from '../services/plan-state.service';
+import {
+  defaultMapConfig,
+  defaultMapConfigsDictionary,
+  defaultMapViewOptions,
+} from './map.helper';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -133,7 +135,7 @@ describe('MapComponent', () => {
         }),
       }
     );
-    const fakePlanService = jasmine.createSpyObj<PlanService>(
+    const fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
       'PlanService',
       { createPlan: of({ success: true, result: fakePlan }) },
       {
@@ -141,7 +143,6 @@ describe('MapComponent', () => {
           all: {}, // All plans indexed by id
           currentPlanId: 'temp',
           currentScenarioId: null,
-          currentConfigId: null,
           mapConditionLayer: null,
           mapShapes: null,
           legendUnits: null,
@@ -164,10 +165,7 @@ describe('MapComponent', () => {
       'MatDialog',
       {
         open: {
-          afterClosed: () =>
-            of({
-              value: 'test name',
-            }),
+          afterClosed: () => of('temp'),
         } as MatDialogRef<any>,
       },
       {}
@@ -191,7 +189,7 @@ describe('MapComponent', () => {
         { provide: AuthService, useValue: fakeAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
-        { provide: PlanService, useValue: fakePlanService },
+        { provide: PlanService, useValue: fakePlanStateService },
         { provide: SessionService, useValue: fakeSessionService },
         { provide: Router, useFactory: routerStub },
       ],
@@ -657,8 +655,6 @@ describe('MapComponent', () => {
       userSignedIn$.next(true);
       const fakeMatDialog: MatDialog =
         fixture.debugElement.injector.get(MatDialog);
-      const planServiceStub: PlanService =
-        fixture.debugElement.injector.get(PlanService);
       component.selectedAreaCreationAction = component.AreaCreationAction.DRAW;
       fixture.componentInstance.showConfirmAreaButton$ =
         new BehaviorSubject<boolean>(true);
@@ -673,32 +669,23 @@ describe('MapComponent', () => {
 
       expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
         PlanCreateDialogComponent,
-        { maxWidth: '560px' }
+        {
+          maxWidth: '560px',
+          data: {
+            shape: { type: 'FeatureCollection', features: [] },
+          },
+        }
       );
-      expect(planServiceStub.createPlan).toHaveBeenCalled();
     }));
 
     it('dialog calls create plan with name and planning area', fakeAsync(async () => {
       userSignedIn$.next(true);
-      const planServiceStub: PlanService =
-        fixture.debugElement.injector.get(PlanService);
+
       const routerStub: Router = fixture.debugElement.injector.get(Router);
       spyOn(routerStub, 'navigate').and.callThrough();
 
-      const emptyGeoJson: GeoJSON.GeoJSON = {
-        type: 'FeatureCollection',
-        features: [],
-      };
-      const createPlanSpy = spyOn<any>(
-        component,
-        'createPlan'
-      ).and.callThrough();
-
       fixture.componentInstance.openCreatePlanDialog();
       tick();
-
-      expect(createPlanSpy).toHaveBeenCalledWith('test name', emptyGeoJson);
-      expect(planServiceStub.createPlan).toHaveBeenCalled();
       expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan', 'temp']);
     }));
   });

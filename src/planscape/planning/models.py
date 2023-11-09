@@ -1,6 +1,9 @@
+from pathlib import Path
 from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from core.models import CreatedAtMixin, UpdatedAtMixin
+from django.core.serializers.json import DjangoJSONEncoder
 
 User = get_user_model()
 
@@ -55,6 +58,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     configuration = models.JSONField(default=dict)
 
+    def get_shapefile_folder(self):
+        return Path(settings.OUTPUT_DIR) / "shapefile" / Path(self.name)
+
+    def get_forsys_folder(self):
+        return Path(settings.OUTPUT_DIR) / Path(self.name)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
@@ -88,7 +97,7 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
         default=ScenarioResultStatus.PENDING,
     )
 
-    result = models.JSONField(null=True)
+    result = models.JSONField(null=True, encoder=DjangoJSONEncoder)
 
     run_details = models.JSONField(null=True)
 
