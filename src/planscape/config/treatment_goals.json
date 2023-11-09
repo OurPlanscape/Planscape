@@ -234,7 +234,12 @@
                 ]
               },
               "stand_thresholds": [
-                "california_spotted_owl_habitat == 0 & california_spotted_owl_territory == 0 & pacific_fisher == 0 & northern_goshawk_habitat == 0 & american_pacific_marten_habitat == 0 & band_tailed_pigeon_habitat == 0"
+                "california_spotted_owl_habitat < 0.5",
+                "california_spotted_owl_territory < 0.5",
+                "pacific_fisher < 0.5",
+                "northern_goshawk_habitat < 0.5",
+                "american_pacific_marten_habitat < 0.5",
+                "band_tailed_pigeon_habitat < 0.5"
               ],
               "global_thresholds": []
             },
@@ -285,7 +290,7 @@
                 ]
               },
               "stand_thresholds": [
-                "california_spotted_owl_habitat == 0"
+                "california_spotted_owl_habitat < 0.5"
               ],
               "global_thresholds": []
             }
