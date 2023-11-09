@@ -70,6 +70,7 @@ get_scenario_data <- function(connection, scenario_id) {
   query <- "SELECT
               s.id,
               s.name,
+              s.uuid,
               s.configuration,
               pa.region_name as \"region_name\",
               pa.name as \"planning_area_name\",
@@ -548,7 +549,8 @@ call_forsys <- function(
     return_outputs = TRUE,
     write_outputs = TRUE,
     overwrite_output = TRUE,
-    scenario_name = scenario$name,
+    # scenario_name = scenario$name,
+    scenario_name = scenario$uuid, # using UUID here instead of name
     scenario_output_fields = c(outputs$condition_name, "area_acres"),
     scenario_priorities = scenario_priorities,
     stand_data = stand_data,

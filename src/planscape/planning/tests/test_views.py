@@ -1704,7 +1704,9 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.scenario_result.save()
 
         # generate fake data in a directory that corresponds to this scenario name
-        self.mock_project_path = str(settings.OUTPUT_DIR) + "/" + "test scenario"
+        self.mock_project_path = (
+            str(settings.OUTPUT_DIR) + "/" + str(self.scenario.uuid)
+        )
 
         # this will also make the output directory that we currently don't commit
         os.makedirs(self.mock_project_path, exist_ok=True)

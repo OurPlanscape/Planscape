@@ -385,8 +385,8 @@ def get_scenario_download_by_id(request: HttpRequest) -> HttpResponse:
         if scenario_result.status != ScenarioResultStatus.SUCCESS:
             raise ValueError("Scenario was not successful, data cannot be downloaded.")
 
-        source_dir = Path(settings.OUTPUT_DIR) / Path(scenario.name)
-        output_zip_name: str = scenario.name + ".zip"
+        source_dir = Path(settings.OUTPUT_DIR) / Path(str(scenario.uuid))
+        output_zip_name: str = str(scenario.uuid) + ".zip"
 
         if os.path.exists(source_dir) == False:
             raise ValueError("Scenario files cannot be read.")
