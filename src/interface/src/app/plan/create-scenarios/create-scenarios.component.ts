@@ -68,6 +68,7 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  priorities: string[] = [];
   scenarioChartData: any[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
@@ -219,6 +220,9 @@ export class CreateScenariosComponent implements OnInit {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
           this.disableForms();
+          this.priorities =
+            scenario.configuration.treatment_question?.scenario_priorities ||
+            [];
           this.selectedTabIndex = 1;
           if (this.scenarioState == 'SUCCESS') {
             this.processScenarioResults(scenario);
@@ -441,18 +445,26 @@ export class CreateScenariosComponent implements OnInit {
             var displayName = metric_data[metric]['display_name'];
             var dataUnits = metric_data[metric]['data_units'];
             var metricLayer = metric_data[metric]['raw_layer'];
+            var metricName = metric_data[metric]['metric_name'];
             var metricData: string[] = [];
             this.scenarioResults?.result.features.map((featureCollection) => {
               const props = featureCollection.properties;
               metricData.push(props[metric]);
             });
-            labels.push([displayName, dataUnits, metricLayer, metricData]);
+            labels.push([
+              displayName,
+              dataUnits,
+              metricLayer,
+              metricData,
+              metricName,
+            ]);
           }
           this.scenarioChartData = labels.map((label, _) => ({
             label: label[0],
             measurement: label[1],
             metric_layer: label[2],
             values: label[3],
+            key: label[4],
           }));
         });
       this.planStateService.updateStateWithShapes(
