@@ -18,6 +18,7 @@ import { parseResultsToProjectAreas } from '../plan-helpers';
 export class ScenarioResultsComponent implements OnChanges {
   @Input() results: ScenarioResult | null = null;
   @Input() scenarioChartData: any[] = [];
+  @Input() priorities: string[] = [];
   @Output() downloadCsv = new EventEmitter();
 
   areas: ProjectAreaReport[] = [];

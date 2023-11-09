@@ -23,13 +23,10 @@ import * as shp from 'shpjs';
 import {
   AuthService,
   MapService,
-  PlanService,
   PopupService,
   SessionService,
 } from '../services';
 import {
-  defaultMapConfig,
-  defaultMapViewOptions,
   Legend,
   Map,
   MapConfig,
@@ -37,7 +34,6 @@ import {
   NONE_BOUNDARY_CONFIG,
   Plan,
   Region,
-  regionMapCenters,
 } from '../types';
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
@@ -47,7 +43,13 @@ import { FeatureService } from '../features/feature.service';
 import { AreaCreationAction, LEGEND } from './map.constants';
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { addGeoJSONToMap, getMapNameplateWidth } from './map.helper';
+import {
+  addGeoJSONToMap,
+  defaultMapConfig,
+  defaultMapViewOptions,
+  getMapNameplateWidth,
+  regionMapCenters,
+} from './map.helper';
 import { changeMapBaseStyle } from './map.tiles';
 import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
 import { updateLegendWithColorMap } from './map.legends';
@@ -57,6 +59,7 @@ import {
   hideRegionLayer,
   showRegionLayer,
 } from './map.layers';
+import { PlanStateService } from '../services/plan-state.service';
 
 @UntilDestroy()
 @Component({
@@ -129,7 +132,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planService: PlanService,
+    private planStateService: PlanStateService,
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -229,7 +232,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private loadPlanAndDrawPlanningArea() {
     // if planID is provided load planning area
     if (this.planId) {
-      const plan$ = this.planService.getPlan(this.planId).pipe(take(1));
+      const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
 
       plan$.subscribe({
         next: (plan) => {

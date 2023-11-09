@@ -51,7 +51,16 @@ PREPROCESSING_MULTIPLIERS <- list(
   )
 
 METRIC_COLUMNS <- list(
-  distance_to_roads = "min"
+  distance_to_roads = "min",
+  slope = "max",
+  california_spotted_owl_habitat = "sum",
+  american_pacific_marten_habitat = "sum",
+  nothern_goshawk_habitat = "sum",
+  band_tailed_pigeon_habitat = "sum",
+  california_spotted_owl_territory = "sum",
+  pacific_fisher = "sum",
+  giant_sequoia_stands = "sum",
+  low_income_population_proportional = "sum"
 )
 
 
@@ -174,12 +183,11 @@ get_stand_metrics <- function(
   query <- glue_sql(
     "SELECT
       stand_id,
-      {`metric_column`} as {`condition_name`}
+      COALESCE({`metric_column`}, 0) AS {`condition_name`}
      FROM stands_standmetric
      WHERE
        condition_id = {condition_id} AND
-       stand_id IN ({stand_ids*}) AND
-       {`metric_column`} is NOT NULL",
+       stand_id IN ({stand_ids*})",
     condition_id = condition_id,
     condition_name = condition_name,
     stand_ids = stand_ids,
@@ -214,7 +222,7 @@ get_project_ids <- function(forsys_output) {
 
 rename_col <- function(name) {
   new_name <- gsub(
-    "^(Pr_[0-9]+_|ETrt_)",
+    "^(ETrt_)",
     "",
     name
   )
@@ -238,6 +246,7 @@ to_properties <- function(
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
+    select(-contains("Pr_1")) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
@@ -331,6 +340,17 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
           "yielded an empty result. check underlying data!"
         )
       )
+
+      if (any(is.na(metric[,condition_name]))) {
+        log_warn(
+          paste(
+            "Condition",
+            condition_name,
+            "contains NA/NULL values."
+          )
+        )
+      }
+
       metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
       names(metric) <- c("stand_id", condition_name)
     }
@@ -483,6 +503,10 @@ get_stand_thresholds <- function(scenario) {
   return(NULL)
 }
 
+remove_duplicates <- function(dataframe) {
+  return(dataframe[!duplicated(dataframe), ])
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -493,6 +517,10 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
+  # we use this to drop priorities, that are repeated in here - we need those
+  # so front-end can show data from priorities as well
+  forsys_inputs <- remove_duplicates(forsys_inputs)
+
   stand_data <- get_stand_data(
     connection,
     scenario,
@@ -599,11 +627,13 @@ main <- function(scenario_id) {
     scenario,
     configuration$scenario_priorities
   )
+
   outputs <- get_priorities(
     connection,
     scenario,
     configuration$scenario_output_fields
   )
+
   restrictions <- get_priorities(
     connection,
     scenario,

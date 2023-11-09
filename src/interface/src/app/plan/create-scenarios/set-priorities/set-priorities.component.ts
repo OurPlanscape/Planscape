@@ -1,24 +1,15 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { FormGroup } from '@angular/forms';
-import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { Plan } from 'src/app/types';
-
 import { MapService } from './../../../services/map.service';
-import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import {
-  PlanConditionScores,
-  TreatmentQuestionConfig,
   TreatmentGoalConfig,
-} from './../../../types/plan.types';
-
-export interface ScoreColumn {
-  label: string;
-  score: number;
-}
+  TreatmentQuestionConfig,
+} from '../../../types/scenario.types';
 
 interface PriorityRow {
   selected?: boolean;
@@ -44,15 +35,10 @@ export class SetPrioritiesComponent implements OnInit {
   @Input() treatmentGoals$: TreatmentGoalConfig[] | null = null;
   @Output() changeConditionEvent = new EventEmitter<string>();
 
-  conditionScores = new Map<string, ScoreColumn>();
-  displayedColumns: string[] = ['selected', 'displayName', 'score', 'visible'];
   datasource = new MatTableDataSource<PriorityRow>();
   selectedQuestion: TreatmentQuestionConfig | null = null;
 
-  constructor(
-    private mapService: MapService,
-    private planService: PlanService
-  ) {}
+  constructor(private mapService: MapService) {}
 
   ngOnInit(): void {
     this.mapService.conditionsConfig$
@@ -65,14 +51,6 @@ export class SetPrioritiesComponent implements OnInit {
           conditionsConfig!
         );
       });
-    this.plan$.pipe(filter((plan) => !!plan)).subscribe((plan) => {
-      this.planService
-        .getConditionScoresForPlanningArea(plan!.id)
-        .subscribe((response) => {
-          this.conditionScores =
-            this.convertConditionScoresToDictionary(response);
-        });
-    });
   }
 
   private conditionsConfigToPriorityData(
@@ -124,36 +102,6 @@ export class SetPrioritiesComponent implements OnInit {
     return data;
   }
 
-  private convertConditionScoresToDictionary(
-    scores: PlanConditionScores
-  ): Map<string, ScoreColumn> {
-    let scoreMap = new Map<string, ScoreColumn>();
-    scores.conditions.forEach((condition) => {
-      scoreMap.set(condition.condition, {
-        label: this.scoreToLabel(condition.mean_score),
-        score: condition.mean_score,
-      });
-    });
-    return scoreMap;
-  }
-
-  private scoreToLabel(score: number): string {
-    // TEMPORARY: use 5 equal buckets for scores [-1, 1] (Lowest, Low, Medium, High, Highest)
-    if (score < -0.6) return 'Lowest';
-    if (score < -0.2) return 'Low';
-    if (score < 0.2) return 'Medium';
-    if (score < 0.6) return 'High';
-    return 'Highest';
-  }
-
-  getScoreLabel(conditionName: string): string | undefined {
-    return this.conditionScores.get(conditionName)?.label;
-  }
-
-  getScore(conditionName: string): number | undefined {
-    return this.conditionScores.get(conditionName)?.score;
-  }
-
   /** Toggle whether a priority condition's children are expanded. */
   toggleExpand(
     priority: PriorityRow,
@@ -166,60 +114,6 @@ export class SetPrioritiesComponent implements OnInit {
       if (child.hidden) {
         this.toggleExpand(child, false, true);
       }
-    });
-  }
-
-  /** Toggle visibility for a priority condition. If visibility is ON, turn visibility
-   *  for all other conditions to OFF.
-   */
-  toggleVisibility(priority: PriorityRow): void {
-    priority.visible = !priority.visible;
-    if (priority.visible) {
-      this.changeConditionEvent.emit(priority.filepath);
-      this.datasource.data.forEach((priorityRow) => {
-        if (priorityRow !== priority) {
-          priorityRow.visible = false;
-        }
-      });
-    } else {
-      this.changeConditionEvent.emit('');
-    }
-  }
-
-  /** Update the priority list with the user's current selections and disable descendants. */
-  updatePrioritiesFormControl(
-    priority: PriorityRow,
-    event: MatCheckboxChange
-  ): void {
-    // const selectedPriorities: string[] = this.datasource.data
-    //   .filter((row) => row.selected)
-    //   .map((row) => row.conditionName);
-
-    if (event.checked) {
-      this.disableDescendants(priority);
-    } else {
-      this.enableDescendants(priority);
-    }
-  }
-
-  /** Update the checkboxes with the current form value. */
-  updateSelectedPriorities(): void {
-    this.datasource.data = this.datasource.data.map((row) => {
-      return row;
-    });
-  }
-
-  private disableDescendants(priority: PriorityRow): void {
-    priority.children.forEach((descendant) => {
-      descendant.disabled = true;
-      this.disableDescendants(descendant);
-    });
-  }
-
-  private enableDescendants(priority: PriorityRow): void {
-    priority.children.forEach((descendant) => {
-      descendant.disabled = false;
-      this.enableDescendants(descendant);
     });
   }
 }
