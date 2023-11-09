@@ -54,12 +54,12 @@ METRIC_COLUMNS <- list(
   distance_to_roads = "min",
   slope = "max",
   california_spotted_owl_habitat = "sum",
-  california_spotted_owl_territory = "sum",
+  american_pacific_marten_habitat = "sum",
   nothern_goshawk_habitat = "sum",
+  california_spotted_owl_territory = "sum",
   pacific_fisher = "sum",
   giant_sequoia_stands = "sum",
-  american_pacific_marten_habitat = "sum",
-  low_income_population_proportional = "sum",
+  low_income_population_proportional = "sum"
 )
 
 
