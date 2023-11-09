@@ -1,5 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
+import { PROJECT_AREA_COLORS } from '../../shared/constants';
 
 @Component({
   selector: 'app-report-chart',
@@ -31,7 +32,12 @@ export class ReportChartComponent implements OnInit {
   ngOnInit() {
     this.barChartData = {
       labels: this.values.map((v, i) => i + 1),
-      datasets: [{ data: this.values }],
+      datasets: [
+        {
+          data: this.values,
+          backgroundColor: PROJECT_AREA_COLORS,
+        },
+      ],
     };
 
     this.barChartOptions = {

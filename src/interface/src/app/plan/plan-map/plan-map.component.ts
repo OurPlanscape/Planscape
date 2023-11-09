@@ -14,6 +14,8 @@ import { BackendConstants } from './../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanStateService } from '../../services/plan-state.service';
 import { regionMapCenters } from '../../map/map.helper';
+import { Feature } from 'geojson';
+import { getColorForProjectPosition } from '../plan-helpers';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {
@@ -62,7 +64,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
           this.layer = state.mapConditionLayer ?? '';
           this.setCondition(state.mapConditionLayer ?? '');
         }
-        if (state.mapShapes !== this.shapes) {
+        if (state.mapShapes && state.mapShapes !== this.shapes) {
           this.shapes = state.mapShapes;
           this.drawShapes(state.mapShapes);
         }
@@ -112,10 +114,10 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.drawingLayer = L.geoJSON(plan.planningArea, {
       pane: 'overlayPane',
       style: {
-        color: color ?? '#3367D6',
-        fillColor: color ?? '#3367D6',
-        fillOpacity: opacity ?? 0.1,
-        weight: 7,
+        color: color ?? '#000000',
+        fillColor: color ?? '#A5C8D7',
+        fillOpacity: opacity ?? 0.12,
+        weight: 3,
       },
     }).addTo(this.map);
     this.map.fitBounds(this.drawingLayer.getBounds(), {
@@ -257,17 +259,17 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
-  private drawShapes(shapes: any): void {
+  private drawShapes(shapes: Feature[]): void {
     this.projectAreasLayer?.remove();
 
     if (!shapes) return;
 
     this.projectAreasLayer = L.geoJSON(shapes, {
-      style: (_) => ({
-        color: '#0f5acd',
-        fillColor: '#0f5acd',
-        fillOpacity: 0.1,
-        weight: 5,
+      style: (shape) => ({
+        color: '#000',
+        fillColor: getColorForProjectPosition(shape?.properties.proj_id),
+        fillOpacity: 0.4,
+        weight: 1.5,
       }),
       onEachFeature: function (feature, layer) {
         // TODO Find a better way to center this — could see if it's possible to add an actual center coordinate to the properties and use that to set tooltip location
