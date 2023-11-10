@@ -35,7 +35,6 @@ th {
   font-weight: bold;
 }
 
-
 td {
   text-align: center;
 }
@@ -56,3 +55,7 @@ tr:nth-child(even):not(.total-row) {
   padding: 20px;
 }
 
+.area-id {
+  border-left: 8px solid white;
+  display: block;
+}
