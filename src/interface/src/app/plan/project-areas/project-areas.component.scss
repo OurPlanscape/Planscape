@@ -29,9 +29,11 @@ table {
   width: 100%;
   border-collapse: collapse;
 }
+
 th {
   font-weight: normal;
 }
+
 td {
   text-align: center;
 }
@@ -43,10 +45,15 @@ td {
 tr:nth-child(even):not(.total-row) {
   background-color: #e3e5e8;
 }
+
 .total-row {
   border-top: 1px solid black;
 }
 
 .tooltip {
   padding: 20px;
+}
+
+.area-id {
+  font-weight: bold;
 }

@@ -64,7 +64,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
           this.layer = state.mapConditionLayer ?? '';
           this.setCondition(state.mapConditionLayer ?? '');
         }
-        if (state.mapShapes && state.mapShapes !== this.shapes) {
+        if (state.mapShapes !== this.shapes) {
           this.shapes = state.mapShapes;
           this.drawShapes(state.mapShapes);
         }
@@ -259,7 +259,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
-  private drawShapes(shapes: Feature[]): void {
+  private drawShapes(shapes: Feature[] | null): void {
     this.projectAreasLayer?.remove();
 
     if (!shapes) return;

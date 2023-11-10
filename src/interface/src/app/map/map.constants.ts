@@ -54,10 +54,10 @@ export const HOVER_STYLES: L.PathOptions = {
 };
 
 export const DRAWING_STYLES: L.PathOptions = {
-  color: '#3367D6',
-  fillColor: '#3367D6',
-  fillOpacity: 0.1,
-  weight: 5,
+  color: '#000',
+  fillColor: '#A5C8D7',
+  fillOpacity: 0.25,
+  weight: 2,
 };
 
 export const BOUNDARY_LAYER_NORMAL_STYLES: L.PathOptions = {
