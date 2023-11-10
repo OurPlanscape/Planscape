@@ -68,7 +68,9 @@
               [results]="scenarioResults"
               [scenarioChartData]="scenarioChartData"
               [priorities]="priorities"
-              (downloadCsv)="downloadCsv()"></app-scenario-results>
+              [scenarioName]="nameFormGroup.get('scenarioName')?.value"
+              [scenarioId]="scenarioId!">
+            </app-scenario-results>
             <app-scenario-failure
               *ngSwitchCase="'FAILURE'"
               (goBack)="goBackToPlanning()"></app-scenario-failure>
