@@ -130,11 +130,11 @@ export class MapManager {
       snappable: false,
       removeLayerBelowMinVertexCount: false,
       hintlineStyle: {
-        color: '#3367D6',
+        color: '#000',
         weight: 5,
       },
       templineStyle: {
-        color: '#3367D6',
+        color: '#000',
         weight: 5,
       },
       layerGroup: this.drawingLayer,
