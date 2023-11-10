@@ -30,9 +30,11 @@ table {
   border-collapse: collapse;
 }
 
+
 th {
-  font-weight: normal;
+  font-weight: bold;
 }
+
 
 td {
   text-align: center;
@@ -54,6 +56,3 @@ tr:nth-child(even):not(.total-row) {
   padding: 20px;
 }
 
-.area-id {
-  font-weight: bold;
-}
