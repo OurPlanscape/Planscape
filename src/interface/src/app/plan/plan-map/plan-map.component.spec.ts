@@ -112,7 +112,7 @@ describe('PlanMapComponent', () => {
 
       fakePlanState$.next({
         ...emptyPlanState,
-        mapShapes: shapes,
+        mapShapes: shapes.features,
       });
 
       expect(component.projectAreasLayer).toBeDefined();
@@ -124,12 +124,13 @@ describe('PlanMapComponent', () => {
 
       fakePlanState$.next({
         ...emptyPlanState,
-        mapShapes: shapes,
+        mapShapes: shapes.features,
       });
       fakePlanState$.next({
         ...emptyPlanState,
         mapShapes: null,
       });
+      fixture.detectChanges();
 
       expect(component.projectAreasLayer).toBeDefined();
       expect(component.map.hasLayer(component.projectAreasLayer!)).toBeFalse();
