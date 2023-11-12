@@ -38,37 +38,53 @@
       <h1 class="signup-title">Create your account</h1>
 
       <form [formGroup]="form" (ngSubmit)="signup()">
-        <mat-form-field appearance="fill">
-          <mat-label>First name</mat-label>
+        <mat-label
+          >First name
+          <span class="form-required-blurb">(required)</span></mat-label
+        >
+        <mat-form-field appearance="fill" hideRequiredMarker>
           <input type="text" required formControlName="firstName" matInput />
         </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Last name</mat-label>
+        <mat-label
+          >Last name
+          <span class="form-required-blurb">(required)</span></mat-label
+        >
+        <mat-form-field appearance="fill" hideRequiredMarker>
           <input type="text" required formControlName="lastName" matInput />
         </mat-form-field>
 
+        <mat-label
+          >Email <span class="form-required-blurb">(required)</span></mat-label
+        >
         <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
           <input type="text" required formControlName="email" matInput />
         </mat-form-field>
 
+        <mat-label
+          >Create password
+          <span class="form-required-blurb">(required)</span></mat-label
+        >
         <mat-form-field appearance="fill">
-          <mat-label>Create password</mat-label>
           <input
             type="password"
             required
             formControlName="password1"
-            matInput />
+            matInput
+            hideRequiredMarker />
         </mat-form-field>
 
+        <mat-label
+          >Confirm password
+          <span class="form-required-blurb">(required)</span></mat-label
+        >
         <mat-form-field appearance="fill">
-          <mat-label>Confirm password</mat-label>
           <input
             type="password"
             required
             formControlName="password2"
-            matInput />
+            matInput
+            hideRequiredMarker />
         </mat-form-field>
 
         <div></div>
@@ -91,56 +107,7 @@
                 Password must contain at least 8 characters.
               </div>
               <div *ngIf="form.errors?.['mustBe8Characters'] === null">
-                <mat-icon class="material-symbols-outlined pw-validation-icons">
-                  radio_button_unchecked
-                </mat-icon>
-                Password must contain at least 8 characters.
-              </div>
-
-              <div
-                *ngIf="form.errors?.['mustContainNumber']"
-                style="color: red">
-                <mat-icon class="warning-icon">warning</mat-icon>
-                Your new password must contain a number.
-              </div>
-              <div
-                *ngIf="form.errors?.['mustContainNumber'] === false"
-                style="color: green">
-                <mat-icon class="done-icon">done</mat-icon>
-                Your new password must contain a number.
-              </div>
-              <div *ngIf="form.errors?.['mustContainNumber'] === null">
-                - Your new password must contain a number.
-              </div>
-
-              <div *ngIf="form.errors?.['mustContainUpper']" style="color: red">
-                <mat-icon class="warning-icon">warning</mat-icon>
-                Your new password must contain at least one uppercase character.
-              </div>
-              <div
-                *ngIf="form.errors?.['mustContainUpper'] === false"
-                style="color: green">
-                <mat-icon class="done-icon">done</mat-icon>
-                Your new password must contain at least one uppercase character.
-              </div>
-              <div *ngIf="form.errors?.['mustContainUpper'] === null">
-                - Your new password must contain at least one uppercase
-                character.
-              </div>
-
-              <div *ngIf="form.errors?.['mustContainLower']" style="color: red">
-                <mat-icon class="warning-icon">warning</mat-icon>
-                Your new password must contain at least one uppercase character.
-              </div>
-              <div
-                *ngIf="form.errors?.['mustContainLower'] === false"
-                style="color: green">
-                <mat-icon class="done-icon">done</mat-icon>
-                Your new password must contain at least one lowercase character.
-              </div>
-              <div *ngIf="form.errors?.['mustContainLower'] === null">
-                - Your new password must contain at least one lowercase
-                character.
+                <li>Password must contain at least 8 characters.</li>
               </div>
             </div>
           </div>
