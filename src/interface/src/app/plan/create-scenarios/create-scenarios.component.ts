@@ -27,9 +27,7 @@ import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
-import FileSaver from 'file-saver';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ScenarioService } from '../../services/scenario.service';
 import { PlanStateService } from '../../services/plan-state.service';
 import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 
@@ -81,8 +79,7 @@ export class CreateScenariosComponent implements OnInit {
     private fb: FormBuilder,
     private planStateService: PlanStateService,
     private router: Router,
-    private matSnackBar: MatSnackBar,
-    private scenarioService: ScenarioService
+    private matSnackBar: MatSnackBar
   ) {
     this.treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
       untilDestroyed(this)
@@ -505,21 +502,5 @@ export class CreateScenariosComponent implements OnInit {
 
   goBackToPlanning() {
     this.router.navigate(['plan', this.plan$.value?.id]);
-  }
-
-  downloadCsv() {
-    const filename =
-      (this.nameFormGroup.get('scenarioName')?.value || 'scenario_results') +
-      '.zip';
-    if (this.scenarioId) {
-      this.scenarioService
-        .downloadCsvData(this.scenarioId)
-        .subscribe((data) => {
-          const blob = new Blob([data], {
-            type: 'application/zip',
-          });
-          FileSaver.saveAs(blob, filename);
-        });
-    }
   }
 }

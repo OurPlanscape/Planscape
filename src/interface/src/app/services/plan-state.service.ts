@@ -14,6 +14,7 @@ import {
   TreatmentQuestionConfig,
 } from '../types';
 import { BehaviorSubject, map, switchMap, take, tap } from 'rxjs';
+import { Feature } from 'geojson';
 
 export interface PlanState {
   all: {
@@ -22,7 +23,7 @@ export interface PlanState {
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
   mapConditionLayer: string | null;
-  mapShapes: any | null;
+  mapShapes: Feature[] | null;
   legendUnits: string | null;
 }
 

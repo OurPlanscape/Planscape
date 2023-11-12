@@ -103,6 +103,17 @@ export class ScenarioService {
     );
   }
 
+  downloadShapeFiles(scenarioId: string): Observable<any> {
+    return this.http.get(
+      BackendConstants.END_POINT +
+        `/planning/download_shapefile?id=${scenarioId}`,
+      {
+        withCredentials: true,
+        responseType: 'arraybuffer',
+      }
+    );
+  }
+
   /** Gets Metric Data For Scenario Output Fields */
   getMetricData(metric_paths: any, region: Region): Observable<any> {
     const url = BackendConstants.END_POINT.concat(
