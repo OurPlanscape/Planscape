@@ -126,16 +126,26 @@ export class SignupComponent {
   ): ValidationErrors | null => {
     const password1 = formControls.value.password1;
     const password2 = formControls.value.password2;
-  
+    const email = formControls.value.email;
+
+    // Note that Django also validates email formats, but it uses a different regex.
+    // So unless the regexes are equivalent, a user can get an error from Django but not 
+    //  from Angular. Below is the same regex from Django's email validation regex: 
+    const emailRegex = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
+
     const allTheErrors = {
       newPaswordsMustMatch: false,
-      mustContainNumber: false,
-      mustContainUpper: false,
-      mustContainLower: false,
-      mustBe8Characters: false
+      mustBe8Characters: false,
+      emailIsInvalid: false
     };
   
-    console.log('Here is the group: ', formControls);
+    //console.log('Here is the group: ', formControls);
+
+    console.log("Does email match?:", emailRegex.test(email));
+
+    if ( !emailRegex.test(email) && email.length > 0) {
+      allTheErrors.emailIsInvalid = true;
+    }
 
     if ( password1.length > 0 &&  password2.length > 0
     ) {
@@ -145,17 +155,13 @@ export class SignupComponent {
       if (password1 !== password2) {
         allTheErrors.newPaswordsMustMatch = true;
       }
-      if (!/[0-9]+/.test(password1)) {
-        allTheErrors.mustContainNumber = true;
-      }
-      if (!/[A-Z]+/.test(password1)) {
-        allTheErrors.mustContainUpper = true;
-      }
-      if (!/[a-z]+/.test(password1)) {
-        allTheErrors.mustContainLower = true;
-      }
-    } else {
-     return  null;
+    }
+    console.log("All the errors:", allTheErrors);
+
+    if (allTheErrors.newPaswordsMustMatch === false 
+        && allTheErrors.emailIsInvalid === false 
+        && allTheErrors.mustBe8Characters === false) {
+        return null;
     }
     return allTheErrors;
   };

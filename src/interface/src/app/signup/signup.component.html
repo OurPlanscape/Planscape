@@ -90,43 +90,42 @@
         <div></div>
 
         <div #policyBox id="policyBox">
-          <mat-error
-            *ngIf="form.errors || errors.length > 0 || form.valid === false">
-            <div *ngIf="form.controls['email'].status === 'INVALID'">
-              <mat-icon class="warning-icon">warning</mat-icon>
-              Email address must be valid.
-            </div>
-            <div
-              *ngIf="form.controls['email'].status === 'VALID'"
-              style="color: green">
-              <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
-              Email address must be valid.
-            </div>
-            <div *ngFor="let e of errors">
-              <mat-icon class="warning-icon">warning</mat-icon>
-              {{ e }}
-            </div>
-            <div *ngIf="form.errors?.['newPaswordsMustMatch']">
-              <mat-icon class="warning-icon">warning</mat-icon>
-              The new passwords you entered do not match.
-            </div>
-            <div
-              *ngIf="form.errors?.['newPaswordsMustMatch'] === false"
-              style="color: green">
-              <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
-              The new passwords you entered do not match.
-            </div>
-            <div *ngIf="form.errors?.['newPaswordsMustMatch']">
-              <mat-icon class="warning-icon">warning</mat-icon>
-              The new passwords you entered do not match.
-            </div>
-            <div
-              *ngIf="form.errors?.['newPaswordsMustMatch'] === false"
-              style="color: green">
-              <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
-              The new passwords you entered do not match.
-            </div>
-          </mat-error>
+          <div *ngFor="let e of errors">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            {{ e }}
+          </div>
+
+          <div *ngIf="form.errors?.['emailIsInvalid'] === true">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            Email address must be valid.
+          </div>
+          <div
+            *ngIf="form.errors?.['emailIsInvalid'] === false"
+            style="color: green">
+            <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
+            Email address must be valid.
+          </div>
+
+          <div *ngIf="form.errors?.['']">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            Passwords must match.
+          </div>
+          <div
+            *ngIf="form.errors?.['newPaswordsMustMatch'] === false"
+            style="color: green">
+            <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
+            Passwords must match.
+          </div>
+          <div *ngIf="form.errors?.['mustBe8Characters']">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            Your password must be at least 8 characters.
+          </div>
+          <div
+            *ngIf="form.errors?.['mustBe8Characters'] === false"
+            style="color: green">
+            <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
+            Your password must be at least 8 characters.
+          </div>
         </div>
 
         <button
