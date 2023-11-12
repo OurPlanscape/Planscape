@@ -7,10 +7,9 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
+import { TreatmentQuestionConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
-import { PlanService } from './../../../services/plan.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import { ColormapConfig } from './../../../types/legend.types';
 import { SetPrioritiesComponent } from './set-priorities.component';
@@ -25,7 +24,6 @@ describe('SetPrioritiesComponent', () => {
   let loader: HarnessLoader;
 
   let fakeMapService: MapService;
-  let fakePlanService: PlanService;
 
   const defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
@@ -85,37 +83,7 @@ describe('SetPrioritiesComponent', () => {
         }),
       }
     );
-    fakePlanService = jasmine.createSpyObj<PlanService>(
-      'PlanService',
-      {
-        getConditionScoresForPlanningArea: of({
-          conditions: [
-            {
-              condition: 'test_pillar_1',
-              mean_score: 0.1,
-            },
-            {
-              condition: 'test_element_1',
-              mean_score: -0.7,
-            },
-            {
-              condition: 'test_metric_1',
-              mean_score: 0.4,
-            },
-          ],
-        }),
-      },
-      {
-        treatmentGoalsConfig$: new BehaviorSubject<
-          TreatmentGoalConfig[] | null
-        >([
-          {
-            category_name: 'test_category',
-            questions: [testQuestion],
-          },
-        ]),
-      }
-    );
+
     await TestBed.configureTestingModule({
       imports: [
         BrowserAnimationsModule,
@@ -130,10 +98,6 @@ describe('SetPrioritiesComponent', () => {
         {
           provide: MapService,
           useValue: fakeMapService,
-        },
-        {
-          provide: PlanService,
-          useValue: fakePlanService,
         },
       ],
     }).compileComponents();

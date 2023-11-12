@@ -7,18 +7,15 @@ import {
 } from '@angular/core';
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
-import { distinctUntilChanged, map, take } from 'rxjs/operators';
-import { PlanService } from 'src/app/services';
-import {
-  FrontendConstants,
-  regionMapCenters,
-  Plan,
-  Region,
-  regionToString,
-} from 'src/app/types';
+import { take } from 'rxjs/operators';
+import { FrontendConstants, Plan, Region, regionToString } from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { PlanStateService } from '../../services/plan-state.service';
+import { regionMapCenters } from '../../map/map.helper';
+import { Feature } from 'geojson';
+import { getColorForProjectPosition } from '../plan-helpers';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {
@@ -48,24 +45,19 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   selectedRegion$ = new BehaviorSubject<Region>(Region.SIERRA_NEVADA);
-  currentScenarioId$ = this.planService.planState$.pipe(
-    map(({ currentScenarioId }) => currentScenarioId),
-    distinctUntilChanged(),
-    takeUntil(this.destroy$)
-  );
 
   private layer: string = '';
   private shapes: any | null = null;
 
   constructor(
-    private planService: PlanService,
+    private planStateService: PlanStateService,
     private http: HttpClient
   ) {
-    this.selectedRegion$ = this.planService.planRegion$;
+    this.selectedRegion$ = this.planStateService.planRegion$;
   }
 
   ngOnInit(): void {
-    this.planService.planState$
+    this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
         if (state.mapConditionLayer !== this.layer) {
@@ -122,10 +114,10 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.drawingLayer = L.geoJSON(plan.planningArea, {
       pane: 'overlayPane',
       style: {
-        color: color ?? '#3367D6',
-        fillColor: color ?? '#3367D6',
-        fillOpacity: opacity ?? 0.1,
-        weight: 7,
+        color: color ?? '#000000',
+        fillColor: color ?? '#A5C8D7',
+        fillOpacity: opacity ?? 0.12,
+        weight: 3,
       },
     }).addTo(this.map);
     this.map.fitBounds(this.drawingLayer.getBounds(), {
@@ -163,7 +155,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (filepath?.length === 0 || !filepath) return;
 
-    var region = regionToString(this.planService.planRegion$.getValue());
+    var region = regionToString(this.planStateService.planRegion$.getValue());
     this.tileLayer = L.tileLayer.wms(
       BackendConstants.TILES_END_POINT + region + '/wms?',
       {
@@ -180,7 +172,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Map legend request
     var dataUnit = '';
-    this.planService.planState$.pipe(take(1)).subscribe((state) => {
+    this.planStateService.planState$.pipe(take(1)).subscribe((state) => {
       if (state.legendUnits) {
         dataUnit = state.legendUnits;
       }
@@ -267,17 +259,17 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
-  private drawShapes(shapes: any): void {
+  private drawShapes(shapes: Feature[] | null): void {
     this.projectAreasLayer?.remove();
 
     if (!shapes) return;
 
     this.projectAreasLayer = L.geoJSON(shapes, {
-      style: (_) => ({
-        color: '#0f5acd',
-        fillColor: '#0f5acd',
-        fillOpacity: 0.1,
-        weight: 5,
+      style: (shape) => ({
+        color: '#000',
+        fillColor: getColorForProjectPosition(shape?.properties.proj_id),
+        fillOpacity: 0.4,
+        weight: 1.5,
       }),
       onEachFeature: function (feature, layer) {
         // TODO Find a better way to center this — could see if it's possible to add an actual center coordinate to the properties and use that to set tooltip location

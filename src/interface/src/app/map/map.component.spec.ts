@@ -25,28 +25,30 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanState,
   SessionService,
 } from '../services';
 import {
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
-  defaultMapConfig,
-  defaultMapViewOptions,
-  defaultMapConfigsDictionary,
   Map,
   MapConfig,
   MapViewOptions,
   Plan,
   Region,
-} from './../types';
+} from '../types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeaturesModule } from '../features/features.module';
+import { PlanState, PlanStateService } from '../services/plan-state.service';
+import {
+  defaultMapConfig,
+  defaultMapConfigsDictionary,
+  defaultMapViewOptions,
+} from './map.helper';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -133,7 +135,7 @@ describe('MapComponent', () => {
         }),
       }
     );
-    const fakePlanService = jasmine.createSpyObj<PlanService>(
+    const fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
       'PlanService',
       { createPlan: of({ success: true, result: fakePlan }) },
       {
@@ -141,7 +143,6 @@ describe('MapComponent', () => {
           all: {}, // All plans indexed by id
           currentPlanId: 'temp',
           currentScenarioId: null,
-          currentConfigId: null,
           mapConditionLayer: null,
           mapShapes: null,
           legendUnits: null,
@@ -188,7 +189,7 @@ describe('MapComponent', () => {
         { provide: AuthService, useValue: fakeAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
-        { provide: PlanService, useValue: fakePlanService },
+        { provide: PlanService, useValue: fakePlanStateService },
         { provide: SessionService, useValue: fakeSessionService },
         { provide: Router, useFactory: routerStub },
       ],

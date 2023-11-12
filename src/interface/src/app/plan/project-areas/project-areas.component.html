@@ -31,8 +31,12 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let area of areas">
-      <td>{{ area.id }}</td>
+    <tr
+      *ngFor="let area of areas"
+      [style.background-color]="colors[area.id - 1] + '4D'">
+      <td class="area-id">
+        {{ area.id }}
+      </td>
       <td data-id="acres">{{ area.acres | number: '1.0-0' }}</td>
       <td data-id="percentTotal">{{ area.percentTotal | percent: '1.0-2' }}</td>
       <td data-id="estimatedCost">{{ area.estimatedCost | currencyInK }}</td>

@@ -22,7 +22,7 @@
             <app-set-priorities
               [plan$]="plan$"
               [formGroup]="formGroups[1]"
-              [treatmentGoals$]="treatmentGoals | async"
+              [treatmentGoals$]="treatmentGoals$ | async"
               (changeConditionEvent)="
                 changeCondition($event)
               "></app-set-priorities>
@@ -67,7 +67,10 @@
               *ngSwitchCase="'SUCCESS'"
               [results]="scenarioResults"
               [scenarioChartData]="scenarioChartData"
-              (downloadCsv)="downloadCsv()"></app-scenario-results>
+              [priorities]="priorities"
+              [scenarioName]="nameFormGroup.get('scenarioName')?.value"
+              [scenarioId]="scenarioId!">
+            </app-scenario-results>
             <app-scenario-failure
               *ngSwitchCase="'FAILURE'"
               (goBack)="goBackToPlanning()"></app-scenario-failure>

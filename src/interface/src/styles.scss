@@ -46,6 +46,13 @@ body {
   }
 }
 
+.snackbar-notice {
+  background: #000000;
+  button {
+    color: #ffffff;
+  }
+}
+
 // Leaflet attribution box
 .leaflet-control-attribution {
   max-width: calc(100% - 200px);

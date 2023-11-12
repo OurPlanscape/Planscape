@@ -15,6 +15,7 @@ import { MapConfigSummaryComponent } from './map-config-summary/map-config-summa
 import { ConditionTreeComponent } from './map-control-panel/condition-tree/condition-tree.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeaturesModule } from '../features/features.module';
+import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { FeaturesModule } from '../features/features.module';
     RegionDropdownComponent,
     MapConfigSummaryComponent,
     ConditionTreeComponent,
+    OutsideRegionDialogComponent,
   ],
   imports: [
     CommonModule,

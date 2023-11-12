@@ -8,18 +8,15 @@ import { MatRadioGroupHarness } from '@angular/material/radio/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import {
-  BaseLayerType,
-  defaultMapConfig,
-  defaultMapViewOptions,
-} from 'src/app/types';
+import { BaseLayerType } from 'src/app/types';
 
-import { NONE_BOUNDARY_CONFIG } from './../../types/data.types';
-import { LayerInfoCardComponent } from './../layer-info-card/layer-info-card.component';
+import { NONE_BOUNDARY_CONFIG } from '../../types';
+import { LayerInfoCardComponent } from '../layer-info-card/layer-info-card.component';
 import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
 import { MapControlPanelComponent } from './map-control-panel.component';
 import { FeaturesModule } from '../../features/features.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { defaultMapConfig, defaultMapViewOptions } from '../map.helper';
 
 describe('MapControlPanelComponent', () => {
   let component: MapControlPanelComponent;

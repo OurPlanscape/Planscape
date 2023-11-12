@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { parseResultsToTotals } from '../plan-helpers';
+import { PROJECT_AREA_COLORS } from '../../shared/constants';
 
 export interface ProjectAreaReport {
   id: number;
@@ -22,6 +23,7 @@ export interface ProjectTotalReport {
 })
 export class ProjectAreasComponent implements OnChanges {
   @Input() areas!: ProjectAreaReport[];
+  colors = PROJECT_AREA_COLORS;
 
   total: ProjectTotalReport = {
     acres: 0,

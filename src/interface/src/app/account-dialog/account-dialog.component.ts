@@ -1,12 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -44,7 +36,10 @@ export class AccountDialogComponent implements OnInit {
   }
 
   logout(): void {
-    this.authService.logout().pipe(take(1)).subscribe();
+    this.authService
+      .logout()
+      .pipe(take(1))
+      .subscribe((_) => this.close());
   }
 
   switchToChangePassword(): void {}

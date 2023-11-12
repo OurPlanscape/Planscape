@@ -1,9 +1,11 @@
 @import '../../shared/_variables.scss';
 
 :host {
-  overflow: scroll;
+  overflow: hidden;
   width: 100%;
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .planning {
@@ -22,11 +24,13 @@
   flex: 1;
   min-height: calc(100% - $toolbar-height);
 }
+
 .title-nav {
   display: flex;
   gap: 10px;
   align-items: center;
 }
+
 h3 {
   font-size: 18px;
   line-height: 24px;
@@ -43,6 +47,8 @@ h3 {
 
 app-plan-table {
   margin-top: 20px;
+  flex: 1;
+  overflow: hidden;
 }
 
 .tooltip {

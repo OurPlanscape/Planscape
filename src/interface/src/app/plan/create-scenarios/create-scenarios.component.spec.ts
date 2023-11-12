@@ -9,7 +9,7 @@ import {
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
-import { PlanService, PlanState } from 'src/app/services';
+
 import {
   Region,
   Scenario,
@@ -23,6 +23,8 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
+import { ScenarioService } from '../../services/scenario.service';
+import { PlanState, PlanStateService } from '../../services/plan-state.service';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -34,7 +36,8 @@ import { POLLING_INTERVAL } from '../plan-helpers';
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
-  let fakePlanService: PlanService;
+  let fakePlanStateService: PlanStateService;
+  let fakeScenarioService: ScenarioService;
 
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
@@ -52,19 +55,17 @@ describe('CreateScenariosComponent', () => {
   };
 
   beforeEach(async () => {
-    fakePlanService = jasmine.createSpyObj<PlanService>(
-      'PlanService',
+    fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
+      'ScenarioService',
       {
-        getConditionScoresForPlanningArea: of(),
-        getProject: of({
-          id: 1,
-          maxBudget: 100,
-        }),
-        updateProject: of(1),
-        createProjectArea: of(1),
         createScenario: of('1'),
         getScenario: of(fakeScenario),
-        updateStateWithShapes: undefined,
+      }
+    );
+    fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
+      'PlanStateService',
+      {
+        getScenario: of(fakeScenario),
       },
       {
         planState$: new BehaviorSubject<PlanState>({
@@ -77,7 +78,6 @@ describe('CreateScenariosComponent', () => {
             },
           },
           currentPlanId: '1',
-          currentConfigId: 1,
           currentScenarioId: '1',
           mapConditionLayer: null,
           mapShapes: null,
@@ -112,7 +112,10 @@ describe('CreateScenariosComponent', () => {
         RouterTestingModule,
       ],
       declarations: [CreateScenariosComponent],
-      providers: [{ provide: PlanService, useValue: fakePlanService }],
+      providers: [
+        { provide: PlanStateService, useValue: fakePlanStateService },
+        { provide: ScenarioService, useValue: fakeScenarioService },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
@@ -129,7 +132,7 @@ describe('CreateScenariosComponent', () => {
   it('should load existing scenario', () => {
     spyOn(component, 'pollForChanges');
     fixture.detectChanges();
-    expect(fakePlanService.getScenario).toHaveBeenCalledOnceWith('1');
+    expect(fakePlanStateService.getScenario).toHaveBeenCalledOnceWith('1');
     component.formGroups[2].valueChanges.subscribe((_) => {
       expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
         100

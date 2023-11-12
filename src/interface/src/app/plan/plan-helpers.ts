@@ -5,6 +5,7 @@ import {
   ProjectAreaReport,
   ProjectTotalReport,
 } from './project-areas/project-areas.component';
+import { PROJECT_AREA_COLORS } from '../shared/constants';
 
 export const NOTE_SAVE_INTERVAL = 5000;
 
@@ -51,4 +52,9 @@ export function parseResultsToTotals(
       estimatedCost: 0,
     }
   );
+}
+
+export function getColorForProjectPosition(position: number) {
+  const id = position;
+  return PROJECT_AREA_COLORS[(id - 1) % PROJECT_AREA_COLORS.length];
 }

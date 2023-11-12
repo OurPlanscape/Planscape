@@ -26,6 +26,11 @@ class Command(BaseCommand):
         while True:
             self.stdout.write("[OK] Polling for new scenario...")
             scenario = self.get_scenario()
+
+            if self.handler.caught_signal:
+                self.stdout.write(f"Shutting down. Caught {self.handler.caught_signal}")
+                break
+
             if not scenario:
                 time.sleep(idle_cooldown)
                 continue
@@ -43,10 +48,6 @@ class Command(BaseCommand):
                 self.stderr.write(
                     f"[FAIL] Failed to run forsys for scenario id: {scenario.pk} - {str(ex)}"
                 )
-
-            if self.handler.caught_signal:
-                self.stdout.write(f"Shutting down. Caught {self.handler.caught_signal}")
-                break
 
             time.sleep(busy_cooldown)
 

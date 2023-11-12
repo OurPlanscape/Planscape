@@ -1,10 +1,18 @@
 <app-project-areas [areas]="areas"></app-project-areas>
 <app-project-areas-metrics
   [data]="data"
+  [priorities]="priorities"
   [selectedCharts]="selectedCharts"></app-project-areas-metrics>
 
 <div class="actions">
-  <button mat-raised-button (click)="downloadCsv.emit()">
+  <button
+    mat-raised-button
+    (click)="downloadShapeFiles()"
+    data-id="downloadShapeFiles">
+    Download Shape Files
+  </button>
+
+  <button mat-raised-button (click)="downloadCsv()" data-id="downloadCsv">
     Download CSV data
   </button>
 </div>

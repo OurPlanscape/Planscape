@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
@@ -10,6 +11,7 @@ import { PlanPreview } from '../../types/plan.types';
 import { calculateAcres } from '../../plan/plan-helpers';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
+import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
 
 interface PlanRow extends PlanPreview {
   totalAcres: number;
@@ -39,7 +41,8 @@ export class PlanTableComponent implements OnInit {
     private dialog: MatDialog,
     private planService: PlanService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private snackbar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -86,6 +89,12 @@ export class PlanTableComponent implements OnInit {
           this.planService
             .deletePlan(planIdsToDelete)
             .subscribe((_) => this.refresh());
+
+          this.snackbar.open(
+            `Successfully deleted plan: ${this.selectedPlan?.name}`,
+            'Dismiss',
+            SNACK_NOTICE_CONFIG
+          );
         }
       });
   }

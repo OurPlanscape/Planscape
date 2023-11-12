@@ -1,8 +1,8 @@
 import { Component, Input } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { ChartData } from './chart-data';
-import { PlanService } from 'src/app/services';
 import { map } from 'rxjs';
+import { PlanStateService } from '../../services/plan-state.service';
 
 @Component({
   selector: 'app-project-areas-metrics',
@@ -12,16 +12,17 @@ import { map } from 'rxjs';
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
   @Input() selectedCharts: ChartData[] = [];
+  @Input() priorities: string[] = [];
 
-  mapConditionLayer$ = this.planService.planState$.pipe(
+  mapConditionLayer$ = this.planStateService.planState$.pipe(
     map((planState) => planState.mapConditionLayer)
   );
 
-  constructor(private planService: PlanService) {}
+  constructor(private planStateService: PlanStateService) {}
 
   selectDataPoint(e: MatSelectChange, i: number) {
     const showingThisLayer =
-      this.planService.planState$.value.mapConditionLayer ===
+      this.planStateService.planState$.value.mapConditionLayer ===
       this.selectedCharts[i]['metric_layer'];
 
     this.selectedCharts[i] = e.value;
@@ -31,14 +32,14 @@ export class ProjectAreasMetricsComponent {
   }
 
   toggleMapLayer(i: number) {
-    const planState = this.planService.planState$.value;
+    const planState = this.planStateService.planState$.value;
     const measurement = this.selectedCharts[i]['measurement'];
     const legend = planState.legendUnits === measurement ? null : measurement;
-    this.planService.updateStateWithLegendUnits(legend);
+    this.planStateService.updateStateWithLegendUnits(legend);
     const metric = this.selectedCharts[i]['metric_layer'];
     const condition = planState.mapConditionLayer === metric ? null : metric;
 
-    this.planService.updateStateWithConditionLayer(condition);
+    this.planStateService.updateStateWithConditionLayer(condition);
   }
 
   filterData(
