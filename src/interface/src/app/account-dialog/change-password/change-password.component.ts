@@ -7,11 +7,9 @@ import {
   ValidationErrors,
   ValidatorFn,
 } from '@angular/forms';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+//import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
-
 import { AuthService } from '../../services';
 import { User } from '../../types';
 
@@ -31,9 +29,7 @@ export class ChangePasswordComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private snackbar: MatSnackBar,
-    private router: Router,
-
+    private snackbar: MatSnackBar
   ) {
     this.changePasswordForm = this.fb.group(
       {

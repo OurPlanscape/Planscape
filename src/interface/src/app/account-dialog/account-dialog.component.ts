@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Observable, take } from 'rxjs';
 
@@ -17,13 +16,14 @@ export class AccountDialogComponent implements OnInit {
   disableEditButton: boolean = false;
   error: any;
   user$!: Observable<User | null | undefined>;
+  editingAccount: boolean = false;
+  changingPassword: boolean = false;
 
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
     private dialogRef: MatDialogRef<AccountDialogComponent>,
-    private router: Router,
-    private snackbar: MatSnackBar
+    private router: Router
   ) {}
 
   ngOnInit(): void {

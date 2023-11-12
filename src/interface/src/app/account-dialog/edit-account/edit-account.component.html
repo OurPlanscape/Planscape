@@ -1,4 +1,4 @@
-<div *ngIf="editingAccount">
+<div>
   <form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
     <mat-form-field>
       <mat-label>First name</mat-label>
@@ -37,7 +37,7 @@
         {{ disableEditButton ? 'SAVING...' : 'SAVE CHANGES' }}
       </button>
 
-      <button mat-raised-button (click)="editingAccount = false">CANCEL</button>
+      <button mat-raised-button (click)="closeDialog()">CANCEL</button>
     </div>
     <mat-error>
       <p *ngIf="error">{{ error?.message }}</p>
