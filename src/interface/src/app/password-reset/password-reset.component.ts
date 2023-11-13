@@ -3,7 +3,8 @@ import {
   AbstractControl,
   FormBuilder,
   FormGroup,
-  Validators,
+  ValidationErrors,
+  ValidatorFn,
 } from '@angular/forms';
 import { ActivatedRoute, Data, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -35,14 +36,11 @@ export class PasswordResetComponent implements OnInit {
   ) {
     this.form = this.formBuilder.group(
       {
-        password1: this.formBuilder.control('', [
-          Validators.required,
-          Validators.minLength(8),
-        ]),
-        password2: this.formBuilder.control('', Validators.required),
+        password1: this.formBuilder.control('', []),
+        password2: this.formBuilder.control(''),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validator: this.crossFieldValidators,
       }
     );
   }
@@ -74,6 +72,16 @@ export class PasswordResetComponent implements OnInit {
           this.dialog.open(ConfirmationDialogComponent);
         },
         error: (err: HttpErrorResponse) => {
+          const problemFields = Object.keys(err.error);
+            problemFields.map ( (f) => {
+              if (f == 'new_password2') {
+                this.form.controls['password1'].setErrors({ backendError: true })
+              }
+              if (f == 'new_password1') {
+                this.form.controls['password2'].setErrors({ backendError: true })
+              }
+              
+            })
           this.errors = Object.values(err.error);
         },
       });
@@ -83,9 +91,33 @@ export class PasswordResetComponent implements OnInit {
     this.router.navigate(['login']);
   }
 
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('password1')?.value;
-    const password2 = group.get('password2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
-  }
+
+  private crossFieldValidators: ValidatorFn = (
+    formControls: AbstractControl
+  ): ValidationErrors | null => {
+    const password1 = formControls.value.password1;
+    const password2 = formControls.value.password2;
+
+    const allTheErrors = {
+      newPaswordsMustMatch: false,
+      mustBe8Characters: false,
+    };
+
+    if (password1.length > 0 && password1.length > 0) {
+      if (password1.length < 8) {
+        allTheErrors.mustBe8Characters = true;
+      }
+      if (password1 !== password2) {
+        allTheErrors.newPaswordsMustMatch = true;
+      }
+    }
+
+    if (
+      allTheErrors.newPaswordsMustMatch === false &&
+      allTheErrors.mustBe8Characters === false
+    ) {
+      return null;
+    }
+    return allTheErrors;
+  };
 }
