@@ -1,11 +1,12 @@
-import { Component, ViewChild} from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
   FormGroup,
   Validators,
   ValidationErrors,
-  ValidatorFn
+  ValidatorFn,
+  // FormControl,
 } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -21,7 +22,7 @@ import { TimeoutError, timeout } from 'rxjs';
   styleUrls: ['./signup.component.scss'],
 })
 export class SignupComponent {
-  @ViewChild('policyMenu') policyMenu : MatMenu | undefined;
+  @ViewChild('policyMenu') policyMenu: MatMenu | undefined;
 
   errors: string[] = [];
   form: FormGroup;
@@ -33,21 +34,18 @@ export class SignupComponent {
     private formBuilder: FormBuilder,
     private router: Router
   ) {
-
     this.form = this.formBuilder.group(
       {
         firstName: this.formBuilder.control('', Validators.required),
         lastName: this.formBuilder.control('', Validators.required),
         email: this.formBuilder.control('', [
-         // Validators.required,
           Validators.email,
         ]),
         password1: this.formBuilder.control('', [
-         // Validators.required,
-          //Validators.minLength(8),
+         
         ]),
-        password2: this.formBuilder.control('',
-        // Validators.required
+        password2: this.formBuilder.control(
+          ''
         ),
       },
       {
@@ -61,10 +59,10 @@ export class SignupComponent {
     const policyBox = document.getElementById('policyBox');
     console.log('do we have a thing?', policyBox);
     if (policyBox !== null) {
-      policyBox.style.display = "block";
+      policyBox.style.display = 'block';
       console.log('we are showing?...', policyBox.style.display);
     }
-    }
+  }
 
   hidePolicy() {
     console.log('we are hiding it...');
@@ -103,7 +101,13 @@ export class SignupComponent {
         },
         error: (error: HttpErrorResponse) => {
           this.submitting = false;
+
           if (error.status == 400) {
+            // intercept the problematic fields from the backend, then set an error manually on each field
+            const problemFields = Object.keys(error.error);
+            problemFields.map((f) =>
+              this.form.controls[f].setErrors({ backendError: true })
+            );
             this.errors = Object.values(error.error);
           } else if (error.status == 500) {
             this.errors = Object.values([
@@ -120,7 +124,6 @@ export class SignupComponent {
       });
   }
 
-
   private crossFieldValidators: ValidatorFn = (
     formControls: AbstractControl
   ): ValidationErrors | null => {
@@ -129,26 +132,21 @@ export class SignupComponent {
     const email = formControls.value.email;
 
     // Note that Django also validates email formats, but it uses a different regex.
-    // So unless the regexes are equivalent, a user can get an error from Django but not 
-    //  from Angular. Below is the same regex from Django's email validation regex: 
+    // So unless the regexes are equivalent, a user can get an error from Django but not
+    //  from Angular. Below is the same regex from Django's email validation regex:
     const emailRegex = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
 
     const allTheErrors = {
       newPaswordsMustMatch: false,
       mustBe8Characters: false,
-      emailIsInvalid: false
+      emailIsInvalid: false,
     };
-  
-    //console.log('Here is the group: ', formControls);
 
-    console.log("Does email match?:", emailRegex.test(email));
-
-    if ( !emailRegex.test(email) && email.length > 0) {
+    if (!emailRegex.test(email) && email.length > 0) {
       allTheErrors.emailIsInvalid = true;
     }
 
-    if ( password1.length > 0 &&  password2.length > 0
-    ) {
+    if (password1.length > 0 && password1.length > 0) {
       if (password1.length < 8) {
         allTheErrors.mustBe8Characters = true;
       }
@@ -156,14 +154,14 @@ export class SignupComponent {
         allTheErrors.newPaswordsMustMatch = true;
       }
     }
-    console.log("All the errors:", allTheErrors);
 
-    if (allTheErrors.newPaswordsMustMatch === false 
-        && allTheErrors.emailIsInvalid === false 
-        && allTheErrors.mustBe8Characters === false) {
-        return null;
+    if (
+      allTheErrors.newPaswordsMustMatch === false &&
+      allTheErrors.emailIsInvalid === false &&
+      allTheErrors.mustBe8Characters === false
+    ) {
+      return null;
     }
     return allTheErrors;
   };
-
 }

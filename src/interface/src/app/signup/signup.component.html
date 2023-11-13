@@ -91,8 +91,9 @@
 
         <div #policyBox id="policyBox">
           <div *ngFor="let e of errors">
-            <mat-icon class="warning-icon">warning</mat-icon>
-            {{ e }}
+            <div *ngIf="form.status === 'INVALID'">
+              <mat-icon class="warning-icon">warning</mat-icon> `{{ e }}
+            </div>
           </div>
 
           <div *ngIf="form.errors?.['emailIsInvalid'] === true">
@@ -100,18 +101,26 @@
             Email address must be valid.
           </div>
           <div
-            *ngIf="form.errors?.['emailIsInvalid'] === false"
+            *ngIf="
+              (form.errors?.['emailIsInvalid'] === false &&
+                form.value.email.length > 0) ||
+              (form.errors === null && form.pristine === false)
+            "
             style="color: green">
             <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
             Email address must be valid.
           </div>
 
-          <div *ngIf="form.errors?.['']">
+          <div *ngIf="form.errors?.['newPaswordsMustMatch'] === true">
             <mat-icon class="warning-icon">warning</mat-icon>
             Passwords must match.
           </div>
           <div
-            *ngIf="form.errors?.['newPaswordsMustMatch'] === false"
+            *ngIf="
+              form.value.password1.length > 0 &&
+              (form.errors?.['newPaswordsMustMatch'] === false ||
+                (form.errors === null && form.pristine === false))
+            "
             style="color: green">
             <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
             Passwords must match.
@@ -121,7 +130,12 @@
             Your password must be at least 8 characters.
           </div>
           <div
-            *ngIf="form.errors?.['mustBe8Characters'] === false"
+            *ngIf="
+              (form.value.password1.length > 0 &&
+                form.errors?.['mustBe8Characters'] === false &&
+                form.value.password1.length > 0) ||
+              (form.errors === null && form.pristine === false)
+            "
             style="color: green">
             <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
             Your password must be at least 8 characters.
