@@ -1,9 +1,16 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { BehaviorSubject, take } from 'rxjs';
+import { take } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Plan } from 'src/app/types';
 import { MapService } from './../../../services/map.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import {
@@ -29,16 +36,28 @@ interface PriorityRow {
   templateUrl: './set-priorities.component.html',
   styleUrls: ['./set-priorities.component.scss'],
 })
-export class SetPrioritiesComponent implements OnInit {
-  @Input() formGroup: FormGroup | undefined;
-  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
+export class SetPrioritiesComponent implements OnInit, OnChanges {
   @Input() treatmentGoals$: TreatmentGoalConfig[] | null = null;
+  @Input() selectedTreatmentQuestion: TreatmentQuestionConfig | null = null;
   @Output() changeConditionEvent = new EventEmitter<string>();
 
-  datasource = new MatTableDataSource<PriorityRow>();
-  selectedQuestion: TreatmentQuestionConfig | null = null;
+  formGroup = this.fb.group({
+    selectedQuestion: [this.selectedTreatmentQuestion, Validators.required],
+  });
 
-  constructor(private mapService: MapService) {}
+  datasource = new MatTableDataSource<PriorityRow>();
+
+  constructor(
+    private mapService: MapService,
+    private fb: FormBuilder
+  ) {}
+
+  createForm() {
+    this.formGroup = this.fb.group({
+      selectedQuestion: [this.selectedTreatmentQuestion, Validators.required],
+    });
+    return this.formGroup;
+  }
 
   ngOnInit(): void {
     this.mapService.conditionsConfig$
@@ -51,6 +70,24 @@ export class SetPrioritiesComponent implements OnInit {
           conditionsConfig!
         );
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (this.selectedTreatmentQuestion) {
+      let selectedQuestion: TreatmentQuestionConfig | undefined;
+      this.treatmentGoals$?.some((goal) => {
+        selectedQuestion = goal.questions.find(
+          (question) =>
+            question.short_question_text ===
+            this.selectedTreatmentQuestion?.short_question_text
+        );
+        return !!selectedQuestion;
+      });
+      if (this.treatmentGoals$ && selectedQuestion) {
+        this.formGroup.get('selectedQuestion')?.setValue(selectedQuestion);
+      }
+      this.formGroup.disable();
+    }
   }
 
   private conditionsConfigToPriorityData(

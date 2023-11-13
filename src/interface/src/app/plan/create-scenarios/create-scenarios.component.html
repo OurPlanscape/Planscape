@@ -20,8 +20,7 @@
         <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
-              [plan$]="plan$"
-              [formGroup]="formGroups[1]"
+              [selectedTreatmentQuestion]="treatmentQuestion"
               [treatmentGoals$]="treatmentGoals$ | async"
               (changeConditionEvent)="
                 changeCondition($event)
@@ -40,7 +39,6 @@
                 color="primary"
                 type="submit"
                 [disabled]="
-                  !formGroups[1].valid ||
                   !formGroups[2].valid ||
                   !formGroups[3].valid ||
                   generatingScenario
@@ -68,7 +66,7 @@
               [results]="scenarioResults"
               [scenarioChartData]="scenarioChartData"
               [priorities]="priorities"
-              [scenarioName]="nameFormGroup.get('scenarioName')?.value"
+              [scenarioName]="formGroups[0].get('scenarioName')?.value"
               [scenarioId]="scenarioId!">
             </app-scenario-results>
             <app-scenario-failure
