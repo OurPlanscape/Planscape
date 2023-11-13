@@ -73,15 +73,14 @@ export class PasswordResetComponent implements OnInit {
         },
         error: (err: HttpErrorResponse) => {
           const problemFields = Object.keys(err.error);
-            problemFields.map ( (f) => {
-              if (f == 'new_password2') {
-                this.form.controls['password1'].setErrors({ backendError: true })
-              }
-              if (f == 'new_password1') {
-                this.form.controls['password2'].setErrors({ backendError: true })
-              }
-              
-            })
+          problemFields.map((f) => {
+            if (f == 'new_password2') {
+              this.form.controls['password1'].setErrors({ backendError: true });
+            }
+            if (f == 'new_password1') {
+              this.form.controls['password2'].setErrors({ backendError: true });
+            }
+          });
           this.errors = Object.values(err.error);
         },
       });
@@ -90,7 +89,6 @@ export class PasswordResetComponent implements OnInit {
   cancel() {
     this.router.navigate(['login']);
   }
-
 
   private crossFieldValidators: ValidatorFn = (
     formControls: AbstractControl

@@ -38,15 +38,9 @@ export class SignupComponent {
       {
         firstName: this.formBuilder.control('', Validators.required),
         lastName: this.formBuilder.control('', Validators.required),
-        email: this.formBuilder.control('', [
-          Validators.email,
-        ]),
-        password1: this.formBuilder.control('', [
-         
-        ]),
-        password2: this.formBuilder.control(
-          ''
-        ),
+        email: this.formBuilder.control('', [Validators.email]),
+        password1: this.formBuilder.control('', []),
+        password2: this.formBuilder.control(''),
       },
       {
         validator: this.crossFieldValidators,
@@ -55,21 +49,16 @@ export class SignupComponent {
   }
 
   showPolicy() {
-    console.log('we are shwoing it...');
     const policyBox = document.getElementById('policyBox');
-    console.log('do we have a thing?', policyBox);
     if (policyBox !== null) {
       policyBox.style.display = 'block';
-      console.log('we are showing?...', policyBox.style.display);
     }
   }
 
   hidePolicy() {
-    console.log('we are hiding it...');
     const policyBox = document.getElementById('policyBox');
     if (policyBox !== null) {
       policyBox.style.display = 'none';
-      console.log('we are hiding?...', policyBox.style);
     }
   }
 
@@ -77,11 +66,6 @@ export class SignupComponent {
     if (this.submitting) return;
 
     this.submitting = true;
-
-    console.log('Form after submission:', this.form);
-
-    console.log('is it dirty?', this.form.dirty);
-
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
