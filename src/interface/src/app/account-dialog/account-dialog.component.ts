@@ -114,6 +114,19 @@ export class AccountDialogComponent implements OnInit {
           );
         },
         (err: any) => {
+          const problemFields = Object.keys(err.error);
+            problemFields.map ( (f) => {
+              if (f == 'new_password2') {
+                this.changePasswordForm.controls['newPassword2'].setErrors({ backendError: true })
+              }
+              if (f == 'new_password1') {
+                this.changePasswordForm.controls['newPassword1'].setErrors({ backendError: true })
+              }
+              if (f == 'old_password') {
+                this.changePasswordForm.controls['currentPassword'].setErrors({ backendError: true })
+              }
+            })
+
           this.error = Object.values(err.error);
           this.disableChangeButton = false;
         }
@@ -191,9 +204,7 @@ const crossFieldValidators: ValidatorFn = (
   const allTheErrors = {
     newPasswordMustBeNew: false,
     newPaswordsMustMatch: false,
-    mustContainNumber: false,
-    mustContainUpper: false,
-    mustContainLower: false,
+    mustNotEqualOldPassword: false,
   };
 
   if (
@@ -207,14 +218,8 @@ const crossFieldValidators: ValidatorFn = (
     if (password1 !== password2) {
       allTheErrors.newPaswordsMustMatch = true;
     }
-    if (!/[0-9]+/.test(password1)) {
-      allTheErrors.mustContainNumber = true;
-    }
-    if (!/[A-Z]+/.test(password1)) {
-      allTheErrors.mustContainUpper = true;
-    }
-    if (!/[a-z]+/.test(password1)) {
-      allTheErrors.mustContainLower = true;
+    if (password1 === currentPassword) {
+      allTheErrors.mustNotEqualOldPassword = true;
     }
   }
   if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {

@@ -63,11 +63,7 @@
             type="password"
             required
             formControlName="newPassword1"
-            matInput
-            #changePassword="matMenuTrigger"
-            [matMenuTriggerFor]="popoverMenu"
-            (focus)="changePassword.openMenu()"
-            (blur)="changePassword.closeMenu()" />
+            matInput />
         </mat-form-field>
 
         <mat-form-field>
@@ -92,51 +88,66 @@
             CANCEL
           </button>
         </div>
-        <!-- Unified error output -->
-        <mat-error *ngIf="changePasswordForm.errors || error">
-          <p>Please correct the following errors:</p>
-          <ul>
-            <li *ngFor="let e of error">
-              {{ e }}
-            </li>
-            <li
-              *ngIf="
-                changePasswordForm.get('newPassword1')?.hasError('minlength')
-              ">
-              Password must contain at least 8 characters.
-            </li>
-            <li *ngIf="changePasswordForm.errors?.['newPaswordsMustMatch']">
-              The new passwords you entered do not match.
-            </li>
-            <li *ngIf="changePasswordForm.errors?.['newPasswordMustBeNew']">
-              Your new password should not be the same as your current password.
-            </li>
-            <li *ngIf="changePasswordForm.errors?.['mustContainNumber']">
-              Your new password must contain a number.
-            </li>
-            <li *ngIf="changePasswordForm.errors?.['mustContainUpper']">
-              Your new password must contain at least one uppercase character.
-            </li>
-            <li *ngIf="changePasswordForm.errors?.['mustContainLower']">
-              Your new password must contain at least one lowercase character.
-            </li>
-          </ul>
-        </mat-error>
+
+        <div #policyBox id="policyBox">
+          <div *ngFor="let e of error">
+            <div *ngIf="changePasswordForm.status === 'INVALID'">
+              <mat-icon class="warning-icon">warning</mat-icon> `{{ e }}
+            </div>
+          </div>
+          <div
+            *ngIf="
+              changePasswordForm.errors?.['newPaswordsMustMatch'] === true
+            ">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            Passwords must match.
+          </div>
+          <div
+            *ngIf="
+              changePasswordForm.errors?.['newPaswordsMustMatch'] === false ||
+              (changePasswordForm.errors === null &&
+                changePasswordForm.pristine === false)
+            "
+            style="color: green">
+            <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
+            Passwords must match.
+          </div>
+          <div
+            *ngIf="
+              changePasswordForm.errors?.['mustNotEqualOldPassword'] === true
+            ">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            New password must be different from old password.
+          </div>
+          <div
+            *ngIf="
+              changePasswordForm.errors?.['mustNotEqualOldPassword'] ===
+                false ||
+              (changePasswordForm.errors === null &&
+                changePasswordForm.pristine === false)
+            "
+            style="color: green">
+            <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
+            New password must be different from old password.
+          </div>
+          <div
+            *ngIf="changePasswordForm.errors?.['mustBe8Characters'] === true">
+            <mat-icon class="warning-icon">warning</mat-icon>
+            Your password must be at least 8 characters.
+          </div>
+          <div
+            *ngIf="
+              changePasswordForm.errors?.['mustBe8Characters'] === false ||
+              (changePasswordForm.errors === null &&
+                changePasswordForm.pristine === false)
+            "
+            style="color: green">
+            <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
+            Your password must be at least 8 characters.
+          </div>
+        </div>
       </form>
     </ng-container>
-
-    <mat-menu class="password-reqs-menu" #popoverMenu="matMenu">
-      <div class="tooltip">
-        <div>
-          <p>Password requirements:</p>
-          <ul>
-            <li>Must be at least 8 characters.</li>
-            <li>Cannot be a password that you've used before.</li>
-            <li>Cannot be similar to your name or email address.</li>
-          </ul>
-        </div>
-      </div>
-    </mat-menu>
 
     <!-- Edit account details -->
     <ng-container *ngIf="editingAccount">
