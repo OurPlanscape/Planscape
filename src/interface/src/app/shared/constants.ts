@@ -31,3 +31,5 @@ export const PROJECT_AREA_COLORS = [
   '#7BC7B9',
   '#7F95FF',
 ];
+
+export const DEFAULT_AREA_COLOR = '#4965c7';
