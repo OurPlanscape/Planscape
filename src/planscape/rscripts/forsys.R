@@ -402,7 +402,7 @@ get_weights <- function(priorities, configuration) {
 get_number_of_projects <- function(scenario) {
   # this is hardcoded for now. in the future it
   # might come from the configuration JSON
-  return(5)
+  return(10)
 }
 
 get_min_project_area <- function(scenario) {
