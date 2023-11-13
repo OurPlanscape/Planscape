@@ -5,6 +5,7 @@ import {
   ProjectAreaReport,
   ProjectTotalReport,
 } from './project-areas/project-areas.component';
+import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '../shared/constants';
 
 export const NOTE_SAVE_INTERVAL = 5000;
 
@@ -51,4 +52,15 @@ export function parseResultsToTotals(
       estimatedCost: 0,
     }
   );
+}
+
+/**
+ *
+ * @param position rank position (1 based index) of scenario projection
+ */
+export function getColorForProjectPosition(position: number) {
+  if (position < 1) {
+    return DEFAULT_AREA_COLOR;
+  }
+  return PROJECT_AREA_COLORS[(position - 1) % PROJECT_AREA_COLORS.length];
 }
