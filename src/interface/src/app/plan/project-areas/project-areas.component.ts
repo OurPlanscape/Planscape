@@ -1,5 +1,8 @@
 import { Component, Input, OnChanges } from '@angular/core';
-import { parseResultsToTotals } from '../plan-helpers';
+import {
+  getColorForProjectPosition,
+  parseResultsToTotals,
+} from '../plan-helpers';
 import { PROJECT_AREA_COLORS } from '../../shared/constants';
 
 export interface ProjectAreaReport {
@@ -40,4 +43,6 @@ export class ProjectAreasComponent implements OnChanges {
       this.total = parseResultsToTotals(this.areas);
     }
   }
+
+  getColorByPosition = getColorForProjectPosition;
 }
