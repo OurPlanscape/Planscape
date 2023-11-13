@@ -70,6 +70,12 @@ mat-form-field {
   width: 100%;
 }
 
+.validation-error {
+  color: red;
+}
+.validation-ok {
+  color: green;
+}
 
 .form-required-blurb {
   font-size: 0.8rem;

@@ -42,6 +42,13 @@ form {
   flex-direction: column;
 }
 
+.validation-error {
+  color: red;
+}
+.validation-ok {
+  color: green;
+}
+
 .button-row {
   display: flex;
   gap: 12px;
@@ -51,3 +58,5 @@ form {
 .no-user {
   margin-top: -20px; // to reduce the gap by flex .account-dialog
 }
+
+

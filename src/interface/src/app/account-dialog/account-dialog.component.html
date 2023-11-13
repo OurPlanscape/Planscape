@@ -91,14 +91,15 @@
 
         <div #policyBox id="policyBox">
           <div *ngFor="let e of error">
-            <div *ngIf="changePasswordForm.status === 'INVALID'">
+            <div
+              *ngIf="changePasswordForm.status === 'INVALID'"
+              class="validation-error">
               <mat-icon class="warning-icon">warning</mat-icon> `{{ e }}
             </div>
           </div>
           <div
-            *ngIf="
-              changePasswordForm.errors?.['newPaswordsMustMatch'] === true
-            ">
+            *ngIf="changePasswordForm.errors?.['newPaswordsMustMatch'] === true"
+            class="validation-error">
             <mat-icon class="warning-icon">warning</mat-icon>
             Passwords must match.
           </div>
@@ -108,14 +109,15 @@
               (changePasswordForm.errors === null &&
                 changePasswordForm.pristine === false)
             "
-            style="color: green">
+            class="validation-ok">
             <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
             Passwords must match.
           </div>
           <div
             *ngIf="
               changePasswordForm.errors?.['mustNotEqualOldPassword'] === true
-            ">
+            "
+            class="validation-error">
             <mat-icon class="warning-icon">warning</mat-icon>
             New password must be different from old password.
           </div>
@@ -126,12 +128,13 @@
               (changePasswordForm.errors === null &&
                 changePasswordForm.pristine === false)
             "
-            style="color: green">
+            class="validation-ok">
             <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
             New password must be different from old password.
           </div>
           <div
-            *ngIf="changePasswordForm.errors?.['mustBe8Characters'] === true">
+            *ngIf="changePasswordForm.errors?.['mustBe8Characters'] === true"
+            class="validation-error">
             <mat-icon class="warning-icon">warning</mat-icon>
             Your password must be at least 8 characters.
           </div>
@@ -141,7 +144,7 @@
               (changePasswordForm.errors === null &&
                 changePasswordForm.pristine === false)
             "
-            style="color: green">
+            class="validation-error">
             <mat-icon class="done-icon pw-validation-icons">done</mat-icon>
             Your password must be at least 8 characters.
           </div>
