@@ -81,7 +81,7 @@
           <ul>
             <li *ngFor="let error of errors">{{ error }}</li>
           </ul>
-          <div *ngIf="emailAlreadyExists">
+          <div *ngIf="emailAlreadyExists" class="post-error-option">
             <a
               class="forget-password-link"
               i18n="Text on a button to reset password"

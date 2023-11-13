@@ -51,7 +51,7 @@
         </div>
         <mat-error class="mat-error" *ngIf="accountError">
           {{ accountError }}
-          <div *ngIf="offerReverify">
+          <div *ngIf="offerReverify" class="post-error-option">
             <a clickable [routerLink]="[]" (click)="resendVerification()"
               >Click here to re-send your verification email.</a
             >
