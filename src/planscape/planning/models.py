@@ -60,12 +60,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     configuration = models.JSONField(default=dict)
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
-    
+
     def get_shapefile_folder(self):
-        return Path(settings.OUTPUT_DIR) / "shapefile" / Path(self.name)
+        return Path(settings.OUTPUT_DIR) / "shapefile" / Path(str(self.uuid))
 
     def get_forsys_folder(self):
-        return Path(settings.OUTPUT_DIR) / Path(self.name)
+        return Path(settings.OUTPUT_DIR) / Path(str(self.uuid))
 
     class Meta:
         constraints = [

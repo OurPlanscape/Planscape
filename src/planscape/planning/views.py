@@ -405,7 +405,7 @@ def download_csv(request: HttpRequest) -> HttpResponse:
         )
 
     try:
-        output_zip_name: str = scenario.uuid + ".zip"
+        output_zip_name: str = str(scenario.uuid) + ".zip"
 
         if not scenario.get_forsys_folder().exists():
             raise ValueError("Scenario files cannot be read.")
@@ -460,7 +460,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
         )
 
     try:
-        output_zip_name = f"{scenario.uuid}.zip"
+        output_zip_name = f"{str(scenario.uuid)}.zip"
         export_to_shapefile(scenario)
         response = HttpResponse(content_type="application/zip")
         zip_directory(response, scenario.get_shapefile_folder())
