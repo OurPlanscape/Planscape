@@ -414,7 +414,56 @@ def download_csv(request: HttpRequest) -> HttpResponse:
         #  here we're just writing directly to the response obj.
         # Do we want to write this locally -- either to (effectively) cache it, or to reduce server memory load?
         # Note that we don't close this, because `response` gets destroyed on its own
-        zip_directory(response, source_dir)
+        zip_directory(response, scenario.get_forsys_folder())
+
+        response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
+        return response
+
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
+
+
+def download_shapefile(request: HttpRequest) -> HttpResponse:
+    """
+    Generates a new Zip file of the shapefile for a scenario based on ID.
+
+    Requires a logged in user.  Users can only access a scenarios belonging to their own planning areas.
+
+    Returns: a Zip file generated with the shapefiles
+
+    Required params:
+      id (int): The scenario ID to be retrieved.
+    """
+    # Ensure that the user is logged in.
+    user = _get_user(request)
+    if user is None:
+        return HttpResponse(
+            "Unauthorized. User is not logged in.",
+            status=401,
+        )
+
+    scenario = Scenario.objects.select_related("planning_area__user").get(
+        id=request.GET["id"]
+    )
+    # Ensure that current user is associated with this scenario
+    if scenario.planning_area.user.pk != user.pk:
+        return HttpResponse(
+            "Scenario does not exist.",
+            status=404,
+        )
+
+    scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
+    if scenario_result.status != ScenarioResultStatus.SUCCESS:
+        return HttpResponse(
+            "Scenario was not successful, can't download data.",
+            status=424,
+        )
+
+    try:
+        output_zip_name = f"{scenario.uuid}.zip"
+        export_to_shapefile(scenario)
+        response = HttpResponse(content_type="application/zip")
+        zip_directory(response, scenario.get_shapefile_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
         return response
