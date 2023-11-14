@@ -23,6 +23,11 @@ import { SetPrioritiesComponent } from './set-priorities/set-priorities.componen
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { FeatureService } from '../../features/feature.service';
 
+enum ScenarioTabs {
+  CONFIG,
+  RESULTS,
+}
+
 @UntilDestroy()
 @Component({
   selector: 'app-create-scenarios',
@@ -31,17 +36,12 @@ import { FeatureService } from '../../features/feature.service';
 })
 export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
-  selectedTabIndex = 0;
+  selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
   scenarioId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
 
   formGroups: FormGroup[] = [this.fb.group({})];
-
-  treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
-    take(1),
-    untilDestroyed(this)
-  );
 
   project_area_upload_enabled = this.featureService.isFeatureEnabled(
     'upload_project_area'
@@ -88,9 +88,8 @@ export class CreateScenariosComponent implements OnInit {
       this.prioritiesComponent.createForm(),
       // Step 3: Set constraints
       this.constraintsPanelComponent.createForm(),
-      // Step 4: Identify project areas
+      // Step 4: Identify project areas [not in use / feature flagged]
       this.fb.group({
-        // TODO Use flag to set required validator
         generateAreas: [''],
         uploadedArea: [''],
       }),
@@ -116,7 +115,7 @@ export class CreateScenariosComponent implements OnInit {
       this.loadConfig();
       this.pollForChanges();
       // if we have an id go to the results tab.
-      this.selectedTabIndex = 1;
+      this.selectedTab = ScenarioTabs.RESULTS;
     } else {
       // enable animation
       this.tabAnimation = this.tabAnimationOptions.on;
@@ -165,7 +164,8 @@ export class CreateScenariosComponent implements OnInit {
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
-          this.selectedTabIndex = 1;
+
+          this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
             this.processScenarioResults(scenario);
           }
@@ -313,7 +313,7 @@ export class CreateScenariosComponent implements OnInit {
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
-        // this.selectedTabIndex = 1;
+        this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
       });
 

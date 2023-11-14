@@ -22,4 +22,8 @@ describe('Plan Helpers', () => {
       expect(getColorForProjectPosition(-32)).toBe(DEFAULT_AREA_COLOR);
     });
   });
+
+  describe('findQuestionOnTreatmentGoalsConfig', () => {
+    it('should return the question **from** treatmentQuestion', () => {});
+  });
 });

@@ -9,27 +9,20 @@ import {
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { take } from 'rxjs';
+import { take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MapService } from './../../../services/map.service';
-import { ConditionsConfig } from './../../../types/data.types';
 import {
+  PriorityRow,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '../../../types/scenario.types';
 
-interface PriorityRow {
-  selected?: boolean;
-  visible?: boolean; // Visible as raster data on map
-  expanded?: boolean; // Children in table are not hidden
-  hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
-  disabled?: boolean; // Cannot be selected (because ancestor is selected)
-  conditionName: string;
-  displayName?: string;
-  filepath: string;
-  children: PriorityRow[];
-  level: number;
-}
+import { PlanStateService } from '../../../services/plan-state.service';
+import {
+  conditionsConfigToPriorityData,
+  findQuestionOnTreatmentGoalsConfig,
+} from '../../plan-helpers';
 
 @Component({
   selector: 'app-set-priorities',
@@ -37,9 +30,14 @@ interface PriorityRow {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit, OnChanges {
-  @Input() treatmentGoals$: TreatmentGoalConfig[] | null = null;
   @Input() selectedTreatmentQuestion: TreatmentQuestionConfig | null = null;
   @Output() changeConditionEvent = new EventEmitter<string>();
+
+  private _treatmentGoals: TreatmentGoalConfig[] | null = [];
+  treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
+    take(1),
+    tap((s) => (this._treatmentGoals = s))
+  );
 
   formGroup = this.fb.group({
     selectedQuestion: [this.selectedTreatmentQuestion, Validators.required],
@@ -49,7 +47,8 @@ export class SetPrioritiesComponent implements OnInit, OnChanges {
 
   constructor(
     private mapService: MapService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private planStateService: PlanStateService
   ) {}
 
   createForm() {
@@ -66,76 +65,26 @@ export class SetPrioritiesComponent implements OnInit, OnChanges {
         take(1)
       )
       .subscribe((conditionsConfig) => {
-        this.datasource.data = this.conditionsConfigToPriorityData(
+        this.datasource.data = conditionsConfigToPriorityData(
           conditionsConfig!
         );
       });
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (this.selectedTreatmentQuestion) {
-      let selectedQuestion: TreatmentQuestionConfig | undefined;
-      this.treatmentGoals$?.some((goal) => {
-        selectedQuestion = goal.questions.find(
-          (question) =>
-            question.short_question_text ===
-            this.selectedTreatmentQuestion?.short_question_text
-        );
-        return !!selectedQuestion;
-      });
-      if (this.treatmentGoals$ && selectedQuestion) {
+    if (this.selectedTreatmentQuestion && this._treatmentGoals) {
+      // We are losing the object reference somewhere (probably on this.planStateService.treatmentGoalsConfig$)
+      // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
+      // not part of the provided treatmentGoalsConfig$.
+      // The workaround is to look for it, however we should look into the underlying issue
+      let selectedQuestion = findQuestionOnTreatmentGoalsConfig(
+        this._treatmentGoals,
+        this.selectedTreatmentQuestion
+      );
+      if (selectedQuestion) {
         this.formGroup.get('selectedQuestion')?.setValue(selectedQuestion);
       }
       this.formGroup.disable();
     }
-  }
-
-  private conditionsConfigToPriorityData(
-    config: ConditionsConfig
-  ): PriorityRow[] {
-    let data: PriorityRow[] = [];
-    config.pillars
-      ?.filter((pillar) => pillar.display)
-      .forEach((pillar) => {
-        let pillarRow: PriorityRow = {
-          conditionName: pillar.pillar_name!,
-          displayName: pillar.display_name,
-          filepath: pillar.filepath!.concat('_normalized'),
-          children: [],
-          level: 0,
-          expanded: false,
-        };
-        data.push(pillarRow);
-        pillar.elements
-          ?.filter((element) => element.display)
-          .forEach((element) => {
-            let elementRow: PriorityRow = {
-              conditionName: element.element_name!,
-              displayName: element.display_name,
-              filepath: element.filepath!.concat('_normalized'),
-              children: [],
-              level: 1,
-              expanded: false,
-              hidden: true,
-            };
-            data.push(elementRow);
-            pillarRow.children.push(elementRow);
-            element.metrics
-              ?.filter((metric) => !!metric.filepath)
-              .forEach((metric) => {
-                let metricRow: PriorityRow = {
-                  conditionName: metric.metric_name!,
-                  displayName: metric.display_name,
-                  filepath: metric.filepath!.concat('_normalized'),
-                  children: [],
-                  level: 2,
-                  hidden: true,
-                };
-                data.push(metricRow);
-                elementRow.children.push(metricRow);
-              });
-          });
-      });
-    return data;
   }
 }

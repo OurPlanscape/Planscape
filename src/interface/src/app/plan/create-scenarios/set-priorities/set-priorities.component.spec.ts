@@ -7,13 +7,15 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { TreatmentQuestionConfig } from 'src/app/types';
+import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import { ColormapConfig } from './../../../types/legend.types';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
+import { MockProvider } from 'ng-mocks';
+import { PlanStateService } from '../../../services/plan-state.service';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -99,6 +101,11 @@ describe('SetPrioritiesComponent', () => {
           provide: MapService,
           useValue: fakeMapService,
         },
+        MockProvider(PlanStateService, {
+          treatmentGoalsConfig$: new BehaviorSubject<
+            TreatmentGoalConfig[] | null
+          >([{ category_name: 'test category', questions: [testQuestion] }]),
+        }),
       ],
     }).compileComponents();
 
@@ -110,12 +117,6 @@ describe('SetPrioritiesComponent', () => {
     component.formGroup = fb.group({
       selectedQuestion: [defaultSelectedQuestion],
     });
-    component.treatmentGoals$ = [
-      {
-        category_name: 'test_category',
-        questions: [testQuestion],
-      },
-    ];
 
     fixture.detectChanges();
   });

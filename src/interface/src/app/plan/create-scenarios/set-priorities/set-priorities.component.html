@@ -11,7 +11,7 @@
           area="TREATMENT_GOALS"
           title="TREATMENT GOALS"></app-scenario-tooltip>
         <div
-          *ngFor="let treatmentGoal of treatmentGoals$"
+          *ngFor="let treatmentGoal of treatmentGoals$ | async"
           class="goal-control-container">
           <mat-expansion-panel expanded="true" [togglePosition]="'before'">
             <mat-expansion-panel-header class="goal-panel-header">

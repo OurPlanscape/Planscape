@@ -16,7 +16,7 @@ import { EXCLUDED_AREA_OPTIONS } from '../../../shared/constants';
   styleUrls: ['./constraints-panel.component.scss'],
 })
 export class ConstraintsPanelComponent {
-  constraintsForm: FormGroup = this.fb.group({});
+  constraintsForm: FormGroup = this.createForm();
   readonly excludedAreasOptions = EXCLUDED_AREA_OPTIONS;
   standSizeOptions = STAND_SIZES;
 
@@ -58,8 +58,7 @@ export class ConstraintsPanelComponent {
   }
 
   get maxArea() {
-    const area = this.constraintsForm?.get('physicalConstraintForm.maxArea');
-    return area;
+    return this.constraintsForm?.get('physicalConstraintForm.maxArea');
   }
 
   togglMaxAreaAndMaxCost() {
