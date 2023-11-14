@@ -21,7 +21,6 @@
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
               [selectedTreatmentQuestion]="treatmentQuestion"
-              [treatmentGoals$]="treatmentGoals$ | async"
               (changeConditionEvent)="
                 changeCondition($event)
               "></app-set-priorities>

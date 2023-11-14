@@ -13,6 +13,7 @@ export interface ScenarioConfig {
   max_slope?: number;
   max_treatment_area_ratio?: number;
   min_distance_from_road?: number;
+  // TODO is this even being used??
   project_areas?: ProjectArea[];
   treatment_question?: TreatmentQuestionConfig | null;
   excluded_areas?: string[];

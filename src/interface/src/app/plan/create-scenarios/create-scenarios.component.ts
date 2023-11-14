@@ -1,25 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import {
-  BehaviorSubject,
-  catchError,
-  distinctUntilChanged,
-  interval,
-  NEVER,
-  Observable,
-  take,
-} from 'rxjs';
+import { BehaviorSubject, catchError, interval, NEVER, take } from 'rxjs';
 import {
   Plan,
   Scenario,
   ScenarioConfig,
   ScenarioResult,
   ScenarioResultStatus,
-  TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
-import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
@@ -31,6 +21,7 @@ import {
 } from '../../shared/constants';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
+import { FeatureService } from '../../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -47,9 +38,14 @@ export class CreateScenariosComponent implements OnInit {
 
   formGroups: FormGroup[] = [this.fb.group({})];
 
-  treatmentGoals$: Observable<TreatmentGoalConfig[] | null>;
+  treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
+    take(1),
+    untilDestroyed(this)
+  );
 
-  project_area_upload_enabled = features.upload_project_area;
+  project_area_upload_enabled = this.featureService.isFeatureEnabled(
+    'upload_project_area'
+  );
 
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
@@ -75,23 +71,14 @@ export class CreateScenariosComponent implements OnInit {
     private fb: FormBuilder,
     private planStateService: PlanStateService,
     private router: Router,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private featureService: FeatureService
   ) {
-    this.treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
-      distinctUntilChanged(),
-      untilDestroyed(this)
-    );
-
     // TODO Move form builders to their corresponding components rather than passing as input
     // TODO Name groups to make easier to access (instead of having to use index)
-    // Initialize empty form
   }
 
   createForms() {
-    var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
-      excludedAreasChosen[area] = [false, Validators.required];
-    });
     this.formGroups = [
       // Step 1: Name the scenario
       this.fb.group({
@@ -167,13 +154,10 @@ export class CreateScenariosComponent implements OnInit {
       .getScenario(this.scenarioId!)
       .subscribe((scenario) => {
         // if we have the same state do nothing.
-
         if (this.scenarioState === scenario.scenario_result?.status) {
-          console.log('its the same bro');
           return;
         }
-        console.log(this.scenarioState);
-        console.log(scenario.scenario_result?.status);
+
         this.disableForms();
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
@@ -191,6 +175,11 @@ export class CreateScenariosComponent implements OnInit {
 
         var config = scenario.configuration;
 
+        //setting name
+        if (scenario.name) {
+          this.formGroups[0].get('scenarioName')?.setValue(scenario.name);
+        }
+        // setting treatment question
         this.treatmentQuestion = config.treatment_question || null;
 
         EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
@@ -206,9 +195,6 @@ export class CreateScenariosComponent implements OnInit {
           }
         });
 
-        if (scenario.name) {
-          this.formGroups[0].get('scenarioName')?.setValue(scenario.name);
-        }
         if (config.est_cost) {
           this.formGroups[2]
             .get('budgetForm.estimatedCost')
@@ -244,6 +230,8 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   private formValueToScenario(): Scenario {
+    // TODO configuration should come from the child forms.
+    // TODO reactive forms
     const estimatedCost = this.formGroups[2].get('budgetForm.estimatedCost');
     const maxCost = this.formGroups[2].get('budgetForm.maxCost');
     const maxArea = this.formGroups[2].get('physicalConstraintForm.maxArea');
@@ -255,6 +243,8 @@ export class CreateScenariosComponent implements OnInit {
     const scenarioName = this.formGroups[0].get('scenarioName');
 
     let scenarioNameConfig: string = '';
+    // @pablo
+    // TODO use planning_area from scenario!!
     let plan_id: string = '';
     this.planStateService.planState$
       .pipe(untilDestroyed(this))
@@ -323,7 +313,7 @@ export class CreateScenariosComponent implements OnInit {
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
-        this.selectedTabIndex = 1;
+        // this.selectedTabIndex = 1;
         this.pollForChanges();
       });
 
