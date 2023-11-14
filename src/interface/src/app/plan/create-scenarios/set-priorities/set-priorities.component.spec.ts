@@ -114,7 +114,7 @@ describe('SetPrioritiesComponent', () => {
     loader = TestbedHarnessEnvironment.loader(fixture);
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
-    component.formGroup = fb.group({
+    component.goalsForm = fb.group({
       selectedQuestion: [defaultSelectedQuestion],
     });
 
@@ -164,7 +164,7 @@ describe('SetPrioritiesComponent', () => {
       label: testQuestion['short_question_text'],
     });
 
-    expect(component.formGroup?.get('selectedQuestion')?.value).toEqual(
+    expect(component.goalsForm?.get('selectedQuestion')?.value).toEqual(
       testQuestion
     );
   });

@@ -159,10 +159,10 @@ describe('CreateScenariosComponent', () => {
     expect(fakePlanStateService.getScenario).toHaveBeenCalledOnceWith(
       scenarioId
     );
-    component.formGroups[2].valueChanges.subscribe((_) => {
-      expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
-        100
-      );
+    component.constrainsForm?.valueChanges.subscribe((_) => {
+      expect(
+        component.constrainsForm?.get('budgetForm.maxCost')?.value
+      ).toEqual(100);
     });
   });
 
@@ -177,21 +177,16 @@ describe('CreateScenariosComponent', () => {
     it('should emit create scenario event on Generate button click', async () => {
       spyOn(component, 'createScenario');
 
-      component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
-      component.formGroups[0].markAsDirty();
-      component.formGroups[1]
-        .get('selectedQuestion')
-        ?.setValue(defaultSelectedQuestion);
-      component.treatmentQuestion = defaultSelectedQuestion;
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxSlope')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.minDistanceFromRoad')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxArea')
-        ?.setValue(5300);
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.scenarioNameFormField?.markAsDirty();
+
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 5300,
+      });
+
       fixture.detectChanges();
 
       const buttonHarness: MatButtonHarness = await loader.getHarness(
@@ -208,9 +203,9 @@ describe('CreateScenariosComponent', () => {
       const buttonHarness: MatButtonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
       );
-      component.formGroups[1].markAsDirty();
-      component.formGroups[2]
-        .get('physicalConstraintForm.minDistanceFromRoad')
+      component.prioritiesForm?.markAsDirty();
+      component.constrainsForm
+        ?.get('physicalConstraintForm.minDistanceFromRoad')
         ?.setValue(-1);
       fixture.detectChanges();
 
@@ -224,19 +219,15 @@ describe('CreateScenariosComponent', () => {
       const buttonHarness: MatButtonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
       );
-      component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
-      component.formGroups[1]
-        .get('selectedQuestion')
-        ?.setValue(defaultSelectedQuestion);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxSlope')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.minDistanceFromRoad')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxArea')
-        ?.setValue(1122);
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
+
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 1122,
+      });
+
       component.generatingScenario = false;
       fixture.detectChanges();
 

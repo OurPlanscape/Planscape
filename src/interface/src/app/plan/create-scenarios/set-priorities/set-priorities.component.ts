@@ -1,22 +1,15 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnInit,
-  Output,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { MapService } from './../../../services/map.service';
+import { MapService } from '../../../services';
 import {
   PriorityRow,
+  ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
-} from '../../../types/scenario.types';
+} from '../../../types';
 
 import { PlanStateService } from '../../../services/plan-state.service';
 import {
@@ -29,8 +22,7 @@ import {
   templateUrl: './set-priorities.component.html',
   styleUrls: ['./set-priorities.component.scss'],
 })
-export class SetPrioritiesComponent implements OnInit, OnChanges {
-  @Input() selectedTreatmentQuestion: TreatmentQuestionConfig | null = null;
+export class SetPrioritiesComponent implements OnInit {
   @Output() changeConditionEvent = new EventEmitter<string>();
 
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
@@ -39,8 +31,8 @@ export class SetPrioritiesComponent implements OnInit, OnChanges {
     tap((s) => (this._treatmentGoals = s))
   );
 
-  formGroup = this.fb.group({
-    selectedQuestion: [this.selectedTreatmentQuestion, Validators.required],
+  goalsForm = this.fb.group({
+    selectedQuestion: <TreatmentQuestionConfig>[null, Validators.required],
   });
 
   datasource = new MatTableDataSource<PriorityRow>();
@@ -52,10 +44,10 @@ export class SetPrioritiesComponent implements OnInit, OnChanges {
   ) {}
 
   createForm() {
-    this.formGroup = this.fb.group({
-      selectedQuestion: [this.selectedTreatmentQuestion, Validators.required],
+    this.goalsForm = this.fb.group({
+      selectedQuestion: <TreatmentQuestionConfig>[null, Validators.required],
     });
-    return this.formGroup;
+    return this.goalsForm;
   }
 
   ngOnInit(): void {
@@ -71,20 +63,29 @@ export class SetPrioritiesComponent implements OnInit, OnChanges {
       });
   }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (this.selectedTreatmentQuestion && this._treatmentGoals) {
+  getFormData(): Pick<ScenarioConfig, 'treatment_question'> {
+    const selectedQuestion = this.goalsForm.get('selectedQuestion');
+    if (selectedQuestion?.valid) {
+      return { treatment_question: selectedQuestion.value };
+    } else {
+      return {};
+    }
+  }
+
+  setFormData(question: TreatmentQuestionConfig) {
+    if (this._treatmentGoals) {
       // We are losing the object reference somewhere (probably on this.planStateService.treatmentGoalsConfig$)
       // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
       // not part of the provided treatmentGoalsConfig$.
       // The workaround is to look for it, however we should look into the underlying issue
       let selectedQuestion = findQuestionOnTreatmentGoalsConfig(
         this._treatmentGoals,
-        this.selectedTreatmentQuestion
+        question
       );
       if (selectedQuestion) {
-        this.formGroup.get('selectedQuestion')?.setValue(selectedQuestion);
+        this.goalsForm.get('selectedQuestion')?.setValue(selectedQuestion);
       }
-      this.formGroup.disable();
+      this.goalsForm.disable();
     }
   }
 }

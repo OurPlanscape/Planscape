@@ -9,6 +9,7 @@ import {
 import { STAND_SIZES } from '../../plan-helpers';
 import area from '@turf/area';
 import { EXCLUDED_AREA_OPTIONS } from '../../../shared/constants';
+import { ScenarioConfig } from '../../../types';
 
 @Component({
   selector: 'app-constraints-panel',
@@ -92,5 +93,88 @@ export class ConstraintsPanelComponent {
     const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
     const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { budgetOrAreaRequired: true };
+  }
+
+  getFormData(): Partial<ScenarioConfig> {
+    let scenarioConfig: ScenarioConfig = {};
+
+    const estimatedCost = this.constraintsForm.get('budgetForm.estimatedCost');
+    const maxCost = this.constraintsForm.get('budgetForm.maxCost');
+    const maxArea = this.constraintsForm.get('physicalConstraintForm.maxArea');
+    const minDistanceFromRoad = this.constraintsForm.get(
+      'physicalConstraintForm.minDistanceFromRoad'
+    );
+    const maxSlope = this.constraintsForm.get(
+      'physicalConstraintForm.maxSlope'
+    );
+
+    scenarioConfig.stand_size = this.constraintsForm.get(
+      'physicalConstraintForm.standSize'
+    )?.value;
+    scenarioConfig.excluded_areas = [];
+    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
+      if (
+        this.constraintsForm.get('excludedAreasForm.' + area)?.valid &&
+        this.constraintsForm.get('excludedAreasForm.' + area)?.value
+      ) {
+        scenarioConfig.excluded_areas?.push(area);
+      }
+    });
+    if (estimatedCost?.valid)
+      scenarioConfig.est_cost = parseFloat(estimatedCost.value);
+    if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
+    if (maxArea?.valid) {
+      scenarioConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
+    }
+    if (minDistanceFromRoad?.valid) {
+      scenarioConfig.min_distance_from_road = parseFloat(
+        minDistanceFromRoad.value
+      );
+    }
+    if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
+
+    return scenarioConfig;
+  }
+
+  setFormData(config: ScenarioConfig) {
+    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
+      if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
+        this.constraintsForm.get('excludedAreasForm.' + area)?.setValue(true);
+      } else {
+        this.constraintsForm.get('excludedAreasForm.' + area)?.setValue(false);
+      }
+    });
+
+    if (config.est_cost) {
+      this.constraintsForm
+        .get('budgetForm.estimatedCost')
+        ?.setValue(config.est_cost);
+    }
+    if (config.max_budget) {
+      this.constraintsForm
+        .get('budgetForm.maxCost')
+        ?.setValue(config.max_budget);
+    }
+    if (config.max_treatment_area_ratio) {
+      this.constraintsForm
+        .get('physicalConstraintForm.maxArea')
+        ?.setValue(config.max_treatment_area_ratio);
+    }
+    if (config.min_distance_from_road) {
+      this.constraintsForm
+        .get('physicalConstraintForm.minDistanceFromRoad')
+        ?.setValue(config.min_distance_from_road);
+    }
+    if (config.max_slope) {
+      this.constraintsForm
+        .get('physicalConstraintForm.maxSlope')
+        ?.setValue(config.max_slope);
+    }
+
+    if (config.stand_size) {
+      this.constraintsForm
+        .get('physicalConstraintForm.standSize')
+        ?.setValue(config.stand_size);
+    }
   }
 }

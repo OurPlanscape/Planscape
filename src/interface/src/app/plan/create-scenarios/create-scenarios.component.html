@@ -1,7 +1,7 @@
 <div class="create-scenarios-panel mat-elevation-z2">
   <div class="create-scenarios-panel-content">
     <div class="scenario-name">
-      <form [formGroup]="formGroups[0]!">
+      <form [formGroup]="forms!">
         <mat-form-field class="scenario-name-input">
           <input
             formControlName="scenarioName"
@@ -9,7 +9,9 @@
             placeholder="Scenario Name:" />
         </mat-form-field>
       </form>
-      <div *ngIf="formGroups[0].invalid && formGroups[0].touched" class="error">
+      <div
+        *ngIf="scenarioNameFormField?.invalid && scenarioNameFormField?.touched"
+        class="error">
         Please enter scenario name above
       </div>
     </div>
@@ -20,13 +22,12 @@
         <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
-              [selectedTreatmentQuestion]="treatmentQuestion"
               (changeConditionEvent)="
                 changeCondition($event)
               "></app-set-priorities>
             <app-identify-project-areas
               *ngIf="project_area_upload_enabled"
-              [formGroup]="formGroups[3]"></app-identify-project-areas>
+              [formGroup]="projectAreasForm"></app-identify-project-areas>
             <app-constraints-panel></app-constraints-panel>
             <div class="flex-row gap-12">
               <button
@@ -34,8 +35,8 @@
                 color="primary"
                 type="submit"
                 [disabled]="
-                  !formGroups[2].valid ||
-                  !formGroups[3].valid ||
+                  prioritiesForm?.invalid ||
+                  constrainsForm?.invalid ||
                   generatingScenario
                 "
                 (click)="createScenario()">
@@ -61,7 +62,7 @@
               [results]="scenarioResults"
               [scenarioChartData]="scenarioChartData"
               [priorities]="priorities"
-              [scenarioName]="formGroups[0].get('scenarioName')?.value"
+              [scenarioName]="scenarioNameFormField?.value"
               [scenarioId]="scenarioId!">
             </app-scenario-results>
             <app-scenario-failure
