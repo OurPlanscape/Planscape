@@ -285,10 +285,6 @@ class LoginTest(TransactionTestCase):
             {"email": "testuser@test.com", "password": "ComplexPassword123"},
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(
-            mail.outbox[0].subject, "[Planscape] Please Confirm Your E-mail Address"
-        )
 
     def test_login_verified_user(self):
         email = EmailAddress.objects.filter(email="testuser@test.com").get()

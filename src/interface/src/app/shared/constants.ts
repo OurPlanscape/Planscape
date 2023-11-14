@@ -18,3 +18,18 @@ export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
   panelClass: ['snackbar-error'],
   verticalPosition: 'top',
 };
+
+export const PROJECT_AREA_COLORS = [
+  '#FAD648',
+  '#FF9E58',
+  '#BCC3FF',
+  '#27C5F5',
+  '#FFC2C2',
+  '#FEDEBE',
+  '#B9D4FF',
+  '#FDE3FF',
+  '#7BC7B9',
+  '#7F95FF',
+];
+
+export const DEFAULT_AREA_COLOR = '#4965c7';

@@ -12,6 +12,7 @@ import { PlanStateService } from '../../services/plan-state.service';
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
   @Input() selectedCharts: ChartData[] = [];
+  @Input() priorities: string[] = [];
 
   mapConditionLayer$ = this.planStateService.planState$.pipe(
     map((planState) => planState.mapConditionLayer)

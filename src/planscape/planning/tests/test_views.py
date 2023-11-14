@@ -1741,7 +1741,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
     def test_get_scenario_with_zip(self):
         self.client.force_login(self.user)
         response = self.client.get(
-            reverse("planning:get_scenario_download_by_id"), {"id": self.scenario.pk}
+            reverse("planning:download_csv"), {"id": self.scenario.pk}
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["Content-Type"], "application/zip")
@@ -1749,7 +1749,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
 
     def test_get_scenario_not_logged_in(self):
         response = self.client.get(
-            reverse("planning:get_scenario_download_by_id"),
+            reverse("planning:download_csv"),
             {"id": self.scenario.pk},
             content_type="application/json",
         )
@@ -1759,11 +1759,11 @@ class GetScenarioDownloadTest(TransactionTestCase):
     def test_get_scenario_wrong_user(self):
         self.client.force_login(self.user)
         response = self.client.get(
-            reverse("planning:get_scenario_download_by_id"),
+            reverse("planning:download_csv"),
             {"id": self.scenario2.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_get_scenario_without_project_data(self):
@@ -1773,7 +1773,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
 
         self.client.force_login(self.user2)
         response = self.client.get(
-            reverse("planning:get_scenario_download_by_id"),
+            reverse("planning:download_csv"),
             {"id": self.scenario2.pk},
             content_type="application/json",
         )
@@ -1786,11 +1786,11 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.scenario_result.save()
 
         response = self.client.get(
-            reverse("planning:get_scenario_download_by_id"),
+            reverse("planning:download_csv"),
             {"id": self.scenario.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 424)
         self.assertRegex(
             str(response.content),
             r"Scenario was not successful, data cannot be downloaded.",
@@ -1799,11 +1799,11 @@ class GetScenarioDownloadTest(TransactionTestCase):
     def test_get_scenario_nonexistent_scenario(self):
         self.client.force_login(self.user)
         response = self.client.get(
-            reverse("planning:get_scenario_download_by_id"),
+            reverse("planning:download_csv"),
             {"id": 99999},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 404)
         self.assertRegex(str(response.content), r"does not exist")
 
 

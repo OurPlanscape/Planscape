@@ -27,9 +27,7 @@ import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
-import FileSaver from 'file-saver';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ScenarioService } from '../../services/scenario.service';
 import { PlanStateService } from '../../services/plan-state.service';
 import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 
@@ -68,6 +66,7 @@ export class CreateScenariosComponent implements OnInit {
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
+  priorities: string[] = [];
   scenarioChartData: any[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
@@ -80,8 +79,7 @@ export class CreateScenariosComponent implements OnInit {
     private fb: FormBuilder,
     private planStateService: PlanStateService,
     private router: Router,
-    private matSnackBar: MatSnackBar,
-    private scenarioService: ScenarioService
+    private matSnackBar: MatSnackBar
   ) {
     this.treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
       untilDestroyed(this)
@@ -219,6 +217,9 @@ export class CreateScenariosComponent implements OnInit {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
           this.disableForms();
+          this.priorities =
+            scenario.configuration.treatment_question?.scenario_priorities ||
+            [];
           this.selectedTabIndex = 1;
           if (this.scenarioState == 'SUCCESS') {
             this.processScenarioResults(scenario);
@@ -441,18 +442,26 @@ export class CreateScenariosComponent implements OnInit {
             var displayName = metric_data[metric]['display_name'];
             var dataUnits = metric_data[metric]['data_units'];
             var metricLayer = metric_data[metric]['raw_layer'];
+            var metricName = metric_data[metric]['metric_name'];
             var metricData: string[] = [];
             this.scenarioResults?.result.features.map((featureCollection) => {
               const props = featureCollection.properties;
               metricData.push(props[metric]);
             });
-            labels.push([displayName, dataUnits, metricLayer, metricData]);
+            labels.push([
+              displayName,
+              dataUnits,
+              metricLayer,
+              metricData,
+              metricName,
+            ]);
           }
           this.scenarioChartData = labels.map((label, _) => ({
             label: label[0],
             measurement: label[1],
             metric_layer: label[2],
             values: label[3],
+            key: label[4],
           }));
         });
       this.planStateService.updateStateWithShapes(
@@ -493,21 +502,5 @@ export class CreateScenariosComponent implements OnInit {
 
   goBackToPlanning() {
     this.router.navigate(['plan', this.plan$.value?.id]);
-  }
-
-  downloadCsv() {
-    const filename =
-      (this.nameFormGroup.get('scenarioName')?.value || 'scenario_results') +
-      '.zip';
-    if (this.scenarioId) {
-      this.scenarioService
-        .downloadCsvData(this.scenarioId)
-        .subscribe((data) => {
-          const blob = new Blob([data], {
-            type: 'application/zip',
-          });
-          FileSaver.saveAs(blob, filename);
-        });
-    }
   }
 }

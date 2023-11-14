@@ -1,5 +1,6 @@
 import { Map } from '../types';
 import * as L from 'leaflet';
+import { DRAWING_STYLES } from './map.constants';
 
 export function addClonedLayerToMap(map: Map, layer: L.Layer) {
   const originalId = L.Util.stamp(layer);
@@ -66,11 +67,6 @@ export function createDrawingLayer(
 ) {
   return L.geoJSON(planningAreaData, {
     pane: 'overlayPane',
-    style: {
-      color: color ?? '#3367D6',
-      fillColor: color ?? '#3367D6',
-      fillOpacity: opacity ?? 0.1,
-      weight: 7,
-    },
+    style: DRAWING_STYLES,
   });
 }
