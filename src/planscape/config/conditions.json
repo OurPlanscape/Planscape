@@ -89,12 +89,12 @@
         },
         {
           "pillar_name": "air_quality",
-          "display": false,
+          "display": true,
           "display_name": "Air Quality",
           "elements": [
             {
               "element_name": "particulate_matter",
-              "display": false,
+              "display": true,
               "display_name": "Particulate Matter",
               "metrics": [
               ]
