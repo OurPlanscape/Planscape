@@ -43,6 +43,45 @@
                   "reference_link": "",
                   "source": "SIG-GIS",
                   "source_link": ""
+                },
+                {
+                  "display_name": "Distance To Riparian",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_riparian",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/forsys/distance_to_riparian.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To Spotted Owl Habitat",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_spotted_owl",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/forsys/distance_to_spotted_owl.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To WUI",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_wui",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/forsys/distance_to_wui.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
                 }
               ]
             }
@@ -1171,6 +1210,45 @@
                   "reference_link": "",
                   "source": "SIG-GIS",
                   "source_link": ""
+                },
+                {
+                  "display_name": "Distance To Riparian",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_riparian",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forsys/distance_to_riparian.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To Spotted Owl Habitat",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_spotted_owl",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forsys/distance_to_spotted_owl.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To WUI",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_wui",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forsys/distance_to_wui.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
                 }
               ]
             }
@@ -2268,6 +2346,45 @@
                   "metric_name": "distance_to_roads",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forsys/distance_to_roads.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To Riparian",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_riparian",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/forsys/distance_to_riparian.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To Spotted Owl Habitat",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_spotted_owl",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/forsys/distance_to_spotted_owl.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Distance To WUI",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "%",
+                  "max_value": 999,
+                  "metric_name": "distance_to_wui",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/forsys/distance_to_wui.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG-GIS",
