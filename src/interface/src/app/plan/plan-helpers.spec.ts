@@ -1,6 +1,30 @@
 import { TestBed } from '@angular/core/testing';
-import { getColorForProjectPosition } from './plan-helpers';
+import {
+  findQuestionOnTreatmentGoalsConfig,
+  getColorForProjectPosition,
+} from './plan-helpers';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '../shared/constants';
+import { TreatmentGoalConfig, TreatmentQuestionConfig } from '../types';
+
+const questions = [
+  {
+    short_question_text: 'test_question',
+    scenario_output_fields_paths: {},
+    scenario_priorities: [''],
+    stand_thresholds: [''],
+    global_thresholds: [''],
+    weights: [1],
+  },
+];
+
+const defaultQuestion: TreatmentQuestionConfig = {
+  short_question_text: 'this is the question',
+  scenario_output_fields_paths: {},
+  scenario_priorities: [''],
+  stand_thresholds: [''],
+  global_thresholds: [''],
+  weights: [0],
+};
 
 describe('Plan Helpers', () => {
   beforeEach(() => {
@@ -24,6 +48,33 @@ describe('Plan Helpers', () => {
   });
 
   describe('findQuestionOnTreatmentGoalsConfig', () => {
-    it('should return the question **from** treatmentQuestion', () => {});
+    it('should find the treatmentQuestion on treatmentGoalConfigs', () => {
+      const tr: TreatmentGoalConfig[] = [
+        {
+          category_name: 'test_category',
+          questions: [...questions, defaultQuestion],
+        },
+      ];
+      expect(findQuestionOnTreatmentGoalsConfig(tr, defaultQuestion)).toBe(
+        defaultQuestion
+      );
+    });
+
+    it('should return the question **from** treatmentQuestion', () => {
+      const tr: TreatmentGoalConfig[] = [
+        {
+          category_name: 'test_category',
+          questions: [...questions, defaultQuestion],
+        },
+      ];
+      const almostDefaultQuestion = { ...defaultQuestion };
+      expect(
+        findQuestionOnTreatmentGoalsConfig(tr, almostDefaultQuestion)
+      ).toBe(defaultQuestion);
+
+      expect(
+        findQuestionOnTreatmentGoalsConfig(tr, almostDefaultQuestion)
+      ).not.toBe(almostDefaultQuestion);
+    });
   });
 });
