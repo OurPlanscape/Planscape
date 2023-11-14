@@ -20,9 +20,9 @@ import { TimeoutError, timeout } from 'rxjs';
 })
 export class SignupComponent {
   errors: string[] = [];
-
   form: FormGroup;
   submitting: boolean = false;
+  emailAlreadyExists: boolean = false;
 
   constructor(
     private authService: AuthService,
@@ -48,6 +48,11 @@ export class SignupComponent {
         validator: this.passwordsMatchValidator,
       }
     );
+  }
+
+  resendEmail() {
+    const email: string = this.form.get('email')?.value;
+    this.authService.resendValidationEmail(email).subscribe();
   }
 
   signup() {
@@ -76,6 +81,9 @@ export class SignupComponent {
           this.submitting = false;
           if (error.status == 400) {
             this.errors = Object.values(error.error);
+            this.emailAlreadyExists =
+              this.errors.filter((s) => s[0].includes('already registered'))
+                .length > 0;
           } else if (error.status == 500) {
             this.errors = Object.values([
               'An unexpected server error has occured.',
