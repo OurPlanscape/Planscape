@@ -1,11 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import {
   BehaviorSubject,
@@ -31,8 +25,12 @@ import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlanStateService } from '../../services/plan-state.service';
-import { SNACK_ERROR_CONFIG } from '../../shared/constants';
+import {
+  EXCLUDED_AREA_OPTIONS,
+  SNACK_ERROR_CONFIG,
+} from '../../shared/constants';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
+import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 
 @UntilDestroy()
 @Component({
@@ -51,15 +49,6 @@ export class CreateScenariosComponent implements OnInit {
 
   treatmentGoals$: Observable<TreatmentGoalConfig[] | null>;
 
-  excludedAreasOptions: Array<string> = [
-    'National Forests',
-    'National Parks',
-    'Private Land',
-    'State Parks',
-    'Tribal Lands',
-    'Wilderness Area',
-  ];
-
   project_area_upload_enabled = features.upload_project_area;
 
   // this value gets updated once we load the scenario result.
@@ -75,8 +64,12 @@ export class CreateScenariosComponent implements OnInit {
 
   tabAnimation = this.tabAnimationOptions.off;
 
+  // todo check if static is the right thing here
   @ViewChild(SetPrioritiesComponent, { static: true })
   prioritiesComponent!: SetPrioritiesComponent;
+
+  @ViewChild(ConstraintsPanelComponent, { static: true })
+  constraintsPanelComponent!: ConstraintsPanelComponent;
 
   constructor(
     private fb: FormBuilder,
@@ -96,7 +89,7 @@ export class CreateScenariosComponent implements OnInit {
 
   createForms() {
     var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    this.excludedAreasOptions.forEach((area: string) => {
+    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
       excludedAreasChosen[area] = [false, Validators.required];
     });
     this.formGroups = [
@@ -107,33 +100,7 @@ export class CreateScenariosComponent implements OnInit {
       // Step 2: Select priorities
       this.prioritiesComponent.createForm(),
       // Step 3: Set constraints
-      this.fb.group(
-        {
-          budgetForm: this.fb.group({
-            // Estimated cost in $ per acre
-            estimatedCost: [2470, Validators.min(0)],
-            // Max cost of treatment for entire planning area
-            // Initially disabled, estimatedCost is required as input before maxCost is enabled
-            maxCost: ['', Validators.min(0.01)],
-          }),
-          physicalConstraintForm: this.fb.group({
-            // TODO Update if needed once we have confirmation if this is the correct default %
-            // Maximum slope allowed for planning area
-            maxSlope: [, [Validators.min(0), Validators.max(100)]],
-            // Minimum distance from road allowed for planning area
-            minDistanceFromRoad: [, [Validators.min(0)]],
-            // Maximum area to be treated in acres
-            // Using 500 as minimum for now. Ideally the minimum should be based on stand size.
-            maxArea: ['', [Validators.min(500)]],
-            // Stand Size selection
-            standSize: ['LARGE', Validators.required],
-          }),
-          excludedAreasForm: this.fb.group(excludedAreasChosen),
-          excludeAreasByDegrees: [true],
-          excludeAreasByDistance: [true],
-        },
-        { validators: this.constraintsFormValidator }
-      ),
+      this.constraintsPanelComponent.createForm(),
       // Step 4: Identify project areas
       this.fb.group({
         // TODO Use flag to set required validator
@@ -158,6 +125,7 @@ export class CreateScenariosComponent implements OnInit {
 
     if (this.scenarioId) {
       // Has to be outside service subscription or else will cause infinite loop
+      this.scenarioState = 'LOADING';
       this.loadConfig();
       this.pollForChanges();
       // if we have an id go to the results tab.
@@ -194,25 +162,18 @@ export class CreateScenariosComponent implements OnInit {
       });
   }
 
-  private constraintsFormValidator(
-    constraintsForm: AbstractControl
-  ): ValidationErrors | null {
-    // Only one of budget or treatment area constraints is required.
-    const maxCost = constraintsForm.get('budgetForm.maxCost');
-    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
-    const valid = !!maxCost?.value || !!maxArea?.value;
-    return valid ? null : { budgetOrAreaRequired: true };
-  }
-
   loadConfig(): void {
-    this.scenarioState = this.scenarioId ? 'PENDING' : 'LOADING';
     this.planStateService
       .getScenario(this.scenarioId!)
       .subscribe((scenario) => {
         // if we have the same state do nothing.
+
         if (this.scenarioState === scenario.scenario_result?.status) {
+          console.log('its the same bro');
           return;
         }
+        console.log(this.scenarioState);
+        console.log(scenario.scenario_result?.status);
         this.disableForms();
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
@@ -232,7 +193,7 @@ export class CreateScenariosComponent implements OnInit {
 
         this.treatmentQuestion = config.treatment_question || null;
 
-        this.excludedAreasOptions.forEach((area: string) => {
+        EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
           if (
             config.excluded_areas &&
             config.excluded_areas.indexOf(area) > -1
@@ -306,7 +267,7 @@ export class CreateScenariosComponent implements OnInit {
       'physicalConstraintForm.standSize'
     )?.value;
     scenarioConfig.excluded_areas = [];
-    this.excludedAreasOptions.forEach((area: string) => {
+    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
       if (
         this.formGroups[2].get('excludedAreasForm.' + area)?.valid &&
         this.formGroups[2].get('excludedAreasForm.' + area)?.value

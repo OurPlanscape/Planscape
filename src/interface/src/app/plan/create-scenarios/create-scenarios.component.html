@@ -28,11 +28,7 @@
             <app-identify-project-areas
               *ngIf="project_area_upload_enabled"
               [formGroup]="formGroups[3]"></app-identify-project-areas>
-            <app-constraints-panel
-              [constraintsForm]="formGroups[2]"
-              [excludedAreasOptions]="
-                excludedAreasOptions
-              "></app-constraints-panel>
+            <app-constraints-panel></app-constraints-panel>
             <div class="flex-row gap-12">
               <button
                 mat-raised-button

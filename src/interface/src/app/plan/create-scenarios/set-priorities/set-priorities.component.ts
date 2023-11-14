@@ -138,19 +138,4 @@ export class SetPrioritiesComponent implements OnInit, OnChanges {
       });
     return data;
   }
-
-  /** Toggle whether a priority condition's children are expanded. */
-  toggleExpand(
-    priority: PriorityRow,
-    expanded?: boolean,
-    hideChildren?: boolean
-  ): void {
-    priority.expanded = expanded !== undefined ? expanded : !priority.expanded;
-    priority.children.forEach((child) => {
-      child.hidden = hideChildren !== undefined ? hideChildren : !child.hidden;
-      if (child.hidden) {
-        this.toggleExpand(child, false, true);
-      }
-    });
-  }
 }

@@ -1,7 +1,14 @@
-import { Component, Input } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { Component } from '@angular/core';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
 import area from '@turf/area';
+import { EXCLUDED_AREA_OPTIONS } from '../../../shared/constants';
 
 @Component({
   selector: 'app-constraints-panel',
@@ -9,11 +16,46 @@ import area from '@turf/area';
   styleUrls: ['./constraints-panel.component.scss'],
 })
 export class ConstraintsPanelComponent {
-  @Input() constraintsForm: FormGroup | undefined;
-  @Input() excludedAreasOptions: Array<string> | undefined;
+  constraintsForm: FormGroup = this.fb.group({});
+  readonly excludedAreasOptions = EXCLUDED_AREA_OPTIONS;
   standSizeOptions = STAND_SIZES;
 
-  constructor() {}
+  constructor(private fb: FormBuilder) {}
+
+  createForm() {
+    let excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
+    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
+      excludedAreasChosen[area] = [false, Validators.required];
+    });
+    this.constraintsForm = this.fb.group(
+      {
+        budgetForm: this.fb.group({
+          // Estimated cost in $ per acre
+          estimatedCost: [2470, Validators.min(0)],
+          // Max cost of treatment for entire planning area
+          // Initially disabled, estimatedCost is required as input before maxCost is enabled
+          maxCost: ['', Validators.min(0.01)],
+        }),
+        physicalConstraintForm: this.fb.group({
+          // TODO Update if needed once we have confirmation if this is the correct default %
+          // Maximum slope allowed for planning area
+          maxSlope: [, [Validators.min(0), Validators.max(100)]],
+          // Minimum distance from road allowed for planning area
+          minDistanceFromRoad: [, [Validators.min(0)]],
+          // Maximum area to be treated in acres
+          // Using 500 as minimum for now. Ideally the minimum should be based on stand size.
+          maxArea: ['', [Validators.min(500)]],
+          // Stand Size selection
+          standSize: ['LARGE', Validators.required],
+        }),
+        excludedAreasForm: this.fb.group(excludedAreasChosen),
+        excludeAreasByDegrees: [true],
+        excludeAreasByDistance: [true],
+      },
+      { validators: this.constraintsFormValidator }
+    );
+    return this.constraintsForm;
+  }
 
   get maxArea() {
     const area = this.constraintsForm?.get('physicalConstraintForm.maxArea');
@@ -42,4 +84,14 @@ export class ConstraintsPanelComponent {
   }
 
   protected readonly area = area;
+
+  private constraintsFormValidator(
+    constraintsForm: AbstractControl
+  ): ValidationErrors | null {
+    // Only one of budget or treatment area constraints is required.
+    const maxCost = constraintsForm.get('budgetForm.maxCost');
+    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    const valid = !!maxCost?.value || !!maxArea?.value;
+    return valid ? null : { budgetOrAreaRequired: true };
+  }
 }
