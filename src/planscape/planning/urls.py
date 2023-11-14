@@ -4,7 +4,8 @@ from planning.views import (
     create_planning_area,
     delete_planning_area,
     get_planning_area_by_id,
-    get_scenario_download_by_id,
+    download_csv,
+    download_shapefile,
     list_planning_areas,
     update_planning_area,
     create_scenario,
@@ -42,16 +43,26 @@ urlpatterns = [
     path("delete_scenario/", delete_scenario, name="delete_scenario"),
     path("get_scenario_by_id/", get_scenario_by_id, name="get_scenario_by_id"),
     path(
+        # TODO change this to download_csv url
         "get_scenario_download_by_id/",
-        get_scenario_download_by_id,
-        name="get_scenario_download_by_id",
+        download_csv,
+        name="download_csv",
+    ),
+    path(
+        "download_shapefile/",
+        download_shapefile,
+        name="download_shapefile",
     ),
     path(
         "list_scenarios_for_planning_area/",
         list_scenarios_for_planning_area,
         name="list_scenarios_for_planning_area",
     ),
-    path("update_scenario/", update_scenario, name="update_scenario"),
+    path(
+        "update_scenario/",
+        update_scenario,
+        name="update_scenario",
+    ),
     path(
         "update_scenario_result/", update_scenario_result, name="update_scenario_result"
     ),

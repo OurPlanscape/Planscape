@@ -1,8 +1,12 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../services';
+import {
+  SNACK_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from '../../app/shared/constants';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +15,7 @@ import { AuthService } from '../services';
 })
 export class LoginComponent {
   protected accountError = '';
+  protected offerReverify: boolean = false;
 
   form: FormGroup;
 
@@ -22,7 +27,8 @@ export class LoginComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private router: Router
+    private router: Router,
+    private snackbar: MatSnackBar
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -30,6 +36,23 @@ export class LoginComponent {
         Validators.email,
       ]),
       password: this.formBuilder.control('', Validators.required),
+    });
+  }
+
+  resendVerification() {
+    const email = this.form.get('email')?.value;
+    this.authService.resendValidationEmail(email).subscribe({
+      next: () => {
+        this.offerReverify = false;
+        this.snackbar.open(
+          'Sent verification email.',
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        );
+      },
+      error: (err: String) => {
+        this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
+      },
     });
   }
 
@@ -45,6 +68,7 @@ export class LoginComponent {
         const errorMsg: string = error.error.global[0];
         if (errorMsg === 'E-mail is not verified.') {
           this.accountError = 'Please check your email to verify your account.';
+          this.offerReverify = true;
         } else {
           this.accountError = errorMsg;
         }

@@ -29,6 +29,7 @@
     height: auto;
     max-height: 75%;
   }
+
   // Setting heights for built-in leaflet styles to be able to configure relative max-height
   ::ng-deep .leaflet-top {
     height: 100%;
@@ -102,5 +103,16 @@
   ::ng-deep .leaflet-tooltip.project-area-label {
     border: transparent;
     box-shadow: none;
+    background-color: rgba(255, 255, 255, 0.6);
+    color: black;
+    font-weight: bold;
+    font-size: 18px;
+    display: block;
+    border-radius: 50%;
+    aspect-ratio: 1/1;
+    height: 30px;
+    text-align: center;
+    padding: 0;
+    line-height: 30px;
   }
 }
