@@ -34,7 +34,7 @@
                 {
                   "display_name": "Distance To Roads",
                   "data_provider": "SIG-GIS",
-                  "data_units": "yards",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_roads",
                   "min_value": 0,
@@ -47,7 +47,7 @@
                 {
                   "display_name": "Distance To Riparian",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_riparian",
                   "min_value": 0,
@@ -60,7 +60,7 @@
                 {
                   "display_name": "Distance To Spotted Owl Habitat",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_spotted_owl",
                   "min_value": 0,
@@ -73,7 +73,7 @@
                 {
                   "display_name": "Distance To WUI",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_wui",
                   "min_value": 0,
@@ -1201,7 +1201,7 @@
                 {
                   "display_name": "Distance To Roads",
                   "data_provider": "SIG-GIS",
-                  "data_units": "yards",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_roads",
                   "min_value": 0,
@@ -1214,7 +1214,7 @@
                 {
                   "display_name": "Distance To Riparian",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_riparian",
                   "min_value": 0,
@@ -1227,7 +1227,7 @@
                 {
                   "display_name": "Distance To Spotted Owl Habitat",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_spotted_owl",
                   "min_value": 0,
@@ -1240,7 +1240,7 @@
                 {
                   "display_name": "Distance To WUI",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_wui",
                   "min_value": 0,
@@ -2341,7 +2341,7 @@
                 {
                   "display_name": "Distance To Roads",
                   "data_provider": "SIG-GIS",
-                  "data_units": "yards",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_roads",
                   "min_value": 0,
@@ -2354,7 +2354,7 @@
                 {
                   "display_name": "Distance To Riparian",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_riparian",
                   "min_value": 0,
@@ -2367,7 +2367,7 @@
                 {
                   "display_name": "Distance To Spotted Owl Habitat",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_spotted_owl",
                   "min_value": 0,
@@ -2380,7 +2380,7 @@
                 {
                   "display_name": "Distance To WUI",
                   "data_provider": "SIG-GIS",
-                  "data_units": "%",
+                  "data_units": "meters",
                   "max_value": 999,
                   "metric_name": "distance_to_wui",
                   "min_value": 0,
