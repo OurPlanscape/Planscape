@@ -1,7 +1,7 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { take, tap } from 'rxjs';
+import { distinctUntilChanged, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MapService } from '../../../services';
 import {
@@ -27,8 +27,15 @@ export class SetPrioritiesComponent implements OnInit {
 
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
-    take(1),
-    tap((s) => (this._treatmentGoals = s))
+    distinctUntilChanged(),
+    tap((s) => {
+      this._treatmentGoals = s;
+      // if we got new treatment goals we'll need to find the item again and set it as selected
+      const value = this.goalsForm.get('selectedQuestion')?.value;
+      if (value) {
+        this.setFormData(value);
+      }
+    })
   );
 
   goalsForm = this.fb.group({

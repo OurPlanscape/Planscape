@@ -7,7 +7,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
-import area from '@turf/area';
 import { EXCLUDED_AREA_OPTIONS } from '../../../shared/constants';
 import { ScenarioConfig } from '../../../types';
 
@@ -19,7 +18,7 @@ import { ScenarioConfig } from '../../../types';
 export class ConstraintsPanelComponent {
   constraintsForm: FormGroup = this.createForm();
   readonly excludedAreasOptions = EXCLUDED_AREA_OPTIONS;
-  standSizeOptions = STAND_SIZES;
+  readonly standSizeOptions = STAND_SIZES;
 
   constructor(private fb: FormBuilder) {}
 
@@ -81,18 +80,6 @@ export class ConstraintsPanelComponent {
         'maxCost'
       ].enable();
     }
-  }
-
-  protected readonly area = area;
-
-  private constraintsFormValidator(
-    constraintsForm: AbstractControl
-  ): ValidationErrors | null {
-    // Only one of budget or treatment area constraints is required.
-    const maxCost = constraintsForm.get('budgetForm.maxCost');
-    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
-    const valid = !!maxCost?.value || !!maxArea?.value;
-    return valid ? null : { budgetOrAreaRequired: true };
   }
 
   getFormData(): Partial<ScenarioConfig> {
@@ -176,5 +163,15 @@ export class ConstraintsPanelComponent {
         .get('physicalConstraintForm.standSize')
         ?.setValue(config.stand_size);
     }
+  }
+
+  private constraintsFormValidator(
+    constraintsForm: AbstractControl
+  ): ValidationErrors | null {
+    // Only one of budget or treatment area constraints is required.
+    const maxCost = constraintsForm.get('budgetForm.maxCost');
+    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    const valid = !!maxCost?.value || !!maxArea?.value;
+    return valid ? null : { budgetOrAreaRequired: true };
   }
 }

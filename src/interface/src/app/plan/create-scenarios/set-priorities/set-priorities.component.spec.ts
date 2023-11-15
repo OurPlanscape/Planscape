@@ -117,7 +117,7 @@ describe('SetPrioritiesComponent', () => {
     component.goalsForm = fb.group({
       selectedQuestion: [defaultSelectedQuestion],
     });
-
+    component.createForm();
     fixture.detectChanges();
   });
 
