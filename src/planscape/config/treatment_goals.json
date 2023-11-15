@@ -33,7 +33,6 @@
                 ],
                 "metrics": [
                   "probability_of_fire_severity_high",
-                  "high_severity_potential_smoke_emissions",
                   "total_fuel_exposed_to_fire",
                   "dead_and_down_carbon",
                   "structure_exposure",
@@ -76,8 +75,6 @@
                   "hazard"
                 ],
                 "metrics": [
-                  "high_severity_potential_smoke_emissions",
-                  "moderate_severity_potential_smoke_emissions",
                   "total_fuel_exposed_to_fire",
                   "dead_and_down_carbon",
                   "standing_dead_and_ladder_fuels",
@@ -117,8 +114,6 @@
                   "focal_species"
                 ],
                 "metrics": [
-                  "high_severity_potential_smoke_emissions",
-                  "moderate_severity_potential_smoke_emissions",
                   "dead_and_down_carbon",
                   "standing_dead_and_ladder_fuels",
                   "available_standing_biomass",
@@ -173,7 +168,6 @@
                   "probability_of_fire_severity_high",
                   "costs_of_potential_treatment_moving_biomass",
                   "costs_of_potential_treatment_moving_sawlogs",
-                  "moderate_severity_potential_smoke_emissions",
                   "structure_exposure",
                   "damage_potential_wui",
                   "available_standing_biomass",
@@ -231,8 +225,6 @@
                   "habitat_connectivity",
                   "live_tree_density_30in_dbh",
                   "seral_stage_late",
-                  "moderate_severity_potential_smoke_emissions",
-                  "high_severity_potential_smoke_emissions",
                   "total_fuel_exposed_to_fire",
                   "sawtimber_biomass",
                   "costs_of_potential_treatment_moving_biomass",
@@ -292,8 +284,6 @@
                   "live_tree_density_30in_dbh",
                   "dead_and_down_fuels",
                   "standing_dead_and_ladder_fuels",
-                  "moderate_severity_potential_smoke_emissions",
-                  "high_severity_potential_smoke_emissions",
                   "total_fuel_exposed_to_fire",
                   "sawtimber_biomass",
                   "costs_of_potential_treatment_moving_biomass",
