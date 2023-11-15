@@ -192,7 +192,7 @@ describe('SetPrioritiesComponent', () => {
       expect(checked).toBe(testQuestion.toString());
     });
 
-    it('should set the value od the form if treatment goals emits a change', async () => {
+    it('should set the value of the form again if treatment goals emits a change', async () => {
       const radioButtonGroup = await loader.getHarness(
         MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
       );

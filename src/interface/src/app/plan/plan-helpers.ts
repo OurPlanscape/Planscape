@@ -96,7 +96,7 @@ export function conditionsConfigToPriorityData(
       let pillarRow: PriorityRow = {
         conditionName: pillar.pillar_name!,
         displayName: pillar.display_name,
-        filepath: pillar.filepath!.concat('_normalized'),
+        filepath: pillar.filepath! ? pillar.filepath.concat('_normalized') : '',
         children: [],
         level: 0,
         expanded: false,
@@ -108,7 +108,9 @@ export function conditionsConfigToPriorityData(
           let elementRow: PriorityRow = {
             conditionName: element.element_name!,
             displayName: element.display_name,
-            filepath: element.filepath!.concat('_normalized'),
+            filepath: element.filepath
+              ? element.filepath.concat('_normalized')
+              : '',
             children: [],
             level: 1,
             expanded: false,
