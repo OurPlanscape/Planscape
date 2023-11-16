@@ -1,28 +1,21 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormGroup } from '@angular/forms';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
-import { BehaviorSubject, take } from 'rxjs';
+import { distinctUntilChanged, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Plan } from 'src/app/types';
-import { MapService } from './../../../services/map.service';
-import { ConditionsConfig } from './../../../types/data.types';
+import { MapService } from '../../../services';
 import {
+  PriorityRow,
+  ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
-} from '../../../types/scenario.types';
+} from '../../../types';
 
-interface PriorityRow {
-  selected?: boolean;
-  visible?: boolean; // Visible as raster data on map
-  expanded?: boolean; // Children in table are not hidden
-  hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
-  disabled?: boolean; // Cannot be selected (because ancestor is selected)
-  conditionName: string;
-  displayName?: string;
-  filepath: string;
-  children: PriorityRow[];
-  level: number;
-}
+import { PlanStateService } from '../../../services/plan-state.service';
+import {
+  conditionsConfigToPriorityData,
+  findQuestionOnTreatmentGoalsConfig,
+} from '../../plan-helpers';
 
 @Component({
   selector: 'app-set-priorities',
@@ -30,15 +23,39 @@ interface PriorityRow {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
-  @Input() formGroup: FormGroup | undefined;
-  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
-  @Input() treatmentGoals$: TreatmentGoalConfig[] | null = null;
   @Output() changeConditionEvent = new EventEmitter<string>();
 
-  datasource = new MatTableDataSource<PriorityRow>();
-  selectedQuestion: TreatmentQuestionConfig | null = null;
+  private _treatmentGoals: TreatmentGoalConfig[] | null = [];
+  treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
+    distinctUntilChanged(),
+    tap((s) => {
+      this._treatmentGoals = s;
+      // if we got new treatment goals we'll need to find the item again and set it as selected
+      const value = this.goalsForm.get('selectedQuestion')?.value;
+      if (value) {
+        this.setFormData(value);
+      }
+    })
+  );
 
-  constructor(private mapService: MapService) {}
+  goalsForm = this.fb.group({
+    selectedQuestion: <TreatmentQuestionConfig>[null, Validators.required],
+  });
+
+  datasource = new MatTableDataSource<PriorityRow>();
+
+  constructor(
+    private mapService: MapService,
+    private fb: FormBuilder,
+    private planStateService: PlanStateService
+  ) {}
+
+  createForm() {
+    this.goalsForm = this.fb.group({
+      selectedQuestion: <TreatmentQuestionConfig>[null, Validators.required],
+    });
+    return this.goalsForm;
+  }
 
   ngOnInit(): void {
     this.mapService.conditionsConfig$
@@ -47,73 +64,35 @@ export class SetPrioritiesComponent implements OnInit {
         take(1)
       )
       .subscribe((conditionsConfig) => {
-        this.datasource.data = this.conditionsConfigToPriorityData(
+        this.datasource.data = conditionsConfigToPriorityData(
           conditionsConfig!
         );
       });
   }
 
-  private conditionsConfigToPriorityData(
-    config: ConditionsConfig
-  ): PriorityRow[] {
-    let data: PriorityRow[] = [];
-    config.pillars
-      ?.filter((pillar) => pillar.display)
-      .forEach((pillar) => {
-        let pillarRow: PriorityRow = {
-          conditionName: pillar.pillar_name!,
-          displayName: pillar.display_name,
-          filepath: pillar.filepath!.concat('_normalized'),
-          children: [],
-          level: 0,
-          expanded: false,
-        };
-        data.push(pillarRow);
-        pillar.elements
-          ?.filter((element) => element.display)
-          .forEach((element) => {
-            let elementRow: PriorityRow = {
-              conditionName: element.element_name!,
-              displayName: element.display_name,
-              filepath: element.filepath!.concat('_normalized'),
-              children: [],
-              level: 1,
-              expanded: false,
-              hidden: true,
-            };
-            data.push(elementRow);
-            pillarRow.children.push(elementRow);
-            element.metrics
-              ?.filter((metric) => !!metric.filepath)
-              .forEach((metric) => {
-                let metricRow: PriorityRow = {
-                  conditionName: metric.metric_name!,
-                  displayName: metric.display_name,
-                  filepath: metric.filepath!.concat('_normalized'),
-                  children: [],
-                  level: 2,
-                  hidden: true,
-                };
-                data.push(metricRow);
-                elementRow.children.push(metricRow);
-              });
-          });
-      });
-    return data;
+  getFormData(): Pick<ScenarioConfig, 'treatment_question'> {
+    const selectedQuestion = this.goalsForm.get('selectedQuestion');
+    if (selectedQuestion?.valid) {
+      return { treatment_question: selectedQuestion.value };
+    } else {
+      return {};
+    }
   }
 
-  /** Toggle whether a priority condition's children are expanded. */
-  toggleExpand(
-    priority: PriorityRow,
-    expanded?: boolean,
-    hideChildren?: boolean
-  ): void {
-    priority.expanded = expanded !== undefined ? expanded : !priority.expanded;
-    priority.children.forEach((child) => {
-      child.hidden = hideChildren !== undefined ? hideChildren : !child.hidden;
-      if (child.hidden) {
-        this.toggleExpand(child, false, true);
+  setFormData(question: TreatmentQuestionConfig) {
+    if (this._treatmentGoals) {
+      // We are losing the object reference somewhere (probably on this.planStateService.treatmentGoalsConfig$)
+      // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
+      // not part of the provided treatmentGoalsConfig$.
+      // The workaround is to look for it, however we should look into the underlying issue
+      let selectedQuestion = findQuestionOnTreatmentGoalsConfig(
+        this._treatmentGoals,
+        question
+      );
+      if (selectedQuestion) {
+        this.goalsForm.get('selectedQuestion')?.setValue(selectedQuestion);
       }
-    });
+      this.goalsForm.disable();
+    }
   }
 }

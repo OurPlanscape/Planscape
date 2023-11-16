@@ -7,13 +7,15 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
-import { TreatmentQuestionConfig } from 'src/app/types';
+import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
 import { MapService } from './../../../services/map.service';
 import { ConditionsConfig } from './../../../types/data.types';
 import { ColormapConfig } from './../../../types/legend.types';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
+import { MockProvider } from 'ng-mocks';
+import { PlanStateService } from '../../../services/plan-state.service';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -22,7 +24,7 @@ describe('SetPrioritiesComponent', () => {
   let component: SetPrioritiesComponent;
   let fixture: ComponentFixture<SetPrioritiesComponent>;
   let loader: HarnessLoader;
-
+  let treatmentGoals$: BehaviorSubject<TreatmentGoalConfig[] | null>;
   let fakeMapService: MapService;
 
   const defaultSelectedQuestion: TreatmentQuestionConfig = {
@@ -84,6 +86,10 @@ describe('SetPrioritiesComponent', () => {
       }
     );
 
+    treatmentGoals$ = new BehaviorSubject<TreatmentGoalConfig[] | null>([
+      { category_name: 'test category', questions: [testQuestion] },
+    ]);
+
     await TestBed.configureTestingModule({
       imports: [
         BrowserAnimationsModule,
@@ -99,6 +105,9 @@ describe('SetPrioritiesComponent', () => {
           provide: MapService,
           useValue: fakeMapService,
         },
+        MockProvider(PlanStateService, {
+          treatmentGoalsConfig$: treatmentGoals$,
+        }),
       ],
     }).compileComponents();
 
@@ -107,16 +116,10 @@ describe('SetPrioritiesComponent', () => {
     loader = TestbedHarnessEnvironment.loader(fixture);
 
     const fb = fixture.componentRef.injector.get(FormBuilder);
-    component.formGroup = fb.group({
+    component.goalsForm = fb.group({
       selectedQuestion: [defaultSelectedQuestion],
     });
-    component.treatmentGoals$ = [
-      {
-        category_name: 'test_category',
-        questions: [testQuestion],
-      },
-    ];
-
+    component.createForm();
     fixture.detectChanges();
   });
 
@@ -157,14 +160,72 @@ describe('SetPrioritiesComponent', () => {
     const radioButtonGroup = await loader.getHarness(
       MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
     );
-
+    let checked = await radioButtonGroup.getCheckedValue();
+    expect(checked).toBe(null);
     // Act: select the test treatment question
     await radioButtonGroup.checkRadioButton({
       label: testQuestion['short_question_text'],
     });
 
-    expect(component.formGroup?.get('selectedQuestion')?.value).toEqual(
+    expect(component.goalsForm?.get('selectedQuestion')?.value).toEqual(
       testQuestion
     );
+    checked = await radioButtonGroup.getCheckedValue();
+    expect(checked).toBe(testQuestion.toString());
+  });
+
+  describe('setting values', () => {
+    it('should set the value of the form with setFormData', async () => {
+      const radioButtonGroup = await loader.getHarness(
+        MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
+      );
+      component.setFormData(testQuestion);
+      // Act: select the test treatment question
+      await radioButtonGroup.checkRadioButton({
+        label: testQuestion['short_question_text'],
+      });
+
+      expect(component.goalsForm?.get('selectedQuestion')?.value).toEqual(
+        testQuestion
+      );
+      let checked = await radioButtonGroup.getCheckedValue();
+      expect(checked).toBe(testQuestion.toString());
+    });
+
+    it('should set the value of the form again if treatment goals emits a change', async () => {
+      const radioButtonGroup = await loader.getHarness(
+        MatRadioGroupHarness.with({ name: 'treatmentGoalSelect' })
+      );
+      component.setFormData(testQuestion);
+      // Act: select the test treatment question
+      await radioButtonGroup.checkRadioButton({
+        label: testQuestion['short_question_text'],
+      });
+      // form should be checked.
+      let checked = await radioButtonGroup.getCheckedValue();
+      expect(checked).toBe(testQuestion.toString());
+
+      const question: TreatmentQuestionConfig = {
+        ...testQuestion,
+        ...{ short_question_text: 'asdas' },
+      };
+      // different treatment goals
+      treatmentGoals$.next([
+        { category_name: 'test category', questions: [question] },
+      ]);
+
+      // form should NOT be checked - treatment goals are different
+      checked = await radioButtonGroup.getCheckedValue();
+      expect(checked).toBe(null);
+
+      // same as original but a shallow copy
+      treatmentGoals$.next([
+        { category_name: 'test category', questions: [{ ...testQuestion }] },
+      ]);
+
+      // form should be checked - treatment goals are now the same
+      checked = await radioButtonGroup.getCheckedValue();
+      expect(checked).toBe(testQuestion.toString());
+    });
   });
 });
