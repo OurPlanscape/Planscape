@@ -33,3 +33,12 @@ export const PROJECT_AREA_COLORS = [
 ];
 
 export const DEFAULT_AREA_COLOR = '#4965c7';
+
+export const EXCLUDED_AREA_OPTIONS = [
+  'National Forests',
+  'National Parks',
+  'Private Land',
+  'State Parks',
+  'Tribal Lands',
+  'Wilderness Area',
+];

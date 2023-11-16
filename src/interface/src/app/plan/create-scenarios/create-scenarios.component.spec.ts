@@ -13,6 +13,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import {
   Region,
   Scenario,
+  ScenarioResult,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from 'src/app/types';
@@ -25,11 +26,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ScenarioService } from '../../services/scenario.service';
 import { PlanState, PlanStateService } from '../../services/plan-state.service';
+import { CurrencyPipe } from '@angular/common';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
  * 'configures proper priorities and weights based on chosen treatment question'
- * 'creates scenario when createScenario is called'
  * 'creates Project Areas when user uploads Project Area shapefile'
  */
 
@@ -52,9 +53,38 @@ describe('CreateScenariosComponent', () => {
     name: 'name',
     planning_area: '1',
     configuration: {},
+    scenario_result: {
+      status: 'PENDING',
+      completed_at: '0',
+      result: {
+        features: [],
+        type: 'test',
+      },
+    },
   };
 
+  let fakePlanState$: BehaviorSubject<PlanState>;
+  let fakeGetScenario: BehaviorSubject<Scenario>;
+
   beforeEach(async () => {
+    fakePlanState$ = new BehaviorSubject<PlanState>({
+      all: {
+        '1': {
+          id: '1',
+          ownerId: 'fakeowner',
+          name: 'testplan',
+          region: Region.SIERRA_NEVADA,
+        },
+      },
+      currentPlanId: '1',
+      currentScenarioId: null,
+      mapConditionLayer: null,
+      mapShapes: null,
+      legendUnits: null,
+    });
+
+    fakeGetScenario = new BehaviorSubject(fakeScenario);
+
     fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
       'ScenarioService',
       {
@@ -65,24 +95,12 @@ describe('CreateScenariosComponent', () => {
     fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
       'PlanStateService',
       {
-        getScenario: of(fakeScenario),
+        getScenario: fakeGetScenario,
+        getMetricData: of(null),
+        updateStateWithShapes: undefined,
       },
       {
-        planState$: new BehaviorSubject<PlanState>({
-          all: {
-            '1': {
-              id: '1',
-              ownerId: 'fakeowner',
-              name: 'testplan',
-              region: Region.SIERRA_NEVADA,
-            },
-          },
-          currentPlanId: '1',
-          currentScenarioId: '1',
-          mapConditionLayer: null,
-          mapShapes: null,
-          legendUnits: null,
-        }),
+        planState$: fakePlanState$,
         setPlanRegion: () => {},
         treatmentGoalsConfig$: new BehaviorSubject<
           TreatmentGoalConfig[] | null
@@ -113,6 +131,7 @@ describe('CreateScenariosComponent', () => {
       ],
       declarations: [CreateScenariosComponent],
       providers: [
+        CurrencyPipe,
         { provide: PlanStateService, useValue: fakePlanStateService },
         { provide: ScenarioService, useValue: fakeScenarioService },
       ],
@@ -130,13 +149,20 @@ describe('CreateScenariosComponent', () => {
   });
 
   it('should load existing scenario', () => {
+    const scenarioId = 'fakeScenarioId';
+    fakePlanState$.next({
+      ...fakePlanState$.value,
+      ...{ currentScenarioId: scenarioId },
+    });
     spyOn(component, 'pollForChanges');
     fixture.detectChanges();
-    expect(fakePlanStateService.getScenario).toHaveBeenCalledOnceWith('1');
-    component.formGroups[2].valueChanges.subscribe((_) => {
-      expect(component.formGroups[2].get('budgetForm.maxCost')?.value).toEqual(
-        100
-      );
+    expect(fakePlanStateService.getScenario).toHaveBeenCalledOnceWith(
+      scenarioId
+    );
+    component.constrainsForm?.valueChanges.subscribe((_) => {
+      expect(
+        component.constrainsForm?.get('budgetForm.maxCost')?.value
+      ).toEqual(100);
     });
   });
 
@@ -145,25 +171,22 @@ describe('CreateScenariosComponent', () => {
       // spy on polling to avoid dealing with async and timeouts
       spyOn(component, 'pollForChanges');
       fixture.detectChanges();
-      component.selectedTabIndex = 0;
+      component.selectedTab = 0;
     });
 
     it('should emit create scenario event on Generate button click', async () => {
       spyOn(component, 'createScenario');
 
-      component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
-      component.formGroups[1]
-        .get('selectedQuestion')
-        ?.setValue(defaultSelectedQuestion);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxSlope')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.minDistanceFromRoad')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxArea')
-        ?.setValue(5300);
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.scenarioNameFormField?.markAsDirty();
+
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 5300,
+      });
+
       fixture.detectChanges();
 
       const buttonHarness: MatButtonHarness = await loader.getHarness(
@@ -180,9 +203,9 @@ describe('CreateScenariosComponent', () => {
       const buttonHarness: MatButtonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
       );
-      component.formGroups[1].markAsDirty();
-      component.formGroups[2]
-        .get('physicalConstraintForm.minDistanceFromRoad')
+      component.prioritiesForm?.markAsDirty();
+      component.constrainsForm
+        ?.get('physicalConstraintForm.minDistanceFromRoad')
         ?.setValue(-1);
       fixture.detectChanges();
 
@@ -196,19 +219,15 @@ describe('CreateScenariosComponent', () => {
       const buttonHarness: MatButtonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
       );
-      component.formGroups[0].get('scenarioName')?.setValue('scenarioName');
-      component.formGroups[1]
-        .get('selectedQuestion')
-        ?.setValue(defaultSelectedQuestion);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxSlope')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.minDistanceFromRoad')
-        ?.setValue(1);
-      component.formGroups[2]
-        .get('physicalConstraintForm.maxArea')
-        ?.setValue(1122);
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
+
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 1122,
+      });
+
       component.generatingScenario = false;
       fixture.detectChanges();
 
@@ -372,8 +391,14 @@ describe('CreateScenariosComponent', () => {
   });
 
   describe('polling', () => {
+    beforeEach(() => {
+      fakePlanState$.next({
+        ...fakePlanState$.value,
+        ...{ currentScenarioId: 'fakeScenarioId' },
+      });
+      spyOn(component, 'loadConfig').and.callThrough();
+    });
     it('should poll for changes if status is pending', fakeAsync(() => {
-      spyOn(component, 'loadConfig');
       component.scenarioState = 'PENDING';
       fixture.detectChanges();
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
@@ -384,8 +409,15 @@ describe('CreateScenariosComponent', () => {
     }));
 
     it('should not poll for changes if status is not pending', fakeAsync(() => {
-      spyOn(component, 'loadConfig');
-      component.scenarioState = 'NOT_STARTED';
+      const results: ScenarioResult = {
+        ...(fakeScenario.scenario_result as ScenarioResult),
+        ...{ status: 'SUCCESS' },
+      };
+      fakeGetScenario.next({
+        ...fakeScenario,
+        ...{ scenario_result: results },
+      });
+
       fixture.detectChanges();
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
       tick(POLLING_INTERVAL);

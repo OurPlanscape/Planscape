@@ -1,10 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import {
-  FormBuilder,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from 'src/app/material/material.module';
@@ -37,46 +32,8 @@ describe('ConstraintsPanelComponent', () => {
     fixture = TestBed.createComponent(ConstraintsPanelComponent);
     component = fixture.componentInstance;
 
-    var excludedAreasOptions = [
-      'Private Land',
-      'National Forests and Parks',
-      'Wilderness Area',
-      'Tribal Lands',
-    ];
-    var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    excludedAreasOptions.forEach((area: string) => {
-      excludedAreasChosen[area] = [false, Validators.required];
-    });
-    const fb = fixture.componentRef.injector.get(FormBuilder);
-    component.constraintsForm = fb.group({
-      treatmentForm: fb.group({
-        // Max area treated as a % of planning area
-        maxArea: ['', [Validators.min(0), Validators.max(90)]],
-      }),
-      budgetForm: fb.group({
-        // Estimated cost in $ per acre
-        estimatedCost: [2470, [Validators.min(0), Validators.required]],
-        // Max cost of treatment for entire planning area
-        maxCost: ['', Validators.min(0)],
-      }),
-      physicalConstraintForm: fb.group({
-        // Maximum slope allowed for planning area
-        maxSlope: [37, Validators.min(0)],
-        // Minimum distance from road allowed for planning area
-        // TODO: Update variable name to minDistanceFromRoad
-        minDistanceFromRoad: [1000, Validators.min(0)],
-        // Maximum area to be treated in acres
-        maxArea: ['', [Validators.min(0)]],
-        standSize: ['LARGE', Validators.required],
-      }),
-      excludedAreasForm: fb.group(excludedAreasChosen),
-      excludeAreasByDegrees: [false],
-      excludeAreasByDistance: [false],
-      excludeSlope: [''],
-      excludeDistance: [''],
-    });
-
     fixture.detectChanges();
+    component.createForm();
   });
 
   it('should create', () => {

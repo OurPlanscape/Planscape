@@ -13,6 +13,7 @@ export interface ScenarioConfig {
   max_slope?: number;
   max_treatment_area_ratio?: number;
   min_distance_from_road?: number;
+  // TODO is this even being used??
   project_areas?: ProjectArea[];
   treatment_question?: TreatmentQuestionConfig | null;
   excluded_areas?: string[];
@@ -64,4 +65,17 @@ export interface ProjectArea {
   owner?: string;
   estimatedAreaTreated?: number;
   actualAcresTreated?: number;
+}
+
+export interface PriorityRow {
+  selected?: boolean;
+  visible?: boolean; // Visible as raster data on map
+  expanded?: boolean; // Children in table are not hidden
+  hidden?: boolean; // Row hidden from table (independent of "visible" attribute)
+  disabled?: boolean; // Cannot be selected (because ancestor is selected)
+  conditionName: string;
+  displayName?: string;
+  filepath: string;
+  children: PriorityRow[];
+  level: number;
 }
