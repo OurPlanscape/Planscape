@@ -14,7 +14,7 @@ packages <- c(
   "rjson",
   "glue",
   "purrr",
-  "logger",
+  "logger"
 )
 
 install.packages(packages)
