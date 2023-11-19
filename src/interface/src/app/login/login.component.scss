@@ -24,15 +24,38 @@
 }
 
 h1 {
-  font-family: 'Roboto';
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 32px;
-
   &.signin-title {
     margin-bottom: 48px;
     text-align: center;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 30px;
+    font-family: 'Public Sans';
+    font-weight: 600;
+    line-height: 32px;
+    color: #202124;
   }
+}
+
+mat-label {
+  text-align: left;
+  vertical-align: middle;
+  font-size: 16px;
+  font-family: 'Public Sans';
+  line-height: 22px;
+  color: #4a4a4a;
+  padding-bottom: 1em;
+  padding-right: 1em;
+}
+
+.required-blurb {
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+  font-family: Public Sans;
+  font-style: italic;
+  line-height: 22px;
+  color: #898888;
 }
 
 button {
@@ -49,12 +72,11 @@ mat-form-field {
 
 p {
   color: #888888;
-  font-family: 'Roboto';
+  font-family: 'Public Sans', 'Roboto';
   font-size: 13px;
   font-weight: 400;
   line-height: 20px;
   text-align: center;
-
 }
 
 .disclaimer-text {
@@ -66,7 +88,7 @@ p {
 
   p {
     color: white;
-    font-family: 'Roboto';
+    font-family: 'Public Sans', 'Roboto';
     font-size: 13px;
     font-weight: 500;
     line-height: 20px;
@@ -75,10 +97,14 @@ p {
 }
 
 .forget-password-link {
-  margin-bottom: 20px;
-  color: gray;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 16px;
+  font-family: 'Public Sans';
+  line-height: 26px;
   text-decoration: underline;
-  align-content: center;
+  color: #064bba;
+  padding-top: 26px;
 }
 
 .info-text-container {
@@ -111,6 +137,45 @@ h3 {
 .mat-error {
   margin-top: 10px;
   text-align: center;
+}
+
+.login-error-box {
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 12px 10px;
+  padding-bottom: 5px;
+  background-color: rgba(245, 245, 245, 0.4000000059604645);
+  border: 1px solid #d50000;
+  margin-top: 5px;
+  margin-bottom: 1em;
+}
+
+.login-error-icon {
+  padding-left: 0;
+  padding-right: 0.2em;
+  float: left;
+}
+
+.login-error-heading {
+  float: left;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+  font-family: 'Public Sans';
+  line-height: 20px;
+  color: #d50000;
+}
+
+.login-error-details {
+  text-align: left;
+  vertical-align: middle;
+  font-size: 14px;
+  font-family: Public Sans;
+  line-height: 22px;
+  color: #4a4a4a;
 }
 
 .post-error-option {

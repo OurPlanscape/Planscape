@@ -14,7 +14,7 @@ import {
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  protected accountError = '';
+  protected loginError = '';
   protected offerReverify: boolean = false;
 
   form: FormGroup;
@@ -65,12 +65,18 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe(
       (_) => this.router.navigate(['home']),
       (error) => {
+        // determine the cause of the error...
+        // present the user with the strings that we decided for UX, rather than
+        //  the errors provided by the backend and dj-rest-auth 
         const errorMsg: string = error.error.global[0];
         if (errorMsg === 'E-mail is not verified.') {
-          this.accountError = 'Please check your email to verify your account.';
+          this.loginError = 'Please check your email to verify your account.';
           this.offerReverify = true;
+        } else if (errorMsg === 'Unable to log in with provided credentials.') {
+          this.loginError = 'Either the user name or password that you have entered is incorrect. Please try again.';
+          this.offerReverify = false;
         } else {
-          this.accountError = errorMsg;
+          this.loginError = errorMsg;
         }
       }
     );

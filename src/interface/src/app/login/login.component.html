@@ -1,26 +1,52 @@
 <div class="signin-root">
   <div class="signin-card-container">
+    <div class="planscape--white--logo">
+      <div class="logo">
+        <img src="" />
+        <div class="text">
+          <img src="" />
+        </div>
+      </div>
+    </div>
+
     <div class="signin-card">
       <h1 class="signin-title">Sign in to Planscape</h1>
 
       <form [formGroup]="form" (ngSubmit)="login()">
+        <mat-label
+          >Email
+          <span class="required-blurb">required</span>
+        </mat-label>
         <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
           <input type="text" required formControlName="email" matInput />
         </mat-form-field>
 
+        <mat-label
+          >Password
+          <span class="required-blurb">required</span>
+        </mat-label>
         <mat-form-field appearance="fill">
-          <mat-label>Password</mat-label>
           <input type="password" required formControlName="password" matInput />
         </mat-form-field>
-        <p>
-          <a
-            class="forget-password-link"
-            i18n="Text on a button to reset password"
-            href="reset/">
-            Forgot password?
-          </a>
-        </p>
+
+        <div class="login-error-box" *ngIf="loginError">
+          <p class="login-error-heading">
+            <mat-icon class="warning-icon login-error-icon">warning</mat-icon>
+            CREDENTIALS ERROR
+          </p>
+          <p class="login-error-details">
+            {{ loginError }}
+
+            <a
+              *ngIf="offerReverify"
+              clickable
+              [routerLink]="[]"
+              (click)="resendVerification()"
+              >Click here to re-send your verification email.</a
+            >
+          </p>
+        </div>
+
         <mat-card-actions class="login-form-buttons">
           <button
             mat-flat-button
@@ -31,6 +57,13 @@
             Sign in
           </button>
         </mat-card-actions>
+
+        <p class="forget-password-link">
+          <a i18n="Text on a button to reset password" href="reset/">
+            Forgot your password?
+          </a>
+        </p>
+
         <div class="login-form-buttons">
           <button
             mat-stroked-button
@@ -49,14 +82,6 @@
             Create an Account
           </button>
         </div>
-        <mat-error class="mat-error" *ngIf="accountError">
-          {{ accountError }}
-          <div *ngIf="offerReverify" class="post-error-option">
-            <a clickable [routerLink]="[]" (click)="resendVerification()"
-              >Click here to re-send your verification email.</a
-            >
-          </div>
-        </mat-error>
       </form>
     </div>
 
