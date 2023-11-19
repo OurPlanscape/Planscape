@@ -1,88 +1,91 @@
 <div class="signin-root">
   <div class="signin-card-container">
-    <div class="planscape--white--logo">
-      <div class="logo">
-        <img src="" />
-        <div class="text">
-          <img src="" />
+    <div class="signin-subcontainer">
+      <div class="signin-card-logo">
+        <div class="planscape-white-logo">
+          <img src="assets/svg/planscape-white-logo.svg" alt="planscape logo" />
         </div>
       </div>
-    </div>
 
-    <div class="signin-card">
-      <h1 class="signin-title">Sign in to Planscape</h1>
+      <div class="signin-card">
+        <h1 class="signin-title">Sign in to Planscape</h1>
 
-      <form [formGroup]="form" (ngSubmit)="login()">
-        <mat-label
-          >Email
-          <span class="required-blurb">required</span>
-        </mat-label>
-        <mat-form-field appearance="fill">
-          <input type="text" required formControlName="email" matInput />
-        </mat-form-field>
+        <form [formGroup]="form" (ngSubmit)="login()">
+          <mat-label
+            >Email
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="fill">
+            <input type="text" required formControlName="email" matInput />
+          </mat-form-field>
 
-        <mat-label
-          >Password
-          <span class="required-blurb">required</span>
-        </mat-label>
-        <mat-form-field appearance="fill">
-          <input type="password" required formControlName="password" matInput />
-        </mat-form-field>
+          <mat-label
+            >Password
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="fill">
+            <input
+              type="password"
+              required
+              formControlName="password"
+              matInput />
+          </mat-form-field>
 
-        <div class="login-error-box" *ngIf="loginError">
-          <p class="login-error-heading">
-            <mat-icon class="warning-icon login-error-icon">warning</mat-icon>
-            CREDENTIALS ERROR
+          <div class="login-error-box" *ngIf="loginError">
+            <p class="login-error-heading">
+              <mat-icon class="warning-icon login-error-icon">warning</mat-icon>
+              CREDENTIALS ERROR
+            </p>
+            <p class="login-error-details">
+              {{ loginError }}
+
+              <a
+                *ngIf="offerReverify"
+                clickable
+                [routerLink]="[]"
+                (click)="resendVerification()"
+                >Click here to re-send your verification email.</a
+              >
+            </p>
+          </div>
+
+          <mat-card-actions class="login-form-buttons">
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              [disabled]="!form.valid"
+              class="login-form-button">
+              Sign in
+            </button>
+          </mat-card-actions>
+
+          <p class="forget-password-link">
+            <a i18n="Text on a button to reset password" href="reset/">
+              Forgot your password?
+            </a>
           </p>
-          <p class="login-error-details">
-            {{ loginError }}
 
-            <a
-              *ngIf="offerReverify"
-              clickable
-              [routerLink]="[]"
-              (click)="resendVerification()"
-              >Click here to re-send your verification email.</a
-            >
-          </p>
-        </div>
-
-        <mat-card-actions class="login-form-buttons">
-          <button
-            mat-flat-button
-            color="primary"
-            type="submit"
-            [disabled]="!form.valid"
-            class="login-form-button">
-            Sign in
-          </button>
-        </mat-card-actions>
-
-        <p class="forget-password-link">
-          <a i18n="Text on a button to reset password" href="reset/">
-            Forgot your password?
-          </a>
-        </p>
-
-        <div class="login-form-buttons">
-          <button
-            mat-stroked-button
-            color="primary"
-            data-id="explore"
-            [routerLink]="'/map'"
-            class="login-form-button">
-            Explore
-          </button>
-          <button
-            mat-stroked-button
-            color="primary"
-            data-id="create-account"
-            [routerLink]="'/signup'"
-            class="login-form-button">
-            Create an Account
-          </button>
-        </div>
-      </form>
+          <div class="login-form-buttons">
+            <button
+              mat-stroked-button
+              color="primary"
+              data-id="explore"
+              [routerLink]="'/map'"
+              class="login-form-button">
+              Explore
+            </button>
+            <button
+              mat-stroked-button
+              color="primary"
+              data-id="create-account"
+              [routerLink]="'/signup'"
+              class="login-form-button">
+              Create an Account
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div class="disclaimer-text">

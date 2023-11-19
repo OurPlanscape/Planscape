@@ -11,6 +11,23 @@
   width: 50%;
 }
 
+.signin-subcontainer {
+  flex-direction: column;
+  margin: auto;
+  height: 90%;
+}
+
+.signin-card-logo {
+  display: flex;
+  padding: 1em;
+}
+
+.planscape-white-logo {
+  margin: auto;
+  height: 42px;
+  width: 246px;
+}
+
 .signin-card {
   margin: auto;
   width: 300px;
