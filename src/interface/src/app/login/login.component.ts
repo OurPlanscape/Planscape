@@ -69,6 +69,7 @@ export class LoginComponent {
         // present the user with the strings that we decided for UX, rather than
         //  the errors provided by the backend and dj-rest-auth
         const errorMsg: string = error.error.global[0];
+        this.form.setErrors({ error: errorMsg });
         if (errorMsg === 'E-mail is not verified.') {
           this.loginError = 'Please check your email to verify your account.';
           this.offerReverify = true;
