@@ -350,6 +350,400 @@
           ]
         }
       ]
+    },
+    {
+      "region_name": "southern-california",
+      "treatment_goals": [
+        {
+          "category_name": "Fire Dynamics",
+          "questions": [
+            {
+              "long_question_text": "What areas have the greatest probability of high severity fire?",
+              "short_question_text": "High-severity Fire Areas",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "hazard",
+                  "functional_fire",
+                  "severity",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition"
+                ],
+                "metrics": [
+                  "structure_exposure_score",
+                  "housing_unit_density",
+                  "wildland_urban_interface",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "wildlife_species_richness",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "probability_of_fire_severity_high"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "annual_burn_probability",
+                "predicted_ignition_probability_human_caused"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "annual_burn_probability > 0",
+                "wildfire_ignitions_human_caused > 0",
+                "predicted_ignition_probability_lightning_caused > 0",
+                "(mean_fri_departure_condition_class == 2 || mean_fri_departure_condition_class == 3)"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "Where are the best opportunities to effectively reduce fire risk within the Wildland Urban Interface? ",
+              "short_question_text": "Reduce WUI Fire Risk",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "hazard",
+                  "functional_fire",
+                  "severity",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition"
+                ],
+                "metrics": [
+                  "housing_unit_density",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "wildlife_species_richness",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "probability_of_fire_severity_high",
+                  "structure_exposure_score",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "structure_exposure_score",
+                "wui_damage_potential"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "structure_exposure_score != 1",
+                "wui_damage_potential != 0",
+                "(wildland_urban_interface == 1 || wildland_urban_interface == 2)"
+              ],
+              "global_thresholds": []
+            }
+          ]
+        },
+        {
+          "category_name": "Biodiversity",
+          "questions": [
+            {
+              "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to riparian habitats",
+              "short_question_text": "Reduce Fire Risk to Riparian Habitat",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity_conservation",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity",
+                  "fire_adapted_communities"
+                ],
+                "elements": [
+                  "species_diversity",
+                  "functional_fire",
+                  "severity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition",
+                  "hazard"
+                ],
+                "metrics": [
+                  "threatened_endangered_vertebrate_species_richness",
+                  "wildlife_species_richness",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "structure_exposure_score",
+                  "housing_unit_density",
+                  "probability_of_fire_severity_high"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "Where are the best/priority opportunities to effectively reduce high severity fire risk to California Spotted Owl habitat?",
+              "short_question_text": "Reduce Fire Risk in Owl Habitat",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity_conservation",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity",
+                  "fire_adapted_communities"
+                ],
+                "elements": [
+                  "species_diversity",
+                  "functional_fire",
+                  "severity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition",
+                  "hazard"
+                ],
+                "metrics": [
+                  "threatened_endangered_vertebrate_species_richness",
+                  "wildlife_species_richness",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "structure_exposure_score",
+                  "housing_unit_density",
+                  "probability_of_fire_severity_high"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "wildlife_species_richness == 0",
+                "probability_of_fire_severity_high > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
+              "short_question_text": "Wildlife Richness Exposure to Fire",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity_conservation",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity",
+                  "fire_adapted_communities"
+                ],
+                "elements": [
+                  "species_diversity",
+                  "functional_fire",
+                  "severity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition",
+                  "hazard"
+                ],
+                "metrics": [
+                  "threatened_endangered_vertebrate_species_richness",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "structure_exposure_score",
+                  "housing_unit_density",
+                  "probability_of_fire_severity_high",
+                  "wildlife_species_richness"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "wildlife_species_richness"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "wildlife_species_richness > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
+              "short_question_text": "Threatened/Endangered Species Exposure to Fire",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity_conservation",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity",
+                  "fire_adapted_communities"
+                ],
+                "elements": [
+                  "species_diversity",
+                  "functional_fire",
+                  "severity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition",
+                  "hazard"
+                ],
+                "metrics": [
+                  "threatened_endangered_vertebrate_species_richness",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "wildlife_species_richness",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "structure_exposure_score",
+                  "housing_unit_density",
+                  "probability_of_fire_severity_high"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "threatened_endangered_vertebrate_species_richness > 0"
+              ],
+              "global_thresholds": []
+            }
+          ]
+        },
+        {
+          "category_name": "Carbon/Biomass",
+          "questions": [
+            {
+              "long_question_text": "What areas support high above ground live carbon and are exposed to high severity fire potential?",
+              "short_question_text": "Areas with Long-term Carbon Storage",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity_conservation",
+                  "fire_dynamics",
+                  "economic_diversity",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity",
+                  "fire_adapted_communities"
+                ],
+                "elements": [
+                  "species_diversity",
+                  "functional_fire",
+                  "severity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "environmental_justice",
+                  "composition",
+                  "hazard"
+                ],
+                "metrics": [
+                  "threatened_endangered_vertebrate_species_richness",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "annual_burn_probability",
+                  "wildlife_species_richness",
+                  "mountain_lion",
+                  "coastal_california_gnatcatcher",
+                  "mountain_yellow_legged_frog",
+                  "california_red_legged_frog",
+                  "joshua_tree",
+                  "hermes_copper_butterfly",
+                  "cost_of_potential_treatments",
+                  "tribal_land_designations",
+                  "aquatic_species_richness",
+                  "structure_exposure_score",
+                  "housing_unit_density",
+                  "probability_of_fire_severity_high"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "total_aboveground_carbon > 0"
+              ],
+              "global_thresholds": []
+            }
+          ]
+        }
+      ]
     }
   ]
 }
