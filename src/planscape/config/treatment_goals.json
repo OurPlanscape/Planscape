@@ -384,7 +384,6 @@
                   "housing_unit_density",
                   "wildland_urban_interface",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "wildlife_species_richness",
                   "threatened_endangered_vertebrate_species_richness",
@@ -410,7 +409,6 @@
                 "probability_of_fire_severity_high > 0",
                 "annual_burn_probability > 0",
                 "wildfire_ignitions_human_caused > 0",
-                "predicted_ignition_probability_lightning_caused > 0",
                 "(mean_fri_departure_condition_class == 2 || mean_fri_departure_condition_class == 3)"
               ],
               "global_thresholds": []
@@ -440,7 +438,6 @@
                 "metrics": [
                   "housing_unit_density",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "wildlife_species_richness",
                   "threatened_endangered_vertebrate_species_richness",
@@ -503,7 +500,6 @@
                   "threatened_endangered_vertebrate_species_richness",
                   "wildlife_species_richness",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
@@ -554,7 +550,6 @@
                   "threatened_endangered_vertebrate_species_richness",
                   "wildlife_species_richness",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
@@ -605,7 +600,6 @@
                 "metrics": [
                   "threatened_endangered_vertebrate_species_richness",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
@@ -658,7 +652,6 @@
                 "metrics": [
                   "threatened_endangered_vertebrate_species_richness",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "wildlife_species_richness",
                   "mountain_lion",
@@ -714,7 +707,6 @@
                 "metrics": [
                   "threatened_endangered_vertebrate_species_richness",
                   "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightning_caused",
                   "annual_burn_probability",
                   "wildlife_species_richness",
                   "mountain_lion",
