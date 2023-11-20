@@ -1,35 +1,27 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import {
-  BehaviorSubject,
-  catchError,
-  interval,
-  NEVER,
-  Observable,
-  take,
-} from 'rxjs';
+import { BehaviorSubject, catchError, interval, NEVER, take } from 'rxjs';
 import {
   Plan,
   Scenario,
-  ScenarioConfig,
   ScenarioResult,
   ScenarioResultStatus,
-  TreatmentGoalConfig,
 } from 'src/app/types';
-import features from '../../features/features.json';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlanStateService } from '../../services/plan-state.service';
 import { SNACK_ERROR_CONFIG } from '../../shared/constants';
+import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
+import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
+import { FeatureService } from '../../features/feature.service';
+
+enum ScenarioTabs {
+  CONFIG,
+  RESULTS,
+}
 
 @UntilDestroy()
 @Component({
@@ -39,29 +31,17 @@ import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 })
 export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
-  selectedTabIndex = 0;
+  selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
   scenarioId?: string | null;
+  planId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
 
-  formGroups: FormGroup[];
-  nameFormGroup: FormGroup<any>;
-  treatmentGoalGroup: FormGroup<any>;
-  constraintsFormGroup: FormGroup<any>;
-  projectAreaGroup: FormGroup<any>;
+  forms: FormGroup = this.fb.group({});
 
-  treatmentGoals$: Observable<TreatmentGoalConfig[] | null>;
-
-  excludedAreasOptions: Array<string> = [
-    'National Forests',
-    'National Parks',
-    'Private Land',
-    'State Parks',
-    'Tribal Lands',
-    'Wilderness Area',
-  ];
-
-  project_area_upload_enabled = features.upload_project_area;
+  project_area_upload_enabled = this.featureService.isFeatureEnabled(
+    'upload_project_area'
+  );
 
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
@@ -75,82 +55,41 @@ export class CreateScenariosComponent implements OnInit {
 
   tabAnimation = this.tabAnimationOptions.off;
 
+  @ViewChild(SetPrioritiesComponent, { static: true })
+  prioritiesComponent!: SetPrioritiesComponent;
+
+  @ViewChild(ConstraintsPanelComponent, { static: true })
+  constraintsPanelComponent!: ConstraintsPanelComponent;
+
   constructor(
     private fb: FormBuilder,
     private planStateService: PlanStateService,
     private router: Router,
-    private matSnackBar: MatSnackBar
-  ) {
-    this.treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
-      untilDestroyed(this)
-    );
+    private matSnackBar: MatSnackBar,
+    private featureService: FeatureService
+  ) {}
 
-    var excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    this.excludedAreasOptions.forEach((area: string) => {
-      excludedAreasChosen[area] = [false, Validators.required];
-    });
-    // TODO Move form builders to their corresponding components rather than passing as input
-    // TODO Name groups to make easier to access (instead of having to use index)
-    // Initialize empty form
-    this.formGroups = [
-      // Step 1: Name the scenario
-      this.fb.group({
-        scenarioName: [, Validators.required],
-      }),
-      // Step 2: Select priorities
-      this.fb.group({
-        selectedQuestion: ['', Validators.required],
-      }),
-      // Step 3: Set constraints
-      this.fb.group(
-        {
-          budgetForm: this.fb.group({
-            // Estimated cost in $ per acre
-            estimatedCost: [2470, Validators.min(0)],
-            // Max cost of treatment for entire planning area
-            // Initially disabled, estimatedCost is required as input before maxCost is enabled
-            maxCost: ['', Validators.min(0.01)],
-          }),
-          physicalConstraintForm: this.fb.group({
-            // TODO Update if needed once we have confirmation if this is the correct default %
-            // Maximum slope allowed for planning area
-            maxSlope: [, [Validators.min(0), Validators.max(100)]],
-            // Minimum distance from road allowed for planning area
-            minDistanceFromRoad: [, [Validators.min(0)]],
-            // Maximum area to be treated in acres
-            // Using 500 as minimum for now. Ideally the minimum should be based on stand size.
-            maxArea: ['', [Validators.min(500)]],
-            // Stand Size selection
-            standSize: ['LARGE', Validators.required],
-          }),
-          excludedAreasForm: this.fb.group(excludedAreasChosen),
-          excludeAreasByDegrees: [true],
-          excludeAreasByDistance: [true],
-        },
-        { validators: this.constraintsFormValidator }
-      ),
-      // Step 4: Identify project areas
-      this.fb.group({
-        // TODO Use flag to set required validator
+  createForms() {
+    this.forms = this.fb.group({
+      scenarioName: [null, Validators.required],
+      priorities: this.prioritiesComponent.createForm(),
+      constrains: this.constraintsPanelComponent.createForm(),
+      projectAreas: this.fb.group({
         generateAreas: [''],
         uploadedArea: [''],
       }),
-    ];
-
-    //TODO Change this.formGroups into a formGroup to be able to set child form group names on creation
-    this.nameFormGroup = this.formGroups[0];
-    this.treatmentGoalGroup = this.formGroups[1];
-    this.constraintsFormGroup = this.formGroups[2];
-    this.projectAreaGroup = this.formGroups[3];
+    });
   }
 
   ngOnInit(): void {
+    this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.planStateService.planState$
       .pipe(untilDestroyed(this))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
+        this.planId = planState.currentPlanId;
         if (this.plan$.getValue()?.region) {
           this.planStateService.setPlanRegion(this.plan$.getValue()?.region!);
         }
@@ -158,10 +97,11 @@ export class CreateScenariosComponent implements OnInit {
 
     if (this.scenarioId) {
       // Has to be outside service subscription or else will cause infinite loop
+      this.scenarioState = 'LOADING';
       this.loadConfig();
       this.pollForChanges();
       // if we have an id go to the results tab.
-      this.selectedTabIndex = 1;
+      this.selectedTab = ScenarioTabs.RESULTS;
     } else {
       // enable animation
       this.tabAnimation = this.tabAnimationOptions.on;
@@ -169,9 +109,11 @@ export class CreateScenariosComponent implements OnInit {
 
     // When an area is uploaded, issue an event to draw it on the map.
     // If the "generate areas" option is selected, remove any drawn areas.
-    this.projectAreaGroup.valueChanges.subscribe((_) => {
-      const generateAreas = this.projectAreaGroup.get('generateAreas');
-      const uploadedArea = this.projectAreaGroup.get('uploadedArea');
+    this.projectAreasForm?.valueChanges.subscribe((_) => {
+      const generateAreas = this.forms
+        .get('projectAreas')
+        ?.get('generateAreas');
+      const uploadedArea = this.projectAreasForm?.get('uploadedArea');
       if (generateAreas?.value) {
         this.drawShapes(null);
       } else {
@@ -194,18 +136,7 @@ export class CreateScenariosComponent implements OnInit {
       });
   }
 
-  private constraintsFormValidator(
-    constraintsForm: AbstractControl
-  ): ValidationErrors | null {
-    // Only one of budget or treatment area constraints is required.
-    const maxCost = constraintsForm.get('budgetForm.maxCost');
-    const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
-    const valid = !!maxCost?.value || !!maxArea?.value;
-    return valid ? null : { budgetOrAreaRequired: true };
-  }
-
   loadConfig(): void {
-    this.scenarioState = this.scenarioId ? 'PENDING' : 'LOADING';
     this.planStateService
       .getScenario(this.scenarioId!)
       .subscribe((scenario) => {
@@ -213,14 +144,16 @@ export class CreateScenariosComponent implements OnInit {
         if (this.scenarioState === scenario.scenario_result?.status) {
           return;
         }
+
+        this.disableForms();
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
-          this.disableForms();
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
-          this.selectedTabIndex = 1;
+
+          this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
             this.processScenarioResults(scenario);
           }
@@ -228,138 +161,40 @@ export class CreateScenariosComponent implements OnInit {
           this.tabAnimation = this.tabAnimationOptions.on;
         }
 
-        var config = scenario.configuration;
-
-        this.excludedAreasOptions.forEach((area: string) => {
-          if (
-            config.excluded_areas &&
-            config.excluded_areas.indexOf(area) > -1
-          ) {
-            this.constraintsFormGroup
-              .get('excludedAreasForm.' + area)
-              ?.setValue(true);
-          } else {
-            this.constraintsFormGroup
-              .get('excludedAreasForm.' + area)
-              ?.setValue(false);
-          }
-        });
-
+        //setting name
         if (scenario.name) {
-          this.nameFormGroup.get('scenarioName')?.setValue(scenario.name);
+          this.scenarioNameFormField?.setValue(scenario.name);
         }
-        if (config.est_cost) {
-          this.constraintsFormGroup
-            .get('budgetForm.estimatedCost')
-            ?.setValue(config.est_cost);
+        // setting treatment question
+        if (scenario.configuration.treatment_question) {
+          this.prioritiesComponent.setFormData(
+            scenario.configuration.treatment_question
+          );
         }
-        if (config.max_budget) {
-          this.constraintsFormGroup
-            .get('budgetForm.maxCost')
-            ?.setValue(config.max_budget);
-        }
-        if (config.max_treatment_area_ratio) {
-          this.constraintsFormGroup
-            .get('physicalConstraintForm.maxArea')
-            ?.setValue(config.max_treatment_area_ratio);
-        }
-        if (config.min_distance_from_road) {
-          this.constraintsFormGroup
-            .get('physicalConstraintForm.minDistanceFromRoad')
-            ?.setValue(config.min_distance_from_road);
-        }
-        if (config.max_slope) {
-          this.constraintsFormGroup
-            .get('physicalConstraintForm.maxSlope')
-            ?.setValue(config.max_slope);
-        }
-        if (config.treatment_question) {
-          this.treatmentGoalGroup
-            .get('selectedQuestion')
-            ?.setValue(config.treatment_question);
-        }
-
-        if (config.stand_size) {
-          this.constraintsFormGroup
-            .get('physicalConstraintForm.standSize')
-            ?.setValue(config.stand_size);
-        }
+        // setting constraints
+        this.constraintsPanelComponent.setFormData(scenario.configuration);
       });
   }
 
   private formValueToScenario(): Scenario {
-    const estimatedCost = this.constraintsFormGroup.get(
-      'budgetForm.estimatedCost'
-    );
-    const maxCost = this.constraintsFormGroup.get('budgetForm.maxCost');
-    const maxArea = this.constraintsFormGroup.get(
-      'physicalConstraintForm.maxArea'
-    );
-    const minDistanceFromRoad = this.constraintsFormGroup.get(
-      'physicalConstraintForm.minDistanceFromRoad'
-    );
-    const maxSlope = this.constraintsFormGroup.get(
-      'physicalConstraintForm.maxSlope'
-    );
-    const selectedQuestion = this.treatmentGoalGroup.get('selectedQuestion');
-    const scenarioName = this.nameFormGroup.get('scenarioName');
-
-    let scenarioNameConfig: string = '';
-    let plan_id: string = '';
-    this.planStateService.planState$
-      .pipe(untilDestroyed(this))
-      .subscribe((planState) => {
-        plan_id = planState.currentPlanId!;
-      });
-    let scenarioConfig: ScenarioConfig = {};
-
-    scenarioConfig.stand_size = this.constraintsFormGroup.get(
-      'physicalConstraintForm.standSize'
-    )?.value;
-    scenarioConfig.excluded_areas = [];
-    this.excludedAreasOptions.forEach((area: string) => {
-      if (
-        this.constraintsFormGroup.get('excludedAreasForm.' + area)?.valid &&
-        this.constraintsFormGroup.get('excludedAreasForm.' + area)?.value
-      ) {
-        scenarioConfig.excluded_areas?.push(area);
-      }
-    });
-    if (estimatedCost?.valid)
-      scenarioConfig.est_cost = parseFloat(estimatedCost.value);
-    if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
-    if (maxArea?.valid) {
-      scenarioConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
-    }
-    if (minDistanceFromRoad?.valid) {
-      scenarioConfig.min_distance_from_road = parseFloat(
-        minDistanceFromRoad.value
-      );
-    }
-    if (maxSlope?.valid) scenarioConfig.max_slope = parseFloat(maxSlope.value);
-    if (selectedQuestion?.valid) {
-      scenarioConfig.treatment_question = selectedQuestion.value;
-    }
-    if (scenarioName?.valid) {
-      scenarioNameConfig = scenarioName.value;
-    }
-
     return {
-      name: scenarioNameConfig,
-      planning_area: plan_id,
-      configuration: scenarioConfig,
+      name: this.scenarioNameFormField?.value,
+      planning_area: this.planId || '', // nope I should have planID
+      configuration: {
+        ...this.constraintsPanelComponent.getFormData(),
+        ...this.prioritiesComponent.getFormData(),
+      },
     };
   }
 
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
-    this.formGroups.forEach((form) => form.markAllAsTouched());
-    if (this.formGroups.some((form) => form.invalid)) {
+    this.forms.markAllAsTouched();
+    if (this.forms.invalid) {
       return;
     }
     this.generatingScenario = true;
-    // TODO Add error catching for failed scenario creation
     this.planStateService
       .createScenario(this.formValueToScenario())
       .pipe(
@@ -373,7 +208,7 @@ export class CreateScenariosComponent implements OnInit {
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
-        this.selectedTabIndex = 1;
+        this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
       });
 
@@ -410,9 +245,9 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   disableForms() {
-    this.formGroups[0].disable();
-    this.formGroups[1].disable();
-    this.formGroups[2].disable();
+    this.scenarioNameFormField?.disable();
+    this.prioritiesForm?.disable();
+    this.constrainsForm?.disable();
   }
 
   // createUploadedProjectAreas() {
@@ -502,5 +337,21 @@ export class CreateScenariosComponent implements OnInit {
 
   goBackToPlanning() {
     this.router.navigate(['plan', this.plan$.value?.id]);
+  }
+
+  get projectAreasForm(): FormGroup {
+    return this.forms.get('projectAreas') as FormGroup;
+  }
+
+  get scenarioNameFormField() {
+    return this.forms.get('scenarioName');
+  }
+
+  get prioritiesForm() {
+    return this.forms.get('priorities');
+  }
+
+  get constrainsForm() {
+    return this.forms.get('constrains');
   }
 }

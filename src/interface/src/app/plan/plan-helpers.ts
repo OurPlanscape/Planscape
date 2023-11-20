@@ -1,6 +1,12 @@
 import area from '@turf/area';
 import { FeatureCollection } from 'geojson';
-import { ScenarioResult } from '../types';
+import {
+  ConditionsConfig,
+  PriorityRow,
+  ScenarioResult,
+  TreatmentGoalConfig,
+  TreatmentQuestionConfig,
+} from '../types';
 import {
   ProjectAreaReport,
   ProjectTotalReport,
@@ -63,4 +69,70 @@ export function getColorForProjectPosition(position: number) {
     return DEFAULT_AREA_COLOR;
   }
   return PROJECT_AREA_COLORS[(position - 1) % PROJECT_AREA_COLORS.length];
+}
+
+export function findQuestionOnTreatmentGoalsConfig(
+  treatmentGoalConfigs: TreatmentGoalConfig[],
+  treatmentQuestion: TreatmentQuestionConfig
+) {
+  let selectedQuestion: TreatmentQuestionConfig | undefined;
+  treatmentGoalConfigs.some((goal) => {
+    selectedQuestion = goal.questions.find(
+      (question) =>
+        question.short_question_text === treatmentQuestion?.short_question_text
+    );
+    return !!selectedQuestion;
+  });
+  return selectedQuestion;
+}
+
+export function conditionsConfigToPriorityData(
+  config: ConditionsConfig
+): PriorityRow[] {
+  let data: PriorityRow[] = [];
+  config.pillars
+    ?.filter((pillar) => pillar.display)
+    .forEach((pillar) => {
+      let pillarRow: PriorityRow = {
+        conditionName: pillar.pillar_name!,
+        displayName: pillar.display_name,
+        filepath: pillar.filepath! ? pillar.filepath.concat('_normalized') : '',
+        children: [],
+        level: 0,
+        expanded: false,
+      };
+      data.push(pillarRow);
+      pillar.elements
+        ?.filter((element) => element.display)
+        .forEach((element) => {
+          let elementRow: PriorityRow = {
+            conditionName: element.element_name!,
+            displayName: element.display_name,
+            filepath: element.filepath
+              ? element.filepath.concat('_normalized')
+              : '',
+            children: [],
+            level: 1,
+            expanded: false,
+            hidden: true,
+          };
+          data.push(elementRow);
+          pillarRow.children.push(elementRow);
+          element.metrics
+            ?.filter((metric) => !!metric.filepath)
+            .forEach((metric) => {
+              let metricRow: PriorityRow = {
+                conditionName: metric.metric_name!,
+                displayName: metric.display_name,
+                filepath: metric.filepath!.concat('_normalized'),
+                children: [],
+                level: 2,
+                hidden: true,
+              };
+              data.push(metricRow);
+              elementRow.children.push(metricRow);
+            });
+        });
+    });
+  return data;
 }
