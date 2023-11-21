@@ -396,6 +396,7 @@
                   "cost_of_potential_treatments",
                   "tribal_land_designations",
                   "aquatic_species_richness",
+                  "mean_fri_departure_condition_class",
                   "probability_of_fire_severity_high"
                 ]
               },
