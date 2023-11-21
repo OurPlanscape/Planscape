@@ -18,19 +18,9 @@
           <mat-form-field appearance="outline">
             <input type="text" required formControlName="email" matInput />
           </mat-form-field>
-          <div class="field-alert-box" *ngIf="emailError">
-            <div style="height: 0.8em; width: 100%">
-              <h1 class="login-error-heading">
-                <mat-icon class="warning-icon login-error-icon">
-                  warning
-                </mat-icon>
-                EMAIL ERROR
-              </h1>
-            </div>
-            <div class="field-alert-details">
-              {{ emailError }}
-            </div>
-          </div>
+          <app-field-alert
+            message="{{ emailError }}"
+            title="email error"></app-field-alert>
 
           <mat-label
             >Password
@@ -43,19 +33,9 @@
               formControlName="password"
               matInput />
           </mat-form-field>
-          <div class="field-alert-box" *ngIf="passwordError">
-            <div style="height: 0.8em; width: 100%">
-              <h1 class="login-error-heading">
-                <mat-icon class="warning-icon login-error-icon">
-                  warning
-                </mat-icon>
-                PASSWORD ERROR
-              </h1>
-            </div>
-            <div class="field-alert-details">
-              {{ passwordError }}
-            </div>
-          </div>
+          <app-field-alert
+            message="{{ passwordError }}"
+            title="password error"></app-field-alert>
 
           <div class="login-error-box" *ngIf="loginError">
             <p class="login-error-heading">

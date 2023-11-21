@@ -27,6 +27,7 @@ import { FieldAlertComponent } from './field-alert/field-alert.component';
     NavBarComponent,
     CurrencyInKPipe,
     TypeSafeMatCellDef,
+    FieldAlertComponent,
   ],
   imports: [
     CommonModule,
