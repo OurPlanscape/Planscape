@@ -14,8 +14,10 @@ import {
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  protected loginError = '';
   protected offerReverify: boolean = false;
+  protected loginError = '';
+  protected passwordError = null;
+  protected emailError = null;
 
   form: FormGroup;
 
