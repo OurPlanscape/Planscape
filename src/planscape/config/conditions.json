@@ -3,9 +3,9 @@
   "__comment_planning_sheet": "https://docs.google.com/spreadsheets/d/1Y4zsvrPtq5e6lxI8r04P-_CfWgmms4Ef9IlFGDEqm7I",
   "regions": [
     {
-      "region_name": "north-coast",
-      "display_name": "North Coast",
-      "region_geoserver_name": "north-coast",
+      "region_name": "northern-california",
+      "display_name": "Northern California",
+      "region_geoserver_name": "northern-california",
       "raw_data": true,
       "translated_data": false,
       "future_data": false,
@@ -25,7 +25,7 @@
                   "max_value": 999,
                   "metric_name": "slope",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forsys/slope.tif",
+                  "raw_data_download_path": "northern-california/forsys/slope.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "Landscape Fire and Resource Management Planning Tools",
@@ -38,7 +38,7 @@
                   "max_value": 999,
                   "metric_name": "distance_to_roads",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forsys/distance_to_roads.tif",
+                  "raw_data_download_path": "northern-california/forsys/distance_to_roads.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG-GIS",
@@ -51,7 +51,7 @@
                   "max_value": 999,
                   "metric_name": "distance_to_riparian",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forsys/distance_to_riparian.tif",
+                  "raw_data_download_path": "northern-california/forsys/distance_to_riparian.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG-GIS",
@@ -64,7 +64,7 @@
                   "max_value": 999,
                   "metric_name": "distance_to_spotted_owl",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forsys/distance_to_spotted_owl.tif",
+                  "raw_data_download_path": "northern-california/forsys/distance_to_spotted_owl.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG-GIS",
@@ -77,7 +77,7 @@
                   "max_value": 999,
                   "metric_name": "distance_to_wui",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forsys/distance_to_wui.tif",
+                  "raw_data_download_path": "northern-california/forsys/distance_to_wui.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG-GIS",
@@ -104,7 +104,7 @@
                   "max_value": 0.816,
                   "metric_name": "potential_total_smoke",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/airQuality/Tier1/PotentialTotalSmoke_202209.tif",
+                  "raw_data_download_path": "northern-california/airQuality/Tier1/PotentialTotalSmoke_202209.tif",
                   "raw_layer": ":airQuality_Tier1_PotentialTotalSmoke_202209",
                   "reference_link": "",
                   "source": "",
@@ -117,7 +117,7 @@
                   "max_value": 0.833,
                   "metric_name": "potential_avoided_smoke",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/airQuality/Tier1/PotentialAvoidedSmoke_202209.tif",
+                  "raw_data_download_path": "northern-california/airQuality/Tier1/PotentialAvoidedSmoke_202209.tif",
                   "raw_layer": ":airQuality_Tier1_PotentialAvoidedSmoke_202209",
                   "reference_link": "",
                   "source": "",
@@ -144,10 +144,10 @@
                   "max_value": 5,
                   "metric_name": "habitat_connectivity",
                   "min_value": 1,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier1/HabitatConnectivity_201908.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/HabitatConnectivity_201908.tif",
                   "raw_layer": ":bioDiverConserv_Tier1_HabitatConnectivity_201908",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -157,10 +157,10 @@
                   "max_value": 17,
                   "metric_name": "species_richness_cavity_nesters_excavators",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -170,10 +170,10 @@
                   "max_value": 29,
                   "metric_name": "species_richness_herbivores",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/herbivores_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/herbivores_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_herbivores_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -186,7 +186,7 @@
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/insectivores_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_insectivores_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -196,10 +196,10 @@
                   "max_value": 36,
                   "metric_name": "species_richness_predators",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/predators_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/predators_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_predators_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -209,10 +209,10 @@
                   "max_value": 16,
                   "metric_name": "species_richness_seed_spore_dispersers",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/seed_spore_dispersers_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/seed_spore_dispersers_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_seed_spore_dispersers_species_richness",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -222,10 +222,10 @@
                   "max_value": 10,
                   "metric_name": "species_richness_soil_aerators",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/soil_aerators_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/soil_aerators_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_soil_aerators_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -235,10 +235,10 @@
                   "max_value": 49,
                   "metric_name": "present_day_connectivity",
                   "min_value": 3,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier1/PresentDayConnectivity_Omniscape_202301.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/PresentDayConnectivity_Omniscape_202301.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_PresentDayConnectivity_Omniscape_202301",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -255,10 +255,10 @@
                   "max_value": 76,
                   "metric_name": "wildlife_species_richness",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/wildlife_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/wildlife_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -268,10 +268,10 @@
                   "max_value": 6,
                   "metric_name": "threatened_endangered_vertebrate_species_richness",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/t_e_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/t_e_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -281,10 +281,10 @@
                   "max_value": 9,
                   "metric_name": "forest_raptors_species_richness",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/forest_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/forest_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_forest_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -294,10 +294,10 @@
                   "max_value": 7,
                   "metric_name": "open_habitat_raptors_species_richness",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/open_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/open_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_open_species_richness_20304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -307,10 +307,10 @@
                   "max_value": 3,
                   "metric_name": "hummingbirds_species_richness",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/hummingbirds_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/hummingbirds_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_hummingbirds_species_richness_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -327,10 +327,10 @@
                   "max_value": 1,
                   "metric_name": "california_spotted_owl",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier3/SpottedOwl_habitat_suitability_CWHR_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier3/SpottedOwl_habitat_suitability_CWHR_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier3_SpottedOwl_habitat_suitability_CWHR_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -340,10 +340,10 @@
                   "max_value": 1,
                   "metric_name": "mountain_lion",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/Mountain_Lion_habitat_suitability_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Mountain_Lion_habitat_suitability_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Mountain_Lion_habitat_suitability_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -353,10 +353,10 @@
                   "max_value": 1,
                   "metric_name": "california_red-legged_frog",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier1/california_red_legged_frog_habitat_200106.tif ",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/california_red_legged_frog_habitat_200106.tif ",
                   "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat_200106",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -366,10 +366,10 @@
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_nesting_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/MarbledMurreletNestingHabitat_201709.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/MarbledMurreletNestingHabitat_201709.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletNestingHabitat_201709",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -379,10 +379,10 @@
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_critical_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/MarbledMurreletCriticalHabitat_201101.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/MarbledMurreletCriticalHabitat_201101.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletCriticalHabitat_201101",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -392,10 +392,10 @@
                   "max_value": 8628,
                   "metric_name": "north_spotted_owl_nesting_suitablity_index",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/NSO_NestRoost_Suitability_2023.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/NSO_NestRoost_Suitability_2023.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_NSO_NestRoost_Suitability_2023",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -405,10 +405,10 @@
                   "max_value": 1,
                   "metric_name": "north_spotted_owl_suitability_index",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/NSO_habitatSuitability_2023.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/NSO_habitatSuitability_2023.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_NSO_habitatSuitability_2023",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -418,10 +418,10 @@
                   "max_value": 12,
                   "metric_name": "north_spotted_owl_change_in_suitable_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier3/NSO_habitat_composite_2022.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier3/NSO_habitat_composite_2022.tif",
                   "raw_layer": ":bioDiverConserv_Tier3_NSO_habitat_composite_2022",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -431,10 +431,10 @@
                   "max_value": 100,
                   "metric_name": "north_spotted_owl_topo_climatic_fire_refugia",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier3/current_topoclim_refugia_2019.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier3/current_topoclim_refugia_2019.tif",
                   "raw_layer": ":bioDiverConserv_Tier3_current_topoclim_refugia_2019",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -444,10 +444,10 @@
                   "max_value": 1,
                   "metric_name": "northern_goshawk_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/Northern_Goshawk_habitat_suitability_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Northern_Goshawk_habitat_suitability_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Northern_Goshawk_habitat_suitability_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -457,10 +457,10 @@
                   "max_value": 1,
                   "metric_name": "pacific_fisher",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/Pacific_Fisher_habitat_suitability_raw_201306.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Pacific_Fisher_habitat_suitability_raw_201306.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Pacific_Fisher_habitat_suitability_raw_201306",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -470,10 +470,10 @@
                   "max_value": 1,
                   "metric_name": "humboldt_pacific_fisher",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/Humboldt_Marten_habitat_suitability_2020.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Humboldt_Marten_habitat_suitability_2020.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Humboldt_Marten_habitat_suitability_2020",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -483,10 +483,10 @@
                   "max_value": 1,
                   "metric_name": "chinook_salmon_critical_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/ChinookSalmonCriticalHabitat_200509.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/ChinookSalmonCriticalHabitat_200509.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_ChinookSalmonCriticalHabitat_200509",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -496,10 +496,10 @@
                   "max_value": 1,
                   "metric_name": "coho_salmon_critical_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/CohoSalmonCriticalHabitat_199905.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/CohoSalmonCriticalHabitat_199905.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_CohoSalmonCriticalHabitat_199905",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -509,10 +509,10 @@
                   "max_value": 1,
                   "metric_name": "steelhead_critical_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/SteelheadCriticalHabitat_200509.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/SteelheadCriticalHabitat_200509.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_SteelheadCriticalHabitat_200509",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -522,10 +522,10 @@
                   "max_value": 1,
                   "metric_name": "chinook_salmon_distribution",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/ChinookSalmonDistribution_200509.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/ChinookSalmonDistribution_200509.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_ChinookSalmonDistribution_200509",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -535,10 +535,10 @@
                   "max_value": 1,
                   "metric_name": "coho_salmon_distribution",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/CohoSalmonDistribution_202211.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/CohoSalmonDistribution_202211.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_CohoSalmonDistribution_202211",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -548,10 +548,10 @@
                   "max_value": 1,
                   "metric_name": "winter_steelhead_distribution",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/WinterSteelheadDistribution_201206.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/WinterSteelheadDistribution_201206.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_WinterSteelheadDistribution_201206",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -561,10 +561,10 @@
                   "max_value": 1,
                   "metric_name": "summer_steelhead_distribution",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/SummerSteelheadDistribution_200910.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/SummerSteelheadDistribution_200910.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_SummerSteelheadDistribution_200910",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -588,10 +588,10 @@
                   "max_value": 100000,
                   "metric_name": "total_aboveground_carbon",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/carbonSeq/Tier1/CStocks_Total_Above_202009.tif",
+                  "raw_data_download_path": "northern-california/carbonSeq/Tier1/CStocks_Total_Above_202009.tif",
                   "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_202009",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -608,10 +608,10 @@
                   "max_value": 200,
                   "metric_name": "aboveground_carbon_turnover_time",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/carbonSeq/Tier1/CStocks_Turnovertime_202009.tif",
+                  "raw_data_download_path": "northern-california/carbonSeq/Tier1/CStocks_Turnovertime_202009.tif",
                   "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_202009",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -635,10 +635,10 @@
                   "max_value": 5424,
                   "metric_name": "cost_of_biomass_treatment_low",
                   "min_value": 132,
-                  "raw_data_download_path": "north-coast/econDiversity/Tier2/biomassTreatmentCost_low.tif",
+                  "raw_data_download_path": "northern-california/econDiversity/Tier2/biomassTreatmentCost_low.tif",
                   "raw_layer": ":econDiversity_Tier2_biomassTreatmentCost_low",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -648,10 +648,10 @@
                   "max_value": 5490,
                   "metric_name": "cost_of_biomass_treatment_high",
                   "min_value": 142,
-                  "raw_data_download_path": "north-coast/econDiversity/Tier2/biomassTreatmentCost_high.tif",
+                  "raw_data_download_path": "northern-california/econDiversity/Tier2/biomassTreatmentCost_high.tif",
                   "raw_layer": ":econDiversity_Tier2_biomassTreatmentCost_high",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -661,10 +661,10 @@
                   "max_value": 2728,
                   "metric_name": "cost_of_sawlog_treatment_low",
                   "min_value": 66,
-                  "raw_data_download_path": "north-coast/econDiversity/Tier2/sawlogTreatmentCost_low.tif",
+                  "raw_data_download_path": "northern-california/econDiversity/Tier2/sawlogTreatmentCost_low.tif",
                   "raw_layer": ":econDiversity_Tier2_sawlogTreatmentCost_low",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -674,10 +674,10 @@
                   "max_value": 2735,
                   "metric_name": "cost_of_sawlog_treatment_high",
                   "min_value": 71,
-                  "raw_data_download_path": "north-coast/econDiversity/Tier2/sawlogTreatmentCost_high.tif",
+                  "raw_data_download_path": "northern-california/econDiversity/Tier2/sawlogTreatmentCost_high.tif",
                   "raw_layer": ":econDiversity_Tier2_sawlogTreatmentCost_high",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -687,10 +687,10 @@
                   "max_value": 430,
                   "metric_name": "biomass_residues",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/econDiversity/Tier1/BiomassResidues_201808.tif",
+                  "raw_data_download_path": "northern-california/econDiversity/Tier1/BiomassResidues_201808.tif",
                   "raw_layer": ":econDiversity_Tier2_BiomassResidues_201808",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -714,10 +714,10 @@
                   "max_value": 10,
                   "metric_name": "structure_exposure_score",
                   "min_value": 1,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/StructureExposureScore_WUI_202308_reclass.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/StructureExposureScore_WUI_202308_reclass.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_202308_reclass",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -727,10 +727,10 @@
                   "max_value": 5,
                   "metric_name": "wui_damage_potential",
                   "min_value": 1,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/DamagePotential_WUI_202308_reclass.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/DamagePotential_WUI_202308_reclass.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_202308_reclass",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -740,10 +740,10 @@
                   "max_value": 14.8,
                   "metric_name": "ember_load_index",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/EmberLoadIndex_202308.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/EmberLoadIndex_202308.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_EmberLoadIndex_202308",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -753,10 +753,10 @@
                   "max_value": 90,
                   "metric_name": "wildfire_ignitions",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -766,10 +766,10 @@
                   "max_value": 50,
                   "metric_name": "wildfire_ignitions_human_caused",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -779,10 +779,10 @@
                   "max_value": 3,
                   "metric_name": "wildfire_ignitions_nonhuman_caused",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -792,10 +792,10 @@
                   "max_value": 1.5,
                   "metric_name": "ember_load_to_buildings",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/SourceEmberLoadToBuildings_202308.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/SourceEmberLoadToBuildings_202308.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_SourceEmberLoadToBuildings_202308",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -805,10 +805,10 @@
                   "max_value": 98241,
                   "metric_name": "wildfire_hazard_potential",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/WildfireHazardPotential_202208.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WildfireHazardPotential_202208.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WildfireHazardPotential_202208",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -818,10 +818,10 @@
                   "max_value": 0.7,
                   "metric_name": "predicted_ignition_probability_human_caused",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier3/PredictedHumanIgnitionProb_1km_1992_2015.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier3/PredictedHumanIgnitionProb_1km_1992_2015.tif",
                   "raw_layer": ":fireAdaptComm_Tier3_PredictedHumanIgnitionProb_1km_1992_2015",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -831,10 +831,10 @@
                   "max_value": 0.8,
                   "metric_name": "predicted_ignition_probability_lightning_caused",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireAdaptComm/Tier3/PredictedLightningIgnitionProb_1km_1992_2015.tif",
+                  "raw_data_download_path": "northern-california/fireAdaptComm/Tier3/PredictedLightningIgnitionProb_1km_1992_2015.tif",
                   "raw_layer": ":fireAdaptComm_Tier3_PredictedLightningIgnitionProb_1km_1992_2015",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -858,10 +858,10 @@
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1908",
                   "min_value": -100,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier3/meanPFRID_2022.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier3/meanPFRID_2022.tif",
                   "raw_layer": ":fireDynamics_Tier3_meanPFRID_2022",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -871,10 +871,10 @@
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1970",
                   "min_value": -100,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier2/meanPFRID_1970_2022.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier2/meanPFRID_1970_2022.tif",
                   "raw_layer": ":fireDynamics_Tier2_meanPFRID_1970_2022",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -884,10 +884,10 @@
                   "max_value": 3,
                   "metric_name": "mean_fri_departure_condition_class",
                   "min_value": -3,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier3/meanCC_FRI_2022.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier3/meanCC_FRI_2022.tif",
                   "raw_layer": ":fireDynamics_Tier3_meanCC_FRI_2022",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -897,10 +897,10 @@
                   "max_value": 120,
                   "metric_name": "time_since_last_fire",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier2/TSLF_2022.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier2/TSLF_2022.tif",
                   "raw_layer": ":fireDynamics_Tier2_TSLF_2022",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -910,10 +910,10 @@
                   "max_value": 120,
                   "metric_name": "fri_departure_since_1908",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier3/currentFRI_2022.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier3/currentFRI_2022.tif",
                   "raw_layer": ":fireDynamics_Tier3_currentFRI_2022",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -943,10 +943,10 @@
                   "max_value": 1,
                   "metric_name": "annual_burn_probability",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier1/AnnualBurnProbability_202308.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier1/AnnualBurnProbability_202308.tif",
                   "raw_layer": ":fireDynamics_Tier1_AnnualBurnProbability_202308",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -956,10 +956,10 @@
                   "max_value": 1,
                   "metric_name": "probability_of_fire_severity_high",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/fireDynamics/Tier1/ProbabilityHighFireSev_202308.tif",
+                  "raw_data_download_path": "northern-california/fireDynamics/Tier1/ProbabilityHighFireSev_202308.tif",
                   "raw_layer": ":fireDynamics_Tier1_ProbabilityHighFireSev_202308",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -983,10 +983,10 @@
                   "max_value": 100,
                   "metric_name": "live_tree_density_24_30in_dbh",
                   "min_value": 1,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier2/LargeTreeDensity_24in_30in_202006.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier2/LargeTreeDensity_24in_30in_202006.tif",
                   "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_24in_30in_202006",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -996,10 +996,10 @@
                   "max_value": 100,
                   "metric_name": "live_tree_density_30_40in_dbh",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier2/LargeTreeDensity_30in_40in_202006.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier2/LargeTreeDensity_30in_40in_202006.tif",
                   "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_30in_40in_202006",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1009,10 +1009,10 @@
                   "max_value": 100,
                   "metric_name": "live_tree_density_>40in_dbh",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier2/LargeTreeDensity_gt40in_202006.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier2/LargeTreeDensity_gt40in_202006.tif",
                   "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_gt40in_202006",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1022,10 +1022,10 @@
                   "max_value": 9,
                   "metric_name": "canopy_layers",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
                   "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1035,10 +1035,10 @@
                   "max_value": 80,
                   "metric_name": "canopy_height",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
                   "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1048,10 +1048,10 @@
                   "max_value": 100,
                   "metric_name": "canopy_cover",
                   "min_value": 1,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
                   "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -1068,10 +1068,10 @@
                   "max_value": 1,
                   "metric_name": "tree_cover",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/VegCover_Tree_2021.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/VegCover_Tree_2021.tif",
                   "raw_layer": ":forestShrubResil_Tier1_VegCover_Tree_2021",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1081,10 +1081,10 @@
                   "max_value": 1,
                   "metric_name": "shrub_cover",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/VegCover_Shrub_2021.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/VegCover_Shrub_2021.tif",
                   "raw_layer": ":forestShrubResil_Tier1_VegCover_Shrub_2021",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1094,10 +1094,10 @@
                   "max_value": 1,
                   "metric_name": "herbaceous_cover",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/VegCover_Herb_2021.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/VegCover_Herb_2021.tif",
                   "raw_layer": ":forestShrubResil_Tier1_VegCover_Herb_2021",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1110,7 +1110,7 @@
                   "raw_data_download_path": "central-coast/forestShrubResil/Tier2/SeralStage_EML_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_SeralStage_EML_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1120,10 +1120,10 @@
                   "max_value": 1,
                   "metric_name": "seral_stage_early",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier2/early_SeralStage_prop_202304.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier2/early_SeralStage_prop_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_early_SeralStage_prop_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1133,10 +1133,10 @@
                   "max_value": 1,
                   "metric_name": "seral_stage_late",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier2/late_SeralStage_prop_202304.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier2/late_SeralStage_prop_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_late_SeralStage_prop_202304",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -1153,10 +1153,10 @@
                   "max_value": 1.5,
                   "metric_name": "cumulative_tree_cover_loss",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/DistHist_Severe_Tree_19912020.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/DistHist_Severe_Tree_19912020.tif",
                   "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Tree_19922021",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1166,10 +1166,10 @@
                   "max_value": 1.4,
                   "metric_name": "cumulative_shrub_cover_lost",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/DistHist_Severe_Shrub_19912020.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/DistHist_Severe_Shrub_19912020.tif",
                   "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Shrub_19922021",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1179,10 +1179,10 @@
                   "max_value": 20000,
                   "metric_name": "risk_of_tree_dieoff_during_drought",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier1/Vulner_TreeDieoff_SPI-2_2021.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier1/Vulner_TreeDieoff_SPI-2_2021.tif",
                   "raw_layer": ":forestShrubResil_Tier1_Vulner_TreeDieoff_SPI-2_2021",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1192,10 +1192,10 @@
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_baseline",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier3/hst8110.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier3/hst8110.tif",
                   "raw_layer": ":forestShrubResil_Tier3_hst8110",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1205,10 +1205,10 @@
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_early_century",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier3/miroc_85_1039.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier3/miroc_85_1039.tif",
                   "raw_layer": ":forestShrubResil_Tier3_miroc_85_1039",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1218,10 +1218,10 @@
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_mid-century",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier3/miroc_85_4069.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier3/miroc_85_4069.tif",
                   "raw_layer": ":forestShrubResil_Tier3_miroc_85_4069",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1231,7 +1231,7 @@
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_late_century",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier3/miroc_85_7099.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier3/miroc_85_7099.tif",
                   "raw_layer": ":forestShrubResil_Tier3_miroc_85_7099",
                   "reference_link": "",
                   "source": "Central Coast Regional Resource Kit",
@@ -1244,10 +1244,10 @@
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_miroc_and_cnrm-cm5",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/forestShrubResil/Tier3/combine85_all7_reclass.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier3/combine85_all7_reclass.tif",
                   "raw_layer": ":forestShrubResil_Tier3_combine85_all7_reclass",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -1271,10 +1271,10 @@
                   "max_value": 100,
                   "metric_name": "poverty_percentile",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier1/Poverty_Pctl_202110.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier1/Poverty_Pctl_202110.tif",
                   "raw_layer": ":socialCultural_Tier1_Poverty_Pctl_202110",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1284,10 +1284,10 @@
                   "max_value": 100,
                   "metric_name": "housing_burden_percentile",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier1/HousingBurdenPctl_202110.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier1/HousingBurdenPctl_202110.tif",
                   "raw_layer": ":socialCultural_Tier1_HousingBurdenPctl_202110",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1297,10 +1297,10 @@
                   "max_value": 100,
                   "metric_name": "unemployment_percentile",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier1/Unemployment_Pctl_202110.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier1/Unemployment_Pctl_202110.tif",
                   "raw_layer": ":socialCultural_Tier1_Unemployment_Pctl",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1310,10 +1310,10 @@
                   "max_value": 8,
                   "metric_name": "american_indian_alaska_native_concentration",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/AmericanIndian_202109.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/AmericanIndian_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1323,10 +1323,10 @@
                   "max_value": 7,
                   "metric_name": "hispano_latino_concentration",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/AmericanIndian_202109.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/AmericanIndian_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1336,10 +1336,10 @@
                   "max_value": 8,
                   "metric_name": "black_african_concentration",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/Black_202109.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/Black_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_Black_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1349,10 +1349,10 @@
                   "max_value": 6,
                   "metric_name": "hispanic_black_indigenous_concentration",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/HSPBIPOC_202109.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/HSPBIPOC_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_HSPBIPOC_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1362,10 +1362,10 @@
                   "max_value": 8,
                   "metric_name": "asian_concentration",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/Asian_202109.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/Asian_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_Asian_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1375,10 +1375,10 @@
                   "max_value": 9,
                   "metric_name": "low_income_population",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/LowIncome_202203.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/LowIncome_202203.tif",
                   "raw_layer": ":socialCultural_Tier2_LowIncome_202203",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1388,10 +1388,10 @@
                   "max_value": 49,
                   "metric_name": "low_income_population",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/BIA_AIAN_LAR_202309.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/BIA_AIAN_LAR_202309.tif",
                   "raw_layer": ":socialCultural_Tier2_BIA_AIAN_LAR_202309",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1401,10 +1401,10 @@
                   "max_value": 2,
                   "metric_name": "american_indian_lands",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/socialCultural/Tier2/SB535tribalboundaries202205.tif",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/SB535tribalboundaries202205.tif",
                   "raw_layer": ":socialCultural_Tier2_SB535tribalboundaries202205",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -1428,10 +1428,10 @@
                   "max_value": 20,
                   "metric_name": "actual_evapotranspiration_fraction_drought_conditions",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/waterSecurity/Tier1/WaterFlux_AETFrac_SPI-2_202109.tif",
+                  "raw_data_download_path": "northern-california/waterSecurity/Tier1/WaterFlux_AETFrac_SPI-2_202109.tif",
                   "raw_layer": ":waterSecurity_Tier1_WaterFlux_AETFrac_SPI-2_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1441,10 +1441,10 @@
                   "max_value": 1500,
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
                   "min_value": -2000,
-                  "raw_data_download_path": "north-coast/waterSecurity/Tier1/WaterFlux_Runoff_SPI0_202109.tif",
+                  "raw_data_download_path": "northern-california/waterSecurity/Tier1/WaterFlux_Runoff_SPI0_202109.tif",
                   "raw_layer": ":waterSecurity_Tier1_WaterFlux_Runoff_SPI0_202109",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1454,10 +1454,10 @@
                   "max_value": 1,
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/waterSecurity/Tier3/i08_B118_CA_GroundwaterBasins.tif",
+                  "raw_data_download_path": "northern-california/waterSecurity/Tier3/i08_B118_CA_GroundwaterBasins.tif",
                   "raw_layer": ":waterSecurity_Tier3_i08_B118_CA_GroundwaterBasins",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -1474,10 +1474,10 @@
                   "max_value": 100,
                   "metric_name": "percent_impervious_surface",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/waterSecurity/Tier1/nlcd_2019_imperviousPercent_CA.tif",
+                  "raw_data_download_path": "northern-california/waterSecurity/Tier1/nlcd_2019_imperviousPercent_CA.tif",
                   "raw_layer": ":waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
@@ -1501,10 +1501,10 @@
                   "max_value": 107,
                   "metric_name": "aquatic_species_richness",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/wetlandInteg/Tier1/aquatic_species_richness_2018.tif",
+                  "raw_data_download_path": "northern-california/wetlandInteg/Tier1/aquatic_species_richness_2018.tif",
                   "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1514,10 +1514,10 @@
                   "max_value": 8,
                   "metric_name": "wetland_diversity",
                   "min_value": 1,
-                  "raw_data_download_path": "north-coast/wetlandInteg/Tier1/NWI_WetlandsType_2018_30m.tif",
+                  "raw_data_download_path": "northern-california/wetlandInteg/Tier1/NWI_WetlandsType_2018_30m.tif",
                   "raw_layer": ":wetlandInteg_Tier1_NWI_WetlandsType_2018_30m",
                   "reference_link": "",
-                  "source": "North Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
                 {
@@ -1527,10 +1527,10 @@
                   "max_value": 1,
                   "metric_name": "riparian_habitat",
                   "min_value": 0,
-                  "raw_data_download_path": "north-coast/wetlandInteg/Tier1/RiparianAreas10m_2019.tif",
+                  "raw_data_download_path": "northern-california/wetlandInteg/Tier1/RiparianAreas10m_2019.tif",
                   "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
                   "reference_link": "",
-                  "source": "Northc Coast Regional Resource Kit",
+                  "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
               ]
