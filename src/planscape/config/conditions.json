@@ -367,7 +367,7 @@
                   "metric_name": "marbled_murrelet_nesting_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/MarbledMurreletNestingHabitat_201709.tif",
-                  "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletNestingHabitat_201709.tif",
+                  "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletNestingHabitat_201709",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -380,7 +380,7 @@
                   "metric_name": "marbled_murrelet_critical_habitat",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/bioDiverConserv/Tier2/MarbledMurreletCriticalHabitat_201101.tif",
-                  "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletCriticalHabitat_201101.tif",
+                  "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletCriticalHabitat_201101",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -589,7 +589,7 @@
                   "metric_name": "total_aboveground_carbon",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/carbonSeq/Tier1/CStocks_Total_Above_202009.tif",
-                  "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_202009.tif",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_202009",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -609,7 +609,7 @@
                   "metric_name": "aboveground_carbon_turnover_time",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/carbonSeq/Tier1/CStocks_Turnovertime_202009.tif",
-                  "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_202009.tif",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_202009",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -780,7 +780,7 @@
                   "metric_name": "wildfire_ignitions_nonhuman_caused",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -898,7 +898,7 @@
                   "metric_name": "time_since_last_fire",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/fireDynamics/Tier2/TSLF_2022.tif",
-                  "raw_layer": ":fireDynamics_Tier2_TSLF_2022.tif",
+                  "raw_layer": ":fireDynamics_Tier2_TSLF_2022",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -1311,7 +1311,7 @@
                   "metric_name": "american_indian_alaska_native_concentration",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/socialCultural/Tier2/AmericanIndian_202109.tif",
-                  "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109.tif",
+                  "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -1324,7 +1324,7 @@
                   "metric_name": "hispano_latino_concentration",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/socialCultural/Tier2/AmericanIndian_202109.tif",
-                  "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109.tif",
+                  "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -1402,7 +1402,7 @@
                   "metric_name": "american_indian_lands",
                   "min_value": 0,
                   "raw_data_download_path": "north-coast/socialCultural/Tier2/SB535tribalboundaries202205.tif",
-                  "raw_layer": ":socialCultural_Tier2_SB535tribalboundaries202205.tif",
+                  "raw_layer": ":socialCultural_Tier2_SB535tribalboundaries202205",
                   "reference_link": "",
                   "source": "North Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
