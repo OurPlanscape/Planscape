@@ -16,9 +16,20 @@
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input type="text" required formControlName="email" matInput />
+            <input
+              type="text"
+              required
+              formControlName="email"
+              matInput
+              (blur)="checkEmailErrors()" />
           </mat-form-field>
           <app-field-alert
+            [visible]="
+              this.form.controls['email'].errors !== null &&
+              this.form.controls['email'].value.length > 0
+                ? true
+                : false
+            "
             message="{{ emailError }}"
             title="email error"></app-field-alert>
 

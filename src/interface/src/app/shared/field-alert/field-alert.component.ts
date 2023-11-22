@@ -13,7 +13,7 @@ export class FieldAlertComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    if (this.message) {
+    if (this.message !== '') {
       this.visible = true;
     }
   }
