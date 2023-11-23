@@ -26,15 +26,7 @@
   width: auto;
   box-shadow: 0px 3px 0px 0px #aeb0b8;
   background-color: white;
-  margin-top: 10px;
-  border: 1px #a4aae0 solid;
-  border-radius: 10px;
-  display: inline-block;
-  height: auto;
-  width: auto;
   padding-bottom: 5px;
-  box-shadow: 0px 3px 0px 0px #aeb0b8;
-  background-color: white;
 }
 
 .form-label {
@@ -79,6 +71,10 @@
   margin-bottom: 1px;
 }
 
-::ng-deep .mat-radio-label {
-  width: fit-content;
+:host {
+  ::ng-deep .mat-radio-label {
+    width: fit-content;
+  }
 }
+
+
