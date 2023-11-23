@@ -6,6 +6,7 @@ import { AuthService } from '../services';
 import {
   SNACK_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
+  EMAIL_VALIDATION_REGEX
 } from '../../app/shared/constants';
 
 @Component({
@@ -35,7 +36,7 @@ export class LoginComponent {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
         Validators.required,
-        Validators.email,
+        Validators.pattern(EMAIL_VALIDATION_REGEX)
       ]),
       password: this.formBuilder.control('', Validators.required),
     });
