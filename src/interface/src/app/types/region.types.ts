@@ -24,6 +24,7 @@ const availableRegions = new Set([
   Region.SIERRA_NEVADA,
   features.show_socal ? Region.SOUTHERN_CALIFORNIA : null,
   features.show_centralcoast ? Region.CENTRAL_COAST : null,
+  features.show_north_cal ? Region.NORTHERN_CALIFORNIA : null,
 ]);
 
 export const regionOptions = regions.map((region) => {
