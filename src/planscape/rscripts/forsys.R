@@ -515,7 +515,8 @@ remove_duplicates <- function(dataframe) {
 export_input <- function(scenario, stand_data) {
   output_dir <- get_output_dir(scenario)
   output_file <- paste0(output_dir, "/inputs.csv")
-  st_write(stand_data, output_file, layer_options="GEOMETRY=AS_WKT", append = FALSE, geometry_name = "geometry")
+  layer_options <- c("GEOMETRY=AS_WKT")
+  st_write(stand_data, output_file, layer_options=layer_options, append = FALSE)
 }
 
 call_forsys <- function(
