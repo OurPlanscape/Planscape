@@ -44,10 +44,10 @@ export const EXCLUDED_AREA_OPTIONS = [
 ];
 
 /**
-* @desc This RegEx matches the built-in email validation regex used by Django's
-* built-in validation.
-* 
-* Keeping these in sync reduces the possibility that an email format 
-* that's accepted by Angular is rejected by the backend.
-*/
+ * @desc This RegEx matches the built-in email validation regex used by Django's
+ * built-in validation.
+ *
+ * Keeping these in sync reduces the possibility that an email format
+ * that's accepted by Angular is rejected by the backend.
+ */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
