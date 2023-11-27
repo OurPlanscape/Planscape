@@ -75,6 +75,10 @@ get_connection <- function() {
   return(connection)
 }
 
+get_output_dir <- function(scenario) {
+  return (paste0(getwd(), "/output/", scenario$uuid))
+}
+
 get_scenario_data <- function(connection, scenario_id) {
   query <- "SELECT
               s.id,
@@ -508,6 +512,13 @@ remove_duplicates <- function(dataframe) {
   return(dataframe[!duplicated(dataframe), ])
 }
 
+export_input <- function(scenario, stand_data) {
+  output_dir <- get_output_dir(scenario)
+  output_file <- paste0(output_dir, "/inputs.csv")
+  layer_options <- c("GEOMETRY=AS_WKT")
+  st_write(stand_data, output_file, layer_options=layer_options, append = FALSE)
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -571,6 +582,7 @@ call_forsys <- function(
     patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
   )
+  export_input(scenario, stand_data)
   return(out)
 }
 
