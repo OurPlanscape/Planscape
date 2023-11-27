@@ -6,6 +6,12 @@
   scenario. Please review your constraints and try again.
 </div>
 <div class="actions">
+  <button mat-raised-button (click)="downloadCsv()" data-id="downloadCsv">
+    Download CSV data
+  </button>
+</div>
+
+<div class="actions">
   <a mat-raised-button color="primary" (click)="goBack.emit()" class="return">
     RETURN TO SCENARIOS
   </a>

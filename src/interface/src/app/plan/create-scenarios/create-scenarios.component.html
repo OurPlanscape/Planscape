@@ -67,7 +67,9 @@
             </app-scenario-results>
             <app-scenario-failure
               *ngSwitchCase="'FAILURE'"
-              (goBack)="goBackToPlanning()"></app-scenario-failure>
+              (goBack)="goBackToPlanning()"
+              [scenarioName]="scenarioNameFormField?.value"
+              [scenarioId]="scenarioId!"></app-scenario-failure>
           </ng-container>
         </mat-tab>
       </mat-tab-group>
