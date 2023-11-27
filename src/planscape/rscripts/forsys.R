@@ -516,7 +516,7 @@ export_input <- function(scenario, stand_data) {
   output_dir <- get_output_dir(scenario)
   output_file <- paste0(output_dir, "/inputs.csv")
   layer_options <- c("GEOMETRY=AS_WKT")
-  st_write(stand_data, output_file, layer_options=layer_options, append = FALSE)
+  st_write(stand_data, output_file, layer_options=layer_options, append = FALSE, delete_dsn = TRUE)
 }
 
 call_forsys <- function(
@@ -565,11 +565,12 @@ call_forsys <- function(
 
   log_info(paste("Thresholds configured:", stand_thresholds))
 
+  export_input(scenario, stand_data)
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
-    overwrite_output = TRUE,
-    # scenario_name = scenario$name,
+    overwrite_output = FALSE,
     scenario_name = scenario$uuid, # using UUID here instead of name
     scenario_output_fields = c(outputs$condition_name, "area_acres"),
     scenario_priorities = scenario_priorities,
@@ -582,7 +583,6 @@ call_forsys <- function(
     patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
   )
-  export_input(scenario, stand_data)
   return(out)
 }
 
