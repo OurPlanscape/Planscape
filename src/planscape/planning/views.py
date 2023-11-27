@@ -398,11 +398,6 @@ def download_csv(request: HttpRequest) -> HttpResponse:
         )
 
     scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
-    if scenario_result.status != ScenarioResultStatus.SUCCESS:
-        return HttpResponse(
-            "Scenario was not successful, data cannot be downloaded.",
-            status=424,
-        )
 
     try:
         output_zip_name: str = str(scenario.uuid) + ".zip"

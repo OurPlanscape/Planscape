@@ -1780,7 +1780,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"Scenario files cannot be read")
 
-    def test_get_scenario_without_success_status(self):
+    def test_get_scenario_without_success_status_still_returns_data(self):
         self.client.force_login(self.user)
         self.scenario_result.status = ScenarioResultStatus.FAILURE
         self.scenario_result.save()
@@ -1790,11 +1790,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
             {"id": self.scenario.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 424)
-        self.assertRegex(
-            str(response.content),
-            r"Scenario was not successful, data cannot be downloaded.",
-        )
+        self.assertEqual(response.status_code, 200)
 
     def test_get_scenario_nonexistent_scenario(self):
         self.client.force_login(self.user)
