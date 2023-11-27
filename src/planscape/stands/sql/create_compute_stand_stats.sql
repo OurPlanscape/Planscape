@@ -6,7 +6,7 @@ CREATE TYPE stand_stats AS (
     min          DOUBLE PRECISION,
     avg          DOUBLE PRECISION,
     max          DOUBLE PRECISION,
-    SUM          DOUBLE PRECISION,
+    sum          DOUBLE PRECISION,
     count        BIGINT
 );
 
