@@ -21,12 +21,13 @@
               required
               formControlName="email"
               matInput
-              (blur)="checkEmailErrors()" />
+              (blur)="checkEmailErrors()"
+              (keyup)="clearEmailErrors()" />
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.form.controls['email'].errors !== null &&
-              this.form.controls['email'].value.length > 0
+              this.emailError !== '' &&
+              this.form.controls['email'].errors !== null
                 ? true
                 : false
             "
@@ -55,7 +56,6 @@
             </p>
             <p class="login-error-details">
               {{ loginError }}
-
               <a
                 *ngIf="offerReverify"
                 clickable
