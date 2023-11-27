@@ -4,6 +4,7 @@
   "show_centralcoast": true,
   "show_future_control_panel": false,
   "show_socal": true,
+  "show_north_cal": false,
   "show_translated_control_panel": false,
   "testFalseFeature": false,
   "testTrueFeature": true,
