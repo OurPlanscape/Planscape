@@ -22,7 +22,7 @@ const regionToGeojsonMap: Record<Region, Record<string, string>> = {
     boundary: 'assets/geojson/sierra_nevada_region.geojson',
   },
   [Region.CENTRAL_COAST]: {
-    boundary: 'assets/geojson/central_california_region.geojson',
+    boundary: 'assets/geojson/central_coast_region.geojson',
   },
   [Region.NORTHERN_CALIFORNIA]: {
     boundary: 'assets/geojson/northern_california_region.geojson',
@@ -150,6 +150,7 @@ export class MapService {
 
     return vector;
   }
+
   // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
   getExistingProjects(): Observable<GeoJSON.GeoJSON> {
     return this.http
