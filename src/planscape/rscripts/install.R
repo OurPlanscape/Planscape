@@ -15,6 +15,7 @@ packages <- c(
   "glue",
   "purrr",
   "logger",
+  "tidyr"
 )
 
 install.packages(packages)
