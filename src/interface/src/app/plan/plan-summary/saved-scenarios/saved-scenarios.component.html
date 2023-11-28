@@ -41,9 +41,8 @@
           <mat-header-cell *matHeaderCellDef>Acres</mat-header-cell>
           <mat-cell *matCellDef="let element; dataSource: scenarios">
             {{
-              element.scenario_result &&
-              element.scenario_result.result?.features?.length
-                ? (calculateTotals(element.scenario_result).acres | number)
+              hasResults(element)
+                ? (calculateTotals(element.scenario_result!).acres | number)
                 : '--'
             }}
           </mat-cell>
@@ -56,9 +55,8 @@
             class="data-cell"
             *matCellDef="let element; dataSource: scenarios">
             {{
-              element.scenario_result &&
-              element.scenario_result.result?.features?.length
-                ? (calculateTotals(element.scenario_result).estimatedCost
+              hasResults(element)
+                ? (calculateTotals(element.scenario_result!).estimatedCost
                   | currencyInK: '1.0-0')
                 : '--'
             }}
