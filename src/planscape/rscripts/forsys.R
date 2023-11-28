@@ -14,6 +14,7 @@ library("dplyr")
 library("purrr")
 library("stringi")
 library("glue")
+library("tidyr")
 library("friendlyeval")
 
 readRenviron("planscape/.env")
@@ -301,7 +302,8 @@ to_projects <- function(con, scenario, forsys_outputs) {
 }
 
 merge_data <- function(stands, metrics) {
-  data <- merge(x = stands, y = metrics, by = "stand_id")
+  data <- left_join(x = stands, y = metrics, by = "stand_id")
+
   return(data)
 }
 
@@ -361,7 +363,7 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
     }
     stands <- merge_data(stands, metric)
   }
-
+  stands <- stands %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
   return(stands)
 }
 
