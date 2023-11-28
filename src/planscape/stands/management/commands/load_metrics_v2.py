@@ -141,7 +141,7 @@ class Command(BaseCommand):
                 pool.starmap(
                     handle_stand_condition,
                     zip(stand_ids, repeat(condition_id)),
-                    chunksize=100,
+                    chunksize=10000,
                 )
 
             end_time = datetime.now()
