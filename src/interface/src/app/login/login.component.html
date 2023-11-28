@@ -1,63 +1,111 @@
 <div class="signin-root">
   <div class="signin-card-container">
-    <div class="signin-card">
-      <h1 class="signin-title">Sign in to Planscape</h1>
-
-      <form [formGroup]="form" (ngSubmit)="login()">
-        <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
-          <input type="text" required formControlName="email" matInput />
-        </mat-form-field>
-
-        <mat-form-field appearance="fill">
-          <mat-label>Password</mat-label>
-          <input type="password" required formControlName="password" matInput />
-        </mat-form-field>
-        <p>
-          <a
-            class="forget-password-link"
-            i18n="Text on a button to reset password"
-            href="reset/">
-            Forgot password?
-          </a>
-        </p>
-        <mat-card-actions class="login-form-buttons">
-          <button
-            mat-flat-button
-            color="primary"
-            type="submit"
-            [disabled]="!form.valid"
-            class="login-form-button">
-            Sign in
-          </button>
-        </mat-card-actions>
-        <div class="login-form-buttons">
-          <button
-            mat-stroked-button
-            color="primary"
-            data-id="explore"
-            [routerLink]="'/map'"
-            class="login-form-button">
-            Explore
-          </button>
-          <button
-            mat-stroked-button
-            color="primary"
-            data-id="create-account"
-            [routerLink]="'/signup'"
-            class="login-form-button">
-            Create an Account
-          </button>
+    <div class="signin-subcontainer">
+      <div class="signin-card-logo">
+        <div class="planscape-white-logo">
+          <img src="assets/svg/planscape-white-logo.svg" alt="planscape logo" />
         </div>
-        <mat-error class="mat-error" *ngIf="accountError">
-          {{ accountError }}
-          <div *ngIf="offerReverify" class="post-error-option">
-            <a clickable [routerLink]="[]" (click)="resendVerification()"
-              >Click here to re-send your verification email.</a
-            >
+      </div>
+
+      <div class="signin-card">
+        <h1 class="signin-title">Sign in to Planscape</h1>
+
+        <form [formGroup]="form" (ngSubmit)="login()">
+          <mat-label
+            >Email
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="text"
+              required
+              formControlName="email"
+              matInput
+              (blur)="checkEmailErrors()"
+              (keyup)="clearEmailErrors()" />
+          </mat-form-field>
+          <app-field-alert
+            [visible]="
+              this.emailError !== '' &&
+              this.form.controls['email'].errors !== null
+                ? true
+                : false
+            "
+            message="{{ emailError }}"
+            title="email error"></app-field-alert>
+
+          <mat-label
+            >Password
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="password"
+              required
+              formControlName="password"
+              matInput />
+          </mat-form-field>
+          <app-field-alert
+            message="{{ passwordError }}"
+            title="password error"></app-field-alert>
+
+          <div class="login-error-box" *ngIf="loginError">
+            <p class="login-error-heading">
+              <mat-icon class="warning-icon login-error-icon">warning</mat-icon>
+              CREDENTIALS ERROR
+            </p>
+            <p class="login-error-details">
+              {{ loginError }}
+              <a
+                *ngIf="offerReverify"
+                clickable
+                [routerLink]="[]"
+                (click)="resendVerification()"
+                >Click here to re-send your verification email.</a
+              >
+            </p>
           </div>
-        </mat-error>
-      </form>
+
+          <mat-card-actions class="login-form-buttons">
+            <button
+              mat-flat-button
+              color="primary"
+              type="submit"
+              [disabled]="!form.valid"
+              class="login-form-button">
+              Sign in
+            </button>
+          </mat-card-actions>
+
+          <p>
+            <a
+              class="forget-password-link"
+              i18n="Text on a button to reset password"
+              href="reset/">
+              Forgot your password?
+            </a>
+          </p>
+
+          <div class="login-form-buttons">
+            <button
+              mat-stroked-button
+              color="primary"
+              data-id="explore"
+              [routerLink]="'/map'"
+              class="login-form-button">
+              Explore
+            </button>
+            <button
+              mat-stroked-button
+              color="primary"
+              data-id="create-account"
+              [routerLink]="'/signup'"
+              class="login-form-button">
+              Create an Account
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
 
     <div class="disclaimer-text">

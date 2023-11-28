@@ -1,0 +1,55 @@
+.field-alert-box {
+  position: absolute;
+  padding: 10px;
+  background: #ffffff;
+  width: 240px;
+  min-height: 2em;
+  border: 1px solid #f50000;
+  margin-left: 1em;
+  margin-top: -5px;
+  border-radius: 5px;
+  z-index: 10000;
+  box-shadow: 3px 3px 10px 0px rgba(0, 0, 0, 0.5);
+  text-transform: uppercase;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 19px;
+    border: 16px solid transparent;
+    border-bottom-color: red;
+  }
+  &::after {
+    left: 21px;
+    border: 14px solid transparent;
+    border-bottom-color: #ffffff;
+  }
+}
+
+.field-alert-title {
+  text-transform: uppercase;
+  width: 100%;
+  height: 1em;
+  color: red;
+  float: left;
+  line-height: 2em;
+}
+
+.field-alert-icon {
+  float:left;
+  margin: 0;
+}
+
+.title-text {
+  float: left;
+  padding-left: 10px;
+  font-size: 1.2em;
+}
+
+.field-alert-box .field-alert-details {
+  margin-top: 1em;
+  width:100%;
+  text-transform: none;
+}

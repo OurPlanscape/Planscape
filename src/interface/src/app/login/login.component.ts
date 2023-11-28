@@ -6,6 +6,7 @@ import { AuthService } from '../services';
 import {
   SNACK_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
+  EMAIL_VALIDATION_REGEX,
 } from '../../app/shared/constants';
 
 @Component({
@@ -14,11 +15,11 @@ import {
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
-  protected accountError = '';
   protected offerReverify: boolean = false;
-
+  protected loginError = '';
+  protected passwordError: string = '';
+  protected emailError: string = '';
   form: FormGroup;
-
   readonly text1: string = `
     Planscape is a collaborative effort by the California Natural Resources Agency (CNRA) and the
     USDA Forest Service, with support from Google.org.
@@ -33,10 +34,21 @@ export class LoginComponent {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
         Validators.required,
-        Validators.email,
+        Validators.pattern(EMAIL_VALIDATION_REGEX),
       ]),
       password: this.formBuilder.control('', Validators.required),
     });
+  }
+
+  checkEmailErrors() {
+    if (this.form.controls['email'].errors !== null) {
+      this.emailError = 'Email must be in a proper format.';
+    }
+  }
+  clearEmailErrors() {
+    if (this.emailError !== '') {
+      this.emailError = '';
+    }
   }
 
   resendVerification() {
@@ -65,12 +77,33 @@ export class LoginComponent {
     this.authService.login(email, password).subscribe(
       (_) => this.router.navigate(['home']),
       (error) => {
-        const errorMsg: string = error.error.global[0];
-        if (errorMsg === 'E-mail is not verified.') {
-          this.accountError = 'Please check your email to verify your account.';
-          this.offerReverify = true;
-        } else {
-          this.accountError = errorMsg;
+        // determine the cause of the error...
+        // errors from the backend can be in a variety of formats
+
+        // present the user with the strings that we decided for UX, rather than
+        //  the errors provided by the backend and dj-rest-auth
+        var errorMsg: string = '';
+
+        if (error.error.email) {
+          this.form.controls['email'].setErrors({
+            email: 'Email must be in the proper format.',
+          });
+        }
+        if (error.error.global) {
+          errorMsg = error.error.global[0];
+          this.form.setErrors({ error: errorMsg });
+          if (errorMsg === 'E-mail is not verified.') {
+            this.loginError = 'Please check your email to verify your account.';
+            this.offerReverify = true;
+          } else if (
+            errorMsg === 'Unable to log in with provided credentials.'
+          ) {
+            this.loginError =
+              'Either the user name or password that you have entered is incorrect. Please try again.';
+            this.offerReverify = false;
+          } else {
+            this.loginError = errorMsg;
+          }
         }
       }
     );
