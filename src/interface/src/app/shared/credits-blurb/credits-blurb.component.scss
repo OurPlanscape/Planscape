@@ -1,0 +1,22 @@
+:host {
+    bottom: 20px;
+    box-sizing: border-box;
+    padding: 0px 100px;
+    position: absolute;
+    width: 50%;
+  
+    a {
+      color: #82d8fd;
+    }
+  
+    p {
+      color: white;
+      font-family: 'Public Sans', 'Roboto';
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 20px;
+      margin: 0px;
+      text-align: center;
+    }
+  
+}
