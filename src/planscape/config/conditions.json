@@ -2937,7 +2937,7 @@
                   "data_provider": "FVEG",
                   "data_units": "Binary",
                   "max_value": 1,
-                  "metric_name": "wildlife_species_richness",
+                  "metric_name": "california_spotted_owl",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/bioDiverConserv/Tier2/CSO_suitable_habitat.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_CSO_suitable_habitat",
