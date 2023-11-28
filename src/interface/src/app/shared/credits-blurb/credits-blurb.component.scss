@@ -1,23 +1,27 @@
 :host {
-    bottom: 0px;
-    box-sizing: border-box;
-    padding: 1.5em 2em;
-    position: absolute;
-    width: 50%;
-    background-color: rgba(0, 0, 0, 0.5);
-  
-    a {
-      color: #82d8fd;
-    }
-  
-    p {
-      color: white;
-      font-family: 'Public Sans', 'Roboto';
-      font-size: 13px;
-      font-weight: 500;
-      line-height: 20px;
-      margin: 0px;
-      text-align: center;
-    }
-  
+  bottom: 0px;
+  box-sizing: border-box;
+  padding: 1.5em 2em;
+  position: absolute;
+  width: 50%;
+  background-color: rgba(0, 0, 0, 0.5);
+
+  a {
+    color: #82d8fd;
+    text-decoration: none;
+  }
+  a:hover,
+  a:active {
+    text-decoration: underline;
+  }
+
+  p {
+    color: white;
+    font-family: 'Public Sans', 'Roboto';
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 20px;
+    margin: 0px;
+    text-align: center;
+  }
 }
