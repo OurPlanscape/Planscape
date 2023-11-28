@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioFailureComponent } from './scenario-failure.component';
 import { MatIconModule } from '@angular/material/icon';
+import { MockProvider } from 'ng-mocks';
+import { ScenarioService } from '../../services/scenario.service';
 
 describe('ScenarioFailureComponent', () => {
   let component: ScenarioFailureComponent;
@@ -10,6 +12,7 @@ describe('ScenarioFailureComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [ScenarioFailureComponent],
       imports: [MatIconModule],
+      providers: [MockProvider(ScenarioService)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioFailureComponent);

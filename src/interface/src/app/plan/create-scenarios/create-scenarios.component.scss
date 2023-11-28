@@ -71,28 +71,31 @@
   box-sizing: border-box;
 }
 
-::ng-deep .mat-tab-body-wrapper {
+:host {
+  ::ng-deep .mat-tab-body-wrapper {
 
-  background-color: #e6e9f4;
-  flex-grow: 1;
+    background-color: #e6e9f4;
+    flex-grow: 1;
+  }
+
+  ::ng-deep .mat-tab-group {
+    height: 100%;
+  }
+
+  ::ng-deep mat-tab-header {
+    padding: 0 32px;
+  }
+
+  ::ng-deep .mat-tab-body {
+    padding-bottom: 10px;
+  }
+
+  ::ng-deep .mat-tab-body-content {
+    padding: 0 20px;
+
+  }
 }
 
-::ng-deep .mat-tab-group {
-  height: 100%;
-}
-
-::ng-deep mat-tab-header {
-  padding: 0 32px;
-}
-
-::ng-deep .mat-tab-body {
-  padding-bottom: 10px;
-}
-
-::ng-deep .mat-tab-body-content {
-  padding: 0 20px;
-
-}
 
 .flex-row {
   align-items: center;

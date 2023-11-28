@@ -14,6 +14,7 @@ library("dplyr")
 library("purrr")
 library("stringi")
 library("glue")
+library("tidyr")
 library("friendlyeval")
 
 readRenviron("planscape/.env")
@@ -73,6 +74,10 @@ get_connection <- function() {
     password = Sys.getenv("PLANSCAPE_DATABASE_PASSWORD"),
   )
   return(connection)
+}
+
+get_output_dir <- function(scenario) {
+  return (paste0(getwd(), "/output/", scenario$uuid))
 }
 
 get_scenario_data <- function(connection, scenario_id) {
@@ -297,7 +302,8 @@ to_projects <- function(con, scenario, forsys_outputs) {
 }
 
 merge_data <- function(stands, metrics) {
-  data <- merge(x = stands, y = metrics, by = "stand_id")
+  data <- left_join(x = stands, y = metrics, by = "stand_id")
+
   return(data)
 }
 
@@ -357,7 +363,7 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
     }
     stands <- merge_data(stands, metric)
   }
-
+  stands <- stands %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
   return(stands)
 }
 
@@ -508,6 +514,14 @@ remove_duplicates <- function(dataframe) {
   return(dataframe[!duplicated(dataframe), ])
 }
 
+export_input <- function(scenario, stand_data) {
+  output_dir <- get_output_dir(scenario)
+  output_file <- paste0(output_dir, "/inputs.csv")
+  layer_options <- c("GEOMETRY=AS_WKT")
+  dir.create(output_dir)
+  st_write(stand_data, output_file, layer_options=layer_options, append = FALSE, delete_dsn = TRUE)
+}
+
 call_forsys <- function(
     connection,
     scenario,
@@ -554,11 +568,12 @@ call_forsys <- function(
 
   log_info(paste("Thresholds configured:", stand_thresholds))
 
+  export_input(scenario, stand_data)
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
-    overwrite_output = TRUE,
-    # scenario_name = scenario$name,
+    overwrite_output = FALSE,
     scenario_name = scenario$uuid, # using UUID here instead of name
     scenario_output_fields = c(outputs$condition_name, "area_acres"),
     scenario_priorities = scenario_priorities,

@@ -131,6 +131,13 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
+  hasResults(scenario: Scenario) {
+    return (
+      !!scenario.scenario_result &&
+      scenario.scenario_result.result?.features?.length > 0
+    );
+  }
+
   private deleteScenario(ids: string[]) {
     this.scenarioService.deleteScenarios(ids).subscribe({
       next: (deletedIds) => {

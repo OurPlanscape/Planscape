@@ -24,13 +24,27 @@ h4 {
   margin-left: 44px;
 }
 
-::ng-deep .mat-radio-label {
-  padding-left: 20px;
+:host {
+  ::ng-deep .mat-radio-label {
+    padding-left: 20px;
+  }
+
+  ::ng-deep .mat-radio-label-content {
+    white-space: normal !important;
+  }
+
+  ::ng-deep {
+    .long-question-tooltip.mat-tooltip {
+      border: 1px solid #979797;
+      border-radius: 11px;
+      background-color: #e6e9f4;
+      color: black;
+      font-size: 14px;
+      padding: 8px;
+    }
+  }
 }
 
-::ng-deep .mat-radio-label-content {
-  white-space: normal !important;
-}
 
 .legend-wrapper {
   flex: 2 0 224px;
@@ -222,15 +236,5 @@ h5 {
   background-color: #00000012;
 }
 
-::ng-deep {
-  .long-question-tooltip.mat-tooltip {
-    border: 1px solid #979797;
-    border-radius: 11px;
-    background-color: #e6e9f4;
-    color: black;
-    font-size: 14px;
-    padding: 8px;
-  }
-}
 
 
