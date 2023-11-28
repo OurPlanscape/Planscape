@@ -1,0 +1,16 @@
+<a
+  routerLink="/account/information"
+  [ngClass]="{ active: isSelected('information') }"
+  >Personal Information</a
+>
+<a
+  routerLink="/account/credentials"
+  [ngClass]="{ active: isSelected('credentials') }"
+  >Credentials</a
+>
+<a
+  routerLink="/account/delete-account"
+  [ngClass]="{ active: isSelected('delete-account') }"
+  >Delete Account</a
+>
+<a (click)="logout()">Sign Out</a>

@@ -21,6 +21,10 @@ import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
+import { AccountPageComponent } from './account/account-page/account-page.component';
+import { DetailsComponent } from './account/details/details.component';
+import { CredentialsComponent } from './account/credentials/credentials.component';
+import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 
 const routes: Routes = [
   {
@@ -110,7 +114,38 @@ const routes: Routes = [
         component: ExploreComponent,
         canActivate: [AuthGuard],
       },
-      { path: '**', redirectTo: 'home' },
+      {
+        path: 'account',
+        title: 'Account Details',
+        component: AccountPageComponent,
+        canActivate: [AuthGuard],
+        data: { item: 'information' },
+        children: [
+          {
+            path: '',
+            redirectTo: 'information',
+            pathMatch: 'full',
+          },
+          {
+            path: 'information',
+            title: 'Personal information',
+            component: DetailsComponent,
+            data: { item: 'information' },
+          },
+          {
+            path: 'credentials',
+            title: 'Credentials',
+            component: CredentialsComponent,
+            data: { item: 'credentials' },
+          },
+          {
+            path: 'delete-account',
+            title: 'Delete Account',
+            data: { item: 'delete-account' },
+            component: DeleteAccountComponent,
+          },
+        ],
+      },
     ],
   },
 ];
