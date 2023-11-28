@@ -15,9 +15,10 @@ def handle(apps, schema_editor):
         print("This migration is BAD! Check manually")
         return
 
-    spotted_owl = spotted_owl.first()
-    spotted_owl.condition_name = "california_spotted_owl"
-    spotted_owl.save()
+    instance = spotted_owl.first()
+    if instance:
+        spotted_owl.condition_name = "california_spotted_owl"
+        spotted_owl.save()
 
 
 class Migration(migrations.Migration):
@@ -25,4 +26,4 @@ class Migration(migrations.Migration):
         ("conditions", "0007_auto_20230818_1616"),
     ]
 
-    operations = [handle]
+    operations = [migrations.RunPython(handle)]
