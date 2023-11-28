@@ -1,9 +1,10 @@
 :host {
-    bottom: 20px;
+    bottom: 0px;
     box-sizing: border-box;
-    padding: 0px 100px;
+    padding: 1.5em 2em;
     position: absolute;
     width: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
   
     a {
       color: #82d8fd;
