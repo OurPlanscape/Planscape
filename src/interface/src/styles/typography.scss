@@ -1,0 +1,125 @@
+// base
+body {
+  font-family: Public Sans, sans-serif;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: normal;
+}
+
+// header 1
+.h1 {
+  font-size: 30px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+// header 2
+.h2 {
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+// header 3
+.h3 {
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+// header 4
+.h4 {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+// Regular Paragraph
+.p {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 26px;
+}
+
+// Small Paragraph
+.p-small {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+}
+
+// Important paragraph
+.p-important {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 32px;
+}
+
+
+// standard link
+.a {
+  color: #064BBA;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 26px;
+  text-decoration-line: underline;
+}
+
+// xs label
+.label-xs {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 14px;
+}
+
+// top level label
+.label-top {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 14px; /* 100% */
+  text-transform: uppercase;
+}
+
+// italic small
+.i-small {
+  font-size: 14px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+// standard input label
+.input-label {
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px
+}
+
+// button text
+.button-text {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 16px;
+}
+
+// light button text
+.button-text-light {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 16px; /* 114.286% */
+  text-transform: uppercase
+}
