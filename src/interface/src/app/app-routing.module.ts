@@ -119,7 +119,6 @@ const routes: Routes = [
         title: 'Account Details',
         component: AccountPageComponent,
         canActivate: [AuthGuard],
-        data: { item: 'information' },
         children: [
           {
             path: '',
@@ -130,18 +129,15 @@ const routes: Routes = [
             path: 'information',
             title: 'Personal information',
             component: DetailsComponent,
-            data: { item: 'information' },
           },
           {
             path: 'credentials',
             title: 'Credentials',
             component: CredentialsComponent,
-            data: { item: 'credentials' },
           },
           {
             path: 'delete-account',
             title: 'Delete Account',
-            data: { item: 'delete-account' },
             component: DeleteAccountComponent,
           },
         ],

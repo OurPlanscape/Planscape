@@ -1,8 +1,13 @@
 :host {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   height: 100%;
   box-sizing: border-box;
+}
+
+section {
+  width: 100%;
+  padding: 0 40px 0;
 }
 
 aside {
@@ -12,4 +17,16 @@ aside {
   background-position: bottom right;
   min-width: 242px;
   padding: 40px 2px 0;
+}
+
+h2 {
+  padding: 20px 40px 0 0;
+  color: #4A4A4A;
+  /* H2 */
+  font-family: Public Sans;
+  font-size: 26px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 32px;
+  border-bottom: 2px solid black;
 }
