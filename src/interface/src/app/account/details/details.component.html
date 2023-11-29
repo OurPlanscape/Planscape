@@ -1,1 +1,43 @@
-<div>Personal Information component</div>
+<form [formGroup]="nameForm" (ngSubmit)="saveFirstName()">
+  <mat-form-field>
+    <mat-label>First name</mat-label>
+    <input type="text" required formControlName="firstName" matInput />
+  </mat-form-field>
+
+  <div class="button-row">
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="editAccountForm.invalid || disableEditButton"
+      (click)="saveEdits()">
+      {{ disableEditButton ? 'SAVING...' : 'SAVE' }}
+    </button>
+  </div>
+  <mat-error>
+    <p *ngIf="error">{{ error?.message }}</p>
+  </mat-error>
+</form>
+
+<form [formGroup]="editAccountForm" (ngSubmit)="saveEdits()">
+  <mat-form-field>
+    <mat-label>First name</mat-label>
+    <input type="text" required formControlName="firstName" matInput />
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Last name</mat-label>
+    <input type="text" required formControlName="lastName" matInput />
+  </mat-form-field>
+  <div class="button-row">
+    <button
+      mat-raised-button
+      color="primary"
+      [disabled]="editAccountForm.invalid || disableEditButton"
+      (click)="saveEdits()">
+      {{ disableEditButton ? 'SAVING...' : 'SAVE' }}
+    </button>
+  </div>
+  <mat-error>
+    <p *ngIf="error">{{ error?.message }}</p>
+  </mat-error>
+</form>
