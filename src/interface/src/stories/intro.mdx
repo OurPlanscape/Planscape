@@ -1,0 +1,59 @@
+import { Meta, Unstyled } from '@storybook/blocks';
+
+
+<Meta title="Colors" />
+
+
+<style>
+  {`
+  p {
+  aspect-ratio:1;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  }
+
+    span {
+      background-color: white;
+      display: inline-block;
+      width:100%;
+      padding-top:10px;
+    }
+
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 15px;
+    }
+
+`}
+</style>
+<Unstyled>
+  <h3 className={'h3'}>Colors </h3>
+  <div className={'grid'}>
+    <p className={'bg-color-black'}><span>bg-color-black</span></p>
+    <p className={'bg-color-dark-gray'}><span>bg-color-dark-gray</span></p>
+    <p className={'bg-color-md-gray'}><span>bg-color-md-gray</span></p>
+    <p className={'bg-color-text-gray'}><span>bg-color-text-gray</span></p>
+    <p className={'bg-color-fields-gray'}><span>bg-color-fields-gray</span></p>
+    <p className={'bg-color-light-gray'}><span>bg-color-light-gray</span></p>
+    <p className={'bg-color-error'}><span>bg-color-error</span></p>
+    <p className={'bg-color-standard-blue'}><span>bg-color-standard-blue</span></p>
+    <p className={'bg-color-original-purple'}><span>bg-color-original-purple</span></p>
+    <p className={'bg-color-soft-purple'}><span>bg-color-soft-purple</span></p>
+    <p className={'bg-color-main-blue'}><span>bg-color-main-blue</span></p>
+    <p className={'bg-color-main-yellow'}><span>bg-color-main-yellow</span></p>
+    <p className={'bg-color-orange'}><span>bg-color-orange</span></p>
+    <p className={'bg-color-light-blue'}><span>bg-color-light-blue</span></p>
+    <p className={'bg-color-highlight'}><span>bg-color-highlight</span></p>
+    <p className={'bg-color-brand-teal'}><span>bg-color-brand-teal</span></p>
+    <p className={'bg-color-brand-green'}><span>bg-color-brand-green</span></p>
+    <p className={'bg-color-brand-soft-green'}><span>bg-color-brand-soft-green</span></p>
+    <p className={'bg-color-brand-soft-orange'}><span>bg-color-brand-soft-orange</span></p>
+    <p className={'bg-color-brand-soft-yellow'}><span>bg-color-brand-soft-yellow</span></p>
+  </div>
+
+
+</Unstyled>
+

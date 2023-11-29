@@ -8,8 +8,9 @@ import {
   SessionService,
   MapService,
 } from '../../services';
-import { RegionOption, regionOptions } from '../../types';
+import { RegionOption } from '../../types';
 import features from '../../features/features.json';
+import { RegionService } from '../../services/region.service';
 
 /**
  * The main region selection view component.
@@ -23,7 +24,7 @@ import features from '../../features/features.json';
 export class RegionSelectionComponent implements OnInit {
   hasPlans: boolean = false;
   loggedIn$ = this.authService.isLoggedIn$;
-  readonly regionOptions: RegionOption[] = regionOptions;
+  readonly regionOptions = this.regions.regionOptions;
 
   /** We assume that Sierra Nevada is always enabled.  */
   multiple_regions_enabled = features.show_socal || features.show_centralcoast;
@@ -33,7 +34,8 @@ export class RegionSelectionComponent implements OnInit {
     private planService: PlanService,
     private sessionService: SessionService,
     private mapService: MapService,
-    private router: Router
+    private router: Router,
+    private regions: RegionService
   ) {}
 
   ngOnInit(): void {
