@@ -23,6 +23,7 @@ export class SignupComponent {
   form: FormGroup;
   submitting: boolean = false;
   emailAlreadyExists: boolean = false;
+  emailError: string = '';
 
   constructor(
     private authService: AuthService,
@@ -54,6 +55,10 @@ export class SignupComponent {
     const email: string = this.form.get('email')?.value;
     this.authService.resendValidationEmail(email).subscribe();
   }
+
+  checkEmailErrors() {}
+
+  clearEmailErrors() {}
 
   signup() {
     if (this.submitting) return;

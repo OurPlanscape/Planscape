@@ -4,11 +4,12 @@
   }
 
   .validation-result-container {
-    background-image: url('/assets/png/planscape_signin_bg.png');
+    background-image: url('/assets/jpg/planscape-background.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     display: flex;
     width: 100%;
+    border: 1px red solid;
   }
   
   .validation-result-card {
@@ -16,7 +17,7 @@
     border-radius: 16px;
     flex-grow: 1;
     justify-content: center;
-    margin: 10% 20% auto 20%;
+    margin: 46% 20% 46% 20%;
     padding: 50px;
     align-content: center;
     display: flex;

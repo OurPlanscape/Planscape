@@ -4,8 +4,8 @@
 }
 
 .info-card-container {
-  background-image: url('/assets/png/planscape-background.jpg');
-  
+  background-image: url('/assets/jpg/planscape-background.jpg');
+  font-family: 'Public Sans';
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;
@@ -26,28 +26,41 @@
 
 h3 {
   font-family: 'Public Sans', 'Roboto';
-  font-size: 18px;
-  font-weight: 400;
+  font-size: 1.375rem;
+  font-weight: 200;
   line-height: 24px;
 }
 
 .signup-form-container {
   align-items: center;
-  background-color: white;
+  background-color: #E6E8F3;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 145px 120px 120px 82px;
+  padding: 5% 10% 5% 10%;
   width: 50%;
 }
+
+.planscape-color-logo {
+  margin-bottom: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  height: 42px;
+  width: 246px;
+}
+
 
 .signup-form {
   align-items: stretch;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: auto;
+  background-color: white;
+  margin: auto 100px;
+  padding: 2em;
   width: 300px;
+  border:1px black solid;
+  border-radius: 10px;
 }
 
 h1 {
@@ -95,3 +108,15 @@ button {
   padding: 2em;
   text-align: center;
 }
+
+/* field - default */
+::ng-deep .mat-form-field-outline {
+  background-color: #f4f4f4;
+}
+
+/* field - selected */
+::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
+  background-color: rgba(255, 249, 102, 0.3);
+  //background-color: $highlight;
+}
+

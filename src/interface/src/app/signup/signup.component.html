@@ -2,103 +2,158 @@
   <div class="info-card-container">
     <div class="info-card">
       <h3><b>With a Planscape account, you can:</b></h3>
-
-      <ul>
-        <li>
-          <h3>Save planning areas</h3>
-        </li>
-        <li>
-          <h3>Create plans, configurations, and scenarios</h3>
-        </li>
-        <li>
-          <h3>Download shapefiles & metadata</h3>
-        </li>
-        <li>
-          <h3>Share work with collaborators</h3>
-        </li>
-      </ul>
+      <div>
+        <h3>
+          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Save
+          planning areas
+        </h3>
+      </div>
+      <div>
+        <h3>
+          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Create
+          plans, configurations, and scenarios
+        </h3>
+      </div>
+      <div>
+        <h3>
+          <img
+            src="assets/svg/icons/checkbox.svg"
+            alt="checkbox icon" />Download shapefiles & metadata
+        </h3>
+      </div>
+      <div>
+        <h3>
+          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Share
+          work with collaborators
+        </h3>
+      </div>
 
       <h3><b>As a guest user, you can:</b></h3>
-
-      <ul>
-        <li>
-          <h3>Explore regional data on the map</h3>
-        </li>
-        <li>
-          <h3>View plans and/or scenarios that are publicly visible*</h3>
-        </li>
-      </ul>
+      <div>
+        <h3>
+          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Explore
+          regional data on the map
+        </h3>
+      </div>
+      <div>
+        <h3>
+          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />View
+          plans and/or scenarios that are publicly visible*
+        </h3>
+      </div>
 
       <p><i>*Accessible only via direct links</i></p>
     </div>
   </div>
 
   <div class="signup-form-container">
-    <div class="signup-form">
-      <h1 class="signup-title">Create your account</h1>
+    <div class="signup-form-subcontainer">
+      <div class="planscape-color-logo">
+        <img src="assets/svg/planscape-color-logo.svg" alt="Planscape logo" />
+      </div>
+      <div class="signup-form">
+        <h1 class="signup-title">Create your account</h1>
 
-      <form [formGroup]="form" (ngSubmit)="signup()">
-        <mat-form-field appearance="fill">
-          <mat-label>First name</mat-label>
-          <input type="text" required formControlName="firstName" matInput />
-        </mat-form-field>
+        <form [formGroup]="form" (ngSubmit)="signup()">
+          <mat-label
+            >First Name
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input type="text" required formControlName="firstName" matInput />
+          </mat-form-field>
+          <app-field-alert
+            [visible]="
+              this.form.controls['firstName'].errors !== null ? true : false
+            "
+            message="{{ this.form.controls['firstName'].errors }}"
+            title="field error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Last name</mat-label>
-          <input type="text" required formControlName="lastName" matInput />
-        </mat-form-field>
+          <mat-label
+            >Last Name
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input type="text" required formControlName="lastName" matInput />
+          </mat-form-field>
+          <app-field-alert
+            [visible]="
+              this.form.controls['lastName'].errors !== null ? true : false
+            "
+            message=""
+            title="email error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
-          <input type="text" required formControlName="email" matInput />
-        </mat-form-field>
+          <mat-label
+            >Email
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="text"
+              required
+              formControlName="email"
+              matInput
+              (blur)="checkEmailErrors()"
+              (keyup)="clearEmailErrors()" />
+          </mat-form-field>
+          <app-field-alert
+            [visible]="
+              this.emailError !== '' &&
+              this.form.controls['email'].errors !== null
+                ? true
+                : false
+            "
+            message="{{ emailError }}"
+            title="email error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Create password</mat-label>
-          <input
-            type="password"
-            required
-            formControlName="password1"
-            matInput />
-          <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
-            Password must contain at least 8 characters.
-          </mat-error>
-        </mat-form-field>
+          <mat-label
+            >Create Password
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="password"
+              required
+              formControlName="password1"
+              matInput />
+          </mat-form-field>
+          <app-field-alert
+            [visible]="
+              this.form.controls['password1'].errors !== null ? true : false
+            "
+            message=""
+            title="email error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Confirm password</mat-label>
-          <input
-            type="password"
-            required
-            formControlName="password2"
-            matInput />
-          <mat-error *ngIf="form.hasError('passwordsNotEqual')">
-            Passwords must match.
-          </mat-error>
-        </mat-form-field>
+          <mat-label
+            >Confirm Password
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="password"
+              required
+              formControlName="password2"
+              matInput />
+          </mat-form-field>
+          <app-field-alert
+            [visible]="
+              this.emailError !== '' &&
+              this.form.controls['password2'].errors !== null
+                ? true
+                : false
+            "
+            message=""
+            title="password error"></app-field-alert>
 
-        <mat-error *ngIf="errors.length > 0">
-          <ul>
-            <li *ngFor="let error of errors">{{ error }}</li>
-          </ul>
-          <div *ngIf="emailAlreadyExists" class="post-error-option">
-            <a
-              class="forget-password-link"
-              i18n="Text on a button to reset password"
-              href="reset/">
-              Click here to reset your password.
-            </a>
-          </div>
-        </mat-error>
-
-        <button
-          mat-flat-button
-          type="submit"
-          color="primary"
-          [disabled]="!form.valid || submitting">
-          {{ submitting ? 'Please wait...' : 'Create account' }}
-        </button>
-      </form>
+          <button
+            mat-flat-button
+            type="submit"
+            color="primary"
+            [disabled]="!form.valid || submitting">
+            {{ submitting ? 'Please wait...' : 'Create account' }}
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>

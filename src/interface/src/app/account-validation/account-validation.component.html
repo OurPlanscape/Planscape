@@ -3,17 +3,21 @@
     <div class="validation-result-card">
       <div>
         <div *ngIf="isValidated" class="valid-token">
-          <h1>Your email address was validated.</h1>
+          <h1>Account Validation</h1>
           <h3>
-            Please
+            Your email address was validated. Please
             <a href="login/">click here</a>
-            to login.
+            to continue.
           </h3>
         </div>
         <div *ngIf="!isValidated" class="invalid-token">
-          <h1>This validation token was not recognized.</h1>
+          <h1>Account Validation</h1>
+          <h3>This validation token was not recognized.</h3>
         </div>
       </div>
     </div>
+  </div>
+  <div class="info-text-container">
+    <app-planscape-about></app-planscape-about>
   </div>
 </div>
