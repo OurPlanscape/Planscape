@@ -10,6 +10,7 @@ import { FeaturesModule } from '../features/features.module';
 import { RouterLinkWithHref } from '@angular/router';
 import { CurrencyInKPipe } from '../pipes/currency-in-k.pipe';
 import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.directive';
+import { FieldAlertComponent } from './field-alert/field-alert.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.
     NavBarComponent,
     CurrencyInKPipe,
     TypeSafeMatCellDef,
+    FieldAlertComponent,
   ],
   exports: [
     FileUploaderComponent,
@@ -25,6 +27,7 @@ import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.
     NavBarComponent,
     CurrencyInKPipe,
     TypeSafeMatCellDef,
+    FieldAlertComponent,
   ],
   imports: [
     CommonModule,

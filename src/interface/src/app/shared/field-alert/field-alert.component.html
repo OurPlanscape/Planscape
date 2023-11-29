@@ -1,0 +1,11 @@
+<div class="field-alert-box" *ngIf="visible">
+  <div style="height: 0.8em; width: 100%">
+    <div class="field-alert-title">
+      <mat-icon class="warning-icon field-alert-icon">warning</mat-icon>
+      <p class="title-text">{{ title }}</p>
+    </div>
+  </div>
+  <div class="field-alert-details">
+    {{ message }}
+  </div>
+</div>
