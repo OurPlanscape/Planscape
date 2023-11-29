@@ -1,0 +1,25 @@
+:host {
+  display: block;
+  box-sizing: border-box;
+  font-family: Public Sans;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 26px;
+}
+
+a {
+  display: block;
+  background-color: white;
+  border-bottom: 3px solid #E1E1E1;
+  color: #767575;
+  padding: 10px 6px;
+  text-decoration: none;
+
+  &:hover, &.active {
+    text-decoration: underline;
+    background-color: #4A4A4A;
+    color: white;
+    border-bottom-color: #FFCD66;
+  }
+
+}
