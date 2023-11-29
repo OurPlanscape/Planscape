@@ -18,11 +18,6 @@ export class ForgetPasswordComponent {
     Enter the email address associated with your account, and we'll email you a link to reset your password.
   `;
 
-  readonly disclaimerText: string = `
-    Planscape is a collaborative effort by the California Natural Resources Agency (CNRA) and the
-    USDA Forest Service, with support from Google.org.
-  `;
-
   protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
 
   protected accountError = '';

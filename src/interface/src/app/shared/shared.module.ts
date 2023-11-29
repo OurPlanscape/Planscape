@@ -11,6 +11,7 @@ import { RouterLinkWithHref } from '@angular/router';
 import { CurrencyInKPipe } from '../pipes/currency-in-k.pipe';
 import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.directive';
 import { FieldAlertComponent } from './field-alert/field-alert.component';
+import { CreditsBlurbComponent } from './credits-blurb/credits-blurb.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { FieldAlertComponent } from './field-alert/field-alert.component';
     CurrencyInKPipe,
     TypeSafeMatCellDef,
     FieldAlertComponent,
+    CreditsBlurbComponent,
   ],
   exports: [
     FileUploaderComponent,
@@ -28,6 +30,7 @@ import { FieldAlertComponent } from './field-alert/field-alert.component';
     CurrencyInKPipe,
     TypeSafeMatCellDef,
     FieldAlertComponent,
+    CreditsBlurbComponent,
   ],
   imports: [
     CommonModule,
