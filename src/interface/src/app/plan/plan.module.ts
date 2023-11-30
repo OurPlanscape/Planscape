@@ -31,6 +31,7 @@ import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.co
 import { ExploreComponent } from './explore/explore/explore.component';
 import { MapModule } from '../map/map.module';
 import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
+import { NgxMaskModule } from 'ngx-mask';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -73,6 +74,7 @@ import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-t
     FeaturesModule,
     NgChartsModule,
     MapModule,
+    NgxMaskModule.forRoot(),
   ],
 })
 export class PlanModule {}

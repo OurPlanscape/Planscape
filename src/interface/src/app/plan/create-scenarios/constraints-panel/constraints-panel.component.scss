@@ -35,7 +35,7 @@
   display: inline-block;
   height: auto;
   width: auto;
-  box-shadow: 0 3px 0 0#aeb0b8;
+  box-shadow: 0 3px 0 0 #aeb0b8;
   background-color: white;
   padding-left: 10px;
 }
@@ -139,7 +139,6 @@
 }
 
 
-
 .button-wrapper {
   display: flex;
   flex-direction: row;
@@ -172,12 +171,13 @@
 
 :host {
   ::ng-deep
-    .mat-button-toggle-appearance-standard
-    .mat-button-toggle-label-content {
+  .mat-button-toggle-appearance-standard
+  .mat-button-toggle-label-content {
     line-height: 20px;
     top: 5px;
     width: 60px;
   }
+
   ::ng-deep .mat-select-value,
   ::ng-deep .mat-option-text {
     text-align: center;
@@ -186,4 +186,8 @@
 
 .mat-grid-tile-content {
   width: fit-content;
+}
+
+.suffix {
+  margin-left: 5px;
 }
