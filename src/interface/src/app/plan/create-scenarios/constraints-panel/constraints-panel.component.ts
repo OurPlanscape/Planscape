@@ -41,7 +41,7 @@ export class ConstraintsPanelComponent {
           // Maximum slope allowed for planning area
           maxSlope: [, [Validators.min(0), Validators.max(100)]],
           // Minimum distance from road allowed for planning area
-          minDistanceFromRoad: [, [Validators.min(0)]],
+          minDistanceFromRoad: [, [Validators.min(0), Validators.max(100000)]],
           // Maximum area to be treated in acres
           // Using 500 as minimum for now. Ideally the minimum should be based on stand size.
           maxArea: ['', [Validators.min(500)]],
