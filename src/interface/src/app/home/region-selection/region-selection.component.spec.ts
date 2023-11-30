@@ -9,6 +9,7 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { SessionService } from '../../services';
 import { Region } from '../../types';
 import { RegionSelectionComponent } from './region-selection.component';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('RegionSelectionComponent', () => {
   let component: RegionSelectionComponent;
@@ -23,7 +24,7 @@ describe('RegionSelectionComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule],
+      imports: [HttpClientTestingModule, MaterialModule, FeaturesModule],
       declarations: [RegionSelectionComponent],
       providers: [{ provide: SessionService, useValue: mockSessionService }],
     }).compileComponents();
