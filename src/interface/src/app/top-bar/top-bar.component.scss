@@ -10,13 +10,13 @@
 
   .site-link {
     color: #ffffff;
-    font-family: 'Google Sans', 'Open Sans', sans-serif;
     font-size: 19px;
     font-style: normal;
     font-weight: 400;
     letter-spacing: 0.5px;
     text-decoration: none;
   }
+
   .logo-center {
     display: flex;
     align-items: center;
@@ -52,6 +52,7 @@
 
 .nav-link {
   text-decoration: none;
+
   &:visited,
   &:active {
     color: white;
