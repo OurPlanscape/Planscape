@@ -1,10 +1,6 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 
-@import '../../../theme.scss';
-
-$color-config: mat.get-color-config($planscape-frontend-theme);
-$primary-palette: map.get($color-config, 'primary');
 
 .controls-container {
   background-color: white;
@@ -144,11 +140,6 @@ h3 {
 
 // Overrides of Material component styles
 
-::ng-deep .mat-radio-checked {
-  label {
-    color: mat.get-color-from-palette($primary-palette, 500);
-  }
-}
 
 ::ng-deep .mat-expansion-panel-body {
   padding-bottom: 0px !important;

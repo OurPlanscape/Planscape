@@ -45,10 +45,8 @@ h1 {
   &.signin-title {
     margin-bottom: 48px;
     text-align: center;
-    text-align: center;
     vertical-align: middle;
     font-size: 30px;
-    font-family: 'Public Sans';
     font-weight: 600;
     line-height: 32px;
     color: #202124;
@@ -59,7 +57,6 @@ mat-label {
   text-align: left;
   vertical-align: middle;
   font-size: 16px;
-  font-family: 'Public Sans';
   line-height: 22px;
   color: #4a4a4a;
   padding-bottom: 1em;
@@ -70,7 +67,6 @@ mat-label {
   text-align: left;
   vertical-align: middle;
   font-size: 14px;
-  font-family: Public Sans;
   font-style: italic;
   line-height: 22px;
   color: #898888;
@@ -90,7 +86,6 @@ mat-form-field {
 
 p {
   color: #888888;
-  font-family: 'Public Sans', 'Roboto';
   font-size: 13px;
   font-weight: 400;
   line-height: 20px;
@@ -102,7 +97,6 @@ p {
   text-align: center;
   vertical-align: middle;
   font-size: 16px;
-  font-family: 'Public Sans';
   line-height: 26px;
   text-decoration: underline;
   color: #064bba;
@@ -119,7 +113,6 @@ p {
 }
 
 h3 {
-  font-family: 'Roboto';
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
@@ -151,7 +144,8 @@ h3 {
   margin-top: -5px;
   border-radius: 5px;
   z-index: 10000;
-  box-shadow: 3px 3px 10px 0px rgba(0,0,0,0.5);
+  box-shadow: 3px 3px 10px 0px rgba(0, 0, 0, 0.5);
+
   &::before,
   &::after {
     content: '';
@@ -161,12 +155,14 @@ h3 {
     border: 16px solid transparent;
     border-bottom-color: red;
   }
+
   &::after {
     left: 21px;
     border: 14px solid transparent;
     border-bottom-color: #ffffff;
-  } 
+  }
 }
+
 .field-alert-box .field-alert-details {
   float: left;
 }
@@ -196,7 +192,6 @@ h3 {
   text-align: left;
   vertical-align: middle;
   font-size: 14px;
-  font-family: 'Public Sans';
   line-height: 20px;
   color: #d50000;
 }
@@ -205,7 +200,6 @@ h3 {
   text-align: left;
   vertical-align: middle;
   font-size: 14px;
-  font-family: Public Sans;
   line-height: 22px;
   color: #4a4a4a;
 }

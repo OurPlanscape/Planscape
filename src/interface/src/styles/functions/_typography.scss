@@ -1,0 +1,62 @@
+@mixin toMixin($map) {
+  @debug $map;
+  @each $name, $value in $map {
+    @debug $name;
+    #{$name}: $value;
+  }
+}
+
+@function h1() {
+  @return (
+    font-size: 30px,
+    font-style: normal,
+    font-weight: 700,
+    line-height: 32px,
+  );
+}
+
+@function h2() {
+  @return (
+    font-size: 26px,
+    font-style: normal,
+    font-weight: 700,
+    line-height: 32px
+  );
+}
+
+@function h3() {
+  @return (
+    font-size: 22px,
+    font-style: normal,
+    font-weight: 600,
+    line-height: 32px
+  );
+}
+
+
+@function h4() {
+  @return (
+    font-size: 18px,
+    font-style: normal,
+    font-weight: 600,
+    line-height: 32px
+  );
+}
+
+@function body-1() {
+  @return (
+    font-size: 14px,
+    font-style: normal,
+    font-weight: 400,
+    line-height: 22px,
+  )
+}
+
+@function body-2() {
+  @return (
+    font-size: 16px,
+    font-style: normal,
+    font-weight: 400,
+    line-height: 26px,
+  )
+}
