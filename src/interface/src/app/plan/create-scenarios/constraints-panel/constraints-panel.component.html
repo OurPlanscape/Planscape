@@ -16,8 +16,10 @@
               <input
                 class="right-align"
                 formControlName="maxArea"
+                type="text"
+                mask="separator"
+                thousandSeparator=","
                 matInput
-                type="number"
                 (input)="togglMaxAreaAndMaxCost()" />
             </mat-form-field>
           </div>
@@ -38,7 +40,9 @@
                 class="right-align"
                 formControlName="maxCost"
                 matInput
-                type="number"
+                type="text"
+                mask="separator"
+                thousandSeparator=","
                 (input)="togglMaxAreaAndMaxCost()" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
@@ -61,7 +65,7 @@
                 matInput
                 type="number"
                 [value]="37" />
-              <span matSuffix>%</span>
+              <span matSuffix class="suffix">%</span>
             </mat-form-field>
           </div>
         </div>
@@ -77,9 +81,10 @@
                 class="right-align"
                 formControlName="estimatedCost"
                 matInput
-                type="number" />
-              <span matPrefix>$&nbsp;</span>
-              <span matSuffix>/acre</span>
+                type="text"
+                mask="separator"
+                thousandSeparator="," />
+              <span matSuffix class="suffix">/acre</span>
             </mat-form-field>
           </div>
         </div>
@@ -98,9 +103,11 @@
               class="right-align"
               formControlName="minDistanceFromRoad"
               matInput
-              type="number"
+              type="text"
+              mask="separator"
+              thousandSeparator=","
               [value]="" />
-            <span matSuffix>yds</span>
+            <span matSuffix class="suffix">yds</span>
           </mat-form-field>
         </div>
         <div>

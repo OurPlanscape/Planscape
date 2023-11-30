@@ -59,6 +59,7 @@ import { DetailsComponent } from './account/details/details.component';
 import { CredentialsComponent } from './account/credentials/credentials.component';
 import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { MenuComponent } from './account/menu/menu.component';
+import { NgxMaskModule } from 'ngx-mask';
 
 @NgModule({
   declarations: [
@@ -114,6 +115,7 @@ import { MenuComponent } from './account/menu/menu.component';
     MatDialogModule,
     NgChartsModule,
     MapModule,
+    NgxMaskModule.forRoot(),
   ],
   providers: [
     AuthService,
