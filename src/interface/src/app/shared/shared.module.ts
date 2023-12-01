@@ -12,6 +12,7 @@ import { CurrencyInKPipe } from '../pipes/currency-in-k.pipe';
 import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.directive';
 import { FieldAlertComponent } from './field-alert/field-alert.component';
 import { CreditsBlurbComponent } from './credits-blurb/credits-blurb.component';
+import { FormResponseBoxComponent } from './form-response-box/form-response-box.component';
 
 @NgModule({
   declarations: [
@@ -22,6 +23,7 @@ import { CreditsBlurbComponent } from './credits-blurb/credits-blurb.component';
     TypeSafeMatCellDef,
     FieldAlertComponent,
     CreditsBlurbComponent,
+    FormResponseBoxComponent,
   ],
   exports: [
     FileUploaderComponent,
