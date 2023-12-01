@@ -1,2 +1,15 @@
-<app-edit-field userField="firstName" currentValue="Robert"></app-edit-field>
-<app-edit-field userField="lastName" currentValue="Papalos"></app-edit-field>
+<section *ngIf="successMsg">
+  <h3>Success!</h3>
+  <div>
+    {{ successMsg }}
+  </div>
+</section>
+
+<app-edit-field
+  userField="firstName"
+  [currentValue]="(user$ | async)?.firstName || ''"
+  (saved)="successMsg = $event"></app-edit-field>
+<app-edit-field
+  userField="lastName"
+  [currentValue]="(user$ | async)?.lastName || ''"
+  (saved)="successMsg = $event"></app-edit-field>

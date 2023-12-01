@@ -1,10 +1,11 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { User } from '../../types';
 import { take } from 'rxjs';
 import { AuthService } from '../../services';
 
-type availableUserFields = keyof Pick<User, 'firstName' | 'lastName'>;
+type AvailableUserFields = keyof Pick<User, 'firstName' | 'lastName'>;
+type State = 'view' | 'editing' | 'saving' | 'error';
 
 @Component({
   selector: 'app-edit-field',
@@ -13,12 +14,12 @@ type availableUserFields = keyof Pick<User, 'firstName' | 'lastName'>;
 })
 export class EditFieldComponent {
   @Input() currentValue = '';
-  @Input() userField: availableUserFields = 'firstName';
-  editing = false;
-  disableEditButton = false;
+  @Input() userField: AvailableUserFields = 'firstName';
+  @Output() saved = new EventEmitter<string>();
+  state: State = 'view';
   form: FormGroup;
 
-  readonly labels: Record<availableUserFields, string> = {
+  readonly labels: Record<AvailableUserFields, string> = {
     firstName: 'First Name',
     lastName: 'Last Name',
   };
@@ -34,8 +35,7 @@ export class EditFieldComponent {
 
   saveForm() {
     if (this.form.invalid) return;
-
-    this.disableEditButton = true;
+    this.state = 'saving';
     let user: Partial<User> = {};
     user[this.userField] = this.form.get('name')?.value;
 
@@ -44,17 +44,11 @@ export class EditFieldComponent {
       .pipe(take(1))
       .subscribe(
         (_) => {
-          this.disableEditButton = false;
+          this.state = 'view';
+          this.saved.emit(this.labels[this.userField] + ' Changed');
         },
         (err) => {
-          // if (err.status == 401) {
-          //   this.error = {
-          //     message: 'Your credentials were not entered correctly.',
-          //   };
-          // } else {
-          //   this.error = { message: 'An unexpected error occured.' };
-          // }
-          this.disableEditButton = false;
+          this.state = 'error';
         }
       );
   }
