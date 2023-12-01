@@ -1,5 +1,5 @@
 
-.login-error-box {
+:host {
     border-radius: 2px;
     display: flex;
     flex-direction: column;
@@ -11,15 +11,19 @@
     border: 1px solid #d50000;
     margin-top: 5px;
     margin-bottom: 1em;
-  }
   
-  .login-error-icon {
+    :host.message-icon {
     padding-left: 0;
     padding-right: 0.2em;
     float: left;
+    }
+
+  :host.title {
+    text-transform: capitalize;
+    color: #d50000;
   }
-  
-  .login-error-heading {
+
+  :host.message-title {
     float: left;
     text-align: left;
     vertical-align: middle;
@@ -27,9 +31,9 @@
     font-family: 'Public Sans';
     line-height: 20px;
     color: #d50000;
-  }
+      }
   
-  .login-error-details {
+  :host.login-error-details {
     text-align: left;
     vertical-align: middle;
     font-size: 14px;
@@ -38,3 +42,4 @@
     color: #4a4a4a;
   }
   
+}

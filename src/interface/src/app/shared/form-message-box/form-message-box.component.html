@@ -1,0 +1,19 @@
+<div>
+  <div class="title">
+    <mat-icon class="warning-icon message-icon">warning</mat-icon>
+    <img
+      src="assets/svg/icons/checkmark-round-fill.svg"
+      alt="checkmark"
+      class="" />
+    <img
+      src="assets/svg/icons/exclamation-square-fill.svg"
+      alt="exclamation"
+      class="" />
+    <img src="assets/svg/icons/warning-icon-fill.svg" alt="warning icon" />
+    <p class="message-title">{{ title }}</p>
+  </div>
+  <div>
+    {{ message }}
+    <ng-content select="[added-info]"></ng-content>
+  </div>
+</div>
