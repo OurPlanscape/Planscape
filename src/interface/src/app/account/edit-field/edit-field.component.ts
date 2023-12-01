@@ -40,7 +40,7 @@ export class EditFieldComponent {
     user[this.userField] = this.form.get('name')?.value;
 
     this.authService
-      .updateUserName(user)
+      .updateUserInfo(user)
       .pipe(take(1))
       .subscribe(
         (_) => {

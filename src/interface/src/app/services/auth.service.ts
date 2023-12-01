@@ -238,7 +238,7 @@ export class AuthService {
       );
   }
 
-  updateUserName(newUser: Partial<User>): Observable<User> {
+  updateUserInfo(newUser: Partial<User>): Observable<User> {
     return this.http
       .patch(
         this.API_ROOT.concat('user'),
@@ -264,6 +264,11 @@ export class AuthService {
       );
   }
 
+  /**
+   * deprecated
+   * @param newUser
+   * @param currentPassword
+   */
   updateUser(newUser: User, currentPassword: string): Observable<User> {
     return this.http
       .patch(
