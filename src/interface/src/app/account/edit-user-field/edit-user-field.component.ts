@@ -8,11 +8,11 @@ type AvailableUserFields = keyof Pick<User, 'firstName' | 'lastName'>;
 type State = 'view' | 'editing' | 'saving' | 'error';
 
 @Component({
-  selector: 'app-edit-field',
-  templateUrl: './edit-field.component.html',
-  styleUrls: ['./edit-field.component.scss'],
+  selector: 'app-edit-user-field',
+  templateUrl: './edit-user-field.component.html',
+  styleUrls: ['./edit-user-field.component.scss'],
 })
-export class EditFieldComponent {
+export class EditUserFieldComponent {
   @Input() currentValue = '';
   @Input() userField: AvailableUserFields = 'firstName';
   @Output() saved = new EventEmitter<string>();

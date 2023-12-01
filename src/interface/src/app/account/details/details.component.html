@@ -5,11 +5,11 @@
   </div>
 </section>
 
-<app-edit-field
+<app-edit-user-field
   userField="firstName"
   [currentValue]="(user$ | async)?.firstName || ''"
-  (saved)="successMsg = $event"></app-edit-field>
-<app-edit-field
+  (saved)="successMsg = $event"></app-edit-user-field>
+<app-edit-user-field
   userField="lastName"
   [currentValue]="(user$ | async)?.lastName || ''"
-  (saved)="successMsg = $event"></app-edit-field>
+  (saved)="successMsg = $event"></app-edit-user-field>

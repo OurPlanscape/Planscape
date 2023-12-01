@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DetailsComponent } from './details.component';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { AuthService } from '../../services';
-import { EditFieldComponent } from '../edit-field/edit-field.component';
+import { EditUserFieldComponent } from '../edit-field/edit-user-field.component';
 
 describe('DetailsComponent', () => {
   let component: DetailsComponent;
@@ -11,7 +11,7 @@ describe('DetailsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [DetailsComponent, MockComponent(EditFieldComponent)],
+      declarations: [DetailsComponent, MockComponent(EditUserFieldComponent)],
       providers: [MockProvider(AuthService)],
     }).compileComponents();
 

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EditFieldComponent } from './edit-field.component';
+import { EditUserFieldComponent } from './edit-user-field.component';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '../../services';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -12,18 +12,18 @@ import { MaterialModule } from '../../material/material.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('EditFieldComponent', () => {
-  let component: EditFieldComponent;
-  let fixture: ComponentFixture<EditFieldComponent>;
+  let component: EditUserFieldComponent;
+  let fixture: ComponentFixture<EditUserFieldComponent>;
   let loader: HarnessLoader;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [EditFieldComponent],
+      declarations: [EditUserFieldComponent],
       providers: [MockProvider(AuthService)],
       imports: [ReactiveFormsModule, MaterialModule, NoopAnimationsModule],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EditFieldComponent);
+    fixture = TestBed.createComponent(EditUserFieldComponent);
     component = fixture.componentInstance;
     loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();

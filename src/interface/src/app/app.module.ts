@@ -60,7 +60,7 @@ import { CredentialsComponent } from './account/credentials/credentials.componen
 import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { MenuComponent } from './account/menu/menu.component';
 import { NgxMaskModule } from 'ngx-mask';
-import { EditFieldComponent } from './account/edit-field/edit-field.component';
+import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
 
 @NgModule({
   declarations: [
@@ -92,7 +92,7 @@ import { EditFieldComponent } from './account/edit-field/edit-field.component';
     CredentialsComponent,
     DeleteAccountComponent,
     MenuComponent,
-    EditFieldComponent,
+    EditUserFieldComponent,
   ],
   imports: [
     AppRoutingModule,
