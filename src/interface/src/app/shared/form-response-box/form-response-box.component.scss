@@ -1,0 +1,40 @@
+
+.login-error-box {
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 12px 10px;
+    padding-bottom: 5px;
+    background-color: rgba(245, 245, 245, 0.4000000059604645);
+    border: 1px solid #d50000;
+    margin-top: 5px;
+    margin-bottom: 1em;
+  }
+  
+  .login-error-icon {
+    padding-left: 0;
+    padding-right: 0.2em;
+    float: left;
+  }
+  
+  .login-error-heading {
+    float: left;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 14px;
+    font-family: 'Public Sans';
+    line-height: 20px;
+    color: #d50000;
+  }
+  
+  .login-error-details {
+    text-align: left;
+    vertical-align: middle;
+    font-size: 14px;
+    font-family: Public Sans;
+    line-height: 22px;
+    color: #4a4a4a;
+  }
+  

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FormResponseBoxComponent } from './form-response-box.component';
+import { FormMessageBoxComponent } from './form-response-box.component';
 
-describe('FormResponseBoxComponent', () => {
-  let component: FormResponseBoxComponent;
-  let fixture: ComponentFixture<FormResponseBoxComponent>;
+describe('FormMessageBoxComponent', () => {
+  let component: FormMessageBoxComponent;
+  let fixture: ComponentFixture<FormMessageBoxComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ FormResponseBoxComponent ]
+      declarations: [ FormMessageBoxComponent ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(FormResponseBoxComponent);
+    fixture = TestBed.createComponent(FormMessageBoxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
