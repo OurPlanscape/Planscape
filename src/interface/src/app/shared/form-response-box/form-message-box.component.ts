@@ -16,9 +16,9 @@
   
 export class FormMessageBoxComponent implements {
   @Input() headingText!: string;
-  @Input() detailsText!: string;
-  @Input() boxStyle: string; // error, warning, alert, info, success
-  @Input() visible: boolean;
+@Input() detailsText!: string;
+  @Input() boxStyle!: string; // error, warning, alert, info, success
+  @Input() visible!: boolean;
 
   constructor() { }
 
