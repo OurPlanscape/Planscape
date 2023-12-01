@@ -238,6 +238,32 @@ export class AuthService {
       );
   }
 
+  updateUserName(newUser: Partial<User>): Observable<User> {
+    return this.http
+      .patch(
+        this.API_ROOT.concat('user'),
+        {
+          first_name: newUser.firstName,
+          last_name: newUser.lastName,
+        },
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response: any) => {
+          const user: User = {
+            email: response.email,
+            username: response.username,
+            firstName: response.first_name,
+            lastName: response.last_name,
+          };
+          this.loggedInUser$.next(user);
+          return user;
+        })
+      );
+  }
+
   updateUser(newUser: User, currentPassword: string): Observable<User> {
     return this.http
       .patch(
