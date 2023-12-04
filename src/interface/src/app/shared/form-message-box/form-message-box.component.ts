@@ -6,7 +6,6 @@ import { Component, Input, OnInit } from '@angular/core';
   templateUrl: './form-message-box.component.html',
   styleUrls: ['./form-message-box.component.scss'],
 })
-
 export class FormMessageBoxComponent implements OnInit {
   @Input() title!: string;
   @Input() message?: string;
@@ -24,7 +23,7 @@ export class FormMessageBoxComponent implements OnInit {
       case 'SUCCESS':
         return 'assets/svg/icons/checkmark-round-fill.svg';
       default: // alert is default
-        return 'assets/svg/icons/exclamation-square-fill.svg'; 
+        return 'assets/svg/icons/exclamation-square-fill.svg';
     }
   }
 
@@ -44,6 +43,5 @@ export class FormMessageBoxComponent implements OnInit {
   ngOnInit(): void {
     this.getBoxClass();
     this.getMessageIcon();
-
   }
 }
