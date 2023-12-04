@@ -45,7 +45,7 @@ $color-black: #000000;
   }
 
   .message-title {
-    @include top-level-label;
+    @include top-level-label();
     text-transform: uppercase;
     float: left;
     text-align: left;
@@ -58,7 +58,7 @@ $color-black: #000000;
   }
 
   .message-details {
-    @include small-paragraph;
+    @include small-paragraph();
     text-align: left;
     vertical-align: middle;
   }
