@@ -13,18 +13,18 @@
     border: 1px solid black;
   }
   .message-box.success {
-    border: 1px solid green;
+    border-color: green;
   }
   .message-box.error {
-    border: 1px solid red;
+    border-color: red;
   }
 
-  :host.message-icon {
+  .message-icon {
     padding-right: 0.8em;
     float: left;
   }
 
-  :host.message-title {
+  .message-title {
     text-transform: uppercase;
     float: left;
     text-align: left;
@@ -35,16 +35,16 @@
     color: black;
   }
 
-  :host.error .message-title {
+  .message-box.error .message-title   {
     color: #d50000;
   }
 
-  :host.message-details {
+  .message-details {
     color: #4a4a4a;
     text-align: left;
     vertical-align: middle;
     font-size: 14px;
     line-height: 22px;
-    font-family: 'Public Sans', 'Roboto', Arial, Helvetica, sans-serif;
+    font-family: 'Public Sans', Arial, Helvetica, sans-serif;
   }
 }

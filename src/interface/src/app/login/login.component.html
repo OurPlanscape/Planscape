@@ -50,11 +50,10 @@
             title="password error"></app-field-alert>
 
           <app-form-message
-            *ngIf="loginError !== '' ? true : false"
-            messageType="ERROR"
+            [messageType]="FormMessageType.ALERT"
             title="Credentials error"
             message="{{ loginError }}">
-            <div added-content *ngIf="offerReverify">
+            <div *ngIf="offerReverify">
               <a [routerLink]="[]" (click)="resendVerification()"
                 >Click here to re-send your verification email.</a
               >

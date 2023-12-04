@@ -1,10 +1,10 @@
-<div *ngIf="message" class="message-box" [ngClass]="getBoxClass()">
+<div class="message-box" [ngClass]="boxClass[messageType]">
   <div class="title">
-    <img [src]="getMessageIcon()" alt="message-icon" class="message-icon" />
+    <img [src]="icons[messageType]" alt="message-icon" class="message-icon" />
     <p class="message-title">{{ title }}</p>
   </div>
   <div class="message-details">
     {{ message }}
-    <ng-content select="[added-content]"></ng-content>
+    <ng-content></ng-content>
   </div>
 </div>
