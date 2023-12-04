@@ -7,19 +7,11 @@ import { Component, Input, OnInit } from '@angular/core';
   styleUrls: ['./form-message-box.component.scss'],
 })
 
-// export const responseBoxTypes: FormResponse[] = [
-//   FormResponse.ERROR,
-//   FormResponse.WARNING,
-//   FormResponse.ALERT,
-//   FormResponse.INFO,
-//   FormResponse.SUCCESS,
-// ];
 export class FormMessageBoxComponent implements OnInit {
   @Input() title!: string;
   @Input() message?: string;
   @Input() showMessage: boolean = false;
-  //@Input() messageType: FormMessageType = FormMessageType.ALERT;
-  @Input() messageType: String = '';
+  @Input() messageType: string = '';
 
   constructor() {}
 
@@ -31,8 +23,8 @@ export class FormMessageBoxComponent implements OnInit {
         return 'assets/svg/icons/warning-icon-fill.svg';
       case 'SUCCESS':
         return 'assets/svg/icons/checkmark-round-fill.svg';
-      default: // assume error
-        return 'assets/svg/icons/warning-icon-fill.svg'; // No class if inputValue doesn't match any case
+      default: // alert is default
+        return 'assets/svg/icons/exclamation-square-fill.svg'; 
     }
   }
 
@@ -45,12 +37,13 @@ export class FormMessageBoxComponent implements OnInit {
       case 'SUCCESS':
         return 'success';
       default:
-        return 'error';
+        return 'alert';
     }
   }
 
   ngOnInit(): void {
-    // This code will subscribe to the event emitted by the parent component
-    console.log('we got inited?');
+    this.getBoxClass();
+    this.getMessageIcon();
+
   }
 }

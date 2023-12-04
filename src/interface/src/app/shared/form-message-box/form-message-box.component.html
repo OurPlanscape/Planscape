@@ -3,7 +3,7 @@
     <img [src]="getMessageIcon()" alt="message-icon" class="message-icon" />
     <p class="message-title">{{ title }}</p>
   </div>
-  <div>
+  <div class="message-details">
     {{ message }}
     <ng-content select="[added-content]"></ng-content>
   </div>

@@ -5,29 +5,22 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    padding: 12px 10px;
-    padding-bottom: 5px;
+    padding: 12px 10px 12px 10px;
     background-color: rgba(245, 245, 245, 0.4000000059604645);
     margin-top: 5px;
     margin-bottom: 1em;
+    font-family: 'Public Sans', 'Roboto', Arial, Helvetica, sans-serif;
+    border: 1px solid black;
   }
   .message-box.success {
     border: 1px solid green;
-  }
-  .message-box.alert {
-    border: 1px solid black;
   }
   .message-box.error {
     border: 1px solid red;
   }
 
-  :host.error {
-    border: 1px solid #d50000;
-  }
-
   :host.message-icon {
-    padding-left: 0;
-    padding-right: 0.2em;
+    padding-right: 0.8em;
     float: left;
   }
 
@@ -36,27 +29,22 @@
     float: left;
     text-align: left;
     vertical-align: middle;
-    font-size: 14px;
-    font-family: 'Public Sans';
     line-height: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: black;
   }
 
   :host.error .message-title {
-    text-transform: uppercase;
     color: #d50000;
   }
 
-  :host.alert .message-title {
-    text-transform: uppercase;
-    color: green;
-  }
-
-  :host.login-error-details {
+  :host.message-details {
+    color: #4a4a4a;
     text-align: left;
     vertical-align: middle;
     font-size: 14px;
-    font-family: Public Sans;
     line-height: 22px;
-    color: #4a4a4a;
+    font-family: 'Public Sans', 'Roboto', Arial, Helvetica, sans-serif;
   }
 }
