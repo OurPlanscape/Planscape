@@ -1,3 +1,23 @@
+$color-error: #d50000;
+$color-dark-gray: #4A4A4A;
+$color-brand-teal: #356A72;
+$color-soft-purple: #E6E8F3;
+$color-message-background: #F5F5F566;
+$color-black: #000000;
+
+@mixin top-level-label {
+  font-size: 1.2em;
+  font-weight: bold;
+  color: $color-black;
+}
+
+@mixin small-paragraph {
+  font-size: 14px;
+  line-height: 22px;
+  font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+  color: $color-dark-gray;
+}
+
 :host {
   .message-box {
     border-radius: 2px;
@@ -6,45 +26,41 @@
     justify-content: flex-start;
     align-items: flex-start;
     padding: 12px 10px 12px 10px;
-    background-color: rgba(245, 245, 245, 0.4000000059604645);
+    background-color: $color-message-background;
     margin-top: 5px;
     margin-bottom: 1em;
-    font-family: 'Public Sans', 'Roboto', Arial, Helvetica, sans-serif;
-    border: 1px solid black;
+    font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+    border: 1px solid $color-dark-gray;
   }
   .message-box.success {
-    border-color: green;
+    border-color: $color-brand-teal;
   }
   .message-box.error {
-    border-color: red;
+    border-color: $color-error;
   }
 
   .message-icon {
-    padding-right: 0.8em;
-    float: left;
+    float:left;
+    margin-right: 8px;
   }
 
   .message-title {
+    @include top-level-label;
     text-transform: uppercase;
     float: left;
     text-align: left;
     vertical-align: middle;
     line-height: 20px;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: black;
+
   }
 
-  .message-box.error .message-title   {
-    color: #d50000;
+  .message-box.error .message-title {
+    color: $color-error;
   }
 
   .message-details {
-    color: #4a4a4a;
+    @include small-paragraph;
     text-align: left;
     vertical-align: middle;
-    font-size: 14px;
-    line-height: 22px;
-    font-family: 'Public Sans', Arial, Helvetica, sans-serif;
   }
 }
