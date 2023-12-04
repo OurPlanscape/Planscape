@@ -46,3 +46,13 @@
 .tooltip {
   padding: 20px;
 }
+
+.breadcrumb {
+  color: #064BBA; // standard blue - replace with vars ones landed
+  text-decoration: none;
+
+  &:hover, &:active {
+    text-decoration: underline;
+    color: #123D81; // main blue - replace with vars ones landed
+  }
+}
