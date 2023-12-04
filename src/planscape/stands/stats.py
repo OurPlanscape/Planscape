@@ -1,6 +1,7 @@
 import sys
 import warnings
 
+from rasterstats.io import parse_feature
 import numpy as np
 from affine import Affine
 from shapely.geometry import shape
@@ -18,7 +19,9 @@ from rasterstats.utils import (
 
 
 def gen_zonal_stats_experiment(
-    vectors,
+    stand_id,
+    stand_geometry,
+    stand_cache,
     raster,
     layer=0,
     band=1,
@@ -120,31 +123,33 @@ def gen_zonal_stats_experiment(
         warnings.warn("Use `band` to specify band number", DeprecationWarning)
         band = band_num
 
-    with Raster(raster, affine, nodata, band) as rast:
-        features_iter = read_features(vectors, layer)
-        geoms = []
-        for i, feat in enumerate(features_iter, start=1):
-            feat_geom = shape(feat["geometry"])
-            if "Point" in feat_geom.geom_type:
-                feat_geom = boxify_points(feat_geom, rast)
-            geoms.append((feat_geom, i))
+    if stand_id in stand_cache:
+        geoms_as_array, geom_bounds = stand_cache[stand_id]
+    else:
+        with Raster(raster, affine, nodata, band) as rast:
+            features_iter = [parse_feature(stand_geometry)]
+            geoms = []
+            for i, feat in enumerate(features_iter, start=1):
+                feat_geom = shape(feat["geometry"])
+                geoms.append((feat_geom, i))
 
-        n_features = len(geoms)
-        geom_bounds = tuple(unary_union([g for g, i in geoms]).bounds)
+            n_features = len(geoms)
+            geom_bounds = tuple(unary_union([g for g, i in geoms]).bounds)
 
-        fsrc = rast.read(bounds=geom_bounds, boundless=boundless)
+            fsrc = rast.read(bounds=geom_bounds, boundless=boundless)
 
-        # rasterized geometry
-        # rv_array = rasterize(geom, like=fsrc, all_touched=all_touched)
+            # rasterized geometry
+            # rv_array = rasterize(geom, like=fsrc, all_touched=all_touched)
 
-        geoms_as_array = rasterize(
-            geoms,
-            out_shape=fsrc.shape,
-            transform=fsrc.affine,
-            fill=0,
-            dtype="uint32",
-            all_touched=all_touched,
-        )
+            geoms_as_array = rasterize(
+                geoms,
+                out_shape=fsrc.shape,
+                transform=fsrc.affine,
+                fill=0,
+                dtype="uint32",
+                all_touched=all_touched,
+            )
+            stand_cache[stand_id] = (geoms_as_array, geom_bounds)
 
     # Align original raster and new array with geom IDs burned in.
     stacked_arrays = np.stack([fsrc.array, geoms_as_array])
