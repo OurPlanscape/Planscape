@@ -1,5 +1,5 @@
 import { LayoutModule } from '@angular/cdk/layout';
-import { CommonModule, CurrencyPipe, NgOptimizedImage } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -120,7 +120,6 @@ import { ChangePasswordComponent } from './account/change-password/change-passwo
     NgChartsModule,
     MapModule,
     NgxMaskModule.forRoot(),
-    NgOptimizedImage,
   ],
   providers: [
     AuthService,
