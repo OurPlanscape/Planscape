@@ -9,6 +9,7 @@ import { AuthService } from '../../services';
 export class DetailsComponent {
   user$ = this.authService.loggedInUser$;
   successMsg: string | null = null;
+  errorMsg: string | null = null;
 
   constructor(private authService: AuthService) {}
 }

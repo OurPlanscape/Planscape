@@ -16,6 +16,7 @@ export class EditUserFieldComponent {
   @Input() currentValue = '';
   @Input() userField: AvailableUserFields = 'firstName';
   @Output() saved = new EventEmitter<string>();
+  @Output() failed = new EventEmitter<string>();
   state: State = 'view';
   form: FormGroup;
 
@@ -49,6 +50,7 @@ export class EditUserFieldComponent {
         },
         (err) => {
           this.state = 'error';
+          this.failed.emit(err);
         }
       );
   }

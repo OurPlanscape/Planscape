@@ -1,15 +1,25 @@
+<!--TODO: replace with alert component-->
 <section *ngIf="successMsg">
   <h3>Success!</h3>
   <div>
     {{ successMsg }}
   </div>
 </section>
+<!--TODO: replace with alert component-->
+<section *ngIf="errorMsg">
+  <h3>Error!</h3>
+  <div>
+    {{ errorMsg }}
+  </div>
+</section>
 
 <app-edit-user-field
   userField="firstName"
   [currentValue]="(user$ | async)?.firstName || ''"
-  (saved)="successMsg = $event"></app-edit-user-field>
+  (saved)="successMsg = $event"
+  (failed)="errorMsg = $event"></app-edit-user-field>
 <app-edit-user-field
   userField="lastName"
   [currentValue]="(user$ | async)?.lastName || ''"
-  (saved)="successMsg = $event"></app-edit-user-field>
+  (saved)="successMsg = $event"
+  (failed)="errorMsg = $event"></app-edit-user-field>
