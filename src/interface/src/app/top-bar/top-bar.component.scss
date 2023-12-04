@@ -15,6 +15,7 @@
     font-weight: 400;
     letter-spacing: 0.5px;
     text-decoration: none;
+    height: 100%;
   }
 
   .logo-center {
@@ -22,6 +23,12 @@
     align-items: center;
     gap: 10px;
     margin-left: 10px;
+    box-sizing: border-box;
+    padding: 10px 0;
+  }
+
+  .logo {
+    height: 100%;
   }
 }
 
