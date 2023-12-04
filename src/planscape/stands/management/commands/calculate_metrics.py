@@ -11,48 +11,31 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.management.base import BaseCommand
 from django.db import connection
 from rasterstats import zonal_stats
-from stands.stats import gen_zonal_stats_experiment
+from stands.stats import gen_zonal_stats2
 from stands.models import Stand
 from django.conf import settings
 
 
-def inner(stand, condition_id, raster_path):
-    stand_id, geometry = stand
-    stats = zonal_stats(
-        vectors=[geometry],
-        raster=raster_path,
-        stats="min max mean count sum majority minority",
-    )[0]
-    min = stats.get("min")
-    max = stats.get("max")
-    avg = stats.get("mean")
-    count = stats.get("count")
-    sum = stats.get("sum")
-    maj = stats.get("majority")
-    mnt = stats.get("minority")
-    if count <= 0:
-        return None
-    return f"{stand_id},{condition_id},{min},{max},{avg},{sum},{count},{maj},{mnt}\n"
-
-
 def inner2(stand, condition_id, raster_path, stand_cache):
     stand_id, geometry = stand
-    stats = gen_zonal_stats_experiment(
+    stats = gen_zonal_stats2(
         stand_id,
         stand_geometry=geometry,
         stand_cache=stand_cache,
         raster=raster_path,
         stats="min max mean count sum majority minority",
-    )[0]
-    min = stats.get("min")
-    max = stats.get("max")
-    avg = stats.get("mean")
-    count = stats.get("count", 0)
-    sum = stats.get("sum")
-    maj = stats.get("majority")
-    mnt = stats.get("minority")
+    )
+
+    min = stats["min"]
+    max = stats["max"]
+    avg = stats["mean"]
+    sum = stats["sum"]
+    maj = stats["majority"]
+    mnt = stats["minority"]
+    count = stats["count"]
     if count <= 0:
         return None
+
     return f"{stand_id},{condition_id},{min},{max},{avg},{sum},{count},{maj},{mnt}\n"
 
 
@@ -148,11 +131,11 @@ class Command(BaseCommand):
 
         # removes duplicates
         condition_names = list(set(conditions))
-        print("Conditions:\n")
+        self.stdout.write("Conditions:\n")
         for c in condition_names:
-            print(f"{c}")
+            self.stdout.write(f"{c}")
 
-        print(f"Conditions found: {len(condition_names)}")
+        self.stdout.write(f"Conditions found: {len(condition_names)}")
 
         value = "y" if force_yes else input("Do you wish to proceed? [Y/n]").lower()
 
@@ -174,33 +157,33 @@ class Command(BaseCommand):
             cached = options.get("cached", True)
 
             real_start = time.time()
-
-            stand_cache = dict()
-
-            for condition in conditions:
-                start_condition = time.time()
-                stands = self.get_stands_queryset(condition_id=condition.id, size=size)
-                condition_id = condition.pk
-                region = condition.condition_dataset.region_name
-                if stands.count() <= 0:
-                    self.stdout.write(
-                        f"[OK] Finished {condition_id}: 0 seconds - no raster data."
+            with multiprocessing.Manager() as manager:
+                stand_cache = manager.dict()
+                for condition in conditions:
+                    start_condition = time.time()
+                    stands = self.get_stands_queryset(
+                        condition_id=condition.id, size=size
                     )
-                    continue
-                self.stdout.write(
-                    f"[OK] Processing {condition_id} with {stands.count()} stands."
-                )
-                stand_data = stands.values_list("id", "geom").iterator(chunk_size=1000)
-                raster_path = get_raster_path(condition)
+                    condition_id = condition.pk
+                    region = condition.condition_dataset.region_name
+                    if stands.count() <= 0:
+                        self.stdout.write(
+                            f"[OK] Finished {condition_id}: 0 seconds - no raster data."
+                        )
+                        continue
+                    self.stdout.write(
+                        f"[OK] Processing {condition_id} with {stands.count()} stands."
+                    )
+                    stand_data = stands.values_list("id", "geom").iterator(
+                        chunk_size=1000
+                    )
+                    raster_path = get_raster_path(condition)
 
-                if not raster_path.exists():
-                    self.stdout.write("[FAIL] Raster does not exists in disk")
-                    continue
+                    if not raster_path.exists():
+                        self.stdout.write("[FAIL] Raster does not exists in disk")
+                        continue
 
-                outfile = f"{region}_{condition_id}_{size}.csv"
-
-                with multiprocessing.Manager() as manager:
-                    stand_cache = manager.dict()
+                    outfile = f"{region}_{condition_id}_{size}.csv"
 
                     with multiprocessing.Pool(max_workers) as pool:
                         data = zip(
@@ -209,37 +192,16 @@ class Command(BaseCommand):
                             repeat(raster_path),
                             repeat(stand_cache),
                         )
-                        for result in pool.starmap(inner2, data, chunksize=1000):
-                            print(result)
+                        with open(outfile, "w") as out:
+                            results = pool.starmap(inner2, data, chunksize=1000)
+                            out.writelines(
+                                "stand_id,condition_id,min,max,avg,sum,count,majority,minority\n"
+                            )
+                            out.writelines([r for r in results if r])
 
-                    # with multiprocessing.Pool(max_workers) as pool:
-                    #     data = zip(
-                    #         stand_data,
-                    #         repeat(stand_cache),
-                    #         repeat(condition_id),
-                    #         repeat(raster_path),
-                    #     )
-                    #     for result in pool.starmap(compute_from_array, data):
-                    #         print(result)
-
-                # with open(outfile, "w") as out:
-                #     out.write(
-                #         "stand_id,condition_id,min,max,avg,sum,count,majority,minority"
-                #     )
-
-                #     with multiprocessing.Pool(max_workers) as pool:
-                #         data = zip(
-                #             stand_data,
-                #             repeat(condition_id),
-                #             repeat(raster_path),
-                #         )
-                #         for result in pool.starmap(inner, data, chunksize=500):
-                #             if result:
-                #                 out.write(result)
-
-                end_condition = time.time()
-                self.stdout.write(
-                    f"CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
-                )
+                    end_condition = time.time()
+                    self.stdout.write(
+                        f"CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
+                    )
             real_end = time.time()
             self.stdout.write(f"TOTAL RUNTIME {real_end - real_start}")
