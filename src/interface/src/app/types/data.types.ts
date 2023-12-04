@@ -68,14 +68,6 @@ export enum ConditionTreeType {
   FUTURE = 'Future',
 }
 
-export enum FormMessageType {
-  ERROR,
-  WARNING,
-  ALERT,
-  INFO,
-  SUCCESS,
-}
-
 export const NONE_BOUNDARY_CONFIG: BoundaryConfig = {
   boundary_name: '',
   display_name: 'None',
