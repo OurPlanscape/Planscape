@@ -13,32 +13,69 @@
 }
 
 .info-card {
-  align-items: stretch;
   background-color: white;
-  border-radius: 16px;
+  border-radius: 8px;
+  border: 1px;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   justify-content: center;
   margin: auto 100px;
-  padding: 50px;
+  padding: 40px 40px 30px 40px;
+  gap: 8px;
+}
+.list-icon {
+  height: 20px;
+  width: 20px;
+  padding-right: 4px;
+  float:left;
 }
 
 h3 {
-  font-family: 'Public Sans', 'Roboto';
-  font-size: 1.375rem;
-  font-weight: 200;
-  line-height: 24px;
+  font-family: 'Public Sans';
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
+  color: #202124;
+}
+
+/* regular paragraph */
+.listed-text {
+  font-size: 1rem;
+  font-weight: 400;
+  color: #4a4a4a;
+  font-family: 'Public Sans';
+  line-height: 1.625 rem;
+  float:left;
+}
+
+.caveat {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 400;
+  color: #767575;
+}
+
+.conditions-link {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  color: #064bba;
+  text-decoration: underline;
 }
 
 .signup-form-container {
   align-items: center;
-  background-color: #E6E8F3;
+  background-color: #e6e8f3;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 5% 10% 5% 10%;
+  padding: 40px 0px 40px 0px;
   width: 50%;
+}
+
+.signup-form-subcontainer {
+  width: 60%;
 }
 
 .planscape-color-logo {
@@ -49,30 +86,32 @@ h3 {
   width: 246px;
 }
 
-
 .signup-form {
   align-items: stretch;
   display: flex;
   flex-direction: column;
   justify-content: center;
   background-color: white;
-  margin: auto 100px;
-  padding: 2em;
-  width: 300px;
-  border:1px black solid;
-  border-radius: 10px;
+  // margin: auto 100px;
+  padding: 20px 60px 20px 60px;
+  border: 1px black solid;
+  border-color: #4854c0;
+  border-radius: 8px;
+  gap: 30px;
 }
 
 h1 {
-  font-family: 'Roboto';
-  font-size: 24px;
-  font-weight: 500;
+  font-family: 'Public Sans';
+  font-size: 30px;
+  font-weight: 700;
   line-height: 32px;
+  color: #202124;
+  text-align: center;
 
-  &.signup-title {
-    margin-bottom: 48px;
-    text-align: center;
-  }
+  // &.signup-title {
+  //   margin-bottom: 48px;
+  //   text-align: center;
+  // }
 }
 
 mat-form-field {
@@ -109,7 +148,24 @@ button {
   text-align: center;
 }
 
-/* field - default */
+/*standard label*/
+.standard-label {
+  color: #4a4a4a;
+  font-family: 'Public Sans';
+  font-weight: Medium;
+  font-size: 1rem;
+  line-height: 1.375 rem;
+}
+
+  /* italic-sm */
+.required-blurb {
+  font-family: 'Public Sans';
+  font-weight: Medium italic;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-style: italic;
+}
+
 ::ng-deep .mat-form-field-outline {
   background-color: #f4f4f4;
 }
@@ -117,6 +173,4 @@ button {
 /* field - selected */
 ::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
   background-color: rgba(255, 249, 102, 0.3);
-  //background-color: $highlight;
 }
-

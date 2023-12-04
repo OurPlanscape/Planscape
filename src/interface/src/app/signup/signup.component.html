@@ -1,48 +1,73 @@
 <div class="signup-root">
   <div class="info-card-container">
     <div class="info-card">
-      <h3><b>With a Planscape account, you can:</b></h3>
-      <div>
-        <h3>
-          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Save
-          planning areas
-        </h3>
-      </div>
-      <div>
-        <h3>
-          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Create
-          plans, configurations, and scenarios
-        </h3>
-      </div>
-      <div>
-        <h3>
-          <img
-            src="assets/svg/icons/checkbox.svg"
-            alt="checkbox icon" />Download shapefiles & metadata
-        </h3>
-      </div>
-      <div>
-        <h3>
-          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Share
-          work with collaborators
-        </h3>
-      </div>
+      <h3>With a Planscape account, you can:</h3>
 
-      <h3><b>As a guest user, you can:</b></h3>
-      <div>
-        <h3>
-          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />Explore
-          regional data on the map
-        </h3>
-      </div>
-      <div>
-        <h3>
-          <img src="assets/svg/icons/checkbox.svg" alt="checkbox icon" />View
-          plans and/or scenarios that are publicly visible*
-        </h3>
-      </div>
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        Create plans, scenarios and project areas
+      </p>
 
-      <p><i>*Accessible only via direct links</i></p>
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        Test different land management options and view outcomes
+      </p>
+
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        Save planning areas
+      </p>
+
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        Download shapefiles and metadata from your plans
+      </p>
+
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        Share work with collaborators
+      </p>
+
+      <h3>As a guest user, you can:</h3>
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        Explore data from the Regional Resource Kits
+      </p>
+      <p class="listed-text">
+        <img
+          src="assets/svg/icons/checkbox.svg"
+          alt="checkbox icon"
+          class="list-icon" />
+        View publicly available plans and scenarios*
+      </p>
+      <p class="caveat">*Accessible only via direct links</p>
+      <p class="listed-text">
+        Review Planscape
+        <a
+          class="conditions-link"
+          href="https://www.planscape.org/conditions-of-use/"
+          target="_blank"
+          >Conditions of Use</a
+        >
+      </p>
     </div>
   </div>
 
@@ -55,7 +80,7 @@
         <h1 class="signup-title">Create your account</h1>
 
         <form [formGroup]="form" (ngSubmit)="signup()">
-          <mat-label
+          <mat-label class="standard-label"
             >First Name
             <span class="required-blurb">required</span>
           </mat-label>
@@ -69,7 +94,7 @@
             message="{{ this.form.controls['firstName'].errors }}"
             title="field error"></app-field-alert>
 
-          <mat-label
+          <mat-label class="standard-label"
             >Last Name
             <span class="required-blurb">required</span>
           </mat-label>
@@ -83,7 +108,7 @@
             message=""
             title="email error"></app-field-alert>
 
-          <mat-label
+          <mat-label class="standard-label"
             >Email
             <span class="required-blurb">required</span>
           </mat-label>
@@ -106,7 +131,7 @@
             message="{{ emailError }}"
             title="email error"></app-field-alert>
 
-          <mat-label
+          <mat-label class="standard-label"
             >Create Password
             <span class="required-blurb">required</span>
           </mat-label>
@@ -124,7 +149,7 @@
             message=""
             title="email error"></app-field-alert>
 
-          <mat-label
+          <mat-label class="standard-label"
             >Confirm Password
             <span class="required-blurb">required</span>
           </mat-label>
