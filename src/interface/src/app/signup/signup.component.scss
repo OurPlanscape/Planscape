@@ -1,3 +1,61 @@
+$color-dark-gray: #4A4A4A;
+$color-light-gray: #F4F4F4;
+$color-original-purple: #4854C0;
+$color-soft-purple: #e6e8f3;
+$color-standard-blue: #064BBA;
+$color-highlight: #FFF966;
+$color-highlight-30percent: #FFF9664D;
+$color-medium-gray: #767575;
+
+@mixin h3 {
+  font-family: 'Public Sans';
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
+  color: $color-dark-gray;
+  // #202124;
+}
+
+@mixin regular-paragraph {
+  font-size: 1rem;
+  font-weight: 400;
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  line-height: 1.625 rem;
+}
+
+@mixin h1 {
+  font-family: 'Public Sans';
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 32px;
+  color: $color-dark-gray;
+}
+
+@mixin standard-label {
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  font-weight: Medium;
+  font-size: 1rem;
+  line-height: 1.375 rem;
+}
+
+@mixin italic-sm {
+  font-family: 'Public Sans';
+  font-weight: Medium italic;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-style: italic;
+}
+
+@mixin standard-link {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  color: $color-standard-blue;
+  text-decoration: underline;
+}
+
 .signup-root {
   display: flex;
   height: 100%;
@@ -15,7 +73,7 @@
 .info-card {
   background-color: white;
   border-radius: 8px;
-  border: 1px;
+  border: 1px $color-original-purple solid;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -28,45 +86,33 @@
   height: 20px;
   width: 20px;
   padding-right: 4px;
-  float:left;
+  float: left;
 }
 
 h3 {
-  font-family: 'Public Sans';
-  font-size: 22px;
-  font-weight: 400;
-  line-height: 32px;
-  color: #202124;
+  @include h3();
 }
 
 /* regular paragraph */
 .listed-text {
-  font-size: 1rem;
-  font-weight: 400;
-  color: #4a4a4a;
-  font-family: 'Public Sans';
-  line-height: 1.625 rem;
-  float:left;
+  @include regular-paragraph();
+  float: left;
 }
 
 .caveat {
   font-size: 16px;
   line-height: 26px;
   font-weight: 400;
-  color: #767575;
+  color: $color-medium-gray;
 }
 
 .conditions-link {
-  font-size: 16px;
-  line-height: 26px;
-  font-weight: 500;
-  color: #064bba;
-  text-decoration: underline;
+  @include standard-link();
 }
 
 .signup-form-container {
   align-items: center;
-  background-color: #e6e8f3;
+  background-color: $color-soft-purple;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -92,26 +138,16 @@ h3 {
   flex-direction: column;
   justify-content: center;
   background-color: white;
-  // margin: auto 100px;
   padding: 20px 60px 20px 60px;
   border: 1px black solid;
-  border-color: #4854c0;
+  border-color: $color-original-purple;
   border-radius: 8px;
   gap: 30px;
 }
 
 h1 {
-  font-family: 'Public Sans';
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 32px;
-  color: #202124;
+  @include h1();
   text-align: center;
-
-  // &.signup-title {
-  //   margin-bottom: 48px;
-  //   text-align: center;
-  // }
 }
 
 mat-form-field {
@@ -123,26 +159,6 @@ button {
   width: 100%;
 }
 
-.section-dots {
-  bottom: 40px;
-  box-sizing: border-box;
-  display: flex;
-  gap: 12px;
-  margin: 0px auto;
-  position: absolute;
-}
-
-.section-dot {
-  background-color: #c4c7c5;
-  border-radius: 5px;
-  height: 10px;
-  width: 10px;
-
-  &.selected {
-    background-color: #444746;
-  }
-}
-
 .post-error-option {
   padding: 2em;
   text-align: center;
@@ -150,27 +166,20 @@ button {
 
 /*standard label*/
 .standard-label {
-  color: #4a4a4a;
-  font-family: 'Public Sans';
-  font-weight: Medium;
-  font-size: 1rem;
-  line-height: 1.375 rem;
+  @include standard-label();
+  color: $color-dark-gray;
 }
 
-  /* italic-sm */
+/* italic-sm */
 .required-blurb {
-  font-family: 'Public Sans';
-  font-weight: Medium italic;
-  font-size: 0.875rem;
-  line-height: 1.375rem;
-  font-style: italic;
+  @include italic-sm();
 }
 
 ::ng-deep .mat-form-field-outline {
-  background-color: #f4f4f4;
+  background-color: $color-light-gray
 }
 
 /* field - selected */
 ::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
-  background-color: rgba(255, 249, 102, 0.3);
+  background-color: $color-highlight-30percent;
 }
