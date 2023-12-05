@@ -29,6 +29,15 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 600;
 }
 
+@mixin h3 {
+  @include public-sans();
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+
 @mixin h4 {
   @include public-sans();
   font-size: 18px;
@@ -47,4 +56,11 @@ Declare mixins based on styleguide and apply to classes
   @include public-sans();
   font-size: 14px;
   line-height: 22px;
+}
+
+@mixin p {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 26px
 }
