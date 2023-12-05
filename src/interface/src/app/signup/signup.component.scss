@@ -1,60 +1,5 @@
-$color-dark-gray: #4A4A4A;
-$color-light-gray: #F4F4F4;
-$color-original-purple: #4854C0;
-$color-soft-purple: #e6e8f3;
-$color-standard-blue: #064BBA;
-$color-highlight: #FFF966;
-$color-highlight-30percent: #FFF9664D;
-$color-medium-gray: #767575;
-
-@mixin h3 {
-  font-family: 'Public Sans';
-  font-size: 22px;
-  font-weight: 400;
-  line-height: 32px;
-  color: $color-dark-gray;
-  // #202124;
-}
-
-@mixin regular-paragraph {
-  font-size: 1rem;
-  font-weight: 400;
-  color: $color-dark-gray;
-  font-family: 'Public Sans';
-  line-height: 1.625 rem;
-}
-
-@mixin h1 {
-  font-family: 'Public Sans';
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 32px;
-  color: $color-dark-gray;
-}
-
-@mixin standard-label {
-  color: $color-dark-gray;
-  font-family: 'Public Sans';
-  font-weight: Medium;
-  font-size: 1rem;
-  line-height: 1.375 rem;
-}
-
-@mixin italic-sm {
-  font-family: 'Public Sans';
-  font-weight: Medium italic;
-  font-size: 0.875rem;
-  line-height: 1.375rem;
-  font-style: italic;
-}
-
-@mixin standard-link {
-  font-size: 16px;
-  line-height: 26px;
-  font-weight: 500;
-  color: $color-standard-blue;
-  text-decoration: underline;
-}
+@import '../../styles/colors';
+@import '../../styles/mixins';
 
 .signup-root {
   display: flex;
@@ -91,23 +36,26 @@ $color-medium-gray: #767575;
 
 h3 {
   @include h3();
+  color: $color-dark-gray;
 }
 
 /* regular paragraph */
 .listed-text {
   @include regular-paragraph();
   float: left;
+  color: $color-dark-gray;
 }
 
 .caveat {
   font-size: 16px;
   line-height: 26px;
   font-weight: 400;
-  color: $color-medium-gray;
+  color: $color-md-gray;
 }
 
 .conditions-link {
   @include standard-link();
+  color: $color-standard-blue;
 }
 
 .signup-form-container {
@@ -148,6 +96,7 @@ h3 {
 h1 {
   @include h1();
   text-align: center;
+  color: $color-dark-gray;
 }
 
 mat-form-field {
@@ -176,10 +125,10 @@ button {
 }
 
 ::ng-deep .mat-form-field-outline {
-  background-color: $color-light-gray
+  background-color: $color-light-gray;
 }
 
 /* field - selected */
 ::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
-  background-color: $color-highlight-30percent;
+  background-color: $color-highlight-30pct;
 }

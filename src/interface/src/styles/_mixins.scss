@@ -15,6 +15,13 @@ Declare mixins based on styleguide and apply to classes
   line-height: 22px;
 }
 
+@mixin regular-paragraph {
+  font-size: 1rem;
+  font-weight: 400;
+  font-family: 'Public Sans';
+  line-height: 1.625 rem;
+}
+
 @mixin standard-label {
   /* standard-label */
   @include public-sans();
@@ -24,9 +31,30 @@ Declare mixins based on styleguide and apply to classes
   line-height: 24px; /* 133.333% */
 }
 
+@mixin standard-link {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
 @mixin standard-label-bold {
   @include standard-label();
   font-weight: 600;
+}
+
+@mixin h1 {
+  @include public-sans();
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+@mixin h3 {
+  @include public-sans();
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
 }
 
 @mixin h4 {
