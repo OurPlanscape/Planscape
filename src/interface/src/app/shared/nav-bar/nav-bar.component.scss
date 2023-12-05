@@ -1,4 +1,6 @@
 @import '../../shared/_variables.scss';
+@import "../../../styles/colors";
+@import "../../../styles/mixins";
 
 .nav-bar {
   display: flex;
@@ -11,11 +13,6 @@
   gap: 10px;
 }
 
-.title {
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
-}
 
 .back-button {
   line-height: 0; // override line height from .mat-icon-button
@@ -48,11 +45,15 @@
 }
 
 .breadcrumb {
-  color: #064BBA; // standard blue - replace with vars ones landed
-  text-decoration: none;
+  @include standard-label();
 
-  &:hover, &:active {
-    text-decoration: underline;
-    color: #123D81; // main blue - replace with vars ones landed
+  a {
+    color: $color-standard-blue;
+    text-decoration: none;
+
+    &:hover, &:active {
+      text-decoration: underline;
+      color: $color-main-blue
+    }
   }
 }

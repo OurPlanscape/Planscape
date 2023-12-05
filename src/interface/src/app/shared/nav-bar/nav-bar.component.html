@@ -2,15 +2,12 @@
   <button mat-icon-button (click)="goBack.emit()" class="back-button">
     <mat-icon color="primary">arrow_back</mat-icon>
   </button>
-  <span class="title">
-    <a [routerLink]="'/home'" class="breadcrumb">Planning Areas</a>
+  <span class="breadcrumb">
+    <a [routerLink]="'/home'">Planning Areas</a>
 
     <ng-container *ngFor="let breadcrumb of breadcrumbs">
       /
-      <a
-        [routerLink]="breadcrumb.path"
-        *ngIf="breadcrumb.path"
-        class="breadcrumb">
+      <a [routerLink]="breadcrumb.path" *ngIf="breadcrumb.path">
         {{ breadcrumb.name }}</a
       >
       <span *ngIf="!breadcrumb.path">{{ breadcrumb.name }}</span>
