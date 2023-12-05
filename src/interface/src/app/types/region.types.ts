@@ -1,5 +1,3 @@
-import features from '../features/features.json';
-
 export enum Region {
   SIERRA_NEVADA = 'Sierra Nevada',
   SOUTHERN_CALIFORNIA = 'Southern California',
@@ -13,27 +11,12 @@ export interface RegionOption {
   available: boolean;
 }
 
-const regions: Region[] = [
+export const regions: Region[] = [
   Region.SIERRA_NEVADA,
   Region.SOUTHERN_CALIFORNIA,
   Region.CENTRAL_COAST,
   Region.NORTHERN_CALIFORNIA,
 ];
-
-const availableRegions = new Set([
-  Region.SIERRA_NEVADA,
-  features.show_socal ? Region.SOUTHERN_CALIFORNIA : null,
-  features.show_centralcoast ? Region.CENTRAL_COAST : null,
-  features.show_north_cal ? Region.NORTHERN_CALIFORNIA : null,
-]);
-
-export const regionOptions = regions.map((region) => {
-  return {
-    type: region,
-    name: region,
-    available: availableRegions.has(region),
-  };
-});
 
 /* Note: these are the names used by the configurations and backend
  * Defaults to Sierra Nevada. */

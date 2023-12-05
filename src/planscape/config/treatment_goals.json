@@ -385,7 +385,7 @@
                   "wildland_urban_interface",
                   "predicted_ignition_probability_human_caused",
                   "annual_burn_probability",
-                  "wildlife_species_richness",
+                  "california_spotted_owl",
                   "threatened_endangered_vertebrate_species_richness",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
@@ -440,7 +440,7 @@
                   "housing_unit_density",
                   "predicted_ignition_probability_human_caused",
                   "annual_burn_probability",
-                  "wildlife_species_richness",
+                  "california_spotted_owl",
                   "threatened_endangered_vertebrate_species_richness",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
@@ -500,7 +500,7 @@
                 ],
                 "metrics": [
                   "threatened_endangered_vertebrate_species_richness",
-                  "wildlife_species_richness",
+                  "california_spotted_owl",
                   "predicted_ignition_probability_human_caused",
                   "annual_burn_probability",
                   "mountain_lion",
@@ -550,7 +550,7 @@
                 ],
                 "metrics": [
                   "threatened_endangered_vertebrate_species_richness",
-                  "wildlife_species_richness",
+                  "california_spotted_owl",
                   "predicted_ignition_probability_human_caused",
                   "annual_burn_probability",
                   "mountain_lion",
@@ -572,7 +572,7 @@
               ],
               "weights": [],
               "stand_thresholds": [
-                "wildlife_species_richness == 0",
+                "california_spotted_owl == 0",
                 "probability_of_fire_severity_high > 0"
               ],
               "global_thresholds": []
@@ -615,17 +615,17 @@
                   "structure_exposure_score",
                   "housing_unit_density",
                   "probability_of_fire_severity_high",
-                  "wildlife_species_richness"
+                  "california_spotted_owl"
                 ]
               },
               "scenario_priorities": [
                 "probability_of_fire_severity_high",
-                "wildlife_species_richness"
+                "california_spotted_owl"
               ],
               "weights": [],
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0",
-                "wildlife_species_richness > 0"
+                "california_spotted_owl > 0"
               ],
               "global_thresholds": []
             },
@@ -655,7 +655,7 @@
                   "threatened_endangered_vertebrate_species_richness",
                   "predicted_ignition_probability_human_caused",
                   "annual_burn_probability",
-                  "wildlife_species_richness",
+                  "california_spotted_owl",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
                   "mountain_yellow_legged_frog",
@@ -712,7 +712,7 @@
                   "threatened_endangered_vertebrate_species_richness",
                   "predicted_ignition_probability_human_caused",
                   "annual_burn_probability",
-                  "wildlife_species_richness",
+                  "california_spotted_owl",
                   "mountain_lion",
                   "coastal_california_gnatcatcher",
                   "mountain_yellow_legged_frog",

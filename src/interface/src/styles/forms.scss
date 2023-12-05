@@ -1,0 +1,33 @@
+@import "mixins";
+@import "colors";
+
+.form-field-label {
+  @include standard-label();
+  color: $color-dark-gray;
+  padding-bottom: 0;
+  padding-right: 1em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  .required-blurb {
+    @include italic-sm();
+    color: $color-text-gray;
+  }
+}
+
+mat-form-field.form-field-input {
+  min-width: 287px;
+  max-width: 900px;
+  max-height: 50px;
+  margin-bottom: 10px;
+
+  .mat-form-field-outline {
+    background-color: $color-light-gray;
+  }
+
+  .mat-form-field-infix {
+    border-top-width: 4px;
+  }
+
+}

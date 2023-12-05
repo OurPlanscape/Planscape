@@ -54,6 +54,13 @@ import { ConfirmationDialogComponent } from './password-reset/confirmation-dialo
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { MapModule } from './map/map.module';
 import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
+import { AccountPageComponent } from './account/account-page/account-page.component';
+import { DetailsComponent } from './account/details/details.component';
+import { CredentialsComponent } from './account/credentials/credentials.component';
+import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
+import { MenuComponent } from './account/menu/menu.component';
+import { NgxMaskModule } from 'ngx-mask';
+import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +87,12 @@ import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
     ConfirmationDialogComponent,
     AccountValidationComponent,
     DeleteDialogComponent,
+    AccountPageComponent,
+    DetailsComponent,
+    CredentialsComponent,
+    DeleteAccountComponent,
+    MenuComponent,
+    EditUserFieldComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -104,6 +117,7 @@ import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
     MatDialogModule,
     NgChartsModule,
     MapModule,
+    NgxMaskModule.forRoot(),
   ],
   providers: [
     AuthService,

@@ -20,10 +20,6 @@ export class LoginComponent {
   protected passwordError: string = '';
   protected emailError: string = '';
   form: FormGroup;
-  readonly text1: string = `
-    Planscape is a collaborative effort by the California Natural Resources Agency (CNRA) and the
-    USDA Forest Service, with support from Google.org.
-  `;
 
   constructor(
     private authService: AuthService,

@@ -1,0 +1,19 @@
+@import "mixins";
+@import "colors";
+
+h4.form-field-title {
+  @include h4();
+  border-bottom: 1px solid $color-text-gray;
+  padding-bottom: 4px;
+  margin-bottom: 10px;
+}
+
+.lowercase {
+  text-transform: lowercase;
+}
+
+.form-field-p {
+  @include standard-label();
+  margin: 10px 0;
+  color: $color-dark-gray;
+}

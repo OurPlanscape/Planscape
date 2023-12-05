@@ -45,6 +45,7 @@
     "ng2-charts": "^4.0.0",
     "ngx-cookie-service": "^14.0.1",
     "ngx-google-analytics": "^14.0.1",
+    "ngx-mask": "^14.3.2",
     "rxjs": "~7.5.0",
     "shpjs": "^4.0.4",
     "tslib": "^2.3.0",

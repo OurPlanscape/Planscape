@@ -48,6 +48,7 @@ body {
 
 .snackbar-notice {
   background: #000000;
+
   button {
     color: #ffffff;
   }
@@ -74,3 +75,4 @@ body {
 
 // Must manually import leaflet draw css. https://github.com/Leaflet/Leaflet.draw/issues/617
 @import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
+@import "styles/index";
