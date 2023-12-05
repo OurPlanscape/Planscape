@@ -1,6 +1,11 @@
 @import "mixins";
 @import "colors";
 
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}
+
 .form-field-label {
   @include standard-label();
   color: $color-dark-gray;
@@ -13,6 +18,10 @@
   .required-blurb {
     @include italic-sm();
     color: $color-text-gray;
+  }
+
+  .error {
+    color: $color-error;
   }
 }
 
@@ -29,5 +38,8 @@ mat-form-field.form-field-input {
   .mat-form-field-infix {
     border-top-width: 4px;
   }
-
+  /* selected */
+  .mat-form-field-outline.mat-form-field-outline-thick {
+    background-color: $color-highlight-30pct;
+  }
 }

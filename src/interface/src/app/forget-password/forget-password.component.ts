@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ResetPasswordDialogComponent } from './reset-password-dialog/reset_password_dialog.component';
 import * as signInMessages from '../shared/constants';
 import { EMAIL_VALIDATION_REGEX } from '../../app/shared/constants';
+import { FormMessageType } from '../types/data.types';
 
 @Component({
   selector: 'app-forget-password',
@@ -21,6 +22,7 @@ export class ForgetPasswordComponent {
   protected accountError = '';
   protected emailError: string = '';
   form: FormGroup;
+  FormMessageType = FormMessageType;
 
   constructor(
     private authService: AuthService,
