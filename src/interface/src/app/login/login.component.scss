@@ -1,50 +1,5 @@
-/* var and mixin placeholders */
-$color-dark-gray: #4a4a4a;
-$color-light-gray: #f4f4f4;
-$color-original-purple: #4854c0;
-$color-original-purple-50percent: #4854c080;
-$color-soft-purple: #e6e8f3;
-$color-standard-blue: #064bba;
-$color-highlight: #fff966;
-$color-highlight-30percent: #fff9664d;
-$color-medium-gray: #767575;
-$color-text-gray: #898989;
-$color-text-dark: #202124;
-$color-error: #D50000;
-
-@mixin h1 {
-  font-family: 'Public Sans';
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 32px;
-  letter-spacing: 0px;
-}
-
-@mixin standard-label {
-  color: $color-dark-gray;
-  font-family: 'Public Sans';
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
-  letter-spacing: 0px;
-  text-align: left;
-}
-
-@mixin standard-link {
-  font-family: 'Public Sans';
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 16px;
-  letter-spacing: 0px;
-}
-
-@mixin italic-sm {
-  font-family: 'Public Sans';
-  font-weight: Medium italic;
-  font-size: 0.875rem;
-  line-height: 1.375rem;
-  font-style: italic;
-}
+@import "../../styles/colors";
+@import "../../styles/mixins";
 
 .signin-root {
   display: flex;
@@ -170,6 +125,7 @@ mat-form-field {
   text-align: center;
 }
 
+/* TODO: remove in favor of new component */
 .login-error-box {
   border-radius: 2px;
   display: flex;
@@ -184,6 +140,7 @@ mat-form-field {
   margin-bottom: 1em;
 }
 
+/* TODO: remove in favor of new component */
 .login-error-icon {
   padding-left: 0;
   padding-right: 0.2em;
