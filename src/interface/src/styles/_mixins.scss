@@ -7,6 +7,13 @@ Declare mixins based on styleguide and apply to classes
   font-family: Public Sans;
 }
 
+@mixin button-text {
+  @include public-sans();
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
 @mixin italic-sm {
   @include public-sans();
   font-size: 14px;
@@ -27,6 +34,21 @@ Declare mixins based on styleguide and apply to classes
 @mixin standard-label-bold {
   @include standard-label();
   font-weight: 600;
+}
+
+
+@mixin h1 {
+  @include public-sans();
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+@mixin h3 {
+  @include public-sans();
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
 }
 
 @mixin h4 {
