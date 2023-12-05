@@ -1,0 +1,137 @@
+/* var and mixin placeholders */
+$color-dark-gray: #4a4a4a;
+$color-light-gray: #f4f4f4;
+$color-original-purple: #4854c0;
+$color-original-purple-50percent: #4854c080;
+$color-soft-purple: #e6e8f3;
+$color-standard-blue: #064bba;
+$color-highlight: #fff966;
+$color-highlight-30percent: #fff9664d;
+$color-medium-gray: #767575;
+$color-text-gray: #898989;
+$color-brand-teal: #356a72;
+
+
+@mixin h2 {
+  font-family: 'Public Sans';
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+@mixin h3 {
+  font-family: 'Public Sans';
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
+  color: $color-dark-gray;
+}
+
+@mixin regular-paragraph {
+  font-size: 1rem;
+  font-weight: 400;
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  line-height: 1.625 rem;
+}
+
+@mixin small-paragraph {
+    font-size: 14px;
+    line-height: 22px;
+    font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+    color: $color-dark-gray;
+  }
+
+@mixin standard-label {
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  font-weight: Medium;
+  font-size: 1rem;
+  line-height: 1.375 rem;
+}
+
+@mixin italic-sm {
+  font-family: 'Public Sans';
+  font-weight: Medium italic;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-style: italic;
+}
+
+@mixin standard-link {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  color: $color-standard-blue;
+  text-decoration: underline;
+}
+
+@mixin button-text {
+  font-family: Public Sans;
+  font-weight: semibold;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}
+
+@mixin horizontal-card {
+  border: 1px solid $color-dark-gray;
+  width: 523px;
+  height: 120px;
+  box-shadow: 0px 4px 4px 0px #00000017;
+  display: flex;
+  flex-direction: row;
+
+}
+
+@mixin top-level-label {
+font-family: Public Sans;
+font-size: 14px;
+font-weight: 700;
+line-height: 14px;
+letter-spacing: 0px;
+text-align: left;
+
+  }
+
+@mixin icon-box {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  margin:8px;
+  padding: 10px;
+  background-color: $color-brand-teal;
+}
+
+.horizontal-card {
+  @include horizontal-card();
+  .icon-box {
+    @include icon-box();
+  }}
+
+  .icon-box-icon {
+    fill: white;
+    stroke: blue;
+    path {
+        stroke: #ff00ff;
+    }
+  }
+
+  .card-content {
+    padding: 20px 10px 20px 10px;
+    gap: 20px;
+    width: 380px;
+    float: left;
+  }
+
+  .title {
+    @include top-level-label();
+    text-transform: uppercase;
+    color: $color-dark-gray;
+  }
+

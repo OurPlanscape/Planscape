@@ -1,0 +1,146 @@
+/* var and mixin placeholders */
+$color-dark-gray: #4a4a4a;
+$color-light-gray: #f4f4f4;
+$color-original-purple: #4854c0;
+$color-original-purple-50percent: #4854c080;
+$color-soft-purple: #e6e8f3;
+$color-standard-blue: #064bba;
+$color-highlight: #fff966;
+$color-highlight-30percent: #fff9664d;
+$color-medium-gray: #767575;
+$color-text-gray: #898989;
+
+@mixin h2 {
+  font-family: 'Public Sans';
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+@mixin h3 {
+  font-family: 'Public Sans';
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
+  color: $color-dark-gray;
+}
+
+@mixin regular-paragraph {
+  font-size: 1rem;
+  font-weight: 400;
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  line-height: 1.625 rem;
+}
+
+@mixin standard-label {
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  font-weight: Medium;
+  font-size: 1rem;
+  line-height: 1.375 rem;
+}
+
+@mixin italic-sm {
+  font-family: 'Public Sans';
+  font-weight: Medium italic;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-style: italic;
+}
+
+@mixin standard-link {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  color: $color-standard-blue;
+  text-decoration: underline;
+}
+
+@mixin button-text {
+  font-family: Public Sans;
+  font-weight: semibold;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}
+
+@mixin form-card {
+  padding: 10px 0px 10px 0px;
+  border-radius: 8px;
+  border: 1px;
+  gap: 20px;
+
+  align-items: stretch;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: auto;
+  padding: 40px 60px 40px 60px;
+  width: 70%;
+  border: 1px $color-original-purple-50percent solid;
+  border-radius: 8px;
+  box-shadow: 0px 4px 4px 0px #00000040;
+  font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+}
+
+/* --- */
+
+.thankyou-root {
+  display: flex;
+  height: 100%;
+}
+
+.thankyou-container {
+  background-image: url('/assets/jpg/planscape-background.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  width: 50%;
+}
+
+.thankyou-subcontainer {
+  flex-direction: column;
+  margin: auto;
+  height: 400px;
+  width: 500px;
+  padding: 20px 0px 20px 0px;
+  gap: 20px;
+  display: flex;
+}
+
+.thankyou-card {
+  @include form-card();
+  background-color: white;
+  margin: auto;
+  height: 156px;
+  width: 50%;
+  gap: 10px;
+}
+
+h2 {
+  @include h2();
+  &.title {
+    text-align: center;
+    color: $color-dark-gray;
+  }
+}
+
+p.regular {
+    @include regular-paragraph();
+}
+
+a.standard-link {
+    @include standard-link();
+}
+
+.info-text-container {
+  background-color: $color-soft-purple;
+  width: 50%;
+  display: flex;
+  justify-content: center;
+}

@@ -1,0 +1,113 @@
+/* var and mixin placeholders */
+$color-dark-gray: #4a4a4a;
+$color-light-gray: #f4f4f4;
+$color-original-purple: #4854c0;
+$color-original-purple-50percent: #4854c080;
+$color-soft-purple: #e6e8f3;
+$color-standard-blue: #064bba;
+$color-highlight: #fff966;
+$color-highlight-30percent: #fff9664d;
+$color-medium-gray: #767575;
+$color-text-gray: #898989;
+
+@mixin h2 {
+  font-family: 'Public Sans';
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+@mixin h3 {
+  font-family: 'Public Sans';
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 32px;
+  color: $color-dark-gray;
+}
+
+@mixin regular-paragraph {
+  font-size: 1rem;
+  font-weight: 400;
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  line-height: 1.625 rem;
+}
+
+@mixin standard-label {
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  font-weight: Medium;
+  font-size: 1rem;
+  line-height: 1.375 rem;
+}
+
+@mixin italic-sm {
+  font-family: 'Public Sans';
+  font-weight: Medium italic;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-style: italic;
+}
+
+@mixin standard-link {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+  color: $color-standard-blue;
+  text-decoration: underline;
+}
+
+@mixin button-text {
+  font-family: Public Sans;
+  font-weight: semibold;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}
+
+@mixin top-level-label {
+    font-size: 16px;
+    font-weight: bold;
+    font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+  }
+
+/** End placeholders **/
+
+::host {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.learn-more-component {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+.learn-more-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 680px;
+    padding: 40px 0px 40px 0px;
+    gap: 40px;
+}
+
+.learn-more-title {
+    @include top-level-label;
+}
+
+.logo-container {
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+  
+

@@ -60,6 +60,9 @@ import { CredentialsComponent } from './account/credentials/credentials.componen
 import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { MenuComponent } from './account/menu/menu.component';
 import { NgxMaskModule } from 'ngx-mask';
+import { ThankYouComponent } from './signup/thank-you/thank-you.component';
+import { LearnMoreComponent } from './home/learn-more/learn-more.component';
+import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.component';
 
 @NgModule({
   declarations: [
@@ -91,6 +94,9 @@ import { NgxMaskModule } from 'ngx-mask';
     CredentialsComponent,
     DeleteAccountComponent,
     MenuComponent,
+    ThankYouComponent,
+    LearnMoreComponent,
+    HorizonalCardComponent,
   ],
   imports: [
     AppRoutingModule,

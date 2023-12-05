@@ -25,6 +25,7 @@ import { AccountPageComponent } from './account/account-page/account-page.compon
 import { DetailsComponent } from './account/details/details.component';
 import { CredentialsComponent } from './account/credentials/credentials.component';
 import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
+import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 
 const routes: Routes = [
   {
@@ -60,6 +61,12 @@ const routes: Routes = [
         path: 'signup',
         title: 'Signup',
         component: SignupComponent,
+        canActivate: [createFeatureGuard('login')],
+      },
+      {
+        path: 'thankyou',
+        title: 'Account Validation',
+        component: ThankYouComponent,
         canActivate: [createFeatureGuard('login')],
       },
       {
