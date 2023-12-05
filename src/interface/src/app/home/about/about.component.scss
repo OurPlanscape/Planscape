@@ -1,68 +1,5 @@
-/* var and mixin placeholders */
-$color-dark-gray: #4a4a4a;
-$color-light-gray: #f4f4f4;
-$color-original-purple: #4854c0;
-$color-original-purple-50percent: #4854c080;
-$color-soft-purple: #e6e8f3;
-$color-standard-blue: #064bba;
-$color-highlight: #fff966;
-$color-highlight-30percent: #fff9664d;
-$color-medium-gray: #767575;
-$color-text-gray: #898989;
-$color-text-dark: #202124;
-
-@mixin regular-paragraph {
-  font-family: 'Public Sans';
-  font-size: 16px;
-  font-weight: 300;
-  line-height: 26px;
-  letter-spacing: 0px;
-  text-align: left;
-}
-
-@mixin important-paragraph {
-  font-family: 'Public Sans';
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 32px;
-  letter-spacing: 0px;
-  text-align: left;
-}
-
-@mixin small-paragraph {
-  font-family: 'Public Sans';
-  font-size: 14px;
-  font-weight: 400;
-  line-height: 22px;
-  letter-spacing: 0px;
-  text-align: left;
-}
-
-@mixin h1 {
-  font-family: 'Public Sans';
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 32px;
-}
-
-@mixin h3 {
-  font-family: 'Public Sans';
-  font-weight: 500;
-  font-size: 22px;
-  line-height: 24px;
-}
-
-/* component definitions */
-::host {
-  background-color: $color-soft-purple;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 145px 120px 120px 82px;
-  width: 50%;
-  gap: 20px;
-}
+@import "../../../styles/colors";
+@import "../../../styles/mixins";
 
 .about-container {
   background-color: $color-soft-purple;
@@ -85,6 +22,7 @@ p.important {
   @include important-paragraph();
   color: $color-dark-gray;
   margin: auto;
+  text-align: left;
 }
 
 .list-area {
@@ -97,6 +35,7 @@ p.regular {
   @include regular-paragraph();
   color: $color-dark-gray;
   float: left;
+  text-align: left;
 }
 
 .dot-icon {
@@ -116,4 +55,5 @@ p.regular {
 
 p.small {
   @include small-paragraph();
+  text-align: left;
 }
