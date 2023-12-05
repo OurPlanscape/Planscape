@@ -81,3 +81,9 @@ export const NONE_DATA_LAYER_CONFIG: DataLayerConfig = {
   layer: '',
   colormap: NONE_COLORMAP,
 };
+
+export enum FormMessageType {
+  SUCCESS,
+  ERROR,
+  ALERT,
+}

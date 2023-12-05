@@ -49,22 +49,17 @@
             message="{{ passwordError }}"
             title="password error"></app-field-alert>
 
-          <div class="login-error-box" *ngIf="loginError">
-            <p class="login-error-heading">
-              <mat-icon class="warning-icon login-error-icon">warning</mat-icon>
-              CREDENTIALS ERROR
-            </p>
-            <p class="login-error-details">
-              {{ loginError }}
-              <a
-                *ngIf="offerReverify"
-                clickable
-                [routerLink]="[]"
-                (click)="resendVerification()"
+          <app-form-message
+            [messageType]="FormMessageType.ERROR"
+            *ngIf="loginError ? true : false"
+            title="Credentials error"
+            message="{{ loginError }}">
+            <div *ngIf="offerReverify">
+              <a [routerLink]="[]" (click)="resendVerification()"
                 >Click here to re-send your verification email.</a
               >
-            </p>
-          </div>
+            </div>
+          </app-form-message>
 
           <mat-card-actions class="login-form-buttons">
             <button
