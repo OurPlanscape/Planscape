@@ -15,6 +15,12 @@ Declare mixins based on styleguide and apply to classes
   line-height: 22px;
 }
 
+@mixin small-paragraph {
+  @include public-sans();
+  font-size: 14px;
+  line-height: 22px;
+}
+
 @mixin standard-label {
   /* standard-label */
   @include public-sans();
@@ -49,4 +55,10 @@ Declare mixins based on styleguide and apply to classes
   font-weight: semibold;
   font-size: 1rem;
   line-height: 1rem;
+}
+
+@mixin top-level-label {
+  @include public-sans();
+  font-size: 16px;
+  font-weight: bold;
 }

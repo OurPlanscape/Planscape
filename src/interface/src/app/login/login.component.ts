@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../services';
+import { FormMessageType } from '../types/data.types';
+
 import {
   SNACK_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
@@ -20,6 +22,7 @@ export class LoginComponent {
   protected passwordError: string = '';
   protected emailError: string = '';
   form: FormGroup;
+  FormMessageType = FormMessageType;
 
   constructor(
     private authService: AuthService,
