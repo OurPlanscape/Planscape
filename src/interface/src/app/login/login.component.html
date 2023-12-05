@@ -11,7 +11,7 @@
         <h1 class="signin-title">Sign in to Planscape</h1>
 
         <form [formGroup]="form" (ngSubmit)="login()">
-          <mat-label
+          <mat-label class="standard-label"
             >Email
             <span class="required-blurb">required</span>
           </mat-label>
@@ -34,7 +34,7 @@
             message="{{ emailError }}"
             title="email error"></app-field-alert>
 
-          <mat-label
+          <mat-label class="standard-label"
             >Password
             <span class="required-blurb">required</span>
           </mat-label>
@@ -49,6 +49,7 @@
             message="{{ passwordError }}"
             title="password error"></app-field-alert>
 
+          <!-- replace with new compoennt, when it's available -->
           <div class="login-error-box" *ngIf="loginError">
             <p class="login-error-heading">
               <mat-icon class="warning-icon login-error-icon">warning</mat-icon>
@@ -73,15 +74,12 @@
               type="submit"
               [disabled]="!form.valid"
               class="login-form-button">
-              Sign in
+              LOG IN
             </button>
           </mat-card-actions>
 
-          <p>
-            <a
-              class="forget-password-link"
-              i18n="Text on a button to reset password"
-              href="reset/">
+          <p class="forget-password-link">
+            <a i18n="Text on a button to reset password" href="reset/">
               Forgot your password?
             </a>
           </p>

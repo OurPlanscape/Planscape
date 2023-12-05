@@ -1,3 +1,51 @@
+/* var and mixin placeholders */
+$color-dark-gray: #4a4a4a;
+$color-light-gray: #f4f4f4;
+$color-original-purple: #4854c0;
+$color-original-purple-50percent: #4854c080;
+$color-soft-purple: #e6e8f3;
+$color-standard-blue: #064bba;
+$color-highlight: #fff966;
+$color-highlight-30percent: #fff9664d;
+$color-medium-gray: #767575;
+$color-text-gray: #898989;
+$color-text-dark: #202124;
+$color-error: #D50000;
+
+@mixin h1 {
+  font-family: 'Public Sans';
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: 0px;
+}
+
+@mixin standard-label {
+  color: $color-dark-gray;
+  font-family: 'Public Sans';
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  letter-spacing: 0px;
+  text-align: left;
+}
+
+@mixin standard-link {
+  font-family: 'Public Sans';
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0px;
+}
+
+@mixin italic-sm {
+  font-family: 'Public Sans';
+  font-weight: Medium italic;
+  font-size: 0.875rem;
+  line-height: 1.375rem;
+  font-style: italic;
+}
+
 .signin-root {
   display: flex;
   height: 100%;
@@ -37,43 +85,39 @@
   justify-content: flex-start;
   align-items: center;
   padding: 40px 60px;
-  background-color: #ffffff;
+  background-color: white;
   border: 1px solid rgba(72, 84, 192, 0.5);
 }
 
 h1 {
   &.signin-title {
+    @include h1();
     margin-bottom: 48px;
     text-align: center;
     text-align: center;
     vertical-align: middle;
-    font-size: 30px;
-    font-family: 'Public Sans';
-    font-weight: 600;
-    line-height: 32px;
-    color: #202124;
+    color: $color-text-dark;
   }
+}
+
+.forget-link {
+  text-align: center;
 }
 
 mat-label {
   text-align: left;
   vertical-align: middle;
-  font-size: 16px;
-  font-family: 'Public Sans';
-  line-height: 22px;
-  color: #4a4a4a;
   padding-bottom: 1em;
   padding-right: 1em;
 }
 
+.standard-label {
+  @include standard-label();
+}
+
 .required-blurb {
-  text-align: left;
-  vertical-align: middle;
-  font-size: 14px;
-  font-family: Public Sans;
-  font-style: italic;
-  line-height: 22px;
-  color: #898888;
+  @include italic-sm();
+  color: $color-text-gray;
 }
 
 button {
@@ -87,42 +131,25 @@ mat-divider {
 mat-form-field {
   width: 100%;
 }
-
-p {
-  color: #888888;
-  font-family: 'Public Sans', 'Roboto';
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 20px;
-  text-align: center;
+::ng-deep .mat-form-field-outline {
+  background-color: $color-light-gray
 }
 
-
 .forget-password-link {
+  @include standard-link();
   text-align: center;
   vertical-align: middle;
-  font-size: 16px;
-  font-family: 'Public Sans';
-  line-height: 26px;
+
   text-decoration: underline;
-  color: #064bba;
+  color: $color-standard-blue;
   padding-top: 26px;
 }
 
 .info-text-container {
-  box-sizing: border-box;
-  flex-direction: column;
-  justify-content: center;
-  padding: 70px 120px 50px 82px;
-  width: 50%;
-  overflow: scroll;
-}
+  background-color: $color-soft-purple;
 
-h3 {
-  font-family: 'Roboto';
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
+  width: 50%;
+  gap: 20px;
 }
 
 .login-form-buttons {
@@ -134,41 +161,13 @@ h3 {
 
 .login-form-button {
   flex: 1;
+  width: 70px;
+
 }
 
 .mat-error {
   margin-top: 10px;
   text-align: center;
-}
-
-.field-alert-box {
-  position: absolute;
-  padding: 1em;
-  background: #ffffff;
-  width: 300px;
-  border: 1px solid #f50000;
-  margin-left: 1em;
-  margin-top: -5px;
-  border-radius: 5px;
-  z-index: 10000;
-  box-shadow: 3px 3px 10px 0px rgba(0,0,0,0.5);
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 19px;
-    border: 16px solid transparent;
-    border-bottom-color: red;
-  }
-  &::after {
-    left: 21px;
-    border: 14px solid transparent;
-    border-bottom-color: #ffffff;
-  } 
-}
-.field-alert-box .field-alert-details {
-  float: left;
 }
 
 .login-error-box {
@@ -180,7 +179,7 @@ h3 {
   padding: 12px 10px;
   padding-bottom: 5px;
   background-color: rgba(245, 245, 245, 0.4000000059604645);
-  border: 1px solid #d50000;
+  border: 1px  $color-error solid;
   margin-top: 5px;
   margin-bottom: 1em;
 }
@@ -191,6 +190,7 @@ h3 {
   float: left;
 }
 
+/* TODO: remove in favor of new component */
 .login-error-heading {
   float: left;
   text-align: left;
@@ -198,16 +198,16 @@ h3 {
   font-size: 14px;
   font-family: 'Public Sans';
   line-height: 20px;
-  color: #d50000;
+  color: $color-error;
 }
-
+/* TODO: remove in favor of new component */
 .login-error-details {
   text-align: left;
   vertical-align: middle;
   font-size: 14px;
   font-family: Public Sans;
   line-height: 22px;
-  color: #4a4a4a;
+  color: $color-dark-gray;
 }
 
 .post-error-option {
