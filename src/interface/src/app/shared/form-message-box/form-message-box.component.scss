@@ -1,49 +1,47 @@
-@import "../../../styles/colors";
-@import "../../../styles/mixins";
+@import '../../../styles/colors';
+@import '../../../styles/mixins';
 
-:host {
-  .message-box {
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: flex-start;
-    padding: 12px 10px 12px 10px;
-    background-color: $color-soft-purple-30pct;
-    margin-top: 5px;
-    margin-bottom: 1em;
-    border-radius: 2px;
-    border: 1px solid $color-dark-gray;
-  }
-  .message-box.success {
-    border-color: $color-brand-teal;
-  }
-  .message-box.error {
-    border-color: $color-error;
-  }
+.message-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 12px 10px 12px 10px;
+  background-color: $color-soft-purple-30pct;
+  margin-top: 5px;
+  margin-bottom: 1em;
+  border-radius: 2px;
+  border: 1px solid $color-dark-gray;
+}
+.message-box.success {
+  border-color: $color-brand-teal;
+}
+.message-box.error {
+  border-color: $color-error;
+}
 
-  .message-icon {
-    float: left;
-    margin-right: 8px;
-  }
+.message-icon {
+  float: left;
+  margin-right: 8px;
+}
 
-  .message-title {
-    @include top-level-label();
-    text-transform: uppercase;
-    float: left;
-    text-align: left;
-    vertical-align: middle;
-    line-height: 20px;
-    color: $color-black;
-  }
+.message-title {
+  @include top-level-label();
+  text-transform: uppercase;
+  float: left;
+  text-align: left;
+  vertical-align: middle;
+  line-height: 20px;
+  color: $color-black;
+}
 
-  .message-box.error .message-title {
-    color: $color-error;
-  }
+.message-box.error .message-title {
+  color: $color-error;
+}
 
-  .message-details {
-    @include small-paragraph();
-    text-align: left;
-    vertical-align: middle;
-    color: $color-dark-gray;
-  }
+.message-details {
+  @include small-paragraph();
+  text-align: left;
+  vertical-align: middle;
+  color: $color-dark-gray;
 }
