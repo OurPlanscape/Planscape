@@ -132,6 +132,5 @@ import { EditUserFieldComponent } from './account/edit-user-field/edit-user-fiel
     CurrencyPipe,
   ],
   bootstrap: [AppComponent],
-  entryComponents: [AccountDialogComponent],
 })
 export class AppModule {}

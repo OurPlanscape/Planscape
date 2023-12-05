@@ -3,7 +3,10 @@
   This will permanently erase your account and delete any plans that you own
 </p>
 
-<button mat-flat-button color="warn">
+<button
+  mat-stroked-button
+  color="secondary"
+  (click)="openDeleteAccountDialog()">
   <mat-icon>delete_outline</mat-icon>
   Delete Account
 </button>
