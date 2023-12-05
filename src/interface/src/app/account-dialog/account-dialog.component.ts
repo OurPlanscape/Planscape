@@ -17,6 +17,9 @@ import { AuthService } from '../services';
 import { User } from '../types';
 import { DeleteAccountDialogComponent } from './delete-account-dialog/delete-account-dialog.component';
 
+/**
+ * @deprecated use new account routes
+ */
 @Component({
   selector: 'app-account-dialog',
   templateUrl: './account-dialog.component.html',
