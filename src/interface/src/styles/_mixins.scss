@@ -29,10 +29,24 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 600;
 }
 
+@mixin h1 {
+  @include public-sans();
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
 @mixin h4 {
   @include public-sans();
   font-size: 18px;
   font-style: normal;
   font-weight: 600;
   line-height: 32px;
+}
+
+@mixin button-text {
+  font-family: Public Sans;
+  font-weight: semibold;
+  font-size: 1rem;
+  line-height: 1rem;
 }
