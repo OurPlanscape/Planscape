@@ -23,6 +23,8 @@ import { Plan, User } from '../types';
 import { AuthService } from '../services';
 import { ScenarioService } from '../services/scenario.service';
 import { PlanStateService } from '../services/plan-state.service';
+import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
+import { getPlanPath } from './plan-helpers';
 
 @Component({
   selector: 'app-plan',
@@ -52,13 +54,18 @@ export class PlanComponent implements OnInit, OnDestroy {
     this.scenario$,
   ]).pipe(
     map(([plan, scenario]) => {
-      const crumbs = [plan.name];
       const path = this.getPathFromSnapshot();
+      const crumbs: Breadcrumb[] = [
+        {
+          name: plan.name,
+          path: path === 'config' ? getPlanPath(plan.id) : undefined,
+        },
+      ];
       if (path === 'config' && !scenario) {
-        crumbs.push('New Scenario');
+        crumbs.push({ name: 'New Scenario' });
       }
       if (scenario) {
-        crumbs.push(scenario.name || '');
+        crumbs.push({ name: scenario.name || '' });
       }
       return crumbs;
     })
