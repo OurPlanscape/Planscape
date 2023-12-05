@@ -60,6 +60,8 @@ import {
   showRegionLayer,
 } from './map.layers';
 import { PlanStateService } from '../services/plan-state.service';
+import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
+import { getPlanPath } from '../plan/plan-helpers';
 
 @UntilDestroy()
 @Component({
@@ -121,7 +123,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   );
   existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   showConfirmAreaButton$ = new BehaviorSubject(false);
-  breadcrumbs$ = new BehaviorSubject(['New Plan']);
+  breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
   constructor(
     public applicationRef: ApplicationRef,
@@ -242,7 +244,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           }
 
           this.drawPlanningArea(plan);
-          this.breadcrumbs$.next([plan.name]);
+          this.breadcrumbs$.next([
+            { name: plan.name, path: getPlanPath(plan.id) },
+          ]);
         },
         error: (error) => {
           // this.planNotFound = true;

@@ -134,12 +134,12 @@ const routes: Routes = [
           },
           {
             path: 'information',
-            title: 'Personal information',
+            title: 'Edit Personal information',
             component: DetailsComponent,
           },
           {
             path: 'credentials',
-            title: 'Credentials',
+            title: 'Edit Credentials',
             component: CredentialsComponent,
           },
           {

@@ -63,6 +63,7 @@ import { NgxMaskModule } from 'ngx-mask';
 import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 import { LearnMoreComponent } from './home/learn-more/learn-more.component';
 import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.component';
+import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
 
 @NgModule({
   declarations: [
@@ -97,6 +98,7 @@ import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.com
     ThankYouComponent,
     LearnMoreComponent,
     HorizonalCardComponent,
+    EditUserFieldComponent,
   ],
   imports: [
     AppRoutingModule,

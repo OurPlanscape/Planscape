@@ -7,7 +7,7 @@
 
 section {
   width: 100%;
-  padding: 0 40px 0;
+  padding: 20px 40px 0;
 }
 
 aside {
@@ -20,7 +20,7 @@ aside {
 }
 
 h2 {
-  padding: 20px 40px 0 0;
+  padding: 20px 40px 4px 0;
   color: #4A4A4A;
   /* H2 */
   font-family: Public Sans;
@@ -28,5 +28,6 @@ h2 {
   font-style: normal;
   font-weight: 700;
   line-height: 32px;
-  border-bottom: 2px solid black;
+  border-bottom: 1px solid black;
+  margin-bottom: 30px;
 }
