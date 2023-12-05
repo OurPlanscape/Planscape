@@ -17,8 +17,8 @@ def handle(apps, schema_editor):
 
     instance = spotted_owl.first()
     if instance:
-        spotted_owl.condition_name = "california_spotted_owl"
-        spotted_owl.save()
+        instance.condition_name = "california_spotted_owl"
+        instance.save()
 
 
 class Migration(migrations.Migration):
