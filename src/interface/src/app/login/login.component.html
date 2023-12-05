@@ -50,7 +50,8 @@
             title="password error"></app-field-alert>
 
           <app-form-message
-            [messageType]="FormMessageType.ALERT"
+            [messageType]="FormMessageType.ERROR"
+            *ngIf="loginError ? true : false"
             title="Credentials error"
             message="{{ loginError }}">
             <div *ngIf="offerReverify">

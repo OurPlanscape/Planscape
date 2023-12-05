@@ -1,23 +1,5 @@
-$color-error: #d50000;
-$color-dark-gray: #4a4a4a;
-$color-brand-teal: #356a72;
-$color-soft-purple: #e6e8f3;
-$color-message-background: #f5f5f566;
-$color-black: #000000;
-
-@mixin top-level-label {
-  font-size: 16px;
-  font-weight: bold;
-  color: $color-black;
-  font-family: 'Public Sans', Arial, Helvetica, sans-serif;
-}
-
-@mixin small-paragraph {
-  font-size: 14px;
-  line-height: 22px;
-  font-family: 'Public Sans', Arial, Helvetica, sans-serif;
-  color: $color-dark-gray;
-}
+@import "../../../styles/colors";
+@import "../../../styles/mixins";
 
 :host {
   .message-box {
@@ -26,7 +8,7 @@ $color-black: #000000;
     justify-content: flex-start;
     align-items: flex-start;
     padding: 12px 10px 12px 10px;
-    background-color: $color-message-background;
+    background-color: $color-soft-purple-30pct;
     margin-top: 5px;
     margin-bottom: 1em;
     border-radius: 2px;
@@ -51,6 +33,7 @@ $color-black: #000000;
     text-align: left;
     vertical-align: middle;
     line-height: 20px;
+    color: $color-black;
   }
 
   .message-box.error .message-title {
@@ -61,5 +44,6 @@ $color-black: #000000;
     @include small-paragraph();
     text-align: left;
     vertical-align: middle;
+    color: $color-dark-gray;
   }
 }

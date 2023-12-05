@@ -36,3 +36,15 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 600;
   line-height: 32px;
 }
+
+@mixin top-level-label {
+  font-size: 16px;
+  font-weight: bold;
+  font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+}
+
+@mixin small-paragraph {
+  font-size: 14px;
+  line-height: 22px;
+  font-family: 'Public Sans', Arial, Helvetica, sans-serif;
+}
