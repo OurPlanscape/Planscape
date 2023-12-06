@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ChangePasswordComponent } from './change-password.component';
+import { ReactiveFormsModule } from '@angular/forms';
+import { MockProvider } from 'ng-mocks';
+import { AuthService } from '../../services';
 
 describe('ChangePasswordComponent', () => {
   let component: ChangePasswordComponent;
@@ -8,9 +10,10 @@ describe('ChangePasswordComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ ChangePasswordComponent ]
-    })
-    .compileComponents();
+      declarations: [ChangePasswordComponent],
+      imports: [ReactiveFormsModule],
+      providers: [MockProvider(AuthService)],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ChangePasswordComponent);
     component = fixture.componentInstance;
