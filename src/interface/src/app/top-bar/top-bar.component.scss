@@ -1,16 +1,16 @@
 @import '../shared/_variables.scss';
-
+@import "../../styles/colors";
 
 // Top-bar styling
 .mat-toolbar {
-  background-color: #494949;
+  background-color: $color-dark-gray;
   height: $toolbar-height;
   padding: 0 12px;
   position: relative;
   z-index: 2;
 
   .site-link {
-    color: #ffffff;
+    color: $color-white;
     font-size: 19px;
     font-style: normal;
     font-weight: 400;
@@ -50,7 +50,7 @@
 
 .username,
 .nav-link {
-  color: white;
+  color: $color-white;
   font-size: 18px;
   font-weight: 400;
   line-height: 24px;
@@ -63,14 +63,14 @@
 
   &:visited,
   &:active {
-    color: white;
+    color: $color-white;
   }
 }
 
 .avatar {
   border-radius: 50%;
   background-color: white;
-  color: #494949;
+  color: $color-dark-gray;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -88,11 +88,11 @@
     display: none;
   }
   .mat-toolbar {
-    background-color: white;
+    background-color: $color-white;
   }
 
   .mat-toolbar .site-link {
-    color: black;
+    color: $color-black;
   }
 
   .site-link img {
