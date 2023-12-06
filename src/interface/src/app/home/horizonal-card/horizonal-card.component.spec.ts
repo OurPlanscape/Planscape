@@ -8,9 +8,8 @@ describe('HorizonalCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ HorizonalCardComponent ]
-    })
-    .compileComponents();
+      declarations: [HorizonalCardComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(HorizonalCardComponent);
     component = fixture.componentInstance;
