@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services';
+import { FormMessageType } from '../../types';
 
 @Component({
   selector: 'app-details',
@@ -10,6 +11,8 @@ export class DetailsComponent {
   user$ = this.authService.loggedInUser$;
   successMsg: string | null = null;
   errorMsg: string | null = null;
+
+  readonly FormMessageType = FormMessageType;
 
   constructor(private authService: AuthService) {}
 }
