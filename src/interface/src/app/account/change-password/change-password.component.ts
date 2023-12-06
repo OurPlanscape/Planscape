@@ -1,14 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  ValidationErrors,
-  ValidatorFn,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services';
 import { take } from 'rxjs';
+import {
+  newPasswordMustBeNewValidator,
+  newPasswordValidator,
+} from '../../validators/passwords';
 
 type State = 'view' | 'editing' | 'saving' | 'error';
 
@@ -40,7 +37,10 @@ export class ChangePasswordComponent {
         passwordConfirm: this.fb.control('', [Validators.required]),
       },
       {
-        validators: [crossFieldValidators],
+        validators: [
+          newPasswordMustBeNewValidator('current', 'password'),
+          newPasswordValidator('password', 'passwordConfirm'),
+        ],
       }
     );
   }
@@ -74,46 +74,3 @@ export class ChangePasswordComponent {
       );
   }
 }
-
-// duplicated from AccountDialogComponent (component to be deleted)
-const crossFieldValidators: ValidatorFn = (
-  formControls: AbstractControl
-): ValidationErrors | null => {
-  const currentPassword = formControls.value.current;
-  const password1 = formControls.value.password;
-  const password2 = formControls.value.passwordConfirm;
-
-  const allTheErrors = {
-    newPasswordMustBeNew: false,
-    newPaswordsMustMatch: false,
-    mustContainNumber: false,
-    mustContainUpper: false,
-    mustContainLower: false,
-  };
-
-  if (
-    currentPassword.length > 0 &&
-    password1.length > 0 &&
-    password2.length > 0
-  ) {
-    if (currentPassword === password1) {
-      allTheErrors.newPasswordMustBeNew = true;
-    }
-    if (password1 !== password2) {
-      allTheErrors.newPaswordsMustMatch = true;
-    }
-    if (!/[0-9]+/.test(password1)) {
-      allTheErrors.mustContainNumber = true;
-    }
-    if (!/[A-Z]+/.test(password1)) {
-      allTheErrors.mustContainUpper = true;
-    }
-    if (!/[a-z]+/.test(password1)) {
-      allTheErrors.mustContainLower = true;
-    }
-  }
-  if (Object.entries(allTheErrors).some(([key, value]) => value !== false)) {
-    return allTheErrors;
-  }
-  return null;
-};
