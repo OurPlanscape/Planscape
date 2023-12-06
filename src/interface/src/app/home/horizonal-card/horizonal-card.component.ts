@@ -6,9 +6,9 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./horizonal-card.component.scss'],
 })
 export class HorizonalCardComponent {
-  @Input() title: string = 'HELLO I AM A TITLE';
+  @Input() title: string = '';
   @Input() content: string = '';
-  @Input() icon: string = '';
+  @Input() iconsrc: string = '';
 
   constructor() {}
 }
