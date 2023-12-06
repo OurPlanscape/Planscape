@@ -3,8 +3,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services';
 import { take } from 'rxjs';
 import {
-  newPasswordMustBeNewValidator,
-  newPasswordValidator,
+  passwordMustBeNewValidator,
+  passwordsMustMatchValidator,
 } from '../../validators/passwords';
 
 type State = 'view' | 'editing' | 'saving' | 'error';
@@ -38,8 +38,8 @@ export class ChangePasswordComponent {
       },
       {
         validators: [
-          newPasswordMustBeNewValidator('current', 'password'),
-          newPasswordValidator('password', 'passwordConfirm'),
+          passwordMustBeNewValidator('current', 'password'),
+          passwordsMustMatchValidator('password', 'passwordConfirm'),
         ],
       }
     );
