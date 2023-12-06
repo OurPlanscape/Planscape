@@ -50,8 +50,15 @@ export function passwordsMustMatchValidator(
   const crossFieldValidators: ValidatorFn = (
     formControls: AbstractControl
   ): ValidationErrors | null => {
-    const password1 = formControls.get(passwordFieldName)?.value;
-    const password2 = formControls.get(passwordConfirmFieldName)?.value;
+    const passwordField = formControls.get(passwordFieldName);
+    const confirmationField = formControls.get(passwordConfirmFieldName);
+
+    const passwordErrors = passwordField?.errors || {};
+    const confirmationErrors = confirmationField?.errors || {};
+
+    // remove previous error if any
+    delete passwordErrors['newPasswordsMustMatch'];
+    delete confirmationErrors['newPasswordsMustMatch'];
 
     const passwordsMustMatch: Pick<
       PasswordFieldsErrors,
@@ -60,12 +67,28 @@ export function passwordsMustMatchValidator(
       newPasswordsMustMatch: true,
     };
 
-    if (password1.length > 0 && password2.length > 0) {
-      if (password1 !== password2) {
+    const password = passwordField?.value;
+    const confirmation = confirmationField?.value;
+
+    if (password.length > 0 && confirmation.length > 0) {
+      if (password !== confirmation) {
+        // add errors to fields
+        passwordField?.setErrors({ ...passwordErrors, ...passwordsMustMatch });
+        confirmationField?.setErrors({
+          ...confirmationErrors,
+          ...passwordsMustMatch,
+        });
         return passwordsMustMatch;
       }
     }
+
+    passwordField?.setErrors(formatErrors(passwordErrors));
+    confirmationField?.setErrors(formatErrors(confirmationErrors));
     return null;
   };
   return crossFieldValidators;
+}
+
+function formatErrors(field: ValidationErrors) {
+  return Object.keys(field).length > 0 ? field : null;
 }
