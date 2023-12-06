@@ -61,6 +61,7 @@ import { DeleteAccountComponent } from './account/delete-account/delete-account.
 import { MenuComponent } from './account/menu/menu.component';
 import { NgxMaskModule } from 'ngx-mask';
 import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
+import { ChangePasswordComponent } from './account/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -93,6 +94,7 @@ import { EditUserFieldComponent } from './account/edit-user-field/edit-user-fiel
     DeleteAccountComponent,
     MenuComponent,
     EditUserFieldComponent,
+    ChangePasswordComponent,
   ],
   imports: [
     AppRoutingModule,
