@@ -22,10 +22,11 @@
 }
 
 .logo-container {
-  width: 300px;
+  width: 250px;
   margin-left: auto;
   margin-right: auto;
   height: 80px;
+  display: flex;
 }
 
 .learn-more-title {
@@ -33,8 +34,3 @@
   text-align: center;
 }
 
-.logo-container {
-  width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-}
