@@ -1,17 +1,16 @@
-<!--TODO: replace with alert component-->
-<section *ngIf="successMsg">
-  <h3>Success!</h3>
-  <div>
-    {{ successMsg }}
-  </div>
-</section>
-<!--TODO: replace with alert component-->
-<section *ngIf="errorMsg">
-  <h3>Error!</h3>
-  <div>
-    {{ errorMsg }}
-  </div>
-</section>
+<app-form-message
+  [messageType]="FormMessageType.SUCCESS"
+  *ngIf="successMsg"
+  title="Success!"
+  message="{{ successMsg }}">
+</app-form-message>
+
+<app-form-message
+  [messageType]="FormMessageType.ERROR"
+  *ngIf="errorMsg"
+  title="Error!"
+  message="{{ errorMsg }}">
+</app-form-message>
 
 <app-edit-user-field
   userField="firstName"
