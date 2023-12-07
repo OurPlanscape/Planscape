@@ -78,3 +78,6 @@ restart: reload stop stop-forsys start start-forsys
 
 nginx-restart:
 	sudo service nginx restart
+
+load-restrictions:
+	cd src/planscape && sh bin/load_restrictions.sh

@@ -62,6 +62,7 @@ import { MenuComponent } from './account/menu/menu.component';
 import { NgxMaskModule } from 'ngx-mask';
 import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
 import { InfoCardComponent } from './signup/info-card/info-card.component';
+import { ChangePasswordComponent } from './account/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -95,6 +96,7 @@ import { InfoCardComponent } from './signup/info-card/info-card.component';
     MenuComponent,
     EditUserFieldComponent,
     InfoCardComponent,
+    ChangePasswordComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -134,6 +136,5 @@ import { InfoCardComponent } from './signup/info-card/info-card.component';
     CurrencyPipe,
   ],
   bootstrap: [AppComponent],
-  entryComponents: [AccountDialogComponent],
 })
 export class AppModule {}

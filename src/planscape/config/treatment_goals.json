@@ -191,64 +191,6 @@
           "category_name": "Biodiversity",
           "questions": [
             {
-              "long_question_text": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to forest habitat-associated special status (focal) species?",
-              "short_question_text": "Reduce Fire Risk in Forest Habitat",
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "probability_of_fire_severity_moderate"
-              ],
-              "weights": [],
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "air_quality",
-                  "biodiversity_conservation",
-                  "economic_diversity",
-                  "fire_dynamics",
-                  "forest_resilience"
-                ],
-                "elements": [
-                  "particulate_matter",
-                  "community_integrity",
-                  "species_diversity",
-                  "focal_species",
-                  "carbon_stability",
-                  "wood_product_industry",
-                  "functional_fire",
-                  "severity",
-                  "forest_structure",
-                  "forest_composition",
-                  "disturbance"
-                ],
-                "metrics": [
-                  "endangered_vertebrate",
-                  "wildlife_species_richness",
-                  "habitat_connectivity",
-                  "live_tree_density_30in_dbh",
-                  "seral_stage_late",
-                  "total_fuel_exposed_to_fire",
-                  "sawtimber_biomass",
-                  "costs_of_potential_treatment_moving_biomass",
-                  "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
-                  "pacific_fisher",
-                  "northern_goshawk_habitat",
-                  "american_pacific_marten_habitat",
-                  "band_tailed_pigeon_habitat",
-                  "probability_of_fire_severity_high",
-                  "probability_of_fire_severity_moderate"
-                ]
-              },
-              "stand_thresholds": [
-                "california_spotted_owl_habitat < 0.5",
-                "california_spotted_owl_territory < 0.5",
-                "pacific_fisher < 0.5",
-                "northern_goshawk_habitat < 0.5",
-                "american_pacific_marten_habitat < 0.5",
-                "band_tailed_pigeon_habitat < 0.5"
-              ],
-              "global_thresholds": []
-            },
-            {
               "long_question_text": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "scenario_priorities": [
