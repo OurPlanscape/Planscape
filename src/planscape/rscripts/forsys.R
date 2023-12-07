@@ -122,7 +122,7 @@ priority_to_condition <- function(connection, scenario, priority) {
   return(tibble(head(result, 1)))
 }
 
-get_stands <- function(connection, scenario_id, stand_size) {
+get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   query_text <- "
   WITH plan_scenario AS (
     SELECT
@@ -133,6 +133,19 @@ get_stands <- function(connection, scenario_id, stand_size) {
   LEFT JOIN planning_scenario ps ON (ps.planning_area_id = pp.id)
   WHERE
       ps.id = {scenario_id}
+  ), 
+  restricted_stands AS (
+    SELECT
+      ss.id
+    FROM stands_stand ss
+    WHERE NOT EXISTS (
+      SELECT 1
+      FROM restrictions_restriction rr
+      WHERE
+        rr.type IN ({restrictions*})
+        ss.geometry && rr.geometry AND
+        ST_Intersects(ss.geometry, rr.geometry)
+    )
   )
   SELECT
       ss.id AS \"stand_id\",
@@ -142,7 +155,10 @@ get_stands <- function(connection, scenario_id, stand_size) {
   WHERE
       ss.\"size\" = {stand_size} AND
       ss.geometry && plan_scenario.geometry AND
-      ST_Intersects(ss.geometry, plan_scenario.geometry)"
+      ST_Intersects(ss.geometry, plan_scenario.geometry) AND
+      ss.id NOT IN (
+        SELECT id FROM restricted_stands
+      )"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
 
   result <- st_read(
