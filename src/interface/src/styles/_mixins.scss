@@ -45,6 +45,14 @@ Declare mixins based on styleguide and apply to classes
   letter-spacing: 0px;
 }
 
+@mixin h3 {
+  @include public-sans();
+  font-size: 22px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
 @mixin h4 {
   @include public-sans();
   font-size: 18px;
@@ -53,3 +61,22 @@ Declare mixins based on styleguide and apply to classes
   line-height: 32px;
 }
 
+@mixin top-level-label {
+  @include public-sans();
+  font-size: 16px;
+  font-weight: bold;
+}
+
+@mixin small-paragraph {
+  @include public-sans();
+  font-size: 14px;
+  line-height: 22px;
+}
+
+@mixin p {
+  @include public-sans();
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 26px
+}
