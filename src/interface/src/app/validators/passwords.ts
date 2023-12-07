@@ -19,18 +19,28 @@ export function passwordMustBeNewValidator(
   const newPasswordValidation: ValidatorFn = (
     formControls: AbstractControl
   ): ValidationErrors | null => {
-    const currentPassword = formControls.get(currentPasswordFieldName)?.value;
-    const password = formControls.get(passwordFieldName)?.value;
-    const error: Pick<PasswordFieldsErrors, 'newPasswordMustBeNew'> = {
-      newPasswordMustBeNew: true,
-    };
+    // current password
+    const currentPasswordField = formControls.get(currentPasswordFieldName);
+    const currentPassword = currentPasswordField?.value;
+    // new password
+    const passwordField = formControls.get(passwordFieldName);
+    const password = passwordField?.value;
+
+    // error
+    let result: ValidationErrors | null = null;
+    const errorKey = 'newPasswordMustBeNew';
+    const passwordMustBeNewError: Pick<PasswordFieldsErrors, typeof errorKey> =
+      { newPasswordMustBeNew: true };
+
     if (
       currentPassword.length > 0 &&
       password.length > 0 &&
       currentPassword === password
     ) {
-      return error;
+      result = passwordMustBeNewError;
     }
+    setErrorsOnField(currentPasswordField, errorKey, result);
+    setErrorsOnField(passwordField, errorKey, result);
 
     return null;
   };
@@ -50,43 +60,42 @@ export function passwordsMustMatchValidator(
   const crossFieldValidators: ValidatorFn = (
     formControls: AbstractControl
   ): ValidationErrors | null => {
+    const errorKey = 'newPasswordsMustMatch';
+    const passwordsMustMatchError: Pick<PasswordFieldsErrors, typeof errorKey> =
+      { newPasswordsMustMatch: true };
+    let result: ValidationErrors | null = null;
+
     const passwordField = formControls.get(passwordFieldName);
-    const confirmationField = formControls.get(passwordConfirmFieldName);
-
-    const passwordErrors = passwordField?.errors || {};
-    const confirmationErrors = confirmationField?.errors || {};
-
-    // remove previous error if any
-    delete passwordErrors['newPasswordsMustMatch'];
-    delete confirmationErrors['newPasswordsMustMatch'];
-
-    const passwordsMustMatch: Pick<
-      PasswordFieldsErrors,
-      'newPasswordsMustMatch'
-    > = {
-      newPasswordsMustMatch: true,
-    };
-
     const password = passwordField?.value;
+
+    const confirmationField = formControls.get(passwordConfirmFieldName);
     const confirmation = confirmationField?.value;
 
-    if (password.length > 0 && confirmation.length > 0) {
-      if (password !== confirmation) {
-        // add errors to fields
-        passwordField?.setErrors({ ...passwordErrors, ...passwordsMustMatch });
-        confirmationField?.setErrors({
-          ...confirmationErrors,
-          ...passwordsMustMatch,
-        });
-        return passwordsMustMatch;
-      }
+    if (
+      password.length > 0 &&
+      confirmation.length > 0 &&
+      password !== confirmation
+    ) {
+      result = passwordsMustMatchError;
     }
-
-    passwordField?.setErrors(formatErrors(passwordErrors));
-    confirmationField?.setErrors(formatErrors(confirmationErrors));
-    return null;
+    setErrorsOnField(passwordField, errorKey, result);
+    setErrorsOnField(confirmationField, errorKey, result);
+    return result;
   };
   return crossFieldValidators;
+}
+
+function setErrorsOnField(
+  field: AbstractControl | null,
+  errorKey: string,
+  error: ValidationErrors | null
+) {
+  let fieldErrors = field?.errors || {};
+  delete fieldErrors[errorKey];
+  if (error) {
+    fieldErrors = { ...fieldErrors, ...error };
+  }
+  field?.setErrors(formatErrors(fieldErrors));
 }
 
 function formatErrors(field: ValidationErrors) {
