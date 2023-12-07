@@ -1,5 +1,5 @@
-@import "../../styles/colors";
-@import "../../styles/mixins";
+@import '../../styles/colors';
+@import '../../styles/mixins';
 
 .signin-root {
   display: flex;
@@ -18,6 +18,7 @@
   flex-direction: column;
   margin: auto;
   height: 90%;
+  margin-top: 20%;
 }
 
 .signin-card-logo {
@@ -87,9 +88,8 @@ mat-form-field {
   width: 100%;
 }
 ::ng-deep .mat-form-field-outline {
-  background-color: $color-light-gray
+  background-color: $color-light-gray;
 }
-
 
 .forget-password-div {
   text-align: center;
@@ -110,8 +110,7 @@ mat-form-field {
   background-image: url('/assets/svg/waves.svg');
   background-position: bottom right;
   background-repeat: no-repeat;
-  background-size:50%;
-
+  background-size: 50%;
 }
 
 .login-form-buttons {
