@@ -122,6 +122,13 @@ priority_to_condition <- function(connection, scenario, priority) {
   return(tibble(head(result, 1)))
 }
 
+get_restrictions <- function(connection, restrictions) {
+    statement <- "SELECT ST_Union(geometry) as geometry FROM restrictions_restriction rr WHERE type IN ({restrictions*})"
+    restrictions_statement <- glue_sql(statement, restrictions=restrictions, .con=connection)
+    restriction_data <- st_read(dsn = connection, layer = NULL, query = restrictions_statement, geometry_column = "geometry")
+    return (restriction_data)
+}
+
 get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   query_text <- "
   WITH plan_scenario AS (
@@ -133,19 +140,6 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   LEFT JOIN planning_scenario ps ON (ps.planning_area_id = pp.id)
   WHERE
       ps.id = {scenario_id}
-  ), 
-  restricted_stands AS (
-    SELECT
-      ss.id
-    FROM stands_stand ss
-    WHERE NOT EXISTS (
-      SELECT 1
-      FROM restrictions_restriction rr
-      WHERE
-        rr.type IN ({restrictions*})
-        ss.geometry && rr.geometry AND
-        ST_Intersects(ss.geometry, rr.geometry)
-    )
   )
   SELECT
       ss.id AS \"stand_id\",
@@ -155,19 +149,21 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   WHERE
       ss.\"size\" = {stand_size} AND
       ss.geometry && plan_scenario.geometry AND
-      ST_Intersects(ss.geometry, plan_scenario.geometry) AND
-      ss.id NOT IN (
-        SELECT id FROM restricted_stands
-      )"
+      ST_Intersects(ss.geometry, plan_scenario.geometry)"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
 
-  result <- st_read(
+  stands <- st_read(
     dsn = connection,
     layer = NULL,
     query = query,
     geometry_column = "geometry"
   )
-  return(result)
+
+  if (restrictions) {
+    restriction_data <- get_restrictions(restrictions)
+    stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
+  }
+  return(stands)
 }
 
 preprocess_metrics <- function(metrics, condition_name) {
