@@ -26,7 +26,8 @@ class Command(BaseCommand):
         )
 
     def clear(self, type):
-        Restriction.objects.filter(type=type).delete()
+        counts = Restriction.objects.filter(type=type).delete()
+        self.stdout.write(f"Deleted {counts} for {type}")
 
     def handle(self, *args, **options):
         type = options.get("type")
