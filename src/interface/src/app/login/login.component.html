@@ -25,11 +25,10 @@
               (keyup)="clearEmailErrors()" />
           </mat-form-field>
           <app-field-alert
-            [visible]="
-              this.emailError !== '' &&
-              this.form.controls['email'].errors !== null
-                ? true
-                : false
+            *ngIf="
+              this.emailError &&
+              this.form.controls['email'].errors &&
+              this.form.controls['email'].dirty
             "
             message="{{ emailError }}"
             title="email error"></app-field-alert>
