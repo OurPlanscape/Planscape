@@ -56,6 +56,12 @@ export class SignupComponent {
     this.authService.resendValidationEmail(email).subscribe();
   }
 
+  logFormInfo() {
+    console.log(this.form);
+    console.log('touched?', this.form.get('lastName')?.touched);
+    console.log('dirty?', this.form.get('lastName')?.dirty);
+  }
+
   checkEmailErrors() {}
 
   clearEmailErrors() {}

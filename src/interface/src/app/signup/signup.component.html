@@ -1,74 +1,6 @@
 <div class="signup-root">
   <div class="info-card-container">
-    <div class="info-card">
-      <h3>With a Planscape account, you can:</h3>
-
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        Create plans, scenarios and project areas
-      </p>
-
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        Test different land management options and view outcomes
-      </p>
-
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        Save planning areas
-      </p>
-
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        Download shapefiles and metadata from your plans
-      </p>
-
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        Share work with collaborators
-      </p>
-
-      <h3>As a guest user, you can:</h3>
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        Explore data from the Regional Resource Kits
-      </p>
-      <p class="listed-text">
-        <img
-          src="assets/svg/icons/checkbox.svg"
-          alt="checkbox icon"
-          class="list-icon" />
-        View publicly available plans and scenarios*
-      </p>
-      <p class="caveat">*Accessible only via direct links</p>
-      <p class="listed-text">
-        Review Planscape
-        <a
-          class="conditions-link"
-          href="https://www.planscape.org/conditions-of-use/"
-          target="_blank"
-          >Conditions of Use</a
-        >
-      </p>
-    </div>
+    <app-info-card></app-info-card>
   </div>
 
   <div class="signup-form-container">
@@ -85,13 +17,19 @@
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input type="text" required formControlName="firstName" matInput />
+            <input
+              type="text"
+              required
+              formControlName="firstName"
+              matInput
+              (blur)="logFormInfo()" />
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.form.controls['firstName'].errors !== null ? true : false
+              this.form.controls['firstName'].errors !== null &&
+              this.form.controls['firstName'].dirty === true
             "
-            message="{{ this.form.controls['firstName'].errors }}"
+            message="Must contain a value."
             title="field error"></app-field-alert>
 
           <mat-label class="standard-label"
@@ -99,14 +37,20 @@
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input type="text" required formControlName="lastName" matInput />
+            <input
+              type="text"
+              required
+              formControlName="lastName"
+              matInput
+              (blur)="logFormInfo()" />
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.form.controls['lastName'].errors !== null ? true : false
+              this.form.controls['lastName'].errors !== null &&
+              (this.form.controls['lastName'].dirty || this.form.invalid)
             "
-            message=""
-            title="email error"></app-field-alert>
+            message="Must contain a value."
+            title="field error"></app-field-alert>
 
           <mat-label class="standard-label"
             >Email
@@ -125,8 +69,6 @@
             [visible]="
               this.emailError !== '' &&
               this.form.controls['email'].errors !== null
-                ? true
-                : false
             "
             message="{{ emailError }}"
             title="email error"></app-field-alert>
@@ -144,10 +86,11 @@
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.form.controls['password1'].errors !== null ? true : false
+              this.form.controls['password1'].dirty &&
+              this.form.controls['password1'].errors !== null
             "
             message=""
-            title="email error"></app-field-alert>
+            title="Password error"></app-field-alert>
 
           <mat-label class="standard-label"
             >Confirm Password
@@ -162,10 +105,8 @@
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.emailError !== '' &&
+              this.form.controls['password2'].dirty &&
               this.form.controls['password2'].errors !== null
-                ? true
-                : false
             "
             message=""
             title="password error"></app-field-alert>
