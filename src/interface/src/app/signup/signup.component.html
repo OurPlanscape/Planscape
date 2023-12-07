@@ -17,12 +17,7 @@
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input
-              type="text"
-              required
-              formControlName="firstName"
-              matInput
-              (blur)="logFormInfo()" />
+            <input type="text" required formControlName="firstName" matInput />
           </mat-form-field>
           <app-field-alert
             [visible]="
