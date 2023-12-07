@@ -6,6 +6,8 @@ import {
   passwordMustBeNewValidator,
   passwordsMustMatchValidator,
 } from '../../validators/passwords';
+import { FormMessageType } from '../../types';
+import { AfterSubmitErrorStateMatcher } from '../../validators/error-matchers';
 
 type State = 'view' | 'editing' | 'saving' | 'error';
 
@@ -22,6 +24,10 @@ export class ChangePasswordComponent {
   state: State = 'view';
   form: FormGroup;
   error: any;
+
+  afterSubmitMatcher = new AfterSubmitErrorStateMatcher();
+
+  readonly FormMessageType = FormMessageType;
 
   constructor(
     private fb: FormBuilder,

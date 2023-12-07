@@ -42,7 +42,7 @@ export function passwordMustBeNewValidator(
     setErrorsOnField(currentPasswordField, errorKey, result);
     setErrorsOnField(passwordField, errorKey, result);
 
-    return null;
+    return result;
   };
   return newPasswordValidation;
 }
