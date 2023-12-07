@@ -9,7 +9,7 @@ import {
 import { FormMessageType } from '../../types';
 import { AfterSubmitErrorStateMatcher } from '../../validators/error-matchers';
 
-type State = 'view' | 'editing' | 'saving' | 'error';
+type State = 'view' | 'editing' | 'saving';
 
 @Component({
   selector: 'app-change-password',
@@ -24,6 +24,7 @@ export class ChangePasswordComponent {
   state: State = 'view';
   form: FormGroup;
   error: any;
+  success = false;
 
   afterSubmitMatcher = new AfterSubmitErrorStateMatcher();
 
@@ -65,18 +66,18 @@ export class ChangePasswordComponent {
       .subscribe(
         (_) => {
           this.error = null;
-          // show success
-          // this.snackbar.open(
-          //   'Updated password successfully',
-          //   'Dismiss',
-          //   SNACK_NOTICE_CONFIG
-          // );
+          this.success = true;
           this.state = 'view';
         },
         (err: any) => {
           this.error = Object.values(err.error);
-          this.state = 'error';
         }
       );
+  }
+
+  cancel() {
+    this.state = 'view';
+    this.error = null;
+    this.success = false;
   }
 }
