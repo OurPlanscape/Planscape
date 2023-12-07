@@ -71,10 +71,13 @@
             </button>
           </mat-card-actions>
 
-          <p class="forget-password-link">
-            <a i18n="Text on a button to reset password" href="reset/">
-              Forgot your password?
-            </a>
+          <p class="forget-password-div">
+            <a
+              i18n="Text on a button to reset password"
+              href="reset/"
+              class="forget-password-link"
+              >Forgot your password?</a
+            >
           </p>
 
           <div class="login-form-buttons">
@@ -83,7 +86,7 @@
               color="primary"
               data-id="explore"
               [routerLink]="'/map'"
-              class="login-form-button">
+              class="login-form-button guest-buttons">
               Explore
             </button>
             <button
@@ -91,7 +94,7 @@
               color="primary"
               data-id="create-account"
               [routerLink]="'/signup'"
-              class="login-form-button">
+              class="login-form-button guest-buttons">
               Create an Account
             </button>
           </div>
