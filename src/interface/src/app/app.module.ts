@@ -43,7 +43,6 @@ import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ValidationEmailDialogComponent } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
@@ -84,7 +83,6 @@ import { ChangePasswordComponent } from './account/change-password/change-passwo
     PlanningAreasComponent,
     PreviewComponent,
     ResetPasswordDialogComponent,
-    ValidationEmailDialogComponent,
     ForgetPasswordComponent,
     AboutComponent,
     PasswordResetComponent,
