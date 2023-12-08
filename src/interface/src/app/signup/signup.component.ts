@@ -71,7 +71,10 @@ export class SignupComponent {
     if (emailErrors && 'pattern' in emailErrors) {
       return 'Email must be the correct format.';
     }
-    return 'Unknon error.';
+    if (emailErrors && 'AlreadyExists' in emailErrors) {
+      return 'An account with this email already exists.';
+    }
+    return 'Unknown error.';
   }
 
   getPasswordError() {
@@ -153,7 +156,7 @@ export class SignupComponent {
             if (this.emailAlreadyExists) {
               this.emailError = 'An Account with this email already exists';
               this.form.get('email')?.setErrors({
-                Error: 'An Account with this email already exists',
+                AlreadyExists: 'An Account with this email already exists',
               });
             }
           } else if (error.status == 500) {
