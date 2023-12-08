@@ -45,6 +45,7 @@
               matInput />
           </mat-form-field>
           <app-field-alert
+            *ngIf="passwordError"
             message="{{ passwordError }}"
             title="password error"></app-field-alert>
 
@@ -86,7 +87,7 @@
               color="primary"
               data-id="explore"
               [routerLink]="'/map'"
-              class="login-form-button guest-buttons">
+              class="login-form-button guest-button">
               Explore
             </button>
             <button
@@ -94,7 +95,7 @@
               color="primary"
               data-id="create-account"
               [routerLink]="'/signup'"
-              class="login-form-button guest-buttons">
+              class="login-form-button guest-button">
               Create an Account
             </button>
           </div>
