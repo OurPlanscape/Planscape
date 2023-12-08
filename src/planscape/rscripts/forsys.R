@@ -135,14 +135,19 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
         ps.id = {scenario_id}
     )
     SELECT
-      ST_Union(geometry) as geometry 
+      ST_Union(geometry) as \"geometry\"
     FROM restrictions_restriction rr, plan_scenario
-    WHERE 
+    WHERE
       type IN ({restrictions*}) AND
       rr.geometry && plan_scenario.geometry AND
       ST_Intersects(rr.geometry, plan_scenario.geometry)"
-    restrictions_statement <- glue_sql(statement, restrictions=restrictions, .con=connection)
-    restriction_data <- st_read(dsn = connection, layer = NULL, query = restrictions_statement, geometry_column = "geometry")
+    restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, restrictions = restrictions, .con=connection)
+    restriction_data <- st_read(
+      dsn = connection,
+      layer = NULL,
+      query = restrictions_statement,
+      geometry_column = "geometry"
+    )
     return (restriction_data)
 }
 
@@ -177,7 +182,8 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   )
 
   if (length(restrictions) > 0) {
-    restriction_data <- get_restrictions(restrictions)
+    log_info("Restrictions found!")
+    restriction_data <- get_restrictions(restrictions, scenario_id)
     stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
   }
   return(stands)
@@ -355,7 +361,8 @@ get_priorities <- function(
 
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
-  stands <- get_stands(connection, scenario$id, stand_size, configuration$excluded_areas)
+
+  stands <- get_stands(connection, scenario$id, stand_size, as.list(configuration$excluded_areas))
   for (row in seq_len(nrow(conditions))) {
     condition_id <- conditions[row, "condition_id"]$condition_id
     condition_name <- conditions[row, "condition_name"]$condition_name
