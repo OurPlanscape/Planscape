@@ -1,5 +1,12 @@
+:host{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px 120px 120px 82px;
+}
+
 .data-info-box {
-  background-color: #ebebeb;
+  background-color: white;
   border-radius: 16px;
   box-sizing: border-box;
   display: flex;
