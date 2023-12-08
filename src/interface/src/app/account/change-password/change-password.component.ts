@@ -7,7 +7,7 @@ import {
   passwordsMustMatchValidator,
 } from '../../validators/passwords';
 import { FormMessageType } from '../../types';
-import { AfterTouchedOrSubmitErrorStateMatcher } from '../../validators/error-matchers';
+import { PasswordStateMatcher } from '../../validators/error-matchers';
 
 type State = 'view' | 'editing' | 'saving';
 
@@ -29,7 +29,14 @@ export class ChangePasswordComponent {
     map((user) => user?.username)
   );
 
-  errorStateMatcher = new AfterTouchedOrSubmitErrorStateMatcher();
+  currentPasswordStateMatcher = new PasswordStateMatcher([]);
+  passwordStateMatcher = new PasswordStateMatcher([
+    'newPasswordMustBeNew',
+    'newPasswordsMustMatch',
+  ]);
+  confirmPasswordStateMatcher = new PasswordStateMatcher([
+    'newPasswordsMustMatch',
+  ]);
   showHint = false;
 
   readonly FormMessageType = FormMessageType;
@@ -64,11 +71,15 @@ export class ChangePasswordComponent {
     if (this.form.invalid) return;
     this.state = 'saving';
 
+    const current = this.form.get('current');
+    const newPassword = this.form.get('newPassword');
+    const passwordConfirm = this.form.get('passwordConfirm');
+
     this.authService
       .changePassword(
-        this.form.get('current')?.value,
-        this.form.get('newPassword')?.value,
-        this.form.get('passwordConfirm')?.value
+        current?.value,
+        newPassword?.value,
+        passwordConfirm?.value
       )
       .pipe(take(1))
       .subscribe(
@@ -78,9 +89,12 @@ export class ChangePasswordComponent {
           this.state = 'view';
         },
         (err: any) => {
-          console.log(err.error);
           if (err.error.old_password) {
-            this.form.get('current')?.setErrors({ invalid: true });
+            current?.setErrors({ invalid: true });
+          }
+          if (err.error.new_password2) {
+            newPassword?.setErrors({ invalid: true });
+            passwordConfirm?.setErrors({ invalid: true });
           }
           this.error = Object.values(err.error);
           this.state = 'editing';
