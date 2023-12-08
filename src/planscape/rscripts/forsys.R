@@ -135,7 +135,7 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
         ps.id = {scenario_id}
     )
     SELECT
-      ST_Union(geometry) as \"geometry\"
+      ST_Transform(ST_Union(rr.geometry), 5070) as \"geometry\"
     FROM restrictions_restriction rr, plan_scenario
     WHERE
       type IN ({restrictions*}) AND
@@ -183,7 +183,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
 
   if (length(restrictions) > 0) {
     log_info("Restrictions found!")
-    restriction_data <- get_restrictions(restrictions, scenario_id)
+    restriction_data <- get_restrictions(connection, scenario_id, restrictions)
     stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
   }
   return(stands)
@@ -362,7 +362,7 @@ get_priorities <- function(
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
 
-  stands <- get_stands(connection, scenario$id, stand_size, as.list(configuration$excluded_areas))
+  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
   for (row in seq_len(nrow(conditions))) {
     condition_id <- conditions[row, "condition_id"]$condition_id
     condition_name <- conditions[row, "condition_name"]$condition_name
