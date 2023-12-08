@@ -2,14 +2,10 @@
 @import "../../../styles/mixins";
 
 .about-container {
-  background-color: $color-soft-purple;
-  gap: 20px;
-  height: 550px;
+  gap: 30px;
   display: flex;
   flex-direction: column;
-  width: 80%;
-  margin: auto;
-  padding: 80px 40px 80px 40px;
+  padding: 100px 60px 80px 60px;
 }
 
 h3 {
