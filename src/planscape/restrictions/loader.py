@@ -3,9 +3,9 @@ from restrictions.models import Restriction
 
 MAPPINGS = {
     "WILDERNESS_AREA": {"name": "WILDERNE_1", "geometry": "MULTIPOLYGON"},
-    "TRIBAL_LANDS": {},
+    "TRIBAL_LANDS": {"name": "Name", "geometry": "MULTIPOLYGON"},
     "PRIVATE_LANDS": {"geometry": "MULTIPOLYGON"},
-    "NATIONAL_FORESTS": {},
+    "NATIONAL_FORESTS": {"name": "FORESTNAME", "geometry": "MULTIPOLYGON"},
     "NATIONAL_PARKS": {"name": "UNIT_NAME", "geometry": "MULTIPOLYGON"},
     "STATE_PARKS": {"name": "UNITNAME", "geometry": "MULTIPOLYGON"},
 }
