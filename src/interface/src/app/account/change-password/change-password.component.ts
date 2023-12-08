@@ -71,6 +71,7 @@ export class ChangePasswordComponent {
         },
         (err: any) => {
           this.error = Object.values(err.error);
+          this.state = 'editing';
         }
       );
   }
