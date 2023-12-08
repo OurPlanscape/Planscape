@@ -362,7 +362,7 @@ get_priorities <- function(
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
 
-  stands <- get_stands(connection, scenario$id, stand_size, c(configuration$excluded_areas))
+  stands <- get_stands(connection, scenario$id, stand_size, as.list(configuration$excluded_areas))
   for (row in seq_len(nrow(conditions))) {
     condition_id <- conditions[row, "condition_id"]$condition_id
     condition_name <- conditions[row, "condition_name"]$condition_name
