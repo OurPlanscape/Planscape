@@ -62,6 +62,9 @@ export function passwordsMustMatchValidator(
 
     if (password1.length > 0 && password2.length > 0) {
       if (password1 !== password2) {
+        formControls.get(passwordConfirmFieldName)?.setErrors({
+          passwordsMustMatchValidator: 'Passwords must match.',
+        });
         return passwordsMustMatch;
       }
     }

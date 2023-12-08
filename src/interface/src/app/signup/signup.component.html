@@ -32,17 +32,12 @@
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input
-              type="text"
-              required
-              formControlName="lastName"
-              matInput
-              (blur)="logFormInfo()" />
+            <input type="text" required formControlName="lastName" matInput />
           </mat-form-field>
           <app-field-alert
             [visible]="
               this.form.controls['lastName'].errors !== null &&
-              (this.form.controls['lastName'].dirty || this.form.invalid)
+              this.form.controls['lastName'].dirty
             "
             message="Must contain a value."
             title="field error"></app-field-alert>
@@ -57,15 +52,15 @@
               required
               formControlName="email"
               matInput
-              (blur)="checkEmailErrors()"
+              (blur)="getEmailError()"
               (keyup)="clearEmailErrors()" />
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.emailError !== '' &&
+              this.form.controls['email'].touched &&
               this.form.controls['email'].errors !== null
             "
-            message="{{ emailError }}"
+            [message]="getEmailError()"
             title="email error"></app-field-alert>
 
           <mat-label class="standard-label"
@@ -77,14 +72,15 @@
               type="password"
               required
               formControlName="password1"
-              matInput />
+              matInput
+              (focus)="clearPasswordErrors()" />
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.form.controls['password1'].dirty &&
-              this.form.controls['password1'].errors !== null
+              this.form.controls['password1'].errors !== null &&
+              this.form.controls['password1'].touched
             "
-            message=""
+            [message]="getPasswordError()"
             title="Password error"></app-field-alert>
 
           <mat-label class="standard-label"
@@ -100,11 +96,18 @@
           </mat-form-field>
           <app-field-alert
             [visible]="
-              this.form.controls['password2'].dirty &&
-              this.form.controls['password2'].errors !== null
+              this.form.controls['password2'].errors !== null &&
+              this.form.controls['password2'].touched
             "
-            message=""
+            [message]="getConfirmPasswordError()"
             title="password error"></app-field-alert>
+
+          <app-form-message
+            [messageType]="FormMessageType.ERROR"
+            *ngIf="this.form.errors !== null"
+            title="Signup Error"
+            [message]="getFormErrors()">
+          </app-form-message>
 
           <button
             mat-flat-button
