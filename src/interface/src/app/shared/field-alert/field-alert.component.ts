@@ -1,20 +1,25 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { FormMessageType } from '../../types/data.types';
 
 @Component({
   selector: 'app-field-alert',
   templateUrl: './field-alert.component.html',
   styleUrls: ['./field-alert.component.scss'],
 })
-export class FieldAlertComponent implements OnInit {
-  @Input() visible: boolean = false;
+export class FieldAlertComponent {
   @Input() message!: string;
   @Input() title!: string;
+  @Input() messageType: FormMessageType = FormMessageType.ERROR;
 
-  constructor() {}
+  icons: Record<FormMessageType, string> = {
+    [FormMessageType.SUCCESS]: 'assets/svg/icons/checkmark-round-fill.svg',
+    [FormMessageType.ERROR]: 'assets/svg/icons/warning-icon-fill.svg',
+    [FormMessageType.ALERT]: 'assets/svg/icons/exclamation-square-fill.svg',
+  };
 
-  ngOnInit(): void {
-    if (this.message !== '') {
-      this.visible = true;
-    }
-  }
+  boxClass: Record<FormMessageType, string> = {
+    [FormMessageType.SUCCESS]: 'success',
+    [FormMessageType.ERROR]: 'error',
+    [FormMessageType.ALERT]: 'alert',
+  };
 }

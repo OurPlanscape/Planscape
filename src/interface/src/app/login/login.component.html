@@ -25,14 +25,9 @@
               (keyup)="clearEmailErrors()" />
           </mat-form-field>
           <app-field-alert
-            [visible]="
-              this.emailError !== '' &&
-              this.form.controls['email'].errors !== null
-                ? true
-                : false
-            "
-            message="{{ emailError }}"
-            title="email error"></app-field-alert>
+            *ngIf="this.emailError !== '' && this.form.controls['email'].errors"
+            title="email error"
+            message="{{ emailError }}"></app-field-alert>
 
           <mat-label
             >Password
@@ -46,6 +41,7 @@
               matInput />
           </mat-form-field>
           <app-field-alert
+            *ngIf="passwordError"
             message="{{ passwordError }}"
             title="password error"></app-field-alert>
 
