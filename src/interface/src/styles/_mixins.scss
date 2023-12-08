@@ -31,9 +31,9 @@ Declare mixins based on styleguide and apply to classes
 
 @mixin standard-link {
   @include public-sans();
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
-  line-height: 26px;
+  line-height: 16px;
   letter-spacing: 0px;
 }
 
@@ -99,10 +99,5 @@ Declare mixins based on styleguide and apply to classes
   line-height: 26px
 }
 
-@mixin top-level-label {
-  @include public-sans();
-  font-size: 16px;
-  font-weight: bold;
-}
 
 
