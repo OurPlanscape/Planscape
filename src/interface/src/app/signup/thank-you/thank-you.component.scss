@@ -1,21 +1,6 @@
 @import '../../../styles/colors';
 @import '../../../styles/mixins';
 
-@mixin form-card {
-  @include public_sans(); 
-  gap: 20px;
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  margin: auto;
-  padding: 40px 60px 40px 60px;
-  border: 1px;
-  border-color: $color-original-purple-50pct;
-  border-style: solid;
-  border-radius: 8px;
-  box-shadow: 0px 4px 4px 0px #00000040;
-}
-
 .thankyou-root {
   display: flex;
   height: 100%;
@@ -39,7 +24,18 @@
 }
 
 .thankyou-card {
-  @include form-card();
+  @include public_sans(); 
+  gap: 20px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  padding: 40px 60px 40px 60px;
+  border: 1px;
+  border-color: $color-original-purple-50pct;
+  border-style: solid;
+  border-radius: 8px;
+  box-shadow: 0px 4px 4px 0px #00000040;
   text-align: left;
 }
 
