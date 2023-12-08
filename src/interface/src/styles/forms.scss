@@ -1,11 +1,6 @@
 @import "mixins";
 @import "colors";
 
-@mixin button-disabled {
-  background-color: $color-light-gray;
-  color: $color-text-gray;
-}
-
 .form-field-label {
   @include standard-label();
   color: $color-dark-gray;

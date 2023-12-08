@@ -113,3 +113,8 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 400;
   line-height: 26px
 }
+
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}
