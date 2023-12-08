@@ -41,7 +41,7 @@ export function createLegendHtmlElement(
       } else if (lastChild != '') {
         htmlContent += '<div class="legendline"' + lastChild + '></div>';
       }
-    } else {
+    } else if (entry['color'] != '#000000') {
       htmlContent +=
         '<div class="legendline" ' +
         lastChild +
