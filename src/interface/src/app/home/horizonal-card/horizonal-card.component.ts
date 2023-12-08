@@ -9,6 +9,11 @@ export class HorizonalCardComponent {
   @Input() title: string = '';
   @Input() content: string = '';
   @Input() iconsrc: string = '';
+  @Input() outboundLink: string = '';
 
   constructor() {}
+
+  handleClick() {
+    window.open(this.outboundLink, '_blank');
+  }
 }
