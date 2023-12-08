@@ -453,7 +453,7 @@
                 {
                   "display_name": "Pacific Fisher Predicted Habitat",
                   "data_provider": "FVEG",
-                  "data_units": "Binary",
+                  "data_units": "Probability",
                   "max_value": 1,
                   "metric_name": "pacific_fisher",
                   "min_value": 0,
@@ -854,7 +854,7 @@
                 {
                   "display_name": "Mean % FRI Departure since 1908",
                   "data_provider": "Fire History (2021), CAL FIRE",
-                  "data_units": "Continuous Variable",
+                  "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1908",
                   "min_value": -100,
@@ -1188,7 +1188,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Baseline)",
                   "data_provider": ": Information Center for the Environment, UC Davis",
-                  "data_units": "Percent",
+                  "data_units": "Continuous",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_baseline",
                   "min_value": 0,
@@ -1201,7 +1201,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Early Century)",
                   "data_provider": "Information Center for the Environment, UC Davis",
-                  "data_units": "Percent",
+                  "data_units": "Continuous",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_early_century",
                   "min_value": 0,
@@ -1214,7 +1214,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Mid-century)",
                   "data_provider": ": Information Center for the Environment, UC Davis",
-                  "data_units": "Percent",
+                  "data_units": "Continuous",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_mid-century",
                   "min_value": 0,
@@ -1227,7 +1227,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Late Century)",
                   "data_provider": ": Information Center for the Environment, UC Davis",
-                  "data_units": "Percent",
+                  "data_units": "Continuous",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_late_century",
                   "min_value": 0,
@@ -1384,7 +1384,7 @@
                 {
                   "display_name": "American Indian Land Area Representation",
                   "data_provider": "",
-                  "data_units": "Categorical",
+                  "data_units": "Index",
                   "max_value": 49,
                   "metric_name": "low_income_population",
                   "min_value": 0,
