@@ -1188,7 +1188,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Baseline)",
                   "data_provider": ": Information Center for the Environment, UC Davis",
-                  "data_units": "Continuous",
+                  "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_baseline",
                   "min_value": 0,
@@ -1201,7 +1201,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Early Century)",
                   "data_provider": "Information Center for the Environment, UC Davis",
-                  "data_units": "Continuous",
+                  "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_early_century",
                   "min_value": 0,
@@ -1214,7 +1214,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Mid-century)",
                   "data_provider": ": Information Center for the Environment, UC Davis",
-                  "data_units": "Continuous",
+                  "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_mid-century",
                   "min_value": 0,
@@ -1227,7 +1227,7 @@
                 {
                   "display_name": "Potential Climate Refugia (Late Century)",
                   "data_provider": ": Information Center for the Environment, UC Davis",
-                  "data_units": "Continuous",
+                  "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_late_century",
                   "min_value": 0,
