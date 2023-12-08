@@ -62,6 +62,7 @@ import {
 import { PlanStateService } from '../services/plan-state.service';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
+import { RegionService } from '../services/region.service';
 
 @UntilDestroy()
 @Component({
@@ -125,6 +126,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
+  drawRegionEnabled$ = this.regionService.drawRegionEnabled$;
+
   constructor(
     public applicationRef: ApplicationRef,
     private authService: AuthService,
@@ -138,7 +141,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private regionService: RegionService
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))

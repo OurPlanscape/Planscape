@@ -1,12 +1,17 @@
 import { Injectable } from '@angular/core';
 import { FeatureService } from '../features/feature.service';
 import { Region, RegionOption, regions } from '../types';
+import { SessionService } from './session.service';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class RegionService {
-  constructor(private features: FeatureService) {}
+  constructor(
+    private features: FeatureService,
+    private sessionService: SessionService
+  ) {}
 
   private availableRegions = new Set([
     Region.SIERRA_NEVADA,
@@ -28,4 +33,23 @@ export class RegionService {
       available: this.availableRegions.has(region),
     };
   });
+
+  private regionDrawOptions: Record<Region, boolean> = {
+    [Region.SIERRA_NEVADA]: true,
+    [Region.SOUTHERN_CALIFORNIA]: this.features.isFeatureEnabled('draw_socal'),
+    [Region.NORTHERN_CALIFORNIA]:
+      this.features.isFeatureEnabled('draw_northcal'),
+    [Region.CENTRAL_COAST]: this.features.isFeatureEnabled('draw_centralcoast'),
+  };
+
+  drawRegionEnabled$ = this.sessionService.region$
+    .asObservable()
+    .pipe(
+      map((region) =>
+        region
+          ? this.features.isFeatureEnabled('login') &&
+            this.regionDrawOptions[region]
+          : false
+      )
+    );
 }
