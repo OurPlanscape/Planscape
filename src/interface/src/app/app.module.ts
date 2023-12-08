@@ -64,6 +64,7 @@ import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 import { LearnMoreComponent } from './home/learn-more/learn-more.component';
 import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.component';
 import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
+import { ChangePasswordComponent } from './account/change-password/change-password.component';
 
 @NgModule({
   declarations: [
@@ -99,6 +100,7 @@ import { EditUserFieldComponent } from './account/edit-user-field/edit-user-fiel
     LearnMoreComponent,
     HorizonalCardComponent,
     EditUserFieldComponent,
+    ChangePasswordComponent,
   ],
   imports: [
     AppRoutingModule,

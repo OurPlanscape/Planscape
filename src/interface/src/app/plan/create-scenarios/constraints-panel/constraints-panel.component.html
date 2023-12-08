@@ -132,9 +132,9 @@
             <mat-checkbox
               [color]="'primary'"
               *ngFor="let item of excludedAreasOptions"
-              [formControlName]="item"
-              [value]="item">
-              {{ item }}
+              [formControlName]="item.key"
+              [value]="item.key">
+              {{ item.label }}
             </mat-checkbox>
           </div>
         </section>
