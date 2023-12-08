@@ -1,13 +1,13 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services';
-import { take } from 'rxjs';
+import { map, take } from 'rxjs';
 import {
   passwordMustBeNewValidator,
   passwordsMustMatchValidator,
 } from '../../validators/passwords';
 import { FormMessageType } from '../../types';
-import { AfterSubmitErrorStateMatcher } from '../../validators/error-matchers';
+import { AfterTouchedOrSubmitErrorStateMatcher } from '../../validators/error-matchers';
 
 type State = 'view' | 'editing' | 'saving';
 
@@ -25,8 +25,12 @@ export class ChangePasswordComponent {
   form: FormGroup;
   error: any;
   success = false;
+  username$ = this.authService.loggedInUser$.pipe(
+    map((user) => user?.username)
+  );
 
-  afterSubmitMatcher = new AfterSubmitErrorStateMatcher();
+  errorStateMatcher = new AfterTouchedOrSubmitErrorStateMatcher();
+  showHint = false;
 
   readonly FormMessageType = FormMessageType;
 
@@ -34,10 +38,14 @@ export class ChangePasswordComponent {
     private fb: FormBuilder,
     private authService: AuthService
   ) {
-    this.form = this.fb.group(
+    this.form = this.createForm();
+  }
+
+  private createForm() {
+    return this.fb.group(
       {
         current: this.fb.control('', [Validators.required]),
-        password: this.fb.control('', [
+        newPassword: this.fb.control('', [
           Validators.required,
           Validators.minLength(8),
         ]),
@@ -45,8 +53,8 @@ export class ChangePasswordComponent {
       },
       {
         validators: [
-          passwordMustBeNewValidator('current', 'password'),
-          passwordsMustMatchValidator('password', 'passwordConfirm'),
+          passwordMustBeNewValidator('current', 'newPassword'),
+          passwordsMustMatchValidator('newPassword', 'passwordConfirm'),
         ],
       }
     );
@@ -59,7 +67,7 @@ export class ChangePasswordComponent {
     this.authService
       .changePassword(
         this.form.get('current')?.value,
-        this.form.get('password')?.value,
+        this.form.get('newPassword')?.value,
         this.form.get('passwordConfirm')?.value
       )
       .pipe(take(1))
@@ -70,6 +78,10 @@ export class ChangePasswordComponent {
           this.state = 'view';
         },
         (err: any) => {
+          console.log(err.error);
+          if (err.error.old_password) {
+            this.form.get('current')?.setErrors({ invalid: true });
+          }
           this.error = Object.values(err.error);
           this.state = 'editing';
         }
@@ -78,7 +90,17 @@ export class ChangePasswordComponent {
 
   cancel() {
     this.state = 'view';
+    this.resetAll();
+  }
+
+  edit() {
+    this.state = 'editing';
+    this.resetAll();
+  }
+
+  resetAll() {
     this.error = null;
     this.success = false;
+    this.form = this.createForm();
   }
 }

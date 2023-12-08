@@ -10,7 +10,7 @@ interface PasswordFieldsErrors {
  * Validates that the current password is not the same as the new one
  * @param currentPasswordFieldName the name of the current password formControl element on the form
  * @param passwordFieldName the name of the new password formControl element on the form
- * @return if error returns `newPasswordMustBeNew: true`
+ * @return if error returns `newPasswordMustBeNew: true`. Will additionally mark with the error the field with passwordFieldName
  */
 export function passwordMustBeNewValidator(
   currentPasswordFieldName: string,
@@ -39,7 +39,6 @@ export function passwordMustBeNewValidator(
     ) {
       result = passwordMustBeNewError;
     }
-    setErrorsOnField(currentPasswordField, errorKey, result);
     setErrorsOnField(passwordField, errorKey, result);
 
     return result;
