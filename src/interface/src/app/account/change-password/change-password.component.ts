@@ -70,6 +70,7 @@ export class ChangePasswordComponent {
   saveForm() {
     if (this.form.invalid) return;
     this.state = 'saving';
+    this.error = null;
 
     const current = this.form.get('current');
     const newPassword = this.form.get('newPassword');
