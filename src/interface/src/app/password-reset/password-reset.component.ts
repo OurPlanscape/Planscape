@@ -86,7 +86,7 @@ export class PasswordResetComponent implements OnInit {
 
   getErrors(): string {
     if (this.errors.length > 0) {
-      return this.errors.join(' ');
+      return this.errors.join();
     }
     return '';
   }

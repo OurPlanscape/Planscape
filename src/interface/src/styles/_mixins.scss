@@ -87,3 +87,15 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 400;
   line-height: 26px
 }
+
+@mixin standard-button {
+  @include button-text();
+  padding: 10px 8px 10px 8px;
+  border-radius: 4px;
+  gap: 10px;
+}
+
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}
