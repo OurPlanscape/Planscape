@@ -5,6 +5,7 @@ django-cors-headers
 django-filter~=21.1.0
 django-leaflet
 django-lockdown
+django-ratelimit
 djangorestframework~=3.13.1
 djangorestframework-gis~=0.18.0
 djangorestframework-simplejwt~=5.2.2

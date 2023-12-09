@@ -305,3 +305,31 @@ class LoginTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
         # No email is sent for user to verify email because login failed.
         self.assertEqual(len(mail.outbox), 0)
+
+
+class EmailExistsTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(email="auserwejustadded@test.test")
+        self.user.set_password("12345")
+        self.user.save()
+
+    def test_email_exists(self):
+        response = self.client.post(
+            reverse("users:check_email"),
+            {"email": "auserwejustadded@test.test"},
+            content_type="application/json",
+        )
+
+        self.assertEquals(response.status_code, 200)
+        exists_response = response.json()["exists"]
+        self.assertEquals(exists_response, True)
+
+    def test_email_doesnt_exist(self):
+        response = self.client.post(
+            reverse("users:check_email"),
+            {"email": "definitelynonexistent@test.test"},
+            content_type="application/json",
+        )
+        self.assertEquals(response.status_code, 200)
+        exists_response = response.json()["exists"]
+        self.assertEquals(exists_response, False)

@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonR
 from django.utils.encoding import force_str
 from dj_rest_auth.views import UserDetailsView
 from users.serializers import UserSerializer
+from django_ratelimit.decorators import ratelimit
 
 
 def get_user(request: HttpRequest) -> User:
@@ -61,6 +62,20 @@ def is_verified_user(request: HttpRequest) -> HttpResponse:
         if not has_verified_email(logged_in_user):
             raise ValueError("Email not verified.")
         return JsonResponse({"verified": True})
+    except Exception as e:
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+
+@ratelimit(key="ip", rate="5/m", block=True)
+def check_email(request: HttpRequest) -> HttpResponse:
+    try:
+        body = json.loads(request.body)
+        email_to_check = body.get("email", None)
+        user_exists = False
+        found_users = User.objects.filter(email=email_to_check)
+        if found_users.exists():
+            user_exists = True
+        return JsonResponse({"exists": user_exists})
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
