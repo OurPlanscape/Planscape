@@ -50,6 +50,23 @@ export class SignupComponent {
     );
   }
 
+  doesEmailExist() {
+    const email: string = this.form.get('email')?.value;
+    this.authService.checkEmail(email).subscribe({
+      next: (exists) => {
+        if (exists) {
+          this.form.get('email')?.setErrors({ exists: 'Account exists' });
+        }
+      },
+      error: (error: HttpErrorResponse) => {
+        // TODO: We could also silence this error, as it could come from rate-limiting
+        this.errors = Object.values([
+          'A server error occurred validating your email.',
+        ]);
+      },
+    });
+  }
+
   resendEmail() {
     const email: string = this.form.get('email')?.value;
     this.authService.resendValidationEmail(email).subscribe();

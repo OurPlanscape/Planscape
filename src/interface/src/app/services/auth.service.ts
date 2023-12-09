@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CanActivate, Router } from '@angular/router';
@@ -234,6 +234,33 @@ export class AuthService {
             lastName: response.last_name,
           };
           return user;
+        })
+      );
+  }
+
+  /* confirms whether an email exists for this account */
+  /** Note: this is a rate-limited endpoint */
+  checkEmail(emailToCheck: string): Observable<boolean> {
+    const headers = new HttpHeaders({
+      'Content-Type': 'application/json',
+    });
+    return this.http
+      .post(
+        BackendConstants.END_POINT.concat('/users/check_email'),
+        {
+          email: emailToCheck,
+        },
+        {
+          headers: headers,
+          withCredentials: true,
+        }
+      )
+      .pipe(
+        map((response: any) => {
+          if (response?.exists === true) {
+            return true;
+          }
+          return false;
         })
       );
   }

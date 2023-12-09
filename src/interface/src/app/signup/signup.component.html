@@ -50,8 +50,16 @@
 
         <mat-form-field appearance="fill">
           <mat-label>Email</mat-label>
-          <input type="text" required formControlName="email" matInput />
+          <input
+            type="text"
+            required
+            formControlName="email"
+            matInput
+            (blur)="doesEmailExist()" />
         </mat-form-field>
+        <mat-error *ngIf="form.get('email')?.hasError('exists')">
+          Account already exists.
+        </mat-error>
 
         <mat-form-field appearance="fill">
           <mat-label>Create password</mat-label>
