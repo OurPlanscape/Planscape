@@ -2,10 +2,8 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatDialog } from '@angular/material/dialog';
 import { FormMessageType } from '../types/data.types';
 import { AuthService } from './../services';
-import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
 import { TimeoutError, timeout } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
 import { passwordsMustMatchValidator } from '../validators/passwords';
@@ -32,7 +30,6 @@ export class SignupComponent {
   showHint = false;
   constructor(
     private authService: AuthService,
-    private readonly dialog: MatDialog,
     private formBuilder: FormBuilder,
     private router: Router
   ) {
@@ -105,12 +102,7 @@ export class SignupComponent {
       .pipe(timeout(10000))
       .subscribe({
         next: () => {
-          const dialogConfig = {
-            data: email,
-          };
-          this.dialog.open(ValidationEmailDialogComponent, dialogConfig);
-
-          this.router.navigate(['home']);
+          this.router.navigate(['thankyou']);
         },
         error: (error: HttpErrorResponse) => {
           this.submitting = false;
