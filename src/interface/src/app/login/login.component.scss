@@ -1,3 +1,6 @@
+@import '../../styles/colors';
+@import '../../styles/mixins';
+
 .signin-root {
   display: flex;
   height: 100%;
@@ -15,6 +18,7 @@
   flex-direction: column;
   margin: auto;
   height: 90%;
+  margin-top: 20%;
 }
 
 .signin-card-logo {
@@ -37,43 +41,39 @@
   justify-content: flex-start;
   align-items: center;
   padding: 40px 60px;
-  background-color: #ffffff;
+  background-color: white;
   border: 1px solid rgba(72, 84, 192, 0.5);
 }
 
 h1 {
   &.signin-title {
+    @include h1();
     margin-bottom: 48px;
     text-align: center;
     text-align: center;
     vertical-align: middle;
-    font-size: 30px;
-    font-family: 'Public Sans';
-    font-weight: 600;
-    line-height: 32px;
-    color: #202124;
+    color: $color-text-dark;
   }
+}
+
+.forget-link {
+  text-align: center;
 }
 
 mat-label {
   text-align: left;
   vertical-align: middle;
-  font-size: 16px;
-  font-family: 'Public Sans';
-  line-height: 22px;
-  color: #4a4a4a;
   padding-bottom: 1em;
   padding-right: 1em;
 }
 
+.standard-label {
+  @include standard-label();
+}
+
 .required-blurb {
-  text-align: left;
-  vertical-align: middle;
-  font-size: 14px;
-  font-family: Public Sans;
-  font-style: italic;
-  line-height: 22px;
-  color: #898888;
+  @include italic-sm();
+  color: $color-text-gray;
 }
 
 button {
@@ -87,127 +87,52 @@ mat-divider {
 mat-form-field {
   width: 100%;
 }
-
-p {
-  color: #888888;
-  font-family: 'Public Sans', 'Roboto';
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 20px;
-  text-align: center;
+::ng-deep .mat-form-field-outline {
+  background-color: $color-light-gray;
 }
 
-
-.forget-password-link {
+.forget-password {
   text-align: center;
   vertical-align: middle;
-  font-size: 16px;
-  font-family: 'Public Sans';
-  line-height: 26px;
+  margin-top: 20px;
+}
+
+.forget-password-link {
+  @include standard-link();
   text-decoration: underline;
-  color: #064bba;
+  color: $color-standard-blue;
   padding-top: 26px;
 }
 
 .info-text-container {
-  box-sizing: border-box;
-  flex-direction: column;
-  justify-content: center;
-  padding: 70px 120px 50px 82px;
+  background-color: $color-soft-purple;
   width: 50%;
-  overflow: scroll;
-}
-
-h3 {
-  font-family: 'Roboto';
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
+  background-image: url('/assets/svg/waves.svg');
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  background-size: 50%;
 }
 
 .login-form-buttons {
-  margin-top: 20px;
   display: flex;
   justify-content: space-between;
   gap: 10px;
 }
 
 .login-form-button {
-  flex: 1;
+  width: 80px;
+  height: 36px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.guest-button {
+  width: 160px;
 }
 
 .mat-error {
   margin-top: 10px;
   text-align: center;
-}
-
-.field-alert-box {
-  position: absolute;
-  padding: 1em;
-  background: #ffffff;
-  width: 300px;
-  border: 1px solid #f50000;
-  margin-left: 1em;
-  margin-top: -5px;
-  border-radius: 5px;
-  z-index: 10000;
-  box-shadow: 3px 3px 10px 0px rgba(0,0,0,0.5);
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: 19px;
-    border: 16px solid transparent;
-    border-bottom-color: red;
-  }
-  &::after {
-    left: 21px;
-    border: 14px solid transparent;
-    border-bottom-color: #ffffff;
-  } 
-}
-.field-alert-box .field-alert-details {
-  float: left;
-}
-
-.login-error-box {
-  border-radius: 2px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding: 12px 10px;
-  padding-bottom: 5px;
-  background-color: rgba(245, 245, 245, 0.4000000059604645);
-  border: 1px solid #d50000;
-  margin-top: 5px;
-  margin-bottom: 1em;
-}
-
-.login-error-icon {
-  padding-left: 0;
-  padding-right: 0.2em;
-  float: left;
-}
-
-.login-error-heading {
-  float: left;
-  text-align: left;
-  vertical-align: middle;
-  font-size: 14px;
-  font-family: 'Public Sans';
-  line-height: 20px;
-  color: #d50000;
-}
-
-.login-error-details {
-  text-align: left;
-  vertical-align: middle;
-  font-size: 14px;
-  font-family: Public Sans;
-  line-height: 22px;
-  color: #4a4a4a;
 }
 
 .post-error-option {
