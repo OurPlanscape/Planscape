@@ -28,8 +28,8 @@ export function passwordMustBeNewValidator(
     };
 
     if (
-      currentPassword.length > 0 &&
-      password.length > 0 &&
+      currentPassword?.length > 0 &&
+      password?.length > 0 &&
       currentPassword === password
     ) {
       return passwordMustBeNewError;
@@ -61,8 +61,8 @@ export function passwordsMustMatchValidator(
     const confirmation = formControls.get(passwordConfirmFieldName)?.value;
 
     if (
-      password.length > 0 &&
-      confirmation.length > 0 &&
+      password?.length > 0 &&
+      confirmation?.length > 0 &&
       password !== confirmation
     ) {
       return passwordsMustMatchError;
