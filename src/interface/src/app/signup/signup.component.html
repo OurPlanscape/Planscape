@@ -52,8 +52,7 @@
               required
               formControlName="email"
               matInput
-              (blur)="getEmailError()"
-              (keyup)="clearEmailErrors()" />
+              (blur)="getEmailError()" />
           </mat-form-field>
           <app-field-alert
             [visible]="
@@ -73,7 +72,10 @@
               required
               formControlName="password1"
               matInput
-              (focus)="clearPasswordErrors()" />
+              autocomplete="password"
+              [errorStateMatcher]="passwordStateMatcher"
+              (focus)="showHint = true"
+              (blur)="showHint = false" />
           </mat-form-field>
           <app-field-alert
             [visible]="
@@ -92,6 +94,7 @@
               type="password"
               required
               formControlName="password2"
+              autocomplete="new-password"
               matInput />
           </mat-form-field>
           <app-field-alert

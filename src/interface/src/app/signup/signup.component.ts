@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { passwordsMustMatchValidator } from '../validators/passwords';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,6 +8,8 @@ import { AuthService } from './../services';
 import { ValidationEmailDialogComponent } from './validation-email-dialog/validation-email-dialog.component';
 import { TimeoutError, timeout } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
+import { passwordsMustMatchValidator } from '../validators/passwords';
+import { PasswordStateMatcher } from '../validators/error-matchers';
 
 @Component({
   selector: 'app-signup',
@@ -22,8 +23,13 @@ export class SignupComponent {
   emailAlreadyExists: boolean = false;
   emailError: string = '';
   signupError: string = '';
-  FormMessageType = FormMessageType;
+  readonly FormMessageType = FormMessageType;
+  passwordStateMatcher = new PasswordStateMatcher(['newPasswordsMustMatch']);
+  confirmPasswordStateMatcher = new PasswordStateMatcher([
+    'newPasswordsMustMatch',
+  ]);
 
+  showHint = false;
   constructor(
     private authService: AuthService,
     private readonly dialog: MatDialog,
@@ -53,14 +59,6 @@ export class SignupComponent {
   resendEmail() {
     const email: string = this.form.get('email')?.value;
     this.authService.resendValidationEmail(email).subscribe();
-  }
-
-  checkEmailErrors() {}
-
-  clearEmailErrors() {}
-
-  clearPasswordErrors() {
-    this.form.controls['password1'].setErrors(null);
   }
 
   getEmailError() {
