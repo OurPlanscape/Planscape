@@ -17,8 +17,7 @@
 .signin-subcontainer {
   flex-direction: column;
   margin: auto;
-  height: 90%;
-  margin-top: 20%;
+  margin-top: 10%;
 }
 
 .signin-card-logo {
@@ -107,10 +106,6 @@ mat-form-field {
 .info-text-container {
   background-color: $color-soft-purple;
   width: 50%;
-  background-image: url('/assets/svg/waves.svg');
-  background-position: bottom right;
-  background-repeat: no-repeat;
-  background-size: 50%;
 }
 
 .login-form-buttons {
