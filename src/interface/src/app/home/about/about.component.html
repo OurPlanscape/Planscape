@@ -1,24 +1,27 @@
-<h1>Planscape is a new wildfire resilience planning tool</h1>
+<div class="about-container">
+  <h3>Planscape is a new wildfire resilience planning tool</h3>
 
-<h3>
-  Designed to bring the best available state & federal data and science
-  together, Planscape guides regional planners in identifying the optimal
-  landscapes to treat in order to mitigate fire risk, maximize ecological
-  benefits, and help California's landscapes adapt to climate change.
-</h3>
-
-<ul>
-  <li *ngFor="let bullet of bulletPoints">
-    <h3>{{ bullet }}</h3>
-  </li>
-</ul>
-
-<div class="data-info-box">
-  <p>
-    The data used is based on California's Regional Resource Kits, developed by
-    the California Wildfire & Forest Resilience Task Force. You can find more
-    detailed information about these
-    <!-- eslint-disable-next-line prettier/prettier -->
-    <a href='https://wildfiretaskforce.org/regional-resource-kits-page/#kits'>here</a>.
+  <p class="important">
+    Designed to bring the best available state & federal data and science
+    together, Planscape guides regional planners in identifying the optimal
+    landscapes to treat in order to mitigate fire risk, maximize ecological
+    benefits, and help California's landscapes adapt to climate change.
   </p>
+
+  <div class="list-area">
+    <p *ngFor="let bullet of bulletPoints" class="regular">
+      <img src="assets/svg/icons/dot-icon.svg" class="dot-icon" />
+      {{ bullet }}
+    </p>
+  </div>
+
+  <div class="data-info-box">
+    <p class="small">
+      The data used is based on California's Regional Resource Kits, developed
+      by the California Wildfire & Forest Resilience Task Force. You can find
+      more detailed information about these
+      <!-- eslint-disable-next-line prettier/prettier -->
+    <a href='https://wildfiretaskforce.org/regional-resource-kits-page/#kits'>here</a>.
+    </p>
+  </div>
 </div>

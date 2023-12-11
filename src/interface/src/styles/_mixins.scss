@@ -15,8 +15,31 @@ Declare mixins based on styleguide and apply to classes
   line-height: 22px;
 }
 
+@mixin important-paragraph {
+  @include public-sans();
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 32px;
+  letter-spacing: 0px;
+}
+
+@mixin regular-paragraph {
+  @include public-sans();
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 26px;
+  letter-spacing: 0px;
+}
+
+@mixin small-paragraph {
+  @include public-sans();
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0px;
+}
+
 @mixin standard-label {
-  /* standard-label */
   @include public-sans();
   font-size: 18px;
   font-style: normal;
@@ -54,6 +77,9 @@ Declare mixins based on styleguide and apply to classes
 
 @mixin h3 {
   @include public-sans();
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 24px;
   font-size: 22px;
   font-style: normal;
   font-weight: 600;
@@ -66,6 +92,13 @@ Declare mixins based on styleguide and apply to classes
   font-style: normal;
   font-weight: 600;
   line-height: 32px;
+}
+
+@mixin button-text {
+  @include public-sans();
+  font-weight: semibold;
+  font-size: 1rem;
+  line-height: 1rem;
 }
 
 @mixin top-level-label {
@@ -98,5 +131,7 @@ Declare mixins based on styleguide and apply to classes
   line-height: 26px
 }
 
-
-
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+}

@@ -1,7 +1,7 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 // the possible custom errors
-interface PasswordFieldsErrors {
+export interface PasswordFieldsErrors {
   newPasswordMustBeNew: boolean;
   newPasswordsMustMatch: boolean;
 }
@@ -10,7 +10,7 @@ interface PasswordFieldsErrors {
  * Validates that the current password is not the same as the new one
  * @param currentPasswordFieldName the name of the current password formControl element on the form
  * @param passwordFieldName the name of the new password formControl element on the form
- * @return if error returns `newPasswordMustBeNew: true`
+ * @return if error returns `newPasswordMustBeNew: true`. Will additionally mark with the error the field with passwordFieldName
  */
 export function passwordMustBeNewValidator(
   currentPasswordFieldName: string,
@@ -21,15 +21,18 @@ export function passwordMustBeNewValidator(
   ): ValidationErrors | null => {
     const currentPassword = formControls.get(currentPasswordFieldName)?.value;
     const password = formControls.get(passwordFieldName)?.value;
-    const error: Pick<PasswordFieldsErrors, 'newPasswordMustBeNew'> = {
+
+    // error
+    const passwordMustBeNewError: Partial<PasswordFieldsErrors> = {
       newPasswordMustBeNew: true,
     };
+
     if (
       currentPassword.length > 0 &&
       password.length > 0 &&
       currentPassword === password
     ) {
-      return error;
+      return passwordMustBeNewError;
     }
 
     return null;
@@ -50,20 +53,19 @@ export function passwordsMustMatchValidator(
   const crossFieldValidators: ValidatorFn = (
     formControls: AbstractControl
   ): ValidationErrors | null => {
-    const password1 = formControls.get(passwordFieldName)?.value;
-    const password2 = formControls.get(passwordConfirmFieldName)?.value;
+    const errorKey = 'newPasswordsMustMatch';
+    const passwordsMustMatchError: Pick<PasswordFieldsErrors, typeof errorKey> =
+      { newPasswordsMustMatch: true };
 
-    const passwordsMustMatch: Pick<
-      PasswordFieldsErrors,
-      'newPasswordsMustMatch'
-    > = {
-      newPasswordsMustMatch: true,
-    };
+    const password = formControls.get(passwordFieldName)?.value;
+    const confirmation = formControls.get(passwordConfirmFieldName)?.value;
 
-    if (password1.length > 0 && password2.length > 0) {
-      if (password1 !== password2) {
-        return passwordsMustMatch;
-      }
+    if (
+      password.length > 0 &&
+      confirmation.length > 0 &&
+      password !== confirmation
+    ) {
+      return passwordsMustMatchError;
     }
     return null;
   };
