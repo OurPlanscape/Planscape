@@ -1,10 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Data, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -12,6 +7,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FormMessageType } from '../types';
 import { AuthService, PasswordResetToken } from '../services';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { PasswordStateMatcher } from '../validators/error-matchers';
+import { passwordsMustMatchValidator } from '../validators/passwords';
 
 @UntilDestroy()
 @Component({
@@ -23,9 +20,14 @@ export class PasswordResetComponent implements OnInit {
   errors: string[] = [];
 
   form: FormGroup;
-
   passwordResetToken: PasswordResetToken | null = null;
   FormMessageType = FormMessageType;
+  currentPasswordStateMatcher = new PasswordStateMatcher([]);
+  passwordStateMatcher = new PasswordStateMatcher(['newPasswordsMustMatch']);
+  confirmPasswordStateMatcher = new PasswordStateMatcher([
+    'newPasswordsMustMatch',
+  ]);
+  showHint = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -43,7 +45,7 @@ export class PasswordResetComponent implements OnInit {
         password2: this.formBuilder.control('', Validators.required),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validator: passwordsMustMatchValidator('password1', 'password2'),
       }
     );
   }
@@ -89,11 +91,5 @@ export class PasswordResetComponent implements OnInit {
       return this.errors.join();
     }
     return '';
-  }
-
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('password1')?.value;
-    const password2 = group.get('password2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
   }
 }
