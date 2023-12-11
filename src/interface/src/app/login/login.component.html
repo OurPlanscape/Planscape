@@ -11,7 +11,7 @@
         <h1 class="signin-title">Sign in to Planscape</h1>
 
         <form [formGroup]="form" (ngSubmit)="login()">
-          <mat-label
+          <mat-label class="standard-label"
             >Email
             <span class="required-blurb">required</span>
           </mat-label>
@@ -25,11 +25,15 @@
               (keyup)="clearEmailErrors()" />
           </mat-form-field>
           <app-field-alert
-            *ngIf="this.emailError !== '' && this.form.controls['email'].errors"
-            title="email error"
-            message="{{ emailError }}"></app-field-alert>
+            *ngIf="
+              this.emailError &&
+              this.form.controls['email'].errors &&
+              this.form.controls['email'].dirty
+            "
+            message="{{ emailError }}"
+            title="email error"></app-field-alert>
 
-          <mat-label
+          <mat-label class="standard-label"
             >Password
             <span class="required-blurb">required</span>
           </mat-label>
@@ -64,17 +68,17 @@
               type="submit"
               [disabled]="!form.valid"
               class="login-form-button">
-              Sign in
+              LOG IN
             </button>
           </mat-card-actions>
 
-          <p>
+          <p class="forget-password">
             <a
-              class="forget-password-link"
               i18n="Text on a button to reset password"
-              href="reset/">
-              Forgot your password?
-            </a>
+              href="reset/"
+              class="forget-password-link"
+              >Forgot your password?</a
+            >
           </p>
 
           <div class="login-form-buttons">
@@ -83,7 +87,7 @@
               color="primary"
               data-id="explore"
               [routerLink]="'/map'"
-              class="login-form-button">
+              class="login-form-button guest-button">
               Explore
             </button>
             <button
@@ -91,7 +95,7 @@
               color="primary"
               data-id="create-account"
               [routerLink]="'/signup'"
-              class="login-form-button">
+              class="login-form-button guest-button">
               Create an Account
             </button>
           </div>
