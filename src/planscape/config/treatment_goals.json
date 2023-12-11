@@ -94,7 +94,8 @@
               "long_question_text": "Where are the optimal areas to treat to reduce overall fuel loads?",
               "short_question_text": "Fuel-load Reduction Opportunities",
               "scenario_priorities": [
-                "total_fuel_exposed_to_fire"
+                "total_fuel_exposed_to_fire",
+                "probability_of_fire_severity_high"
               ],
               "weights": [],
               "scenario_output_fields_paths": {
@@ -127,7 +128,8 @@
                 ]
               },
               "stand_thresholds": [
-                "probability_of_fire_severity_high > 0.2"
+                "total_fuel_exposed_to_fire > 0",
+                "probability_of_fire_severity_high > 0"
               ],
               "global_thresholds": []
             },
