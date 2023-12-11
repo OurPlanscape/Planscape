@@ -20,12 +20,12 @@
             <input type="text" required formControlName="firstName" matInput />
           </mat-form-field>
           <app-field-alert
-            [visible]="
+            *ngIf="
               this.form.controls['firstName'].errors !== null &&
               this.form.controls['firstName'].dirty === true
             "
-            message="Must contain a value."
-            title="field error"></app-field-alert>
+            message="This field must contain a value."
+            title="First Name Error"></app-field-alert>
 
           <mat-label class="standard-label"
             >Last Name
@@ -35,12 +35,12 @@
             <input type="text" required formControlName="lastName" matInput />
           </mat-form-field>
           <app-field-alert
-            [visible]="
+            *ngIf="
               this.form.controls['lastName'].errors !== null &&
               this.form.controls['lastName'].dirty
             "
-            message="Must contain a value."
-            title="field error"></app-field-alert>
+            message="This field must contain a value."
+            title="Last Name Error"></app-field-alert>
 
           <mat-label class="standard-label"
             >Email
@@ -55,7 +55,7 @@
               (blur)="getEmailError()" />
           </mat-form-field>
           <app-field-alert
-            [visible]="
+            *ngIf="
               this.form.controls['email'].touched &&
               this.form.controls['email'].errors !== null
             "
@@ -78,12 +78,19 @@
               (blur)="showHint = false" />
           </mat-form-field>
           <app-field-alert
-            [visible]="
-              this.form.controls['password1'].errors !== null &&
-              this.form.controls['password1'].touched
+            [messageType]="FormMessageType.ALERT"
+            *ngIf="showHint && !form.get('password1')?.value"
+            title="Password requirements"
+            message="Your password needs to be at least 8 characters long.">
+          </app-field-alert>
+          <app-field-alert
+            [messageType]="FormMessageType.ERROR"
+            *ngIf="
+              (!showHint && form.get('password1')?.errors?.['minlength']) ||
+              form.errors?.['newPasswordMustBeNew']
             "
-            [message]="getPasswordError()"
-            title="Password error"></app-field-alert>
+            title="Password Error"
+            message="Your password needs to be at least 8-characters long."></app-field-alert>
 
           <mat-label class="standard-label"
             >Confirm Password
@@ -97,13 +104,6 @@
               autocomplete="new-password"
               matInput />
           </mat-form-field>
-          <app-field-alert
-            [visible]="
-              this.form.controls['password2'].errors !== null &&
-              this.form.controls['password2'].touched
-            "
-            [message]="getConfirmPasswordError()"
-            title="password error"></app-field-alert>
 
           <app-form-message
             [messageType]="FormMessageType.ERROR"
