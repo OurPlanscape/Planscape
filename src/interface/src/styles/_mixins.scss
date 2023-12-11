@@ -32,10 +32,11 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin standard-link {
-  font-size: 16px;
-  line-height: 26px;
+  @include public-sans();
+  font-size: 14px;
   font-weight: 500;
-  text-decoration: underline;
+  line-height: 16px;
+  letter-spacing: 0px;
 }
 
 @mixin standard-label-bold {
@@ -48,6 +49,7 @@ Declare mixins based on styleguide and apply to classes
   font-size: 30px;
   font-weight: 700;
   line-height: 32px;
+  letter-spacing: 0px;
 }
 
 @mixin h3 {
