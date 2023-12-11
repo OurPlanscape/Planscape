@@ -69,51 +69,32 @@ export class SignupComponent {
     if (emailErrors && 'pattern' in emailErrors) {
       return 'Email must be the correct format.';
     }
-    if (emailErrors && 'AlreadyExists' in emailErrors) {
+    if (emailErrors && 'accountExists' in emailErrors) {
       return 'An account with this email already exists.';
     }
     return 'Unknown error.';
-  }
-
-  getPasswordError() {
-    var passwordErrors = this.form.controls['password1'].errors;
-
-    if (passwordErrors && 'required' in passwordErrors) {
-      return 'A password is required.';
-    }
-    if (passwordErrors && 'minlength' in passwordErrors) {
-      return 'A password must be at least 8 characters long.';
-    }
-    if (passwordErrors && 'PasswordTooCommon' in passwordErrors) {
-      return 'This password is too common. Please choose another.';
-    }
-    //TODO: We need to handle one more error condition -- which is that the password was used in the past...
-    return 'Some kind of terrible password error.';
-  }
-  getConfirmPasswordError() {
-    var pwConfirmErrors = this.form.controls['password2'].errors;
-
-    if (pwConfirmErrors && 'required' in pwConfirmErrors) {
-      return 'A password is required.';
-    }
-    if (pwConfirmErrors && 'passwordsMustMatchValidator' in pwConfirmErrors) {
-      return 'Pssswords must match.';
-    }
-    return 'Unknon error.';
   }
 
   getFormErrors(): string {
     if (this.form.errors && 'newPasswordsMustMatch' in this.form.errors) {
       return 'Given passwords must match.';
     }
-    return 'Unknown Error';
+    if (this.form.errors && 'passwordTooCommon' in this.form.errors) {
+      return 'This password is too common. Please choose a different password.';
+    }
+    if (this.form.errors && 'serverError' in this.form.errors) {
+      return 'An unexpected server error has occured.';
+    }
+    if (this.form.errors && 'timeoutError' in this.form.errors) {
+      return 'A validation email was not able to be sent at this time. If one does not arrive, you can attempt to login, but you may need to request a new validation email.';
+    }
+    return 'An unexpected error has occured submitting this form.';
   }
 
   signup() {
     if (this.submitting) return;
 
     this.submitting = true;
-
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
@@ -140,11 +121,9 @@ export class SignupComponent {
             if (
               this.errors.filter((s) =>
                 s[0].includes('This password is too common.')
-              )
+              ).length > 0
             ) {
-              this.form
-                .get('password1')
-                ?.setErrors({ PasswordTooCommon: true });
+              this.form.setErrors({ passwordTooCommon: true });
             }
 
             // Backend Error: An account already exists with this email.
@@ -152,21 +131,14 @@ export class SignupComponent {
               this.errors.filter((s) => s[0].includes('already registered'))
                 .length > 0;
             if (this.emailAlreadyExists) {
-              this.emailError = 'An Account with this email already exists';
-              this.form.get('email')?.setErrors({
-                AlreadyExists: 'An Account with this email already exists',
-              });
+              this.form.controls['email'].setErrors({ accountExists: true });
             }
           } else if (error.status == 500) {
-            this.errors = Object.values([
-              'An unexpected server error has occured.',
-            ]);
+            this.form.setErrors({ serverError: true });
           } else if (error instanceof TimeoutError) {
-            this.errors = Object.values([
-              'The server was not able to send a validation email at this time.',
-            ]);
+            this.form.setErrors({ timeoutError: true });
           } else {
-            this.errors = Object.values(['An unexpected error has occured.']);
+            this.form.setErrors({ unexpectedError: true });
           }
         },
       });
