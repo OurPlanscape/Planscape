@@ -65,7 +65,7 @@ const routes: Routes = [
       },
       {
         path: 'thankyou',
-        title: 'Account Validation',
+        title: 'Thank You',
         component: ThankYouComponent,
         canActivate: [createFeatureGuard('login')],
       },

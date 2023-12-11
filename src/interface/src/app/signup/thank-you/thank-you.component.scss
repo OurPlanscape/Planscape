@@ -1,16 +1,16 @@
 @import '../../../styles/colors';
 @import '../../../styles/mixins';
 
-.thankyou-root {
+:host {
   display: flex;
   height: 100%;
 }
 
 .thankyou-container {
+  display: flex;
   background-image: url('/assets/jpg/planscape-background.jpg');
   background-repeat: no-repeat;
   background-size: cover;
-  display: flex;
   width: 50%;
 }
 
@@ -58,7 +58,6 @@ a.standard-link {
 
 .info-text-container {
   background-color: $color-soft-purple;
-  width: 50%;
   display: flex;
   justify-content: center;
   background-color: $color-soft-purple;

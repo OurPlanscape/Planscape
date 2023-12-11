@@ -1,12 +1,8 @@
 @import '../../../styles/colors';
 @import '../../../styles/mixins';
 
-.learn-more-component {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+:host {
   width: 100%;
-  height: 700px;
   gap: 40px;
   padding: 40px 0px 40px 0px;
 }
