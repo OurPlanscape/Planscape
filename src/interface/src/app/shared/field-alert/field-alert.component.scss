@@ -5,7 +5,7 @@
   position: absolute;
   padding: 12px 10px 12px 10px;
   background: white;
-  width: 240px;
+  width: 255px;
   margin-left: 1em;
   margin-top: -5px;
   border-radius: 5px;
@@ -28,18 +28,22 @@
     border: 16px solid transparent;
     border-bottom-color: $color-error;
   }
+
   &::after {
     left: 21px;
     border: 14px solid transparent;
     border-bottom-color: white;
   }
 }
+
 .field-alert-box.alert {
   border-color: black;
+
   &::before,
   &::after {
     border-bottom-color: black;
   }
+
   &::after {
     border-bottom-color: white;
   }
@@ -47,10 +51,12 @@
 
 .field-alert-box.success {
   border-color: $color-brand-teal;
+
   &::before,
   &::after {
     border-bottom-color: $color-brand-teal;
   }
+
   &::after {
     border-bottom-color: white;
   }
@@ -65,6 +71,7 @@
   text-transform: uppercase;
   color: $color-error;
 }
+
 .field-alert-box.alert .title-text,
 .field-alert-box.success .title-text {
   color: $color-dark-gray;
