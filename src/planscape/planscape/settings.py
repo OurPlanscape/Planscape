@@ -248,7 +248,7 @@ REST_AUTH = {
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=90),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=90),
-    'ROTATE_REFRESH_TOKENS': True, # ensure the Refresh token is invalidated each time
+    'ROTATE_REFRESH_TOKENS': True, # ensure the Refresh token is invalidated at each login
 }
 
 AUTHENTICATION_BACKENDS = [
