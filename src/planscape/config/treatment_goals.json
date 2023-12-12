@@ -46,7 +46,9 @@
                   "california_spotted_owl_territory"
                 ]
               },
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0"
+              ],
               "global_thresholds": []
             },
             {
@@ -197,7 +199,7 @@
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "scenario_priorities": [
                 "probability_of_fire_severity_high",
-                "probability_of_fire_severity_moderate"
+                "total_fuel_exposed_to_fire"
               ],
               "weights": [],
               "scenario_output_fields_paths": {
@@ -239,7 +241,9 @@
                 ]
               },
               "stand_thresholds": [
-                "california_spotted_owl_habitat < 0.5"
+                "probability_of_fire_severity_high > 0",
+                "total_fuel_exposed_to_fire > 0",
+                "california_spotted_owl_habitat == 0"
               ],
               "global_thresholds": []
             }
@@ -288,7 +292,9 @@
                   "aboveground_live_tree_carbon"
                 ]
               },
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "aboveground_live_tree_carbon > 0"
+              ],
               "global_thresholds": []
             }
           ]
