@@ -295,7 +295,7 @@
                   "metric_name": "open_habitat_raptors_species_richness",
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/open_species_richness_202304.tif",
-                  "raw_layer": ":bioDiverConserv_Tier2_open_species_richness_20304",
+                  "raw_layer": ":bioDiverConserv_Tier2_open_species_richness_202304",
                   "reference_link": "",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
