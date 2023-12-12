@@ -290,7 +290,9 @@
                   "aboveground_live_tree_carbon"
                 ]
               },
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "aboveground_live_tree_carbon > 0"
+              ],
               "global_thresholds": []
             }
           ]
