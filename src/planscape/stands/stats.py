@@ -1,9 +1,7 @@
 import sys
-import warnings
 
 from rasterstats.io import parse_feature
 import numpy as np
-from affine import Affine
 from shapely.geometry import shape
 from rasterstats.main import Raster
 from rasterstats.utils import (
