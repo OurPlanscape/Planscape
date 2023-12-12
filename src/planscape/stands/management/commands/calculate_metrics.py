@@ -10,20 +10,16 @@ from django.contrib.gis.db.models.functions import AsWKT, Transform
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management.base import BaseCommand
 from django.db import connection
-from rasterstats import zonal_stats
-from stands.stats import gen_zonal_stats2
+from stands.stats import get_zonal_stats
 from stands.models import Stand
 from django.conf import settings
 
 
-def inner2(stand, condition_id, raster_path, stand_cache):
+def calculate_metric(stand, condition_id, raster):
     stand_id, geometry = stand
-    stats = gen_zonal_stats2(
-        stand_id,
+    stats = get_zonal_stats(
         stand_geometry=geometry,
-        stand_cache=stand_cache,
-        raster=raster_path,
-        stats="min max mean count sum majority minority",
+        raster=raster,
     )
 
     min = stats["min"]
@@ -129,6 +125,14 @@ class Command(BaseCommand):
                 output_fields = question.get("scenario_output_fields_paths", {})
                 conditions.extend(output_fields.get("metrics", []))
 
+        # fixed all scenarios can have these restrictions, so they must be loaded.
+        conditions.extend(
+            [
+                "slope",
+                "distance_to_roads",
+            ]
+        )
+
         # removes duplicates
         condition_names = list(set(conditions))
         self.stdout.write("Conditions:\n")
@@ -157,51 +161,44 @@ class Command(BaseCommand):
             cached = options.get("cached", True)
 
             real_start = time.time()
-            with multiprocessing.Manager() as manager:
-                stand_cache = manager.dict()
-                for condition in conditions:
-                    start_condition = time.time()
-                    stands = self.get_stands_queryset(
-                        condition_id=condition.id, size=size
-                    )
-                    condition_id = condition.pk
-                    region = condition.condition_dataset.region_name
-                    if stands.count() <= 0:
-                        self.stdout.write(
-                            f"[OK] Finished {condition_id}: 0 seconds - no raster data."
-                        )
-                        continue
+            for condition in conditions:
+                start_condition = time.time()
+                stands = self.get_stands_queryset(condition_id=condition.id, size=size)
+                condition_id = condition.pk
+                region = condition.condition_dataset.region_name
+                if stands.count() <= 0:
                     self.stdout.write(
-                        f"[OK] Processing {condition_id} with {stands.count()} stands."
+                        f"[OK] Finished {condition_id}: 0 seconds - no raster data."
                     )
-                    stand_data = stands.values_list("id", "geom").iterator(
-                        chunk_size=1000
+                    continue
+                self.stdout.write(
+                    f"[OK] Processing {condition_id} with {stands.count()} stands."
+                )
+                stand_data = stands.values_list("id", "geom").iterator(chunk_size=1000)
+                raster_path = get_raster_path(condition)
+
+                if not raster_path.exists():
+                    self.stdout.write("[FAIL] Raster does not exists in disk")
+                    continue
+
+                outfile = f"{region}_{condition_id}_{size}.csv"
+
+                with multiprocessing.Pool(max_workers) as pool:
+                    data = zip(
+                        stand_data,
+                        repeat(condition_id),
+                        repeat(raster_path),
                     )
-                    raster_path = get_raster_path(condition)
-
-                    if not raster_path.exists():
-                        self.stdout.write("[FAIL] Raster does not exists in disk")
-                        continue
-
-                    outfile = f"{region}_{condition_id}_{size}.csv"
-
-                    with multiprocessing.Pool(max_workers) as pool:
-                        data = zip(
-                            stand_data,
-                            repeat(condition_id),
-                            repeat(raster_path),
-                            repeat(stand_cache),
+                    with open(outfile, "w") as out:
+                        results = pool.starmap(calculate_metric, data, chunksize=1000)
+                        out.writelines(
+                            "stand_id,condition_id,min,max,avg,sum,count,majority,minority\n"
                         )
-                        with open(outfile, "w") as out:
-                            results = pool.starmap(inner2, data, chunksize=1000)
-                            out.writelines(
-                                "stand_id,condition_id,min,max,avg,sum,count,majority,minority\n"
-                            )
-                            out.writelines([r for r in results if r])
+                        out.writelines([r for r in results if r])
 
-                    end_condition = time.time()
-                    self.stdout.write(
-                        f"CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
-                    )
+                end_condition = time.time()
+                self.stdout.write(
+                    f"CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
+                )
             real_end = time.time()
             self.stdout.write(f"TOTAL RUNTIME {real_end - real_start}")
