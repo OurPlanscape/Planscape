@@ -22,6 +22,9 @@ def calculate_metric(stand, condition_id, raster):
         raster=raster,
     )
 
+    if stats["count"] <= 0:
+        return None
+
     min = stats["min"]
     max = stats["max"]
     avg = stats["mean"]
@@ -29,8 +32,6 @@ def calculate_metric(stand, condition_id, raster):
     maj = stats["majority"]
     mnt = stats["minority"]
     count = stats["count"]
-    if count <= 0:
-        return None
 
     return f"{stand_id},{condition_id},{min},{max},{avg},{sum},{count},{maj},{mnt}\n"
 
