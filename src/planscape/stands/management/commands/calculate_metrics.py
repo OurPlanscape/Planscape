@@ -159,7 +159,6 @@ class Command(BaseCommand):
             discover_region = options.get("discover")
             size = options.get("size")
             conditions = self.get_conditions(condition_ids, discover_region)
-            cached = options.get("cached", True)
 
             real_start = time.time()
             for condition in conditions:
@@ -183,7 +182,6 @@ class Command(BaseCommand):
                     continue
 
                 outfile = f"{region}_{condition_id}_{size}.csv"
-                raster_path = str(raster_path)
                 with multiprocessing.Pool(max_workers) as pool:
                     data = zip(
                         stand_data,
