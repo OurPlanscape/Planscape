@@ -97,7 +97,7 @@ class Command(BaseCommand):
             queryset = queryset.filter(geometry__intersects=extent)
 
         return queryset.annotate(
-            geom=AsWKT(Transform(srid=3857, expression="geometry"))
+            geom=AsWKT(Transform(srid=settings.CRS_FOR_RASTERS, expression="geometry"))
         )
 
     def get_conditions(self, condition_ids=None, discover_region=None):
@@ -191,15 +191,18 @@ class Command(BaseCommand):
                         repeat(raster_path),
                     )
                     with open(outfile, "w") as out:
-                        results = pool.starmap(calculate_metric, data, chunksize=1000)
+                        results = pool.starmap_async(
+                            calculate_metric,
+                            data,
+                        )
                         out.writelines(
                             "stand_id,condition_id,min,max,avg,sum,count,majority,minority\n"
                         )
-                        out.writelines([r for r in results if r])
+                        out.writelines([r for r in results.get() if r])
 
                 end_condition = time.time()
                 self.stdout.write(
-                    f"CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
+                    f"[OK] CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
                 )
             real_end = time.time()
-            self.stdout.write(f"TOTAL RUNTIME {real_end - real_start}")
+            self.stdout.write(f"[OK] TOTAL RUNTIME {real_end - real_start}")
