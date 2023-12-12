@@ -183,7 +183,7 @@ class Command(BaseCommand):
                     continue
 
                 outfile = f"{region}_{condition_id}_{size}.csv"
-
+                raster_path = str(raster_path)
                 with multiprocessing.Pool(max_workers) as pool:
                     data = zip(
                         stand_data,
