@@ -46,7 +46,9 @@
                   "california_spotted_owl_territory"
                 ]
               },
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0"
+              ],
               "global_thresholds": []
             },
             {
