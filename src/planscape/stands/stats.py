@@ -26,22 +26,6 @@ def get_zonal_stats(
     need from the original one.
     """
 
-    # Handle 1.0 deprecations
-    transform = kwargs.get("transform")
-    if transform:
-        warnings.warn(
-            "GDAL-style transforms will disappear in 1.0. "
-            "Use affine=Affine.from_gdal(*transform) instead",
-            DeprecationWarning,
-        )
-        if not affine:
-            affine = Affine.from_gdal(*transform)
-
-    band_num = kwargs.get("band_num")
-    if band_num:
-        warnings.warn("Use `band` to specify band number", DeprecationWarning)
-        band = band_num
-
     with Raster(raster, affine, nodata, band) as rast:
         feat = parse_feature(stand_geometry)
 
@@ -65,12 +49,7 @@ def get_zonal_stats(
         # mask everything that is not a valid value or not within our geom
         masked = np.ma.MaskedArray(fsrc.array, mask=(isnodata | ~rv_array))
 
-        # If we're on 64 bit platform and the array is an integer type
-        # make sure we cast to 64 bit to avoid overflow for certain numpy ops
-        if sys.maxsize > 2**32 and issubclass(masked.dtype.type, np.integer):
-            accum_dtype = "int64"
-        else:
-            accum_dtype = None  # numpy default
+        accum_dtype = None  # numpy default
 
         if masked.compressed().size == 0:
             # nothing here, fill with None and move on
