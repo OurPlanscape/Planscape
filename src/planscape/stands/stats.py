@@ -49,7 +49,10 @@ def get_zonal_stats(
         # mask everything that is not a valid value or not within our geom
         masked = np.ma.MaskedArray(fsrc.array, mask=(isnodata | ~rv_array))
 
-        accum_dtype = None  # numpy default
+        if sys.maxsize > 2**32 and issubclass(masked.dtype.type, np.integer):
+            accum_dtype = "int64"
+        else:
+            accum_dtype = None  #
 
         if masked.compressed().size == 0:
             # nothing here, fill with None and move on
