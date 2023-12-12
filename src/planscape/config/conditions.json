@@ -401,7 +401,7 @@
                 {
                   "display_name": "No. Spotted Owl Habitat Suitability Index",
                   "data_provider": "FVEG",
-                  "data_units": "Binary",
+                  "data_units": "Index",
                   "max_value": 1,
                   "metric_name": "north_spotted_owl_suitability_index",
                   "min_value": 0,
