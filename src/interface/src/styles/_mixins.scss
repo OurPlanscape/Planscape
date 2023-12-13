@@ -46,6 +46,13 @@ Declare mixins based on styleguide and apply to classes
   letter-spacing: 0px;
 }
 
+@mixin standard-input-label {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+}
+
 @mixin standard-label {
   @include public-sans();
   font-size: 18px;

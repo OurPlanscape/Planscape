@@ -13,6 +13,9 @@
   }
 
   .mat-menu-item {
+    @include standard-input-label;
+    color: $color-md-gray;
+    line-height: 48px;
     min-width: 160px;
     border-bottom: 2px solid $color-soft-gray;
   }

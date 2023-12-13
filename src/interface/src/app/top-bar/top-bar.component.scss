@@ -59,6 +59,12 @@ button.navbar-item, a.navbar-item {
   }
 }
 
+.navbar-item[aria-expanded="true"] {
+  color: $color-light-blue;
+  text-decoration: underline;
+  text-underline-position: under;
+}
+
 .help {
   margin-left: 20px;
 
