@@ -88,11 +88,11 @@ button {
   @include italic-sm();
 }
 
-::ng-deep .mat-form-field-outline {
+:host ::ng-deep .mat-form-field-outline {
   background-color: $color-light-gray;
 }
 
 /* field - selected */
-::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
+:host ::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
   background-color: $color-highlight-30pct;
 }
