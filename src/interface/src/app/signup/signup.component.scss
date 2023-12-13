@@ -23,13 +23,10 @@
   flex-direction: column;
   padding: 3% 0px 40px 0px;
   width: 50%;
-
-  background-color: $color-soft-purple;
-    width: 50%;
-    background-image: url('/assets/svg/waves-large.svg');
-    background-position: bottom right;
-    background-repeat: no-repeat;
-    background-size: 50%;
+  background-image: url('/assets/svg/waves-large.svg');
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  background-size: 50%;
 }
 
 .signup-form-subcontainer {
@@ -50,10 +47,16 @@
   flex-direction: column;
   justify-content: center;
   background-color: white;
-  padding: 20px 60px 20px 60px;
+  padding: 20px 60px 40px 60px;
   border: 1px black solid;
   border-color: $color-original-purple;
   border-radius: 8px;
+  box-shadow: 0px 4px 4px 0px $color-drop-shadow;
+}
+
+.button-row {
+  display:flex;
+  width: 100%;
 }
 
 h1 {
@@ -68,7 +71,15 @@ mat-form-field {
 
 button {
   margin-bottom: 5px;
-  width: 100%;
+}
+
+.create-button {
+  @include standard-button();
+  background-color: $color-standard-blue;
+  border: 1px $color-dark-gray solid;
+  margin-left: auto;
+  margin-right: auto;
+  width: 200px;
 }
 
 .post-error-option {
@@ -79,7 +90,7 @@ button {
 /*standard label*/
 .standard-label {
   @include standard-label();
-  color: $color-dark-gray;
+  color: $color-text-gray;
 }
 
 /* italic-sm */

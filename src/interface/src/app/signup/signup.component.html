@@ -107,13 +107,16 @@
             [message]="getFormErrors()">
           </app-form-message>
 
-          <button
-            mat-flat-button
-            type="submit"
-            color="primary"
-            [disabled]="!form.valid || submitting">
-            {{ submitting ? 'Please wait...' : 'Create account' }}
-          </button>
+          <div class="button-row">
+            <button
+              mat-flat-button
+              type="submit"
+              color="primary"
+              class="create-button"
+              [disabled]="!form.valid || submitting">
+              {{ submitting ? 'Please wait...' : 'CREATE ACCOUNT' }}
+            </button>
+          </div>
         </form>
       </div>
     </div>

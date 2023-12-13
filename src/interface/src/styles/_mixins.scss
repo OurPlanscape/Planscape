@@ -4,7 +4,7 @@ Declare mixins based on styleguide and apply to classes
  */
 
 @mixin public-sans() {
-  font-family: Public Sans;
+  font-family: 'Public Sans';
 }
 
 @mixin button-text {
@@ -122,11 +122,12 @@ Declare mixins based on styleguide and apply to classes
 @mixin button-disabled {
   background-color: $color-light-gray;
   color: $color-text-gray;
+  border:1px $color-text-gray solid;
 }
 
 @mixin button-text {
   @include public-sans();
-  font-weight: semibold;
+  font-weight: 400;
   font-size: 1rem;
   line-height: 1rem;
 }
