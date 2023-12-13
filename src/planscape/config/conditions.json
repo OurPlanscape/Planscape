@@ -99,7 +99,7 @@
               "metrics": [
                 {
                   "display_name": "Potential Total Smoke Emissions",
-                  "data_provider": "",
+                  "data_provider": "LANDFIRE FCCS 2022",
                   "data_units": "pounds PM2.5/acre",
                   "max_value": 0.816,
                   "metric_name": "potential_total_smoke",
@@ -112,7 +112,7 @@
                 },
                 {
                   "display_name": "Potential Avoided Smoke Emissions",
-                  "data_provider": "",
+                  "data_provider": "LANDFIRE FCCS 2022",
                   "data_units": "pounds PM2.5/acre",
                   "max_value": 0.833,
                   "metric_name": "potential_avoided_smoke",
@@ -152,7 +152,7 @@
                 },
                 {
                   "display_name": "Species Richness: Cavity Nesters/Excavators",
-                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 17,
                   "metric_name": "species_richness_cavity_nesters_excavators",
@@ -165,7 +165,7 @@
                 },
                 {
                   "display_name": "Species Richness: Herbivores",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 29,
                   "metric_name": "species_richness_herbivores",
@@ -178,7 +178,7 @@
                 },
                 {
                   "display_name": "Species Richness: Insectivores",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 43,
                   "metric_name": "species_richness_insectivores",
@@ -191,7 +191,7 @@
                 },
                 {
                   "display_name": "Species Richness: Predators",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 36,
                   "metric_name": "species_richness_predators",
@@ -204,7 +204,7 @@
                 },
                 {
                   "display_name": "Species Richness: Seed/Spore Dispersers",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 16,
                   "metric_name": "species_richness_seed_spore_dispersers",
@@ -217,7 +217,7 @@
                 },
                 {
                   "display_name": "Species Richness: Soil Aerators",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 10,
                   "metric_name": "species_richness_soil_aerators",
@@ -230,7 +230,7 @@
                 },
                 {
                   "display_name": "Present Day Connectivity",
-                  "data_provider": "FVEG",
+                  "data_provider": "The Nature Conservancy, Omniscape",
                   "data_units": "Categorical",
                   "max_value": 49,
                   "metric_name": "present_day_connectivity",
@@ -250,7 +250,7 @@
               "metrics": [
                 {
                   "display_name": "Wildlife Species Richness",
-                  "data_provider": "CDFW",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 76,
                   "metric_name": "wildlife_species_richness",
@@ -263,7 +263,7 @@
                 },
                 {
                   "display_name": "Threatened/Endangered Vertebrate Species Richness",
-                  "data_provider": "CDFW",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 6,
                   "metric_name": "threatened_endangered_vertebrate_species_richness",
@@ -276,7 +276,7 @@
                 },
                 {
                   "display_name": "Forest Raptors Species Richness",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 9,
                   "metric_name": "forest_raptors_species_richness",
@@ -289,7 +289,7 @@
                 },
                 {
                   "display_name": "Open Habitat Raptors Species Richness",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 7,
                   "metric_name": "open_habitat_raptors_species_richness",
@@ -302,7 +302,7 @@
                 },
                 {
                   "display_name": "Hummingbirds Species Richness",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 3,
                   "metric_name": "hummingbirds_species_richness",
@@ -322,7 +322,7 @@
               "metrics": [
                 {
                   "display_name": "California Spotted Owl",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "california_spotted_owl",
@@ -335,7 +335,7 @@
                 },
                 {
                   "display_name": "Mountain Lion",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "mountain_lion",
@@ -361,7 +361,7 @@
                 },
                 {
                   "display_name": "Marbled Murrelet Nesting Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "Regional Ecosystem Office - Northwest Forest Plan",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_nesting_habitat",
@@ -374,7 +374,7 @@
                 },
                 {
                   "display_name": "Marbled Murrelet Critical Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife CWHR",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_critical_habitat",
@@ -387,7 +387,7 @@
                 },
                 {
                   "display_name": "No. Spotted Owl Nesting/Roosting Suitability Index",
-                  "data_provider": "FVEG",
+                  "data_provider": "Regional Ecosystem Office - Northwest Forest Plan",
                   "data_units": "Index (Dimensionless)",
                   "max_value": 8628,
                   "metric_name": "north_spotted_owl_nesting_suitablity_index",
@@ -400,7 +400,7 @@
                 },
                 {
                   "display_name": "No. Spotted Owl Habitat Suitability Index",
-                  "data_provider": "FVEG",
+                  "data_provider": "Regional Ecosystem Office - Northwest Forest Plan",
                   "data_units": "Index",
                   "max_value": 1,
                   "metric_name": "north_spotted_owl_suitability_index",
@@ -413,7 +413,7 @@
                 },
                 {
                   "display_name": "NSO Changes in Suitable Habitat 1993-2022",
-                  "data_provider": "FVEG",
+                  "data_provider": "Regional Ecosystem Office - Northwest Forest Plan",
                   "data_units": "Categorical",
                   "max_value": 12,
                   "metric_name": "north_spotted_owl_change_in_suitable_habitat",
@@ -426,7 +426,7 @@
                 },
                 {
                   "display_name": "NSO Habitat: Topo-Climatic Fire Refugia",
-                  "data_provider": "FVEG",
+                  "data_provider": "USDA Forest Service, Region 6",
                   "data_units": "Index",
                   "max_value": 100,
                   "metric_name": "north_spotted_owl_topo_climatic_fire_refugia",
@@ -439,7 +439,7 @@
                 },
                 {
                   "display_name": "Northern Goshawk Suitable Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "northern_goshawk_habitat",
@@ -452,7 +452,7 @@
                 },
                 {
                   "display_name": "Pacific Fisher Predicted Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "Conservation Biology Institute",
                   "data_units": "Probability",
                   "max_value": 1,
                   "metric_name": "pacific_fisher",
@@ -465,7 +465,7 @@
                 },
                 {
                   "display_name": "Humboldt Marten Predicted Distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "Moriarty, et al.",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "humboldt_pacific_fisher",
@@ -478,7 +478,7 @@
                 },
                 {
                   "display_name": "California Coastal Chinook Salmon Critical Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "National Marine Fisheries Service (NOAA Fisheries)",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "chinook_salmon_critical_habitat",
@@ -491,7 +491,7 @@
                 },
                 {
                   "display_name": "No. California Coast Coho Salmon Critical Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "National Marine Fisheries Service (NOAA Fisheries)",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "coho_salmon_critical_habitat",
@@ -504,7 +504,7 @@
                 },
                 {
                   "display_name": "No. California DPU Steelhead Critical Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "National Marine Fisheries Service (NOAA Fisheries)",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "steelhead_critical_habitat",
@@ -517,7 +517,7 @@
                 },
                 {
                   "display_name": "California Coastal Chinook Salmon Distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "National Marine Fisheries Service (NOAA Fisheries)",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "chinook_salmon_distribution",
@@ -530,7 +530,7 @@
                 },
                 {
                   "display_name": "No. California Coast Coho Salmon Distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "coho_salmon_distribution",
@@ -543,7 +543,7 @@
                 },
                 {
                   "display_name": "No. California Winter Steelhead Distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "winter_steelhead_distribution",
@@ -556,7 +556,7 @@
                 },
                 {
                   "display_name": "No. California Summer Steelhead Distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "summer_steelhead_distribution",
@@ -630,7 +630,7 @@
               "metrics": [
                 {
                   "display_name": "Cost of Biomass Treatments - low",
-                  "data_provider": "CALFIRE",
+                  "data_provider": "Rocky Mountain Research Station, USGS",
                   "data_units": "Dollars/CCF",
                   "max_value": 5424,
                   "metric_name": "cost_of_biomass_treatment_low",
@@ -643,7 +643,7 @@
                 },
                 {
                   "display_name": "Cost of Biomass Treatments - high",
-                  "data_provider": "CALFIRE",
+                  "data_provider": "Rocky Mountain Research Station, USGS",
                   "data_units": "Dollars/CCF",
                   "max_value": 5490,
                   "metric_name": "cost_of_biomass_treatment_high",
@@ -656,7 +656,7 @@
                 },
                 {
                   "display_name": "Cost of Sawlog Treatment - low",
-                  "data_provider": "CALFIRE",
+                  "data_provider": "Rocky Mountain Research Station, USGS",
                   "data_units": "Dollars/CCF",
                   "max_value": 2728,
                   "metric_name": "cost_of_sawlog_treatment_low",
@@ -669,7 +669,7 @@
                 },
                 {
                   "display_name": "Cost of Sawlog Treatment - high",
-                  "data_provider": "CALFIRE",
+                  "data_provider": "Rocky Mountain Research Station, USGS",
                   "data_units": "Dollars/CCF",
                   "max_value": 2735,
                   "metric_name": "cost_of_sawlog_treatment_high",
@@ -682,7 +682,7 @@
                 },
                 {
                   "display_name": "Biomass Residues",
-                  "data_provider": "CALFIRE",
+                  "data_provider": "Schatz Energy Research Center"
                   "data_units": "short tons/acre",
                   "max_value": 430,
                   "metric_name": "biomass_residues",
@@ -709,7 +709,7 @@
               "metrics": [
                 {
                   "display_name": "Structure Exposure Score",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Pyrologix",
                   "data_units": "Relative Index",
                   "max_value": 10,
                   "metric_name": "structure_exposure_score",
@@ -722,7 +722,7 @@
                 },
                 {
                   "display_name": "WUI Damage Potential",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Pyrologix",
                   "data_units": "Relative Index",
                   "max_value": 5,
                   "metric_name": "wui_damage_potential",
@@ -735,7 +735,7 @@
                 },
                 {
                   "display_name": "Ember Load Index",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Pyrologix",
                   "data_units": "Relative Number of Embers",
                   "max_value": 14.8,
                   "metric_name": "ember_load_index",
@@ -748,7 +748,7 @@
                 },
                 {
                   "display_name": "Wildfire Ignitions",
-                  "data_provider": "Rocky Mountain Research Station",
+                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
                   "data_units": "Count of Fires",
                   "max_value": 90,
                   "metric_name": "wildfire_ignitions",
@@ -774,7 +774,7 @@
                 },
                 {
                   "display_name": "Wildfire Ignitions (Nonhuman-caused)",
-                  "data_provider": "Rocky Mountain Research Station,",
+                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
                   "data_units": "Count of Fires",
                   "max_value": 3,
                   "metric_name": "wildfire_ignitions_nonhuman_caused",
@@ -787,7 +787,7 @@
                 },
                 {
                   "display_name": "Ember Load to Buildings",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Pyrologix",
                   "data_units": "Relative Index",
                   "max_value": 1.5,
                   "metric_name": "ember_load_to_buildings",
@@ -800,7 +800,7 @@
                 },
                 {
                   "display_name": "Wildfire Hazard Potential",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Pyrologix",
                   "data_units": "Relative Index",
                   "max_value": 98241,
                   "metric_name": "wildfire_hazard_potential",
@@ -813,7 +813,7 @@
                 },
                 {
                   "display_name": "Predicted Human Ignition Probability",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Bin Chen and Yufang Jin, University of California Davis",
                   "data_units": "Probability",
                   "max_value": 0.7,
                   "metric_name": "predicted_ignition_probability_human_caused",
@@ -826,7 +826,7 @@
                 },
                 {
                   "display_name": "Predicted Lightning Ignition Probability",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Bin Chen and Yufang Jin, University of California Davis",
                   "data_units": "Probability",
                   "max_value": 0.8,
                   "metric_name": "predicted_ignition_probability_lightning_caused",
@@ -853,7 +853,7 @@
               "metrics": [
                 {
                   "display_name": "Mean % FRI Departure since 1908",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "USDA Forest Service, Region 5, MARS Team",
                   "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1908",
@@ -866,7 +866,7 @@
                 },
                 {
                   "display_name": "Mean % FRI Departure since 1970",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "USDA Forest Service, Region 5, MARS Team",
                   "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1970",
@@ -879,7 +879,7 @@
                 },
                 {
                   "display_name": "Mean FRI Departure Condition Class",
-                  "data_provider": "CAL FIRE",
+                  "data_provider": "USDA Forest Service, Region 5, MARS Team",
                   "data_units": "Categorical",
                   "max_value": 3,
                   "metric_name": "mean_fri_departure_condition_class",
@@ -892,7 +892,7 @@
                 },
                 {
                   "display_name": "Time Since Last Fire",
-                  "data_provider": "CAL FIRE",
+                  "data_provider": "USDA Forest Service, Region 5, MARS Team",
                   "data_units": "Years",
                   "max_value": 120,
                   "metric_name": "time_since_last_fire",
@@ -905,7 +905,7 @@
                 },
                 {
                   "display_name": "FRI Departure since 1908",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "USDA Forest Service, Region 5, MARS Team",
                   "data_units": "Average Years",
                   "max_value": 120,
                   "metric_name": "fri_departure_since_1908",
@@ -918,7 +918,7 @@
                 },
                 {
                   "display_name": "FRI Departure since 1970",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "USDA Forest Service, Region 5, MARS Team",
                   "data_units": "Average Years",
                   "max_value": 55,
                   "metric_name": "fri_departure_since_1970",
@@ -938,7 +938,7 @@
               "metrics": [
                 {
                   "display_name": "Annual Burn Probability",
-                  "data_provider": ": Pyrologix, LLC ",
+                  "data_provider": ": Pyrologix",
                   "data_units": "Probability",
                   "max_value": 1,
                   "metric_name": "annual_burn_probability",
@@ -951,7 +951,7 @@
                 },
                 {
                   "display_name": "Probability of Fire Severity (High)",
-                  "data_provider": "Pyrologix, LLC",
+                  "data_provider": "Pyrologix",
                   "data_units": "Probability",
                   "max_value": 1,
                   "metric_name": "probability_of_fire_severity_high",
@@ -978,7 +978,7 @@
               "metrics": [
                 {
                   "display_name": "Large Tree Density 24-30in DBH",
-                  "data_provider": "California Forest Observatory (Salo Sciences)",
+                  "data_provider": "California Forest Observatory",
                   "data_units": "% Live Trees/Pixel",
                   "max_value": 100,
                   "metric_name": "live_tree_density_24_30in_dbh",
@@ -991,7 +991,7 @@
                 },
                 {
                   "display_name": "Large Tree Density 30-40in DBH",
-                  "data_provider": "California Forest Observatory (Salo Sciences)",
+                  "data_provider": "California Forest Observatory",
                   "data_units": "% Live Trees/Pixel",
                   "max_value": 100,
                   "metric_name": "live_tree_density_30_40in_dbh",
@@ -1004,7 +1004,7 @@
                 },
                 {
                   "display_name": "Large Tree Density >40in DBH",
-                  "data_provider": "California Forest Observatory (Salo Sciences)",
+                  "data_provider": "California Forest Observatory",
                   "data_units": "% Live Trees/Pixel",
                   "max_value": 100,
                   "metric_name": "live_tree_density_>40in_dbh",
@@ -1017,7 +1017,7 @@
                 },
                 {
                   "display_name": "Canopy Layers",
-                  "data_provider": "California Forest Observatory (Salo Sciences)",
+                  "data_provider": "California Forest Observatory",
                   "data_units": "Count",
                   "max_value": 9,
                   "metric_name": "canopy_layers",
@@ -1030,7 +1030,7 @@
                 },
                 {
                   "display_name": "Canopy Height",
-                  "data_provider": "California Forest Observatory (Salo Sciences)",
+                  "data_provider": "California Forest Observatory",
                   "data_units": "Meters",
                   "max_value": 80,
                   "metric_name": "canopy_height",
@@ -1043,7 +1043,7 @@
                 },
                 {
                   "display_name": "Canopy Cover",
-                  "data_provider": "California Forest Observatory (Salo Sciences)",
+                  "data_provider": "California Forest Observatory",
                   "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "canopy_cover",
@@ -1102,7 +1102,7 @@
                 },
                 {
                   "display_name": "Seral Stage",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023",
                   "data_units": "Categorical",
                   "max_value": 1,
                   "metric_name": "seral_stage",
@@ -1115,7 +1115,7 @@
                 },
                 {
                   "display_name": "Seral Stage (Early)",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023",
                   "data_units": "Proportion",
                   "max_value": 1,
                   "metric_name": "seral_stage_early",
@@ -1128,7 +1128,7 @@
                 },
                 {
                   "display_name": "Seral Stage (Late)",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023",
                   "data_units": "Proportion",
                   "max_value": 1,
                   "metric_name": "seral_stage_late",
@@ -1187,7 +1187,7 @@
                 },
                 {
                   "display_name": "Potential Climate Refugia (Baseline)",
-                  "data_provider": ": Information Center for the Environment, UC Davis",
+                  "data_provider": "Information Center for the Environment, UC Davis",
                   "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_baseline",
@@ -1213,7 +1213,7 @@
                 },
                 {
                   "display_name": "Potential Climate Refugia (Mid-century)",
-                  "data_provider": ": Information Center for the Environment, UC Davis",
+                  "data_provider": "Information Center for the Environment, UC Davis",
                   "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_mid-century",
@@ -1226,7 +1226,7 @@
                 },
                 {
                   "display_name": "Potential Climate Refugia (Late Century)",
-                  "data_provider": ": Information Center for the Environment, UC Davis",
+                  "data_provider": "Information Center for the Environment, UC Davis",
                   "data_units": "Continuous Variable",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_late_century",
@@ -1239,7 +1239,7 @@
                 },
                 {
                   "display_name": "Potential Climate Refugia (MIROC and CNRM-CM5)",
-                  "data_provider": " Information Center for the Environment, UC Davis",
+                  "data_provider": "Information Center for the Environment, UC Davis",
                   "data_units": "0,1,2,3,8,9",
                   "max_value": 1,
                   "metric_name": "potential_climate_refugia_miroc_and_cnrm-cm5",
@@ -1266,7 +1266,7 @@
               "metrics": [
                 {
                   "display_name": "Poverty Percentile",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "California Environmental Protection Agency",
                   "data_units": "Percentile",
                   "max_value": 100,
                   "metric_name": "poverty_percentile",
@@ -1279,7 +1279,7 @@
                 },
                 {
                   "display_name": "Housing Burden Percentile",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "California Environmental Protection Agency",
                   "data_units": "Percentile",
                   "max_value": 100,
                   "metric_name": "housing_burden_percentile",
@@ -1292,7 +1292,7 @@
                 },
                 {
                   "display_name": "Unemployment Percentile",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "California Environmental Protection Agency",
                   "data_units": "Percentile",
                   "max_value": 100,
                   "metric_name": "unemployment_percentile",
@@ -1305,7 +1305,7 @@
                 },
                 {
                   "display_name": "American Indian or Alaska Native Race Alone Population Concentration",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "american_indian_alaska_native_concentration",
@@ -1318,7 +1318,7 @@
                 },
                 {
                   "display_name": "Hispanic/Latino Pop. Concentration",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 7,
                   "metric_name": "hispano_latino_concentration",
@@ -1331,7 +1331,7 @@
                 },
                 {
                   "display_name": "Black/African American Pop. Concentration",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "black_african_concentration",
@@ -1344,7 +1344,7 @@
                 },
                 {
                   "display_name": "Hispanic/Black, Indigenous or Person of Color",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 6,
                   "metric_name": "hispanic_black_indigenous_concentration",
@@ -1357,7 +1357,7 @@
                 },
                 {
                   "display_name": "Asian Population Concentration",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "asian_concentration",
@@ -1370,7 +1370,7 @@
                 },
                 {
                   "display_name": "Low Income Population",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 9,
                   "metric_name": "low_income_population",
@@ -1383,7 +1383,7 @@
                 },
                 {
                   "display_name": "American Indian Land Area Representation",
-                  "data_provider": "",
+                  "data_provider": "U.S. Department of Interior, Bureau of Indian Affairs",
                   "data_units": "Index",
                   "max_value": 49,
                   "metric_name": "low_income_population",
@@ -1396,7 +1396,7 @@
                 },
                 {
                   "display_name": "American Indian Lands (Census Data)",
-                  "data_provider": "",
+                  "data_provider": "California Environmental Protection Agency",
                   "data_units": "Categorical",
                   "max_value": 2,
                   "metric_name": "american_indian_lands",
@@ -1449,7 +1449,7 @@
                 },
                 {
                   "display_name": "Groundwater Basin Boundaries",
-                  "data_provider": "CECS",
+                  "data_provider": "California Department of Water Resources",
                   "data_units": "binary",
                   "max_value": 1,
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
@@ -1469,7 +1469,7 @@
               "metrics": [
                 {
                   "display_name": "Percent Impervious Surface",
-                  "data_provider": "National Land Cover Database (NLCD)",
+                  "data_provider": "National Land Cover Database",
                   "data_units": "Percent imperviousness",
                   "max_value": 100,
                   "metric_name": "percent_impervious_surface",
