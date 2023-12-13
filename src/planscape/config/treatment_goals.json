@@ -296,6 +296,52 @@
                 "aboveground_live_tree_carbon > 0"
               ],
               "global_thresholds": []
+            },
+            {
+              "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
+              "short_question_text": "Reduce Fire Risk in Carbon Sinks",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "carbon_sequestration",
+                  "forest_resilience",
+                  "biodiversity_conservation"
+                ],
+                "elements": [
+                  "functional_fire",
+                  "carbon_storage",
+                  "severity",
+                  "forest_composition",
+                  "forest_structure",
+                  "disturbance",
+                  "species_diversity",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "aboveground_live_tree_carbon",
+                  "total_fuel_exposed_to_fire",
+                  "seral_stage_late",
+                  "basal_area",
+                  "live_tree_density_30in_dbh",
+                  "natural_conifer_regeneration_probability",
+                  "time_since_last_disturbance",
+                  "wildlife_species_richness",
+                  "endangered_vertebrate",
+                  "california_spotted_owl_habitat",
+                  "california_spotted_owl_territory"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "aboveground_live_tree_carbon"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "aboveground_live_tree_carbon > 0"
+              ],
+              "global_thresholds": []
             }
           ]
         }
