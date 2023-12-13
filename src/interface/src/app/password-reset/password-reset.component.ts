@@ -84,9 +84,9 @@ export class PasswordResetComponent implements OnInit {
     this.router.navigate(['login']);
   }
 
-  getErrors(): string {
-    var errorString = '';
+  getErrors(): string | null {
     if (this.form.errors) {
+      var errorString = '';
       var formErrors = this.form.errors;
       if ('newPasswordsMustMatch' in formErrors) {
         errorString = 'Passwords must match.';
@@ -95,7 +95,8 @@ export class PasswordResetComponent implements OnInit {
       } else {
         errorString = 'An unkown error has occurred.';
       }
+      return errorString;
     }
-    return errorString;
+    return null;
   }
 }
