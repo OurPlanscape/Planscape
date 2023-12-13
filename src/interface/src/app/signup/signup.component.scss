@@ -87,15 +87,14 @@ button {
   text-align: center;
 }
 
-/*standard label*/
 .standard-label {
   @include standard-label();
-  color: $color-text-gray;
+  color: $color-dark-gray;
 }
 
-/* italic-sm */
 .required-blurb {
   @include italic-sm();
+  color: $color-text-gray;
 }
 
 :host ::ng-deep .mat-form-field-outline {
