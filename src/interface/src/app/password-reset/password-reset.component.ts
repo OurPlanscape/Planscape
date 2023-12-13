@@ -17,8 +17,6 @@ import { passwordsMustMatchValidator } from '../validators/passwords';
   styleUrls: ['./password-reset.component.scss'],
 })
 export class PasswordResetComponent implements OnInit {
-  errors: string[] = [];
-
   form: FormGroup;
   passwordResetToken: PasswordResetToken | null = null;
   FormMessageType = FormMessageType;
@@ -77,7 +75,7 @@ export class PasswordResetComponent implements OnInit {
           this.dialog.open(ConfirmationDialogComponent);
         },
         error: (err: HttpErrorResponse) => {
-          this.errors = Object.values(err.error);
+          this.form.setErrors({ backendError: Object.values(err.error) });
         },
       });
   }
@@ -87,9 +85,17 @@ export class PasswordResetComponent implements OnInit {
   }
 
   getErrors(): string {
-    if (this.errors.length > 0) {
-      return this.errors.join();
+    var errorString = '';
+    if (this.form.errors) {
+      var formErrors = this.form.errors;
+      if ('newPasswordsMustMatch' in formErrors) {
+        errorString = 'Passwords must match.';
+      } else if ('backendError' in formErrors) {
+        errorString = formErrors['backendError'];
+      } else {
+        errorString = 'An unkown error has occurred.';
+      }
     }
-    return '';
+    return errorString;
   }
 }
