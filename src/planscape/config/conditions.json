@@ -682,7 +682,7 @@
                 },
                 {
                   "display_name": "Biomass Residues",
-                  "data_provider": "Schatz Energy Research Center"
+                  "data_provider": "Schatz Energy Research Center",
                   "data_units": "short tons/acre",
                   "max_value": 430,
                   "metric_name": "biomass_residues",
