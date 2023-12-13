@@ -246,6 +246,52 @@
                 "california_spotted_owl_habitat == 0"
               ],
               "global_thresholds": []
+            },
+            {
+              "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
+              "short_question_text": "Threatened/Endangered Species Exposure to Fire",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "biodiversity_conservation",
+                  "forest_resilience",
+                  "economic_diversity"
+                ],
+                "elements": [
+                  "functional_fire",
+                  "species_diversity",
+                  "community_integrity",
+                  "forest_structure",
+                  "severity",
+                  "wood_product_industry",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "endangered_vertebrate",
+                  "beta_diversity",
+                  "cavity_nesters_excavators_species_richness",
+                  "wildlife_species_richness",
+                  "habitat_connectivity",
+                  "live_tree_density_30in_dbh",
+                  "dead_and_down_fuels",
+                  "sawtimber_biomass",
+                  "costs_of_potential_treatment_moving_biomass",
+                  "costs_of_potential_treatment_moving_sawlogs",
+                  "california_spotted_owl_habitat",
+                  "california_spotted_owl_territory"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "endangered_vertebrate"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "endangered_vertebrate > 0"
+              ],
+              "global_thresholds": []
             }
           ]
         },
