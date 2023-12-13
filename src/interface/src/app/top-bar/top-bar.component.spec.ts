@@ -145,4 +145,9 @@ describe('TopBarComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/']);
     });
   });
+
+  /// display name is
+  // guest when no login flag
+  // sign in if not logged in
+  // name if logged in
 });

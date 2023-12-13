@@ -11,8 +11,6 @@ import {
   NgxGoogleAnalyticsModule,
   NgxGoogleAnalyticsRouterModule,
 } from 'ngx-google-analytics';
-
-import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
@@ -37,7 +35,7 @@ import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './home/about/about.component';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
-import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
+
 import { environment } from 'src/environments/environment';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
@@ -65,18 +63,16 @@ import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.com
 import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
 import { InfoCardComponent } from './signup/info-card/info-card.component';
 import { ChangePasswordComponent } from './account/change-password/change-password.component';
+import { DeleteAccountDialogComponent } from './account/delete-account-dialog/delete-account-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-
     LoginComponent,
     SignupComponent,
     NavigationComponent,
     TopBarComponent,
-    AccountDialogComponent,
     RegionSelectionComponent,
-
     HomeComponent,
     PlanTableComponent,
     DeleteAccountDialogComponent,

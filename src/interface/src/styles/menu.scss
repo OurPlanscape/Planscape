@@ -1,0 +1,25 @@
+@import "mixins";
+@import "colors";
+
+.dropdown-menu {
+
+  .mat-menu-content:not(:empty) {
+    padding: 0;
+  }
+
+  &.mat-menu-panel {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mat-menu-item {
+    min-width: 160px;
+    border-bottom: 2px solid $color-soft-gray;
+  }
+
+  .mat-menu-item:last-child {
+    border-bottom-width: 4px;
+  }
+
+}
+
