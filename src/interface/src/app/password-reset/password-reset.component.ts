@@ -86,8 +86,8 @@ export class PasswordResetComponent implements OnInit {
 
   getErrors(): string | null {
     if (this.form.errors) {
-      var errorString = '';
-      var formErrors = this.form.errors;
+      let errorString = '';
+      const formErrors = this.form.errors;
       if ('newPasswordsMustMatch' in formErrors) {
         errorString = 'Passwords must match.';
       } else if ('backendError' in formErrors) {
