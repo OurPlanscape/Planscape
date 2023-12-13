@@ -7,7 +7,7 @@ import { FormMessageType } from '../../types/data.types';
   styleUrls: ['./field-alert.component.scss'],
 })
 export class FieldAlertComponent {
-  @Input() message!: string;
+  @Input() message!: string | null;
   @Input() title!: string;
   @Input() messageType: FormMessageType = FormMessageType.ERROR;
 

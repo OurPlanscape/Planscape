@@ -58,34 +58,35 @@ export class SignupComponent {
     this.authService.resendValidationEmail(email).subscribe();
   }
 
-  getEmailError() {
-    var emailErrors = this.form.controls['email'].errors;
-    if (emailErrors && 'required' in emailErrors) {
-      return 'Email is required.';
+  getEmailError(): string | null {
+    if (!!this.form.controls['email'].errors) {
+      const emailErrors = this.form.controls['email'].errors;
+      if ('required' in emailErrors) {
+        return 'Email is required.';
+      } else if ('pattern' in emailErrors) {
+        return 'Email must be the correct format.';
+      } else if ('accountExists' in emailErrors) {
+        return 'An account with this email already exists.';
+      }
+      return 'Unknown error.';
     }
-    if (emailErrors && 'pattern' in emailErrors) {
-      return 'Email must be the correct format.';
-    }
-    if (emailErrors && 'accountExists' in emailErrors) {
-      return 'An account with this email already exists.';
-    }
-    return 'Unknown error.';
+    return null;
   }
 
-  getFormErrors(): string {
-    if (this.form.errors && 'newPasswordsMustMatch' in this.form.errors) {
-      return 'Given passwords must match.';
+  getFormErrors(): string | null {
+    if (!!this.form.errors) {
+      if ('newPasswordsMustMatch' in this.form.errors) {
+        return 'Given passwords must match.';
+      } else if ('passwordTooCommon' in this.form.errors) {
+        return 'This password is too common. Please choose a different password.';
+      } else if ('serverError' in this.form.errors) {
+        return 'An unexpected server error has occured.';
+      } else if ('timeoutError' in this.form.errors) {
+        return 'A validation email was not able to be sent at this time. If one does not arrive, you can attempt to login, but you may need to request a new validation email.';
+      }
+      return 'An unexpected error has occured submitting this form.';
     }
-    if (this.form.errors && 'passwordTooCommon' in this.form.errors) {
-      return 'This password is too common. Please choose a different password.';
-    }
-    if (this.form.errors && 'serverError' in this.form.errors) {
-      return 'An unexpected server error has occured.';
-    }
-    if (this.form.errors && 'timeoutError' in this.form.errors) {
-      return 'A validation email was not able to be sent at this time. If one does not arrive, you can attempt to login, but you may need to request a new validation email.';
-    }
-    return 'An unexpected error has occured submitting this form.';
+    return null;
   }
 
   signup() {

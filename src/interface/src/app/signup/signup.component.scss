@@ -8,7 +8,7 @@
 
 .info-card-container {
   background-image: url('/assets/jpg/planscape-background.jpg');
-  font-family: 'Public Sans';
+  @include public-sans();
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;

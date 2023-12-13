@@ -84,13 +84,9 @@
           </app-field-alert>
           <app-field-alert
             [messageType]="FormMessageType.ERROR"
-            *ngIf="
-              (!showHint && form.get('password1')?.errors?.['minlength']) ||
-              form.errors?.['newPasswordMustBeNew']
-            "
+            *ngIf="!showHint && form.get('password1')?.errors?.['minlength']"
             title="Password Error"
-            message="Your password needs to be at least 8-characters long."></app-field-alert>
-
+            message="Your password needs to be at least 8 characters long."></app-field-alert>
           <mat-label class="standard-label"
             >Confirm Password
             <span class="required-blurb">required</span>
