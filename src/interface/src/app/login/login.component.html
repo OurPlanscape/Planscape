@@ -49,6 +49,10 @@
             message="{{ passwordError }}"
             title="password error"></app-field-alert>
 
+          <mat-checkbox formControlName="extend_auth">
+            Remember me on this browser
+          </mat-checkbox>
+
           <div class="login-error-box" *ngIf="loginError">
             <p class="login-error-heading">
               <mat-icon class="warning-icon login-error-icon">warning</mat-icon>

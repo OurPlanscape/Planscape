@@ -33,6 +33,7 @@ export class LoginComponent {
         Validators.pattern(EMAIL_VALIDATION_REGEX),
       ]),
       password: this.formBuilder.control('', Validators.required),
+      extend_auth: this.formBuilder.control(''),
     });
   }
 
@@ -69,8 +70,9 @@ export class LoginComponent {
 
     const email: string = this.form.get('email')?.value;
     const password: string = this.form.get('password')?.value;
+    const extend_auth: boolean = this.form.get('extend_auth')?.value;
 
-    this.authService.login(email, password).subscribe(
+    this.authService.login(email, password, extend_auth).subscribe(
       (_) => this.router.navigate(['home']),
       (error) => {
         // determine the cause of the error...

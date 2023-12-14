@@ -44,11 +44,12 @@ export class AuthService {
     private snackbar: MatSnackBar
   ) {}
 
-  login(email: string, password: string) {
+  login(email: string, password: string, extend_login: boolean) {
+    console.log("Did we get a value for extend_login?", extend_login);
     return this.http
       .post(
         this.API_ROOT.concat('login/'),
-        { email, password },
+        { email, password, extend_login },
         { withCredentials: true }
       )
       .pipe(

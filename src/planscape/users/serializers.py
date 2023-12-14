@@ -8,7 +8,9 @@ from dj_rest_auth.serializers import (
     PasswordChangeSerializer,
     PasswordResetSerializer,
     PasswordResetConfirmSerializer,
+    JWTSerializerWithExpiration
 )
+from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
@@ -86,3 +88,18 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
             to=[user.email],
         )
         email.send()
+
+# TODO: config these timedeltas in settings.py
+class AllowPersistentExpirationSerializer(JWTSerializerWithExpiration):
+    long_term_access = serializers.BooleanField(default=False)
+    print(f"Here is the users selection: {long_term_access}")
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        long_term_access = validated_data.pop(f'long_term_access')
+        if long_term_access:
+            validated_data['token']['exp'] = datetime.utcnow() + timedelta(days=90)
+        else:
+            validated_data['token']['exp'] = datetime.utcnow() + timedelta(hours=3)
+        return validated_data
+

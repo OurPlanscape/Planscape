@@ -6,8 +6,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
-from dj_rest_auth.views import UserDetailsView
-from users.serializers import UserSerializer
+from dj_rest_auth.views import UserDetailsView, LoginView
+from users.serializers import UserSerializer, AllowPersistentExpirationSerializer
 
 
 def get_user(request: HttpRequest) -> User:
@@ -114,3 +114,8 @@ class CustomUserDetailsView(UserDetailsView):
 
         except Exception as e:
             return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+class ExtendedExpirationLoginView(LoginView):
+    def get_serializer(self):
+        print("Okay...we are getting a serializer?")
+        return AllowPersistentExpirationSerializer
