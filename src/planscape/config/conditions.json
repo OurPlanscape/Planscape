@@ -362,7 +362,7 @@
                 {
                   "display_name": "Marbled Murrelet Nesting Habitat",
                   "data_provider": "Regional Ecosystem Office - Northwest Forest Plan",
-                  "data_units": "Binary",
+                  "data_units": "Relative Suitability",
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_nesting_habitat",
                   "min_value": 0,
