@@ -46,6 +46,13 @@ Declare mixins based on styleguide and apply to classes
   letter-spacing: 0px;
 }
 
+@mixin standard-input-label {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+}
+
 @mixin standard-label {
   @include public-sans();
   font-size: 18px;
@@ -93,7 +100,7 @@ Declare mixins based on styleguide and apply to classes
   @include public-sans();
   font-size: 18px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: normal;
   line-height: 32px;
 }
 
@@ -104,6 +111,21 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 500;
 }
 
+@mixin small-paragraph {
+  @include public-sans();
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0px;
+}
+
+@mixin regular-paragraph {
+  @include public-sans();
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.625rem;
+}
+
 @mixin p {
   @include public-sans();
   font-size: 16px;
@@ -111,6 +133,7 @@ Declare mixins based on styleguide and apply to classes
   font-weight: 400;
   line-height: 26px;
 }
+
 
 @mixin standard-button {
   @include button-text();
@@ -122,7 +145,7 @@ Declare mixins based on styleguide and apply to classes
 @mixin button-disabled {
   background-color: $color-light-gray;
   color: $color-text-gray;
-  border:1px $color-text-gray solid;
+  border: 1px $color-text-gray solid;
 }
 
 @mixin button-text {
