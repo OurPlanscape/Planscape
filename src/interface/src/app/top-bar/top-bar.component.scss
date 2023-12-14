@@ -1,11 +1,12 @@
 @import '../shared/_variables.scss';
 @import "../../styles/colors";
+@import "../../styles/mixins";
 
 // Top-bar styling
 .mat-toolbar {
   background-color: $color-dark-gray;
   height: $toolbar-height;
-  padding: 0 12px;
+  padding: 0 64px 0 12px;
   position: relative;
   z-index: 2;
 
@@ -33,57 +34,52 @@
   }
 }
 
-// Hamburger menu icon
-.menu-button {
-  margin-right: 10px;
-}
-
-// The icon on the left of the region dropdown
-.region-dropdown-icon {
-  margin: 2px 6px 0 18px;
-}
 
 // The space between left and right elements on the top-bar
 .spacer {
   flex: 1 1 auto;
 }
 
-.username,
-.nav-link {
+.navbar-item {
+  @include h4();
   color: $color-white;
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
-  margin-right: 5px;
-  margin-left: 5px;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
 }
 
-.nav-link {
-  text-decoration: none;
+button.navbar-item, a.navbar-item {
+  cursor: pointer;
 
-  &:visited,
-  &:active {
-    color: $color-white;
+  &:active, &:hover {
+    color: $color-light-blue;
+    text-decoration: underline;
+    text-underline-position: under;
   }
 }
 
-.avatar {
-  border-radius: 50%;
-  background-color: white;
-  color: $color-dark-gray;
-  font-weight: bold;
-  text-transform: uppercase;
+.navbar-item[aria-expanded="true"] {
+  color: $color-light-blue;
+  text-decoration: underline;
+  text-underline-position: under;
 }
 
-.menu-link {
-  text-align: center;
+.help {
+  margin-left: 20px;
+
+  &:active, &:hover {
+    color: $color-light-blue;
+  }
+}
+
+.mat-menu-trigger {
+  height: 100%;
 }
 
 @media print {
   .nav-link,
-  .username,
   .mat-menu-trigger,
-  .avatar,
   .help {
     display: none;
   }

@@ -12,17 +12,43 @@
   <!-- Show this section once we know if the user is logged in or not to avoid -->
   <!-- flashing guest / default icon and content shifting -->
   <ng-container *ngIf="(displayName$ | async) !== undefined">
-    <!--  Feedback-->
-    <a
-      routerLink="/feedback"
-      class="nav-link"
-      data-id="feedback"
-      target="_blank"
-      rel="noopener noreferrer">
-      Feedback
-    </a>
+    <!-- Guest if no login enabled -->
+    <div
+      *appFeatureFlag="'login'; hide: true"
+      class="navbar-item"
+      data-id="login-guest">
+      Guest
+    </div>
+    <!-- User or sign in with menu if login enabled -->
+    <button
+      *appFeatureFlag="'login'"
+      [matMenuTriggerFor]="dotMenu"
+      class="navbar-item"
+      data-id="menu-trigger">
+      {{ displayName$ | async }}
+    </button>
+    <mat-menu #dotMenu="matMenu" class="dropdown-menu">
+      <!-- logged out-->
+      <ng-container *ngIf="(loggedIn$ | async) === false">
+        <a mat-menu-item routerLink="/login"> Log In </a>
+        <a mat-menu-item routerLink="/signup"> Create Account</a>
+      </ng-container>
 
-    <!-- Account Name & Button -->
+      <!--  Logged in-->
+      <ng-container *ngIf="loggedIn$ | async">
+        <button mat-menu-item routerLink="/home" data-id="home">Plans</button>
+        <button
+          mat-menu-item
+          routerLink="/account/information"
+          data-id="account">
+          Account
+        </button>
+        <button mat-menu-item (click)="logout()" data-id="logout">
+          Sign Out
+        </button>
+      </ng-container>
+    </mat-menu>
+
     <a
       class="help"
       mat-icon-button
@@ -33,51 +59,15 @@
       data-id="help">
       <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
     </a>
-    <span class="username">{{ displayName$ | async }}</span>
 
-    <button
-      mat-icon-button
-      [matMenuTriggerFor]="dotMenu"
-      *appFeatureFlag="'login'">
-      <mat-icon class="material-symbols-outlined">more_vert</mat-icon>
-    </button>
-    <mat-menu #dotMenu="matMenu">
-      <button
-        mat-menu-item
-        *ngIf="loggedIn$ | async"
-        (click)="logout()"
-        data-id="logout"
-        class="menu-link">
-        Log out
-      </button>
-      <a
-        mat-menu-item
-        *ngIf="(loggedIn$ | async) === false"
-        routerLink="/login"
-        class="menu-link">
-        Log in
-      </a>
-      <a
-        mat-menu-item
-        *ngIf="(loggedIn$ | async) === false"
-        routerLink="/signup"
-        class="menu-link">
-        Create account
-      </a>
-    </mat-menu>
-
-    <button
-      mat-icon-button
-      data-testid="account-button"
-      class="top-bar-account-button"
-      aria-label="account icon button"
-      (click)="openAccountDialog()">
-      <!-- If not logged in show default avatar icon -->
-      <mat-icon *ngIf="(loggedIn$ | async) === false">account_circle</mat-icon>
-      <!-- If logged in, show the first letter as avatar -->
-      <div *ngIf="loggedIn$ | async" class="avatar mat-icon">
-        {{ initial$ | async }}
-      </div>
-    </button>
+    <!--  Feedback-->
+    <a
+      routerLink="/feedback"
+      class="navbar-item"
+      data-id="feedback"
+      target="_blank"
+      rel="noopener noreferrer">
+      Feedback
+    </a>
   </ng-container>
 </mat-toolbar>
