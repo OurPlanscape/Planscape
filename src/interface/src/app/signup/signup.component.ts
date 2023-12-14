@@ -1,15 +1,13 @@
 import { Component } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-
+import { FormMessageType } from '../types/data.types';
 import { AuthService } from './../services';
 import { TimeoutError, timeout } from 'rxjs';
+import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
+import { passwordsMustMatchValidator } from '../validators/passwords';
+import { PasswordStateMatcher } from '../validators/error-matchers';
 
 @Component({
   selector: 'app-signup',
@@ -21,7 +19,15 @@ export class SignupComponent {
   form: FormGroup;
   submitting: boolean = false;
   emailAlreadyExists: boolean = false;
+  emailError: string = '';
+  signupError: string = '';
+  readonly FormMessageType = FormMessageType;
+  passwordStateMatcher = new PasswordStateMatcher(['newPasswordsMustMatch']);
+  confirmPasswordStateMatcher = new PasswordStateMatcher([
+    'newPasswordsMustMatch',
+  ]);
 
+  showHint = false;
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
@@ -33,7 +39,7 @@ export class SignupComponent {
         lastName: this.formBuilder.control('', Validators.required),
         email: this.formBuilder.control('', [
           Validators.required,
-          Validators.email,
+          Validators.pattern(EMAIL_VALIDATION_REGEX),
         ]),
         password1: this.formBuilder.control('', [
           Validators.required,
@@ -42,7 +48,7 @@ export class SignupComponent {
         password2: this.formBuilder.control('', Validators.required),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validators: [passwordsMustMatchValidator('password1', 'password2')],
       }
     );
   }
@@ -52,11 +58,41 @@ export class SignupComponent {
     this.authService.resendValidationEmail(email).subscribe();
   }
 
+  getEmailError(): string | null {
+    if (!!this.form.controls['email'].errors) {
+      const emailErrors = this.form.controls['email'].errors;
+      if ('required' in emailErrors) {
+        return 'Email is required.';
+      } else if ('pattern' in emailErrors) {
+        return 'Email must be the correct format.';
+      } else if ('accountExists' in emailErrors) {
+        return 'An account with this email already exists.';
+      }
+      return 'Unknown error.';
+    }
+    return null;
+  }
+
+  getFormErrors(): string | null {
+    if (!!this.form.errors) {
+      if ('newPasswordsMustMatch' in this.form.errors) {
+        return 'Given passwords must match.';
+      } else if ('passwordTooCommon' in this.form.errors) {
+        return 'This password is too common. Please choose a different password.';
+      } else if ('serverError' in this.form.errors) {
+        return 'An unexpected server error has occured.';
+      } else if ('timeoutError' in this.form.errors) {
+        return 'A validation email was not able to be sent at this time. If one does not arrive, you can attempt to login, but you may need to request a new validation email.';
+      }
+      return 'An unexpected error has occured submitting this form.';
+    }
+    return null;
+  }
+
   signup() {
     if (this.submitting) return;
 
     this.submitting = true;
-
     const email: string = this.form.get('email')?.value;
     const password1: string = this.form.get('password1')?.value;
     const password2: string = this.form.get('password2')?.value;
@@ -73,27 +109,31 @@ export class SignupComponent {
           this.submitting = false;
           if (error.status == 400) {
             this.errors = Object.values(error.error);
+
+            // Backend Error: Password is too common
+            if (
+              this.errors.filter((s) =>
+                s[0].includes('This password is too common.')
+              ).length > 0
+            ) {
+              this.form.setErrors({ passwordTooCommon: true });
+            }
+
+            // Backend Error: An account already exists with this email.
             this.emailAlreadyExists =
               this.errors.filter((s) => s[0].includes('already registered'))
                 .length > 0;
+            if (this.emailAlreadyExists) {
+              this.form.controls['email'].setErrors({ accountExists: true });
+            }
           } else if (error.status == 500) {
-            this.errors = Object.values([
-              'An unexpected server error has occured.',
-            ]);
+            this.form.setErrors({ serverError: true });
           } else if (error instanceof TimeoutError) {
-            this.errors = Object.values([
-              'The server was not able to send a validation email at this time.',
-            ]);
+            this.form.setErrors({ timeoutError: true });
           } else {
-            this.errors = Object.values(['An unexpected error has occured.']);
+            this.form.setErrors({ unexpectedError: true });
           }
         },
       });
-  }
-
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('password1')?.value;
-    const password2 = group.get('password2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
   }
 }
