@@ -13,19 +13,25 @@
   <!-- flashing guest / default icon and content shifting -->
   <ng-container *ngIf="(displayName$ | async) !== undefined">
     <!-- Guest if no login enabled -->
-    <div *appFeatureFlag="'login'; hide: true" class="navbar-item">Guest</div>
+    <div
+      *appFeatureFlag="'login'; hide: true"
+      class="navbar-item"
+      data-id="login-guest">
+      Guest
+    </div>
     <!-- User or sign in with menu if login enabled -->
     <button
       *appFeatureFlag="'login'"
       [matMenuTriggerFor]="dotMenu"
-      class="navbar-item">
+      class="navbar-item"
+      data-id="menu-trigger">
       {{ displayName$ | async }}
     </button>
     <mat-menu #dotMenu="matMenu" class="dropdown-menu">
       <!-- logged out-->
       <ng-container *ngIf="(loggedIn$ | async) === false">
-        <a mat-menu-item routerLink="/login"> Log in </a>
-        <a mat-menu-item routerLink="/signup"> Create account</a>
+        <a mat-menu-item routerLink="/login"> Log In </a>
+        <a mat-menu-item routerLink="/signup"> Create Account</a>
       </ng-container>
 
       <!--  Logged in-->
@@ -38,7 +44,7 @@
           Account
         </button>
         <button mat-menu-item (click)="logout()" data-id="logout">
-          Sign out
+          Sign Out
         </button>
       </ng-container>
     </mat-menu>

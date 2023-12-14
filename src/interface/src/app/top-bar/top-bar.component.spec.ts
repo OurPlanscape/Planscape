@@ -1,63 +1,57 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialog } from '@angular/material/dialog';
 import { By } from '@angular/platform-browser';
-import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 import { MaterialModule } from '../material/material.module';
-import { AuthService, SessionService } from '../services';
-import { Region, User } from '../types';
-import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
+import { AuthService } from '../services';
+import { User } from '../types';
 import { TopBarComponent } from './top-bar.component';
 import { FeaturesModule } from '../features/features.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
+import { FEATURES_JSON } from '../features/features-config';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { MatMenuHarness } from '@angular/material/menu/testing';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
   let fixture: ComponentFixture<TopBarComponent>;
   let mockAuthService: Partial<AuthService>;
-  let mockSessionService: Partial<SessionService>;
+  let loader: HarnessLoader;
+
+  const guestSelector = '[data-id="login-guest"]';
+  const menuSelector = '[data-id="menu-trigger"]';
+  let loggedIn$ = new BehaviorSubject(false);
 
   beforeEach(async () => {
-    const fakeMatDialog = jasmine.createSpyObj<MatDialog>(
-      'MatDialog',
-      {
-        open: undefined,
-      },
-      {}
-    );
-
     mockAuthService = {
       loggedInUser$: new BehaviorSubject<User | null | undefined>(null),
-      isLoggedIn$: new BehaviorSubject(false),
+      isLoggedIn$: loggedIn$,
       logout: () => of({ detail: '' }),
     };
-    mockSessionService = {
-      region$: new BehaviorSubject<Region | null>(null),
-      setRegion: () => {},
-    };
+
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
         MaterialModule,
         FeaturesModule,
         RouterTestingModule,
+        NoopAnimationsModule,
       ],
       declarations: [TopBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      providers: [
-        { provide: AuthService, useValue: mockAuthService },
-        { provide: MatDialog, useValue: fakeMatDialog },
-        { provide: SessionService, useValue: mockSessionService },
-      ],
+      providers: [{ provide: AuthService, useValue: mockAuthService }],
     }).compileComponents();
   });
 
   function setUpComponent() {
     fixture = TestBed.createComponent(TopBarComponent);
     component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
     fixture.detectChanges();
   }
 
@@ -66,52 +60,79 @@ describe('TopBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('actions', () => {
-    beforeEach(() => {
+  describe('guest mode', () => {
+    it('should show guest as name and should not show the menu', async () => {
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { login: false },
+      });
       setUpComponent();
-    });
 
-    it('should open account dialog', () => {
-      const fakeMatDialog: MatDialog =
-        fixture.debugElement.injector.get(MatDialog);
-
-      // Act: click on the account icon
-      const accountButton = fixture.debugElement.query(
-        By.css('[data-testid="account-button"]')
-      );
-      const clickEvent = new MouseEvent('click');
-      accountButton.triggerEventHandler('click', clickEvent);
-
-      // Assert: expect that the dialog opens
-      expect(fakeMatDialog.open).toHaveBeenCalledOnceWith(
-        AccountDialogComponent
-      );
+      const guestNameEl = fixture.debugElement.query(By.css(guestSelector));
+      expect(guestNameEl.nativeElement.innerHTML.trim()).toEqual('Guest');
     });
   });
 
-  describe('username', () => {
+  describe('with login enabled ', () => {
     beforeEach(() => {
-      setUpComponent();
-    });
-
-    it('should be "Guest" when no user is logged in', async () => {
-      const displayName = await firstValueFrom(component.displayName$);
-      expect(displayName).toEqual('Guest');
-    });
-
-    it('should be the first name of the logged in user', async () => {
-      mockAuthService.loggedInUser$?.next({
-        firstName: 'Foo',
-        username: 'User',
+      TestBed.overrideProvider(FEATURES_JSON, {
+        useValue: { login: true },
       });
-      const displayName = await firstValueFrom(component.displayName$);
-      expect(displayName).toEqual('Foo');
+    });
+    describe('logged out', () => {
+      beforeEach(() => loggedIn$.next(false));
+
+      it('should show `Sign In` on the title bar', () => {
+        setUpComponent();
+        const guestNameEl = fixture.debugElement.query(By.css(guestSelector));
+        expect(guestNameEl).toBeFalsy();
+        const menuTriggerEl = fixture.debugElement.query(By.css(menuSelector));
+        expect(menuTriggerEl.nativeElement.innerHTML.trim()).toEqual('Sign In');
+      });
+      it('should have a menu with `login` and `create account` options', async () => {
+        setUpComponent();
+        const harness = await loader.getHarness(MatMenuHarness);
+        await harness.open();
+        const items = await harness.getItems();
+
+        expect(items.length).toBe(2);
+
+        const loginText = await items[0].getText();
+        const createAccountText = await items[1].getText();
+
+        expect(loginText).toBe('Log In');
+        expect(createAccountText).toBe('Create Account');
+      });
     });
 
-    it('should be the username of the logged in user if they have no first name', async () => {
-      mockAuthService.loggedInUser$?.next({ username: 'User' });
-      const displayName = await firstValueFrom(component.displayName$);
-      expect(displayName).toEqual('User');
+    describe('logged in', () => {
+      beforeEach(() => {
+        mockAuthService.loggedInUser$?.next({
+          firstName: 'Foo',
+          username: 'User',
+        });
+        loggedIn$.next(true);
+      });
+      it('should show the first name on the title bar', () => {
+        setUpComponent();
+        const guestNameEl = fixture.debugElement.query(By.css(guestSelector));
+        expect(guestNameEl).toBeFalsy();
+        const menuTriggerEl = fixture.debugElement.query(By.css(menuSelector));
+        expect(menuTriggerEl.nativeElement.innerHTML.trim()).toEqual('Foo');
+      });
+      it('should have a menu with `plans`, `account`  and `sign out`', async () => {
+        setUpComponent();
+        const harness = await loader.getHarness(MatMenuHarness);
+        await harness.open();
+        const items = await harness.getItems();
+
+        expect(items.length).toBe(3);
+
+        const texts = await Promise.all(
+          items.map(async (item) => await item.getText())
+        );
+
+        expect(texts).toEqual(['Plans', 'Account', 'Sign Out']);
+      });
     });
   });
 
@@ -145,9 +166,4 @@ describe('TopBarComponent', () => {
       expect(router.navigate).toHaveBeenCalledWith(['/']);
     });
   });
-
-  /// display name is
-  // guest when no login flag
-  // sign in if not logged in
-  // name if logged in
 });
