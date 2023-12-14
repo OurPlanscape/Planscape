@@ -1,5 +1,6 @@
 import json
 import multiprocessing
+from pathlib import Path
 import time
 from itertools import repeat
 
@@ -53,8 +54,9 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
-            "--outfile",
+            "--output_folder",
             type=str,
+            default="",
         )
 
         parser.add_argument("--discover", type=str, default=None)
@@ -141,6 +143,10 @@ class Command(BaseCommand):
 
         return []
 
+    def get_outfile_path(self, output_folder, region, condition_id, stand_size):
+        base_path = Path(output_folder)
+        return base_path / f"{region}_{condition_id}_{stand_size}.csv"
+
     def handle(self, *args, **options):
         with rasterio.Env(
             GDAL_NUM_THREADS="ALL_CPUS",
@@ -151,8 +157,8 @@ class Command(BaseCommand):
             condition_ids = options.get("condition_ids")
             discover_region = options.get("discover")
             size = options.get("size")
+            output_folder = options.get("output_folder")
             conditions = self.get_conditions(condition_ids, discover_region)
-
             real_start = time.time()
             for condition in conditions:
                 start_condition = time.time()
@@ -174,7 +180,12 @@ class Command(BaseCommand):
                     self.stdout.write("[FAIL] Raster does not exists in disk")
                     continue
 
-                outfile = f"{region}_{condition_id}_{size}.csv"
+                outfile = self.get_outfile_path(
+                    output_folder,
+                    region=region,
+                    condition_id=condition_id,
+                    stand_size=size,
+                )
                 with multiprocessing.Pool(max_workers) as pool:
                     data = zip(
                         stand_data,
