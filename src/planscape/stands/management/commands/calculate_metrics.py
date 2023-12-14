@@ -9,10 +9,10 @@ from conditions.registry import get_raster_path
 from django.contrib.gis.db.models.functions import AsWKT, Transform
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management.base import BaseCommand
-from django.db import connection
 from stands.stats import get_zonal_stats
 from stands.models import Stand
 from django.conf import settings
+from shapely.geometry import box
 
 
 def calculate_metric(stand, condition_id, raster):
@@ -63,34 +63,23 @@ class Command(BaseCommand):
 
         parser.add_argument("--force-yes", action="store_true")
 
-    def get_condition_extent(self, condition_id):
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                SELECT
-                    ST_Envelope(ST_Collect(ST_Envelope(raster))) AS "geometry"
-                FROM conditions_conditionraster cc 
-                WHERE condition_id = %s""",
-                [condition_id],
-            )
+    def get_condition_extent(self, raster_path):
+        with rasterio.open(raster_path, "r") as rast:
+            bounds = rast.bounds
+            geom = box(*bounds)
+            return GEOSGeometry(geom.wkt, srid=rast.crs.to_epsg())
 
-            row = cursor.fetchone()
-            geometry = row[0]
-            if geometry:
-                return GEOSGeometry(row[0])
-            return None
-
-    def get_stands_queryset(self, condition_id=None, size=None):
+    def get_stands_queryset(self, raster_path=None, size=None):
         queryset = Stand.objects.all()
 
         if size:
             queryset = queryset.filter(size=size)
 
-        if condition_id:
-            extent = self.get_condition_extent(condition_id)
+        if raster_path:
+            extent = self.get_condition_extent(raster_path)
             if not extent:
                 self.stdout.write(
-                    f"[WARN] Empty extent for condition {condition_id}. No metrics to load."
+                    f"[WARN] Empty extent for condition {raster_path}. No metrics to load."
                 )
                 return Stand.objects.none()
 
@@ -153,7 +142,11 @@ class Command(BaseCommand):
         return []
 
     def handle(self, *args, **options):
-        with rasterio.Env(GDAL_CACHE_MAX=16000, GDAL_NUM_THREADS="ALL_CPUS"):
+        with rasterio.Env(
+            GDAL_NUM_THREADS="ALL_CPUS",
+            GTIFF_DIRECT_IO=True,
+            GTIFF_VIRTUAL_MEM_IO=True,
+        ):
             max_workers = options.get("max_workers")
             condition_ids = options.get("condition_ids")
             discover_region = options.get("discover")
@@ -163,7 +156,8 @@ class Command(BaseCommand):
             real_start = time.time()
             for condition in conditions:
                 start_condition = time.time()
-                stands = self.get_stands_queryset(condition_id=condition.id, size=size)
+                raster_path = get_raster_path(condition)
+                stands = self.get_stands_queryset(raster_path=raster_path, size=size)
                 condition_id = condition.pk
                 region = condition.condition_dataset.region_name
                 if stands.count() <= 0:
@@ -175,7 +169,6 @@ class Command(BaseCommand):
                     f"[OK] Processing {condition_id} with {stands.count()} stands."
                 )
                 stand_data = stands.values_list("id", "geom").iterator(chunk_size=1000)
-                raster_path = get_raster_path(condition)
 
                 if not raster_path.exists():
                     self.stdout.write("[FAIL] Raster does not exists in disk")

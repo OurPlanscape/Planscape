@@ -61,8 +61,8 @@ export function passwordsMustMatchValidator(
     const confirmation = formControls.get(passwordConfirmFieldName)?.value;
 
     if (
-      password.length > 0 &&
-      confirmation.length > 0 &&
+      password?.length > 0 &&
+      confirmation?.length > 0 &&
       password !== confirmation
     ) {
       return passwordsMustMatchError;
