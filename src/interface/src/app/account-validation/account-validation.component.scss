@@ -1,50 +1,63 @@
-  .validation-root {
-    display: flex;
-    height: 100%;
-  }
+@import '../../styles/colors';
+@import '../../styles/mixins';
 
-  .validation-result-container {
-    background-image: url('/assets/png/planscape_signin_bg.png');
-    background-repeat: no-repeat;
-    background-size: cover;
-    display: flex;
-    width: 100%;
-  }
-  
-  .validation-result-card {
-    background-color: white;
-    border-radius: 16px;
-    flex-grow: 1;
-    justify-content: center;
-    margin: 10% 20% auto 20%;
-    padding: 50px;
-    align-content: center;
-    display: flex;
-  }
-  
-  h3 {
-    font-family: 'Public Sans', 'Roboto';
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 24px;
-  }
-  
-  h1 {
-    font-family: 'Roboto';
-    font-size: 24px;
-    font-weight: 500;
-    line-height: 32px;
-  
-    &.signup-title {
-      margin-bottom: 48px;
-      text-align: center;
-    }
-  }
-  
-  button {
-    margin-bottom: 5px;
-    width: 100%;
-  }
-  
+:host {
+  display: flex;
+  height: 100%;
+}
 
-  
+.validation-result-container {
+  display: flex;
+  background-image: url('/assets/jpg/planscape-background.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: 50%;
+}
+
+.validation-result-subcontainer {
+  flex-direction: column;
+  margin: auto;
+  margin-top: 30%;
+  width: 60%;
+  max-width: 600px;
+  display: flex;
+}
+
+.validation-result-card {
+  @include public_sans(); 
+  gap: 20px;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  padding: 40px 60px 40px 60px;
+  border: 1px;
+  border-color: $color-original-purple-50pct;
+  border-style: solid;
+  border-radius: 8px;
+  box-shadow: 0px 4px 4px 0px #00000040;
+  text-align: left;
+}
+
+h2 {
+  @include h2();
+  &.title {
+    color: $color-dark-gray;
+  }
+}
+
+p.regular {
+  @include regular-paragraph();
+  color: $color-dark-gray;
+}
+
+.info-text-container {
+  background-color: $color-soft-purple;
+  display: flex;
+  justify-content: center;
+  width: 50%;
+  background-image: url('/assets/svg/waves-large.svg');
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  background-size: 50%;
+}
