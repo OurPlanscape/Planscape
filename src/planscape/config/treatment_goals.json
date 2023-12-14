@@ -248,6 +248,55 @@
               "global_thresholds": []
             },
             {
+              "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
+              "short_question_text": "Wildlife Richness Exposure to Fire",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "biodiversity_conservation",
+                  "wetland_integrity",
+                  "forest_resilience",
+                  "economic_diversity"
+                ],
+                "elements": [
+                  "functional_fire",
+                  "species_diversity",
+                  "community_integrity",
+                  "hydrologic",
+                  "forest_structure",
+                  "severity",
+                  "wood_product_industry",
+                  "focal_species"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "wildlife_species_richness",
+                  "endangered_vertebrate",
+                  "beta_diversity",
+                  "cavity_nesters_excavators_species_richness",
+                  "aquatic_species_richness",
+                  "habitat_connectivity",
+                  "live_tree_density_30in_dbh",
+                  "dead_and_down_fuels",
+                  "sawtimber_biomass",
+                  "costs_of_potential_treatment_moving_biomass",
+                  "costs_of_potential_treatment_moving_sawlogs",
+                  "california_spotted_owl_habitat",
+                  "california_spotted_owl_territory"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "wildlife_species_richness"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "wildlife_species_richness > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
