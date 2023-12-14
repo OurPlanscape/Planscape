@@ -8,7 +8,7 @@ import { FormMessageType } from '../../types/data.types';
 })
 export class FormMessageBoxComponent {
   @Input() title!: string;
-  @Input() message?: string;
+  @Input() message?: string | null;
   @Input() messageType: FormMessageType = FormMessageType.ALERT;
 
   icons: Record<FormMessageType, string> = {
