@@ -207,10 +207,28 @@ export class MapManager {
     L.geoJSON(area, {
       style: (_) => DRAWING_STYLES,
       pmIgnore: false,
-      onEachFeature: (_, layer) => {
-        layer.addTo(this.drawingLayer);
-        this.addClonedPolygons(layer);
-        layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+      onEachFeature: (feature, layer) => {
+        if (feature.geometry.type === 'MultiPolygon') {
+          feature.geometry.coordinates.forEach((coord) => {
+            const newFeature: GeoJSON.Feature = {
+              type: 'Feature',
+              geometry: {
+                type: 'Polygon',
+                coordinates: coord,
+              },
+              properties: {},
+            };
+
+            const newLayer = new L.GeoJSON(newFeature);
+            newLayer.addTo(this.drawingLayer);
+            this.addClonedPolygons(newLayer);
+            newLayer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+          });
+        } else {
+          layer.addTo(this.drawingLayer);
+          this.addClonedPolygons(layer);
+          layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+        }
       },
     });
     this.polygonsCreated$.next(true);
