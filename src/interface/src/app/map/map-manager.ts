@@ -203,7 +203,7 @@ export class MapManager {
    * Adds a GeoJSON to the drawing layer.
    * @param area: The geojson of the area to add to the drawing layer.
    */
-  addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
+  addGeoJsonToDrawing(area: GeoJSON.GeoJSON, map: Map) {
     L.geoJSON(area, {
       style: (_) => DRAWING_STYLES,
       pmIgnore: false,
@@ -213,6 +213,9 @@ export class MapManager {
         layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
       },
     });
+
+    map.instance?.fitBounds(this.drawingLayer.getBounds());
+
     this.polygonsCreated$.next(true);
   }
 
