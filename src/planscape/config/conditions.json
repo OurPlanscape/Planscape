@@ -3863,6 +3863,19 @@
               "display": false,
               "metrics": [
                 {
+                  "display_name": "Vegetation Types",
+                  "data_provider": "California Department of Fish and Wildlife CWHR",
+                  "data_units": "",
+                  "metric_name": "f3veg100",
+                  "max_value": 4900,
+                  "min_value": 100,
+                  "raw_data_download_path": "sierra-nevada/forsys/f3veg100.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
                   "display_name": "Wildland Urban Interface",
                   "data_provider": "SIG-GIS",
                   "data_units": "",
