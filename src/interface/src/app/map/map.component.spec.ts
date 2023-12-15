@@ -242,14 +242,15 @@ describe('MapComponent', () => {
       expect(component.mapViewOptions$.getValue().selectedMapIndex).toBe(0);
     });
 
-    it('can select another map', () => {
+    it('can select another map', fakeAsync(() => {
       component.ngAfterViewInit();
 
       // Clicking the initialized map should select it
       component.maps[2].instance?.fireEvent('click');
-
+      tick();
+      flush();
       expect(component.mapViewOptions$.getValue().selectedMapIndex).toBe(2);
-    });
+    }));
 
     it('selected map is always visible', () => {
       [0, 1, 2, 3].forEach((selectedMapIndex: number) => {
@@ -770,34 +771,34 @@ describe('MapComponent', () => {
         );
       });
 
-      it('attaches popup when feature polygon is clicked', () => {
+      it('attaches popup when feature polygon is clicked', fakeAsync(() => {
         // Click on the polygon
         component.maps[3].instance?.fireEvent('click', {
           latlng: [0, 0],
         });
-
+        flush();
         expect(applicationRef.attachView).toHaveBeenCalledTimes(1);
-      });
+      }));
 
-      it('does not attach popup when map is clicked outside the polygon', () => {
+      it('does not attach popup when map is clicked outside the polygon', fakeAsync(() => {
         // Click outside the polygon
         component.maps[3].instance?.fireEvent('click', {
           latlng: [2, 2],
         });
-
+        flush();
         expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
-      });
+      }));
 
-      it('does not attach popup if drawing mode is active', () => {
+      it('does not attach popup if drawing mode is active', fakeAsync(() => {
         component.mapManager.isInDrawingMode = true;
 
         // Click on the polygon
         component.maps[3].instance?.fireEvent('click', {
           latlng: [0, 0],
         });
-
+        flush();
         expect(applicationRef.attachView).toHaveBeenCalledTimes(0);
-      });
+      }));
     });
 
     it('popup is removed when existing project layer is removed', () => {

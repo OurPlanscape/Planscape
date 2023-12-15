@@ -88,7 +88,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   mapManager: MapManager;
   regionRecord: string = '';
-  loadingIndicators: { [layerName: string]: boolean } = {
+  loadingIndicators: {
+    [layerName: string]: boolean;
+  } = {
     existing_projects: true,
   };
   selectedAreaCreationAction = AreaCreationAction.NONE;
@@ -526,7 +528,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           fileAsArrayBuffer
         )) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
-          this.mapManager.addGeoJsonToDrawing(geojson);
+          const selectedMapIndex =
+            this.mapViewOptions$.getValue().selectedMapIndex;
+          this.mapManager.addGeoJsonToDrawing(
+            geojson,
+            this.maps[selectedMapIndex]
+          );
+
           this.showUploader = false;
           this.addDrawingControlToAllMaps();
         } else {
@@ -641,6 +649,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
         this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
       }
+      setTimeout(() => {
+        this.maps.forEach((map: Map) => {
+          map.instance?.invalidateSize();
+        });
+      }, 0);
     }
   }
 
