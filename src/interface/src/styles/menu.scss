@@ -1,0 +1,28 @@
+@import "mixins";
+@import "colors";
+
+.dropdown-menu {
+
+  .mat-menu-content:not(:empty) {
+    padding: 0;
+  }
+
+  &.mat-menu-panel {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mat-menu-item {
+    @include standard-input-label;
+    color: $color-md-gray;
+    line-height: 48px;
+    min-width: 160px;
+    border-bottom: 2px solid $color-soft-gray;
+  }
+
+  .mat-menu-item:last-child {
+    border-bottom-width: 4px;
+  }
+
+}
+

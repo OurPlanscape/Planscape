@@ -32,11 +32,6 @@ urlpatterns = [
         user_views.verify_password_reset_token,
         name="verify_password_reset_token",
     ),
-    path(
-        "planscape-backend/dj-rest-auth/user/",
-        CustomUserDetailsView.as_view(),
-        name="user-details",
-    ),
     path("planscape-backend/dj-rest-auth/", include("dj_rest_auth.urls")),
     path(
         "planscape-backend/dj-rest-auth/registration/",

@@ -21,7 +21,7 @@ These settings are
 import multiprocessing
 import os
 from pathlib import Path
-
+from datetime import timedelta
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
@@ -53,6 +53,7 @@ planscape_apps = [
     "planning",
     "stands",
     "users",
+    "restrictions",
     "utils",
 ]
 INSTALLED_APPS = [
@@ -148,7 +149,6 @@ LOCKDOWN_REMOTE_ADDR_EXCEPTIONS = [
     "::1",
 ]
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -243,6 +243,12 @@ REST_AUTH = {
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
     "LANGUAGE_CODE": "en-us",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=90),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
+    "ROTATE_REFRESH_TOKENS": True,  # ensure the Refresh token is invalidated at each login
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -343,6 +349,9 @@ if SENTRY_DSN is not None:
 
 DEFAULT_CONDITIONS_FILE = config(
     "DEFAULT_CONDITIONS_FILE", BASE_DIR / "config" / "conditions.json"
+)
+DEFAULT_TREATMENTS_FILE = config(
+    "DEFAULT_TREATMENTS_FILE", BASE_DIR / "config" / "treatment_goals.json"
 )
 RASTER_ROOT = config("RASTER_ROOT", "/mnt/gis/planscape")
 RASTER_TILE = config("RASTER_TILE", "32x32")

@@ -22,3 +22,4 @@ src/interface/src/app/features/features.dev.json
 # Editors
 .vscode/*
 .idea/*
+data/*

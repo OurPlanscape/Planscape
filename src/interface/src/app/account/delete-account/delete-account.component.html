@@ -1,1 +1,12 @@
-<div>Delete Account component</div>
+<h3>Are you sure you want to delete your account?</h3>
+<p>
+  This will permanently erase your account and delete any plans that you own
+</p>
+
+<button
+  mat-stroked-button
+  color="secondary"
+  (click)="openDeleteAccountDialog()">
+  <mat-icon>delete_outline</mat-icon>
+  Delete Account
+</button>

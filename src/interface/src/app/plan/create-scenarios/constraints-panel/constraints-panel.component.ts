@@ -7,7 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
-import { EXCLUDED_AREA_OPTIONS } from '../../../shared/constants';
+import { EXCLUDED_AREAS } from '../../../shared/constants';
 import { ScenarioConfig } from '../../../types';
 
 @Component({
@@ -17,15 +17,15 @@ import { ScenarioConfig } from '../../../types';
 })
 export class ConstraintsPanelComponent {
   constraintsForm: FormGroup = this.createForm();
-  readonly excludedAreasOptions = EXCLUDED_AREA_OPTIONS;
+  readonly excludedAreasOptions = EXCLUDED_AREAS;
   readonly standSizeOptions = STAND_SIZES;
 
   constructor(private fb: FormBuilder) {}
 
   createForm() {
     let excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
-      excludedAreasChosen[area] = [false, Validators.required];
+    EXCLUDED_AREAS.forEach((area) => {
+      excludedAreasChosen[area.key] = [false, Validators.required];
     });
     this.constraintsForm = this.fb.group(
       {
@@ -99,12 +99,12 @@ export class ConstraintsPanelComponent {
       'physicalConstraintForm.standSize'
     )?.value;
     scenarioConfig.excluded_areas = [];
-    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
+    EXCLUDED_AREAS.forEach((area) => {
       if (
-        this.constraintsForm.get('excludedAreasForm.' + area)?.valid &&
-        this.constraintsForm.get('excludedAreasForm.' + area)?.value
+        this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
+        this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        scenarioConfig.excluded_areas?.push(area);
+        scenarioConfig.excluded_areas?.push(area.key);
       }
     });
     if (estimatedCost?.valid)
@@ -124,11 +124,18 @@ export class ConstraintsPanelComponent {
   }
 
   setFormData(config: ScenarioConfig) {
-    EXCLUDED_AREA_OPTIONS.forEach((area: string) => {
-      if (config.excluded_areas && config.excluded_areas.indexOf(area) > -1) {
-        this.constraintsForm.get('excludedAreasForm.' + area)?.setValue(true);
+    EXCLUDED_AREAS.forEach((area) => {
+      if (
+        config.excluded_areas &&
+        config.excluded_areas.indexOf(area.key) > -1
+      ) {
+        this.constraintsForm
+          .get('excludedAreasForm.' + area.key)
+          ?.setValue(true);
       } else {
-        this.constraintsForm.get('excludedAreasForm.' + area)?.setValue(false);
+        this.constraintsForm
+          .get('excludedAreasForm.' + area.key)
+          ?.setValue(false);
       }
     });
 

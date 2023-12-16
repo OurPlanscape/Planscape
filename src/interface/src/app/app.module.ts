@@ -11,8 +11,6 @@ import {
   NgxGoogleAnalyticsModule,
   NgxGoogleAnalyticsRouterModule,
 } from 'ngx-google-analytics';
-
-import { AccountDialogComponent } from './account-dialog/account-dialog.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
@@ -37,13 +35,12 @@ import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './home/about/about.component';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
-import { DeleteAccountDialogComponent } from './account-dialog/delete-account-dialog/delete-account-dialog.component';
+
 import { environment } from 'src/environments/environment';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
-import { ValidationEmailDialogComponent } from './signup/validation-email-dialog/validation-email-dialog.component';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
@@ -60,18 +57,22 @@ import { CredentialsComponent } from './account/credentials/credentials.componen
 import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { MenuComponent } from './account/menu/menu.component';
 import { NgxMaskModule } from 'ngx-mask';
+import { ThankYouComponent } from './signup/thank-you/thank-you.component';
+import { LearnMoreComponent } from './home/learn-more/learn-more.component';
+import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.component';
+import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
+import { InfoCardComponent } from './signup/info-card/info-card.component';
+import { ChangePasswordComponent } from './account/change-password/change-password.component';
+import { DeleteAccountDialogComponent } from './account/delete-account-dialog/delete-account-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-
     LoginComponent,
     SignupComponent,
     NavigationComponent,
     TopBarComponent,
-    AccountDialogComponent,
     RegionSelectionComponent,
-
     HomeComponent,
     PlanTableComponent,
     DeleteAccountDialogComponent,
@@ -79,7 +80,6 @@ import { NgxMaskModule } from 'ngx-mask';
     PlanningAreasComponent,
     PreviewComponent,
     ResetPasswordDialogComponent,
-    ValidationEmailDialogComponent,
     ForgetPasswordComponent,
     AboutComponent,
     PasswordResetComponent,
@@ -91,6 +91,12 @@ import { NgxMaskModule } from 'ngx-mask';
     CredentialsComponent,
     DeleteAccountComponent,
     MenuComponent,
+    ThankYouComponent,
+    LearnMoreComponent,
+    HorizonalCardComponent,
+    EditUserFieldComponent,
+    InfoCardComponent,
+    ChangePasswordComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -130,6 +136,5 @@ import { NgxMaskModule } from 'ngx-mask';
     CurrencyPipe,
   ],
   bootstrap: [AppComponent],
-  entryComponents: [AccountDialogComponent],
 })
 export class AppModule {}

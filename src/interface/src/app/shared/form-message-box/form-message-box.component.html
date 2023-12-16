@@ -1,0 +1,10 @@
+<div class="message-box" [ngClass]="boxClass[messageType]">
+  <div class="title">
+    <img [src]="icons[messageType]" alt="message-icon" class="message-icon" />
+    <p class="message-title">{{ title }}</p>
+  </div>
+  <div class="message-details">
+    {{ message }}
+    <ng-content></ng-content>
+  </div>
+</div>

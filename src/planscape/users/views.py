@@ -94,7 +94,6 @@ def verify_password_reset_token(
 
     return JsonResponse({"valid": True})
 
-
 # This class exists only to override the PATCH call in dj-rest-auth's UserDetailsView
 class CustomUserDetailsView(UserDetailsView):
     # require a password validation in addition to checking that the user is logged in

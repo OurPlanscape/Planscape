@@ -1,1 +1,24 @@
-<div>Personal Information component</div>
+<app-form-message
+  [messageType]="FormMessageType.SUCCESS"
+  *ngIf="successMsg"
+  title="Success!"
+  message="{{ successMsg }}">
+</app-form-message>
+
+<app-form-message
+  [messageType]="FormMessageType.ERROR"
+  *ngIf="errorMsg"
+  title="Error!"
+  message="{{ errorMsg }}">
+</app-form-message>
+
+<app-edit-user-field
+  userField="firstName"
+  [currentValue]="(user$ | async)?.firstName || ''"
+  (saved)="successMsg = $event"
+  (failed)="errorMsg = $event"></app-edit-user-field>
+<app-edit-user-field
+  userField="lastName"
+  [currentValue]="(user$ | async)?.lastName || ''"
+  (saved)="successMsg = $event"
+  (failed)="errorMsg = $event"></app-edit-user-field>

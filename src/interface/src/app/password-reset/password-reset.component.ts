@@ -1,17 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  AbstractControl,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Data, Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-
+import { FormMessageType } from '../types';
 import { AuthService, PasswordResetToken } from '../services';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
+import { PasswordStateMatcher } from '../validators/error-matchers';
+import { passwordsMustMatchValidator } from '../validators/passwords';
 
 @UntilDestroy()
 @Component({
@@ -20,11 +17,15 @@ import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-
   styleUrls: ['./password-reset.component.scss'],
 })
 export class PasswordResetComponent implements OnInit {
-  errors: string[] = [];
-
   form: FormGroup;
-
   passwordResetToken: PasswordResetToken | null = null;
+  FormMessageType = FormMessageType;
+  currentPasswordStateMatcher = new PasswordStateMatcher([]);
+  passwordStateMatcher = new PasswordStateMatcher(['newPasswordsMustMatch']);
+  confirmPasswordStateMatcher = new PasswordStateMatcher([
+    'newPasswordsMustMatch',
+  ]);
+  showHint = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -42,7 +43,7 @@ export class PasswordResetComponent implements OnInit {
         password2: this.formBuilder.control('', Validators.required),
       },
       {
-        validator: this.passwordsMatchValidator,
+        validator: passwordsMustMatchValidator('password1', 'password2'),
       }
     );
   }
@@ -74,7 +75,7 @@ export class PasswordResetComponent implements OnInit {
           this.dialog.open(ConfirmationDialogComponent);
         },
         error: (err: HttpErrorResponse) => {
-          this.errors = Object.values(err.error);
+          this.form.setErrors({ backendError: Object.values(err.error) });
         },
       });
   }
@@ -83,9 +84,19 @@ export class PasswordResetComponent implements OnInit {
     this.router.navigate(['login']);
   }
 
-  private passwordsMatchValidator(group: AbstractControl) {
-    const password1 = group.get('password1')?.value;
-    const password2 = group.get('password2')?.value;
-    return password1 === password2 ? null : { passwordsNotEqual: true };
+  getErrors(): string | null {
+    if (this.form.errors) {
+      let errorString = '';
+      const formErrors = this.form.errors;
+      if ('newPasswordsMustMatch' in formErrors) {
+        errorString = 'Passwords must match.';
+      } else if ('backendError' in formErrors) {
+        errorString = formErrors['backendError'];
+      } else {
+        errorString = 'An unkown error has occurred.';
+      }
+      return errorString;
+    }
+    return null;
   }
 }

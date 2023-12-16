@@ -15,6 +15,7 @@ psycopg2>=2.9.3
 pymemcache
 python-decouple==3.6
 rasterio
+rasterstats
 rpy2==3.5.6
 typing_extensions
 uwsgi

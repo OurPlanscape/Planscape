@@ -1,104 +1,124 @@
 <div class="signup-root">
   <div class="info-card-container">
-    <div class="info-card">
-      <h3><b>With a Planscape account, you can:</b></h3>
-
-      <ul>
-        <li>
-          <h3>Save planning areas</h3>
-        </li>
-        <li>
-          <h3>Create plans, configurations, and scenarios</h3>
-        </li>
-        <li>
-          <h3>Download shapefiles & metadata</h3>
-        </li>
-        <li>
-          <h3>Share work with collaborators</h3>
-        </li>
-      </ul>
-
-      <h3><b>As a guest user, you can:</b></h3>
-
-      <ul>
-        <li>
-          <h3>Explore regional data on the map</h3>
-        </li>
-        <li>
-          <h3>View plans and/or scenarios that are publicly visible*</h3>
-        </li>
-      </ul>
-
-      <p><i>*Accessible only via direct links</i></p>
-    </div>
+    <app-info-card></app-info-card>
   </div>
 
   <div class="signup-form-container">
-    <div class="signup-form">
-      <h1 class="signup-title">Create your account</h1>
+    <div class="signup-form-subcontainer">
+      <div class="planscape-color-logo">
+        <img src="assets/svg/planscape-color-logo.svg" alt="Planscape logo" />
+      </div>
+      <div class="signup-form">
+        <h1 class="signup-title">Create your account</h1>
 
-      <form [formGroup]="form" (ngSubmit)="signup()">
-        <mat-form-field appearance="fill">
-          <mat-label>First name</mat-label>
-          <input type="text" required formControlName="firstName" matInput />
-        </mat-form-field>
+        <form [formGroup]="form" (ngSubmit)="signup()">
+          <mat-label class="standard-label"
+            >First Name
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input type="text" required formControlName="firstName" matInput />
+          </mat-form-field>
+          <app-field-alert
+            *ngIf="
+              !!form.controls['firstName'].errors &&
+              form.controls['firstName'].dirty === true
+            "
+            message="This field must contain a value."
+            title="First Name Error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Last name</mat-label>
-          <input type="text" required formControlName="lastName" matInput />
-        </mat-form-field>
+          <mat-label class="standard-label"
+            >Last Name
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input type="text" required formControlName="lastName" matInput />
+          </mat-form-field>
+          <app-field-alert
+            *ngIf="
+              !!form.controls['lastName'].errors &&
+              form.controls['lastName'].dirty
+            "
+            message="This field must contain a value."
+            title="Last Name Error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Email</mat-label>
-          <input type="text" required formControlName="email" matInput />
-        </mat-form-field>
+          <mat-label class="standard-label"
+            >Email
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="text"
+              required
+              formControlName="email"
+              matInput
+              (blur)="getEmailError()" />
+          </mat-form-field>
+          <app-field-alert
+            *ngIf="
+              form.controls['email'].touched && !!form.controls['email'].errors
+            "
+            [message]="getEmailError()"
+            title="email error"></app-field-alert>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Create password</mat-label>
-          <input
-            type="password"
-            required
-            formControlName="password1"
-            matInput />
-          <mat-error *ngIf="form.get('password1')?.hasError('minlength')">
-            Password must contain at least 8 characters.
-          </mat-error>
-        </mat-form-field>
+          <mat-label class="standard-label"
+            >Create Password
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="password"
+              required
+              formControlName="password1"
+              matInput
+              autocomplete="password"
+              [errorStateMatcher]="passwordStateMatcher"
+              (focus)="showHint = true"
+              (blur)="showHint = false" />
+          </mat-form-field>
+          <app-field-alert
+            [messageType]="FormMessageType.ALERT"
+            *ngIf="showHint && !form.get('password1')?.value"
+            title="Password requirements"
+            message="Your password needs to be at least 8 characters long.">
+          </app-field-alert>
+          <app-field-alert
+            [messageType]="FormMessageType.ERROR"
+            *ngIf="!showHint && form.get('password1')?.errors?.['minlength']"
+            title="Password Error"
+            message="Your password needs to be at least 8 characters long."></app-field-alert>
+          <mat-label class="standard-label"
+            >Confirm Password
+            <span class="required-blurb">required</span>
+          </mat-label>
+          <mat-form-field appearance="outline">
+            <input
+              type="password"
+              required
+              formControlName="password2"
+              autocomplete="new-password"
+              matInput />
+          </mat-form-field>
 
-        <mat-form-field appearance="fill">
-          <mat-label>Confirm password</mat-label>
-          <input
-            type="password"
-            required
-            formControlName="password2"
-            matInput />
-          <mat-error *ngIf="form.hasError('passwordsNotEqual')">
-            Passwords must match.
-          </mat-error>
-        </mat-form-field>
+          <app-form-message
+            [messageType]="FormMessageType.ERROR"
+            *ngIf="!!form.errors"
+            title="Signup Error"
+            [message]="getFormErrors()">
+          </app-form-message>
 
-        <mat-error *ngIf="errors.length > 0">
-          <ul>
-            <li *ngFor="let error of errors">{{ error }}</li>
-          </ul>
-          <div *ngIf="emailAlreadyExists" class="post-error-option">
-            <a
-              class="forget-password-link"
-              i18n="Text on a button to reset password"
-              href="reset/">
-              Click here to reset your password.
-            </a>
+          <div class="button-row">
+            <button
+              mat-flat-button
+              type="submit"
+              color="primary"
+              class="create-button"
+              [disabled]="!form.valid || submitting">
+              {{ submitting ? 'Please wait...' : 'CREATE ACCOUNT' }}
+            </button>
           </div>
-        </mat-error>
-
-        <button
-          mat-flat-button
-          type="submit"
-          color="primary"
-          [disabled]="!form.valid || submitting">
-          {{ submitting ? 'Please wait...' : 'Create account' }}
-        </button>
-      </form>
+        </form>
+      </div>
     </div>
   </div>
 </div>

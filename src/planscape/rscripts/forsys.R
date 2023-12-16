@@ -122,7 +122,36 @@ priority_to_condition <- function(connection, scenario, priority) {
   return(tibble(head(result, 1)))
 }
 
-get_stands <- function(connection, scenario_id, stand_size) {
+get_restrictions <- function(connection, scenario_id, restrictions) {
+    statement <- "
+    WITH plan_scenario AS (
+      SELECT
+        pp.id AS \"planning_area_id\",
+        ps.id AS \"scenario_id\",
+        pp.geometry
+    FROM planning_planningarea pp
+    LEFT JOIN planning_scenario ps ON (ps.planning_area_id = pp.id)
+    WHERE
+        ps.id = {scenario_id}
+    )
+    SELECT
+      ST_Transform(ST_Union(rr.geometry), 5070) as \"geometry\"
+    FROM restrictions_restriction rr, plan_scenario
+    WHERE
+      type IN ({restrictions*}) AND
+      rr.geometry && plan_scenario.geometry AND
+      ST_Intersects(rr.geometry, plan_scenario.geometry)"
+    restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, restrictions = restrictions, .con=connection)
+    restriction_data <- st_read(
+      dsn = connection,
+      layer = NULL,
+      query = restrictions_statement,
+      geometry_column = "geometry"
+    )
+    return (restriction_data)
+}
+
+get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   query_text <- "
   WITH plan_scenario AS (
     SELECT
@@ -145,13 +174,19 @@ get_stands <- function(connection, scenario_id, stand_size) {
       ST_Intersects(ss.geometry, plan_scenario.geometry)"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
 
-  result <- st_read(
+  stands <- st_read(
     dsn = connection,
     layer = NULL,
     query = query,
     geometry_column = "geometry"
   )
-  return(result)
+
+  if (length(restrictions) > 0) {
+    log_info("Restrictions found!")
+    restriction_data <- get_restrictions(connection, scenario_id, restrictions)
+    stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
+  }
+  return(stands)
 }
 
 preprocess_metrics <- function(metrics, condition_name) {
@@ -326,7 +361,8 @@ get_priorities <- function(
 
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
-  stands <- get_stands(connection, scenario$id, stand_size)
+
+  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
   for (row in seq_len(nrow(conditions))) {
     condition_id <- conditions[row, "condition_id"]$condition_id
     condition_name <- conditions[row, "condition_name"]$condition_name

@@ -1,0 +1,156 @@
+/*
+Typography mixins.
+Declare mixins based on styleguide and apply to classes
+ */
+
+@mixin public-sans() {
+  font-family: 'Public Sans';
+}
+
+@mixin button-text {
+  @include public-sans();
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1rem;
+}
+
+@mixin italic-sm {
+  @include public-sans();
+  font-size: 14px;
+  font-style: italic;
+  font-weight: normal;
+  line-height: 22px;
+}
+
+@mixin important-paragraph {
+  @include public-sans();
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 32px;
+  letter-spacing: 0px;
+}
+
+@mixin regular-paragraph {
+  @include public-sans();
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 26px;
+  letter-spacing: 0px;
+}
+
+@mixin small-paragraph {
+  @include public-sans();
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0px;
+}
+
+@mixin standard-input-label {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+@mixin standard-label {
+  @include public-sans();
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 24px; /* 133.333% */
+}
+
+@mixin standard-label-bold {
+  @include standard-label();
+  font-weight: 600;
+}
+
+@mixin standard-link {
+  @include public-sans();
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 16px;
+  letter-spacing: 0px;
+}
+
+@mixin h1 {
+  @include public-sans();
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 32px;
+  letter-spacing: 0px;
+}
+
+@mixin h2 {
+  @include public-sans();
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+@mixin h3 {
+  @include public-sans();
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+@mixin h4 {
+  @include public-sans();
+  font-size: 18px;
+  font-style: normal;
+  font-weight: normal;
+  line-height: 32px;
+}
+
+@mixin top-level-label {
+  @include public-sans();
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 500;
+}
+
+@mixin small-paragraph {
+  @include public-sans();
+  font-size: 14px;
+  line-height: 22px;
+  font-weight: 400;
+  letter-spacing: 0px;
+}
+
+@mixin regular-paragraph {
+  @include public-sans();
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.625rem;
+}
+
+@mixin p {
+  @include public-sans();
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 26px;
+}
+
+
+@mixin standard-button {
+  @include button-text();
+  padding: 10px 8px 10px 8px;
+  border-radius: 4px;
+  gap: 10px;
+}
+
+@mixin button-disabled {
+  background-color: $color-light-gray;
+  color: $color-text-gray;
+  border: 1px $color-text-gray solid;
+}
+
+@mixin button-text {
+  @include public-sans();
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1rem;
+}

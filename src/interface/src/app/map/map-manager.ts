@@ -203,7 +203,7 @@ export class MapManager {
    * Adds a GeoJSON to the drawing layer.
    * @param area: The geojson of the area to add to the drawing layer.
    */
-  addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
+  addGeoJsonToDrawing(area: GeoJSON.GeoJSON, map: Map) {
     L.geoJSON(area, {
       style: (_) => DRAWING_STYLES,
       pmIgnore: false,
@@ -213,6 +213,9 @@ export class MapManager {
         layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
       },
     });
+
+    map.instance?.fitBounds(this.drawingLayer.getBounds());
+
     this.polygonsCreated$.next(true);
   }
 
@@ -572,6 +575,7 @@ export class MapManager {
     if (region == null) {
       region = 'sierra-nevada';
     }
+
     map.dataLayerRef = L.tileLayer.wms(
       BackendConstants.TILES_END_POINT + region + '/wms?',
       {
@@ -594,7 +598,7 @@ export class MapManager {
     const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
     let queryParams = new HttpParams();
     queryParams = queryParams.append('request', 'GetLegendGraphic');
-    queryParams = queryParams.append('layer', layer);
+    queryParams = queryParams.append('layer', region + layer);
     queryParams = queryParams.append('format', 'application/json');
     var legendJson = this.http.get<string>(legendUrl, { params: queryParams });
     legendJson.pipe(take(1)).subscribe((value: any) => {

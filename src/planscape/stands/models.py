@@ -89,6 +89,10 @@ class StandMetric(CreatedAtMixin, models.Model):
 
     count = models.IntegerField(null=True)
 
+    majority = models.FloatField(null=True)
+
+    minority = models.FloatField(null=True)
+
     class Meta:
         constraints = [
             models.UniqueConstraint(

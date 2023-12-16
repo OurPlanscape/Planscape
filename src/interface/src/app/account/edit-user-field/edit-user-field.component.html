@@ -1,0 +1,40 @@
+<h4 class="form-field-title">{{ labels[userField] }}</h4>
+<p class="form-field-p">
+  Current <span class="lowercase">{{ labels[userField] }}</span
+  >: {{ currentValue }}
+</p>
+
+<form
+  [formGroup]="form"
+  (ngSubmit)="saveForm()"
+  *ngIf="state === 'editing' || state === 'saving'">
+  <div class="form-field-label">
+    {{ labels[userField] }}
+    <div class="required-blurb">required</div>
+  </div>
+  <mat-form-field appearance="outline" class="form-field-input">
+    <input type="text" required formControlName="name" matInput />
+  </mat-form-field>
+  <div>
+    <button
+      mat-flat-button
+      color="primary"
+      [disabled]="form.invalid || state === 'saving'">
+      SAVE
+    </button>
+    <button
+      type="button"
+      mat-stroked-button
+      color="secondary"
+      (click)="state = 'view'"
+      class="btn-spaced">
+      Cancel
+    </button>
+  </div>
+</form>
+
+<div *ngIf="state === 'view'">
+  <button mat-flat-button color="primary" (click)="state = 'editing'">
+    EDIT
+  </button>
+</div>

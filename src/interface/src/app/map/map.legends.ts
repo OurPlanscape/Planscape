@@ -29,7 +29,7 @@ export function createLegendHtmlElement(
     }
     if (entry['label']) {
       // Filter out 'nodata' entries
-      if (entry['color'] != '#000000') {
+      if (entry['opacity'] != '0.0') {
         htmlContent +=
           '<div class="legendline" ' +
           lastChild +
@@ -41,7 +41,7 @@ export function createLegendHtmlElement(
       } else if (lastChild != '') {
         htmlContent += '<div class="legendline"' + lastChild + '></div>';
       }
-    } else {
+    } else if (entry['opacity'] != '0.0') {
       htmlContent +=
         '<div class="legendline" ' +
         lastChild +

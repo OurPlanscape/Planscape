@@ -1,19 +1,22 @@
-<div class="validation-root">
-  <div class="validation-result-container">
+<div class="validation-result-container">
+  <div class="validation-result-subcontainer">
     <div class="validation-result-card">
-      <div>
-        <div *ngIf="isValidated" class="valid-token">
-          <h1>Your email address was validated.</h1>
-          <h3>
-            Please
-            <a href="login/">click here</a>
-            to login.
-          </h3>
-        </div>
-        <div *ngIf="!isValidated" class="invalid-token">
-          <h1>This validation token was not recognized.</h1>
-        </div>
+      <h2 class="title">Account Validation</h2>
+      <div *ngIf="isValidated" class="valid-token">
+        <p class="regular">
+          Your email address was validated. Please
+          <a href="login/">click here</a>
+          to continue.
+        </p>
+      </div>
+      <div *ngIf="!isValidated" class="invalid-token">
+        <p class="regular">This validation token was not recognized.</p>
       </div>
     </div>
   </div>
+  <app-credits-blurb></app-credits-blurb>
+</div>
+
+<div class="info-text-container">
+  <app-planscape-about></app-planscape-about>
 </div>

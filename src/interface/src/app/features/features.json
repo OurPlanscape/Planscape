@@ -11,5 +11,8 @@
   "top_percent_slider": true,
   "unlaunched_layers": false,
   "upload_project_area": false,
-  "use_its": false
+  "use_its": false,
+  "draw_northcal": false,
+  "draw_socal": false,
+  "draw_centralcoast": false
 }
