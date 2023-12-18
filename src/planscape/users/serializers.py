@@ -10,7 +10,7 @@ from dj_rest_auth.serializers import (
     PasswordResetConfirmSerializer,
     JWTSerializerWithExpiration
 )
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, utcnow
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage

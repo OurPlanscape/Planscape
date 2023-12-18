@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 from dj_rest_auth.registration.views import VerifyEmailView
 from users import views as user_views
-from users.views import CustomUserDetailsView, ExtendedExpirationLoginView
+from users.views import ExtendedExpirationLoginView
 
 urlpatterns = [
     path("planscape-backend/admin/", admin.site.urls),
@@ -32,6 +32,7 @@ urlpatterns = [
         user_views.verify_password_reset_token,
         name="verify_password_reset_token",
     ),
+    path("planscape-backend/dj-rest-auth/login/", ExtendedExpirationLoginView.as_view(), name="login"),
     path("planscape-backend/dj-rest-auth/", include("dj_rest_auth.urls")),
     path(
         "planscape-backend/dj-rest-auth/registration/",
@@ -41,6 +42,5 @@ urlpatterns = [
         "planscape-backend/dj-rest-auth/registration/account-confirm-email/",
         VerifyEmailView.as_view(),
     ),
-    path('login/', ExtendedExpirationLoginView.as_view(), name='login'),
     
 ]
