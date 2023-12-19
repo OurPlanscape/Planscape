@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
-import { BehaviorSubject, EMPTY, map, Observable, take, of } from 'rxjs';
+import { BehaviorSubject, EMPTY, map, Observable, take, of, tap } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { SessionService } from '../services';
@@ -46,6 +46,8 @@ export class MapService {
 
   readonly selectedRegion$ = this.sessionService.region$;
 
+  private regionBoundaries: Partial<Record<Region, GeoJSON.GeoJSON>> = {};
+
   constructor(
     private http: HttpClient,
     private sessionService: SessionService
@@ -80,19 +82,13 @@ export class MapService {
   getRegionBoundary(region: Region): Observable<GeoJSON.GeoJSON> {
     const path = regionToGeojsonMap[region];
     if (!path || !path['boundary']) return EMPTY;
-    return this.http.get<GeoJSON.GeoJSON>(path['boundary']);
-  }
 
-  /**
-   * (For reference, currently unused)
-   * Gets boundaries for four regions: Sierra Nevada, Southern California,
-   * Central Coast, Northern California.
-   * */
-  getRegionBoundaries(): Observable<GeoJSON.GeoJSON> {
-    return this.http.get<GeoJSON.GeoJSON>(
-      BackendConstants.END_POINT +
-        '/boundary/boundary_details/?boundary_name=task_force_regions'
-    );
+    if (this.regionBoundaries[region]) {
+      return of(this.regionBoundaries[region]!);
+    }
+    return this.http
+      .get<GeoJSON.GeoJSON>(path['boundary'])
+      .pipe(tap((data) => (this.regionBoundaries[region] = data)));
   }
 
   setConfigs() {
