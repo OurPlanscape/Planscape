@@ -34,6 +34,7 @@ import {
   checkIfAreaInBoundaries,
   createMultiPolygonFeatureCollection,
   regionMapCenters,
+  transformCoordToLayer,
 } from './map.helper';
 import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
 import { createAndAddLegend } from './map.legends';
@@ -210,16 +211,7 @@ export class MapManager {
       onEachFeature: (feature, layer) => {
         if (feature.geometry.type === 'MultiPolygon') {
           feature.geometry.coordinates.forEach((coord) => {
-            const newFeature: GeoJSON.Feature = {
-              type: 'Feature',
-              geometry: {
-                type: 'Polygon',
-                coordinates: coord,
-              },
-              properties: {},
-            };
-
-            const newLayer = new L.GeoJSON(newFeature);
+            const newLayer = transformCoordToLayer(coord);
             newLayer.addTo(this.drawingLayer);
             this.addClonedPolygons(newLayer);
             newLayer.on('pm:edit', ({ layer }) => this.editHandler(layer));
