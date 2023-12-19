@@ -340,7 +340,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
     // Renders the selected region on the map.
     this.selectedRegion$
-      .pipe(untilDestroyed(this))
+      .pipe(take(1))
       .subscribe((selectedRegion: Region | null) => {
         var centerCoords = regionMapCenters(selectedRegion!);
         map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
