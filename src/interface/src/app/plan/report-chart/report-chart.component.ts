@@ -50,6 +50,12 @@ export class ReportChartComponent implements OnInit {
               text: this.measurement,
             },
           },
+          x: {
+            title: {
+              display: true,
+              text: 'Project Area',
+            },
+          },
         },
       },
     };
