@@ -303,7 +303,8 @@ to_project_data <- function(
   project_stand_ids <- select(
     filter(
       forsys_outputs$stand_output,
-      proj_id == project_id
+      proj_id == project_id,
+      DoTreat == 1
     ),
     stand_id
   )
