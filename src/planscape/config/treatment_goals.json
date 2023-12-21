@@ -195,6 +195,62 @@
           "category_name": "Biodiversity",
           "questions": [
             {
+              "long_question_text": "Where are the priority opportunities to effectively reduce high severity fire risk to riparian habitats?",
+              "short_question_text": "Reduce Fire Risk to Riparian Habitat",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "biodiversity_conservation",
+                  "wetland_integrity",
+                  "forest_resilience",
+                  "air_quality",
+                  "economic_diversity",
+                  "forsys"
+                ],
+                "elements": [
+                  "functional_fire",
+                  "species_diversity",
+                  "hydrologic",
+                  "community_integrity",
+                  "forest_structure",
+                  "forest_composition",
+                  "particulate_matter",
+                  "wood_product_industry",
+                  "focal_species",
+                  "Forsys"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "probability_of_fire_severity_moderate",
+                  "endangered_vertebrate",
+                  "wildlife_species_richness",
+                  "meadow_sensitivity_index",
+                  "habitat_connectivity",
+                  "aquatic_species_richness",
+                  "beta_diversity",
+                  "live_tree_density_30in_dbh",
+                  "seral_stage_late",
+                  "total_fuel_exposed_to_fire",
+                  "sawtimber_biomass",
+                  "costs_of_potential_treatment_moving_biomass",
+                  "california_spotted_owl_habitat",
+                  "california_spotted_owl_territory",
+                  "f3veg100"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "total_fuel_exposed_to_fire"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "total_fuel_exposed_to_fire > 0",
+                "(f3veg100 != 1200 || f3veg100 != 2700 || f3veg100 != 3300 || f3veg100 != 1100 || f3veg100 != 1300 || f3veg100 != 1900 || f3veg100 != 2900 || f3veg100 != 3800)"
+              ],
+              "global_thresholds": []
+            },
+            {
               "long_question_text": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "scenario_priorities": [
