@@ -526,6 +526,20 @@ get_stand_thresholds <- function(scenario) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
+  if (length(configuration$stand_thresholds) > 0) {
+    all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
+  }
+
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
+}
+
+get_global_thresholds <- function(scenario) {
+  all_thresholds <- c()
+  configuration <- get_configuration(scenario)
+
   if (!is.null(configuration$max_slope)) {
     max_slope <- get_max_slope(configuration)
     all_thresholds <- c(all_thresholds, max_slope)
@@ -534,10 +548,6 @@ get_stand_thresholds <- function(scenario) {
   if (!is.null(configuration$min_distance_from_road)) {
     distance_to_roads <- get_distance_to_roads(configuration)
     all_thresholds <- c(all_thresholds, distance_to_roads)
-  }
-
-  if (length(configuration$stand_thresholds) > 0) {
-    all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
 
   if (length(all_thresholds) > 0) {
@@ -601,8 +611,9 @@ call_forsys <- function(
   max_area_project <- max_treatment_area / number_of_projects
 
   stand_thresholds <- get_stand_thresholds(scenario)
-
-  log_info(paste("Thresholds configured:", stand_thresholds))
+  global_thresholds <- get_global_thresholds(scenario)
+  log_info(paste("Stand Thresholds configured:", stand_thresholds))
+  log_info(paste("Global Thresholds configured:", global_thresholds))
 
   export_input(scenario, stand_data)
 
@@ -617,6 +628,7 @@ call_forsys <- function(
     stand_area_field = "area_acres",
     stand_id_field = "stand_id",
     stand_threshold = stand_thresholds,
+    global_threshold = global_thresholds,
     run_with_patchmax = TRUE,
     patchmax_proj_size_min = min_area_project,
     patchmax_proj_size = max_area_project,
