@@ -23,7 +23,7 @@ def handle(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("conditions", "0008_auto_20231128"),
+        ("conditions", "0008_auto_20231128_1346"),
     ]
 
     operations = [migrations.RunPython(handle)]
