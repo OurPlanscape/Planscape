@@ -80,7 +80,7 @@
                   "hazard"
                 ],
                 "metrics": [
-                  "slope",
+                  "wui",
                   "probability_of_fire_severity_high",
                   "structure_exposure",
                   "damage_potential_wui",
@@ -98,7 +98,7 @@
                 ]
               },
               "stand_thresholds": [
-                "(slope == 1 || slope == 2)",
+                "(wui == 1 || wui == 2)",
                 "total_fuel_exposed_to_fire > 0",
                 "probability_of_fire_severity_high > 0",
                 "structure_exposure > 0",
