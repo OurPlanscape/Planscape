@@ -3880,7 +3880,7 @@
                   "data_provider": "SIG-GIS",
                   "data_units": "",
                   "max_value": 2,
-                  "metric_name": "slope",
+                  "metric_name": "wui",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forsys/wui.tif",
                   "raw_layer": "",
