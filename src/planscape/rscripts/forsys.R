@@ -583,11 +583,14 @@ call_forsys <- function(
   if (length(priorities$condition_name) > 1) {
     weights <- get_weights(priorities, configuration)
     log_info("combining priorities")
-    stand_data <- stand_data %>% forsys::combine_priorities(
-      fields = priorities$condition_name,
-      weights = weights,
-      new_field = "priority"
-    )
+    stand_data <- stand_data %>% 
+      forsys::calculate_spm(fields = priorities$condition_name) %>%
+      forsys::calculate_pcp(fields = priorities$condition_name) %>%
+      forsys::combine_priorities(
+        fields = paste0(priorities$condition_name, "_SPM"),
+        weights = weights,
+        new_field = "priority"
+      )
     scenario_priorities <- c("priority")
   } else {
     log_info("running with single priority")
