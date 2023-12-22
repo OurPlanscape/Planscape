@@ -1,4 +1,10 @@
-import { Feature, FeatureCollection, MultiPolygon, Polygon } from 'geojson';
+import {
+  Feature,
+  FeatureCollection,
+  MultiPolygon,
+  Polygon,
+  Position,
+} from 'geojson';
 import * as L from 'leaflet';
 import booleanWithin from '@turf/boolean-within';
 import booleanIntersects from '@turf/boolean-intersects';
@@ -17,9 +23,36 @@ export function checkIfAreaInBoundaries(
   boundaries: Feature
 ): boolean {
   let overlappingAreas = area.features.map((feature) => {
+    // if we want to allow multipolygons we need to transform them to polygons
+    // to validate if in area.
+    // if (feature.geometry.type === 'MultiPolygon') {
+    //   return checkIfMultipolygonOverlaps(
+    //     feature as Feature<MultiPolygon>,
+    //     boundaries
+    //   );
+    // }
     return !booleanWithin(feature, boundaries);
   });
   return !overlappingAreas.some((overlap) => overlap);
+}
+
+// @ts-ignore
+function checkIfMultipolygonOverlaps(
+  feature: Feature<MultiPolygon>,
+  boundaries: Feature
+) {
+  const overlap = feature.geometry.coordinates.some((coord) => {
+    const newFeature: GeoJSON.Feature = {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: coord,
+      },
+      properties: {},
+    };
+    return !booleanWithin(newFeature, boundaries);
+  });
+  return overlap;
 }
 
 export function areaOverlaps(
@@ -143,4 +176,17 @@ export function defaultMapConfigsDictionary(): Record<Region, MapConfig[]> {
       defaultMapConfig(),
     ],
   };
+}
+
+export function transformCoordToLayer(coord: Position[][]) {
+  const newFeature: GeoJSON.Feature = {
+    type: 'Feature',
+    geometry: {
+      type: 'Polygon',
+      coordinates: coord,
+    },
+    properties: {},
+  };
+
+  return new L.GeoJSON(newFeature);
 }

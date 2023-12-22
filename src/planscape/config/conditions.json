@@ -362,7 +362,7 @@
                 {
                   "display_name": "Marbled Murrelet Nesting Habitat",
                   "data_provider": "Regional Ecosystem Office - Northwest Forest Plan",
-                  "data_units": "Binary",
+                  "data_units": "Relative Suitability",
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_nesting_habitat",
                   "min_value": 0,
@@ -3863,11 +3863,24 @@
               "display": false,
               "metrics": [
                 {
+                  "display_name": "Vegetation Types",
+                  "data_provider": "California Department of Fish and Wildlife CWHR",
+                  "data_units": "",
+                  "metric_name": "f3veg100",
+                  "max_value": 4900,
+                  "min_value": 100,
+                  "raw_data_download_path": "sierra-nevada/forsys/f3veg100.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
                   "display_name": "Wildland Urban Interface",
                   "data_provider": "SIG-GIS",
                   "data_units": "",
                   "max_value": 2,
-                  "metric_name": "slope",
+                  "metric_name": "wui",
                   "min_value": 0,
                   "raw_data_download_path": "sierra-nevada/forsys/wui.tif",
                   "raw_layer": "",

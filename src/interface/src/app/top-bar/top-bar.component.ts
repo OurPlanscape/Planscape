@@ -1,10 +1,8 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 
 import { AuthService } from '../services';
-import { AccountDialogComponent } from '../account-dialog/account-dialog.component';
 
 @Component({
   selector: 'app-top-bar',
@@ -29,7 +27,7 @@ export class TopBarComponent implements OnInit {
       if (user) {
         return user.firstName || user.username;
       } else {
-        return 'Guest';
+        return 'Sign In';
       }
     })
   );
@@ -40,16 +38,11 @@ export class TopBarComponent implements OnInit {
 
   constructor(
     private authService: AuthService,
-    private dialog: MatDialog,
     private router: Router
   ) {}
 
   ngOnInit(): void {
     this.router.routeReuseStrategy.shouldReuseRoute = () => false;
-  }
-  /** Opens the account management dialog. */
-  openAccountDialog() {
-    this.dialog.open(AccountDialogComponent);
   }
 
   logout() {

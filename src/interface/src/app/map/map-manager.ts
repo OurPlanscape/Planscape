@@ -34,6 +34,7 @@ import {
   checkIfAreaInBoundaries,
   createMultiPolygonFeatureCollection,
   regionMapCenters,
+  transformCoordToLayer,
 } from './map.helper';
 import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
 import { createAndAddLegend } from './map.legends';
@@ -203,16 +204,28 @@ export class MapManager {
    * Adds a GeoJSON to the drawing layer.
    * @param area: The geojson of the area to add to the drawing layer.
    */
-  addGeoJsonToDrawing(area: GeoJSON.GeoJSON) {
+  addGeoJsonToDrawing(area: GeoJSON.GeoJSON, map: Map) {
     L.geoJSON(area, {
       style: (_) => DRAWING_STYLES,
       pmIgnore: false,
-      onEachFeature: (_, layer) => {
-        layer.addTo(this.drawingLayer);
-        this.addClonedPolygons(layer);
-        layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+      onEachFeature: (feature, layer) => {
+        if (feature.geometry.type === 'MultiPolygon') {
+          feature.geometry.coordinates.forEach((coord) => {
+            const newLayer = transformCoordToLayer(coord);
+            newLayer.addTo(this.drawingLayer);
+            this.addClonedPolygons(newLayer);
+            newLayer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+          });
+        } else {
+          layer.addTo(this.drawingLayer);
+          this.addClonedPolygons(layer);
+          layer.on('pm:edit', ({ layer }) => this.editHandler(layer));
+        }
       },
     });
+
+    map.instance?.fitBounds(this.drawingLayer.getBounds());
+
     this.polygonsCreated$.next(true);
   }
 

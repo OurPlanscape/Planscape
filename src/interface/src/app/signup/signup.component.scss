@@ -1,3 +1,6 @@
+@import '../../styles/colors';
+@import '../../styles/mixins';
+
 .signup-root {
   display: flex;
   height: 100%;
@@ -5,40 +8,37 @@
 
 .info-card-container {
   background-image: url('/assets/jpg/planscape-background.jpg');
-  
+  @include public-sans();
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;
   width: 50%;
 }
 
-.info-card {
-  align-items: stretch;
-  background-color: white;
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-  justify-content: center;
-  margin: auto 100px;
-  padding: 50px;
-}
-
-h3 {
-  font-family: 'Public Sans', 'Roboto';
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 24px;
-}
-
 .signup-form-container {
   align-items: center;
-  background-color: white;
+  background-color: $color-soft-purple;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 145px 120px 120px 82px;
+  padding: 3% 0px 40px 0px;
   width: 50%;
+  background-image: url('/assets/svg/waves-large.svg');
+  background-position: bottom right;
+  background-repeat: no-repeat;
+  background-size: 50%;
+}
+
+.signup-form-subcontainer {
+  width: 60%;
+}
+
+.planscape-color-logo {
+  margin-bottom: 1em;
+  margin-left: auto;
+  margin-right: auto;
+  height: 42px;
+  width: 246px;
 }
 
 .signup-form {
@@ -46,20 +46,23 @@ h3 {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  margin: auto;
-  width: 300px;
+  background-color: white;
+  padding: 20px 60px 40px 60px;
+  border: 1px black solid;
+  border-color: $color-original-purple;
+  border-radius: 8px;
+  box-shadow: 0px 4px 4px 0px $color-drop-shadow;
+}
+
+.button-row {
+  display:flex;
+  width: 100%;
 }
 
 h1 {
-  font-family: 'Roboto';
-  font-size: 24px;
-  font-weight: 500;
-  line-height: 32px;
-
-  &.signup-title {
-    margin-bottom: 48px;
-    text-align: center;
-  }
+  @include h1();
+  text-align: center;
+  color: $color-dark-gray;
 }
 
 mat-form-field {
@@ -68,30 +71,37 @@ mat-form-field {
 
 button {
   margin-bottom: 5px;
-  width: 100%;
 }
 
-.section-dots {
-  bottom: 40px;
-  box-sizing: border-box;
-  display: flex;
-  gap: 12px;
-  margin: 0px auto;
-  position: absolute;
-}
-
-.section-dot {
-  background-color: #c4c7c5;
-  border-radius: 5px;
-  height: 10px;
-  width: 10px;
-
-  &.selected {
-    background-color: #444746;
-  }
+.create-button {
+  @include standard-button();
+  background-color: $color-standard-blue;
+  border: 1px $color-dark-gray solid;
+  margin-left: auto;
+  margin-right: auto;
+  width: 200px;
 }
 
 .post-error-option {
   padding: 2em;
   text-align: center;
+}
+
+.standard-label {
+  @include standard-label();
+  color: $color-dark-gray;
+}
+
+.required-blurb {
+  @include italic-sm();
+  color: $color-text-gray;
+}
+
+:host ::ng-deep .mat-form-field-outline {
+  background-color: $color-light-gray;
+}
+
+/* field - selected */
+:host ::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
+  background-color: $color-highlight-30pct;
 }

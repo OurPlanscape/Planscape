@@ -28,8 +28,8 @@ export function passwordMustBeNewValidator(
     };
 
     if (
-      currentPassword.length > 0 &&
-      password.length > 0 &&
+      currentPassword?.length > 0 &&
+      password?.length > 0 &&
       currentPassword === password
     ) {
       return passwordMustBeNewError;

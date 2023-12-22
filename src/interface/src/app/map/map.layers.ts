@@ -33,18 +33,17 @@ export function addRegionLayer(map: Map, boundary: any) {
     map.regionLayerRef?.remove();
   }
   map.regionLayerRef = createRegionLayer(boundary);
-  map.regionLayerRef.addTo(map.instance!);
 }
 
 export function showRegionLayer(map: Map) {
   if (map.regionLayerRef) {
-    map.regionLayerRef.setStyle({ opacity: 1 });
+    map.regionLayerRef.addTo(map.instance!);
   }
 }
 
 export function hideRegionLayer(map: Map) {
   if (map.regionLayerRef) {
-    map.regionLayerRef.setStyle({ opacity: 0 });
+    map.regionLayerRef.removeFrom(map.instance!);
   }
 }
 
@@ -53,7 +52,7 @@ function createRegionLayer(boundaries: GeoJSON.GeoJSON) {
     style: (_) => ({
       color: '#93b3ff',
       weight: 4,
-      opacity: 0,
+      opacity: 1,
       fillColor: '#000000',
       fillOpacity: 0,
     }),

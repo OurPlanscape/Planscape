@@ -4,7 +4,7 @@ Declare mixins based on styleguide and apply to classes
  */
 
 @mixin public-sans() {
-  font-family: Public Sans;
+  font-family: 'Public Sans';
 }
 
 @mixin button-text {
@@ -46,6 +46,13 @@ Declare mixins based on styleguide and apply to classes
   letter-spacing: 0px;
 }
 
+@mixin standard-input-label {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+}
+
 @mixin standard-label {
   @include public-sans();
   font-size: 18px;
@@ -84,28 +91,17 @@ Declare mixins based on styleguide and apply to classes
 
 @mixin h3 {
   @include public-sans();
-  font-weight: 500;
   font-size: 22px;
-  line-height: 24px;
-  font-size: 22px;
-  font-style: normal;
   font-weight: 600;
-  line-height: 32px;
+  line-height: 24px;
 }
 
 @mixin h4 {
   @include public-sans();
   font-size: 18px;
   font-style: normal;
-  font-weight: 600;
+  font-weight: normal;
   line-height: 32px;
-}
-
-@mixin button-text {
-  @include public-sans();
-  font-weight: semibold;
-  font-size: 1rem;
-  line-height: 1rem;
 }
 
 @mixin top-level-label {
@@ -127,7 +123,7 @@ Declare mixins based on styleguide and apply to classes
   @include public-sans();
   font-size: 1rem;
   font-weight: 400;
-  line-height: 1.625 rem;
+  line-height: 1.625rem;
 }
 
 @mixin p {
@@ -135,8 +131,9 @@ Declare mixins based on styleguide and apply to classes
   font-size: 16px;
   font-style: normal;
   font-weight: 400;
-  line-height: 26px
+  line-height: 26px;
 }
+
 
 @mixin standard-button {
   @include button-text();
@@ -148,4 +145,12 @@ Declare mixins based on styleguide and apply to classes
 @mixin button-disabled {
   background-color: $color-light-gray;
   color: $color-text-gray;
+  border: 1px $color-text-gray solid;
+}
+
+@mixin button-text {
+  @include public-sans();
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1rem;
 }
