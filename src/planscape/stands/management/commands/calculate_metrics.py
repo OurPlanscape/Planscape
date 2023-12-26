@@ -65,6 +65,36 @@ class Command(BaseCommand):
 
         parser.add_argument("--force-yes", action="store_true")
 
+        parser.add_argument(
+            "--only-script",
+            action="store_true",
+            help="If true, this will only generate the output script.",
+        )
+
+    def create_load_script(self, output_folder):
+        path = Path(output_folder)
+        commands = [
+            """TRUNCATE stands_standmetric;
+ALTER SEQUENCE stands_standmetric_id_seq RESTART WITH 1;
+        """
+        ]
+
+        csv_files = path.glob("*.csv")
+        for f in csv_files:
+            commands.append(
+                f"""COPY stands_standmetric (stand_id, condition_id, min, max, avg, sum, count, majority, minority)
+FROM '{f.resolve()}'
+WITH (
+    delimiter ',',
+    format csv,
+    header on
+);
+"""
+            )
+        script_destination = path / "load.sql"
+        with open(script_destination, "w") as output_script:
+            output_script.writelines(commands)
+
     def get_condition_extent(self, raster_path):
         with rasterio.open(raster_path, "r") as rast:
             bounds = rast.bounds
@@ -158,53 +188,61 @@ class Command(BaseCommand):
             discover_region = options.get("discover")
             size = options.get("size")
             output_folder = options.get("output_folder")
+            only_script = options.get("only_script")
             conditions = self.get_conditions(condition_ids, discover_region)
             real_start = time.time()
-            for condition in conditions:
-                start_condition = time.time()
-                raster_path = get_raster_path(condition)
-                stands = self.get_stands_queryset(raster_path=raster_path, size=size)
-                condition_id = condition.pk
-                region = condition.condition_dataset.region_name
-                if stands.count() <= 0:
+            if not only_script:
+                for condition in conditions:
+                    start_condition = time.time()
+                    raster_path = get_raster_path(condition)
+                    stands = self.get_stands_queryset(
+                        raster_path=raster_path, size=size
+                    )
+                    condition_id = condition.pk
+                    region = condition.condition_dataset.region_name
+                    if stands.count() <= 0:
+                        self.stdout.write(
+                            f"[OK] Finished {condition_id}: 0 seconds - no raster data."
+                        )
+                        continue
                     self.stdout.write(
-                        f"[OK] Finished {condition_id}: 0 seconds - no raster data."
+                        f"[OK] Processing {condition_id} with {stands.count()} stands."
                     )
-                    continue
-                self.stdout.write(
-                    f"[OK] Processing {condition_id} with {stands.count()} stands."
-                )
-                stand_data = stands.values_list("id", "geom").iterator(chunk_size=1000)
-
-                if not raster_path.exists():
-                    self.stdout.write("[FAIL] Raster does not exists in disk")
-                    continue
-
-                outfile = self.get_outfile_path(
-                    output_folder,
-                    region=region,
-                    condition_id=condition_id,
-                    stand_size=size,
-                )
-                with multiprocessing.Pool(max_workers) as pool:
-                    data = zip(
-                        stand_data,
-                        repeat(condition_id),
-                        repeat(raster_path),
+                    stand_data = stands.values_list("id", "geom").iterator(
+                        chunk_size=1000
                     )
-                    with open(outfile, "w") as out:
-                        results = pool.starmap_async(
-                            calculate_metric,
-                            data,
-                        )
-                        out.writelines(
-                            "stand_id,condition_id,min,max,avg,sum,count,majority,minority\n"
-                        )
-                        out.writelines([r for r in results.get() if r])
 
-                end_condition = time.time()
-                self.stdout.write(
-                    f"[OK] CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
-                )
-            real_end = time.time()
-            self.stdout.write(f"[OK] TOTAL RUNTIME {real_end - real_start}")
+                    if not raster_path.exists():
+                        self.stdout.write("[FAIL] Raster does not exists in disk")
+                        continue
+
+                    outfile = self.get_outfile_path(
+                        output_folder,
+                        region=region,
+                        condition_id=condition_id,
+                        stand_size=size,
+                    )
+                    with multiprocessing.Pool(max_workers) as pool:
+                        data = zip(
+                            stand_data,
+                            repeat(condition_id),
+                            repeat(raster_path),
+                        )
+                        with open(outfile, "w") as out:
+                            results = pool.starmap_async(
+                                calculate_metric,
+                                data,
+                            )
+                            out.writelines(
+                                "stand_id,condition_id,min,max,avg,sum,count,majority,minority\n"
+                            )
+                            out.writelines([r for r in results.get() if r])
+
+                    end_condition = time.time()
+                    self.stdout.write(
+                        f"[OK] CONDITION RUNTIME {condition_id} {end_condition - start_condition}"
+                    )
+                real_end = time.time()
+                self.stdout.write(f"[OK] TOTAL RUNTIME {real_end - real_start}")
+
+            self.create_load_script(output_folder)
