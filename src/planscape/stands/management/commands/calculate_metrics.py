@@ -1,6 +1,7 @@
 import json
 import multiprocessing
 from pathlib import Path
+import re
 import time
 from itertools import repeat
 
@@ -74,9 +75,12 @@ class Command(BaseCommand):
     def create_load_script(self, output_folder):
         path = Path(output_folder)
         commands = list()
-
+        conditions = list()
         csv_files = path.glob("*.csv")
+
         for f in csv_files:
+            condition_id = re.findall(r"\d+", f.name)[0]
+            conditions.append(condition_id)
             commands.append(
                 f"""COPY stands_standmetric (stand_id, condition_id, min, max, avg, sum, count, majority, minority)
 FROM '{f.resolve()}'
@@ -87,9 +91,13 @@ WITH (
 );
 """
             )
+        conditions = set(conditions)
+        for c in conditions:
+            commands.append(f"DELETE stands_standmetric WHERE condition_id = {c};\n")
+
         script_destination = path / "load.sql"
         with open(script_destination, "w") as output_script:
-            output_script.writelines(commands)
+            output_script.writelines(commands[::-1])
 
     def get_condition_extent(self, raster_path):
         with rasterio.open(raster_path, "r") as rast:
