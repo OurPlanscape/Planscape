@@ -73,11 +73,7 @@ class Command(BaseCommand):
 
     def create_load_script(self, output_folder):
         path = Path(output_folder)
-        commands = [
-            """TRUNCATE stands_standmetric;
-ALTER SEQUENCE stands_standmetric_id_seq RESTART WITH 1;
-        """
-        ]
+        commands = list()
 
         csv_files = path.glob("*.csv")
         for f in csv_files:
