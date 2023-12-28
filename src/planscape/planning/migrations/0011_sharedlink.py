@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
                 ),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
-                    "generated_link",
+                    "link_code",
                     models.CharField(
                         default=planning.models.SharedLink.generate_random_string,
                         max_length=8,

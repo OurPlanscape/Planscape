@@ -117,8 +117,8 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
 
 class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
-    def generate_random_string(length):
-        characters = string.ascii_letters  # Combine lowercase and uppercase letters
+    def generate_random_string(length=8):
+        characters = string.ascii_letters
         return "".join(random.choice(characters) for _ in range(length))
 
     user = models.ForeignKey(
@@ -128,7 +128,7 @@ class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
         null=True,
     )
 
-    generated_link = models.CharField(max_length=8, default=generate_random_string)
+    link_code = models.CharField(max_length=8, default=generate_random_string)
     link_state = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     clicked_count = models.PositiveIntegerField(default=0)

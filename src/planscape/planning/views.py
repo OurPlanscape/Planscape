@@ -6,18 +6,27 @@ from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
+
 from django.http import (
     HttpRequest,
     HttpResponse,
     HttpResponseBadRequest,
+    Http404,
     JsonResponse,
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
 from pathlib import Path
-from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from planning.models import (
+    PlanningArea,
+    Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
+    SharedLink,
+)
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
@@ -27,6 +36,7 @@ from planning.services import (
     validate_scenario_treatment_ratio,
     zip_directory,
 )
+from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
 
@@ -749,3 +759,47 @@ def get_treatment_goals_config_for_region(params: QueryDict):
 def treatment_goals_config(request: HttpRequest) -> HttpResponse:
     treatment_goals = get_treatment_goals_config_for_region(request.GET)
     return JsonResponse(treatment_goals, safe=False)
+
+
+#### SHARED LINK Handlers ####
+def get_shared_link(request: HttpRequest, link_id: int , link_code: str) -> HttpResponse:
+    try:
+        link_obj = SharedLink.objects.get(link_code=link_code, id=link_id)
+    except SharedLink.DoesNotExist:
+    # Handle the case where the object doesn't exist
+       raise Http404("This link does not exist")
+
+    return JsonResponse(link_obj.link_state, safe=False)
+
+
+def create_shared_link(request: HttpRequest) -> HttpResponse:
+    try:
+        # Check that the user is logged in.
+        user = _get_user(request)
+        if user is None:
+            raise ValueError("User must be logged in.")
+
+        # read the JSON config that stores the frontend state
+        body = json.loads(request.body)
+        view_state = body.get("view_state")
+        if view_state is None:
+            raise ValueError("Must specify the state of the map view.")
+
+        # Create the planning area
+        shared_link = SharedLink.objects.create(
+            user=user,
+            link_state=view_state,
+        )
+        shared_link.save()
+        referrer = request.META.get("HTTP_ORIGIN")
+        path_to_app = "planscape-backend/planning/"
+        full_url = urljoin(referrer, f"{path_to_app}shared_link/{shared_link.pk}/{shared_link.link_code}")
+
+        return HttpResponse(
+            json.dumps({"link_id": shared_link.pk, 
+                        "link_code": shared_link.link_code, 
+                        "full_url": full_url}), content_type="application/json"
+        )
+
+    except Exception as e:
+        return HttpResponseBadRequest("Error in create: " + str(e))

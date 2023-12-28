@@ -1913,3 +1913,100 @@ class DeleteScenarioTest(TransactionTestCase):
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
         self.assertRegex(str(response.content), r"Must specify scenario id")
+
+
+class CreateSharedLinkTest(TransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create(username="testuser")
+        self.user.set_password("12345")
+        self.user.save()
+
+    def test_create_shared_link(self):
+        view_state = {
+            "page_attributes": ["a", "b", "c", "d"],
+            "control_values": [
+                {"question1": "yes"},
+                {"question2": "no"},
+                {"question3": "maybe"},
+            ],
+            "long": "-100.00",
+            "lat": "-100.01",
+            "zoom": "+500",
+        }
+        view_json = json.dumps(view_state)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("planning:create_shared_link"),
+            {"view_state": view_json},
+            content_type="application/json",
+        )
+        json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(isinstance(json_response["link_id"], int), "Link id should be an integer")
+        self.assertTrue(
+            json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
+        )
+
+    def test_retrieving_new_link(self):
+        view_state = {
+            "page_attributes": ["a", "b", "c", "d"],
+            "control_values": [
+                {"question1": "yes"},
+                {"question2": "no"},
+                {"question3": "maybe"},
+            ],
+            "long": "-100.00",
+            "lat": "-100.01",
+            "zoom": "+500",
+        }
+        view_json = json.dumps(view_state)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("planning:create_shared_link"),
+            {"view_state": view_json},
+            content_type="application/json",
+        )
+
+        json_response = json.loads(response.content)
+        link_url = json_response["full_url"]
+
+        shared_link_response = self.client.post(
+            link_url,
+            content_type="application/json",
+        )
+        print(f"Link response is: {shared_link_response}")
+
+    def test_retrieving_bad_link(self):
+        view_state = {"test-state": "nothing here, really"}
+        view_json = json.dumps(view_state)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("planning:create_shared_link"),
+            {"view_state": view_json},
+            content_type="application/json",
+        )
+        json_response = json.loads(response.content)
+        link_url = json_response["full_url"]
+        shared_link_response = self.client.post(
+            link_url,
+            content_type="application/json",
+        )
+        print(f"Link response is: {shared_link_response}")
+
+    def test_retrieving_malformed_link(self):
+        view_state = {"test-state": "nothing here, really"}
+        view_json = json.dumps(view_state)
+        self.client.force_login(self.user)
+        response = self.client.post(
+            reverse("planning:create_shared_link"),
+            {"view_state": view_json},
+            content_type="application/json",
+        )
+        json_response = json.loads(response.content)
+        link_url = json_response["full_url"]
+        shared_link_response = self.client.post(
+            link_url,
+            content_type="application/json",
+        )
+        print(f"Link response is: {shared_link_response}")
+
