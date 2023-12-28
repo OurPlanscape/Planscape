@@ -137,6 +137,11 @@ DATABASES = {
     }
 }
 
+CRONJOBS = [
+    ('0 0 * * *', 'planning.cron.delete_old_shared_links'),  # Runs at midnight daily
+]
+
+SHARED_LINKS_NUM_DAYS_VALID=60
 
 # Locking down API calls to only itself.
 LOCKDOWN_ENABLED = False
