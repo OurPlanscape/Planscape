@@ -17,10 +17,9 @@
 }
 
 .logo-container {
-  width: 250px;
-  margin-left: auto;
-  margin-right: auto;
-  height: 80px;
+
+    display: flex;
+    justify-content: center;
 }
 
 .learn-more-title {
