@@ -2,6 +2,7 @@ dj-rest-auth~=3.0.0
 django~=4.1.1
 django-allauth~=0.53.1
 django-cors-headers
+django-crontab
 django-filter~=21.1.0
 django-leaflet
 django-lockdown
