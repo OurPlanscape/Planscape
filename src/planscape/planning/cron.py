@@ -5,6 +5,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 def delete_old_shared_links(interval=settings.SHARED_LINKS_NUM_DAYS_VALID):
     expire_date = timezone.now() - timezone.timedelta(days=interval)
     links_to_delete = SharedLink.objects.filter(created_at__lte=expire_date)

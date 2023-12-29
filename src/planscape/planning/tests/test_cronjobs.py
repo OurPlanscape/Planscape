@@ -12,6 +12,7 @@ from planning.models import SharedLink
 import planning.cron as cron
 from django.utils import timezone
 
+
 class DeleteOldLinksTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
@@ -24,19 +25,19 @@ class DeleteOldLinksTest(TransactionTestCase):
         two_years_ago = timezone.now() - timezone.timedelta(days=730)
         link_today = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok":"test"}),
+            link_state=json.dumps({"ok": "test"}),
         )
         link_one_month_old = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok":"test"}),
+            link_state=json.dumps({"ok": "test"}),
         )
         link_two_months_old = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok":"test"}),
+            link_state=json.dumps({"ok": "test"}),
         )
         link_two_years_old = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok":"test"}),
+            link_state=json.dumps({"ok": "test"}),
         )
         link_today.save()
         link_one_month_old.created_at = one_month_ago
@@ -48,7 +49,6 @@ class DeleteOldLinksTest(TransactionTestCase):
 
         self.assertEqual(SharedLink.objects.count(), 4)
 
-        cron.delete_old_shared_links(60) # this should delete two of the links
+        cron.delete_old_shared_links(60)  # this should delete two of the links
 
         self.assertEqual(SharedLink.objects.count(), 2)
-

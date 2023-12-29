@@ -1942,7 +1942,9 @@ class CreateSharedLinkTest(TransactionTestCase):
         )
         json_response = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(isinstance(json_response["link_id"], int), "Link id should be an integer")
+        self.assertTrue(
+            isinstance(json_response["link_id"], int), "Link id should be an integer"
+        )
         self.assertTrue(
             json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
         )
@@ -2009,4 +2011,3 @@ class CreateSharedLinkTest(TransactionTestCase):
             content_type="application/json",
         )
         print(f"Link response is: {shared_link_response}")
-

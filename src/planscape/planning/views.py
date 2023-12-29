@@ -762,12 +762,12 @@ def treatment_goals_config(request: HttpRequest) -> HttpResponse:
 
 
 #### SHARED LINK Handlers ####
-def get_shared_link(request: HttpRequest, link_id: int , link_code: str) -> HttpResponse:
+def get_shared_link(request: HttpRequest, link_id: int, link_code: str) -> HttpResponse:
     try:
         link_obj = SharedLink.objects.get(link_code=link_code, id=link_id)
     except SharedLink.DoesNotExist:
-    # Handle the case where the object doesn't exist
-       raise Http404("This link does not exist")
+        # Handle the case where the object doesn't exist
+        raise Http404("This link does not exist")
 
     return JsonResponse(link_obj.link_state, safe=False)
 
@@ -793,12 +793,20 @@ def create_shared_link(request: HttpRequest) -> HttpResponse:
         shared_link.save()
         referrer = request.META.get("HTTP_ORIGIN")
         path_to_app = "planscape-backend/planning/"
-        full_url = urljoin(referrer, f"{path_to_app}shared_link/{shared_link.pk}/{shared_link.link_code}")
+        full_url = urljoin(
+            referrer,
+            f"{path_to_app}shared_link/{shared_link.pk}/{shared_link.link_code}",
+        )
 
         return HttpResponse(
-            json.dumps({"link_id": shared_link.pk, 
-                        "link_code": shared_link.link_code, 
-                        "full_url": full_url}), content_type="application/json"
+            json.dumps(
+                {
+                    "link_id": shared_link.pk,
+                    "link_code": shared_link.link_code,
+                    "full_url": full_url,
+                }
+            ),
+            content_type="application/json",
         )
 
     except Exception as e:
