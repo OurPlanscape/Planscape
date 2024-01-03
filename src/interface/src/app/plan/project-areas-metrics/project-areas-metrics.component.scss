@@ -56,4 +56,13 @@
   color: #4965c7;
 }
 
+@media print {
+  :host {
+    border: none;
+    box-shadow: none;
+  }
+  mat-icon {
+    display: none;
+  }
+}
 
