@@ -49,7 +49,6 @@ planscape_apps = [
     "attributes",
     "boundary",
     "conditions",
-    "existing_projects",
     "planning",
     "stands",
     "users",
