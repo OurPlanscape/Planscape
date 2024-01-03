@@ -1,4 +1,3 @@
-<button (click)="addThing()">ADD THING!</button>
 <app-nav-bar
   (goBack)="backHome()"
   [breadcrumbs]="(breadcrumbs$ | async) || []"
@@ -8,7 +7,6 @@
   <app-map-control-panel
     [boundaryConfig]="boundaryConfig$ | async"
     [conditionsConfig$]="conditionsConfig$"
-    [loadingIndicators]="loadingIndicators"
     [mapHasDataLayer]="mapHasDataLayer$ | async"
     [maps]="maps"
     [mapViewOptions]="mapViewOptions$ | async"
@@ -175,7 +173,6 @@
     class="config-summary"
     [boundaryConfig]="boundaryConfig$ | async"
     [conditionsConfig$]="conditionsConfig$"
-    [loadingIndicators]="loadingIndicators"
     [mapHasDataLayer]="mapHasDataLayer$ | async"
     [maps]="maps"
     [mapViewOptions]="mapViewOptions$ | async"></app-map-config-summary>

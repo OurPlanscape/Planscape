@@ -1,5 +1,4 @@
 import * as L from 'leaflet';
-import * as esri from 'esri-leaflet';
 
 import {
   AfterViewInit,
@@ -42,12 +41,7 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeatureService } from '../features/feature.service';
-import {
-  AreaCreationAction,
-  HOVER_STYLES,
-  LEGEND,
-  NORMAL_STYLES,
-} from './map.constants';
+import { AreaCreationAction, LEGEND } from './map.constants';
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -95,11 +89,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   mapManager: MapManager;
   regionRecord: string = '';
-  loadingIndicators: {
-    [layerName: string]: boolean;
-  } = {
-    existing_projects: true,
-  };
+
   selectedAreaCreationAction = AreaCreationAction.NONE;
   showUploader = false;
   drawingLayer: L.GeoJSON | undefined;
@@ -131,7 +121,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   mapHasDataLayer$ = this.selectedMap$.pipe(
     map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
   );
-  existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
@@ -161,22 +150,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         }
       });
 
-    // this.mapService
-    //   .getExistingProjects()
-    //   .pipe(untilDestroyed(this))
-    //   .subscribe((projects: GeoJSON.GeoJSON) => {
-    //     this.existingProjectsGeoJson$.next(projects);
-    //     this.loadingIndicators['existing_projects'] = false;
-    //   });
-
     this.mapManager = new MapManager(
       this.matSnackBar,
       this.maps,
       this.mapViewOptions$,
       this.popupService,
       this.sessionService,
-      this.startLoadingLayerCallback.bind(this),
-      this.doneLoadingLayerCallback.bind(this),
       this.http
     );
     this.mapManager.polygonsCreated$
@@ -198,45 +177,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           this.maps.map((map: Map) => map.config)
         );
       });
-  }
-
-  addThing() {
-    const map = this.maps[0].instance;
-    if (map) {
-      esri
-        .featureLayer({
-          url: 'https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2',
-          simplifyFactor: 0.5,
-          precision: 4,
-          where: "PROJECT_STATUS='Active'",
-          style: (feature) => {
-            return {
-              color: '#404040',
-              fillColor: '#303030',
-            };
-          },
-          onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-            layer.bindTooltip(
-              this.popupService.makeDetailsPopup(
-                feature.properties.PROJECT_NAME
-              ),
-              {
-                sticky: true,
-              }
-            );
-            // Exact type of layer (polygon or line) is not known
-            if ((layer as any).setStyle) {
-              layer.addEventListener('mouseover', (_) =>
-                (layer as L.Polygon).setStyle(HOVER_STYLES)
-              );
-              layer.addEventListener('mouseout', (_) =>
-                (layer as L.Polygon).setStyle(NORMAL_STYLES)
-              );
-            }
-          },
-        })
-        .addTo(map);
-    }
   }
 
   ngDoCheck(): void {
@@ -378,7 +318,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.mapManager.initLeafletMap(
       map,
       id,
-      this.existingProjectsGeoJson$,
       this.createDetailCardCallback.bind(this),
       this.getBoundaryLayerVector.bind(this)
     );
@@ -427,14 +366,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.mapNameplateWidths[this.maps.indexOf(map)].next(
       getMapNameplateWidth(map)
     );
-  }
-
-  private startLoadingLayerCallback(layerName: string) {
-    this.loadingIndicators[layerName] = true;
-  }
-
-  private doneLoadingLayerCallback(layerName: string) {
-    this.loadingIndicators[layerName] = false;
   }
 
   private createDetailCardCallback(
