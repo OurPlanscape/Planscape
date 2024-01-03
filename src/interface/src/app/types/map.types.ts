@@ -1,6 +1,7 @@
 import * as L from 'leaflet';
 
 import { BaseLayerType, BoundaryConfig, DataLayerConfig } from '../types';
+import * as esri from 'esri-leaflet';
 
 export interface Map {
   id: string;
@@ -9,7 +10,7 @@ export interface Map {
   instance?: L.Map | undefined;
   baseLayerRef?: L.Layer | undefined;
   boundaryLayerRef?: L.Layer | undefined;
-  existingProjectsLayerRef?: L.Layer | undefined;
+  existingProjectsLayerRef?: esri.FeatureLayer | undefined;
   dataLayerRef?: L.TileLayer | undefined;
   clonedDrawingRef?: L.FeatureGroup | undefined;
   drawnPolygonLookup?: { [key: string]: L.Layer };

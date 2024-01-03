@@ -1,4 +1,5 @@
 import * as L from 'leaflet';
+
 import {
   AfterViewInit,
   ApplicationRef,
@@ -88,11 +89,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   mapManager: MapManager;
   regionRecord: string = '';
-  loadingIndicators: {
-    [layerName: string]: boolean;
-  } = {
-    existing_projects: true,
-  };
+
   selectedAreaCreationAction = AreaCreationAction.NONE;
   showUploader = false;
   drawingLayer: L.GeoJSON | undefined;
@@ -124,7 +121,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   mapHasDataLayer$ = this.selectedMap$.pipe(
     map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
   );
-  existingProjectsGeoJson$ = new BehaviorSubject<GeoJSON.GeoJSON | null>(null);
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
@@ -154,22 +150,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         }
       });
 
-    this.mapService
-      .getExistingProjects()
-      .pipe(untilDestroyed(this))
-      .subscribe((projects: GeoJSON.GeoJSON) => {
-        this.existingProjectsGeoJson$.next(projects);
-        this.loadingIndicators['existing_projects'] = false;
-      });
-
     this.mapManager = new MapManager(
       this.matSnackBar,
       this.maps,
       this.mapViewOptions$,
       this.popupService,
       this.sessionService,
-      this.startLoadingLayerCallback.bind(this),
-      this.doneLoadingLayerCallback.bind(this),
       this.http
     );
     this.mapManager.polygonsCreated$
@@ -332,7 +318,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.mapManager.initLeafletMap(
       map,
       id,
-      this.existingProjectsGeoJson$,
       this.createDetailCardCallback.bind(this),
       this.getBoundaryLayerVector.bind(this)
     );
@@ -381,14 +366,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.mapNameplateWidths[this.maps.indexOf(map)].next(
       getMapNameplateWidth(map)
     );
-  }
-
-  private startLoadingLayerCallback(layerName: string) {
-    this.loadingIndicators[layerName] = true;
-  }
-
-  private doneLoadingLayerCallback(layerName: string) {
-    this.loadingIndicators[layerName] = false;
   }
 
   private createDetailCardCallback(

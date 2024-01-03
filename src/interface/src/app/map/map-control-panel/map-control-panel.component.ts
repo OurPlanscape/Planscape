@@ -40,7 +40,6 @@ export class MapControlPanelComponent implements OnInit {
 
   @Input() boundaryConfig: BoundaryConfig[] | null = null;
   @Input() conditionsConfig$!: Observable<ConditionsConfig | null>;
-  @Input() loadingIndicators: { [layerName: string]: boolean } = {};
   @Input() mapHasDataLayer: boolean | null = false;
   @Input() maps: Map[] = [];
   @Input() mapViewOptions: MapViewOptions | null = null;
