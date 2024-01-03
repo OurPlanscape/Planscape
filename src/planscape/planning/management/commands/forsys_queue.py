@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 from planning.models import Scenario, ScenarioResultStatus
 from utils.cli_utils import call_forsys
 from utils.signals import SignalHandler
+from django.conf import settings
 
 
 class Command(BaseCommand):
@@ -18,6 +19,12 @@ class Command(BaseCommand):
         self.handler = SignalHandler(signals)
 
     def handle(self, *args: Any, **options: Any) -> str | None:
+        if settings.USE_CELERY_FOR_FORSYS:
+            self.stdout.write(
+                "[FAIL] System is configured to use celery to run forsys. Shutting down."
+            )
+            return
+
         idle_cooldown = options.get("idle_cooldown")
         busy_cooldown = options.get("busy_cooldown")
 
