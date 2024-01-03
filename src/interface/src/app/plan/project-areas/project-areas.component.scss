@@ -60,3 +60,13 @@ tr:nth-child(even):not(.total-row) {
   border-left: 8px solid transparent;
   display: block;
 }
+
+@media print {
+  :host {
+    border: none;
+    box-shadow: none;
+  }
+  mat-icon {
+    display: none;
+  }
+}

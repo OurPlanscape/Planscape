@@ -6,3 +6,9 @@
   justify-content: center;
   gap: 20px;
 }
+
+@media print {
+  .actions {
+    display: none;
+  }
+}
