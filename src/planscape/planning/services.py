@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 import zipfile
 from django.conf import settings
 import fiona
-
+from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices, area_from_size
 
@@ -40,29 +40,32 @@ def get_max_treatable_stand_count(
     return math.floor(max_treatable_area / stand_area)
 
 
+def get_acreage(geometry: GEOSGeometry):
+    CONVERSION_SQM_ACRES = 4046.8564213562374
+    epsg_5070_area = geometry.transform(5070, clone=True).area
+    acres = epsg_5070_area / CONVERSION_SQM_ACRES
+    return acres
+
+
 def validate_scenario_treatment_ratio(
     planning_area: PlanningArea,
     configuration: Dict[str, Any],
 ) -> Tuple[bool, str]:
+    planning_area_acres = get_acreage(planning_area.geometry)
     max_treatable_area = get_max_treatable_area(configuration)
-    max_treatable_stands = get_max_treatable_stand_count(
-        max_treatable_area,
-        configuration.get("stand_size"),
-    )
-    stands = Stand.objects.overlapping(
-        planning_area.geometry,
-        configuration.get("stand_size"),
-    )
-    stand_count = stands.count()
-    ratio = max_treatable_stands / stand_count
+
+    ratio = max_treatable_area / planning_area_acres
 
     if ratio <= 0.2:
-        return (False, "Too few treatable stands for the selected area and stand size.")
+        return (
+            False,
+            f"Acreage of treatment area is {max_treatable_area}, which is less than 20% of planning area.",
+        )
 
     if ratio >= 0.8:
         return (
             False,
-            "Too many treatable stands for the selected area and stand size.",
+            f"Acreage of treatment area is {max_treatable_area}, which is more than 80% of planning area.",
         )
 
     return (True, "Treatment ratio is valid.")
