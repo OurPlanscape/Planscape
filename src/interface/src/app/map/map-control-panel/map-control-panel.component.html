@@ -126,9 +126,6 @@
                     : boundary.boundary_name
                 }}
               </mat-radio-button>
-              <mat-spinner
-                [diameter]="24"
-                *ngIf="loadingIndicators[boundary.boundary_name]"></mat-spinner>
             </div>
           </mat-radio-group>
         </mat-expansion-panel>
@@ -148,9 +145,6 @@
               (change)="toggleExistingProjectsLayer.emit(map)">
               Existing projects
             </mat-checkbox>
-            <mat-spinner
-              [diameter]="24"
-              *ngIf="loadingIndicators['existing_projects']"></mat-spinner>
           </div>
         </mat-expansion-panel>
 

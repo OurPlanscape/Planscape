@@ -49,6 +49,7 @@ import {
   defaultMapConfigsDictionary,
   defaultMapViewOptions,
 } from './map.helper';
+import * as esri from 'esri-leaflet';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -103,7 +104,6 @@ describe('MapComponent', () => {
     const fakeMapService = jasmine.createSpyObj<MapService>(
       'MapService',
       {
-        getExistingProjects: of(fakeGeoJson),
         getRegionBoundary: of(fakeGeoJson),
         getBoundaryShapes: of(fakeLayer),
       },
@@ -211,17 +211,6 @@ describe('MapComponent', () => {
       component.maps.forEach((map: Map) => {
         expect(map.config).toEqual(defaultMapConfig());
       });
-    });
-
-    it('calls the MapService for geojson', () => {
-      const mapServiceStub: MapService =
-        fixture.debugElement.injector.get(MapService);
-
-      // Region highlighting temporarily disabled.
-      // expect(mapServiceStub.getRegionBoundary).toHaveBeenCalledWith(
-      //   Region.SIERRA_NEVADA
-      // );
-      expect(mapServiceStub.getExistingProjects).toHaveBeenCalled();
     });
   });
 
@@ -765,7 +754,12 @@ describe('MapComponent', () => {
             PROJECT_NAME: 'test_project',
           },
         };
-        component.maps[3].existingProjectsLayerRef = L.geoJSON(feature);
+
+        let geo = L.geoJSON(feature);
+        (geo as any)['eachFeature'] = geo.eachLayer;
+
+        component.maps[3].existingProjectsLayerRef =
+          geo as unknown as esri.FeatureLayer;
         component.maps[3].existingProjectsLayerRef.addTo(
           component.maps[3].instance!
         );

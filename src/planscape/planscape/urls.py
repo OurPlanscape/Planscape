@@ -24,7 +24,6 @@ urlpatterns = [
     path("planscape-backend/boundary/", include("boundary.urls")),
     path("planscape-backend/conditions/", include("conditions.urls")),
     path("planscape-backend/planning/", include("planning.urls")),
-    path("planscape-backend/projects/", include("existing_projects.urls")),
     # Auth URLs
     path("planscape-backend/users/", include("users.urls")),
     path(
