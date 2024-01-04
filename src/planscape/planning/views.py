@@ -523,13 +523,6 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
-
-# TODO - when we want to support multiple scenario results for the same scenario:
-# def create_result_for_scenario(request: HttpRequest) -> HttpResponse:
-# def list_results_for_scenario(request: HttpRequest) -> HttpResponse:
-# def get_latest_result_for_scenario
-
-
 def update_scenario(request: HttpRequest) -> HttpResponse:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that
