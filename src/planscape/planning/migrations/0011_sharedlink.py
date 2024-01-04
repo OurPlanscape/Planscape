@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                         max_length=8,
                     ),
                 ),
-                ("link_state", models.JSONField()),
+                ("view_state", models.JSONField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("clicked_count", models.PositiveIntegerField(default=0)),
                 (

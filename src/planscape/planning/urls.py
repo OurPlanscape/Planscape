@@ -75,7 +75,7 @@ urlpatterns = [
         name="create_shared_link",
     ),
     path(
-        "shared_link/<int:link_id>/<str:link_code>",
+        "shared_link/<str:link_code>",
         get_shared_link,
         name="get_shared_link",
     ),

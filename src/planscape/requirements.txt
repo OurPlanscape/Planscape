@@ -31,3 +31,4 @@ black==23.7.0
 humanize==4.8.0
 shapely==2.0.2
 fiona==1.9.5
+shortuuid==1.0.11

@@ -1935,6 +1935,7 @@ class CreateSharedLinkTest(TransactionTestCase):
         }
         view_json = json.dumps(view_state)
         self.client.force_login(self.user)
+        # generate the new link with a 'view-state'
         response = self.client.post(
             reverse("planning:create_shared_link"),
             {"view_state": view_json},
@@ -1942,9 +1943,6 @@ class CreateSharedLinkTest(TransactionTestCase):
         )
         json_response = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(
-            isinstance(json_response["link_id"], int), "Link id should be an integer"
-        )
         self.assertTrue(
             json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
         )
@@ -1963,51 +1961,26 @@ class CreateSharedLinkTest(TransactionTestCase):
         }
         view_json = json.dumps(view_state)
         self.client.force_login(self.user)
+        # generate the new link with a 'view-state'
         response = self.client.post(
             reverse("planning:create_shared_link"),
             {"view_state": view_json},
             content_type="application/json",
         )
-
+        # then fetch the data with the new url
         json_response = json.loads(response.content)
-        link_url = json_response["full_url"]
-
-        shared_link_response = self.client.post(
-            link_url,
+        link_code = json_response["link_code"]
+        shared_link_response = self.client.get(
+            reverse("planning:get_shared_link", kwargs={"link_code": link_code}),
             content_type="application/json",
         )
-        print(f"Link response is: {shared_link_response}")
+        json_get_response = json.loads(shared_link_response.content)
+        self.assertJSONEqual(json_get_response, view_state)
 
     def test_retrieving_bad_link(self):
-        view_state = {"test-state": "nothing here, really"}
-        view_json = json.dumps(view_state)
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_shared_link"),
-            {"view_state": view_json},
+        # then fetch the data with a bad link code
+        shared_link_response = self.client.get(
+            reverse("planning:get_shared_link", kwargs={"link_code": "madeuplink"}),
             content_type="application/json",
         )
-        json_response = json.loads(response.content)
-        link_url = json_response["full_url"]
-        shared_link_response = self.client.post(
-            link_url,
-            content_type="application/json",
-        )
-        print(f"Link response is: {shared_link_response}")
-
-    def test_retrieving_malformed_link(self):
-        view_state = {"test-state": "nothing here, really"}
-        view_json = json.dumps(view_state)
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_shared_link"),
-            {"view_state": view_json},
-            content_type="application/json",
-        )
-        json_response = json.loads(response.content)
-        link_url = json_response["full_url"]
-        shared_link_response = self.client.post(
-            link_url,
-            content_type="application/json",
-        )
-        print(f"Link response is: {shared_link_response}")
+        self.assertEqual(shared_link_response.status_code, 404)

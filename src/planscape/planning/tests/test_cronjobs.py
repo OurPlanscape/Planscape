@@ -25,19 +25,19 @@ class DeleteOldLinksTest(TransactionTestCase):
         two_years_ago = timezone.now() - timezone.timedelta(days=730)
         link_today = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok": "test"}),
+            view_state=json.dumps({"ok": "test"}),
         )
         link_one_month_old = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok": "test"}),
+            view_state=json.dumps({"ok": "test"}),
         )
         link_two_months_old = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok": "test"}),
+            view_state=json.dumps({"ok": "test"}),
         )
         link_two_years_old = SharedLink.objects.create(
             user=self.user,
-            link_state=json.dumps({"ok": "test"}),
+            view_state=json.dumps({"ok": "test"}),
         )
         link_today.save()
         link_one_month_old.created_at = one_month_ago
