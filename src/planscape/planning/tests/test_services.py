@@ -46,20 +46,35 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
             name="mytest",
             geometry=MultiPolygon([unit_poly]),
         )
-        for i in range(1, 10):
-            Stand.objects.create(
-                size=StandSizeChoices.LARGE,
-                geometry=unit_poly,
-                area_m2=1,
-            )
-        conf = {
-            "max_budget": None,
-            "est_cost": 10,
-            # 4 stands
-            "max_treatment_area_ratio": 2000,
+        conf_just_above_20 = {
+            "est_cost": 2470,
+            "max_budget": 1502470420,
+            "min_distance_from_road": None,
+            "max_slope": None,
+            "global_thresholds": [],
+            "weights": [],
+            "excluded_areas": [],
             "stand_size": StandSizeChoices.LARGE,
         }
-        result, reason = validate_scenario_treatment_ratio(planning_area, conf)
+        result, reason = validate_scenario_treatment_ratio(
+            planning_area, conf_just_above_20
+        )
+        self.assertTrue(result)
+        self.assertEqual("Treatment ratio is valid.", reason)
+
+        conf_just_below_80 = {
+            "est_cost": 2470,
+            "max_budget": 6009867880,
+            "min_distance_from_road": None,
+            "max_slope": None,
+            "global_thresholds": [],
+            "weights": [],
+            "excluded_areas": [],
+            "stand_size": StandSizeChoices.LARGE,
+        }
+        result, reason = validate_scenario_treatment_ratio(
+            planning_area, conf_just_below_80
+        )
         self.assertTrue(result)
         self.assertEqual("Treatment ratio is valid.", reason)
 
@@ -70,24 +85,21 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
             name="mytest",
             geometry=MultiPolygon([unit_poly]),
         )
-        for i in range(1, 10):
-            Stand.objects.create(
-                size=StandSizeChoices.LARGE,
-                geometry=unit_poly,
-                area_m2=1,
-            )
+
+        # This will be be less than 2433144 acres
         conf = {
-            "max_budget": None,
-            "est_cost": 10,
-            # 1 stand
-            "max_treatment_area_ratio": 500,
+            "est_cost": 2470,
+            "max_budget": 1200,
+            "min_distance_from_road": None,
+            "max_slope": None,
+            "global_thresholds": [],
+            "weights": [],
+            "excluded_areas": [],
             "stand_size": StandSizeChoices.LARGE,
         }
         result, reason = validate_scenario_treatment_ratio(planning_area, conf)
         self.assertFalse(result)
-        self.assertEqual(
-            "Too few treatable stands for the selected area and stand size.", reason
-        )
+        self.assertIn("at least", reason)
 
     def test_validate_scenario_false_above_80(self):
         unit_poly = GEOSGeometry("POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))", srid=4269)
@@ -96,24 +108,21 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
             name="mytest",
             geometry=MultiPolygon([unit_poly]),
         )
-        for i in range(1, 10):
-            Stand.objects.create(
-                size=StandSizeChoices.LARGE,
-                geometry=unit_poly,
-                area_m2=1,
-            )
+
+        # This will be more than 2433144 acres
         conf = {
-            "max_budget": None,
-            "est_cost": 10,
-            # 9 stands
-            "max_treatment_area_ratio": 4500,
+            "est_cost": 2470,
+            "max_budget": 8009867656,
+            "min_distance_from_road": None,
+            "max_slope": None,
+            "global_thresholds": [],
+            "weights": [],
+            "excluded_areas": [],
             "stand_size": StandSizeChoices.LARGE,
         }
         result, reason = validate_scenario_treatment_ratio(planning_area, conf)
         self.assertFalse(result)
-        self.assertEqual(
-            "Too many treatable stands for the selected area and stand size.", reason
-        )
+        self.assertIn("less than", reason)
 
 
 class GetSchemaTest(TestCase):

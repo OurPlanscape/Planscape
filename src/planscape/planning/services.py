@@ -54,18 +54,19 @@ def validate_scenario_treatment_ratio(
     planning_area_acres = get_acreage(planning_area.geometry)
     max_treatable_area = get_max_treatable_area(configuration)
 
-    ratio = max_treatable_area / planning_area_acres
+    min_acreage = math.floor(planning_area_acres * 0.2)
+    max_acreage = math.ceil(planning_area_acres * 0.8)
 
-    if ratio <= 0.2:
+    if max_treatable_area <= min_acreage:
         return (
             False,
-            f"Acreage of treatment area is {max_treatable_area}, which is less than 20% of planning area.",
+            f"Treatment area is {max_treatable_area} acres. This should be at least {min_acreage} acres, or 20% of {int(planning_area_acres)} acres.",
         )
 
-    if ratio >= 0.8:
+    if max_treatable_area >= max_acreage:
         return (
             False,
-            f"Acreage of treatment area is {max_treatable_area}, which is more than 80% of planning area.",
+            f"Treatment area is {max_treatable_area} acres. This should be less than {max_acreage} acres, or 80% of {int(planning_area_acres)} acres.",
         )
 
     return (True, "Treatment ratio is valid.")
