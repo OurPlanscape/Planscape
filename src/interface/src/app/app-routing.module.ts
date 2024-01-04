@@ -144,7 +144,7 @@ const routes: Routes = [
           },
           {
             path: 'delete-account',
-            title: 'Delete Account',
+            title: 'Deactivate Account',
             component: DeleteAccountComponent,
           },
         ],

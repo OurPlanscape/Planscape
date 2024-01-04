@@ -2,10 +2,9 @@
   <mat-icon class="warning-icon">warning</mat-icon>
 
   <p>
-    <b>Are you sure you want to delete your account?</b>
+    <b>Are you sure you want to deactivate your account?</b>
     <br />
-    This will permanently erase your account and delete any plans that you own,
-    including any shared plans.
+    This will deactivate your account, including any plans that you own.
     <br />
     <a href="/home">View my plans</a>
   </p>
@@ -26,7 +25,7 @@
         color="warn"
         (click)="deleteAccount()"
         [disabled]="disableDeleteButton">
-        DELETE
+        DEACTIVATE
       </button>
 
       <button mat-raised-button (click)="cancel()">CANCEL</button>
