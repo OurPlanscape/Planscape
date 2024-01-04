@@ -3,7 +3,7 @@ from planscape.celery import app
 from planning.models import Scenario, ScenarioResultStatus
 import logging
 
-from planscape.utils.cli_utils import call_forsys
+from utils.cli_utils import call_forsys
 
 log = logging.getLogger(__name__)
 
