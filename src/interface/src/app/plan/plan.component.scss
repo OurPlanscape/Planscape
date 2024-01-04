@@ -64,6 +64,7 @@
       flex-direction: column;
       height: 100%;
     }
+
     .create-scenarios-panel {
       flex: 1;
     }
@@ -87,6 +88,7 @@
     app-scenario-configurations .configurations-wrapper .no-configs-overlay {
       display: none;
     }
+
     summary-panel .summary-content .grid-container {
       display: block;
     }
@@ -98,5 +100,19 @@
     ::ng-deep .mat-column-select {
       display: none;
     }
+  }
+
+  .plan-content-panel {
+    width: 100%;
+  }
+  .plan-content {
+    display: block;
+  }
+  .root-container {
+    height: initial;
+  }
+
+  .plan-map-container {
+    page-break-before: always;
   }
 }

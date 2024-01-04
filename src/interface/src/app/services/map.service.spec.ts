@@ -12,7 +12,6 @@ import 'leaflet.vectorgrid';
 describe('MapService', () => {
   let httpTestingController: HttpTestingController;
   let service: MapService;
-  let fakeGeoJson: GeoJSON.GeoJSON;
   // let fakeVector: Observable<L.Layer>;
 
   const conditionsConfig: ConditionsConfig = {
@@ -25,10 +24,6 @@ describe('MapService', () => {
   };
 
   beforeEach(() => {
-    fakeGeoJson = {
-      type: 'FeatureCollection',
-      features: [],
-    };
     // fakeVector = of(
     //   L.vectorGrid.protobuf(
     //     'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
@@ -118,23 +113,6 @@ describe('MapService', () => {
     //   req.flush(fakeGeoJson);
     //   httpTestingController.verify();
     // });
-  });
-
-  describe('getExistingProjects', () => {
-    it('makes request to endpoint', () => {
-      const fakeGeoJsonText: string = JSON.stringify(fakeGeoJson);
-
-      service.getExistingProjects().subscribe((res) => {
-        expect(res).toEqual(fakeGeoJson);
-      });
-
-      const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/projects/calmapper'
-      );
-      expect(req.request.method).toEqual('GET');
-      req.flush(fakeGeoJsonText);
-      httpTestingController.verify();
-    });
   });
 
   // describe('getRegionBoundary', () => {

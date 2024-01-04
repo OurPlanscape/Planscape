@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
-import { BehaviorSubject, EMPTY, map, Observable, take, of, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, take, of, tap } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { SessionService } from '../services';
@@ -13,8 +13,6 @@ import {
   Region,
   regionToString,
 } from '../types';
-
-import features from '../features/features.json';
 
 /** A map of Region to static assets for that region. */
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {
@@ -145,20 +143,6 @@ export class MapService {
     );
 
     return vector;
-  }
-
-  // Queries the CalMAPPER ArcGIS Web Feature Service for known land management projects without filtering.
-  getExistingProjects(): Observable<GeoJSON.GeoJSON> {
-    return this.http
-      .get<string>(
-        BackendConstants.END_POINT +
-          (features.use_its ? '/projects/its' : '/projects/calmapper')
-      )
-      .pipe(
-        map((response: string) => {
-          return JSON.parse(response);
-        })
-      );
   }
 
   /** Get colormap values from the REST server. */

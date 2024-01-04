@@ -100,7 +100,7 @@ describe('DeleteAccountDialogComponent', () => {
   it('delete button should call AuthService and close dialog', async () => {
     const dialogRef = fixture.debugElement.injector.get(MatDialogRef);
     const deleteButton: MatButtonHarness = await loader.getHarness(
-      MatButtonHarness.with({ text: /DELETE/ })
+      MatButtonHarness.with({ text: /DEACTIVATE/ })
     );
     component.deleteAccountForm.setValue({
       currentPassword: 'password',

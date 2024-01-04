@@ -16,7 +16,6 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from pathlib import Path
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -27,7 +26,7 @@ from planning.services import (
     validate_scenario_treatment_ratio,
     zip_directory,
 )
-from utils.cli_utils import call_forsys
+from planning.tasks import async_forsys_run
 
 
 # Retrieve the logged in user from the HTTP request.
@@ -317,9 +316,6 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-#### SCENARIO Handlers ####
-
-
 def _serialize_scenario(scenario: Scenario) -> dict:
     """
     Serializes a Scenario into a dictionary.
@@ -351,7 +347,6 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         if scenario.planning_area.user.pk != user.pk:
             # This matches the same error string if the planning area doesn't exist in the DB for any user.
             raise ValueError("Scenario matching query does not exist.")
-
         return JsonResponse(_serialize_scenario(scenario), safe=False)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -518,6 +513,9 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         # a corresponding ScenarioResult.
         scenario_result = ScenarioResult.objects.create(scenario=scenario)
         scenario_result.save()
+
+        if settings.USE_CELERY_FOR_FORSYS:
+            async_forsys_run.delay(scenario.pk)
 
         return HttpResponse(
             json.dumps({"id": scenario.pk}), content_type="application/json"

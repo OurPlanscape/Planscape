@@ -39,6 +39,7 @@ import {
 import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
 import { createAndAddLegend } from './map.legends';
 import { addClonedLayerToMap, removeClonedLayer } from './map.layers';
+import * as esri from 'esri-leaflet';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -62,8 +63,6 @@ export class MapManager {
     private readonly mapViewOptions$: BehaviorSubject<MapViewOptions>,
     private popupService: PopupService,
     private session: SessionService,
-    private startLoadingLayerCallback: (layerName: string) => void,
-    private doneLoadingLayerCallback: (layerName: string) => void,
     private http: HttpClient
   ) {
     this.selectedRegion$ = this.session.region$;
@@ -73,7 +72,6 @@ export class MapManager {
   initLeafletMap(
     map: Map,
     mapId: string,
-    existingProjectsGeoJson$: BehaviorSubject<GeoJSON.GeoJSON | null>,
     createDetailCardCallback: (
       features: Feature<Geometry, any>[],
       onInitialized: () => void
@@ -114,11 +112,6 @@ export class MapManager {
 
     // Init layers, but only add them to the map instance if specified in the map config.
     this.toggleBoundaryLayer(map, getBoundaryLayerVectorCallback);
-    existingProjectsGeoJson$.subscribe((projects: GeoJSON.GeoJSON | null) => {
-      if (projects) {
-        this.initCalMapperLayer(map, projects);
-      }
-    });
     this.changeConditionsLayer(map);
 
     // Each map has its own cloned drawing layer because the same layer object cannot
@@ -143,43 +136,13 @@ export class MapManager {
     map.instance!.pm.setPathOptions(DRAWING_STYLES);
 
     this.setUpEventHandlers(map, createDetailCardCallback);
-  }
 
-  /** Renders the existing project boundaries + metadata in a popup in an optional layer. */
-  private initCalMapperLayer(map: Map, existingProjects: GeoJSON.GeoJSON) {
-    const normalStyle = NORMAL_STYLES;
-    const hoverStyle: L.PathOptions = HOVER_STYLES;
-
-    // [elsieling] This step makes the map less responsive
-    map.existingProjectsLayerRef = L.geoJSON(existingProjects, {
-      style: normalStyle,
-      onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
-        layer.bindTooltip(
-          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME),
-          {
-            sticky: true,
-          }
-        );
-        // Exact type of layer (polygon or line) is not known
-        if ((layer as any).setStyle) {
-          layer.addEventListener('mouseover', (_) =>
-            (layer as L.Polygon).setStyle(hoverStyle)
-          );
-          layer.addEventListener('mouseout', (_) =>
-            (layer as L.Polygon).setStyle(normalStyle)
-          );
-        }
-      },
-    });
-
-    if (map.config.showExistingProjectsLayer) {
-      map.instance?.addLayer(map.existingProjectsLayerRef);
-    }
-
-    // When the existing projects layer is removed, close any popups.
+    map.existingProjectsLayerRef = this.loadExistingProjectsLayer();
     map.existingProjectsLayerRef.addEventListener('remove', (_) => {
       map.instance?.closePopup();
     });
+
+    this.toggleExistingProjectsLayer(map);
   }
 
   private setUpEventHandlers(
@@ -355,7 +318,7 @@ export class MapManager {
       const intersectingFeatureLayers: L.Polygon[] = [];
 
       // Get all existing project polygons at the clicked point
-      (map.existingProjectsLayerRef as L.GeoJSON).eachLayer((featureLayer) => {
+      map.existingProjectsLayerRef.eachFeature((featureLayer) => {
         if (featureLayer instanceof L.Polygon && featureLayer.feature) {
           const polygon = featureLayer as L.Polygon;
           // If feature contains the point that was clicked, add to list
@@ -511,11 +474,9 @@ export class MapManager {
     const boundaryShapeName = map.config.boundaryLayerConfig.shape_name;
 
     if (boundaryLayerName !== '') {
-      this.startLoadingLayerCallback(boundaryLayerName);
       getBoundaryLayerVectorCallback(boundaryVectorName)
         .pipe(take(1))
         .subscribe((vector) => {
-          this.doneLoadingLayerCallback(boundaryLayerName);
           this.boundaryVectorCache.set(boundaryLayerName, vector);
           map.boundaryLayerRef = this.boundaryLayer(
             vector,
@@ -556,7 +517,7 @@ export class MapManager {
       });
   }
 
-  /** Toggles whether existing projects from CalMapper are shown. */
+  /** Toggles whether existing projects layer is shown */
   toggleExistingProjectsLayer(map: Map) {
     if (map.instance === undefined) return;
 
@@ -621,5 +582,37 @@ export class MapManager {
   /** Change the opacity of a map's data layer. */
   changeOpacity(map: Map) {
     map.dataLayerRef?.setOpacity(map.config.dataLayerConfig.opacity!);
+  }
+
+  loadExistingProjectsLayer() {
+    return esri.featureLayer({
+      url: 'https://services1.arcgis.com/jUJYIo9tSA7EHvfZ/ArcGIS/rest/services/CMDash_v3_view/FeatureServer/2',
+      simplifyFactor: 0.5,
+      precision: 4,
+      where: "PROJECT_STATUS='Active'",
+      style: (feature) => {
+        return {
+          color: '#404040',
+          fillColor: '#303030',
+        };
+      },
+      onEachFeature: (feature: Feature<Geometry, any>, layer: L.Layer) => {
+        layer.bindTooltip(
+          this.popupService.makeDetailsPopup(feature.properties.PROJECT_NAME),
+          {
+            sticky: true,
+          }
+        );
+        // Exact type of layer (polygon or line) is not known
+        if ((layer as any).setStyle) {
+          layer.addEventListener('mouseover', (_) =>
+            (layer as L.Polygon).setStyle(HOVER_STYLES)
+          );
+          layer.addEventListener('mouseout', (_) =>
+            (layer as L.Polygon).setStyle(NORMAL_STYLES)
+          );
+        }
+      },
+    });
   }
 }

@@ -26,6 +26,8 @@ import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.celery import CeleryIntegration
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -49,7 +51,6 @@ planscape_apps = [
     "attributes",
     "boundary",
     "conditions",
-    "existing_projects",
     "planning",
     "stands",
     "users",
@@ -339,6 +340,7 @@ if SENTRY_DSN is not None:
         dsn=SENTRY_DSN,
         integrations=[
             DjangoIntegration(),
+            CeleryIntegration(),
         ],
         send_default_pii=True,
         environment=ENV,
@@ -365,3 +367,19 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 OUTPUT_DIR = BASE_DIR / "output"
 
 DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
+
+
+# SINGLE QUEUE BEHAVIOR
+USE_CELERY_FOR_FORSYS = config("USE_CELERY_FOR_FORSYS", False, cast=bool)
+
+# CELERY
+CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
+
+CELERY_RESULT_BACKEND = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
+CELERY_RESULT_ACCEPT_CONTENT = ("json",)
+CELERY_WORKER_PREFETCH_MULTIPLIER = config(
+    "CELERY_WORKER_PREFETCH_MULTIPLIER", 1, cast=int
+)
+CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
+    "CELERY_WORKER_MAX_TASKS_PER_CHILD", 20, cast=int
+)
