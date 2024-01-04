@@ -5,6 +5,8 @@
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape
 FORSYS_QUEUE=forsys-queue
+CELERY_FORSYS=celery-forsys-worker
+CELERY_DEFAULT=celery-default-worker
 
 # Directory which NGINX serves up for planscape
 PUBLIC_WWW_DIR=/var/www/html/planscape/
@@ -62,6 +64,18 @@ stop-forsys:
 status-forsys:
 	${SYS_CTL} status ${FORSYS_QUEUE}
 
+start-celery:
+	${SYS_CTL} start ${CELERY_DEFAULT}
+	${SYS_CTL} start ${CELERY_FORSYS}
+
+stop-celery:
+	${SYS_CTL} stop ${CELERY_DEFAULT}
+	${SYS_CTL} stop ${CELERY_FORSYS}
+
+status-celery:
+	${SYS_CTL} status ${CELERY_DEFAULT}
+	${SYS_CTL} status ${CELERY_FORSYS}
+
 start:
 	${SYS_CTL} start ${SERVICE}
 
@@ -74,7 +88,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop stop-forsys start start-forsys
+restart: reload stop stop-forsys stop-celery start start-forsys start-celery
 
 nginx-restart:
 	sudo service nginx restart
