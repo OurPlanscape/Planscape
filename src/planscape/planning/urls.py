@@ -15,6 +15,8 @@ from planning.views import (
     treatment_goals_config,
     update_scenario,
     update_scenario_result,
+    create_shared_link,
+    get_shared_link,
 )
 
 app_name = "planning"
@@ -67,5 +69,14 @@ urlpatterns = [
         "update_scenario_result/", update_scenario_result, name="update_scenario_result"
     ),
     # Project Areas
-    # TODO
+    path(
+        "create_link/",
+        create_shared_link,
+        name="create_shared_link",
+    ),
+    path(
+        "shared_link/<str:link_code>",
+        get_shared_link,
+        name="get_shared_link",
+    ),
 ]

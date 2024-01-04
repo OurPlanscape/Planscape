@@ -28,3 +28,4 @@ fiona==1.9.5
 celery==5.3.6
 redis==5.0.1
 kombu==5.3.4
+shortuuid==1.0.11

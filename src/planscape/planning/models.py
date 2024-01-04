@@ -4,7 +4,7 @@ from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
 from core.models import CreatedAtMixin, UpdatedAtMixin
-import uuid
+import uuid, shortuuid
 
 User = get_user_model()
 
@@ -114,3 +114,22 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     class Meta:
         ordering = ["scenario", "-created_at"]
+
+
+class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    def generate_random_string(length=8):
+        return shortuuid.ShortUUID().random(length=length)
+
+    user = models.ForeignKey(
+        User,
+        related_name="shared_links",
+        on_delete=models.DO_NOTHING,
+        null=True,
+    )
+
+    link_code = models.CharField(max_length=100, default=generate_random_string)
+    view_state = models.JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at", "user"]
