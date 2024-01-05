@@ -65,8 +65,8 @@ status-forsys:
 	${SYS_CTL} status ${FORSYS_QUEUE}
 
 start-celery:
-	${SYS_CTL} start ${CELERY_DEFAULT}
-	${SYS_CTL} start ${CELERY_FORSYS}
+	${SYS_CTL} start ${CELERY_DEFAULT} --no-block
+	${SYS_CTL} start ${CELERY_FORSYS} --no-block
 
 stop-celery:
 	${SYS_CTL} stop ${CELERY_DEFAULT}
