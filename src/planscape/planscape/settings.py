@@ -377,9 +377,13 @@ CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
 CELERY_RESULT_BACKEND = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
 CELERY_RESULT_ACCEPT_CONTENT = ("json",)
+# fetches ONE task at a time
 CELERY_WORKER_PREFETCH_MULTIPLIER = config(
     "CELERY_WORKER_PREFETCH_MULTIPLIER", 1, cast=int
 )
 CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
     "CELERY_WORKER_MAX_TASKS_PER_CHILD", 20, cast=int
 )
+CELERY_TASK_DEFAULT_QUEUE = "default"
+# if not specified here it will be sent to the default queue
+CELERY_TASK_ROUTES = {"planning.tasks.*": "forsys"}
