@@ -29,8 +29,8 @@ class Migration(migrations.Migration):
                 (
                     "link_code",
                     models.CharField(
-                        default=planning.models.SharedLink.generate_random_string,
-                        max_length=100,
+                        default=planning.models.generate_short_uuid,
+                        max_length=10,
                     ),
                 ),
                 ("view_state", models.JSONField()),
