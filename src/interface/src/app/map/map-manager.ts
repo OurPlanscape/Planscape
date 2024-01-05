@@ -20,7 +20,7 @@ import {
   Region,
 } from '../types';
 
-import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
+import { SNACK_ERROR_CONFIG } from '../shared/constants';
 import {
   BOUNDARY_LAYER_HOVER_STYLES,
   BOUNDARY_LAYER_NORMAL_STYLES,
@@ -50,7 +50,6 @@ L.PM.setOptIn(true);
  * of in map.component.ts.
  */
 export class MapManager {
-  boundaryVectorCache = new Map<string, L.Layer>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
@@ -165,7 +164,8 @@ export class MapManager {
 
   /**
    * Adds a GeoJSON to the drawing layer.
-   * @param area: The geojson of the area to add to the drawing layer.
+   * @param area  The geoJSON.GeoJSON of the area to add to the drawing layer.
+   * @param map  The map
    */
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON, map: Map) {
     L.geoJSON(area, {
@@ -477,7 +477,6 @@ export class MapManager {
       getBoundaryLayerVectorCallback(boundaryVectorName)
         .pipe(take(1))
         .subscribe((vector) => {
-          this.boundaryVectorCache.set(boundaryLayerName, vector);
           map.boundaryLayerRef = this.boundaryLayer(
             vector,
             boundaryShapeName,
