@@ -85,6 +85,8 @@ class ScenarioResultStatus(models.TextChoices):
     RUNNING = "RUNNING", "Running"
     SUCCESS = "SUCCESS", "Success"
     FAILURE = "FAILURE", "Failure"
+    PANIC = "PANIC", "Panic"
+    TIMED_OUT = "TIMED_OUT", "Timed Out"
 
 
 class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):

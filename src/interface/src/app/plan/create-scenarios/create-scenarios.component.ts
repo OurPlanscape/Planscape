@@ -275,7 +275,9 @@ export class CreateScenariosComponent implements OnInit {
         .subscribe((metric_data) => {
           for (let metric in metric_data) {
             var displayName = metric_data[metric]['display_name'];
-            var dataUnits = metric_data[metric]['data_units'];
+            var dataUnits =
+              metric_data[metric]['output_units'] ||
+              metric_data[metric]['data_units'];
             var metricLayer = metric_data[metric]['raw_layer'];
             var metricName = metric_data[metric]['metric_name'];
             var metricData: string[] = [];

@@ -69,9 +69,14 @@ def get_forsys_call(scenario_id):
     ]
 
 
-def call_forsys(scenario_id, env=None):
+def call_forsys(scenario_id, env=None, check=True, timeout=None):
     environment = os.environ.copy()
     if env:
         environment = {**environment, **env}
     forsys_call = get_forsys_call(scenario_id)
-    return subprocess.run(forsys_call, env=env, check=True)
+    return subprocess.run(
+        forsys_call,
+        env=env,
+        check=check,
+        timeout=timeout,
+    )

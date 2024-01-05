@@ -51,6 +51,11 @@ export class ReportChartComponent implements OnInit {
             },
           },
           x: {
+            ticks: {
+              autoSkip: false,
+              maxRotation: 0,
+              minRotation: 0,
+            },
             title: {
               display: true,
               text: 'Project Area',
