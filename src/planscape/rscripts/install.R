@@ -10,6 +10,7 @@ packages <- c(
   "devtools",
   "DBI",
   "RPostgreSQL",
+  "RPostgres",
   "optparse",
   "rjson",
   "glue",
