@@ -16,7 +16,8 @@ packages <- c(
   "glue",
   "purrr",
   "logger",
-  "tidyr"
+  "tidyr",
+  "checkmate"
 )
 
 install.packages(packages)
