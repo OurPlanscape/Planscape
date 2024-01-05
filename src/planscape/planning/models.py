@@ -118,6 +118,10 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
         ordering = ["scenario", "-created_at"]
 
 
+def generate_short_uuid(length=8):
+    return shortuuid.ShortUUID().random(length=length)
+
+
 class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
     user = models.ForeignKey(
         User,
@@ -126,7 +130,8 @@ class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
         null=True,
     )
 
-    link_code = models.CharField(max_length=100, default=shortuuid.ShortUUID().random)
+    link_code = models.CharField(max_length=10, default=generate_short_uuid)
+
     view_state = models.JSONField()
 
     class Meta:

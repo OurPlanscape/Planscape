@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.serializers import CharField, DateTimeField, IntegerField, JSONField
 from rest_framework_gis import serializers as gis_serializers
 
-from planning.models import PlanningArea, Scenario, ScenarioResult
+from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
 from planning.services import validate_scenario_treatment_ratio
 from stands.models import StandSizeChoices
 
@@ -136,3 +136,9 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "scenario_result",
         )
         model = Scenario
+
+
+class SharedLinkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SharedLink
+        fields = ("updated_at", "created_at", "link_code", "view_state")

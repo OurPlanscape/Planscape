@@ -30,6 +30,7 @@ from planning.models import (
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
+    SharedLinkSerializer,
 )
 from planning.services import (
     export_to_shapefile,
@@ -769,28 +770,13 @@ def create_shared_link(request: HttpRequest) -> HttpResponse:
     try:
         # Check that the user is logged in.
         user = _get_user(request)
-
-        # read the JSON config that stores the frontend state
         body = json.loads(request.body)
-        view_state = body.get("view_state")
-        if view_state is None:
-            raise ValueError("Must specify the state of the map view.")
+        serializer = SharedLinkSerializer(data=body)
+        serializer.is_valid(raise_exception=True)
 
-        # Create the planning area
-        shared_link = SharedLink.objects.create(
-            user=user or None,
-            view_state=view_state,
-        )
-        shared_link.save()
-
-        return HttpResponse(
-            json.dumps(
-                {
-                    "link_code": shared_link.link_code,
-                }
-            ),
-            content_type="application/json",
-        )
+        shared_link = serializer.save()
+        serializer = SharedLinkSerializer(shared_link)
+        return JsonResponse(serializer.data)
 
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
