@@ -4260,7 +4260,8 @@
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/bioDiverConserv.zip",
                   "data_year": "2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=39",
-                  "data_units": "Binary"
+                  "data_units": "Binary",
+                  "output_units": "Habitat (Acres)"
                 },
                 {
                   "display_name": "California Spotted Owl Territory",
@@ -4465,6 +4466,7 @@
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/carbonSeq.zip",
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_units": "Mg C/ha",
+                  "output_units": "Tons/Hectare",
                   "data_year": "2021",
                   "max_value": 600,
                   "metric_name": "aboveground_live_tree_carbon",
@@ -4607,7 +4609,8 @@
                   "min_value": 1,
                   "max_value": 20,
                   "invert_raw": true,
-                  "data_units": "Relative Index"
+                  "data_units": "Relative Index",
+                  "output_units": "Structure Exposure Score"
                 },
                 {
                   "metric_name": "damage_potential_wui",
@@ -4626,7 +4629,8 @@
                   "min_value": 1,
                   "max_value": 12,
                   "invert_raw": true,
-                  "data_units": "Relative Index"
+                  "data_units": "Relative Index",
+                  "output_units": "Damage Potential"
                 }
               ]
             }
@@ -4690,6 +4694,7 @@
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireDynamics.zip",
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_units": "Categorical",
+                  "output_units": "Fire Frequency Departure",
                   "data_year": "2021",
                   "max_value": 3,
                   "metric_name": "mean_percent_fire_return_interval_departure_condition_class",
@@ -4765,7 +4770,8 @@
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true,
-                  "data_units": "Probability"
+                  "data_units": "Probability",
+                  "output_units": "Acres"
                 },
                 {
                   "display_name": "Probability of Fire Severity (Moderate)",
@@ -4833,6 +4839,7 @@
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireDynamics.zip",
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_units": "Short Tons/Acre",
+                  "output_units": "Average Tons per Acre",
                   "data_year": "2021",
                   "max_value": 210,
                   "metric_name": "standing_dead_and_ladder_fuels",
@@ -4848,6 +4855,7 @@
                   "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/fireDynamics.zip",
                   "data_provider": "USDA Forest Service, Region 5",
                   "data_units": "Short Tons/Acre",
+                  "output_units": "Tons per Acre",
                   "data_year": "2021",
                   "max_value": 200,
                   "metric_name": "total_fuel_exposed_to_fire",

@@ -66,6 +66,7 @@ class PillarConfig:
         "reference_link",
         "invert_raw",
         "data_units",
+        "output_units",
     }.union(COMMON_METADATA)
 
     @classmethod
