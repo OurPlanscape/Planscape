@@ -1,9 +1,6 @@
 [
-    {
-      "planning_area": "monobasin.json",
-      "treatment_scenarios": [
-        { "scenario": "mono-large.json", 
-        "outcome": "mono-large.expected-results.json" }
-      ]
-    }
-  ]
+  {
+    "planning_area": "areas.json",
+    "treatment_scenarios": []
+  }
+]

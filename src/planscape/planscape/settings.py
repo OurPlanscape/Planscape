@@ -388,4 +388,4 @@ CELERY_TASK_DEFAULT_QUEUE = "default"
 # if not specified here it will be sent to the default queue
 CELERY_TASK_ROUTES = {"planning.tasks.*": "forsys"}
 
-TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / 'test_fixtures'
+TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
