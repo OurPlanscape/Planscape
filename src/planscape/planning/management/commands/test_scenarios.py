@@ -5,18 +5,25 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 from django.contrib.auth.models import User
-from planning.models import PlanningArea
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from django.core import serializers
+from django.db import transaction
+from django.forms.models import model_to_dict
+from utils.cli_utils import call_forsys
 
 logger = logging.getLogger(__name__)
 
+
 class Command(BaseCommand):
+    fixtures_to_test = []
+    scenarios_to_test = []
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
             "--fixtures-path",
             type=str,
             default=str(settings.TREATMENTS_TEST_FIXTURES_PATH),
-            help="Overrides the default path to fixtures"
+            help="Overrides the default path to fixtures",
         )
 
         parser.add_argument(
@@ -26,16 +33,17 @@ class Command(BaseCommand):
         )
 
     def upsert_test_user(self):
-        self.test_user, created = User.objects.update_or_create(username="e2etest")
-        self.test_user.set_password("12345")
-        # if created:
-        #     self.test_user.save()
-        print(f"The test user id: {self.test_user.id} and username: {self.test_user.username}")
-    
+        self.test_user, _ = User.objects.update_or_create(
+            username="e2etest@sig-gis.com"
+        )
+        print(
+            f"The test user id: {self.test_user.id} and username: {self.test_user.username}"
+        )
+
     def load_test_definitions(self):
         test_defs = os.path.join(
-                settings.BASE_DIR, self.fixtures_path, "test_definitions.json"
-            )
+            settings.BASE_DIR, self.fixtures_path, "test_definitions.json"
+        )
         try:
             with open(test_defs, "r") as f:
                 self.fixtures_to_test = json.load(f)
@@ -46,95 +54,70 @@ class Command(BaseCommand):
         self.test_area_ids = []
         for tests in self.fixtures_to_test:
             planning_area_file = tests["planning_area"]
-            area_file = os.path.join(
+            scenarios = tests["scenarios"]
+            areas_file = os.path.join(
                 settings.BASE_DIR,
                 self.fixtures_path,
                 planning_area_file,
             )
-            with open(area_file,
-                        "r",
-                    ) as area_file:
-                area_data = json.load(area_file)
-                area, created = PlanningArea.objects.update_or_create(area_data)
-                print(f"area info: {area.id}")
-                self.test_area_ids.append(area.id)
+            with open(
+                areas_file,
+                "r",
+            ) as f:
+                area_data = json.load(f)
+                area_data["user_id"] = self.test_user.id
+                area_obj, _ = PlanningArea.objects.update_or_create(
+                    user_id=self.test_user.id,
+                    region_name=area_data["region_name"],
+                    name=area_data["name"],
+                    defaults=area_data,
+                )
+                self.test_area_ids.append(area_obj.id)
+                for s in scenarios:
+                    self.upsert_scenarios(s, area_obj.id)
 
-    def read_scenario(self, scenario):
+    def upsert_scenarios(self, scenario_file, area_id):
         scenario_path = os.path.join(
-            settings.BASE_DIR,
-            self.fixtures_path,
-            "scenarios/",
-            scenario["scenario"],
+            settings.BASE_DIR, self.fixtures_path, scenario_file
         )
         with open(
             scenario_path,
             "r",
-        ) as scenario_data:
-            scenario_json = json.load(scenario_data)
-        return scenario_json
+        ) as f:
+            scenario_data = json.load(f)
+            # overwrite details
+            scenario_data["planning_area_id"] = area_id
+            scenario_obj, _ = Scenario.objects.update_or_create(
+                defaults=scenario_data, id=scenario_data["pk"]
+            )
+            self.scenarios_to_test.append(scenario_obj.id)
 
-    def create_scenario(self, scenario_json):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_scenario"),
-            scenario_json,
-            content_type="application/json",
-        )
-        res_data = json.loads(response.content)
-        self.assertEquals(response.status_code, 200, "Creating the Scenario Failed")
-        return res_data["id"]
-
-    def test_scenarios(self):
-        self.client.force_login(self.user)
+    def get_forsys_results(self, scenario_id):
         try:
-            for tests in self.fixtures_to_test:
-                with self.subTest(f"Testing Area Fixture: {tests['planning_area']}"):
-                    planning_area_file = tests["planning_area"]
-                    test_file_path = os.path.join(
-                        settings.BASE_DIR,
-                        self.fixtures_path,
-                        planning_area_file,
+            call_forsys(scenario_id)
+        except Exception as ex:
+            scenario = Scenario.objects.get(scenario_id)
+            scenario.results = ScenarioResultStatus.FAILURE
+            scenario.results.save()
+            print(f"Failed to run forsys for scenario id: {scenario_id} - {str(ex)}")
+
+    def run_tests(self):
+        try:
+            for scenario_id in self.scenarios_to_test:
+                self.get_forsys_results(scenario_id)
+                # check for PENDING results....
+                scenario_result = ScenarioResult.objects.get(scenario__id=scenario_id)
+                print(f"Result status?: {scenario_result.status}")
+                while scenario_result.status == "PENDING":
+                    # TODO: just use the queue for this
+                    time.sleep(2)
+                    scenario_result = ScenarioResult.objects.get(
+                        scenario__id=scenario_id
                     )
-                    with open(
-                        test_file_path,
-                        "r",
-                    ) as planning_file:
-                        planning_area_data = json.load(planning_file)
-                    area_id = self.create_area(planning_area_data)
-                    scenarios = tests["treatment_scenarios"]
-                    for scenario in scenarios:
-                        with self.subTest(
-                            f"Testing: {tests['planning_area']} with {scenario['scenario']}"
-                        ):
-                            scenario_json = self.read_scenario(scenario)
-                            scenario_json["planning_area"] = str(area_id)
+                    existing = Scenario.objects.count()
+                    print(f"We have this many scenarios: {existing}")
+                    print(f"new result is: {scenario_result.status}")
 
-                            # TODO: in order to test fixtures that are intended to fail,
-                            #   we should confirm the intended outcome matches here
-                            scenario_id = self.create_scenario(scenario_json)
-
-                            scenario = Scenario.objects.get(pk=scenario_id)
-                            print(f"\nRunning forsys for scenario_id: {scenario_id}")
-
-                            self.get_forsys_results(scenario_id)
-                            # check for PENDING results....
-
-                            scenario_result = ScenarioResult.objects.get(
-                                scenario__id=scenario_id
-                            )
-                            print(f"Result status?: {scenario_result.status}")
-                            while scenario_result.status == "PENDING":
-                                time.sleep(2)
-                                scenario_result = ScenarioResult.objects.get(
-                                    scenario__id=scenario_id
-                                )
-                                existing = Scenario.objects.count()
-                                print(f"We have this many scenarios: {existing}")
-                                print(f"new result is: {scenario_result.status}")
-
-                            # then fetch the metrics from the backend
-
-                    self.assertEqual(PlanningArea.objects.count(), 1)
         except Exception as e:
             print(f"Failed with {e}")
 
@@ -147,11 +130,10 @@ class Command(BaseCommand):
 
         self.upsert_test_user()
         self.load_test_definitions()
-        print(f"self.fixtures_to_test: {self.fixtures_to_test}")
-
         self.create_areas()
         print(f"Area ids we created: {self.test_area_ids}")
+        print(f"self.fixtures_to_test: {self.fixtures_to_test}")
+        print(f"Scenario ids we created: {self.scenarios_to_test}")
 
-        print("upsert test areas")
-        print("upsert test scenarios")
-
+        # TODO: get database environment from fiile...
+        self.run_tests()

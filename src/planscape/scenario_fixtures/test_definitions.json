@@ -1,6 +1,9 @@
 [
   {
-    "planning_area": "areas.json",
-    "treatment_scenarios": []
+    "planning_area": "monobasin/monobasin.json",
+    "scenarios": [
+      "monobasin/scenarios/eightypct-acreage.json",
+      "monobasin/scenarios/half-acreage.json"
+    ]
   }
 ]
