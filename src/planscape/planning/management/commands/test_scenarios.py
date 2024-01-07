@@ -67,9 +67,7 @@ class Command(BaseCommand):
                 area_data = json.load(f)
                 area_data["user_id"] = self.test_user.id
                 area_obj, _ = PlanningArea.objects.update_or_create(
-                    user_id=self.test_user.id,
-                    region_name=area_data["region_name"],
-                    name=area_data["name"],
+                    id=area_data["pk"],
                     defaults=area_data,
                 )
                 self.test_area_ids.append(area_obj.id)

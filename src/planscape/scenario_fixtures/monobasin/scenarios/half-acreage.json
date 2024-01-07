@@ -9,7 +9,7 @@
     "est_cost": 2470.0,
     "max_slope": null,
     "stand_size": "LARGE",
-    "excluded_areas": ["NATIONAL_FORESTS", "TRIBAL_LANDS"],
+    "excluded_areas": [],
     "stand_thresholds": ["probability_of_fire_severity_high > 0"],
     "global_thresholds": [],
     "scenario_priorities": ["probability_of_fire_severity_high"],
