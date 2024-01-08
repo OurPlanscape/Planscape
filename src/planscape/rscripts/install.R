@@ -10,12 +10,14 @@ packages <- c(
   "devtools",
   "DBI",
   "RPostgreSQL",
+  "RPostgres",
   "optparse",
   "rjson",
   "glue",
   "purrr",
   "logger",
-  "tidyr"
+  "tidyr",
+  "checkmate"
 )
 
 install.packages(packages)

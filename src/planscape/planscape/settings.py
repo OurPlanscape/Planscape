@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django_crontab",
     "leaflet",
     "lockdown",
     "password_policies",
@@ -387,3 +388,9 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
 CELERY_TASK_DEFAULT_QUEUE = "default"
 # if not specified here it will be sent to the default queue
 CELERY_TASK_ROUTES = {"planning.tasks.*": "forsys"}
+
+
+SHARED_LINKS_NUM_DAYS_VALID = 60
+CRONJOBS = [
+    ("0 0 * * *", "planning.cron.delete_old_shared_links"),  # Runs at midnight daily
+]

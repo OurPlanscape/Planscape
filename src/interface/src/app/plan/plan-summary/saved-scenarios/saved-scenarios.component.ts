@@ -61,6 +61,8 @@ export class SavedScenariosComponent implements OnInit {
     RUNNING: 'Running',
     SUCCESS: 'Done',
     FAILURE: 'Failed',
+    PANIC: 'Failed',
+    TIMED_OUT: 'Failed',
   };
 
   constructor(
