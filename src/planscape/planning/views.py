@@ -768,7 +768,6 @@ def get_shared_link(request: HttpRequest, link_code: str) -> HttpResponse:
 
 def create_shared_link(request: HttpRequest) -> HttpResponse:
     try:
-        # Check that the user is logged in.
         user = _get_user(request)
         body = json.loads(request.body)
         serializer = SharedLinkSerializer(data=body)

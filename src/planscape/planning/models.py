@@ -2,6 +2,7 @@ from pathlib import Path
 from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from utils.uuid_utils import generate_short_uuid
 from django.core.serializers.json import DjangoJSONEncoder
 from core.models import CreatedAtMixin, UpdatedAtMixin
 import uuid, shortuuid
@@ -116,10 +117,6 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     class Meta:
         ordering = ["scenario", "-created_at"]
-
-
-def generate_short_uuid(length=8):
-    return shortuuid.ShortUUID().random(length=length)
 
 
 class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
