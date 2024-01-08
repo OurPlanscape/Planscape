@@ -762,8 +762,8 @@ def get_shared_link(request: HttpRequest, link_code: str) -> HttpResponse:
     except SharedLink.DoesNotExist:
         # Handle the case where the object doesn't exist
         raise Http404("This link does not exist")
-
-    return JsonResponse(link_obj.view_state, safe=False)
+    serializer = SharedLinkSerializer(link_obj)
+    return JsonResponse(serializer.data, safe=False)
 
 
 def create_shared_link(request: HttpRequest) -> HttpResponse:
