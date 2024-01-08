@@ -770,10 +770,10 @@ def create_shared_link(request: HttpRequest) -> HttpResponse:
     try:
         user = _get_user(request)
         body = json.loads(request.body)
-        serializer = SharedLinkSerializer(data=body)
+        serializer = SharedLinkSerializer(data=body, context={'user':user})
         serializer.is_valid(raise_exception=True)
-
         shared_link = serializer.save()
+        
         serializer = SharedLinkSerializer(shared_link)
         return JsonResponse(serializer.data)
 

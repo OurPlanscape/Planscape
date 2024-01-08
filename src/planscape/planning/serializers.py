@@ -139,6 +139,15 @@ class ScenarioSerializer(serializers.ModelSerializer):
 
 
 class SharedLinkSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        user = self.context['user'] or None
+        link_obj = SharedLink.objects.create(
+                 **validated_data,
+                 user=user
+             )
+        return link_obj
+
     class Meta:
         model = SharedLink
-        fields = ("updated_at", "created_at", "link_code", "view_state")
+        fields = ("updated_at", "created_at", "link_code", "view_state", "user_id")
+    
