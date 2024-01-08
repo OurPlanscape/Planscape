@@ -200,6 +200,7 @@
               },
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0",
+                "probability_of_fire_severity_high < 0.4",
                 "(mean_percent_fire_return_interval_departure_condition_class == 1 || mean_percent_fire_return_interval_departure_condition_class == 2)"
               ],
               "global_thresholds": []
