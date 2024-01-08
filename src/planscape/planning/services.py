@@ -6,7 +6,7 @@ from typing import Any, Dict, Tuple
 import zipfile
 from django.conf import settings
 import fiona
-
+from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices, area_from_size
 
@@ -40,29 +40,33 @@ def get_max_treatable_stand_count(
     return math.floor(max_treatable_area / stand_area)
 
 
+def get_acreage(geometry: GEOSGeometry):
+    CONVERSION_SQM_ACRES = 4046.8564213562374
+    epsg_5070_area = geometry.transform(5070, clone=True).area
+    acres = epsg_5070_area / CONVERSION_SQM_ACRES
+    return acres
+
+
 def validate_scenario_treatment_ratio(
     planning_area: PlanningArea,
     configuration: Dict[str, Any],
 ) -> Tuple[bool, str]:
+    planning_area_acres = get_acreage(planning_area.geometry)
     max_treatable_area = get_max_treatable_area(configuration)
-    max_treatable_stands = get_max_treatable_stand_count(
-        max_treatable_area,
-        configuration.get("stand_size"),
-    )
-    stands = Stand.objects.overlapping(
-        planning_area.geometry,
-        configuration.get("stand_size"),
-    )
-    stand_count = stands.count()
-    ratio = max_treatable_stands / stand_count
 
-    if ratio <= 0.2:
-        return (False, "Too few treatable stands for the selected area and stand size.")
+    min_acreage = math.floor(planning_area_acres * 0.2)
+    max_acreage = math.ceil(planning_area_acres * 0.8)
 
-    if ratio >= 0.8:
+    if max_treatable_area <= min_acreage:
         return (
             False,
-            "Too many treatable stands for the selected area and stand size.",
+            f"Treatment area is {round(max_treatable_area, 2)} acres. This should be at least {min_acreage} acres, or 20% of {int(planning_area_acres)} acres.",
+        )
+
+    if max_treatable_area >= max_acreage:
+        return (
+            False,
+            f"Treatment area is {round(max_treatable_area, 2)} acres. This should be less than {max_acreage} acres, or 80% of {int(planning_area_acres)} acres.",
         )
 
     return (True, "Treatment ratio is valid.")
