@@ -101,8 +101,6 @@
                 "(wui == 1 || wui == 2)",
                 "total_fuel_exposed_to_fire > 0",
                 "probability_of_fire_severity_high > 0",
-                "structure_exposure > 0",
-                "(damage_potential_wui > 1 && damage_potential_wui < 6)",
                 "(mean_percent_fire_return_interval_departure_condition_class == 2 || mean_percent_fire_return_interval_departure_condition_class == 3)"
               ],
               "global_thresholds": []
@@ -202,8 +200,8 @@
               },
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0",
-                "probability_of_fire_severity_high < 0.2",
-                "mean_percent_fire_return_interval_departure_condition_class == 1"
+                "probability_of_fire_severity_high < 0.4",
+                "(mean_percent_fire_return_interval_departure_condition_class == 1 || mean_percent_fire_return_interval_departure_condition_class == 2)"
               ],
               "global_thresholds": []
             }

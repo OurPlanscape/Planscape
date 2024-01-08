@@ -36,7 +36,9 @@ export type ScenarioResultStatus =
   | 'PENDING' // Scenario created, in queue
   | 'RUNNING' // Scenario created, being processed
   | 'SUCCESS' // Run completed successfully
-  | 'FAILURE'; // Run failed;
+  | 'FAILURE' // Run failed;
+  | 'PANIC' // Run failed; panic
+  | 'TIMED_OUT'; // Run failed; timed out
 
 export interface TreatmentGoalConfig {
   category_name?: string;
