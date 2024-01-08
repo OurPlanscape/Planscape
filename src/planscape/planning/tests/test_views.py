@@ -1975,7 +1975,7 @@ class CreateSharedLinkTest(TransactionTestCase):
             content_type="application/json",
         )
         json_get_response = json.loads(shared_link_response.content)
-        self.assertJSONEqual(json_get_response['view_state'], view_state)
+        self.assertJSONEqual(json_get_response["view_state"], view_state)
 
     def test_retrieving_bad_link(self):
         # then fetch the data with a bad link code
