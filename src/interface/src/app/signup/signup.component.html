@@ -11,7 +11,7 @@
       <div class="signup-form">
         <h1 class="signup-title">Create your account</h1>
 
-        <form [formGroup]="form" (ngSubmit)="signup()">
+        <form [formGroup]="form" (ngSubmit)="signup()" autocomplete="on">
           <mat-label class="standard-label"
             >First Name
             <span class="required-blurb">required</span>
