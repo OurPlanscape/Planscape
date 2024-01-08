@@ -200,7 +200,6 @@
               },
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0",
-                "probability_of_fire_severity_high < 0.2",
               ],
               "global_thresholds": []
             }
