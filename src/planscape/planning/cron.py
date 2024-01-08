@@ -1,6 +1,6 @@
 from planning.models import SharedLink
 from django.utils import timezone
-from planscape import settings
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
