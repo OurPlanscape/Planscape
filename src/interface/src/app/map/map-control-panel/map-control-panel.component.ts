@@ -7,7 +7,7 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { BehaviorSubject, Subject, Observable, takeUntil } from 'rxjs';
+import { Subject, Observable, takeUntil } from 'rxjs';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -21,10 +21,7 @@ import {
   ConditionTreeType,
 } from './../../types/data.types';
 import { Map, MapViewOptions } from './../../types/map.types';
-import {
-  ConditionsNode,
-  ConditionTreeComponent,
-} from './condition-tree/condition-tree.component';
+import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
 import features from '../../features/features.json';
 
 /** Map Legend Display Strings */
@@ -77,10 +74,6 @@ export class MapControlPanelComponent implements OnInit {
 
   public dataTypeEnum = ConditionTreeType;
 
-  conditionDataRaw$ = new BehaviorSubject<ConditionsNode[]>([]);
-  conditionDataNormalized$ = new BehaviorSubject<ConditionsNode[]>([]);
-  conditionDataFuture$ = new BehaviorSubject<ConditionsNode[]>([]);
-
   constructor() {}
 
   ngOnInit(): void {
@@ -111,6 +104,7 @@ export class MapControlPanelComponent implements OnInit {
       L.DomUtil.remove(map.legend);
     }
     this.changeConditionLayer.emit(map);
+    this.conditionTrees?.forEach((el) => el.unstyleAndDeselectAllNodes());
   }
 
   unstyleConditionTree(index: number): void {
