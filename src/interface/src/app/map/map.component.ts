@@ -17,7 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
-import { BehaviorSubject, map, Observable, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
@@ -107,6 +107,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   conditionsConfig$ = this.mapService.conditionsConfig$.asObservable();
   selectedRegion$ = this.sessionService.region$.asObservable();
 
+  conditionsUpdated$ = new BehaviorSubject(false);
+
   selectedMap$ = this.mapViewOptions$.pipe(
     map((options) => this.maps[options.selectedMapIndex])
   );
@@ -118,9 +120,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     )
   );
   /** Whether the currently selected map has a data layer active. */
-  mapHasDataLayer$ = this.selectedMap$.pipe(
-    map((selectedMap) => !!selectedMap?.config.dataLayerConfig.layer)
-  );
+
+  mapHasDataLayer$ = combineLatest([
+    this.selectedMap$,
+    this.conditionsUpdated$,
+  ]).pipe(map(([selectedMap]) => !!selectedMap?.config.dataLayerConfig.layer));
+
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
@@ -566,6 +571,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   /** Changes which condition scores layer (if any) is shown. */
   changeConditionsLayer(map: Map) {
     this.mapManager.changeConditionsLayer(map);
+    this.conditionsUpdated$.next(true);
     updateLegendWithColorMap(map, map.config.dataLayerConfig.colormap, [
       map.config.dataLayerConfig.min_value,
       map.config.dataLayerConfig.max_value,

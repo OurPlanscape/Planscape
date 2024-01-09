@@ -113,12 +113,6 @@ export class ConditionTreeComponent implements OnInit {
     }
   }
 
-  toggleAllLayersOff(): void {
-    this.unstyleAndDeselectAllNodes();
-    this.map.config.dataLayerConfig = NONE_DATA_LAYER_CONFIG;
-    this.changeConditionLayer.emit(this.map);
-  }
-
   /** Used to compute whether a node in the condition layer tree has children. */
   hasChild = (_: number, node: ConditionFlatNode) => node.expandable;
 
