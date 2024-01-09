@@ -4,7 +4,7 @@ from unittest import mock
 from django.db import connection
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.geos import GEOSGeometry
 from django.test import TransactionTestCase
 from django.urls import reverse
 
@@ -44,8 +44,6 @@ def _create_planning_area(
 
 
 #### PLAN(NING AREA) Tests ####
-
-
 class CreatePlanningAreaTest(TransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
@@ -767,7 +765,7 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
-    def test_end_to_end(self, validation):
+    def test_end_to_end(self, validate):
         self.client.force_login(self.user)
 
         # List - returns 0
@@ -1290,7 +1288,7 @@ class UpdateScenarioResultTest(TransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         output = json.loads(response.content)
-        self.assertEquals(output["id"], self.scenario.pk)
+        self.assertEqual(output["id"], self.scenario.pk)
         scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
         self.assertEqual(scenario_result.status, ScenarioResultStatus.RUNNING)
         self.assertEqual(scenario_result.result, json.dumps({"result1": "test result"}))
@@ -1711,7 +1709,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         # this will also make the output directory that we currently don't commit
         os.makedirs(self.mock_project_path, exist_ok=True)
         self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
-        with open(self.mock_project_file, "w") as handle:
+        with open(self.mock_project_file, "w", encoding="UTF-8") as handle:
             print("Just test data", file=handle)
 
         # create a second scenario with a different user

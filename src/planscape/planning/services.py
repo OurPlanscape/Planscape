@@ -4,11 +4,11 @@ from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple
 import zipfile
-from django.conf import settings
 import fiona
+from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
-from stands.models import Stand, StandSizeChoices, area_from_size
+from stands.models import StandSizeChoices, area_from_size
 
 
 def zip_directory(file_obj, source_dir):
@@ -74,21 +74,21 @@ def validate_scenario_treatment_ratio(
 
 def map_property(key_value_pair):
     key, value = key_value_pair
-    type = ""
+    prop_type = ""
     match value:
-        case int() as v:
-            type = "int"
-        case str() as v:
-            type = "str:128"
-        case float() as v:
-            type = "float"
-        case datetime() as v:
-            type = "str:64"
-        case date() as v:
-            type = "date"
-        case time() as v:
-            type = "time"
-    return (key, type)
+        case int():
+            prop_type = "int"
+        case str():
+            prop_type = "str:128"
+        case float():
+            prop_type = "float"
+        case datetime():
+            prop_type = "str:64"
+        case date():
+            prop_type = "date"
+        case time():
+            prop_type = "time"
+    return (key, prop_type)
 
 
 def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:

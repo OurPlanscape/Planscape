@@ -1,7 +1,6 @@
 import json
 import os
 
-
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -18,7 +17,6 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from pathlib import Path
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -37,8 +35,6 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
-from urllib.parse import urljoin
-from utils.cli_utils import call_forsys
 
 
 # Retrieve the logged in user from the HTTP request.
@@ -134,8 +130,8 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
         # MultiPolygon.
         geometry = _convert_polygon_to_multipolygon(geometry)
-
         # Create the planning area
+
         planning_area = PlanningArea.objects.create(
             user=user,
             name=name,
@@ -401,8 +397,6 @@ def download_csv(request: HttpRequest) -> HttpResponse:
             "Scenario matching query does not exist.",
             status=404,
         )
-
-    scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
 
     try:
         output_zip_name: str = str(scenario.uuid) + ".zip"
