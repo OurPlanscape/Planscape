@@ -37,6 +37,7 @@ from planning.services import (
     validate_scenario_treatment_ratio,
     zip_directory,
 )
+from planning.tasks import async_forsys_run
 from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
