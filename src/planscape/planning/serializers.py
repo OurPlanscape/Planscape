@@ -1,10 +1,8 @@
-from conditions.models import BaseCondition, Condition
 from rest_framework import serializers
-from rest_framework.serializers import CharField, DateTimeField, IntegerField, JSONField
+from rest_framework.serializers import CharField, DateTimeField, IntegerField
 from rest_framework_gis import serializers as gis_serializers
 
 from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
-from planning.services import validate_scenario_treatment_ratio
 from stands.models import StandSizeChoices
 
 

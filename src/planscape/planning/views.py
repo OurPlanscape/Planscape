@@ -6,7 +6,6 @@ from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.sites.shortcuts import get_current_site
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
 
@@ -150,7 +149,6 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
             json.dumps({"id": planning_area.pk}), content_type="application/json"
         )
 
-        return HttpResponse(str(planning_area.pk))
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
 
@@ -266,7 +264,6 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
         user = _get_user(request)
         if user is None:
             raise ValueError("User must be logged in.")
-        user_id = user.pk
 
         return JsonResponse(
             _serialize_planning_area(
@@ -743,7 +740,7 @@ def get_treatment_goals_config_for_region(params: QueryDict):
 
     # Read from treatment_goals config
     config_path = os.path.join(settings.BASE_DIR, "config/treatment_goals.json")
-    treatment_goals_config = json.load(open(config_path, "r"))
+    treatment_goals_config = json.load(open(config_path, "r", encoding="utf-8"))
     for region in treatment_goals_config["regions"]:
         if region_name == region["region_name"]:
             return region["treatment_goals"]

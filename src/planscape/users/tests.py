@@ -1,5 +1,4 @@
 import re
-import time
 
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
