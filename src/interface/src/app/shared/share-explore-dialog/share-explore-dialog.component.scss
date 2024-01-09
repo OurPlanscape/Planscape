@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  min-width: 480px;
+}
+
+section {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  position: relative;
+}
+
+
+.info {
+  align-items: center;
+
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 15px;
+}
+
+.full {
+  flex: 1;
+}
+
+.link-textfield {
+  user-select: all;
+}
+
+.loader {
+  position: absolute;
+  bottom: 23px;
+}
