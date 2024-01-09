@@ -64,6 +64,7 @@ METRIC_COLUMNS <- list(
   low_income_population_proportional = "sum"
   wui = "majority",
   mean_percent_fire_return_interval_departure_condition_class = "majority",
+  f3veg100 = "majority"
 )
 
 
