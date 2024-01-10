@@ -71,6 +71,7 @@ total_acres_per_project <- function(value, stand_count, stand_size) {
 POSTPROCESSING_FUNCTIONS <- list(
   probability_of_fire_severity_high = average_per_stand,
   damage_potential_wui = average_per_stand,
+  mean_percent_fire_return_interval_departure_condition_class = average_per_stand,
   total_fuel_exposed_to_fire = average_per_stand,
   standing_dead_and_ladder_fuels = average_per_stand,
   wildlife_species_richness = average_per_stand,
