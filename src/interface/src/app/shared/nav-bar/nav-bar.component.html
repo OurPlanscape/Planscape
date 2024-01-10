@@ -75,7 +75,12 @@
         </div>
       </mat-menu>
     </button>
-    <button mat-button class="action-button" (click)="share()" data-id="share">
+    <button
+      mat-button
+      class="action-button"
+      (click)="share()"
+      data-id="share"
+      *ngIf="area === 'EXPLORE'">
       Share
     </button>
 

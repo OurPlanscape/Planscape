@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
-import { DOCUMENT } from '@angular/common';
+import { WINDOW } from './window.service';
 
 interface CreatedLink {
   created_at: string;
@@ -18,17 +18,17 @@ interface CreatedLink {
 export class ShareMapService {
   constructor(
     private http: HttpClient,
-    @Inject(DOCUMENT) private readonly document: Document
+    @Inject(WINDOW) private readonly window: Window
   ) {}
 
   getSharedLink(mapData: any): Observable<string> {
-    const origin = this.document.location.origin;
+    const origin = this.window.location.origin;
     return this.createShareLink(mapData).pipe(
       map((createdLink) => origin + '/map/' + createdLink.link_code)
     );
   }
 
-  private createShareLink(mapData: any): Observable<CreatedLink> {
+  createShareLink(mapData: any): Observable<CreatedLink> {
     return this.http.post<CreatedLink>(
       BackendConstants.END_POINT + '/planning/create_link/',
       {

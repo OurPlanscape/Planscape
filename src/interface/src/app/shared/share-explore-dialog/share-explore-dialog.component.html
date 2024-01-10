@@ -1,14 +1,13 @@
+<mat-icon class="close-btn" (click)="cancel()">close</mat-icon>
 <h1 mat-dialog-title>Share link</h1>
 <section>
-  <mat-form-field class="full">
-    <input
-      matInput
-      [disabled]="!link"
-      readonly
-      [value]="link || ''"
-      (click)="selectText($event)"
-      class="link-textfield" />
-  </mat-form-field>
+  <input
+    class="link-textfield"
+    readonly
+    [value]="link"
+    (click)="selectText($event)"
+    [disabled]="!link" />
+
   <mat-spinner diameter="24" *ngIf="!link" class="loader"></mat-spinner>
   <mat-error *ngIf="error"> There was an error generating the link.</mat-error>
 

@@ -28,6 +28,6 @@ export class NavBarComponent {
   }
 
   share() {
-    this.dialog.open(ShareExploreDialogComponent);
+    this.dialog.open(ShareExploreDialogComponent, { restoreFocus: false });
   }
 }
