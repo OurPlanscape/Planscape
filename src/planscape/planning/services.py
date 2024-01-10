@@ -46,16 +46,18 @@ def get_acreage(geometry: GEOSGeometry):
     acres = epsg_5070_area / CONVERSION_SQM_ACRES
     return acres
 
+
 def validate_scenario_treatment_ratio(
     planning_area: PlanningArea,
     configuration: Dict[str, Any],
 ) -> Tuple[bool, str]:
     planning_area_acres = get_acreage(planning_area.geometry)
     max_treatable_area = get_max_treatable_area(configuration)
-    
+
     min_acreage = math.floor(planning_area_acres * 0.2)
     max_acreage = math.ceil(planning_area_acres * 0.8)
 
+    # the user has not provided a budget
     if "max_budget" not in configuration:
         if max_treatable_area <= min_acreage:
             return (
@@ -67,13 +69,14 @@ def validate_scenario_treatment_ratio(
                 False,
                 f"Treatment area is {round(max_treatable_area, 2)} acres. This should be less than {max_acreage} acres, or 80% of {int(planning_area_acres)} acres.",
             )
-        
+
+    # the user has provided a budget, but the budget isn't sufficient to treat > 20% of the area
     if "max_budget" in configuration and max_treatable_area <= min_acreage:
-        min_req_budget = round(min_acreage * configuration['est_cost'], 2)
+        min_req_budget = math.ceil(min_acreage * configuration["est_cost"])
         return (
-                False,
-                f"Your budget can only treat {round(max_treatable_area, 2)} acres. It should be at least ${min_req_budget} to treat 20% of the planning area.",
-            )
+            False,
+            f"Your budget can only treat {math.floor(max_treatable_area)} acres. It should be at least ${min_req_budget} to treat 20% of the planning area.",
+        )
 
     return (True, "Treatment ratio is valid.")
 
