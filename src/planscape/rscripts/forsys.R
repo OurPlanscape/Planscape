@@ -51,16 +51,45 @@ PREPROCESSING_MULTIPLIERS <- list(
     aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
   )
 
+STAND_AREAS_ACRES <- list(
+  SMALL = 9.884,
+  MEDIUM = 98.84,
+  LARGE = 494.2
+)
+
+average_per_stand <- function(value, stand_count, stand_size = NA) {
+  return(round(value/stand_count, digits=2))
+}
+average_ses <- function(value, stand_count, stand_size = NA) {
+  return(round(value/stand_count, digits=0))
+}
+total_acres_per_project <- function(value, stand_count, stand_size) {
+  stand_size_in_acres <- STAND_AREAS_ACRES[[stand_size]]
+  return(round(value * stand_size_in_acres, digits=2))
+}
+
+POSTPROCESSING_FUNCTIONS <- list(
+  probability_of_fire_severity_high = average_per_stand,
+  damage_potential_wui = average_per_stand,
+  total_fuel_exposed_to_fire = average_per_stand,
+  standing_dead_and_ladder_fuels = average_per_stand,
+  wildlife_species_richness = average_per_stand,
+  endangered_vertebrate = average_per_stand,
+  aboveground_live_tree_carbon = average_per_stand,
+  structure_exposure = average_ses,
+  structure_exposure_score = average_ses,
+  california_spotted_owl_habitat = total_acres_per_project,
+  american_pacific_marten_habitat = total_acres_per_project,
+  nothern_goshawk_habitat = total_acres_per_project,
+  band_tailed_pigeon_habitat = total_acres_per_project,
+  california_spotted_owl_territory = total_acres_per_project,
+  pacific_fisher = total_acres_per_project,
+  giant_sequoia_stands = total_acres_per_project
+)
+
 METRIC_COLUMNS <- list(
   distance_to_roads = "min",
   slope = "max",
-  california_spotted_owl_habitat = "sum",
-  american_pacific_marten_habitat = "sum",
-  nothern_goshawk_habitat = "sum",
-  band_tailed_pigeon_habitat = "sum",
-  california_spotted_owl_territory = "sum",
-  pacific_fisher = "sum",
-  giant_sequoia_stands = "sum",
   low_income_population_proportional = "sum",
   wui = "majority",
   mean_percent_fire_return_interval_departure_condition_class = "majority",
@@ -283,18 +312,37 @@ get_cost_per_acre <- function(scenario) {
   }
 }
 
+
 to_properties <- function(
     project_id,
     scenario,
-    forsys_project_outputs) {
+    forsys_project_outputs,
+    project_stand_count,
+    stand_size) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
     select(-contains("Pr_1")) %>%
+    mutate(stand_count = project_stand_count) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
     rename_with(.fn = rename_col)
+
+  # post process
+  log_info("Postprocessing results.")
+  for (column in names(project_data)) {
+    if (column %in% names(POSTPROCESSING_FUNCTIONS)) {
+      postprocess_fn <- POSTPROCESSING_FUNCTIONS[[column]]
+      new_column <- glue("p_{column}")
+      log_info("Post processing {column} to {new_column}.")
+      project_data <- project_data %>%
+        mutate(
+          !!treat_string_as_col(new_column) := postprocess_fn(!!treat_string_as_col(column), project_stand_count, stand_size)
+        )
+    }
+  }
+
   return(as.list(project_data))
 }
 
@@ -303,6 +351,8 @@ to_project_data <- function(
     scenario,
     project_id,
     forsys_outputs) {
+  configuration <- get_configuration(scenario)
+  stand_size <- get_stand_size(configuration)
   project_stand_ids <- select(
     filter(
       forsys_outputs$stand_output,
@@ -311,12 +361,15 @@ to_project_data <- function(
     ),
     stand_id
   )
+  stand_count <- nrow(project_stand_ids)
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
   geometry <- get_project_geometry(connection, project_stand_ids)
   properties <- to_properties(
     project_id,
     scenario,
-    forsys_project_outputs = forsys_outputs$project_output
+    forsys_outputs$project_output,
+    stand_count,
+    stand_size
   )
   return(list(
     type = "Feature",
