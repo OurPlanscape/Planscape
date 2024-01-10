@@ -5521,7 +5521,7 @@
                   "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
                   "raw_layer": ":wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
-                  "raw_data_download_path": "sierra-nevada/wetlangInteg/Tier2/MeadowSensNDWI_2019_30m.tif",
+                  "raw_data_download_path": "sierra-nevada/wetlandInteg/Tier2/Meadow_SensNDWI_2019_30m.tif",
                   "normalized_layer": ":wetlandIntegTranslate_Tier2_Meadow_SensNDWI_2019_scored",
                   "normalized_data_download_path": "sierra-nevada/wetlandIntegrityTranslate/Tier2/Meadow_SensNDWI_2019_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
