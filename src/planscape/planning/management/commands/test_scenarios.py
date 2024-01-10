@@ -67,7 +67,7 @@ class Command(BaseCommand):
                 area_data = json.load(f)
                 area_data["user_id"] = self.test_user.id
                 area_obj, _ = PlanningArea.objects.update_or_create(
-                    id=area_data["pk"],
+                    id=area_data.get("pk") or None,
                     defaults=area_data,
                 )
                 self.test_area_ids.append(area_obj.id)
@@ -86,7 +86,7 @@ class Command(BaseCommand):
             # overwrite details
             scenario_data["planning_area_id"] = area_id
             scenario_obj, _ = Scenario.objects.update_or_create(
-                defaults=scenario_data, id=scenario_data["pk"]
+                defaults=scenario_data, id=scenario_data.get("pk") or None
             )
             self.scenarios_to_test.append(scenario_obj.id)
 

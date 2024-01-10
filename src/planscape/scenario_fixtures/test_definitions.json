@@ -5,5 +5,11 @@
       "monobasin/scenarios/eightypct-acreage.json",
       "monobasin/scenarios/half-acreage.json"
     ]
+  },
+  {
+    "planning_area": "owlregion/owlregion.json",
+    "scenarios": [
+      "owlregion/scenarios/450kacres-small.json"
+    ]
   }
 ]
