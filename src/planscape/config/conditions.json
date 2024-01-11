@@ -4770,8 +4770,7 @@
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true,
-                  "data_units": "Probability",
-                  "output_units": "Acres"
+                  "data_units": "Probability"
                 },
                 {
                   "display_name": "Probability of Fire Severity (Moderate)",
