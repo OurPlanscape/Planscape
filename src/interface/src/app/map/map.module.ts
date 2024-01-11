@@ -16,6 +16,7 @@ import { ConditionTreeComponent } from './map-control-panel/condition-tree/condi
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeaturesModule } from '../features/features.module';
 import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
+import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-re
     MapConfigSummaryComponent,
     ConditionTreeComponent,
     OutsideRegionDialogComponent,
+    InvalidLinkDialogComponent,
   ],
   imports: [
     CommonModule,
