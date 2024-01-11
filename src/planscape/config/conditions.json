@@ -4271,7 +4271,7 @@
                   "data_year": "2021",
                   "metric_name": "california_spotted_owl_territory",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CSO_territory.tif",
-                  "raw_layer": ":bioDiverConservTranslate_Tier2_CSO_territory_scored",
+                  "raw_layer": ":bioDiverConservTranslate_Tier2_CSO_territory",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=39",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
