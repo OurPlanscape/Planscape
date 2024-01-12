@@ -52,7 +52,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
 
 
 class ConfigurationSerializer(serializers.Serializer):
-    question_id = serializers.IntegerField(allow_null=True, allow_empty=True)
+    question_id = serializers.IntegerField(allow_null=True, required=False)
     weights = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
     est_cost = serializers.FloatField(min_value=1)
     max_budget = serializers.FloatField(
