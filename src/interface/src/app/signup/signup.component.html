@@ -1,124 +1,122 @@
-<div class="signup-root">
-  <div class="info-card-container">
-    <app-info-card></app-info-card>
-  </div>
+<div class="info-card-container">
+  <app-info-card></app-info-card>
+</div>
 
-  <div class="signup-form-container">
-    <div class="signup-form-subcontainer">
-      <div class="planscape-color-logo">
-        <img src="assets/svg/planscape-color-logo.svg" alt="Planscape logo" />
-      </div>
-      <div class="signup-form">
-        <h1 class="signup-title">Create your account</h1>
+<div class="signup-form-container">
+  <div class="signup-form-subcontainer">
+    <div class="planscape-color-logo">
+      <img src="assets/svg/planscape-color-logo.svg" alt="Planscape logo" />
+    </div>
+    <div class="signup-form">
+      <h1 class="signup-title">Create your account</h1>
 
-        <form [formGroup]="form" (ngSubmit)="signup()">
-          <mat-label class="standard-label"
-            >First Name
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input type="text" required formControlName="firstName" matInput />
-          </mat-form-field>
-          <app-field-alert
-            *ngIf="
-              !!form.controls['firstName'].errors &&
-              form.controls['firstName'].dirty === true
-            "
-            message="This field must contain a value."
-            title="First Name Error"></app-field-alert>
+      <form [formGroup]="form" (ngSubmit)="signup()">
+        <mat-label class="standard-label"
+          >First Name
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input type="text" required formControlName="firstName" matInput />
+        </mat-form-field>
+        <app-field-alert
+          *ngIf="
+            !!form.controls['firstName'].errors &&
+            form.controls['firstName'].dirty === true
+          "
+          message="This field must contain a value."
+          title="First Name Error"></app-field-alert>
 
-          <mat-label class="standard-label"
-            >Last Name
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input type="text" required formControlName="lastName" matInput />
-          </mat-form-field>
-          <app-field-alert
-            *ngIf="
-              !!form.controls['lastName'].errors &&
-              form.controls['lastName'].dirty
-            "
-            message="This field must contain a value."
-            title="Last Name Error"></app-field-alert>
+        <mat-label class="standard-label"
+          >Last Name
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input type="text" required formControlName="lastName" matInput />
+        </mat-form-field>
+        <app-field-alert
+          *ngIf="
+            !!form.controls['lastName'].errors &&
+            form.controls['lastName'].dirty
+          "
+          message="This field must contain a value."
+          title="Last Name Error"></app-field-alert>
 
-          <mat-label class="standard-label"
-            >Email
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input
-              type="text"
-              required
-              formControlName="email"
-              matInput
-              (blur)="getEmailError()" />
-          </mat-form-field>
-          <app-field-alert
-            *ngIf="
-              form.controls['email'].touched && !!form.controls['email'].errors
-            "
-            [message]="getEmailError()"
-            title="email error"></app-field-alert>
+        <mat-label class="standard-label"
+          >Email
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input
+            type="text"
+            required
+            formControlName="email"
+            matInput
+            (blur)="getEmailError()" />
+        </mat-form-field>
+        <app-field-alert
+          *ngIf="
+            form.controls['email'].touched && !!form.controls['email'].errors
+          "
+          [message]="getEmailError()"
+          title="email error"></app-field-alert>
 
-          <mat-label class="standard-label"
-            >Create Password
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input
-              type="password"
-              required
-              formControlName="password1"
-              matInput
-              autocomplete="password"
-              [errorStateMatcher]="passwordStateMatcher"
-              (focus)="showHint = true"
-              (blur)="showHint = false" />
-          </mat-form-field>
-          <app-field-alert
-            [messageType]="FormMessageType.ALERT"
-            *ngIf="showHint && !form.get('password1')?.value"
-            title="Password requirements"
-            message="Your password needs to be at least 8 characters long.">
-          </app-field-alert>
-          <app-field-alert
-            [messageType]="FormMessageType.ERROR"
-            *ngIf="!showHint && form.get('password1')?.errors?.['minlength']"
-            title="Password Error"
-            message="Your password needs to be at least 8 characters long."></app-field-alert>
-          <mat-label class="standard-label"
-            >Confirm Password
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input
-              type="password"
-              required
-              formControlName="password2"
-              autocomplete="new-password"
-              matInput />
-          </mat-form-field>
+        <mat-label class="standard-label"
+          >Create Password
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input
+            type="password"
+            required
+            formControlName="password1"
+            matInput
+            autocomplete="password"
+            [errorStateMatcher]="passwordStateMatcher"
+            (focus)="showHint = true"
+            (blur)="showHint = false" />
+        </mat-form-field>
+        <app-field-alert
+          [messageType]="FormMessageType.ALERT"
+          *ngIf="showHint && !form.get('password1')?.value"
+          title="Password requirements"
+          message="Your password needs to be at least 8 characters long.">
+        </app-field-alert>
+        <app-field-alert
+          [messageType]="FormMessageType.ERROR"
+          *ngIf="!showHint && form.get('password1')?.errors?.['minlength']"
+          title="Password Error"
+          message="Your password needs to be at least 8 characters long."></app-field-alert>
+        <mat-label class="standard-label"
+          >Confirm Password
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input
+            type="password"
+            required
+            formControlName="password2"
+            autocomplete="new-password"
+            matInput />
+        </mat-form-field>
 
-          <app-form-message
-            [messageType]="FormMessageType.ERROR"
-            *ngIf="!!form.errors"
-            title="Signup Error"
-            [message]="getFormErrors()">
-          </app-form-message>
+        <app-form-message
+          [messageType]="FormMessageType.ERROR"
+          *ngIf="!!form.errors"
+          title="Signup Error"
+          [message]="getFormErrors()">
+        </app-form-message>
 
-          <div class="button-row">
-            <button
-              mat-flat-button
-              type="submit"
-              color="primary"
-              class="create-button"
-              [disabled]="!form.valid || submitting">
-              {{ submitting ? 'Please wait...' : 'CREATE ACCOUNT' }}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div class="button-row">
+          <button
+            mat-flat-button
+            type="submit"
+            color="primary"
+            class="create-button"
+            [disabled]="!form.valid || submitting">
+            {{ submitting ? 'Please wait...' : 'CREATE ACCOUNT' }}
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </div>
