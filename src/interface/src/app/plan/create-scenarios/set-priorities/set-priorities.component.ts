@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { distinctUntilChanged, take, tap } from 'rxjs';
@@ -23,8 +23,6 @@ import {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
-  @Output() changeConditionEvent = new EventEmitter<string>();
-
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),

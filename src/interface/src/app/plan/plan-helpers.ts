@@ -78,8 +78,7 @@ export function findQuestionOnTreatmentGoalsConfig(
   let selectedQuestion: TreatmentQuestionConfig | undefined;
   treatmentGoalConfigs.some((goal) => {
     selectedQuestion = goal.questions.find(
-      (question) =>
-        question.short_question_text === treatmentQuestion?.short_question_text
+      (question) => question.id === treatmentQuestion?.id
     );
     return !!selectedQuestion;
   });

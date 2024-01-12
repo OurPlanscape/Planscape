@@ -8,6 +8,7 @@ import { TreatmentGoalConfig, TreatmentQuestionConfig } from '../types';
 
 const questions = [
   {
+    id: 1,
     short_question_text: 'test_question',
     scenario_output_fields_paths: {},
     scenario_priorities: [''],
@@ -18,6 +19,7 @@ const questions = [
 ];
 
 const defaultQuestion: TreatmentQuestionConfig = {
+  id: 2,
   short_question_text: 'this is the question',
   scenario_output_fields_paths: {},
   scenario_priorities: [''],
