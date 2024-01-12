@@ -9,9 +9,9 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
-import { MapService } from './../../../services/map.service';
-import { ConditionsConfig } from './../../../types/data.types';
-import { ColormapConfig } from './../../../types/legend.types';
+import { MapService } from '../../../services';
+import { ConditionsConfig } from '../../../types';
+import { ColormapConfig } from '../../../types';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
@@ -36,6 +36,7 @@ describe('SetPrioritiesComponent', () => {
     weights: [0],
   };
   const testQuestion: TreatmentQuestionConfig = {
+    id: 1,
     short_question_text: 'test_question',
     scenario_priorities: ['test_priority'],
     scenario_output_fields_paths: {},
@@ -206,7 +207,7 @@ describe('SetPrioritiesComponent', () => {
       expect(checked).toBe(testQuestion.toString());
 
       const question: TreatmentQuestionConfig = {
-        ...testQuestion,
+        ...{ ...testQuestion, ...{ id: 2 } },
         ...{ short_question_text: 'asdas' },
       };
       // different treatment goals
