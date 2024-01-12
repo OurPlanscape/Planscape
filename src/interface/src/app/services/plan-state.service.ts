@@ -76,7 +76,9 @@ export class PlanStateService {
     return this.scenarioService.getScenario(scenarioId).pipe(
       switchMap((scenario) => {
         // TODO this is pretty bad, why do we need to pull stuff from another endpoint for this?
-        return this.getSelectedQuestionFromConfig(scenario.configuration).pipe(
+        return this.getSelectedQuestionFromConfig(
+          scenario.configuration.question_id!
+        ).pipe(
           take(1),
           map((selectedQuestion) => {
             return {
@@ -94,17 +96,14 @@ export class PlanStateService {
     );
   }
 
-  getSelectedQuestionFromConfig(config: any) {
+  getSelectedQuestionFromConfig(questionId: number) {
     var selectedQuestion: TreatmentQuestionConfig | null = null;
+
     return this.treatmentGoalsConfig$.pipe(
       map((goals) => {
         goals!.forEach((goal) => {
           goal.questions.forEach((question) => {
-            if (
-              question['scenario_priorities']?.toString() ==
-                config.scenario_priorities?.toString() &&
-              question['weights']?.toString() == config.weights?.toString()
-            ) {
+            if (question.id === questionId) {
               selectedQuestion = question;
             }
           });
