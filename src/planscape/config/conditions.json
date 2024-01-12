@@ -4271,7 +4271,7 @@
                   "data_year": "2021",
                   "metric_name": "california_spotted_owl_territory",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CSO_territory.tif",
-                  "raw_layer": ":bioDiverConservTranslate_Tier2_CSO_territory_scored",
+                  "raw_layer": ":bioDiverConservTranslate_Tier2_CSO_territory",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=39",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -4770,8 +4770,7 @@
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true,
-                  "data_units": "Probability",
-                  "output_units": "Acres"
+                  "data_units": "Probability"
                 },
                 {
                   "display_name": "Probability of Fire Severity (Moderate)",
@@ -5521,7 +5520,7 @@
                   "display_name": "Meadow Sensitivity Index",
                   "filepath": "sierra_nevada/wetland_integrity/hydrologic/Meadow_SensNDWI_2019_300m",
                   "raw_layer": ":wetlandInteg_Tier2_Meadow_SensNDWI_2019_30m",
-                  "raw_data_download_path": "sierra-nevada/wetlangInteg/Tier2/MeadowSensNDWI_2019_30m.tif",
+                  "raw_data_download_path": "sierra-nevada/wetlandInteg/Tier2/Meadow_SensNDWI_2019_30m.tif",
                   "normalized_layer": ":wetlandIntegTranslate_Tier2_Meadow_SensNDWI_2019_scored",
                   "normalized_data_download_path": "sierra-nevada/wetlandIntegrityTranslate/Tier2/Meadow_SensNDWI_2019_scored.tif",
                   "source": "Sierra Nevada Regional Resource Kit",
