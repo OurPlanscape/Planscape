@@ -52,6 +52,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
 
 
 class ConfigurationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
     weights = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
     est_cost = serializers.FloatField(min_value=1)
     max_budget = serializers.FloatField(
