@@ -7,7 +7,7 @@
           "category_name": "Fire Dynamics",
           "questions": [
             {
-              "id": 1,
+              "question_id": 1,
               "long_question_text": "What areas have the highest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "scenario_priorities": [
@@ -53,7 +53,7 @@
               "global_thresholds": []
             },
             {
-              "id": 2,
+              "question_id": 2,
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "scenario_priorities": [
@@ -108,7 +108,7 @@
               "global_thresholds": []
             },
             {
-              "id": 3,
+              "question_id": 3,
               "long_question_text": "Where are the optimal areas to treat to reduce overall fuel loads?",
               "short_question_text": "Fuel-load Reduction Opportunities",
               "scenario_priorities": [
@@ -152,7 +152,7 @@
               "global_thresholds": []
             },
             {
-              "id": 4,
+              "question_id": 4,
               "long_question_text": "What areas are both needed and are suitable for prescribed burning?",
               "short_question_text": "Areas for Prescribed Burns",
               "scenario_priorities": [
@@ -215,7 +215,7 @@
           "category_name": "Biodiversity",
           "questions": [
             {
-              "id": 5,
+              "question_id": 5,
               "long_question_text": "Where are the priority opportunities to effectively reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "scenario_output_fields_paths": {
@@ -272,7 +272,7 @@
               "global_thresholds": []
             },
             {
-              "id": 6,
+              "question_id": 6,
               "long_question_text": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "scenario_priorities": [
@@ -326,7 +326,7 @@
               "global_thresholds": []
             },
             {
-              "id": 7,
+              "question_id": 7,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -376,7 +376,7 @@
               "global_thresholds": []
             },
             {
-              "id": 8,
+              "question_id": 8,
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -428,7 +428,7 @@
           "category_name": "Carbon/Biomass",
           "questions": [
             {
-              "id": 9,
+              "question_id": 9,
               "long_question_text": "What areas should be managed to maximize existing long-term above ground carbon accumulation and storage?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "scenario_priorities": [
@@ -474,7 +474,7 @@
               "global_thresholds": []
             },
             {
-              "id": 10,
+              "question_id": 10,
               "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Reduce Fire Risk in Carbon Sinks",
               "scenario_output_fields_paths": {
@@ -531,7 +531,7 @@
           "category_name": "Fire Dynamics",
           "questions": [
             {
-              "id": 11,
+              "question_id": 11,
               "long_question_text": "What areas have the greatest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "scenario_output_fields_paths": {
@@ -589,7 +589,7 @@
               "global_thresholds": []
             },
             {
-              "id": 12,
+              "question_id": 12,
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk within the Wildland Urban Interface? ",
               "short_question_text": "Reduce WUI Fire Risk",
               "scenario_output_fields_paths": {
@@ -652,7 +652,7 @@
           "category_name": "Biodiversity",
           "questions": [
             {
-              "id": 13,
+              "question_id": 13,
               "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to riparian habitats",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "scenario_output_fields_paths": {
@@ -703,7 +703,7 @@
               "global_thresholds": []
             },
             {
-              "id": 14,
+              "question_id": 14,
               "long_question_text": "Where are the best/priority opportunities to effectively reduce high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "scenario_output_fields_paths": {
@@ -755,7 +755,7 @@
               "global_thresholds": []
             },
             {
-              "id": 15,
+              "question_id": 15,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -808,7 +808,7 @@
               "global_thresholds": []
             },
             {
-              "id": 16,
+              "question_id": 16,
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -864,7 +864,7 @@
           "category_name": "Carbon/Biomass",
           "questions": [
             {
-              "id": 17,
+              "question_id": 17,
               "long_question_text": "What areas support high above ground live carbon and are exposed to high severity fire potential?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "scenario_output_fields_paths": {
@@ -929,7 +929,7 @@
           "category_name": "Fire Dynamics",
           "questions": [
             {
-              "id": 18,
+              "question_id": 18,
               "long_question_text": "What areas have the greatest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "scenario_output_fields_paths": {
@@ -996,7 +996,7 @@
               "global_thresholds": []
             },
             {
-              "id": 19,
+              "question_id": 19,
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk within  the Wildland Urban Interface? ",
               "short_question_text": "Reduce WUI Fire Risk",
               "scenario_output_fields_paths": {
@@ -1064,7 +1064,7 @@
               "global_thresholds": []
             },
             {
-              "id": 20,
+              "question_id": 20,
               "long_question_text": "What areas need and are suitable for prescribed burning?",
               "short_question_text": "Areas for Prescribed Burns",
               "scenario_output_fields_paths": {
@@ -1149,7 +1149,7 @@
           "category_name": "Biodiversity",
           "questions": [
             {
-              "id": 21,
+              "question_id": 21,
               "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to terrestrial habitat associated with special status (focal) species?",
               "short_question_text": "Reduce Fire Risk in Terrestrial Habitat",
               "scenario_output_fields_paths": {
@@ -1215,7 +1215,7 @@
               "global_thresholds": []
             },
             {
-              "id": 22,
+              "question_id": 22,
               "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "scenario_output_fields_paths": {
@@ -1276,7 +1276,7 @@
               "global_thresholds": []
             },
             {
-              "id": 23,
+              "question_id": 23,
               "long_question_text": "Where are the best/priority opportunities to effectively reduce high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "scenario_output_fields_paths": {
@@ -1337,7 +1337,7 @@
               "global_thresholds": []
             },
             {
-              "id": 24,
+              "question_id": 24,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -1359,7 +1359,7 @@
               "global_thresholds": []
             },
             {
-              "id": 25,
+              "question_id": 25,
               "long_question_text": "What areas support high threatened/endangered species richness and what is their exposure to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -1386,7 +1386,7 @@
           "category_name": "Carbon/Biomass",
           "questions": [
             {
-              "id": 26,
+              "question_id": 26,
               "long_question_text": "What areas support high above ground carbon and are exposed to high severity fire potential?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "scenario_output_fields_paths": {
