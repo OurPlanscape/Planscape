@@ -20,7 +20,7 @@ export class ShareExploreDialogComponent implements OnInit {
     private dialogRef: MatDialogRef<ShareExploreDialogComponent>,
     private sessionService: SessionService,
     private shareMapService: ShareMapService,
-    private matSnackBar: MatSnackBar // @Inject(MAT_DIALOG_DATA) public data: PlanCreateDialogData
+    private matSnackBar: MatSnackBar
   ) {}
 
   async submit() {
@@ -42,11 +42,14 @@ export class ShareExploreDialogComponent implements OnInit {
     );
 
     const mapConfigs = await firstValueFrom(this.sessionService.mapConfigs$);
-
-    const data = { mapViewOptions, mapConfigs };
-    this.shareMapService.getSharedLink(data).subscribe((linkUrl) => {
-      this.link = linkUrl;
-    });
+    const region = await firstValueFrom(this.selectedRegion$);
+    if (mapConfigs && region) {
+      const mapConfig = mapConfigs[region];
+      const data = { mapViewOptions, mapConfig, region };
+      this.shareMapService.getSharedLink(data).subscribe((linkUrl) => {
+        this.link = linkUrl;
+      });
+    }
   }
 
   selectText(event: Event) {
@@ -56,10 +59,6 @@ export class ShareExploreDialogComponent implements OnInit {
 
   copy() {
     navigator.clipboard.writeText(this.link || '');
-    this.matSnackBar.open(
-      'Link copied to clipboard',
-      'Dismiss',
-      SNACK_NOTICE_CONFIG
-    );
+    this.matSnackBar.open('Link copied ', 'Dismiss', SNACK_NOTICE_CONFIG);
   }
 }

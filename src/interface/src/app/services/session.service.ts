@@ -8,7 +8,7 @@ import {
 } from '../map/map.helper';
 
 /** How often the user's session should be saved to local storage (in ms). */
-const SESSION_SAVE_INTERVAL = 60000;
+const SESSION_SAVE_INTERVAL = 600;
 
 /**
  * The session service keeps track of where the guest or logged-in user left

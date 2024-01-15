@@ -4,6 +4,7 @@ import { ShareMapService } from './share-map.service';
 import { firstValueFrom, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { WINDOW } from './window.service';
+import { Region } from '../types';
 
 describe('ShareMapService', () => {
   let service: ShareMapService;
@@ -36,13 +37,21 @@ describe('ShareMapService', () => {
           created_at: '',
           link_code: 'superlink',
           updated_at: '',
-          view_state: {},
+          view_state: {
+            mapConfig: [],
+            region: Region.SIERRA_NEVADA,
+            mapViewOptions: null,
+          },
         })
       );
       const link = await firstValueFrom(
-        service.getSharedLink({ data: 'some data' })
+        service.getSharedLink({
+          mapConfig: [],
+          region: Region.SIERRA_NEVADA,
+          mapViewOptions: null,
+        })
       );
-      expect(link).toBe('http://testingurl.com/map/superlink');
+      expect(link).toBe('http://testingurl.com/map?link=superlink');
     });
   });
 });

@@ -1,22 +1,23 @@
 import * as L from 'leaflet';
+import { LatLngTuple } from 'leaflet';
 
 import {
   AfterViewInit,
   ApplicationRef,
+  ChangeDetectorRef,
   Component,
   createComponent,
+  DoCheck,
   EnvironmentInjector,
+  HostListener,
+  Input,
   OnDestroy,
   OnInit,
-  ChangeDetectorRef,
-  DoCheck,
-  Input,
-  HostListener,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -64,7 +65,10 @@ import { PlanStateService } from '../services/plan-state.service';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
 import { RegionService } from '../services/region.service';
-import { LatLngTuple } from 'leaflet';
+
+import { ShareMapService } from '../services/share-map.service';
+import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
+import { Location } from '@angular/common';
 
 @UntilDestroy()
 @Component({
@@ -152,7 +156,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private regionService: RegionService
+    private regionService: RegionService,
+    private route: ActivatedRoute,
+    private shareMapService: ShareMapService,
+    private location: Location
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -179,7 +186,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.selectedRegion$.pipe(take(1)).subscribe((region) => {
       this.regionRecord = region!;
     });
-    this.restoreSession();
+    const link = this.route.snapshot.queryParams['link'];
+    if (link) {
+      this.loadMapDataFromLink(link);
+    } else {
+      this.restoreSession();
+    }
+
     /** Save map configurations in the user's session every X ms. */
     this.sessionService.sessionInterval$
       .pipe(untilDestroyed(this))
@@ -285,6 +298,53 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
   }
 
+  loadMapDataFromLink(link: string) {
+    this.shareMapService.getMapDataFromLink(link).subscribe({
+      next: (result) => {
+        this.sessionService.setRegion(result.region);
+        if (result.mapViewOptions) {
+          this.mapViewOptions$.next(result.mapViewOptions);
+        }
+        result.mapConfig.forEach((mapConfig, index) => {
+          this.maps[index].config = mapConfig;
+          const center = result.mapViewOptions!.center as LatLngTuple;
+          this.initMap(this.maps[index], this.maps[index].id, center);
+        });
+
+        this.updateBoundaryConfigFromMapConfig();
+
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.location.replaceState(location.pathname, '');
+        this.dialog.open(InvalidLinkDialogComponent);
+      },
+    });
+  }
+
+  /** we need to find the same config instance from boundaryConfig$ as the one
+   * saved in map.config, so the map config panel shows the same right selection.
+   * TODO: avoid this, save only the boundary config id or something that we can
+   * easily identify rather than the whole object (which drives this issue)
+   */
+  private updateBoundaryConfigFromMapConfig() {
+    this.boundaryConfig$
+      .pipe(filter((config) => !!config))
+      .subscribe((config) => {
+        // Ensure the radio button corresponding to the saved selection is selected.
+        this.maps.forEach((map) => {
+          const boundaryConfig = config?.find(
+            (boundary) =>
+              boundary.boundary_name ===
+              map.config.boundaryLayerConfig.boundary_name
+          );
+          map.config.boundaryLayerConfig = boundaryConfig
+            ? boundaryConfig
+            : NONE_BOUNDARY_CONFIG;
+        });
+      });
+  }
+
   private restoreSession() {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -308,21 +368,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
               }
             }
           });
-        this.boundaryConfig$
-          .pipe(filter((config) => !!config))
-          .subscribe((config) => {
-            // Ensure the radio button corresponding to the saved selection is selected.
-            this.maps.forEach((map) => {
-              const boundaryConfig = config?.find(
-                (boundary) =>
-                  boundary.boundary_name ===
-                  map.config.boundaryLayerConfig.boundary_name
-              );
-              map.config.boundaryLayerConfig = boundaryConfig
-                ? boundaryConfig
-                : NONE_BOUNDARY_CONFIG;
-            });
-          });
+        this.updateBoundaryConfigFromMapConfig();
       });
     this.cdr.detectChanges();
   }
@@ -342,7 +388,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       .pipe(take(1))
       .subscribe((selectedRegion: Region | null) => {
         const centerCoords = center || regionMapCenters(selectedRegion!);
-
         map.instance?.setView(
           new L.LatLng(centerCoords[0], centerCoords[1]),
           zoom
