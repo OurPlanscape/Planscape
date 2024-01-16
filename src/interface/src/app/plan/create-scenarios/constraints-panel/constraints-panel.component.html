@@ -128,7 +128,7 @@
           area="EXCLUDE_AREAS"
           title="EXCLUDE AREAS"></app-scenario-tooltip>
 
-        <app-form-message class="excluded-areas-warn"
+        <app-form-message class="excluded-areas-warn" *ngIf="showWarning"
           >Adding exclusion areas reduces the available scenario acreage, and
           may cause the scenario to fail. If your scenario is failing, please
           try again with no exclusion areas.
