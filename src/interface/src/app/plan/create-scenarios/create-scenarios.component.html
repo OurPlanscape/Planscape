@@ -21,10 +21,7 @@
         [animationDuration]="tabAnimation">
         <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
-            <app-set-priorities
-              (changeConditionEvent)="
-                changeCondition($event)
-              "></app-set-priorities>
+            <app-set-priorities></app-set-priorities>
             <app-identify-project-areas
               *ngIf="project_area_upload_enabled"
               [formGroup]="projectAreasForm"></app-identify-project-areas>

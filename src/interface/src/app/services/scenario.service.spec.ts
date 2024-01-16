@@ -84,6 +84,7 @@ describe('ScenarioService', () => {
       stand_thresholds: [''],
       global_thresholds: [''],
       weights: [0],
+      id: 2,
     };
     it('should make HTTP request to backend', fakeAsync(() => {
       const scenarioConfig: ScenarioConfig = {
@@ -115,6 +116,7 @@ describe('ScenarioService', () => {
         global_thresholds: [''],
         weights: [0],
         stand_size: 'LARGE',
+        question_id: 2,
       };
 
       service.createScenario(scenario).subscribe((res) => {

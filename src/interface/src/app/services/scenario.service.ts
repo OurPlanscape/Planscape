@@ -127,6 +127,7 @@ export class ScenarioService {
 
   private convertConfigToScenario(config: ScenarioConfig): any {
     return {
+      question_id: config.treatment_question!.id,
       est_cost: config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
