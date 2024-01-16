@@ -10,7 +10,7 @@
       <div class="signin-card">
         <h1 class="signin-title">Sign in to Planscape</h1>
 
-        <form [formGroup]="form" (ngSubmit)="login()">
+        <form [formGroup]="form" (ngSubmit)="login()" autocomplete="on">
           <mat-label class="standard-label"
             >Email
             <span class="required-blurb">required</span>
@@ -22,7 +22,8 @@
               formControlName="email"
               matInput
               (blur)="checkEmailErrors()"
-              (keyup)="clearEmailErrors()" />
+              (keyup)="clearEmailErrors()"
+              autocomplete="email" />
           </mat-form-field>
           <app-field-alert
             *ngIf="
@@ -42,6 +43,7 @@
               type="password"
               required
               formControlName="password"
+              autocomplete="current-password"
               matInput />
           </mat-form-field>
           <app-field-alert
