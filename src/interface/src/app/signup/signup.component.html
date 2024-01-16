@@ -11,13 +11,18 @@
       <div class="signup-form">
         <h1 class="signup-title">Create your account</h1>
 
-        <form [formGroup]="form" (ngSubmit)="signup()">
+        <form [formGroup]="form" (ngSubmit)="signup()" autocomplete="on">
           <mat-label class="standard-label"
             >First Name
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input type="text" required formControlName="firstName" matInput />
+            <input
+              type="text"
+              required
+              formControlName="firstName"
+              matInput
+              autocomplete="given-name" />
           </mat-form-field>
           <app-field-alert
             *ngIf="
@@ -32,7 +37,12 @@
             <span class="required-blurb">required</span>
           </mat-label>
           <mat-form-field appearance="outline">
-            <input type="text" required formControlName="lastName" matInput />
+            <input
+              type="text"
+              required
+              formControlName="lastName"
+              matInput
+              autocomplete="family-name" />
           </mat-form-field>
           <app-field-alert
             *ngIf="
@@ -52,6 +62,7 @@
               required
               formControlName="email"
               matInput
+              autocomplete="email"
               (blur)="getEmailError()" />
           </mat-form-field>
           <app-field-alert
@@ -71,7 +82,7 @@
               required
               formControlName="password1"
               matInput
-              autocomplete="password"
+              autocomplete="new-password"
               [errorStateMatcher]="passwordStateMatcher"
               (focus)="showHint = true"
               (blur)="showHint = false" />
