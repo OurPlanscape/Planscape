@@ -3,6 +3,7 @@ import shutil
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 import fiona
+from fiona.crs import to_string
 
 from planning.services import (
     export_to_shapefile,
@@ -230,4 +231,5 @@ class ExportToShapefileTest(TransactionTestCase):
         path = output / "s1.shp"
         with fiona.open(path, "r", "ESRI Shapefile") as source:
             self.assertEqual(1, len(source))
+            self.assertEqual(to_string(source.crs), "EPSG:4326")
             shutil.rmtree(str(output))
