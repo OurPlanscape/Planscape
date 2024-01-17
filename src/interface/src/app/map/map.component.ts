@@ -11,6 +11,7 @@ import {
   ChangeDetectorRef,
   DoCheck,
   Input,
+  HostListener,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
@@ -64,6 +65,7 @@ import { PlanStateService } from '../services/plan-state.service';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
 import { RegionService } from '../services/region.service';
+import { LatLngTuple } from 'leaflet';
 
 @UntilDestroy()
 @Component({
@@ -130,6 +132,14 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
   drawRegionEnabled$ = this.regionService.drawRegionEnabled$;
+
+  @HostListener('window:beforeunload')
+  beforeUnload(): Observable<boolean> | boolean {
+    // save map state before leaving page
+    this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
+    this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
+    return true;
+  }
 
   constructor(
     public applicationRef: ApplicationRef,
@@ -222,8 +232,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   ngAfterViewInit(): void {
+    const center = this.mapViewOptions$.value.center as LatLngTuple;
     this.maps.forEach((map: Map) => {
-      this.initMap(map, map.id);
+      this.initMap(map, map.id, center, this.mapViewOptions$.value.zoom);
     });
     this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
   }
@@ -272,6 +283,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   ngOnDestroy(): void {
+    // save map state before removing this component
     this.maps.forEach((map: Map) => map.instance?.remove());
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
   }
@@ -319,7 +331,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   /** Initializes the map with controls and the layer options specified in its config. */
-  private initMap(map: Map, id: string) {
+  private initMap(map: Map, id: string, center?: L.LatLngTuple, zoom?: number) {
     this.mapManager.initLeafletMap(
       map,
       id,
@@ -332,8 +344,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.selectedRegion$
       .pipe(take(1))
       .subscribe((selectedRegion: Region | null) => {
-        var centerCoords = regionMapCenters(selectedRegion!);
-        map.instance?.setView(new L.LatLng(centerCoords[0], centerCoords[1]));
+        const centerCoords = center || regionMapCenters(selectedRegion!);
+
+        map.instance?.setView(
+          new L.LatLng(centerCoords[0], centerCoords[1]),
+          zoom
+        );
         // Region highlighting disabled for now
         this.setRegionBoundaryOnMap(map, selectedRegion);
       });

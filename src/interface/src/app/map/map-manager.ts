@@ -368,7 +368,8 @@ export class MapManager {
 
     map.addEventListener('moveend', (e) => {
       const mapViewOptions = this.mapViewOptions$.getValue();
-      mapViewOptions.center = map.getCenter();
+      const center = map.getCenter();
+      mapViewOptions.center = [center.lat, center.lng];
       this.mapViewOptions$.next(mapViewOptions);
     });
   }
