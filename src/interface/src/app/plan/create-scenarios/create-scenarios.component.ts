@@ -17,6 +17,7 @@ import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { FeatureService } from '../../features/feature.service';
+import { ScenarioService } from '../../services/scenario.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -36,7 +37,7 @@ export class CreateScenariosComponent implements OnInit {
   scenarioId?: string | null;
   planId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
-
+  existingScenarioNames : string[] = [];
   forms: FormGroup = this.fb.group({});
 
   project_area_upload_enabled = this.featureService.isFeatureEnabled(
@@ -64,6 +65,7 @@ export class CreateScenariosComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private planStateService: PlanStateService,
+    private scenarioService: ScenarioService,
     private router: Router,
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService
@@ -120,6 +122,20 @@ export class CreateScenariosComponent implements OnInit {
         this.drawShapes(uploadedArea?.value);
       }
     });
+
+    if (typeof this.planId === 'string') {
+      this.scenarioService
+        .getScenariosForPlan(this.planId)
+        .pipe(take(1))
+        .subscribe((scenarios) => {
+          this.existingScenarioNames = scenarios.map(s => s.name);;
+        });
+    }
+  }
+
+  checkExistingNames() {
+    const scenarioNameValue = this.forms.get('scenarioName')?.value;
+    return this.existingScenarioNames.includes(scenarioNameValue);
   }
 
   pollForChanges() {

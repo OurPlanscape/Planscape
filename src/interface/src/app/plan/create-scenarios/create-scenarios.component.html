@@ -14,6 +14,9 @@
         class="error">
         Please enter scenario name above
       </div>
+      <div *ngIf="checkExistingNames()" class="error">
+        Name is already in use.
+      </div>
     </div>
     <div class="tab-container">
       <mat-tab-group
