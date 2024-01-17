@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.contrib.sites.shortcuts import get_current_site
+from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
 
@@ -40,7 +41,6 @@ from planning.services import (
 from planning.tasks import async_forsys_run
 from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
-
 
 # Retrieve the logged in user from the HTTP request.
 def _get_user(request: HttpRequest) -> User:
@@ -530,8 +530,16 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         if settings.USE_CELERY_FOR_FORSYS:
             async_forsys_run.delay(scenario.pk)
 
+        return JsonResponse({"id": scenario.pk})
+
+    except IntegrityError as ve:
+        reason = ve.args[0]
+        if "(planning_area_id, name)" in ve.args[0]:
+            reason = "A scenario with this name already exists."
         return HttpResponse(
-            json.dumps({"id": scenario.pk}), content_type="application/json"
+            json.dumps({"reason": reason}),
+            content_type="application/json",
+            status=400,
         )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
