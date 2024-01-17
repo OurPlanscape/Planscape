@@ -42,6 +42,7 @@ from planning.tasks import async_forsys_run
 from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
+
 # Retrieve the logged in user from the HTTP request.
 def _get_user(request: HttpRequest) -> User:
     user = None
