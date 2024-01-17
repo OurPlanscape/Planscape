@@ -13,11 +13,22 @@
   border-radius: 2px;
   border: 1px solid $color-dark-gray;
 }
+
 .message-box.success {
   border-color: $color-brand-teal;
 }
+
 .message-box.error {
   border-color: $color-error;
+}
+
+.message-box.inline {
+  flex-direction: row;
+
+  .message-icon {
+    margin-top: 4px;
+  }
+
 }
 
 .message-icon {
