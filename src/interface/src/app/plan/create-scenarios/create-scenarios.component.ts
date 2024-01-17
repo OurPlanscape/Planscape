@@ -37,7 +37,7 @@ export class CreateScenariosComponent implements OnInit {
   scenarioId?: string | null;
   planId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
-  existingScenarioNames : string[] = [];
+  existingScenarioNames: string[] = [];
   forms: FormGroup = this.fb.group({});
 
   project_area_upload_enabled = this.featureService.isFeatureEnabled(
@@ -128,7 +128,7 @@ export class CreateScenariosComponent implements OnInit {
         .getScenariosForPlan(this.planId)
         .pipe(take(1))
         .subscribe((scenarios) => {
-          this.existingScenarioNames = scenarios.map(s => s.name);;
+          this.existingScenarioNames = scenarios.map((s) => s.name);
         });
     }
   }
