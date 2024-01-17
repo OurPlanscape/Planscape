@@ -7,7 +7,7 @@ import { FormMessageType } from '../../types/data.types';
   styleUrls: ['./form-message-box.component.scss'],
 })
 export class FormMessageBoxComponent {
-  @Input() title!: string;
+  @Input() title?: string | null;
   @Input() message?: string | null;
   @Input() messageType: FormMessageType = FormMessageType.ALERT;
 
