@@ -207,6 +207,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   ngDoCheck(): void {
     this.selectedRegion$.pipe(take(1)).subscribe((region) => {
       if (this.regionRecord != region) {
+        console.log('run ngDoCheck!');
         this.regionRecord = region!;
         this.sessionService.mapConfigs$
           .pipe(take(1))
@@ -243,6 +244,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   ngAfterViewInit(): void {
     const center = this.mapViewOptions$.value.center as LatLngTuple;
+
+    console.log('run after view init');
+
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id, center, this.mapViewOptions$.value.zoom);
     });
@@ -301,19 +305,51 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   loadMapDataFromLink(link: string) {
     this.shareMapService.getMapDataFromLink(link).subscribe({
       next: (result) => {
+        console.log('loading the link');
+        // this doesn't work if the region is not the same - might have
+        // a weird issue with whatever runs when changing regions.
+        // I need to take a look at the order of things.
         this.sessionService.setRegion(result.region);
+
         if (result.mapViewOptions) {
           this.mapViewOptions$.next(result.mapViewOptions);
         }
         result.mapConfig.forEach((mapConfig, index) => {
           this.maps[index].config = mapConfig;
           const center = result.mapViewOptions!.center as LatLngTuple;
-          this.initMap(this.maps[index], this.maps[index].id, center);
+          this.initMap(
+            this.maps[index],
+            this.maps[index].id,
+            center,
+            this.mapViewOptions$.value.zoom
+          );
         });
 
-        this.updateBoundaryConfigFromMapConfig();
+        this.sessionService.region$.pipe(take(1)).subscribe((region) => {
+          if (result.mapViewOptions) {
+            this.mapViewOptions$.next(result.mapViewOptions);
+          }
+          this.sessionService.setMapConfigs(result.mapConfig);
+          result.mapConfig.forEach((mapConfig, index) => {
+            this.maps[index].config = mapConfig;
+            const center = result.mapViewOptions!.center;
+            this.initMap(
+              this.maps[index],
+              this.maps[index].id,
+              center,
+              this.mapViewOptions$.value.zoom
+            );
+          });
 
-        this.cdr.detectChanges();
+          this.updateBoundaryConfigFromMapConfig();
+
+          // pretty bad, but doing this to reload conditions on panels
+          this.mapService.conditionsConfig$.next(
+            this.mapService.conditionsConfig$.value
+          );
+
+          this.cdr.detectChanges();
+        });
       },
       error: () => {
         this.location.replaceState(location.pathname, '');
@@ -346,6 +382,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   private restoreSession() {
+    console.log('restoring session');
     this.sessionService.mapViewOptions$
       .pipe(take(1))
       .subscribe((mapViewOptions: MapViewOptions | null) => {

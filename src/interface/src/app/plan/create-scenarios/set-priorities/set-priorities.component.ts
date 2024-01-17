@@ -27,7 +27,6 @@ export class SetPrioritiesComponent implements OnInit {
   treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
     tap((s) => {
-      console.log(s);
       this._treatmentGoals = s;
       // if we got new treatment goals we'll need to find the item again and set it as selected
       const value = this.goalsForm.get('selectedQuestion')?.value;
@@ -79,7 +78,6 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   setFormData(question: TreatmentQuestionConfig) {
-    console.log('setting form data', question);
     if (this._treatmentGoals) {
       // We are losing the object reference somewhere (probably on this.planStateService.treatmentGoalsConfig$)
       // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is

@@ -167,7 +167,6 @@ export class CreateScenariosComponent implements OnInit {
         }
 
         this.disableForms();
-        console.log(scenario.configuration.treatment_question);
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
