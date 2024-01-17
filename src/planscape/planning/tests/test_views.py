@@ -749,6 +749,7 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         }
         self.geometry = {"features": [{"geometry": self.internal_geometry}]}
         self.scenario_configuration = {
+            "question_id": 1,
             "weights": [],
             "est_cost": 2000,
             "max_budget": None,
@@ -922,6 +923,7 @@ class CreateScenarioTest(TransactionTestCase):
         )
 
         self.configuration = {
+            "question_id": 1,
             "weights": [],
             "est_cost": 2000,
             "max_budget": None,
@@ -1486,6 +1488,7 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
             self.user, "test plan", self.storable_geometry
         )
         self.configuration = {
+            "question_id": 1,
             "weights": [],
             "est_cost": 2000,
             "max_budget": None,
@@ -1591,6 +1594,7 @@ class GetScenarioTest(TransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.configuration = {
+            "question_id": 1,
             "weights": [],
             "est_cost": 2000,
             "max_budget": None,

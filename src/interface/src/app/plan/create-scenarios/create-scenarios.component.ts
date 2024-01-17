@@ -329,10 +329,6 @@ export class CreateScenariosComponent implements OnInit {
     return geometries;
   }
 
-  changeCondition(layer: string): void {
-    this.planStateService.updateStateWithConditionLayer(layer);
-  }
-
   private drawShapes(shapes: any | null): void {
     this.planStateService.updateStateWithShapes(shapes);
   }

@@ -6,6 +6,7 @@ from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple
 from django.conf import settings
+from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from stands.models import StandSizeChoices, area_from_size
@@ -125,7 +126,14 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
-    with fiona.open(str(shapefile_path), "w", "ESRI Shapefile", schema) as c:
+    crs = from_epsg(4326)
+    with fiona.open(
+        str(shapefile_path),
+        "w",
+        crs=crs,
+        driver="ESRI Shapefile",
+        schema=schema,
+    ) as c:
         for feature in geojson.get("features", []):
             c.write(feature)
 
