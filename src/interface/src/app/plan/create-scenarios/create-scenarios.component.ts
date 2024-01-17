@@ -1,5 +1,11 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  FormControl,
+  AbstractControl,
+} from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject, catchError, interval, NEVER, take } from 'rxjs';
 import {
@@ -73,7 +79,11 @@ export class CreateScenariosComponent implements OnInit {
 
   createForms() {
     this.forms = this.fb.group({
-      scenarioName: [null, Validators.required],
+      scenarioName: new FormControl('', [
+        Validators.required,
+        (control: AbstractControl) =>
+          scenarioNameMustBeNew(control, this.existingScenarioNames),
+      ]),
       priorities: this.prioritiesComponent.createForm(),
       constrains: this.constraintsPanelComponent.createForm(),
       projectAreas: this.fb.group({
@@ -131,11 +141,6 @@ export class CreateScenariosComponent implements OnInit {
           this.existingScenarioNames = scenarios.map((s) => s.name);
         });
     }
-  }
-
-  checkExistingNames() {
-    const scenarioNameValue = this.forms.get('scenarioName')?.value;
-    return this.existingScenarioNames.includes(scenarioNameValue);
   }
 
   pollForChanges() {
@@ -368,4 +373,14 @@ export class CreateScenariosComponent implements OnInit {
   get constrainsForm() {
     return this.forms.get('constrains');
   }
+}
+
+function scenarioNameMustBeNew(
+  nameControl: AbstractControl,
+  existingNames: string[]
+): { [key: string]: any } | null {
+  if (existingNames.includes(nameControl.value)) {
+    return { duplicate: true };
+  }
+  return null;
 }

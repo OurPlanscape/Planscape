@@ -10,12 +10,16 @@
         </mat-form-field>
       </form>
       <div
-        *ngIf="scenarioNameFormField?.invalid && scenarioNameFormField?.touched"
+        *ngIf="
+          scenarioNameFormField?.invalid &&
+          scenarioNameFormField?.touched &&
+          scenarioNameFormField?.errors?.['required']
+        "
         class="error">
         Please enter scenario name above
       </div>
-      <div *ngIf="checkExistingNames()" class="error">
-        Name is already in use.
+      <div *ngIf="scenarioNameFormField?.errors?.['duplicate']" class="error">
+        This name is already used by another scenario.
       </div>
     </div>
     <div class="tab-container">
@@ -35,6 +39,7 @@
                 color="primary"
                 type="submit"
                 [disabled]="
+                  scenarioNameFormField?.invalid ||
                   prioritiesForm?.invalid ||
                   constrainsForm?.invalid ||
                   generatingScenario
