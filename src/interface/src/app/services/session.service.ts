@@ -52,8 +52,8 @@ export class SessionService {
   }
 
   /** Emits the map configs and saves them in local storage. */
-  setMapConfigs(value: MapConfig[]) {
-    var regionIndex: Region | null = this.region$.getValue();
+  setMapConfigs(value: MapConfig[], region?: Region) {
+    var regionIndex: Region | null = region || this.region$.getValue();
     if (!regionIndex) {
       regionIndex = Region.SIERRA_NEVADA;
     }
