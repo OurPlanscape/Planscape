@@ -98,6 +98,23 @@ METRIC_COLUMNS <- list(
 )
 
 
+get_sdw <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_SDW", "0.5")))
+}
+
+get_epw <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_EPW", "0.5")))
+}
+
+get_exclusion_limit <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_EXCLUSION_LIMIT", "0.5")))
+}
+
+get_sample_frac <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_SAMPLE_FRAC", "0.1")))
+}
+
+
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
     host = Sys.getenv("PLANSCAPE_DATABASE_HOST"),
@@ -664,6 +681,11 @@ call_forsys <- function(
 
   export_input(scenario, stand_data)
 
+  sdw <- get_sdw()
+  epw <- get_epw()
+  sample_frac <- get_sample_frac()
+  exclusion_limit <- get_exclusion_limit()
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
@@ -679,6 +701,10 @@ call_forsys <- function(
     patchmax_proj_size_min = min_area_project,
     patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
+    patchmax_SDW = sdw,
+    patchmax_EPW = epw,
+    patchmax_exclusion_limit = exclusion_limit,
+    patchmax_sample_frac = sample_frac
   )
   return(out)
 }
