@@ -69,6 +69,11 @@ total_acres_per_project <- function(value, stand_count, stand_size) {
 }
 
 POSTPROCESSING_FUNCTIONS <- list(
+  available_standing_biomass = total_acres_per_project,
+  sawtimber_biomass = total_acres_per_project,
+  live_tree_density_30in_dbh = average_per_stand,
+  basal_area = average_per_stand,
+  dead_and_down_carbon = average_per_stand,
   probability_of_fire_severity_high = average_per_stand,
   damage_potential_wui = average_per_stand,
   mean_percent_fire_return_interval_departure_condition_class = average_per_stand,

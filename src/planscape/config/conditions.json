@@ -4416,7 +4416,8 @@
                   "raw_layer": ":carbonSeq_Tier2_DeadCarbon_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=55",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Mg C/ha"
                 }
               ]
             },
@@ -4516,7 +4517,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=49",
                   "min_value": 0,
                   "max_value": 300,
-                  "data_units": "Dry Weight Ton/Acre"
+                  "data_units": "Dry Weight Ton/Acre",
+                  "output_units": "Avg. Dry Weight Ton/Acre"
                 },
                 {
                   "display_name": "Sawtimber Biomass",
@@ -4531,7 +4533,8 @@
                   "raw_layer": ":econDiversity_Tier2_ABGDLVSM_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=48",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Dry Weight Ton/Acre"
                 },
                 {
                   "metric_name": "costs_of_potential_treatment_moving_biomass",
@@ -4951,7 +4954,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=27",
                   "min_value": 0,
                   "max_value": 35,
-                  "data_units": "Live Trees/Acre"
+                  "data_units": "Live Trees/Acre",
+                  "output_units": "Avg. Live Tree/Acre"
                 },
                 {
                   "metric_name": "basal_area",
@@ -4969,7 +4973,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=25",
                   "min_value": 0,
                   "max_value": 500,
-                  "data_units": "Sq ft/Acre"
+                  "data_units": "Sq ft/Acre",
+                  "output_units": "Avg. Sq. Ft/Acre"
                 },
                 {
                   "metric_name": "stand_density_index_reineke",
