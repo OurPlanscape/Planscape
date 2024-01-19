@@ -1,9 +1,9 @@
 @import '../../styles/colors';
 @import '../../styles/mixins';
 
-.signup-root {
+:host {
   display: flex;
-  height: 100%;
+  min-height: 100%;
 }
 
 .info-card-container {
@@ -21,7 +21,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  padding: 3% 0px 40px 0px;
+  padding: 3% 0 4% 0;
   width: 50%;
   background-image: url('/assets/svg/waves-large.svg');
   background-position: bottom right;
@@ -79,7 +79,8 @@ button {
   border: 1px $color-dark-gray solid;
   margin-left: auto;
   margin-right: auto;
-  width: 200px;
+  width: 80%;
+  max-width: 200px;
 }
 
 .post-error-option {
@@ -104,4 +105,11 @@ button {
 /* field - selected */
 :host ::ng-deep .mat-form-field-outline.mat-form-field-outline-thick {
   background-color: $color-highlight-30pct;
+}
+
+/* trims the space underneath the field, 
+  which we no longer use for displaying errors
+*/
+:host ::ng-deep .mat-form-field-wrapper {
+  padding-bottom: 5%;
 }
