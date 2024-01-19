@@ -129,7 +129,6 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
         # MultiPolygon.
         geometry = _convert_polygon_to_multipolygon(geometry)
-
         # Create the planning area
         planning_area = PlanningArea.objects.create(
             user=user,
@@ -196,7 +195,7 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
-@api_view(["PATCH"])
+@api_view(["PATCH", "POST"])
 def update_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Updates a planning area's name or notes.  To date, these are the only fields that
@@ -529,7 +528,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-@api_view(["PATCH"])
+@api_view(["PATCH", "POST"])
 def update_scenario(request: HttpRequest) -> HttpResponse:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that

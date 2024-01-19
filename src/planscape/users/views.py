@@ -7,9 +7,11 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from dj_rest_auth.views import UserDetailsView
+from rest_framework.decorators import api_view
 from users.serializers import UserSerializer
 
 
+@api_view(["GET", "POST"])
 def get_user(request: HttpRequest) -> User:
     user = None
     if hasattr(request, "user") and request.user.is_authenticated:
@@ -17,6 +19,7 @@ def get_user(request: HttpRequest) -> User:
     return user
 
 
+@api_view(["GET"])
 def get_user_by_id(request: HttpRequest) -> HttpResponse:
     try:
         assert isinstance(request.GET["id"], str)
@@ -29,6 +32,7 @@ def get_user_by_id(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@api_view(["POST"])
 def delete_user(request: HttpRequest) -> HttpResponse:
     try:
         logged_in_user = get_user(request)
