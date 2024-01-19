@@ -648,6 +648,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
         this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
       }
+      this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
       setTimeout(() => {
         this.maps.forEach((map: Map) => {
           map.instance?.invalidateSize();

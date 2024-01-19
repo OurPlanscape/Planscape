@@ -154,12 +154,8 @@ export class MapManager {
     this.setUpDrawingHandlers(map.instance!);
     this.setUpClickHandler(map, createDetailCardCallback);
 
-    // Since maps are synced, pan and zoom event handlers only need
-    // to be added to the first instance.
-    if (this.maps.indexOf(map) === 0) {
-      this.setUpPanHandler(map.instance!);
-      this.setUpZoomHandler(map.instance!);
-    }
+    this.setUpPanHandler(map.instance!);
+    this.setUpZoomHandler(map.instance!);
   }
 
   /**
@@ -369,8 +365,13 @@ export class MapManager {
     map.addEventListener('moveend', (e) => {
       const mapViewOptions = this.mapViewOptions$.getValue();
       const center = map.getCenter();
-      mapViewOptions.center = [center.lat, center.lng];
-      this.mapViewOptions$.next(mapViewOptions);
+      if (
+        mapViewOptions.center[0] !== center.lat ||
+        mapViewOptions.center[1] !== center.lng
+      ) {
+        mapViewOptions.center = [center.lat, center.lng];
+        this.mapViewOptions$.next(mapViewOptions);
+      }
     });
   }
 
