@@ -140,7 +140,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     // save map state before leaving page
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
     this.sessionService.setMapViewOptions(this.mapViewOptions$.getValue());
-    console.log(this.mapViewOptions$.value.center);
     return true;
   }
 
@@ -244,7 +243,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   ngAfterViewInit(): void {
     const center = this.mapViewOptions$.value.center as LatLngTuple;
-    console.log(center);
     this.maps.forEach((map: Map) => {
       this.initMap(map, map.id, center, this.mapViewOptions$.value.zoom);
     });
