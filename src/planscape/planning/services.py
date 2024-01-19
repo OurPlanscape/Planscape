@@ -1,14 +1,15 @@
 import math
 import os
+import zipfile
+import fiona
 from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple
-import zipfile
 from django.conf import settings
-import fiona
+from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
-from stands.models import Stand, StandSizeChoices, area_from_size
+from stands.models import StandSizeChoices, area_from_size
 
 
 def zip_directory(file_obj, source_dir):
@@ -57,16 +58,25 @@ def validate_scenario_treatment_ratio(
     min_acreage = math.floor(planning_area_acres * 0.2)
     max_acreage = math.ceil(planning_area_acres * 0.8)
 
-    if max_treatable_area <= min_acreage:
-        return (
-            False,
-            f"Treatment area is {round(max_treatable_area, 2)} acres. This should be at least {min_acreage} acres, or 20% of {int(planning_area_acres)} acres.",
-        )
+    # the user has not provided a budget
+    if "max_budget" not in configuration:
+        if max_treatable_area <= min_acreage:
+            return (
+                False,
+                f"Treatment area is {round(max_treatable_area, 2)} acres. This should be at least {min_acreage} acres, or 20% of {int(planning_area_acres)} acres.",
+            )
+        if max_treatable_area >= max_acreage:
+            return (
+                False,
+                f"Treatment area is {round(max_treatable_area, 2)} acres. This should be less than {max_acreage} acres, or 80% of {int(planning_area_acres)} acres.",
+            )
 
-    if max_treatable_area >= max_acreage:
+    # the user has provided a budget, but the budget isn't sufficient to treat > 20% of the area
+    if "max_budget" in configuration and max_treatable_area <= min_acreage:
+        min_req_budget = math.ceil(min_acreage * configuration["est_cost"])
         return (
             False,
-            f"Treatment area is {round(max_treatable_area, 2)} acres. This should be less than {max_acreage} acres, or 80% of {int(planning_area_acres)} acres.",
+            f"Your budget can only treat {math.floor(max_treatable_area)} acres. It should be at least ${min_req_budget} to treat 20% of the planning area.",
         )
 
     return (True, "Treatment ratio is valid.")
@@ -116,7 +126,14 @@ def export_to_shapefile(scenario: Scenario) -> Path:
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
-    with fiona.open(str(shapefile_path), "w", "ESRI Shapefile", schema) as c:
+    crs = from_epsg(4326)
+    with fiona.open(
+        str(shapefile_path),
+        "w",
+        crs=crs,
+        driver="ESRI Shapefile",
+        schema=schema,
+    ) as c:
         for feature in geojson.get("features", []):
             c.write(feature)
 

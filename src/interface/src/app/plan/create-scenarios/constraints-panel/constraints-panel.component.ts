@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -19,6 +19,8 @@ export class ConstraintsPanelComponent {
   constraintsForm: FormGroup = this.createForm();
   readonly excludedAreasOptions = EXCLUDED_AREAS;
   readonly standSizeOptions = STAND_SIZES;
+
+  @Input() showWarning = false;
 
   constructor(private fb: FormBuilder) {}
 
