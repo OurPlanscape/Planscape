@@ -21,7 +21,6 @@ These settings are
 import multiprocessing
 import os
 from pathlib import Path
-from datetime import timedelta
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
