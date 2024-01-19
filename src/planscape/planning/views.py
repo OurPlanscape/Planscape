@@ -38,6 +38,7 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
+from rest_framework.decorators import api_view
 from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
@@ -284,6 +285,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
 
 # No Params expected, since we're always using the logged in user.
+@api_view(["GET"])
 def list_planning_areas(request: HttpRequest) -> HttpResponse:
     """
     Retrieves all planning areas for a user.
@@ -298,10 +300,9 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     Required params: none
     """
     try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
-        user_id = user.pk
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({}, status=401)
 
         # TODO: This could be really slow; consider paging or perhaps
         # fetching everything but geometries (since they're huge) for performance gains.
@@ -309,7 +310,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         # when creating the planning area instead of calculating it each time?
 
         planning_areas = (
-            PlanningArea.objects.filter(user=user_id)
+            PlanningArea.objects.filter(user=user)
             .annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
                 scenario_latest_updated_at=Coalesce(
