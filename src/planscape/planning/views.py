@@ -42,6 +42,7 @@ from rest_framework.decorators import api_view
 from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
+
 # We always need to store multipolygons, so coerce a single polygon to
 # a multigolygon if needed.
 def _convert_polygon_to_multipolygon(geometry: dict):
