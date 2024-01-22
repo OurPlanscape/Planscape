@@ -77,6 +77,7 @@ POSTPROCESSING_FUNCTIONS <- list(
   basal_area = average_per_stand,
   california_spotted_owl_habitat = total_acres_per_project,
   california_spotted_owl_territory = total_acres_per_project,
+  cavity_nesters_excavators_species_richness = average_per_stand,
   damage_potential_wui = average_per_stand,
   dead_and_down_carbon = average_per_stand,
   dead_and_down_fuels = average_per_stand,
