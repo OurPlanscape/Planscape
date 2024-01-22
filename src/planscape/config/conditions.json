@@ -4023,7 +4023,8 @@
                   "raw_layer": ":airQuality_Tier2_HeavyFuels_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=62",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg Tons per Acre"
                 },
                 {
                   "display_name": "Total Fuel Exposed To Fire",
@@ -4333,7 +4334,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_SEGI_MU_2022_92_1",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=40",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Habitat (Acres)"
                 },
                 {
                   "display_name": "Band-Tailed Pigeon Habitat",
@@ -4774,7 +4776,8 @@
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true,
-                  "data_units": "Probability"
+                  "data_units": "Probability",
+                  "output_units": "Avg. Probability"
                 },
                 {
                   "display_name": "Probability of Fire Severity (Moderate)",
@@ -4790,7 +4793,8 @@
                   "raw_layer": ":fireDynamics_Tier1_probModSevFire_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=20",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Probability"
                 },
                 {
                   "metric_name": "probability_of_fire_severity_low",
@@ -4835,7 +4839,8 @@
                   "raw_layer": ":fireDynamics_Tier2_TotalFuelLoad_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=21",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Average Tons per Acre"
                 },
                 {
                   "display_name": "Standing Dead and Ladder Fuels",
@@ -5537,7 +5542,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=60",
                   "min_value": 0,
                   "max_value": 100,
-                  "data_units": "Relative Index"
+                  "data_units": "Relative Index",
+                  "output_units": "Avg. Relative Index"
                 },
                 {
                   "display_name": "Aquatic Species Richness",
@@ -5552,7 +5558,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=63",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Species Richness"
                 }
               ]
             }
