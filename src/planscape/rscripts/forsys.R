@@ -207,7 +207,8 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
     dsn = connection,
     layer = NULL,
     query = restrictions_statement,
-    geometry_column = "geometry"
+    geometry_column = "geometry",
+    crs = 5070
   )
   return(restriction_data)
 }
@@ -239,7 +240,8 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
     dsn = connection,
     layer = NULL,
     query = query,
-    geometry_column = "geometry"
+    geometry_column = "geometry",
+    crs = 5070
   )
 
   if (length(restrictions) > 0) {
