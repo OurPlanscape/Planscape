@@ -4098,7 +4098,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Number of Species"
                 },
                 {
                   "display_name": "Species Richness: Herbivores",
