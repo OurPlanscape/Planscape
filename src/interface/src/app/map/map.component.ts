@@ -311,6 +311,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
         this.sessionService.region$.pipe(take(1)).subscribe((region) => {
           if (result.mapViewOptions) {
+            this.changeMapCount(result.mapViewOptions?.numVisibleMaps);
             this.mapViewOptions$.next(result.mapViewOptions);
           }
 
