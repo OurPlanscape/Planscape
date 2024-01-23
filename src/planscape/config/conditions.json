@@ -183,7 +183,7 @@
                   "max_value": 43,
                   "metric_name": "species_richness_insectivores",
                   "min_value": 0,
-                  "raw_data_download_path": "central-coast/bioDiverConserv/Tier2/insectivores_species_richness_202304.tif",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/insectivores_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_insectivores_species_richness_202304",
                   "reference_link": "",
                   "source": "Northern California Regional Resource Kit",
@@ -1107,7 +1107,7 @@
                   "max_value": 1,
                   "metric_name": "seral_stage",
                   "min_value": 0,
-                  "raw_data_download_path": "central-coast/forestShrubResil/Tier2/SeralStage_EML_202304.tif",
+                  "raw_data_download_path": "northern-california/forestShrubResil/Tier2/SeralStage_EML_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_SeralStage_EML_202304",
                   "reference_link": "",
                   "source": "Northern California Regional Resource Kit",
@@ -1323,8 +1323,8 @@
                   "max_value": 7,
                   "metric_name": "hispano_latino_concentration",
                   "min_value": 0,
-                  "raw_data_download_path": "northern-california/socialCultural/Tier2/AmericanIndian_202109.tif",
-                  "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
+                  "raw_data_download_path": "northern-california/socialCultural/Tier2/Hispanic_202109.tif",
+                  "raw_layer": ":socialCultural_Tier2_Hispanic_202109",
                   "reference_link": "",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
@@ -4023,7 +4023,8 @@
                   "raw_layer": ":airQuality_Tier2_HeavyFuels_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=62",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg Tons per Acre"
                 },
                 {
                   "display_name": "Total Fuel Exposed To Fire",
@@ -4097,7 +4098,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=46",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Number of Species"
                 },
                 {
                   "display_name": "Species Richness: Herbivores",
@@ -4272,7 +4274,7 @@
                   "data_year": "2021",
                   "metric_name": "california_spotted_owl_territory",
                   "raw_data_download_path": "sierra-nevada/bioDiverConserv/Tier2/CSO_territory.tif",
-                  "raw_layer": ":bioDiverConservTranslate_Tier2_CSO_territory",
+                  "raw_layer": ":bioDiverConserv_Tier2_CSO_territory",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=39",
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
@@ -4333,7 +4335,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_SEGI_MU_2022_92_1",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=40",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Habitat (Acres)"
                 },
                 {
                   "display_name": "Band-Tailed Pigeon Habitat",
@@ -4416,7 +4419,8 @@
                   "raw_layer": ":carbonSeq_Tier2_DeadCarbon_2021",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=55",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Mg C/ha"
                 }
               ]
             },
@@ -4516,7 +4520,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=49",
                   "min_value": 0,
                   "max_value": 300,
-                  "data_units": "Dry Weight Ton/Acre"
+                  "data_units": "Dry Weight Ton/Acre",
+                  "output_units": "Avg. Dry Weight Ton/Acre"
                 },
                 {
                   "display_name": "Sawtimber Biomass",
@@ -4531,7 +4536,8 @@
                   "raw_layer": ":econDiversity_Tier2_ABGDLVSM_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=48",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Dry Weight Ton/Acre"
                 },
                 {
                   "metric_name": "costs_of_potential_treatment_moving_biomass",
@@ -4771,7 +4777,8 @@
                   "min_value": 0,
                   "max_value": 1,
                   "invert_raw": true,
-                  "data_units": "Probability"
+                  "data_units": "Probability",
+                  "output_units": "Avg. Probability"
                 },
                 {
                   "display_name": "Probability of Fire Severity (Moderate)",
@@ -4787,7 +4794,8 @@
                   "raw_layer": ":fireDynamics_Tier1_probModSevFire_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=20",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Probability"
                 },
                 {
                   "metric_name": "probability_of_fire_severity_low",
@@ -4832,7 +4840,8 @@
                   "raw_layer": ":fireDynamics_Tier2_TotalFuelLoad_2021_30m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=21",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Average Tons per Acre"
                 },
                 {
                   "display_name": "Standing Dead and Ladder Fuels",
@@ -4951,7 +4960,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=27",
                   "min_value": 0,
                   "max_value": 35,
-                  "data_units": "Live Trees/Acre"
+                  "data_units": "Live Trees/Acre",
+                  "output_units": "Avg. Live Tree/Acre"
                 },
                 {
                   "metric_name": "basal_area",
@@ -4969,7 +4979,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=25",
                   "min_value": 0,
                   "max_value": 500,
-                  "data_units": "Sq ft/Acre"
+                  "data_units": "Sq ft/Acre",
+                  "output_units": "Avg. Sq. Ft/Acre"
                 },
                 {
                   "metric_name": "stand_density_index_reineke",
@@ -5532,7 +5543,8 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=60",
                   "min_value": 0,
                   "max_value": 100,
-                  "data_units": "Relative Index"
+                  "data_units": "Relative Index",
+                  "output_units": "Avg. Relative Index"
                 },
                 {
                   "display_name": "Aquatic Species Richness",
@@ -5547,7 +5559,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=63",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Avg. Species Richness"
                 }
               ]
             }

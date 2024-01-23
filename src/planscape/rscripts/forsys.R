@@ -69,23 +69,34 @@ total_acres_per_project <- function(value, stand_count, stand_size) {
 }
 
 POSTPROCESSING_FUNCTIONS <- list(
-  probability_of_fire_severity_high = average_per_stand,
-  damage_potential_wui = average_per_stand,
-  mean_percent_fire_return_interval_departure_condition_class = average_per_stand,
-  total_fuel_exposed_to_fire = average_per_stand,
-  standing_dead_and_ladder_fuels = average_per_stand,
-  wildlife_species_richness = average_per_stand,
-  endangered_vertebrate = average_per_stand,
   aboveground_live_tree_carbon = average_per_stand,
+  american_pacific_marten_habitat = total_acres_per_project,
+  aquatic_species_richness = average_per_stand,
+  available_standing_biomass = total_acres_per_project,
+  band_tailed_pigeon_habitat = total_acres_per_project,
+  basal_area = average_per_stand,
+  california_spotted_owl_habitat = total_acres_per_project,
+  california_spotted_owl_territory = total_acres_per_project,
+  cavity_nesters_excavators_species_richness = average_per_stand,
+  damage_potential_wui = average_per_stand,
+  dead_and_down_carbon = average_per_stand,
+  dead_and_down_fuels = average_per_stand,
+  endangered_vertebrate = average_per_stand,
+  giant_sequoia_stands = total_acres_per_project,
+  heavy_fuel_load = average_per_stand,
+  live_tree_density_30in_dbh = average_per_stand,
+  mean_percent_fire_return_interval_departure_condition_class = average_per_stand,
+  nothern_goshawk_habitat = total_acres_per_project,
+  pacific_fisher = total_acres_per_project,
+  probability_of_fire_severity_high = average_per_stand,
+  probability_of_fire_severity_moderate = average_per_stand,
+  sawtimber_biomass = total_acres_per_project,
+  standing_dead_and_ladder_fuels = average_per_stand,
   structure_exposure = average_ses,
   structure_exposure_score = average_ses,
-  california_spotted_owl_habitat = total_acres_per_project,
-  american_pacific_marten_habitat = total_acres_per_project,
-  nothern_goshawk_habitat = total_acres_per_project,
-  band_tailed_pigeon_habitat = total_acres_per_project,
-  california_spotted_owl_territory = total_acres_per_project,
-  pacific_fisher = total_acres_per_project,
-  giant_sequoia_stands = total_acres_per_project
+  time_since_last_disturbance = average_per_stand,
+  total_fuel_exposed_to_fire = average_per_stand,
+  wildlife_species_richness = average_per_stand
 )
 
 METRIC_COLUMNS <- list(
@@ -96,6 +107,23 @@ METRIC_COLUMNS <- list(
   mean_percent_fire_return_interval_departure_condition_class = "majority",
   f3veg100 = "majority"
 )
+
+
+get_sdw <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_SDW", "0.5")))
+}
+
+get_epw <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_EPW", "0.5")))
+}
+
+get_exclusion_limit <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_EXCLUSION_LIMIT", "0.5")))
+}
+
+get_sample_frac <- function() {
+  return(as.numeric(Sys.getenv("FORSYS_SAMPLE_FRAC", "0.1")))
+}
 
 
 get_connection <- function() {
@@ -179,7 +207,8 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
     dsn = connection,
     layer = NULL,
     query = restrictions_statement,
-    geometry_column = "geometry"
+    geometry_column = "geometry",
+    crs = 5070
   )
   return(restriction_data)
 }
@@ -211,7 +240,8 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
     dsn = connection,
     layer = NULL,
     query = query,
-    geometry_column = "geometry"
+    geometry_column = "geometry",
+    crs = 5070
   )
 
   if (length(restrictions) > 0) {
@@ -664,6 +694,11 @@ call_forsys <- function(
 
   export_input(scenario, stand_data)
 
+  sdw <- get_sdw()
+  epw <- get_epw()
+  sample_frac <- get_sample_frac()
+  exclusion_limit <- get_exclusion_limit()
+
   out <- forsys::run(
     return_outputs = TRUE,
     write_outputs = TRUE,
@@ -679,6 +714,10 @@ call_forsys <- function(
     patchmax_proj_size_min = min_area_project,
     patchmax_proj_size = max_area_project,
     patchmax_proj_number = number_of_projects,
+    patchmax_SDW = sdw,
+    patchmax_EPW = epw,
+    patchmax_exclusion_limit = exclusion_limit,
+    patchmax_sample_frac = sample_frac
   )
   return(out)
 }
