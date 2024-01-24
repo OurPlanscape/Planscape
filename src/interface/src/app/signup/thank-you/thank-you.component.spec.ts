@@ -1,6 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ThankYouComponent } from './thank-you.component';
+import { MockComponent } from 'ng-mocks';
+import { CreditsBlurbComponent } from '../../shared/credits-blurb/credits-blurb.component';
+import { LearnMoreComponent } from '../../home/learn-more/learn-more.component';
 
 describe('ThankYouComponent', () => {
   let component: ThankYouComponent;
@@ -8,7 +11,11 @@ describe('ThankYouComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ThankYouComponent],
+      declarations: [
+        ThankYouComponent,
+        MockComponent(CreditsBlurbComponent),
+        MockComponent(LearnMoreComponent),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ThankYouComponent);
