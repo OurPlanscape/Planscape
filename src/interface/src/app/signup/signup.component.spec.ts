@@ -7,6 +7,8 @@ import { of } from 'rxjs';
 import { MaterialModule } from '../material/material.module';
 import { AuthService } from '../services';
 import { SignupComponent } from './signup.component';
+import { InfoCardComponent } from './info-card/info-card.component';
+import { MockComponent } from 'ng-mocks';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -27,7 +29,7 @@ describe('SignupComponent', () => {
         NoopAnimationsModule,
         ReactiveFormsModule,
       ],
-      declarations: [SignupComponent],
+      declarations: [SignupComponent, MockComponent(InfoCardComponent)],
       providers: [
         { provide: Router, useFactory: routerStub },
         { provide: AuthService, useValue: fakeAuthService },
