@@ -5,6 +5,7 @@ import { WINDOW } from '../../services/window.service';
 import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MaterialModule } from '../../material/material.module';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('NavBarComponent', () => {
   let component: NavBarComponent;
@@ -12,7 +13,7 @@ describe('NavBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [MaterialModule, RouterTestingModule],
       declarations: [NavBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
@@ -22,7 +23,11 @@ describe('NavBarComponent', () => {
             location: {
               href: 'some-url',
             },
-            navigator: { clipboard: { writeText: () => {} } },
+            navigator: {
+              clipboard: {
+                writeText: () => {},
+              },
+            },
             print: () => {},
           },
         },
