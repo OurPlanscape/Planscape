@@ -41,7 +41,6 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
-import { FeatureService } from '../features/feature.service';
 import { AreaCreationAction, LEGEND } from './map.constants';
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -78,7 +77,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   readonly AreaCreationAction = AreaCreationAction;
   readonly legend: Legend = LEGEND;
-  readonly login_enabled = this.featureService.isFeatureEnabled('login');
   readonly maps: Map[] = ['map1', 'map2', 'map3', 'map4'].map(
     (id: string, index: number) => {
       return {
@@ -154,7 +152,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private featureService: FeatureService,
     private regionService: RegionService
   ) {
     this.sessionService.mapViewOptions$

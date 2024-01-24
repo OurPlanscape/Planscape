@@ -83,7 +83,6 @@
         "
         mat-button
         type="button"
-        [disabled]="!login_enabled"
         class="cancel-button"
         (click)="cancelAreaCreationAction()">
         CANCEL
@@ -98,9 +97,7 @@
         mat-button
         type="button"
         class="done-button"
-        [disabled]="
-          (showConfirmAreaButton$ | async) === false || !login_enabled
-        "
+        [disabled]="(showConfirmAreaButton$ | async) === false"
         (click)="openCreatePlanDialog()">
         DONE
       </button>
