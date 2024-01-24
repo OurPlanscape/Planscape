@@ -1,6 +1,7 @@
 @use '@angular/material' as mat;
 @import "../../../theme";
 @import "../../../styles/mixins";
+@import "../../../styles/colors";
 
 :host {
   display: block;
@@ -26,13 +27,14 @@
 
   h4 {
     @include standard-input-label();
-    margin: 8px 0 0;
+    margin: 0 0 8px;
+    color: $color-black;
 
   }
 
   p {
     @include small-paragraph();
-    color: #000000a8;
+    color: $color-md-gray;
     margin: 0;
   }
 
