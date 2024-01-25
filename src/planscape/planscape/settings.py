@@ -275,6 +275,10 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", "no-reply@planscape.org")
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
 DEFAULT_FROM_EMAIL = "no-reply@planscape.org"
 
+SESSION_REMEMBER = True
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the
 # Regional Resource Kits: the CRS code used for the rasters, and the proj4
