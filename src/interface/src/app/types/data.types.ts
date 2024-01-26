@@ -5,6 +5,7 @@ export interface BoundaryConfig {
   boundary_name: string;
   vector_name: string;
   shape_name: string;
+  region_name?: string;
 }
 
 export interface ConditionsConfig extends DataLayerConfig {
