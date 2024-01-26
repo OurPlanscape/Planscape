@@ -55,6 +55,7 @@ planscape_apps = [
     "users",
     "restrictions",
     "utils",
+    "collaboration",
 ]
 INSTALLED_APPS = [
     "allauth",
