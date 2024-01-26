@@ -1,0 +1,74 @@
+from django.contrib.gis.db import models
+from django.contrib.contenttypes.models import ContentType
+from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+import uuid
+
+User = get_user_model()
+
+
+class Role(models.TextChoices):
+    CREATOR = "Creator"
+    OWNER = "Owner"
+    COLLABORATOR = "Collaborator"
+    VIEWER = "Viewer"
+
+
+class Permissions(models.Model):
+    role = models.CharField(
+        choices=Role.choices,
+        max_length=16,
+        default=Role.VIEWER,
+    )
+    permission = models.CharField(max_length=60)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["role", "permission"],
+                name="unique_permission",
+            )
+        ]
+
+
+class Collaborator(models.Model):
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    # the email address invited to collaborate
+    email = models.CharField(max_length=120)
+    # the user that is being added as collaborator
+    # might be empty if no user is found with the email
+    collaborator = models.ForeignKey(
+        User,
+        related_name="collaborator",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+    # the role assigned
+    role = models.CharField(
+        choices=Role.choices,
+        max_length=16,
+        default=Role.VIEWER,
+    )
+    # the user that invited the collaborator
+    inviter = models.ForeignKey(
+        User,
+        related_name="inviter",
+        on_delete=models.CASCADE,
+        null=False,
+    )
+    # use content types to potentially save other things that are not only planning_areas
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_pk = models.CharField(_("object ID"), max_length=255)
+
+    class Meta:
+        constraints = [
+            # a person can only be invited once to a specific planning area
+            models.UniqueConstraint(
+                fields=[
+                    "email",
+                    "content_type",
+                    "object_pk",
+                ],
+                name="unique_collaborator",
+            )
+        ]
