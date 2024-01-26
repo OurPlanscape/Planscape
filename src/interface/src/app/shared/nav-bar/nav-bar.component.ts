@@ -1,5 +1,7 @@
 import { Component, EventEmitter, Inject, Input, Output } from '@angular/core';
 import { WINDOW } from '../../services/window.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 
 export interface Breadcrumb {
   name: string;
@@ -16,9 +18,16 @@ export class NavBarComponent {
   @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' = 'EXPLORE';
   @Output() goBack = new EventEmitter<void>();
 
-  constructor(@Inject(WINDOW) private window: Window) {}
+  constructor(
+    @Inject(WINDOW) private window: Window,
+    private dialog: MatDialog
+  ) {}
 
   print() {
     this.window.print();
+  }
+
+  share() {
+    this.dialog.open(ShareExploreDialogComponent, { restoreFocus: false });
   }
 }

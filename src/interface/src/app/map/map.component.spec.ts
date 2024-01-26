@@ -13,7 +13,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
@@ -50,6 +50,8 @@ import {
   defaultMapViewOptions,
 } from './map.helper';
 import * as esri from 'esri-leaflet';
+import { MockProvider } from 'ng-mocks';
+import { ShareMapService } from '../services/share-map.service';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -192,6 +194,11 @@ describe('MapComponent', () => {
         { provide: PlanService, useValue: fakePlanStateService },
         { provide: SessionService, useValue: fakeSessionService },
         { provide: Router, useFactory: routerStub },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParams: {} } },
+        },
+        MockProvider(ShareMapService),
       ],
     });
     fixture = TestBed.createComponent(MapComponent);
