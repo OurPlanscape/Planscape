@@ -39,6 +39,8 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
+import sentry_sdk
+import time
 from urllib.parse import urljoin
 from utils.cli_utils import call_forsys
 
@@ -298,36 +300,48 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
 
     Required params: none
     """
-    try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
-        user_id = user.pk
+    with sentry_sdk.push_scope() as scope:
+        try:
+            user = _get_user(request)
+            if user is None:
+                raise ValueError("User must be logged in.")
+            user_id = user.pk
 
-        # TODO: This could be really slow; consider paging or perhaps
-        # fetching everything but geometries (since they're huge) for performance gains.
-        # given that we need geometry to calculate total acres, should we save this value
-        # when creating the planning area instead of calculating it each time?
+            scope.set_tag("what", "ok")
+            scope.set_extra("user_id", user.pk)
 
-        planning_areas = (
-            PlanningArea.objects.filter(user=user_id)
-            .annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
-                )
+            sentry_sdk.capture_message(
+                "Loading planning areas but with user", level="info"
             )
-            .order_by("-scenario_latest_updated_at")
-        )
-        return JsonResponse(
-            [
-                _serialize_planning_area(planning_area, True)
-                for planning_area in planning_areas
-            ],
-            safe=False,
-        )
-    except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+
+            # TODO: This could be really slow; consider paging or perhaps
+            # fetching everything but geometries (since they're huge) for performance gains.
+            # given that we need geometry to calculate total acres, should we save this value
+            # when creating the planning area instead of calculating it each time?
+            start_time = time.time()
+            planning_areas = (
+                PlanningArea.objects.filter(user=user_id)
+                .annotate(scenario_count=Count("scenarios", distinct=True))
+                .annotate(
+                    scenario_latest_updated_at=Coalesce(
+                        Max("scenarios__updated_at"), "updated_at"
+                    )
+                )
+                .order_by("-scenario_latest_updated_at")
+            )
+            end_time = time.time()
+            duration = end_time - start_time
+            sentry_sdk.set_measurement("get planning areas", duration, "second")
+
+            return JsonResponse(
+                [
+                    _serialize_planning_area(planning_area, True)
+                    for planning_area in planning_areas
+                ],
+                safe=False,
+            )
+        except Exception as e:
+            return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 def _serialize_scenario(scenario: Scenario) -> dict:
