@@ -17,6 +17,7 @@ mat-cell {
 
 .mat-card {
   border-radius: 16px;
+  min-height: 180px;
 }
 
 .highlight {
@@ -99,4 +100,8 @@ mat-cell {
 
 .mat-column-starred {
   padding-left: 20px;
+}
+
+.margin-top {
+  margin-top: 30px;
 }

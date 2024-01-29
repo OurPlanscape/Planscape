@@ -44,6 +44,7 @@ export class SavedScenariosComponent implements OnInit {
   `;
 
   highlightedScenarioRow: ScenarioRow | null = null;
+  loading = true;
   scenarios: ScenarioRow[] = [];
   displayedColumns: string[] = [
     'name',
@@ -91,6 +92,7 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(take(1))
       .subscribe((scenarios) => {
         this.scenarios = scenarios;
+        this.loading = false;
       });
   }
 

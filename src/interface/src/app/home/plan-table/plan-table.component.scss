@@ -16,31 +16,6 @@
   margin-right: 10px;
 }
 
-.no-saved-plans {
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  height: 50%;
-  text-align: center;
-
-
-  h4 {
-    @include standard-input-label();
-    margin: 0 0 8px;
-    color: $color-black;
-
-  }
-
-  p {
-    @include small-paragraph();
-    color: $color-md-gray;
-    margin: 0;
-  }
-
-
-}
-
 h2 {
   color: #5f6368;
   font-size: 18px;
@@ -128,11 +103,6 @@ mat-row {
 
 .mat-header-cell:not(.mat-column-name) {
   border-right: 1px solid rgba(0, 0, 0, 0.12);
-}
-
-.spinner {
-  margin: auto;
-  padding-top: 20px;
 }
 
 

@@ -14,6 +14,7 @@ import { FieldAlertComponent } from './field-alert/field-alert.component';
 import { CreditsBlurbComponent } from './credits-blurb/credits-blurb.component';
 import { FormMessageBoxComponent } from './form-message-box/form-message-box.component';
 import { ShareExploreDialogComponent } from './share-explore-dialog/share-explore-dialog.component';
+import { SectionLoaderComponent } from './section-loader/section-loader.component';
 
 @NgModule({
   declarations: [
@@ -26,6 +27,7 @@ import { ShareExploreDialogComponent } from './share-explore-dialog/share-explor
     CreditsBlurbComponent,
     FormMessageBoxComponent,
     ShareExploreDialogComponent,
+    SectionLoaderComponent,
   ],
   exports: [
     FileUploaderComponent,
@@ -36,6 +38,7 @@ import { ShareExploreDialogComponent } from './share-explore-dialog/share-explor
     FieldAlertComponent,
     CreditsBlurbComponent,
     FormMessageBoxComponent,
+    SectionLoaderComponent,
   ],
   imports: [
     CommonModule,
