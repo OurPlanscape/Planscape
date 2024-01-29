@@ -1,0 +1,40 @@
+@import "../../../styles/mixins";
+@import "../../../styles/colors";
+
+:host{
+  display: block;
+  height: 100%;
+}
+
+.spinner, .empty-state {
+  align-items: center;
+  justify-content: flex-end;
+  display: flex;
+  flex-direction: column;
+  height: 50%;
+  text-align: center;
+}
+
+.spinner {
+  margin: auto;
+  padding-top: 20px;
+}
+
+
+.empty-state {
+
+  h4 {
+    @include standard-input-label();
+    margin: 0 0 8px;
+    color: $color-black;
+
+  }
+
+  p {
+    @include small-paragraph();
+    color: $color-md-gray;
+    margin: 0;
+    max-width: 560px;
+  }
+}
+
