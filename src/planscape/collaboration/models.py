@@ -4,6 +4,8 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 import uuid
 
+from core.models import CreatedAtMixin, UpdatedAtMixin
+
 User = get_user_model()
 
 
@@ -31,8 +33,7 @@ class Permissions(models.Model):
         ]
 
 
-class Collaborator(models.Model):
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+class Collaborator(CreatedAtMixin, UpdatedAtMixin, models.Model):
     # the email address invited to collaborate
     email = models.CharField(max_length=120)
     # the user that is being added as collaborator
