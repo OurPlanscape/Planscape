@@ -16,7 +16,6 @@ class Migration(migrations.Migration):
             "delete_collaborator",
             "change_collaborator",
         ]
-        creator = collaborator + ["delete_planningarea", "change_planningarea"]
         Permission = apps.get_model("collaboration", "Permissions")
         for x in viewer:
             entry = Permission(role="VIEWER", permission=x)
@@ -28,10 +27,6 @@ class Migration(migrations.Migration):
 
         for x in owner:
             entry = Permission(role="OWNER", permission=x)
-            entry.save()
-
-        for x in creator:
-            entry = Permission(role="CREATOR", permission=x)
             entry.save()
 
     operations = [
