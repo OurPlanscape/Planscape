@@ -1,7 +1,8 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   FormGroup,
   ValidationErrors,
   Validators,
@@ -15,14 +16,28 @@ import { ScenarioConfig } from '../../../types';
   templateUrl: './constraints-panel.component.html',
   styleUrls: ['./constraints-panel.component.scss'],
 })
-export class ConstraintsPanelComponent {
+export class ConstraintsPanelComponent implements OnChanges {
   constraintsForm: FormGroup = this.createForm();
   readonly excludedAreasOptions = EXCLUDED_AREAS;
   readonly standSizeOptions = STAND_SIZES;
 
   @Input() showWarning = false;
+  @Input() planningAreaAcres = 0;
 
   constructor(private fb: FormBuilder) {}
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // update the form when the planningAreaAcres is updated
+    if (changes['planningAreaAcres']) {
+      const control = this.maxArea as FormControl;
+      control.clearValidators();
+      control.addValidators([
+        Validators.min(this.minMaxAreaValue),
+        Validators.max(this.maxMaxAreaValue),
+      ]);
+      this.constraintsForm.updateValueAndValidity();
+    }
+  }
 
   createForm() {
     let excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
@@ -46,7 +61,13 @@ export class ConstraintsPanelComponent {
           minDistanceFromRoad: [, [Validators.min(0), Validators.max(100000)]],
           // Maximum area to be treated in acres
           // Using 500 as minimum for now. Ideally the minimum should be based on stand size.
-          maxArea: ['', [Validators.min(500)]],
+          maxArea: [
+            '',
+            [
+              Validators.min(this.minMaxAreaValue),
+              Validators.max(this.maxMaxAreaValue),
+            ],
+          ],
           // Stand Size selection
           standSize: ['LARGE', Validators.required],
         }),
@@ -56,7 +77,16 @@ export class ConstraintsPanelComponent {
       },
       { validators: this.constraintsFormValidator }
     );
+
     return this.constraintsForm;
+  }
+
+  get minMaxAreaValue() {
+    return this.planningAreaAcres * 0.2;
+  }
+
+  get maxMaxAreaValue() {
+    return this.planningAreaAcres * 0.8;
   }
 
   get maxArea() {
