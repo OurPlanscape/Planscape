@@ -16,7 +16,6 @@ import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
 import { PlanTableComponent } from './home/plan-table/plan-table.component';
-import { RegionSelectionComponent } from './home/region-selection/region-selection.component';
 import { LoginComponent } from './login/login.component';
 
 import { MaterialModule } from './material/material.module';
@@ -39,7 +38,6 @@ import { TopBarComponent } from './top-bar/top-bar.component';
 import { environment } from 'src/environments/environment';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
-import { PreviewComponent } from './home/preview/preview.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
@@ -72,13 +70,11 @@ import { DeleteAccountDialogComponent } from './account/delete-account-dialog/de
     SignupComponent,
     NavigationComponent,
     TopBarComponent,
-    RegionSelectionComponent,
     HomeComponent,
     PlanTableComponent,
     DeleteAccountDialogComponent,
     WelcomeComponent,
     PlanningAreasComponent,
-    PreviewComponent,
     ResetPasswordDialogComponent,
     ForgetPasswordComponent,
     AboutComponent,

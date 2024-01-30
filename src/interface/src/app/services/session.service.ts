@@ -8,7 +8,7 @@ import {
 } from '../map/map.helper';
 
 /** How often the user's session should be saved to local storage (in ms). */
-const SESSION_SAVE_INTERVAL = 60000;
+const SESSION_SAVE_INTERVAL = 600;
 
 /**
  * The session service keeps track of where the guest or logged-in user left
@@ -52,8 +52,8 @@ export class SessionService {
   }
 
   /** Emits the map configs and saves them in local storage. */
-  setMapConfigs(value: MapConfig[]) {
-    var regionIndex: Region | null = this.region$.getValue();
+  setMapConfigs(value: MapConfig[], region?: Region) {
+    var regionIndex: Region | null = region || this.region$.getValue();
     if (!regionIndex) {
       regionIndex = Region.SIERRA_NEVADA;
     }

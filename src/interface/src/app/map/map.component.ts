@@ -1,22 +1,23 @@
 import * as L from 'leaflet';
+import { LatLngTuple } from 'leaflet';
 
 import {
   AfterViewInit,
   ApplicationRef,
+  ChangeDetectorRef,
   Component,
   createComponent,
+  DoCheck,
   EnvironmentInjector,
+  HostListener,
+  Input,
   OnDestroy,
   OnInit,
-  ChangeDetectorRef,
-  DoCheck,
-  Input,
-  HostListener,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
 import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -41,7 +42,6 @@ import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
-import { FeatureService } from '../features/feature.service';
 import { AreaCreationAction, LEGEND } from './map.constants';
 import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -65,7 +65,10 @@ import { PlanStateService } from '../services/plan-state.service';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
 import { RegionService } from '../services/region.service';
-import { LatLngTuple } from 'leaflet';
+
+import { ShareMapService } from '../services/share-map.service';
+import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
+import { Location } from '@angular/common';
 
 @UntilDestroy()
 @Component({
@@ -78,7 +81,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   readonly AreaCreationAction = AreaCreationAction;
   readonly legend: Legend = LEGEND;
-  readonly login_enabled = this.featureService.isFeatureEnabled('login');
   readonly maps: Map[] = ['map1', 'map2', 'map3', 'map4'].map(
     (id: string, index: number) => {
       return {
@@ -154,8 +156,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private featureService: FeatureService,
-    private regionService: RegionService
+    private regionService: RegionService,
+    private route: ActivatedRoute,
+    private shareMapService: ShareMapService,
+    private location: Location
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -182,7 +186,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.selectedRegion$.pipe(take(1)).subscribe((region) => {
       this.regionRecord = region!;
     });
-    this.restoreSession();
+    const link = this.route.snapshot.queryParams['link'];
+    if (link) {
+      this.loadMapDataFromLink(link);
+    } else {
+      this.restoreSession();
+    }
+
     /** Save map configurations in the user's session every X ms. */
     this.sessionService.sessionInterval$
       .pipe(untilDestroyed(this))
@@ -288,6 +298,85 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     this.sessionService.setMapConfigs(this.maps.map((map: Map) => map.config));
   }
 
+  loadMapDataFromLink(link: string) {
+    this.shareMapService.getMapDataFromLink(link).subscribe({
+      next: (result) => {
+        // if the region is different, update it and retrieve configs (boundaries/RRK) again.
+        if (result.region !== this.regionRecord) {
+          this.regionRecord = result.region;
+          this.sessionService.setRegion(result.region);
+          this.mapService.setConfigs();
+        }
+        this.sessionService.setMapConfigs(result.mapConfig, result.region);
+
+        this.sessionService.region$.pipe(take(1)).subscribe((region) => {
+          if (result.mapViewOptions) {
+            this.changeMapCount(result.mapViewOptions?.numVisibleMaps);
+            this.mapViewOptions$.next(result.mapViewOptions);
+          }
+
+          result.mapConfig.forEach((mapConfig, index) => {
+            this.maps[index].config = mapConfig;
+            this.initMap(
+              this.maps[index],
+              this.maps[index].id,
+              result.mapViewOptions!.center,
+              this.mapViewOptions$.value.zoom
+            );
+          });
+          this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
+
+          this.boundaryConfig$.subscribe((_) =>
+            this.updateBoundaryConfigFromMapConfig()
+          );
+
+          // pretty bad, but doing this to reload conditions on panels
+          this.mapService.conditionsConfig$.next(
+            this.mapService.conditionsConfig$.value
+          );
+          this.cdr.detectChanges();
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.location.replaceState(location.pathname, '');
+        this.dialog.open(InvalidLinkDialogComponent);
+      },
+    });
+  }
+
+  /** we need to find the same config instance from boundaryConfig$ as the one
+   * saved in map.config, so the map config panel shows the same right selection.
+   * TODO: avoid this, save only the boundary config id or something that we can
+   * easily identify rather than the whole object (which drives this issue)
+   *
+   * ISSUE this is happening with the "old" boundary config.
+   * Probably the same happens with the other stuff.
+   */
+  private updateBoundaryConfigFromMapConfig() {
+    this.boundaryConfig$
+      .pipe(filter((config) => !!config))
+      .subscribe((config) => {
+        if (config) {
+          if (config[0].region_name != this.regionRecord) {
+            return;
+          }
+        }
+
+        // Ensure the radio button corresponding to the saved selection is selected.
+        this.maps.forEach((map) => {
+          const boundaryConfig = config?.find(
+            (boundary) =>
+              boundary.boundary_name ===
+              map.config.boundaryLayerConfig.boundary_name
+          );
+          map.config.boundaryLayerConfig = boundaryConfig
+            ? boundaryConfig
+            : NONE_BOUNDARY_CONFIG;
+        });
+      });
+  }
+
   private restoreSession() {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -311,21 +400,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
               }
             }
           });
-        this.boundaryConfig$
-          .pipe(filter((config) => !!config))
-          .subscribe((config) => {
-            // Ensure the radio button corresponding to the saved selection is selected.
-            this.maps.forEach((map) => {
-              const boundaryConfig = config?.find(
-                (boundary) =>
-                  boundary.boundary_name ===
-                  map.config.boundaryLayerConfig.boundary_name
-              );
-              map.config.boundaryLayerConfig = boundaryConfig
-                ? boundaryConfig
-                : NONE_BOUNDARY_CONFIG;
-            });
-          });
+        this.updateBoundaryConfigFromMapConfig();
       });
     this.cdr.detectChanges();
   }
@@ -345,7 +420,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       .pipe(take(1))
       .subscribe((selectedRegion: Region | null) => {
         const centerCoords = center || regionMapCenters(selectedRegion!);
-
         map.instance?.setView(
           new L.LatLng(centerCoords[0], centerCoords[1]),
           zoom
@@ -648,6 +722,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         this.mapManager.addDrawingControl(this.maps[mapIndex].instance!);
         this.mapManager.hideClonedDrawing(this.maps[mapIndex]);
       }
+      this.mapManager.syncVisibleMaps(this.isMapVisible.bind(this));
       setTimeout(() => {
         this.maps.forEach((map: Map) => {
           map.instance?.invalidateSize();

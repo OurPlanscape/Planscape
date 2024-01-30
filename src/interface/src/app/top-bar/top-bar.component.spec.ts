@@ -7,11 +7,9 @@ import { MaterialModule } from '../material/material.module';
 import { AuthService } from '../services';
 import { User } from '../types';
 import { TopBarComponent } from './top-bar.component';
-import { FeaturesModule } from '../features/features.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { FEATURES_JSON } from '../features/features-config';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatMenuHarness } from '@angular/material/menu/testing';
@@ -38,7 +36,6 @@ describe('TopBarComponent', () => {
       imports: [
         HttpClientTestingModule,
         MaterialModule,
-        FeaturesModule,
         RouterTestingModule,
         NoopAnimationsModule,
       ],
@@ -60,24 +57,7 @@ describe('TopBarComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('guest mode', () => {
-    it('should show guest as name and should not show the menu', async () => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { login: false },
-      });
-      setUpComponent();
-
-      const guestNameEl = fixture.debugElement.query(By.css(guestSelector));
-      expect(guestNameEl.nativeElement.innerHTML.trim()).toEqual('Guest');
-    });
-  });
-
   describe('with login enabled ', () => {
-    beforeEach(() => {
-      TestBed.overrideProvider(FEATURES_JSON, {
-        useValue: { login: true },
-      });
-    });
     describe('logged out', () => {
       beforeEach(() => loggedIn$.next(false));
 

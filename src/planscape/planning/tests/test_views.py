@@ -1029,6 +1029,33 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"This field is required")
 
+    def test_create_scenario_duplicate_name(self):
+        self.client.force_login(self.user)
+        first_response = self.client.post(
+            reverse("planning:create_scenario"),
+            {
+                "planning_area": self.planning_area.pk,
+                "configuration": self.configuration,
+                "name": "test scenario",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(first_response.status_code, 200)
+
+        second_response = self.client.post(
+            reverse("planning:create_scenario"),
+            {
+                "planning_area": self.planning_area.pk,
+                "configuration": self.configuration,
+                "name": "test scenario",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(second_response.status_code, 400)
+        self.assertRegex(
+            str(second_response.content), r"A scenario with this name already exists."
+        )
+
     def test_create_scenario_not_logged_in(self):
         response = self.client.post(
             reverse("planning:create_scenario"),

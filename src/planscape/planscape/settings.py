@@ -21,7 +21,6 @@ These settings are
 import multiprocessing
 import os
 from pathlib import Path
-from datetime import timedelta
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
@@ -238,7 +237,6 @@ REST_AUTH = {
     "JWT_AUTH_COOKIE": "my-app-auth",
     "JWT_AUTH_REFRESH_COOKIE": "my-refresh-token",
     "JWT_AUTH_HTTPONLY": False,
-    "JWT_SERIALIZER_WITH_EXPIRATION": "dj_rest_auth.serializers.JWTSerializerWithExpiration",
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
     "OLD_PASSWORD_FIELD_ENABLED": True,
     "PASSWORD_CHANGE_SERIALIZER": "users.serializers.CustomPasswordChangeSerializer",
@@ -246,12 +244,6 @@ REST_AUTH = {
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
     "LANGUAGE_CODE": "en-us",
     "SESSION_LOGIN": False,
-}
-
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=90),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
-    "ROTATE_REFRESH_TOKENS": True,  # ensure the Refresh token is invalidated at each login
 }
 
 AUTHENTICATION_BACKENDS = [
@@ -283,6 +275,10 @@ EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", "no-reply@planscape.org")
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
 DEFAULT_FROM_EMAIL = "no-reply@planscape.org"
+
+SESSION_REMEMBER = True
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 # PostGIS constants. All raster data should be ingested with a common
 # Coordinate Reference System (CRS).  The values below are those for the

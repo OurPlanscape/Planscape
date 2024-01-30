@@ -90,6 +90,18 @@ describe('CreateScenariosComponent', () => {
       {
         createScenario: of('1'),
         getScenario: of(fakeScenario),
+        getScenariosForPlan: of([
+          {
+            id: '1',
+            name: 'name',
+            planning_area: '1',
+            createdTimestamp: 100,
+            configuration: {
+              id: 1,
+              max_budget: 200,
+            },
+          },
+        ]),
       }
     );
     fakePlanStateService = jasmine.createSpyObj<PlanStateService>(

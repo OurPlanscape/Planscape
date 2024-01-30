@@ -1,0 +1,16 @@
+<div *ngIf="isLoading; else loaded" class="spinner">
+  <mat-spinner diameter="40"></mat-spinner>
+</div>
+
+<ng-template #loaded>
+  <ng-container *ngIf="hasData; else noData">
+    <ng-content></ng-content>
+  </ng-container>
+
+  <ng-template #noData>
+    <div class="empty-state">
+      <h4>{{ emptyStateTitle }}</h4>
+      <p>{{ emptyStateContent }}</p>
+    </div>
+  </ng-template>
+</ng-template>

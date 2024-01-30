@@ -5,6 +5,9 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
+import { MockComponent } from 'ng-mocks';
+import { AboutComponent } from '../home/about/about.component';
+import { CreditsBlurbComponent } from '../shared/credits-blurb/credits-blurb.component';
 
 describe('AccountValidationComponent', () => {
   let component: AccountValidationComponent;
@@ -27,7 +30,11 @@ describe('AccountValidationComponent', () => {
     );
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      declarations: [AccountValidationComponent],
+      declarations: [
+        AccountValidationComponent,
+        MockComponent(AboutComponent),
+        MockComponent(CreditsBlurbComponent),
+      ],
       providers: [
         { provide: AuthService, useValue: fakeAuthService },
         { provide: ActivatedRoute, useValue: fakeRoute },

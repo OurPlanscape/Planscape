@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PreviewComponent } from './preview.component';
+import { SectionLoaderComponent } from './section-loader.component';
 
-describe('PreviewComponent', () => {
-  let component: PreviewComponent;
-  let fixture: ComponentFixture<PreviewComponent>;
+describe('SectionLoaderComponent', () => {
+  let component: SectionLoaderComponent;
+  let fixture: ComponentFixture<SectionLoaderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PreviewComponent],
+      declarations: [SectionLoaderComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PreviewComponent);
+    fixture = TestBed.createComponent(SectionLoaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

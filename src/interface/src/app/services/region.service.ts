@@ -44,12 +44,5 @@ export class RegionService {
 
   drawRegionEnabled$ = this.sessionService.region$
     .asObservable()
-    .pipe(
-      map((region) =>
-        region
-          ? this.features.isFeatureEnabled('login') &&
-            this.regionDrawOptions[region]
-          : false
-      )
-    );
+    .pipe(map((region) => (region ? this.regionDrawOptions[region] : false)));
 }
