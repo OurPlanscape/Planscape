@@ -4,6 +4,8 @@ import {
   FormBuilder,
   FormControl,
   FormGroup,
+  FormGroupDirective,
+  NgForm,
   ValidationErrors,
   ValidatorFn,
   Validators,
@@ -11,6 +13,13 @@ import {
 import { STAND_SIZES } from '../../plan-helpers';
 import { EXCLUDED_AREAS } from '../../../shared/constants';
 import { ScenarioConfig } from '../../../types';
+import { ErrorStateMatcher } from '@angular/material/core';
+
+const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
+  {
+    notEnoughBudget: 'notEnoughBudget',
+    budgetOrAreaRequired: 'budgetOrAreaRequired',
+  };
 
 @Component({
   selector: 'app-constraints-panel',
@@ -24,6 +33,8 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   @Input() showWarning = false;
   @Input() planningAreaAcres = 0;
+
+  budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
   constructor(private fb: FormBuilder) {}
 
@@ -233,7 +244,7 @@ export class ConstraintsPanelComponent implements OnChanges {
     const maxCost = constraintsForm.get('budgetForm.maxCost');
     const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
     const valid = !!maxCost?.value || !!maxArea?.value;
-    return valid ? null : { budgetOrAreaRequired: true };
+    return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
 
   /**
@@ -249,10 +260,23 @@ export class ConstraintsPanelComponent implements OnChanges {
       if (!!maxCost) {
         const totalBudgetedAcres = maxCost / estCostPerAcre;
         return totalBudgetedAcres < planningAreaAcres * 0.2
-          ? { notEnoughBudget: planningAreaAcres * estCostPerAcre * 0.2 }
+          ? {
+              [customErrors.notEnoughBudget]:
+                planningAreaAcres * estCostPerAcre * 0.2,
+            }
           : null;
       }
       return null;
     };
+  }
+}
+
+class NotEnoughBudgetStateMatcher implements ErrorStateMatcher {
+  isErrorState(
+    control: FormControl | null,
+    form: FormGroupDirective | NgForm | null
+  ): boolean {
+    const hasError = form?.hasError(customErrors.notEnoughBudget);
+    return !!(control && control.touched && (control.invalid || hasError));
   }
 }

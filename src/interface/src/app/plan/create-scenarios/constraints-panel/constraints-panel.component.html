@@ -45,6 +45,7 @@
                 type="text"
                 mask="separator"
                 thousandSeparator=","
+                [errorStateMatcher]="budgetStateMatcher"
                 (input)="togglMaxAreaAndMaxCost()" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
@@ -57,7 +58,7 @@
             Budget needs to be at least
             {{
               constraintsForm.getError('notEnoughBudget')
-                | currency: 'USD' : true : '1.0-0'
+                | currency: 'USD' : 'symbol' : '1.0-0'
             }}
           </div>
         </div>
