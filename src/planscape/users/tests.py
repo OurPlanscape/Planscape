@@ -1,29 +1,31 @@
 import re
-import time
-
+import json
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TransactionTestCase, override_settings
 from django.urls import reverse
+from rest_framework.test import APITransactionTestCase, force_authenticate
 
 
-class CreateUserTest(TransactionTestCase):
+class CreateUserTest(APITransactionTestCase):
     def test_create_user_username_is_email(self):
-        response = self.client.post(
-            reverse("rest_register"),
+        payload = json.dumps(
             {
                 "email": "testuser@test.com",
                 "password1": "ComplexPassword123",
                 "password2": "ComplexPassword123",
                 "first_name": "FirstName",
                 "last_name": "LastName",
-            },
+            }
         )
-        self.assertEquals(response.status_code, 201)
+        response = self.client.post(
+            reverse("rest_register"), payload, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 201)
 
         user = User.objects.get(email="testuser@test.com")
-        self.assertEquals(user.get_username(), "testuser@test.com")
+        self.assertEqual(user.get_username(), "testuser@test.com")
 
         # Verification email is sent.
         self.assertEqual(len(mail.outbox), 1)
@@ -33,67 +35,73 @@ class CreateUserTest(TransactionTestCase):
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
 
-class DeleteUserTest(TransactionTestCase):
+class DeleteUserTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(email="testuser@test.com")
         self.user.set_password("12345")
         self.user.save()
 
     def test_missing_user(self):
+        payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
             reverse("users:delete"),
-            {"email": "testuser@test.com"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_missing_email(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.post(
-            reverse("users:delete"), {}, content_type="application/json"
+            reverse("users:delete"), json.dumps({}), content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
 
     def test_missing_password(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
             reverse("users:delete"),
-            {"email": "testuser@test.com"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_different_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"email": "diffuser@test.com"})
         response = self.client.post(
             reverse("users:delete"),
-            {"email": "diffuser@test.com"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_same_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"email": "testuser@test.com", "password": "12345"})
         response = self.client.post(
             reverse("users:delete"),
-            {"email": "testuser@test.com", "password": "12345"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
 
 
-class IsVerifiedUserTest(TransactionTestCase):
+class IsVerifiedUserTest(APITransactionTestCase):
     def setUp(self):
-        self.client.post(
-            reverse("rest_register"),
+        payload = json.dumps(
             {
                 "email": "testuser@test.com",
                 "password1": "ComplexPassword123",
                 "password2": "ComplexPassword123",
                 "first_name": "FirstName",
                 "last_name": "LastName",
-            },
+            }
+        )
+        self.client.post(
+            reverse("rest_register"), payload, content_type="application/json"
         )
         self.user = User.objects.filter(email="testuser@test.com").get()
 
@@ -102,12 +110,12 @@ class IsVerifiedUserTest(TransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_not_verified(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(reverse("users:is_verified_user"))
         self.assertEqual(response.status_code, 400)
 
-    def test_verfied(self):
-        self.client.force_login(self.user)
+    def test_verified(self):
+        self.client.force_authenticate(self.user)
         email = EmailAddress.objects.filter(email="testuser@test.com").get()
         email.verified = True
         email.save()
@@ -144,7 +152,10 @@ class PasswordResetTest(TransactionTestCase):
 
     def test_reset_confirmation_email(self):
         # POST request to get reset password link.
-        self.client.post(reverse("rest_password_reset"), {"email": "testuser@test.com"})
+        payload = json.dumps({"email": "testuser@test.com"})
+        self.client.post(
+            reverse("rest_password_reset"), payload, content_type="application/json"
+        )
 
         # Check that reset email was sent and extract reset token.
         self.assertEqual(len(mail.outbox), 1)

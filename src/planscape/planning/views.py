@@ -1,16 +1,12 @@
 import json
 import os
 
-
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.sites.shortcuts import get_current_site
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
-
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -20,7 +16,6 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from pathlib import Path
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -40,8 +35,6 @@ from planning.services import (
 )
 from planning.tasks import async_forsys_run
 from rest_framework.decorators import api_view
-from urllib.parse import urljoin
-from utils.cli_utils import call_forsys
 
 
 # We always need to store multipolygons, so coerce a single polygon to
@@ -166,7 +159,7 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         # Get the planning area IDs
         body = json.loads(request.body)
@@ -215,7 +208,7 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         planning_area_id = body.get("id", None)
@@ -262,7 +255,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         return JsonResponse(
             _serialize_planning_area(
@@ -297,7 +290,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         # TODO: This could be really slow; consider paging or perhaps
         # fetching everything but geometries (since they're huge) for performance gains.
@@ -349,7 +342,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
@@ -379,7 +372,7 @@ def download_csv(request: HttpRequest) -> HttpResponse:
     # Ensure that the user is logged in.
     user = request.user
     if not user.is_authenticated:
-        return JsonResponse({}, status=401)
+        return JsonResponse({"error": "Authentication Required"}, status=401)
 
     scenario = (
         Scenario.objects.select_related("planning_area__user")
@@ -487,7 +480,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
         body = json.loads(request.body)
 
         # Check for all needed fields
@@ -556,7 +549,7 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         scenario_id = body.get("id", None)
@@ -592,6 +585,7 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
             json.dumps({"id": scenario_id}), content_type="application/json"
         )
     except Exception as e:
+        print(f"\n\nERROR: {e}")
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
@@ -674,7 +668,7 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         planning_area_id = request.GET["planning_area"]
         if planning_area_id is None:
@@ -690,7 +684,7 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
 
 
-@api_view(["DELETE"])
+@api_view(["DELETE", "POST"])
 def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
@@ -707,7 +701,7 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         scenario_id_str = body.get("scenario_id", None)

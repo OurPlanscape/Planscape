@@ -6,7 +6,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
-from dj_rest_auth.views import UserDetailsView
 from rest_framework.decorators import api_view
 from users.serializers import UserSerializer
 
@@ -57,9 +56,10 @@ def delete_user(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@api_view(["GET"])
 def is_verified_user(request: HttpRequest) -> HttpResponse:
     try:
-        logged_in_user = get_user(request)
+        logged_in_user = request.user
         if logged_in_user is None:
             raise ValueError("Must be logged in")
         if not has_verified_email(logged_in_user):
@@ -69,6 +69,7 @@ def is_verified_user(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@api_view(["POST"])
 def verify_password_reset_token(
     request: HttpRequest, user_id: str, token: str
 ) -> HttpResponse:
