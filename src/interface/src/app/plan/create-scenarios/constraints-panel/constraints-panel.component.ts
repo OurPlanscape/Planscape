@@ -5,6 +5,7 @@ import {
   FormControl,
   FormGroup,
   ValidationErrors,
+  ValidatorFn,
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
@@ -29,12 +30,19 @@ export class ConstraintsPanelComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
     if (changes['planningAreaAcres']) {
-      const control = this.maxArea as FormControl;
-      control.clearValidators();
-      control.addValidators([
+      const maxArea = this.maxArea as FormControl;
+      maxArea.clearValidators();
+      maxArea.addValidators([
         Validators.min(this.minMaxAreaValue),
         Validators.max(this.maxMaxAreaValue),
       ]);
+      // also update the totalBudgetValidator
+      this.constraintsForm.clearValidators();
+      this.constraintsForm.addValidators([
+        this.budgetOrAreaRequiredValidator,
+        this.totalBudgetedValidator(this.planningAreaAcres),
+      ]);
+      // refresh form
       this.constraintsForm.updateValueAndValidity();
     }
   }
@@ -74,8 +82,14 @@ export class ConstraintsPanelComponent implements OnChanges {
         excludedAreasForm: this.fb.group(excludedAreasChosen),
         excludeAreasByDegrees: [true],
         excludeAreasByDistance: [true],
+        planningAreaAcres: [this.planningAreaAcres],
       },
-      { validators: this.constraintsFormValidator }
+      {
+        validators: [
+          this.budgetOrAreaRequiredValidator,
+          this.totalBudgetedValidator,
+        ],
+      }
     );
 
     return this.constraintsForm;
@@ -91,6 +105,10 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   get maxArea() {
     return this.constraintsForm?.get('physicalConstraintForm.maxArea');
+  }
+
+  get maxCost() {
+    return this.constraintsForm.get('budgetForm.maxCost');
   }
 
   togglMaxAreaAndMaxCost() {
@@ -204,13 +222,37 @@ export class ConstraintsPanelComponent implements OnChanges {
     }
   }
 
-  private constraintsFormValidator(
+  /**
+   * checks that one of budget or treatment area constraints is provided.
+   * @param constraintsForm
+   * @private
+   */
+  private budgetOrAreaRequiredValidator(
     constraintsForm: AbstractControl
   ): ValidationErrors | null {
-    // Only one of budget or treatment area constraints is required.
     const maxCost = constraintsForm.get('budgetForm.maxCost');
     const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
     const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { budgetOrAreaRequired: true };
+  }
+
+  /**
+   * Checks that the maxBudget is enough for the selected estimatedCost per acre
+   * @param planningAreaAcres
+   * @private
+   */
+  private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
+    return (constraintsForm: AbstractControl): ValidationErrors | null => {
+      const maxCost = constraintsForm.get('budgetForm.maxCost')?.value;
+      const estCostPerAcre = constraintsForm.get('budgetForm.estimatedCost')
+        ?.value;
+      if (!!maxCost) {
+        const totalBudgetedAcres = maxCost / estCostPerAcre;
+        return totalBudgetedAcres < planningAreaAcres * 0.2
+          ? { notEnoughBudget: planningAreaAcres * estCostPerAcre * 0.2 }
+          : null;
+      }
+      return null;
+    };
   }
 }

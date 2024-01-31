@@ -24,9 +24,9 @@
             </mat-form-field>
           </div>
           <div class="error-text" *ngIf="maxArea?.invalid && maxArea?.touched">
-            Must be between {{ minMaxAreaValue | number: '1.0-0' }} and
+            Max acres needs to be between
+            {{ minMaxAreaValue | number: '1.0-0' }} and
             {{ maxMaxAreaValue | number: '1.0-0' }}
-            acres
           </div>
         </div>
         or
@@ -48,6 +48,17 @@
                 (input)="togglMaxAreaAndMaxCost()" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
+          </div>
+          <div
+            class="error-text"
+            *ngIf="
+              constraintsForm.hasError('notEnoughBudget') && maxCost?.touched
+            ">
+            Budget needs to be at least
+            {{
+              constraintsForm.getError('notEnoughBudget')
+                | currency: 'USD' : true : '1.0-0'
+            }}
           </div>
         </div>
       </div>
