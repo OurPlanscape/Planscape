@@ -234,7 +234,10 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponse(
             json.dumps({"id": planning_area_id}), content_type="application/json"
         )
+    except Http404:
+        return HttpResponseBadRequest("Planning area not found for user ", status=404)
     except Exception as e:
+        print(f"\nERROR: {e}")
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
@@ -268,6 +271,8 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
                 True,
             )
         )
+    except Http404:
+        return HttpResponseBadRequest("Planning area not found for user ", status=404)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
