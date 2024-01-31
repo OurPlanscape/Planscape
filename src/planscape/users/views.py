@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework.decorators import api_view
+from rest_framework.request import Request
 from users.serializers import UserSerializer
 
 
@@ -34,7 +35,7 @@ def get_user_by_id(request: HttpRequest) -> HttpResponse:
 @api_view(["POST"])
 def delete_user(request: HttpRequest) -> HttpResponse:
     try:
-        logged_in_user = get_user(request)
+        logged_in_user = request.user
         if logged_in_user is None:
             raise ValueError("Must be logged in")
         body = json.loads(request.body)
@@ -53,6 +54,7 @@ def delete_user(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse({"deleted": True})
     except Exception as e:
+        print(f"ERROR in delete_user: {e}")
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
@@ -69,7 +71,7 @@ def is_verified_user(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-@api_view(["POST"])
+@api_view(["POST", "GET"])
 def verify_password_reset_token(
     request: HttpRequest, user_id: str, token: str
 ) -> HttpResponse:

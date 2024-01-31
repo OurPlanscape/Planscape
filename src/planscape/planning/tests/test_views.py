@@ -537,7 +537,9 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertJSONEqual(
+            response.content, {"error": "No planning area ID provided"}
+        )
 
     def test_update_wrong_user(self):
         self.client.force_authenticate(self.user)
@@ -554,7 +556,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertRegex(str(response.content), r"Planning area not found for user.")
 
     def test_update_blank_name(self):
         self.client.force_authenticate(self.user)
@@ -625,7 +627,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertRegex(str(response.content), r"Planning area not found for user.")
 
     def test_get_planning_area_wrong_user(self):
         self.client.force_authenticate(self.user)
@@ -635,7 +637,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertRegex(str(response.content), r"Planning area not found for user.")
 
     def test_get_planning_area_not_logged_in(self):
         response = self.client.get(
@@ -1348,7 +1350,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"Scenario ID is required")
 
     def test_update_wrong_user(self):
@@ -1365,8 +1367,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 401)
-        self.assertRegex(str(response.content), r"does not exist")
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content, {"error": "Scenario matching query does not exist."}
+        )
 
     def test_update_blank_name(self):
         self.client.force_authenticate(self.user)

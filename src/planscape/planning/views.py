@@ -212,6 +212,10 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
 
         body = json.loads(request.body)
         planning_area_id = body.get("id", None)
+
+        if planning_area_id is None:
+            return JsonResponse({"error": "No planning area ID provided"}, status=400)
+
         planning_area = get_object_or_404(user.planning_areas, id=planning_area_id)
         is_dirty = False
 
@@ -235,9 +239,8 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
             json.dumps({"id": planning_area_id}), content_type="application/json"
         )
     except Http404:
-        return HttpResponseBadRequest("Planning area not found for user ", status=404)
+        return HttpResponseBadRequest("Planning area not found for user.", status=404)
     except Exception as e:
-        print(f"\nERROR: {e}")
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
@@ -260,6 +263,11 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
         if not user.is_authenticated:
             return JsonResponse({"error": "Authentication Required"}, status=401)
 
+        if "id" not in request.GET:
+            return JsonResponse(
+                {"error": "Missing required parameter 'id'"}, status=400
+            )
+
         return JsonResponse(
             _serialize_planning_area(
                 get_object_or_404(
@@ -272,7 +280,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
             )
         )
     except Http404:
-        return HttpResponseBadRequest("Planning area not found for user ", status=404)
+        return HttpResponseBadRequest("Planning area not found for user.", status=404)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
@@ -559,14 +567,15 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
         body = json.loads(request.body)
         scenario_id = body.get("id", None)
         if scenario_id is None:
-            raise ValueError("Scenario ID is required.")
+            return JsonResponse({"error": "Scenario ID is required."}, status=400)
 
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=scenario_id
         )
         if scenario.planning_area.user.pk != user.pk:
-            # This matches the same error string if the planning area doesn't exist in the DB for any user.
-            raise ValueError("Scenario matching query does not exist.")
+            return JsonResponse(
+                {"error": "Scenario matching query does not exist."}, status=404
+            )
 
         is_dirty = False
 
@@ -590,7 +599,6 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
             json.dumps({"id": scenario_id}), content_type="application/json"
         )
     except Exception as e:
-        print(f"\n\nERROR: {e}")
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
