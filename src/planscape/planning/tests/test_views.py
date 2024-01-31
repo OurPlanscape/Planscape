@@ -78,8 +78,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
               I do not think it means what you think it means."
 
     def test_create_planning_area(self):
-        # self.client.force_authenticate(self.user)
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.client.force_authenticate(self.user)
         payload = json.dumps(
             {
                 "name": "test plan",
@@ -112,7 +111,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         )
 
     def test_create_planning_area_no_notes(self):
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.token}")
+        self.client.force_authenticate(self.user)
         payload = json.dumps(
             {
                 "name": "test plan",

@@ -98,7 +98,7 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         # Get the name of the planning area.
         body = json.loads(request.body)
@@ -442,7 +442,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
     # Ensure that the user is logged in.
     user = request.user
     if not user.is_authenticated:
-        return JsonResponse({}, status=401)
+        return JsonResponse({"error": "Authentication Required"}, status=401)
 
     scenario = Scenario.objects.select_related("planning_area__user").get(
         id=request.GET["id"]
@@ -782,7 +782,7 @@ def create_shared_link(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({}, status=401)
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         serializer = SharedLinkSerializer(data=body, context={"user": user})
