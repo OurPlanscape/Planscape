@@ -20,7 +20,7 @@ import {
   Region,
 } from '../types';
 
-import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
+import { SNACK_ERROR_CONFIG } from '../shared/constants';
 import {
   BOUNDARY_LAYER_HOVER_STYLES,
   BOUNDARY_LAYER_NORMAL_STYLES,
@@ -50,7 +50,6 @@ L.PM.setOptIn(true);
  * of in map.component.ts.
  */
 export class MapManager {
-  boundaryVectorCache = new Map<string, L.Layer>();
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
@@ -155,17 +154,14 @@ export class MapManager {
     this.setUpDrawingHandlers(map.instance!);
     this.setUpClickHandler(map, createDetailCardCallback);
 
-    // Since maps are synced, pan and zoom event handlers only need
-    // to be added to the first instance.
-    if (this.maps.indexOf(map) === 0) {
-      this.setUpPanHandler(map.instance!);
-      this.setUpZoomHandler(map.instance!);
-    }
+    this.setUpPanHandler(map.instance!);
+    this.setUpZoomHandler(map.instance!);
   }
 
   /**
    * Adds a GeoJSON to the drawing layer.
-   * @param area: The geojson of the area to add to the drawing layer.
+   * @param area  The geoJSON.GeoJSON of the area to add to the drawing layer.
+   * @param map  The map
    */
   addGeoJsonToDrawing(area: GeoJSON.GeoJSON, map: Map) {
     L.geoJSON(area, {
@@ -368,8 +364,14 @@ export class MapManager {
 
     map.addEventListener('moveend', (e) => {
       const mapViewOptions = this.mapViewOptions$.getValue();
-      mapViewOptions.center = map.getCenter();
-      this.mapViewOptions$.next(mapViewOptions);
+      const center = map.getCenter();
+      if (
+        mapViewOptions.center[0] !== center.lat ||
+        mapViewOptions.center[1] !== center.lng
+      ) {
+        mapViewOptions.center = [center.lat, center.lng];
+        this.mapViewOptions$.next(mapViewOptions);
+      }
     });
   }
 
@@ -477,7 +479,6 @@ export class MapManager {
       getBoundaryLayerVectorCallback(boundaryVectorName)
         .pipe(take(1))
         .subscribe((vector) => {
-          this.boundaryVectorCache.set(boundaryLayerName, vector);
           map.boundaryLayerRef = this.boundaryLayer(
             vector,
             boundaryShapeName,

@@ -13,6 +13,8 @@ import { TypeSafeMatCellDef } from './type-safe-mat-cell/type-safe-mat-cell-def.
 import { FieldAlertComponent } from './field-alert/field-alert.component';
 import { CreditsBlurbComponent } from './credits-blurb/credits-blurb.component';
 import { FormMessageBoxComponent } from './form-message-box/form-message-box.component';
+import { ShareExploreDialogComponent } from './share-explore-dialog/share-explore-dialog.component';
+import { SectionLoaderComponent } from './section-loader/section-loader.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +26,8 @@ import { FormMessageBoxComponent } from './form-message-box/form-message-box.com
     FieldAlertComponent,
     CreditsBlurbComponent,
     FormMessageBoxComponent,
+    ShareExploreDialogComponent,
+    SectionLoaderComponent,
   ],
   exports: [
     FileUploaderComponent,
@@ -34,6 +38,7 @@ import { FormMessageBoxComponent } from './form-message-box/form-message-box.com
     FieldAlertComponent,
     CreditsBlurbComponent,
     FormMessageBoxComponent,
+    SectionLoaderComponent,
   ],
   imports: [
     CommonModule,

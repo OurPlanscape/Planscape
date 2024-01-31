@@ -7,6 +7,15 @@ export interface Scenario {
   scenario_result?: ScenarioResult;
 }
 
+/**
+ * TODO this type is used for the backend payload
+ * as well as the frontend interface before saving the scenario.
+ * This is bad, as the types are not the same.
+ * For example, `treatment_question` only exists on the FE but does not exists on
+ * the backend payload.
+ * Similarly, `question_id` only exists on the backend payload, while on the FE side
+ * this is part of `treatment_question`.
+ */
 export interface ScenarioConfig {
   est_cost?: number;
   max_budget?: number;
@@ -19,6 +28,7 @@ export interface ScenarioConfig {
   excluded_areas?: string[];
   stand_size?: string;
   scenario_priorities?: string[];
+  question_id?: number;
 }
 
 export interface ScenarioResult {
@@ -51,9 +61,12 @@ export interface FeatureCollection extends GeoJSON.FeatureCollection {
 }
 
 export interface TreatmentQuestionConfig {
+  id?: number;
   global_thresholds?: string[];
   long_question_text?: string;
-  scenario_output_fields_paths?: { [key: string]: string[] };
+  scenario_output_fields_paths?: {
+    [key: string]: string[];
+  };
   scenario_priorities?: string[];
   short_question_text?: string;
   stand_thresholds?: string[];

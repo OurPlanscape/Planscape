@@ -35,8 +35,14 @@
   z-index: 1;
 }
 
-.map-box.selected {
+.map-box.selected::after {
+  display: block;
+  position: absolute;
+  inset: 0;
+  content: '';
   border: 7px solid #2491ff;
+  z-index: 200;
+  pointer-events: none;
 }
 
 .map {
@@ -73,6 +79,7 @@
   height: auto;
   max-height: 75%;
 }
+
 // Setting heights for built-in leaflet styles to be able to configure relative max-height
 ::ng-deep .leaflet-top {
   height: 100%;
@@ -155,10 +162,9 @@
 .draw-area-button,
 .upload-area-button {
   background-color: #3367d6;
-  box-shadow:
-    0px 1px 5px rgba(0, 0, 0, 0.12),
-    0px 2px 2px rgba(0, 0, 0, 0.2),
-    0px 1px 1px rgba(0, 0, 0, 0.14);
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.12),
+  0px 2px 2px rgba(0, 0, 0, 0.2),
+  0px 1px 1px rgba(0, 0, 0, 0.14);
   color: #ffffff;
   font-size: 13px;
   height: 32px;
@@ -169,6 +175,7 @@
   &:hover {
     background-color: #b9b9b9;
   }
+
   &:disabled {
     background-color: #b9b9b9;
   }
@@ -197,16 +204,16 @@
 
 .done-button {
   background-color: #3367d6;
-  box-shadow:
-    0px 1px 5px rgba(0, 0, 0, 0.12),
-    0px 2px 2px rgba(0, 0, 0, 0.2),
-    0px 1px 1px rgba(0, 0, 0, 0.14);
+  box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.12),
+  0px 2px 2px rgba(0, 0, 0, 0.2),
+  0px 1px 1px rgba(0, 0, 0, 0.14);
   color: #ffffff;
   font-size: 13px;
   height: 32px;
   margin: 10px 12px 0px 0px;
   pointer-events: auto;
   width: fit-content;
+
   &:disabled {
     background-color: #b9b9b9;
   }

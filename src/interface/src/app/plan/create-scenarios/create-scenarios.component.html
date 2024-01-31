@@ -10,9 +10,16 @@
         </mat-form-field>
       </form>
       <div
-        *ngIf="scenarioNameFormField?.invalid && scenarioNameFormField?.touched"
+        *ngIf="
+          scenarioNameFormField?.invalid &&
+          scenarioNameFormField?.touched &&
+          scenarioNameFormField?.errors?.['required']
+        "
         class="error">
         Please enter scenario name above
+      </div>
+      <div *ngIf="scenarioNameFormField?.errors?.['duplicate']" class="error">
+        This name is already used by another scenario.
       </div>
     </div>
     <div class="tab-container">
@@ -21,20 +28,21 @@
         [animationDuration]="tabAnimation">
         <mat-tab label="Configuration">
           <div class="create-scenarios-inner-wrapper">
-            <app-set-priorities
-              (changeConditionEvent)="
-                changeCondition($event)
-              "></app-set-priorities>
+            <app-set-priorities></app-set-priorities>
             <app-identify-project-areas
               *ngIf="project_area_upload_enabled"
               [formGroup]="projectAreasForm"></app-identify-project-areas>
-            <app-constraints-panel></app-constraints-panel>
+            <app-constraints-panel
+              [showWarning]="
+                scenarioState !== 'SUCCESS'
+              "></app-constraints-panel>
             <div class="flex-row gap-12">
               <button
                 mat-raised-button
                 color="primary"
                 type="submit"
                 [disabled]="
+                  scenarioNameFormField?.invalid ||
                   prioritiesForm?.invalid ||
                   constrainsForm?.invalid ||
                   generatingScenario

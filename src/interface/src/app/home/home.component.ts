@@ -1,6 +1,5 @@
-import { Component, HostBinding } from '@angular/core';
+import { Component } from '@angular/core';
 import { AuthService } from '../services';
-import { FeatureService } from '../features/feature.service';
 
 @Component({
   selector: 'app-home',
@@ -10,13 +9,5 @@ import { FeatureService } from '../features/feature.service';
 export class HomeComponent {
   loggedIn$ = this.authService.loggedInStatus$;
 
-  login_enabled = this.featuresService.isFeatureEnabled('login');
-
-  constructor(
-    private authService: AuthService,
-    private featuresService: FeatureService
-  ) {}
-
-  @HostBinding('class.home') loggedInClasses: boolean =
-    this.login_enabled || false;
+  constructor(private authService: AuthService) {}
 }

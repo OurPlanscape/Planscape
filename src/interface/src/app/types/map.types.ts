@@ -29,5 +29,5 @@ export interface MapViewOptions {
   selectedMapIndex: number;
   numVisibleMaps: number;
   zoom: number;
-  center: L.LatLngExpression;
+  center: L.LatLngTuple;
 }
