@@ -14,6 +14,12 @@ import { STAND_SIZES } from '../../plan-helpers';
 import { EXCLUDED_AREAS } from '../../../shared/constants';
 import { ScenarioConfig } from '../../../types';
 import { ErrorStateMatcher } from '@angular/material/core';
+import {
+  calculateMaxArea,
+  calculateMinArea,
+  calculateMinBudget,
+  hasEnoughBudget,
+} from '../../../validators/scenarios';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -107,11 +113,11 @@ export class ConstraintsPanelComponent implements OnChanges {
   }
 
   get minMaxAreaValue() {
-    return this.planningAreaAcres * 0.2;
+    return calculateMinArea(this.planningAreaAcres);
   }
 
   get maxMaxAreaValue() {
-    return this.planningAreaAcres * 0.8;
+    return calculateMaxArea(this.planningAreaAcres);
   }
 
   get maxArea() {
@@ -258,13 +264,20 @@ export class ConstraintsPanelComponent implements OnChanges {
       const estCostPerAcre = constraintsForm.get('budgetForm.estimatedCost')
         ?.value;
       if (!!maxCost) {
-        const totalBudgetedAcres = maxCost / estCostPerAcre;
-        return totalBudgetedAcres < planningAreaAcres * 0.2
-          ? {
-              [customErrors.notEnoughBudget]:
-                planningAreaAcres * estCostPerAcre * 0.2,
-            }
-          : null;
+        const hasBudget = hasEnoughBudget(
+          planningAreaAcres,
+          estCostPerAcre,
+          maxCost
+        );
+
+        return hasBudget
+          ? null
+          : {
+              [customErrors.notEnoughBudget]: calculateMinBudget(
+                planningAreaAcres,
+                estCostPerAcre
+              ),
+            };
       }
       return null;
     };
