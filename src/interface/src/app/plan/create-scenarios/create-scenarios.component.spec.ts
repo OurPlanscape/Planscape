@@ -27,6 +27,7 @@ import { POLLING_INTERVAL } from '../plan-helpers';
 import { ScenarioService } from '../../services/scenario.service';
 import { PlanState, PlanStateService } from '../../services/plan-state.service';
 import { CurrencyPipe } from '@angular/common';
+import * as L from 'leaflet';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -74,6 +75,11 @@ describe('CreateScenariosComponent', () => {
           ownerId: 'fakeowner',
           name: 'testplan',
           region: Region.SIERRA_NEVADA,
+          planningArea: new L.Polygon([
+            new L.LatLng(38.715517043571914, -120.42857302225725),
+            new L.LatLng(38.47079787227401, -120.5164425608172),
+            new L.LatLng(38.52668443555346, -120.11828371421737),
+          ]).toGeoJSON(),
         },
       },
       currentPlanId: '1',
@@ -178,6 +184,50 @@ describe('CreateScenariosComponent', () => {
     });
   });
 
+  describe('max area validation', () => {
+    beforeEach(() => {
+      // spy on polling to avoid dealing with async and timeouts
+      spyOn(component, 'pollForChanges');
+      fixture.detectChanges();
+      component.selectedTab = 0;
+    });
+    it('should validate max area is within range', async () => {
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.scenarioNameFormField?.markAsDirty();
+
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 857,
+      });
+
+      fixture.detectChanges();
+
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      let isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(true);
+
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 38857,
+      });
+      isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(false);
+
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 3885733333333,
+      });
+      isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(true);
+    });
+  });
+
   describe('generate button', () => {
     beforeEach(() => {
       // spy on polling to avoid dealing with async and timeouts
@@ -196,7 +246,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 5300,
+        max_treatment_area_ratio: 38857,
       });
 
       fixture.detectChanges();
@@ -237,7 +287,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 1122,
+        max_treatment_area_ratio: 38857,
       });
 
       component.generatingScenario = false;
