@@ -7,7 +7,6 @@ import {
   TitleStrategy,
 } from '@angular/router';
 
-import { createFeatureGuard } from './features/feature.guard';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
@@ -37,20 +36,17 @@ const routes: Routes = [
         path: 'login',
         title: 'Login',
         component: LoginComponent,
-        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'reset/:userId/:token',
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
         component: PasswordResetComponent,
-        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'reset',
         title: 'Forget password',
         component: ForgetPasswordComponent,
-        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'home',
@@ -61,19 +57,16 @@ const routes: Routes = [
         path: 'signup',
         title: 'Signup',
         component: SignupComponent,
-        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'thankyou',
         title: 'Thank You',
         component: ThankYouComponent,
-        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'validate/:token',
         title: 'Account E-mail Validation',
         component: AccountValidationComponent,
-        canActivate: [createFeatureGuard('login')],
       },
       {
         path: 'map',
@@ -103,6 +96,11 @@ const routes: Routes = [
         component: PlanComponent,
         canActivate: [AuthGuard],
         children: [
+          {
+            path: 'config',
+            title: 'Scenario Configuration',
+            component: CreateScenariosComponent,
+          },
           {
             path: 'config/:id',
             title: 'Scenario Configuration',

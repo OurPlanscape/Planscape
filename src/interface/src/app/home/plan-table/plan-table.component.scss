@@ -1,5 +1,7 @@
 @use '@angular/material' as mat;
 @import "../../../theme";
+@import "../../../styles/mixins";
+@import "../../../styles/colors";
 
 :host {
   display: block;
@@ -14,22 +16,6 @@
   margin-right: 10px;
 }
 
-.no-saved-plans {
-  align-items: center;
-  color: #000000a8;
-  display: flex;
-  flex-direction: row;
-  height: 220px;
-  justify-content: center;
-
-  p {
-    font-size: 15px;
-    font-weight: 400;
-    line-height: 20px;
-    margin: 0;
-  }
-}
-
 h2 {
   color: #5f6368;
   font-size: 18px;
@@ -42,8 +28,8 @@ h2 {
 
   &:hover {
     background-color: transparentize(
-      $color: mat.get-color-from-palette($primary-palette, 500),
-      $amount: 0.9
+            $color: mat.get-color-from-palette($primary-palette, 500),
+            $amount: 0.9
     );
   }
 
@@ -57,8 +43,8 @@ h2 {
 
 .selected {
   background-color: transparentize(
-    $color: mat.get-color-from-palette($primary-palette, 500),
-    $amount: 0.9
+          $color: mat.get-color-from-palette($primary-palette, 500),
+          $amount: 0.9
   );
 }
 
@@ -119,16 +105,12 @@ mat-row {
   border-right: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.spinner {
-  margin: auto;
-  padding-top: 20px;
-}
-
 
 .table-wrapper {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  margin-top: 20px;
+  height: calc(100% - 20px);
 }
 
 .table-scroll {

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.serializers import CharField, DateTimeField, IntegerField, JSONField
 from rest_framework_gis import serializers as gis_serializers
 
-from planning.models import PlanningArea, Scenario, ScenarioResult
+from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
 from planning.services import validate_scenario_treatment_ratio
 from stands.models import StandSizeChoices
 
@@ -52,6 +52,7 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
 
 
 class ConfigurationSerializer(serializers.Serializer):
+    question_id = serializers.IntegerField(allow_null=True, required=False)
     weights = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
     est_cost = serializers.FloatField(min_value=1)
     max_budget = serializers.FloatField(
@@ -136,3 +137,14 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "scenario_result",
         )
         model = Scenario
+
+
+class SharedLinkSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        user = self.context["user"] or None
+        link_obj = SharedLink.objects.create(**validated_data, user=user)
+        return link_obj
+
+    class Meta:
+        model = SharedLink
+        fields = ("updated_at", "created_at", "link_code", "view_state", "user_id")

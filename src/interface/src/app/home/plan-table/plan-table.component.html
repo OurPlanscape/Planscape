@@ -1,9 +1,11 @@
-<div *ngIf="loading; else dataLoaded">
-  <mat-spinner diameter="40" class="spinner"></mat-spinner>
-</div>
-
-<ng-template #dataLoaded>
-  <div *ngIf="datasource.data.length; else noplans" class="table-wrapper">
+<app-section-loader
+  [isLoading]="loading"
+  [hasData]="datasource.data.length > 0"
+  emptyStateTitle="No planning areas yet"
+  emptyStateContent="Click “Explore” to start creating your planning areas.
+  Not ready to create new plans?
+  You can explore the mapping tool without creating a planning area.">
+  <div class="table-wrapper">
     <mat-table [dataSource]="datasource" matSort class="table-scroll">
       <!-- Name Column -->
       <ng-container matColumnDef="name">
@@ -90,8 +92,4 @@
       </button>
     </div>
   </div>
-
-  <ng-template #noplans class="no-saved-plans">
-    <p>There are no saved plans.</p>
-  </ng-template>
-</ng-template>
+</app-section-loader>

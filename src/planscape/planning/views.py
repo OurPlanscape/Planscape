@@ -6,20 +6,32 @@ from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.sites.shortcuts import get_current_site
+from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
+
 from django.http import (
     HttpRequest,
     HttpResponse,
     HttpResponseBadRequest,
+    Http404,
     JsonResponse,
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from pathlib import Path
+from planning.models import (
+    PlanningArea,
+    Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
+    SharedLink,
+)
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
+    SharedLinkSerializer,
 )
 from planning.services import (
     export_to_shapefile,
@@ -27,6 +39,8 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
+from urllib.parse import urljoin
+from utils.cli_utils import call_forsys
 
 
 # Retrieve the logged in user from the HTTP request.
@@ -517,8 +531,16 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         if settings.USE_CELERY_FOR_FORSYS:
             async_forsys_run.delay(scenario.pk)
 
+        return JsonResponse({"id": scenario.pk})
+
+    except IntegrityError as ve:
+        reason = ve.args[0]
+        if "(planning_area_id, name)" in ve.args[0]:
+            reason = "A scenario with this name already exists."
         return HttpResponse(
-            json.dumps({"id": scenario.pk}), content_type="application/json"
+            json.dumps({"reason": reason}),
+            content_type="application/json",
+            status=400,
         )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -741,3 +763,29 @@ def get_treatment_goals_config_for_region(params: QueryDict):
 def treatment_goals_config(request: HttpRequest) -> HttpResponse:
     treatment_goals = get_treatment_goals_config_for_region(request.GET)
     return JsonResponse(treatment_goals, safe=False)
+
+
+#### SHARED LINK Handlers ####
+def get_shared_link(request: HttpRequest, link_code: str) -> HttpResponse:
+    try:
+        link_obj = SharedLink.objects.get(link_code=link_code)
+    except SharedLink.DoesNotExist:
+        # Handle the case where the object doesn't exist
+        raise Http404("This link does not exist")
+    serializer = SharedLinkSerializer(link_obj)
+    return JsonResponse(serializer.data, safe=False)
+
+
+def create_shared_link(request: HttpRequest) -> HttpResponse:
+    try:
+        user = _get_user(request)
+        body = json.loads(request.body)
+        serializer = SharedLinkSerializer(data=body, context={"user": user})
+        serializer.is_valid(raise_exception=True)
+        shared_link = serializer.save()
+
+        serializer = SharedLinkSerializer(shared_link)
+        return JsonResponse(serializer.data)
+
+    except Exception as e:
+        return HttpResponseBadRequest("Error in create: " + str(e))

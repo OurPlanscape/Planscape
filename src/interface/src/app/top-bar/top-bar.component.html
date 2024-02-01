@@ -12,16 +12,8 @@
   <!-- Show this section once we know if the user is logged in or not to avoid -->
   <!-- flashing guest / default icon and content shifting -->
   <ng-container *ngIf="(displayName$ | async) !== undefined">
-    <!-- Guest if no login enabled -->
-    <div
-      *appFeatureFlag="'login'; hide: true"
-      class="navbar-item"
-      data-id="login-guest">
-      Guest
-    </div>
     <!-- User or sign in with menu if login enabled -->
     <button
-      *appFeatureFlag="'login'"
       [matMenuTriggerFor]="dotMenu"
       class="navbar-item"
       data-id="menu-trigger">

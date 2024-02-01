@@ -16,7 +16,6 @@ describe('RegionService', () => {
         {
           provide: FEATURES_JSON,
           useValue: {
-            login: true,
             drawn_northcal: false,
             draw_socal: true,
             draw_centralcoast: false,
