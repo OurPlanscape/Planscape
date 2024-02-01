@@ -7,6 +7,7 @@ from planning.models import Scenario, ScenarioResultStatus
 from utils.cli_utils import call_forsys
 from utils.signals import SignalHandler
 from django.conf import settings
+from subprocess import CalledProcessError, TimeoutExpired
 
 
 class Command(BaseCommand):

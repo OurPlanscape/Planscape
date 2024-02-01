@@ -1,15 +1,14 @@
 import logging
 import json
 import os
+import time
 from typing import Any
 from django.conf import settings
-from django.core.management.base import BaseCommand, CommandError, CommandParser
+from django.core.management.base import BaseCommand, CommandParser
 from django.contrib.auth.models import User
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
-from django.core import serializers
-from django.db import transaction
-from django.forms.models import model_to_dict
 from utils.cli_utils import call_forsys
+from subprocess import CalledProcessError, TimeoutExpired
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +65,8 @@ class Command(BaseCommand):
             ) as f:
                 area_data = json.load(f)
                 area_data["user_id"] = self.test_user.id
+                area_data["pk"] = None
+                area_data["name"] = f"testplan-{time.time()}"
                 area_obj, _ = PlanningArea.objects.update_or_create(
                     id=area_data.get("pk") or None,
                     defaults=area_data,
@@ -85,14 +86,32 @@ class Command(BaseCommand):
             scenario_data = json.load(f)
             # overwrite details
             scenario_data["planning_area_id"] = area_id
+            scenario_data["name"] = f"test-scenario-{time.time()}"
             scenario_obj, _ = Scenario.objects.update_or_create(
                 defaults=scenario_data, id=scenario_data.get("pk") or None
             )
             self.scenarios_to_test.append(scenario_obj.id)
 
+    def handle_results(self, scenario_id):
+        print(f"Here we are dealing with the results for scenario: {scenario_id}")
+
     def get_forsys_results(self, scenario_id):
         try:
             call_forsys(scenario_id)
+            print(f"Finished processing scenario_id? {scenario_id}")
+        except TimeoutExpired:
+            scenario.results.status = ScenarioResultStatus.TIMED_OUT
+            scenario.results.save()
+            log.error(
+                f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
+            )
+        except CalledProcessError:
+            scenario.results.status = ScenarioResultStatus.PANIC
+            scenario.results.save()
+            log.error(
+                f"A panic error happened while trying to call forsys for {scenario_id}"
+            )
+
         except Exception as ex:
             scenario = Scenario.objects.get(scenario_id)
             scenario.results = ScenarioResultStatus.FAILURE
@@ -106,15 +125,6 @@ class Command(BaseCommand):
                 # check for PENDING results....
                 scenario_result = ScenarioResult.objects.get(scenario__id=scenario_id)
                 print(f"Result status?: {scenario_result.status}")
-                while scenario_result.status == "PENDING":
-                    # TODO: just use the queue for this
-                    time.sleep(2)
-                    scenario_result = ScenarioResult.objects.get(
-                        scenario__id=scenario_id
-                    )
-                    existing = Scenario.objects.count()
-                    print(f"We have this many scenarios: {existing}")
-                    print(f"new result is: {scenario_result.status}")
 
         except Exception as e:
             print(f"Failed with {e}")
@@ -129,9 +139,6 @@ class Command(BaseCommand):
         self.upsert_test_user()
         self.load_test_definitions()
         self.create_areas()
-        print(f"Area ids we created: {self.test_area_ids}")
-        print(f"self.fixtures_to_test: {self.fixtures_to_test}")
-        print(f"Scenario ids we created: {self.scenarios_to_test}")
 
         # TODO: get database environment from fiile...
         self.run_tests()

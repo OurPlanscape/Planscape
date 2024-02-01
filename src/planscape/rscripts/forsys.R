@@ -17,7 +17,7 @@ library("glue")
 library("tidyr")
 library("friendlyeval")
 
-readRenviron("planscape/.env")
+readRenviron(".env")
 
 options <- list(
   make_option(
@@ -39,17 +39,17 @@ DEFAULT_COST_PER_ACRE <- 2470
 SHORT_TONS_ACRE_TO_SHORT_TONS_CELL <- 0.2224
 MGC_HA_TO_MGC_CELL <- 0.09
 PREPROCESSING_MULTIPLIERS <- list(
-    total_fuel_exposed_to_fire = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    dead_and_down_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    standing_dead_and_ladder_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    available_standing_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    sawtimber_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    costs_of_potential_treatment_moving_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    costs_of_potential_treatment_moving_sawlogs = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    heavy_fuel_load = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    live_tree_density_30in_dbh = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-    aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
-  )
+  total_fuel_exposed_to_fire = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  dead_and_down_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  standing_dead_and_ladder_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  available_standing_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  sawtimber_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  costs_of_potential_treatment_moving_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  costs_of_potential_treatment_moving_sawlogs = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  heavy_fuel_load = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  live_tree_density_30in_dbh = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
+  aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
+)
 
 METRIC_COLUMNS <- list(
   distance_to_roads = "min",
@@ -77,7 +77,7 @@ get_connection <- function() {
 }
 
 get_output_dir <- function(scenario) {
-  return (paste0(getwd(), "/output/", scenario$uuid))
+  return(paste0(getwd(), "/output/", scenario$uuid))
 }
 
 get_scenario_data <- function(connection, scenario_id) {
@@ -123,7 +123,7 @@ priority_to_condition <- function(connection, scenario, priority) {
 }
 
 get_restrictions <- function(connection, scenario_id, restrictions) {
-    statement <- "
+  statement <- "
     WITH plan_scenario AS (
       SELECT
         pp.id AS \"planning_area_id\",
@@ -141,14 +141,14 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
       type IN ({restrictions*}) AND
       rr.geometry && plan_scenario.geometry AND
       ST_Intersects(rr.geometry, plan_scenario.geometry)"
-    restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, restrictions = restrictions, .con=connection)
-    restriction_data <- st_read(
-      dsn = connection,
-      layer = NULL,
-      query = restrictions_statement,
-      geometry_column = "geometry"
-    )
-    return (restriction_data)
+  restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, restrictions = restrictions, .con = connection)
+  restriction_data <- st_read(
+    dsn = connection,
+    layer = NULL,
+    query = restrictions_statement,
+    geometry_column = "geometry"
+  )
+  return(restriction_data)
 }
 
 get_stands <- function(connection, scenario_id, stand_size, restrictions) {
@@ -385,7 +385,7 @@ get_stand_data <- function(connection, scenario, configuration, conditions) {
         )
       )
 
-      if (any(is.na(metric[,condition_name]))) {
+      if (any(is.na(metric[, condition_name]))) {
         log_warn(
           paste(
             "Condition",
@@ -556,7 +556,7 @@ export_input <- function(scenario, stand_data) {
   output_file <- paste0(output_dir, "/inputs.csv")
   layer_options <- c("GEOMETRY=AS_WKT")
   dir.create(output_dir)
-  st_write(stand_data, output_file, layer_options=layer_options, append = FALSE, delete_dsn = TRUE)
+  st_write(stand_data, output_file, layer_options = layer_options, append = FALSE, delete_dsn = TRUE)
 }
 
 call_forsys <- function(
@@ -583,7 +583,7 @@ call_forsys <- function(
   if (length(priorities$condition_name) > 1) {
     weights <- get_weights(priorities, configuration)
     log_info("combining priorities")
-    stand_data <- stand_data %>% 
+    stand_data <- stand_data %>%
       forsys::calculate_spm(fields = priorities$condition_name) %>%
       forsys::calculate_pcp(fields = priorities$condition_name) %>%
       forsys::combine_priorities(
