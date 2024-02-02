@@ -2,7 +2,6 @@ from django.contrib.gis.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-import uuid
 
 from core.models import CreatedAtMixin, UpdatedAtMixin
 
@@ -10,7 +9,7 @@ User = get_user_model()
 
 
 class Role(models.TextChoices):
-    CREATOR = "Creator"
+    # CREATOR - creator is not a role, but the user that created the planning area
     OWNER = "Owner"
     COLLABORATOR = "Collaborator"
     VIEWER = "Viewer"
