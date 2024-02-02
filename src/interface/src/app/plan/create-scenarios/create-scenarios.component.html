@@ -33,6 +33,7 @@
               *ngIf="project_area_upload_enabled"
               [formGroup]="projectAreasForm"></app-identify-project-areas>
             <app-constraints-panel
+              [planningAreaAcres]="(acres$ | async) || 0"
               [showWarning]="
                 scenarioState !== 'SUCCESS'
               "></app-constraints-panel>
