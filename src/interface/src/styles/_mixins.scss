@@ -53,6 +53,14 @@ Declare mixins based on styleguide and apply to classes
   line-height: 22px;
 }
 
+@mixin small-input-label {
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+
 @mixin standard-label {
   @include public-sans();
   font-size: 18px;

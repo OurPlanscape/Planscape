@@ -12,6 +12,7 @@ import { calculateAcres } from '../../plan/plan-helpers';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
+import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 
 interface PlanRow extends PlanPreview {
   totalAcres: number;
@@ -99,6 +100,27 @@ export class PlanTableComponent implements OnInit {
       });
   }
 
+  sharePlan() {
+    if (!this.selectedPlan) {
+      return;
+    }
+    const dialogRef: MatDialogRef<SharePlanDialogComponent> = this.dialog.open(
+      SharePlanDialogComponent,
+      {
+        data: {
+          name: '"' + this.selectedPlan.name + '"',
+        },
+      }
+    );
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.snackbar.open(`Good lad`, 'Dismiss', SNACK_NOTICE_CONFIG);
+        }
+      });
+  }
   refresh(): void {
     this.getPlansFromService();
   }

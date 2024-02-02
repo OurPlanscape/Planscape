@@ -1,0 +1,80 @@
+<div class="main">
+  <section class="header">
+    <h2>Share {{ data.name }}</h2>
+  </section>
+
+  <app-form-message
+    [messageType]="errorType"
+    *ngIf="invalidEmail"
+    title="Invalid email"
+    message="An email must contain a single @">
+  </app-form-message>
+
+  <form class="grid">
+    <mat-form-field appearance="outline">
+      <mat-chip-list #chipList aria-label="Fruit selection">
+        <mat-chip *ngFor="let email of emails" (removed)="removeEmail(email)">
+          {{ email }}
+          <button matChipRemove>
+            <mat-icon>cancel</mat-icon>
+          </button>
+        </mat-chip>
+      </mat-chip-list>
+      <input
+        type="email"
+        matInput
+        [matChipInputFor]="chipList"
+        [matChipInputAddOnBlur]="true"
+        (matChipInputTokenEnd)="addEmail($event)" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-select>
+        <mat-option>Collaborator</mat-option>
+        <mat-option>Viewer</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="message">
+      <textarea matInput></textarea>
+    </mat-form-field>
+
+    <button class="action">Invite</button>
+  </form>
+  <section class="footer">
+    <h3>People with access</h3>
+    <div *ngFor="let invite of invites$ | async" class="invite">
+      <div>{{ invite.name }}</div>
+      <div>{{ invite.role }}</div>
+    </div>
+  </section>
+</div>
+
+<div class="help" *ngIf="showHelp">
+  <section class="header">
+    <h2>Share {{ data.name }}</h2>
+  </section>
+  <section>
+    <h4>How do I restrict permission to access a planning area?</h4>
+    <p>
+      When you share a planning area with someone, you can choose their
+      permission level.
+    </p>
+
+    <h4>Owner:</h4>
+    <p>
+      People who created the planning area. The owner can choose who can
+      collaborate or only view the scenarios of a planning area.
+    </p>
+
+    <h4>Collaborator:</h4>
+    <p>
+      Collaborators can create and archive scenarios of a planning area shared
+      with them, but they cannot share the planning area/scenarios with others.
+    </p>
+
+    <h4>Viewer:</h4>
+    <p>
+      Viewers can view a planning area, but they can’t create or archive
+      scenarios, and share the planning area with others.
+    </p>
+  </section>
+</div>
