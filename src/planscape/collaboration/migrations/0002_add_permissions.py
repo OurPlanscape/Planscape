@@ -1,5 +1,7 @@
 from django.db import migrations
 
+from collaboration.models import Role
+
 
 # Add the initial data to define each role and corresponding permissions
 class Migration(migrations.Migration):
@@ -18,15 +20,15 @@ class Migration(migrations.Migration):
         ]
         Permission = apps.get_model("collaboration", "Permissions")
         for x in viewer:
-            entry = Permission(role="VIEWER", permission=x)
+            entry = Permission(role=Role.VIEWER, permission=x)
             entry.save()
 
         for x in collaborator:
-            entry = Permission(role="COLLABORATOR", permission=x)
+            entry = Permission(role=Role.COLLABORATOR, permission=x)
             entry.save()
 
         for x in owner:
-            entry = Permission(role="OWNER", permission=x)
+            entry = Permission(role=Role.OWNER, permission=x)
             entry.save()
 
     operations = [
