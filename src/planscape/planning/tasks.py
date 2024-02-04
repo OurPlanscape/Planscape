@@ -2,21 +2,38 @@ from subprocess import CalledProcessError, TimeoutExpired
 from planscape.celery import app
 from planning.models import Scenario, ScenarioResultStatus
 import logging
-
+from jsonschema import Draft202012Validator, validate, ValidationError
 from utils.cli_utils import call_forsys
 
 log = logging.getLogger(__name__)
 
 
+def validate_schema(validation_schema, output_result):
+    print(f"Hello....are we here? we have result: {output_result}")
+    print(f"And we want to compare it with validation_schema: {validation_schema}")
+
+    print(f"do we have a type? {output_result['type']}")
+    print(f"do we have a type? {validation_schema['type']}")
+
+    try:
+        schema_result = Draft202012Validator(validation_schema).is_valid(output_result)
+        print(f"\n\Draft schema Result: {schema_result}")
+        validate(output_result, {"maxItems": 2})
+        return "idfk"
+    except ValidationError as ve:
+        print(f"Error in {ve}")
+
+
 @app.task
-def review_results(sid):
+def review_results(sid, schema):
+    print(f"do we have a schema to compare?: {schema}")
     try:
         scenario = Scenario.objects.get(id=sid)
-        res = scenario.results.status
-        print(f"Status is: {res}")
-        return res
+        res = scenario.results.result
+        return validate_schema(schema, res)
     except Exception:
         log.error(f"Could not get a scenario result for: {sid}")
+    # compare the result json with the JSON file that describes expected results
 
 
 @app.task(max_retries=3, retry_backoff=True)

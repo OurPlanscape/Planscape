@@ -2,16 +2,13 @@ import logging
 import json
 import os
 import time
-from celery import chord, group, chain
+from celery import group, chain
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.contrib.auth.models import User
-from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
-from subprocess import CalledProcessError, TimeoutExpired
+from planning.models import PlanningArea, Scenario
 from typing import Any
 from planning.tasks import async_forsys_run, review_results
-from utils.cli_utils import call_forsys
-from planscape.celery import app
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +16,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     fixtures_to_test = []
     scenarios_to_test = []
+    test_user = ""
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -47,10 +45,12 @@ class Command(BaseCommand):
             settings.BASE_DIR, self.fixtures_path, "test_definitions.json"
         )
         try:
-            with open(test_defs, "r") as f:
+            with open(test_defs, "r", encoding="UTF-8") as f:
                 self.fixtures_to_test = json.load(f)
         except Exception as e:
             logger.error(f"Failed to read test definitions at {test_defs}- {e}")
+
+    # TODO: consider just reading files in the output directory formats
 
     def create_areas(self):
         self.test_area_ids = []
@@ -62,10 +62,7 @@ class Command(BaseCommand):
                 self.fixtures_path,
                 planning_area_file,
             )
-            with open(
-                areas_file,
-                "r",
-            ) as f:
+            with open(areas_file, "r", encoding="UTF-8") as f:
                 area_data = json.load(f)
                 area_data["user_id"] = self.test_user.id
                 area_data["pk"] = None
@@ -76,16 +73,21 @@ class Command(BaseCommand):
                 )
                 self.test_area_ids.append(area_obj.id)
                 for s in scenarios:
-                    self.upsert_scenarios(s, area_obj.id)
+                    print(f"We have this in s: {s}")
+                    self.upsert_scenarios(s["treatment"], s["result"], area_obj.id)
 
-    def upsert_scenarios(self, scenario_file, area_id):
+    def get_results_schema(self, results_file):
+        results_path = os.path.join(settings.BASE_DIR, self.fixtures_path, results_file)
+        with open(results_path, "r", encoding="UTF-8") as f:
+            results_schema = json.load(f)
+            print(f"Here is the schema: {results_schema}")
+            return results_schema
+
+    def upsert_scenarios(self, scenario_file, results_file, area_id):
         scenario_path = os.path.join(
             settings.BASE_DIR, self.fixtures_path, scenario_file
         )
-        with open(
-            scenario_path,
-            "r",
-        ) as f:
+        with open(scenario_path, "r", encoding="UTF-8") as f:
             scenario_data = json.load(f)
             # overwrite details
             scenario_data["planning_area_id"] = area_id
@@ -93,12 +95,18 @@ class Command(BaseCommand):
             scenario_obj, _ = Scenario.objects.update_or_create(
                 defaults=scenario_data, id=scenario_data.get("pk") or None
             )
-            self.scenarios_to_test.append(scenario_obj.id)
+            results_schema = self.get_results_schema(results_file)
+            self.scenarios_to_test.append(
+                {"id": scenario_obj.id, "results": results_schema}
+            )
 
     def run_tests(self):
         all_tasks = []
-        for sid in self.scenarios_to_test:
-            task = chain(async_forsys_run.si(sid), review_results.si(sid))
+        for s in self.scenarios_to_test:
+            print(f"We have this in scenarios to test: {s}")
+            task = chain(
+                async_forsys_run.si(s["id"]), review_results.si(s["id"], s["results"])
+            )
             all_tasks.append(task)
 
         g = group(all_tasks)
