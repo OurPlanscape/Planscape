@@ -44,11 +44,9 @@ def async_forsys_run(scenario_id: int) -> None:
         scenario = Scenario.objects.get(id=scenario_id)
     except Scenario.DoesNotExist:
         log.warning(f"Scenario with {scenario_id} does not exist.")
-        raise Exception("Scenario with id: {scenario_id} does not exist.")
-
     try:
         log.info(f"Running scenario {scenario_id}")
-        # call_forsys(scenario.pk)
+        call_forsys(scenario.pk)
         return
 
     except TimeoutExpired as e:
