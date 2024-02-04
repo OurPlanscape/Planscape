@@ -2,24 +2,18 @@ import logging
 import json
 import os
 import time
-from celery import chord, group
+from celery import chord, group, chain
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.contrib.auth.models import User
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from subprocess import CalledProcessError, TimeoutExpired
 from typing import Any
-from planning.tasks import async_forsys_run
+from planning.tasks import async_forsys_run, review_results
 from utils.cli_utils import call_forsys
 from planscape.celery import app
 
 logger = logging.getLogger(__name__)
-
-@app.task
-def my_callback(a: int):
-    # Process the result here
-    print(f"Callback called {a}")
-    return "what"
 
 
 class Command(BaseCommand):
@@ -102,13 +96,15 @@ class Command(BaseCommand):
             self.scenarios_to_test.append(scenario_obj.id)
 
     def run_tests(self):
-        all_tasks = [] 
+        all_tasks = []
         for sid in self.scenarios_to_test:
-            task = async_forsys_run.si(sid).link(my_callback.si(sid))
+            task = chain(async_forsys_run.si(sid), review_results.si(sid))
             all_tasks.append(task)
+
         g = group(all_tasks)
-        res = g(my_callback.si())
-        print(f"{ res.get() }")
+        res = g()
+        final = res.get()
+        print(f"Final Results: {final}")
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         self.fixtures_path = options["fixtures_path"]
