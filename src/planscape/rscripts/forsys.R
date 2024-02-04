@@ -17,7 +17,7 @@ library("glue")
 library("tidyr")
 library("friendlyeval")
 
-readRenviron(".env")
+readRenviron("planscape/.env")
 
 options <- list(
   make_option(

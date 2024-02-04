@@ -2,15 +2,24 @@ import logging
 import json
 import os
 import time
-from typing import Any
+from celery import chord, group
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.contrib.auth.models import User
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
-from utils.cli_utils import call_forsys
 from subprocess import CalledProcessError, TimeoutExpired
+from typing import Any
+from planning.tasks import async_forsys_run
+from utils.cli_utils import call_forsys
+from planscape.celery import app
 
 logger = logging.getLogger(__name__)
+
+@app.task
+def my_callback(a: int):
+    # Process the result here
+    print(f"Callback called {a}")
+    return "what"
 
 
 class Command(BaseCommand):
@@ -35,7 +44,7 @@ class Command(BaseCommand):
         self.test_user, _ = User.objects.update_or_create(
             username="e2etest@sig-gis.com"
         )
-        print(
+        self.stdout.write(
             f"The test user id: {self.test_user.id} and username: {self.test_user.username}"
         )
 
@@ -92,42 +101,14 @@ class Command(BaseCommand):
             )
             self.scenarios_to_test.append(scenario_obj.id)
 
-    def handle_results(self, scenario_id):
-        print(f"Here we are dealing with the results for scenario: {scenario_id}")
-
-    def get_forsys_results(self, scenario_id):
-        try:
-            call_forsys(scenario_id)
-            print(f"Finished processing scenario_id? {scenario_id}")
-        except TimeoutExpired:
-            scenario.results.status = ScenarioResultStatus.TIMED_OUT
-            scenario.results.save()
-            log.error(
-                f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
-            )
-        except CalledProcessError:
-            scenario.results.status = ScenarioResultStatus.PANIC
-            scenario.results.save()
-            log.error(
-                f"A panic error happened while trying to call forsys for {scenario_id}"
-            )
-
-        except Exception as ex:
-            scenario = Scenario.objects.get(scenario_id)
-            scenario.results = ScenarioResultStatus.FAILURE
-            scenario.results.save()
-            print(f"Failed to run forsys for scenario id: {scenario_id} - {str(ex)}")
-
     def run_tests(self):
-        try:
-            for scenario_id in self.scenarios_to_test:
-                self.get_forsys_results(scenario_id)
-                # check for PENDING results....
-                scenario_result = ScenarioResult.objects.get(scenario__id=scenario_id)
-                print(f"Result status?: {scenario_result.status}")
-
-        except Exception as e:
-            print(f"Failed with {e}")
+        all_tasks = [] 
+        for sid in self.scenarios_to_test:
+            task = async_forsys_run.si(sid).link(my_callback.si(sid))
+            all_tasks.append(task)
+        g = group(all_tasks)
+        res = g(my_callback.si())
+        print(f"{ res.get() }")
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         self.fixtures_path = options["fixtures_path"]
@@ -140,5 +121,4 @@ class Command(BaseCommand):
         self.load_test_definitions()
         self.create_areas()
 
-        # TODO: get database environment from fiile...
         self.run_tests()

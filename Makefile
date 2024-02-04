@@ -95,3 +95,7 @@ nginx-restart:
 
 load-restrictions:
 	cd src/planscape && sh bin/load_restrictions.sh
+
+test-scenarios:
+	cd src/planscape && python3 manage.py test_scenarios
+

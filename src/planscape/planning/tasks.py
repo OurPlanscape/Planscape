@@ -1,6 +1,6 @@
 from subprocess import CalledProcessError, TimeoutExpired
 from planscape.celery import app
-from planning.models import Scenario, ScenarioResultStatus
+from planning.models import Scenario, ScenarioResultStatus, ScenarioResult
 import logging
 
 from utils.cli_utils import call_forsys
@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def async_forsys_run(scenario_id: int) -> None:
+def async_forsys_run(scenario_id: int) -> int:
     try:
         scenario = Scenario.objects.get(id=scenario_id)
     except Scenario.DoesNotExist:
@@ -18,6 +18,9 @@ def async_forsys_run(scenario_id: int) -> None:
     try:
         log.info(f"Running scenario {scenario_id}")
         call_forsys(scenario.pk)
+        sr = ScenarioResult.objects.get(scenario_id=scenario_id)
+        return sr.status
+
     except TimeoutExpired:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.
