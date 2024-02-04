@@ -2,6 +2,7 @@ from subprocess import CalledProcessError, TimeoutExpired
 from planscape.celery import app
 from planning.models import Scenario, ScenarioResultStatus
 import logging
+import json
 from jsonschema import Draft202012Validator, validate, ValidationError
 from utils.cli_utils import call_forsys
 
@@ -9,20 +10,21 @@ log = logging.getLogger(__name__)
 
 
 def validate_schema(validation_schema, output_result):
-    print(f"Hello....are we here? we have result: {output_result}")
-    print(f"And we want to compare it with validation_schema: {validation_schema}")
-
-    print(f"do we have a type? {output_result['type']}")
-    print(f"do we have a type? {validation_schema['type']}")
-
+   
     try:
         schema_result = Draft202012Validator(validation_schema).is_valid(output_result)
-        print(f"\n\Draft schema Result: {schema_result}")
-        validate(output_result, {"maxItems": 2})
-        return "idfk"
+        print(f"schema_result is {schema_result}")
+        validate(instance=output_result, schema=validation_schema)
+        return True
     except ValidationError as ve:
         print(f"Error in {ve}")
-
+        log.error(f"\n\nERROR: JSON validation failed.")
+        # raise ValidationError from ve
+        return False
+    except Exception as e:
+        print(f"Here is the isue: {e}")
+        log.error(f"\n\nERROR: running validations. This is not a JSON validation error.")
+        raise Exception from e
 
 @app.task
 def review_results(sid, schema):

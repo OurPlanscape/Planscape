@@ -1,7 +1,12 @@
 {
   "type": "object",
   "properties": {
-    "price": { "type": "number" },
-    "name": { "type": "string" }
-  }
+    "myKey": {
+      "type": "string",
+      "const": "myValue"
+    }
+  },
+  "required": [
+    "someValueThatIsRequired"
+  ]
 }

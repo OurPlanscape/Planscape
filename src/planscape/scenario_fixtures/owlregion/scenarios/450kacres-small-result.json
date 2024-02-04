@@ -1,1 +1,12 @@
-{}
+{
+    "type": "object",
+    "properties": {
+      "myKey": {
+        "type": "string",
+        "const": "myValue"
+      }
+    },
+    "required": [
+      "thisIsHowWeTestStuff"
+    ]
+  }
