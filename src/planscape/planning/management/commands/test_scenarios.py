@@ -40,8 +40,6 @@ class Command(BaseCommand):
         except Exception as e:
             log.error(f"Failed to read test definitions at {test_defs}- {e}")
 
-    # TODO: consider just reading files in the output directory formats
-
     def create_areas(self):
         self.test_area_ids = []
         for tests in self.fixtures_to_test:

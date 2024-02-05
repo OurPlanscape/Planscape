@@ -18,14 +18,6 @@ def load_schema(schema_file):
         log.error("Error opening schema %s. %s", schema_file, e)
 
 
-def load_examples():
-    results_file = "monobasin/scenarios/100pct-slope-result.json"
-    validation_file = "monobasin/scenarios/100pct-slope-validation.json"
-    results_schema = load_schema(results_file)
-    validation_schema = load_schema(validation_file)
-    validation_results(validation_schema, results_schema)
-
-
 def validation_results(validation_schema, output_result) -> bool:
     try:
         v = Draft202012Validator(validation_schema)
