@@ -6,7 +6,5 @@
       "const": "myValue"
     }
   },
-  "required": [
-    "thisIsHowWeTestThings"
-  ]
+  "required": ["thisIsHowWeTestThings"]
 }

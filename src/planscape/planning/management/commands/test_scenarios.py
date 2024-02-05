@@ -74,7 +74,7 @@ class Command(BaseCommand):
                 self.test_area_ids.append(area_obj.id)
                 for s in scenarios:
                     print(f"We have this in s: {s}")
-                    self.upsert_scenarios(s["treatment"], s["result"], area_obj.id)
+                    self.upsert_scenarios(s["treatment"], s["validation"], area_obj.id)
 
     def get_results_schema(self, results_file):
         results_path = os.path.join(settings.BASE_DIR, self.fixtures_path, results_file)

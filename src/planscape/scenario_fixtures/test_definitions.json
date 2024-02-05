@@ -4,19 +4,21 @@
     "scenarios": [
       {
         "treatment": "monobasin/scenarios/eightypct-acreage.json",
-        "result": "monobasin/scenarios/eightypct-acreage-result.json"
+        "expected": "monobasin/scenarios/eightypct-acreage-validation.json"
       },
       {
         "treatment": "monobasin/scenarios/half-acreage.json",
-        "result": "monobasin/scenarios/half-acreage-result.json"
+        "expected": "monobasin/scenarios/half-acreage-vlaidation.json"
       }
     ]
   },
   {
     "planning_area": "owlregion/owlregion.json",
-    "scenarios": [{
-      "treatment": "owlregion/scenarios/450kacres-small.json",
-      "result": "owlregion/scenarios/450kacres-small-result.json"
-    }]
+    "scenarios": [
+      {
+        "treatment": "owlregion/scenarios/450kacres-small.json",
+        "expected": "owlregion/scenarios/450kacres-small-validation.json"
+      }
+    ]
   }
 ]
