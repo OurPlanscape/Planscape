@@ -1,7 +1,16 @@
 from django.test import TransactionTestCase
 from django.contrib.auth.models import User
 from collaboration.models import Collaborator, Role
-from collaboration.utils import canViewPlanningArea
+from collaboration.utils import (
+    can_add_collaborators,
+    can_add_scenario,
+    can_archive_scenario,
+    can_change_collaborators,
+    can_delete_collaborators,
+    can_view_collaborators,
+    can_view_planning_area,
+    can_view_scenario,
+)
 from planning.models import PlanningArea
 from django.contrib.contenttypes.models import ContentType
 
@@ -43,25 +52,165 @@ class PermissionsTest(TransactionTestCase):
         )
         collaborator.save()
 
-    def creator_can_view_planning_area(self):
-        can_view = canViewPlanningArea(self.user, self.planning_area)
-        self.assertFalse(can_view)
+    # Viewing Planning Area
+
+    def test_creator_can_view_planning_area(self):
+        self.assertTrue(can_view_planning_area(self.user, self.planning_area))
 
     def test_not_invited_cannot_view_planning_area(self):
-        can_view = canViewPlanningArea(self.invitee, self.planning_area)
-        self.assertFalse(can_view)
+        self.assertFalse(can_view_planning_area(self.invitee, self.planning_area))
 
     def test_viewer_can_view_planning_area(self):
         self.create_collaborator_record(Role.VIEWER)
-        can_view = canViewPlanningArea(self.invitee, self.planning_area)
-        self.assertTrue(can_view)
+        self.assertTrue(can_view_planning_area(self.invitee, self.planning_area))
 
     def test_collaborator_can_view_planning_area(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        can_view = canViewPlanningArea(self.invitee, self.planning_area)
-        self.assertTrue(can_view)
+        self.assertTrue(can_view_planning_area(self.invitee, self.planning_area))
 
     def test_owner_can_view_planning_area(self):
         self.create_collaborator_record(Role.OWNER)
-        can_view = canViewPlanningArea(self.invitee, self.planning_area)
-        self.assertTrue(can_view)
+        self.assertTrue(can_view_planning_area(self.invitee, self.planning_area))
+
+    # Viewing Scenarios
+
+    def test_creator_can_view_scenario(self):
+        self.assertTrue(can_view_scenario(self.user, self.planning_area))
+
+    def test_not_invited_cannot_view_scenario(self):
+        self.assertFalse(can_view_scenario(self.invitee, self.planning_area))
+
+    def test_viewer_can_view_scenario(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertTrue(can_view_scenario(self.invitee, self.planning_area))
+
+    def test_collaborator_can_view_scenario(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertTrue(can_view_scenario(self.invitee, self.planning_area))
+
+    def test_owner_can_view_scenario(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(can_view_scenario(self.invitee, self.planning_area))
+
+    # Adding Scenarios
+
+    def test_creator_can_add_scenario(self):
+        self.assertTrue(can_add_scenario(self.user, self.planning_area))
+
+    def test_not_invited_cannot_add_scenario(self):
+        self.assertFalse(can_add_scenario(self.invitee, self.planning_area))
+
+    def test_viewer_cannot_add_scenario(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(can_add_scenario(self.invitee, self.planning_area))
+
+    def test_collaborator_can_add_scenario(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertTrue(can_add_scenario(self.invitee, self.planning_area))
+
+    def test_owner_can_add_scenario(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(can_add_scenario(self.invitee, self.planning_area))
+
+    # Change (Archive) Scenarios
+    # # TODO need to add owner to scenario  id
+    # def creator_can_archive_scenario(self):
+    #     self.assertFalse(can_archive_scenario(self.user, self.planning_area))
+
+    # def test_not_invited_cannot_archive_scenario(self):
+    #     self.assertFalse(can_archive_scenario(self.invitee, self.planning_area))
+
+    # def test_viewer_cannot_archive_scenario(self):
+    #     self.create_collaborator_record(Role.VIEWER)
+    #     self.assertFalse(can_archive_scenario(self.invitee, self.planning_area))
+
+    # def test_collaborator_cannot_archive_scenario(self):
+    #     self.create_collaborator_record(Role.COLLABORATOR)
+    #     self.assertTrue(can_archive_scenario(self.invitee, self.planning_area))
+
+    # # TODO need to add owner to scenario  id
+    # def test_scenario_owner_can_archive_scenario(self):
+    #     self.create_collaborator_record(Role.COLLABORATOR)
+    #     # create a scenario with this user
+    #     #....
+    #     # assert that it can archive
+    #     self.assertTrue( can_archive_scenario(self.invitee, self.planning_area) )
+
+    # View Collaborators
+    def test_creator_can_view_collaborators(self):
+        self.assertTrue(can_view_collaborators(self.user, self.planning_area))
+
+    def test_not_invited_cannot_view_collaborator(self):
+        self.assertFalse(can_view_collaborators(self.invitee, self.planning_area))
+
+    def test_viewer_cannot_view_collaborator(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(can_view_collaborators(self.invitee, self.planning_area))
+
+    def test_collaborator_cannot_view_collaborator(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertFalse(can_view_collaborators(self.invitee, self.planning_area))
+
+    def test_owner_can_view_collaborator(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(can_view_collaborators(self.invitee, self.planning_area))
+
+    # Add Collaborators
+
+    def test_creator_can_add_collaborators(self):
+        self.assertTrue(can_add_collaborators(self.user, self.planning_area))
+
+    def test_not_invited_cannot_add_collaborator(self):
+        self.assertFalse(can_add_collaborators(self.invitee, self.planning_area))
+
+    def test_viewer_cannot_add_collaborator(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(can_add_collaborators(self.invitee, self.planning_area))
+
+    def test_collaborator_cannot_add_collaborator(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertFalse(can_add_collaborators(self.invitee, self.planning_area))
+
+    def test_owner_can_add_collaborator(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(can_add_collaborators(self.invitee, self.planning_area))
+
+    # Change Collaborators
+
+    def test_creator_can_change_collaborators(self):
+        self.assertTrue(can_change_collaborators(self.user, self.planning_area))
+
+    def test_not_invited_cannot_change_collaborator(self):
+        self.assertFalse(can_change_collaborators(self.invitee, self.planning_area))
+
+    def test_viewer_cannot_change_collaborator(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(can_change_collaborators(self.invitee, self.planning_area))
+
+    def test_collaborator_cannot_change_collaborator(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertFalse(can_change_collaborators(self.invitee, self.planning_area))
+
+    def test_owner_can_change_collaborator(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(can_change_collaborators(self.invitee, self.planning_area))
+
+    # Delete Collaborators
+
+    def test_creator_can_delete_collaborators(self):
+        self.assertTrue(can_delete_collaborators(self.user, self.planning_area))
+
+    def test_not_invited_cannot_delete_collaborator(self):
+        self.assertFalse(can_delete_collaborators(self.invitee, self.planning_area))
+
+    def test_viewer_cannot_delete_collaborator(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(can_delete_collaborators(self.invitee, self.planning_area))
+
+    def test_collaborator_cannot_delete_collaborator(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertFalse(can_delete_collaborators(self.invitee, self.planning_area))
+
+    def test_owner_can_delete_collaborator(self):
+        self.create_collaborator_record(Role.OWNER)
+        self.assertTrue(can_delete_collaborators(self.invitee, self.planning_area))
