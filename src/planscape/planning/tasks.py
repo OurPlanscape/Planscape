@@ -9,12 +9,13 @@ from utils.cli_utils import call_forsys
 log = logging.getLogger(__name__)
 
 
-def validate_schema(validation_schema, output_result):
-   
+def validate_result(validation_schema, output_result):
     try:
-        schema_result = Draft202012Validator(validation_schema).is_valid(output_result)
-        print(f"schema_result is {schema_result}")
         validate(instance=output_result, schema=validation_schema)
+        v = Draft202012Validator(validation_schema)
+        for error in sorted(v.iter_errors(output_result)):
+            print(error.message)
+            log.error(f"\nRESULT VALIDATION ERROR: {error.message}")
         return True
     except ValidationError as ve:
         print(f"Error in {ve}")
@@ -28,11 +29,10 @@ def validate_schema(validation_schema, output_result):
 
 @app.task
 def review_results(sid, schema):
-    print(f"do we have a schema to compare?: {schema}")
     try:
         scenario = Scenario.objects.get(id=sid)
         res = scenario.results.result
-        return validate_schema(schema, res)
+        return validate_result(schema, res)
     except Exception:
         log.error(f"Could not get a scenario result for: {sid}")
     # compare the result json with the JSON file that describes expected results
