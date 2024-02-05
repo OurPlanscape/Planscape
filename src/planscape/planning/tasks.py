@@ -24,8 +24,11 @@ def validate_result(validation_schema, output_result):
         return False
     except Exception as e:
         print(f"Here is the isue: {e}")
-        log.error(f"\n\nERROR: running validations. This is not a JSON validation error.")
+        log.error(
+            f"\n\nERROR: running validations. This is not a JSON validation error."
+        )
         raise Exception from e
+
 
 @app.task
 def review_results(sid, schema):
@@ -58,7 +61,6 @@ def async_forsys_run(scenario_id: int) -> None:
         log.error(
             f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
         )
-        raise TimeoutExpired(e.cmd, e.timeout) from e
     except CalledProcessError as cpe:
         scenario.results.status = ScenarioResultStatus.PANIC
         scenario.results.save()
@@ -66,4 +68,3 @@ def async_forsys_run(scenario_id: int) -> None:
         log.error(
             f"A panic error happened while trying to call forsys for {scenario_id}"
         )
-        raise CalledProcessError(e.cmd, e.timeout) from cpe
