@@ -24,7 +24,9 @@
             </mat-form-field>
           </div>
           <div class="error-text" *ngIf="maxArea?.invalid && maxArea?.touched">
-            Max acres needs to be at least 500 acres
+            Max acres needs to be between
+            {{ minMaxAreaValue | number: '1.0-0' }} and
+            {{ maxMaxAreaValue | number: '1.0-0' }}
           </div>
         </div>
         or
@@ -43,9 +45,21 @@
                 type="text"
                 mask="separator"
                 thousandSeparator=","
+                [errorStateMatcher]="budgetStateMatcher"
                 (input)="togglMaxAreaAndMaxCost()" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
+          </div>
+          <div
+            class="error-text"
+            *ngIf="
+              constraintsForm.hasError('notEnoughBudget') && maxCost?.touched
+            ">
+            Budget needs to be at least
+            {{
+              constraintsForm.getError('notEnoughBudget')
+                | currency: 'USD' : 'symbol' : '1.0-0'
+            }}
           </div>
         </div>
       </div>
