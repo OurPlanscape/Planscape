@@ -1,19 +1,21 @@
 {
-  "pk": 1201,
-  "created_at": "2024-01-07T03:33:12.488Z",
-  "updated_at": "2024-01-07T03:33:12.488Z",
-  "name": "Monobasin - 80% treatment",
+  "pk": 853,
+  "updated_at": "2024-01-29T18:19:39.826433Z",
+  "created_at": "2024-01-29T18:19:39.826415Z",
+  "name": "100% slope",
   "notes": null,
   "configuration": {
+    "question_id": 1,
     "weights": [],
     "est_cost": 2470.0,
-    "max_slope": null,
+    "max_budget": null,
+    "max_slope": 100.0,
+    "min_distance_from_road": 1.0,
     "stand_size": "LARGE",
     "excluded_areas": [],
     "stand_thresholds": ["probability_of_fire_severity_high > 0"],
     "global_thresholds": [],
     "scenario_priorities": ["probability_of_fire_severity_high"],
-    "min_distance_from_road": null,
     "scenario_output_fields": [
       "probability_of_fire_severity_high",
       "total_fuel_exposed_to_fire",
@@ -23,12 +25,9 @@
       "standing_dead_and_ladder_fuels",
       "available_standing_biomass",
       "sawtimber_biomass",
-      "costs_of_potential_treatment_moving_biomass",
-      "costs_of_potential_treatment_moving_sawlogs",
       "california_spotted_owl_habitat",
       "california_spotted_owl_territory"
     ],
-    "max_treatment_area_ratio": 50133.0
-  },
-  "uuid": "08bbb3ef-fc5e-4c5e-bca6-ce25da3d92e2"
+    "max_treatment_area_ratio": 40000.0
+  }
 }
