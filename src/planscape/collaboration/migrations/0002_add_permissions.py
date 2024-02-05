@@ -11,6 +11,7 @@ class Migration(migrations.Migration):
 
     def insertData(apps, schema_editor):
         viewer = ["view_planningarea", "view_scenario"]
+        # TODO this is wrong! remove change_scenario
         collaborator = viewer + ["add_scenario", "change_scenario"]
         owner = collaborator + [
             "view_collaborator",
