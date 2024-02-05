@@ -110,6 +110,7 @@ export class PlanTableComponent implements OnInit {
         data: {
           name: '"' + this.selectedPlan.name + '"',
         },
+        restoreFocus: false,
       }
     );
     dialogRef

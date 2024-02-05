@@ -1,6 +1,12 @@
-<div class="main">
+<div class="main" *ngIf="!showHelp">
   <section class="header">
     <h2>Share {{ data.name }}</h2>
+    <button mat-icon-button (click)="showHelp = true" aria-label="help">
+      <mat-icon class="help-btn">help_outlined</mat-icon>
+    </button>
+    <button mat-icon-button (click)="close()" aria-label="close">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
   </section>
 
   <app-form-message
@@ -12,32 +18,46 @@
 
   <form class="grid">
     <mat-form-field appearance="outline">
-      <mat-chip-list #chipList aria-label="Fruit selection">
+      <mat-chip-list #chipList aria-label="Emails">
         <mat-chip *ngFor="let email of emails" (removed)="removeEmail(email)">
           {{ email }}
           <button matChipRemove>
-            <mat-icon>cancel</mat-icon>
+            <mat-icon>close</mat-icon>
           </button>
         </mat-chip>
+        <input
+          cdkFocusInitial
+          type="email"
+          matInput
+          [matChipInputFor]="chipList"
+          [matChipInputAddOnBlur]="true"
+          (matChipInputTokenEnd)="addEmail($event)" />
       </mat-chip-list>
-      <input
-        type="email"
-        matInput
-        [matChipInputFor]="chipList"
-        [matChipInputAddOnBlur]="true"
-        (matChipInputTokenEnd)="addEmail($event)" />
     </mat-form-field>
     <mat-form-field appearance="outline">
-      <mat-select>
-        <mat-option>Collaborator</mat-option>
-        <mat-option>Viewer</mat-option>
+      <mat-select [(value)]="selectedRole">
+        <mat-option [value]="role" *ngFor="let role of roles">{{
+          role
+        }}</mat-option>
       </mat-select>
     </mat-form-field>
     <mat-form-field appearance="outline" class="message">
-      <textarea matInput></textarea>
+      <textarea
+        matInput
+        placeholder="Message"
+        [(ngModel)]="message"
+        name="questionText"></textarea>
     </mat-form-field>
 
-    <button class="action">Invite</button>
+    <button
+      class="action"
+      mat-flat-button
+      type="button"
+      color="primary"
+      [disabled]="submitting || emails.length < 1"
+      (click)="invite()">
+      INVITE
+    </button>
   </form>
   <section class="footer">
     <h3>People with access</h3>
@@ -50,7 +70,9 @@
 
 <div class="help" *ngIf="showHelp">
   <section class="header">
-    <h2>Share {{ data.name }}</h2>
+    <mat-icon class="close-btn" (click)="showHelp = false">arrow_back</mat-icon>
+    <h2>Help</h2>
+    <mat-icon class="close-btn" (click)="close()">close</mat-icon>
   </section>
   <section>
     <h4>How do I restrict permission to access a planning area?</h4>
