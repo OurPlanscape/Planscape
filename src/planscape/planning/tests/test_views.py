@@ -608,25 +608,25 @@ class ListPlanningAreaTest(TransactionTestCase):
             self.user, "test plan5", stored_geometry
         )
         self.scenario1_1 = _create_scenario(
-            self.planning_area1, "test pa1 scenario1 ", "{}", ""
+            self.planning_area1, "test pa1 scenario1 ", "{}", self.user, ""
         )
         self.scenario1_2 = _create_scenario(
-            self.planning_area1, "test pa1 scenario2", "{}", ""
+            self.planning_area1, "test pa1 scenario2", "{}", self.user, ""
         )
         self.scenario1_3 = _create_scenario(
-            self.planning_area1, "test pa1 scenario3", "{}", ""
+            self.planning_area1, "test pa1 scenario3", "{}", self.user, ""
         )
         self.scenario3_1 = _create_scenario(
-            self.planning_area3, "test pa3 scenario1", "{}", ""
+            self.planning_area3, "test pa3 scenario1", "{}", self.user, ""
         )
         self.scenario4_1 = _create_scenario(
-            self.planning_area4, "test pa4 scenario1 ", "{}", ""
+            self.planning_area4, "test pa4 scenario1 ", "{}", self.user, ""
         )
         self.scenario4_2 = _create_scenario(
-            self.planning_area4, "test pa4 scenario2", "{}", ""
+            self.planning_area4, "test pa4 scenario2", "{}", self.user, ""
         )
         self.scenario4_3 = _create_scenario(
-            self.planning_area4, "test pa4 scenario3", "{}", ""
+            self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
         )
 
         self.user2 = User.objects.create(username="testuser2")
@@ -883,6 +883,7 @@ def _create_scenario(
     planning_area: PlanningArea,
     scenario_name: str,
     configuration: str,
+    user: User,
     notes: str | None = None,
 ) -> Scenario:
     scenario = Scenario.objects.create(
@@ -890,6 +891,7 @@ def _create_scenario(
         name=scenario_name,
         configuration=configuration,
         notes=notes,
+        user=user,
     )
     scenario.save()
 
@@ -964,6 +966,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, "test notes")
+        self.assertEqual(scenario.user, self.user)
 
     @mock.patch(
         "planning.views.validate_scenario_treatment_ratio",
@@ -990,6 +993,7 @@ class CreateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, None)
+        self.assertEqual(scenario.user, self.user)
 
     def test_create_scenario_missing_planning_area(self):
         self.client.force_login(self.user)
@@ -1109,7 +1113,7 @@ class UpdateScenarioTest(TransactionTestCase):
             self.user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, self.old_name, "{}", self.old_notes
+            self.planning_area, self.old_name, "{}", self.user, self.old_notes
         )
 
         self.user2 = User.objects.create(username="testuser2")
@@ -1119,7 +1123,7 @@ class UpdateScenarioTest(TransactionTestCase):
             self.user2, "test plan2", self.storable_geometry
         )
         self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}"
+            self.planning_area2, "test user2scenario", "{}", user=self.user2
         )
 
         self.assertEqual(Scenario.objects.count(), 2)
@@ -1142,6 +1146,7 @@ class UpdateScenarioTest(TransactionTestCase):
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
         self.assertEqual(scenario.notes, self.new_notes)
+        self.assertEqual(scenario.user, self.user)
 
     def test_update_notes_only(self):
         self.client.force_login(self.user)
@@ -1157,6 +1162,7 @@ class UpdateScenarioTest(TransactionTestCase):
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, self.new_notes)
+        self.assertEqual(scenario.user, self.user)
 
     def test_update_name_only(self):
         self.client.force_login(self.user)
@@ -1217,6 +1223,7 @@ class UpdateScenarioTest(TransactionTestCase):
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, self.old_notes)
+        self.assertEqual(scenario.user, self.user)
 
     def test_update_not_logged_in(self):
         response = self.client.post(
@@ -1285,9 +1292,15 @@ class UpdateScenarioResultTest(TransactionTestCase):
         self.planning_area = _create_planning_area(
             self.user, "test plan", self.storable_geometry
         )
-        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
-        self.scenario2 = _create_scenario(self.planning_area, "test scenario2", "{}")
-        self.scenario3 = _create_scenario(self.planning_area, "test scenario3", "{}")
+        self.scenario = _create_scenario(
+            self.planning_area, "test scenario", "{}", user=self.user
+        )
+        self.scenario2 = _create_scenario(
+            self.planning_area, "test scenario2", "{}", user=self.user
+        )
+        self.scenario3 = _create_scenario(
+            self.planning_area, "test scenario3", "{}", user=self.user
+        )
         self.empty_planning_area = _create_planning_area(
             self.user, "empty test plan", self.storable_geometry
         )
@@ -1299,7 +1312,7 @@ class UpdateScenarioResultTest(TransactionTestCase):
             self.user2, "test plan2", self.storable_geometry
         )
         self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}"
+            self.planning_area2, "test user2scenario", "{}", self.user2
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
@@ -1530,13 +1543,13 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", self.configuration
+            self.planning_area, "test scenario", self.configuration, user=self.user
         )
         self.scenario2 = _create_scenario(
-            self.planning_area, "test scenario2", self.configuration
+            self.planning_area, "test scenario2", self.configuration, user=self.user
         )
         self.scenario3 = _create_scenario(
-            self.planning_area, "test scenario3", self.configuration
+            self.planning_area, "test scenario3", self.configuration, user=self.user
         )
         self.empty_planning_area = _create_planning_area(
             self.user, "empty test plan", self.storable_geometry
@@ -1549,7 +1562,7 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
             self.user2, "test plan2", self.storable_geometry
         )
         self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}"
+            self.planning_area2, "test user2scenario", "{}", user=self.user2
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
@@ -1640,7 +1653,7 @@ class GetScenarioTest(TransactionTestCase):
             self.user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", self.configuration
+            self.planning_area, "test scenario", self.configuration, user=self.user
         )
 
         self.user2 = User.objects.create(username="testuser2")
@@ -1650,7 +1663,7 @@ class GetScenarioTest(TransactionTestCase):
             self.user2, "test plan2", self.storable_geometry
         )
         self.scenario2 = _create_scenario(
-            self.planning_area2, "test scenario2", self.configuration
+            self.planning_area2, "test scenario2", self.configuration, user=self.user2
         )
 
         self.assertEqual(Scenario.objects.count(), 2)
@@ -1707,6 +1720,7 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result["name"], "test scenario")
+        self.assertEqual(result["user"], self.user.pk)
         self.assertEqual(
             result["scenario_result"]["status"], ScenarioResultStatus.PENDING
         )
@@ -1727,7 +1741,9 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.planning_area = _create_planning_area(
             self.user, "test plan", self.storable_geometry
         )
-        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
+        self.scenario = _create_scenario(
+            self.planning_area, "test scenario", "{}", user=self.user
+        )
 
         # set scenario result status to success
         self.scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
@@ -1753,7 +1769,9 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.planning_area2 = _create_planning_area(
             self.user2, "test plan2", self.storable_geometry
         )
-        self.scenario2 = _create_scenario(self.planning_area2, "test scenario2", "{}")
+        self.scenario2 = _create_scenario(
+            self.planning_area2, "test scenario2", "{}", user=self.user2
+        )
         # set scenario result status to success
         self.scenario2_result = ScenarioResult.objects.get(
             scenario__id=self.scenario2.pk
@@ -1847,9 +1865,15 @@ class DeleteScenarioTest(TransactionTestCase):
         self.planning_area = _create_planning_area(
             self.user, "test plan", self.storable_geometry
         )
-        self.scenario = _create_scenario(self.planning_area, "test scenario", "{}")
-        self.scenario2 = _create_scenario(self.planning_area, "test scenario2", "{}")
-        self.scenario3 = _create_scenario(self.planning_area, "test scenario3", "{}")
+        self.scenario = _create_scenario(
+            self.planning_area, "test scenario", "{}", user=self.user
+        )
+        self.scenario2 = _create_scenario(
+            self.planning_area, "test scenario2", "{}", user=self.user
+        )
+        self.scenario3 = _create_scenario(
+            self.planning_area, "test scenario3", "{}", user=self.user
+        )
 
         self.user2 = User.objects.create(username="testuser2")
         self.user2.set_password("12345")
@@ -1858,7 +1882,7 @@ class DeleteScenarioTest(TransactionTestCase):
             self.user2, "test plan2", self.storable_geometry
         )
         self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}"
+            self.planning_area2, "test user2scenario", "{}", user=self.user2
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
