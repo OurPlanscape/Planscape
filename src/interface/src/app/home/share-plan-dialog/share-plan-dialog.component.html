@@ -29,6 +29,7 @@
           cdkFocusInitial
           type="email"
           matInput
+          placeholder="enter email"
           [matChipInputFor]="chipList"
           [matChipInputAddOnBlur]="true"
           (matChipInputTokenEnd)="addEmail($event)" />
@@ -41,38 +42,57 @@
         }}</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-form-field appearance="outline" class="message">
+    <mat-form-field appearance="outline" class="message" *ngIf="showMessageBox">
       <textarea
         matInput
         placeholder="Message"
         [(ngModel)]="message"
         name="questionText"></textarea>
     </mat-form-field>
-
+  </form>
+  <section class="invited" *ngIf="!showMessageBox">
+    <h3>People with access</h3>
+    <div class="invite">
+      <div>Your Name <span>(You)</span></div>
+      <div>Owner</div>
+    </div>
+    <div *ngFor="let invite of invites$ | async" class="invite">
+      <div>{{ invite.name }}</div>
+      <button mat-button [matMenuTriggerFor]="menu">
+        {{ invite.role }} <mat-icon>arrow_drop_down </mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item *ngFor="let role of roles">{{ role }}</button>
+        <button mat-menu-item>Resend Code</button>
+        <button mat-menu-item>Remove Access</button>
+      </mat-menu>
+    </div>
+  </section>
+  <section class="footer">
     <button
       class="action"
       mat-flat-button
       type="button"
       color="primary"
-      [disabled]="submitting || emails.length < 1"
+      [disabled]="submitting"
       (click)="invite()">
-      INVITE
+      {{ emails.length > 0 ? 'INVITE' : 'DONE' }}
     </button>
-  </form>
-  <section class="footer">
-    <h3>People with access</h3>
-    <div *ngFor="let invite of invites$ | async" class="invite">
-      <div>{{ invite.name }}</div>
-      <div>{{ invite.role }}</div>
-    </div>
   </section>
 </div>
 
 <div class="help" *ngIf="showHelp">
   <section class="header">
-    <mat-icon class="close-btn" (click)="showHelp = false">arrow_back</mat-icon>
+    <button mat-icon-button (click)="showHelp = true" aria-label="help">
+      <mat-icon class="close-btn" (click)="showHelp = false"
+        >arrow_back</mat-icon
+      >
+    </button>
+
     <h2>Help</h2>
-    <mat-icon class="close-btn" (click)="close()">close</mat-icon>
+    <button mat-icon-button (click)="showHelp = true" aria-label="help">
+      <mat-icon class="close-btn" (click)="close()">close</mat-icon>
+    </button>
   </section>
   <section>
     <h4>How do I restrict permission to access a planning area?</h4>

@@ -84,4 +84,8 @@ export class SharePlanDialogComponent {
         this.close();
       });
   }
+
+  get showMessageBox() {
+    return this.invalidEmail || this.emails.length > 0;
+  }
 }

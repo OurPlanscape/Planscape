@@ -1,6 +1,23 @@
 @import "../../../styles/mixins";
 @import "../../../styles/colors";
 
+@mixin full-border($position:'bottom'){
+  position: relative;
+  &::after {
+    height: 1px;
+    background-color: $color-soft-gray;
+    left:-24px; // remove padding from modal
+    right: -24px; // remove padding from modal
+    @if($position == 'bottom'){
+      bottom: 0;
+    }@else if($position == 'top'){
+      top:0;
+    }
+    content: '';
+    position: absolute;
+  }
+}
+
 :host {
   display: block;
   width: 530px;
@@ -9,44 +26,59 @@
 .grid {
   display: grid;
   grid-template-columns: 1fr 138px;
-  margin-top: 16px;
-  gap: 16px;
+  gap: 16px 12px;
 }
 .message {
   grid-column: 1/3;
 }
-.action {
-  grid-column: 2/3;
-}
+
 
 .header {
-  position: relative;
+  @include full-border('bottom');
   display: flex;
   align-items: center;
-  padding-bottom: 10px;
-  margin-top: -10px; // remove padding from modal
-  &::after {
-    height: 1px;
-    background-color: $color-soft-gray;
-    left:-24px; // remove padding from modal
-    right: -24px; // remove padding from modal
-    bottom: 0;
-    content: '';
-    position: absolute;
-  }
+  padding-bottom: 16px;
+
 
   h2 {
     @include top-level-label();
     margin: 0 auto 0 0;
+  }
 
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    line-height: 0;
+    cursor: pointer;
+    height: auto;
+    width: auto;
+  }
+
+  button + button {
+    margin-left: 8px;
   }
 }
-.footer {
+
+.invited {
+  border-top: 1px solid $color-soft-gray;
+  padding-top: 16px;
   h3 {
     @include small-input-label();
     color: $color-md-gray;
   }
+  ::ng-deep.mat-button {
+    padding: 0;
+  }
 }
+
+.footer {
+  @include full-border('top');
+  text-align: right;
+  padding-top: 16px;
+}
+
 .invite {
   @include small-input-label();
   display: flex;
@@ -63,6 +95,22 @@
 
 
 .main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  ::ng-deep .mat-form-field-infix {
+    border-top-width: 4px;
+  }
+
+  ::ng-deep .mat-select-arrow-wrapper{
+    transform: none;
+  }
+
+  ::ng-deep .message-box {
+    margin: 0;
+  }
+
   ::ng-deep mat-chip{
     background-color: white;
     border: 1px solid $color-dark-gray;
@@ -76,3 +124,5 @@
     opacity: 0.9;
   }
 }
+
+
