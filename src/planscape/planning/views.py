@@ -500,7 +500,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         body = json.loads(request.body)
 
         # Check for all needed fields
-        serializer = ScenarioSerializer(data=body)
+        serializer = ScenarioSerializer(data=body, context={"user": user})
         serializer.is_valid(raise_exception=True)
 
         # Ensure that we have a viable planning area owned by the user.  Note that this gives a slightly different
