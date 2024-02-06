@@ -5,10 +5,10 @@ from django.db import connection
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.test import TransactionTestCase
 from django.urls import reverse
-
-
+from rest_framework.test import APITransactionTestCase, force_authenticate
+from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.tokens import RefreshToken
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 
 # Yes, we are pulling in an internal just for testing that a geometry write happened.
@@ -46,11 +46,13 @@ def _create_planning_area(
 #### PLAN(NING AREA) Tests ####
 
 
-class CreatePlanningAreaTest(TransactionTestCase):
+class CreatePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
         self.user.save()
+
+        self.token = RefreshToken.for_user(self.user).access_token
         self.geometry = {
             "features": [
                 {
@@ -71,18 +73,23 @@ class CreatePlanningAreaTest(TransactionTestCase):
                 }
             ]
         }
-        self.notes = "Inconcievable!  You keep using that word. I do not think it means what you think it means."
+        self.notes = "Inconcievable! \
+              You keep using that word. \
+              I do not think it means what you think it means."
 
     def test_create_planning_area(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": self.geometry,
                 "notes": self.notes,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -104,14 +111,17 @@ class CreatePlanningAreaTest(TransactionTestCase):
         )
 
     def test_create_planning_area_no_notes(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": self.geometry,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -130,14 +140,17 @@ class CreatePlanningAreaTest(TransactionTestCase):
         )
 
     def test_create_planning_area_multipolygon(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Southern California",
                 "geometry": self.multipolygon_geometry,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -156,87 +169,105 @@ class CreatePlanningAreaTest(TransactionTestCase):
         )
 
     def test_missing_user(self):
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": self.geometry,
-            },
-            content_type="application/json",
+            }
         )
-        self.assertEqual(response.status_code, 400)
-
-    def test_missing_name(self):
-        self.client.force_login(self.user)
         response = self.client.post(
             reverse("planning:create_planning_area"),
-            {"region_name": "Sierra Nevada", "geometry": self.geometry},
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_missing_name(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"region_name": "Sierra Nevada", "geometry": self.geometry}
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_missing_geometry(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"name": "test plan", "region_name": "Sierra Nevada"})
         response = self.client.post(
             reverse("planning:create_planning_area"),
-            {"name": "test plan", "region_name": "Sierra Nevada"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_missing_geometry_features(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"name": "test plan", "region_name": "Sierra Nevada", "geometry": {}}
+        )
         response = self.client.post(
             reverse("planning:create_planning_area"),
-            {"name": "test plan", "region_name": "Sierra Nevada", "geometry": {}},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_empty_features(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": {"features": []},
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_bad_geometry(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": {"features": [{"type": "Point", "coordinates": [1, 2]}]},
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_bad_polygon(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": {"features": [{"geometry": {"type": "Polygon"}}]},
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
     def test_bad_region_name(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "north_coast_inland",
@@ -250,13 +281,17 @@ class CreatePlanningAreaTest(TransactionTestCase):
                         }
                     ]
                 },
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
 
 
-class DeletePlanningAreaTest(TransactionTestCase):
+class DeletePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -272,11 +307,12 @@ class DeletePlanningAreaTest(TransactionTestCase):
         self.planning_area3 = _create_planning_area(self.user2, "test plan3", None)
 
     def test_delete(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         self.assertEqual(PlanningArea.objects.count(), 3)
+        payload = json.dumps({"id": self.planning_area2.pk})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
-            {"id": self.planning_area2.pk},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -286,22 +322,23 @@ class DeletePlanningAreaTest(TransactionTestCase):
         self.assertEqual(PlanningArea.objects.count(), 2)
 
     def test_delete_user_not_logged_in(self):
+        payload = json.dumps({"id": self.planning_area1.pk})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
-            {"id": self.planning_area1.pk},
+            payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(PlanningArea.objects.count(), 3)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     # Deleteing someone else's plan silently performs nothing.
     def test_delete_wrong_user(self):
-        self.client.force_login(self.user)
-
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.planning_area3.pk})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
-            {"id": self.planning_area3.pk},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -309,28 +346,30 @@ class DeletePlanningAreaTest(TransactionTestCase):
 
     # Only the user's own plans are deleted.
     def test_delete_multiple_planning_areas_with_some_owner_mismatches(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         planning_area_ids = [
             self.planning_area1.pk,
             self.planning_area2.pk,
             self.planning_area3.pk,
         ]
+        payload = json.dumps({"id": planning_area_ids})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
-            {"id": planning_area_ids},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(PlanningArea.objects.count(), 1)
 
     def test_delete_multiple_planning_areas(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
+        payload = json.dumps({"id": planning_area_ids})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
-            {"id": planning_area_ids},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -340,7 +379,7 @@ class DeletePlanningAreaTest(TransactionTestCase):
         self.assertEqual(PlanningArea.objects.count(), 1)
 
 
-class UpdatePlanningAreaTest(TransactionTestCase):
+class UpdatePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -367,14 +406,17 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.new_notes = "I am not left handed."
 
     def test_update_notes_and_name(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "id": self.planning_area.pk,
                 "name": self.new_name,
                 "notes": self.new_notes,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -386,10 +428,11 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area.notes, self.new_notes)
 
     def test_update_notes_only(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.planning_area.pk, "notes": self.new_notes})
+        response = self.client.patch(
             reverse("planning:update_planning_area"),
-            {"id": self.planning_area.pk, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -401,10 +444,11 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area.notes, self.new_notes)
 
     def test_update_name_only(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.planning_area.pk, "name": self.new_name})
+        response = self.client.patch(
             reverse("planning:update_planning_area"),
-            {"id": self.planning_area.pk, "name": self.new_name},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -416,10 +460,11 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area.notes, self.old_notes)
 
     def test_update_clear_notes(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.planning_area.pk, "notes": None})
+        response = self.client.patch(
             reverse("planning:update_planning_area"),
-            {"id": self.planning_area.pk, "notes": None},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -431,10 +476,13 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area.notes, None)
 
     def test_update_empty_string_notes(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {"id": self.planning_area.pk, "notes": ""},
+        )
+        response = self.client.patch(
+            reverse("planning:update_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -446,10 +494,13 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area.notes, "")
 
     def test_update_nothing_to_update(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {"id": self.planning_area.pk},
+        )
+        response = self.client.patch(
+            reverse("planning:update_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -461,64 +512,79 @@ class UpdatePlanningAreaTest(TransactionTestCase):
         self.assertEqual(planning_area.notes, self.old_notes)
 
     def test_update_not_logged_in(self):
-        response = self.client.post(
-            reverse("planning:update_planning_area"),
+        payload = json.dumps(
             {
                 "id": self.planning_area.pk,
                 "name": self.new_name,
                 "notes": self.new_notes,
-            },
+            }
+        )
+        response = self.client.patch(
+            reverse("planning:update_planning_area"),
+            payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_update_missing_id(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
+        response = self.client.patch(
             reverse("planning:update_planning_area"),
-            {"name": self.new_name, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertJSONEqual(
+            response.content, {"error": "No planning area ID provided"}
+        )
 
     def test_update_wrong_user(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_planning_area"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "id": self.planning_area2.pk,
                 "name": self.new_name,
                 "notes": self.new_notes,
-            },
+            }
+        )
+        response = self.client.patch(
+            reverse("planning:update_planning_area"),
+            payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertEqual(response.status_code, 404)
+        self.assertRegex(str(response.content), r"Planning area not found for user.")
 
     def test_update_blank_name(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"id": self.planning_area.pk, "name": None, "notes": self.new_notes}
+        )
+        response = self.client.patch(
             reverse("planning:update_planning_area"),
-            {"id": self.planning_area.pk, "name": None, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"name must be defined")
 
     def test_update_empty_string_name(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"id": self.planning_area.pk, "name": "", "notes": self.new_notes}
+        )
+        response = self.client.patch(
             reverse("planning:update_planning_area"),
-            {"id": self.planning_area.pk, "name": "", "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"name must be defined")
 
 
-class GetPlanningAreaTest(TransactionTestCase):
+class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -540,7 +606,7 @@ class GetPlanningAreaTest(TransactionTestCase):
         )
 
     def test_get_planning_area(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": self.planning_area.pk},
@@ -553,24 +619,24 @@ class GetPlanningAreaTest(TransactionTestCase):
         self.assertIsNotNone(returned_planning_area["created_at"])
 
     def test_get_nonexistent_planning_area(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": 9999},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertEqual(response.status_code, 404)
+        self.assertRegex(str(response.content), r"Planning area not found for user.")
 
     def test_get_planning_area_wrong_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": self.planning_area2.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"No PlanningArea matches")
+        self.assertEqual(response.status_code, 404)
+        self.assertRegex(str(response.content), r"Planning area not found for user.")
 
     def test_get_planning_area_not_logged_in(self):
         response = self.client.get(
@@ -578,11 +644,11 @@ class GetPlanningAreaTest(TransactionTestCase):
             {"id": self.planning_area.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
 
-class ListPlanningAreaTest(TransactionTestCase):
+class ListPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -646,7 +712,7 @@ class ListPlanningAreaTest(TransactionTestCase):
         self.emptyuser.save()
 
     def test_list_planning_areas(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:list_planning_areas"), {}, content_type="application/json"
         )
@@ -701,7 +767,7 @@ class ListPlanningAreaTest(TransactionTestCase):
                     "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s", p
                 )
 
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:list_planning_areas"), {}, content_type="application/json"
         )
@@ -722,11 +788,11 @@ class ListPlanningAreaTest(TransactionTestCase):
         response = self.client.get(
             reverse("planning:list_planning_areas"), {}, content_type="application/json"
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_list_planning_areas_empty_user(self):
-        self.client.force_login(self.emptyuser)
+        self.client.force_authenticate(self.emptyuser)
         response = self.client.get(
             reverse("planning:list_planning_areas"), {}, content_type="application/json"
         )
@@ -738,7 +804,7 @@ class ListPlanningAreaTest(TransactionTestCase):
 # tests what was stored, and then deletes everything.
 # This covers the basic happiest of cases and should not be a substitute
 # for the main unit tests.
-class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
+class EndtoEndPlanningAreaAndScenarioTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -769,7 +835,7 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         return_value=(True, "all good"),
     )
     def test_end_to_end(self, validation):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
 
         # List - returns 0
         response = self.client.get(
@@ -779,13 +845,16 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         self.assertEqual(len(response.json()), 0)
 
         # insert one
-        response = self.client.post(
-            reverse("planning:create_planning_area"),
+        payload = json.dumps(
             {
                 "name": "test plan",
                 "region_name": "Sierra Nevada",
                 "geometry": self.geometry,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -815,14 +884,17 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         self.assertEqual(planning_area["geometry"], self.internal_geometry)
 
         # create a scenario
-        response = self.client.post(
-            reverse("planning:create_scenario"),
+        payload_create_scenario = json.dumps(
             {
                 "planning_area": listed_planning_area["id"],
                 "configuration": self.scenario_configuration,
                 "name": "test scenario",
                 "notes": "test notes",
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload_create_scenario,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -856,7 +928,7 @@ class EndtoEndPlanningAreaAndScenarioTest(TransactionTestCase):
         # remove it
         response = self.client.post(
             reverse("planning:delete_planning_area"),
-            {"id": planning_area["id"]},
+            json.dumps({"id": planning_area["id"]}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -900,7 +972,7 @@ def _create_scenario(
 
 
 # TODO: add more tests when we start parsing configurations.
-class CreateScenarioTest(TransactionTestCase):
+class CreateScenarioTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -943,15 +1015,18 @@ class CreateScenarioTest(TransactionTestCase):
         return_value=(True, "all good"),
     )
     def test_create_scenario(self, validation):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_scenario"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
                 "notes": "test notes",
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -970,14 +1045,17 @@ class CreateScenarioTest(TransactionTestCase):
         return_value=(True, "all good"),
     )
     def test_create_scenario_no_notes(self, validation):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_scenario"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -992,58 +1070,72 @@ class CreateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, None)
 
     def test_create_scenario_missing_planning_area(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"configuration": self.configuration, "name": "test scenario"}
+        )
         response = self.client.post(
             reverse("planning:create_scenario"),
-            {"configuration": self.configuration, "name": "test scenario"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_missing_configuration(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"planning_area": self.planning_area.pk, "name": "test scenario"}
+        )
         response = self.client.post(
             reverse("planning:create_scenario"),
-            {"planning_area": self.planning_area.pk, "name": "test scenario"},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_missing_name(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_scenario"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_duplicate_name(self):
-        self.client.force_login(self.user)
-        first_response = self.client.post(
-            reverse("planning:create_scenario"),
+        self.client.force_authenticate(self.user)
+        first_payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
-            },
+            }
+        )
+        first_response = self.client.post(
+            reverse("planning:create_scenario"),
+            first_payload,
             content_type="application/json",
         )
         self.assertEqual(first_response.status_code, 200)
-
-        second_response = self.client.post(
-            reverse("planning:create_scenario"),
+        second_payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
-            },
+            }
+        )
+        second_response = self.client.post(
+            reverse("planning:create_scenario"),
+            second_payload,
             content_type="application/json",
         )
         self.assertEqual(second_response.status_code, 400)
@@ -1052,48 +1144,57 @@ class CreateScenarioTest(TransactionTestCase):
         )
 
     def test_create_scenario_not_logged_in(self):
-        response = self.client.post(
-            reverse("planning:create_scenario"),
+        payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
-            },
-            content_type="application/json",
+            }
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
-
-    def test_create_scenario_for_nonexistent_planning_area(self):
-        self.client.force_login(self.user)
         response = self.client.post(
             reverse("planning:create_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
+
+    def test_create_scenario_for_nonexistent_planning_area(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "planning_area": 999999,
                 "configuration": self.configuration,
                 "name": "test scenario",
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_create_scenario_wrong_planning_area_user(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:create_scenario"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "planning_area": self.planning_area2.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"No PlanningArea matches")
 
 
-class UpdateScenarioTest(TransactionTestCase):
+class UpdateScenarioTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -1129,10 +1230,13 @@ class UpdateScenarioTest(TransactionTestCase):
         self.new_name = "Vizzini"
 
     def test_update_notes_and_name(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"id": self.scenario.pk, "name": self.new_name, "notes": self.new_notes}
+        )
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "name": self.new_name, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1144,10 +1248,11 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, self.new_notes)
 
     def test_update_notes_only(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.scenario.pk, "notes": self.new_notes})
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1159,10 +1264,11 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, self.new_notes)
 
     def test_update_name_only(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.scenario.pk, "name": self.new_name})
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "name": self.new_name},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1174,10 +1280,11 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, self.old_notes)
 
     def test_update_clear_notes(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.scenario.pk, "notes": None})
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "notes": None},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1189,10 +1296,11 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, None)
 
     def test_update_empty_string_notes(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"id": self.scenario.pk, "notes": ""})
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "notes": ""},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1204,10 +1312,13 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, "")
 
     def test_update_nothing_to_update(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"id": self.scenario.pk},
+        )
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1219,60 +1330,75 @@ class UpdateScenarioTest(TransactionTestCase):
         self.assertEqual(scenario.notes, self.old_notes)
 
     def test_update_not_logged_in(self):
+        payload = json.dumps(
+            {"id": self.scenario.pk, "name": self.new_name, "notes": self.new_notes},
+        )
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "name": self.new_name, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_update_missing_id(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"name": self.new_name, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"Scenario ID is required")
 
     def test_update_wrong_user(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "id": self.user2scenario.pk,
                 "name": self.new_name,
                 "notes": self.new_notes,
-            },
-            content_type="application/json",
+            }
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"does not exist")
-
-    def test_update_blank_name(self):
-        self.client.force_login(self.user)
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "name": None, "notes": self.new_notes},
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content, {"error": "Scenario matching query does not exist."}
+        )
+
+    def test_update_blank_name(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"id": self.scenario.pk, "name": None, "notes": self.new_notes}
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"name must be defined")
 
     def test_update_empty_string_name(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"id": self.scenario.pk, "name": None, "notes": self.new_notes}
+        )
         response = self.client.post(
             reverse("planning:update_scenario"),
-            {"id": self.scenario.pk, "name": None, "notes": self.new_notes},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"name must be defined")
 
 
-class UpdateScenarioResultTest(TransactionTestCase):
+class UpdateScenarioResultTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -1306,20 +1432,23 @@ class UpdateScenarioResultTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_update_scenario_result(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
                 "result": json.dumps({"result1": "test result"}),
                 "run_details": json.dumps({"details": "super duper details"}),
                 "status": ScenarioResultStatus.RUNNING,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
         output = json.loads(response.content)
-        self.assertEquals(output["id"], self.scenario.pk)
+        self.assertEqual(output["id"], self.scenario.pk)
         scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
         self.assertEqual(scenario_result.status, ScenarioResultStatus.RUNNING)
         self.assertEqual(scenario_result.result, json.dumps({"result1": "test result"}))
@@ -1328,21 +1457,23 @@ class UpdateScenarioResultTest(TransactionTestCase):
         )
 
     def test_update_scenario_result_twice(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
                 "result": json.dumps({"result1": "test result"}),
                 "run_details": json.dumps({"details": "super duper details"}),
                 "status": ScenarioResultStatus.RUNNING,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
                 "result": json.dumps(
@@ -1354,7 +1485,11 @@ class UpdateScenarioResultTest(TransactionTestCase):
                     {"details": "Do you always begin conversations this way?"}
                 ),
                 "status": ScenarioResultStatus.SUCCESS,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1374,10 +1509,13 @@ class UpdateScenarioResultTest(TransactionTestCase):
         )
 
     def test_update_scenario_result_status_only(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.RUNNING}
+        )
         response = self.client.post(
             reverse("planning:update_scenario_result"),
-            {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.RUNNING},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1387,13 +1525,16 @@ class UpdateScenarioResultTest(TransactionTestCase):
         self.assertEqual(scenario_result.run_details, None)
 
     def test_update_scenario_result_result_only(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
                 "result": json.dumps({"comment": "test comment"}),
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1405,13 +1546,16 @@ class UpdateScenarioResultTest(TransactionTestCase):
         self.assertEqual(scenario_result.run_details, None)
 
     def test_update_scenario_result_run_details_only(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
                 "run_details": json.dumps({"comment": "test comment"}),
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1423,20 +1567,26 @@ class UpdateScenarioResultTest(TransactionTestCase):
         )
 
     def test_update_scenario_result_bad_status_pending_to_pending(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.PENDING}
+        )
         response = self.client.post(
             reverse("planning:update_scenario_result"),
-            {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.PENDING},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"Invalid new state")
 
     def test_update_scenario_result_bad_status_pending_to_success(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.SUCCESS}
+        )
         response = self.client.post(
             reverse("planning:update_scenario_result"),
-            {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.SUCCESS},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
@@ -1445,14 +1595,17 @@ class UpdateScenarioResultTest(TransactionTestCase):
     # This works since EPs don't have a user context.
     # TODO: Update when we have EPs sending a credential over.
     def test_update_scenario_result_not_logged_in(self):
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
                 "result": json.dumps({"result1": "test result"}),
                 "run_details": json.dumps({"details": "super duper details"}),
                 "status": ScenarioResultStatus.RUNNING,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1466,15 +1619,18 @@ class UpdateScenarioResultTest(TransactionTestCase):
     # This works since EPs don't have a user context.
     # TODO: Update when we have EPs sending a credential over.
     def test_update_scenario_result_wrong_user(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "scenario_id": self.user2scenario.pk,
                 "result": json.dumps({"result1": "test result"}),
                 "run_details": json.dumps({"details": "super duper details"}),
                 "status": ScenarioResultStatus.RUNNING,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1486,22 +1642,25 @@ class UpdateScenarioResultTest(TransactionTestCase):
         )
 
     def test_update_scenario_result_nonexistent_scenario(self):
-        self.client.force_login(self.user)
-        response = self.client.post(
-            reverse("planning:update_scenario_result"),
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
             {
                 "scenario_id": 99999,
                 "result": json.dumps({"result1": "test result"}),
                 "run_details": json.dumps({"details": "super duper details"}),
                 "status": ScenarioResultStatus.RUNNING,
-            },
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario_result"),
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"does not exist")
 
 
-class ListScenariosForPlanningAreaTest(TransactionTestCase):
+class ListScenariosForPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -1556,7 +1715,7 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_list_scenario(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": self.planning_area.pk},
@@ -1574,11 +1733,11 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
             {"planning_area": self.planning_area.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_list_scenario_wrong_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": self.planning_area2.pk},
@@ -1589,7 +1748,7 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(scenarios), 0)
 
     def test_list_scenario_empty_planning_area(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": self.empty_planning_area.pk},
@@ -1600,7 +1759,7 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(scenarios), 0)
 
     def test_list_scenario_nonexistent_planning_area(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": 99999},
@@ -1611,7 +1770,7 @@ class ListScenariosForPlanningAreaTest(TransactionTestCase):
         self.assertEqual(len(scenarios), 0)
 
 
-class GetScenarioTest(TransactionTestCase):
+class GetScenarioTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -1657,7 +1816,7 @@ class GetScenarioTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 2)
 
     def test_get_scenario(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": self.scenario.pk},
@@ -1674,11 +1833,11 @@ class GetScenarioTest(TransactionTestCase):
             {"id": self.scenario.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_get_scenario_wrong_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": self.scenario2.pk},
@@ -1688,7 +1847,7 @@ class GetScenarioTest(TransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_get_scenario_nonexistent_scenario(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": 99999},
@@ -1698,7 +1857,7 @@ class GetScenarioTest(TransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_get_scenario_with_results(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": self.scenario.pk, "show_results": True},
@@ -1712,7 +1871,7 @@ class GetScenarioTest(TransactionTestCase):
         )
 
 
-class GetScenarioDownloadTest(TransactionTestCase):
+class GetScenarioDownloadTest(APITransactionTestCase):
     def setUp(self):
         super().setUp()
         self.set_verbose = True
@@ -1770,7 +1929,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         return super().tearDown()
 
     def test_get_scenario_with_zip(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:download_csv"), {"id": self.scenario.pk}
         )
@@ -1778,17 +1937,17 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.assertEqual(response.headers["Content-Type"], "application/zip")
         self.assertIsInstance(response.content, bytes)
 
-    def test_get_scenario_not_logged_in(self):
+    def test_download_csv_not_logged_in(self):
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": self.scenario.pk},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
-        self.assertRegex(str(response.content), r"Unauthorized. User is not logged in.")
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_get_scenario_wrong_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": self.scenario2.pk},
@@ -1798,11 +1957,11 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_get_scenario_without_project_data(self):
-        self.client.force_login(self.user2)
+        self.client.force_authenticate(self.user2)
         self.scenario2_result.status = ScenarioResultStatus.SUCCESS
         self.scenario2_result.save()
 
-        self.client.force_login(self.user2)
+        self.client.force_authenticate(self.user2)
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": self.scenario2.pk},
@@ -1812,7 +1971,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.assertRegex(str(response.content), r"Scenario files cannot be read")
 
     def test_get_scenario_without_success_status_still_returns_data(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         self.scenario_result.status = ScenarioResultStatus.FAILURE
         self.scenario_result.save()
 
@@ -1824,7 +1983,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_scenario_nonexistent_scenario(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": 99999},
@@ -1834,7 +1993,7 @@ class GetScenarioDownloadTest(TransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
 
-class DeleteScenarioTest(TransactionTestCase):
+class DeleteScenarioTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -1865,10 +2024,11 @@ class DeleteScenarioTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_delete_scenario(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"scenario_id": self.scenario.pk})
         response = self.client.post(
             reverse("planning:delete_scenario"),
-            {"scenario_id": self.scenario.pk},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1876,11 +2036,12 @@ class DeleteScenarioTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 3)
 
     def test_delete_scenario_multiple_owned(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         scenario_ids = [self.scenario.pk, self.scenario2.pk]
+        payload = json.dumps({"scenario_id": scenario_ids})
         response = self.client.post(
             reverse("planning:delete_scenario"),
-            {"scenario_id": scenario_ids},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1889,11 +2050,12 @@ class DeleteScenarioTest(TransactionTestCase):
 
     # Silently does nothing for the non-owned scenario.
     def test_delete_scenario_multiple_partially_owned(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         scenario_ids = [self.scenario.pk, self.scenario2.pk, self.user2scenario.pk]
+        payload = json.dumps({"scenario_id": scenario_ids})
         response = self.client.post(
             reverse("planning:delete_scenario"),
-            {"scenario_id": scenario_ids},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1901,22 +2063,24 @@ class DeleteScenarioTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 2)
 
     def test_delete_scenario_not_logged_in(self):
+        payload = json.dumps({"scenario_id": self.scenario.pk})
         response = self.client.post(
             reverse("planning:delete_scenario"),
-            {"scenario_id": self.scenario.pk},
+            payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
-        self.assertRegex(str(response.content), r"User must be logged in")
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     # Silently does nothing.
     def test_delete_scenario_wrong_user(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"scenario_id": self.user2scenario.pk})
         response = self.client.post(
             reverse("planning:delete_scenario"),
-            {"scenario_id": self.user2scenario.pk},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1925,10 +2089,11 @@ class DeleteScenarioTest(TransactionTestCase):
 
     # Silently does nothing.
     def test_delete_scenario_nonexistent_id(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"scenario_id": 99999})
         response = self.client.post(
             reverse("planning:delete_scenario"),
-            {"scenario_id": 99999},
+            payload,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -1936,9 +2101,12 @@ class DeleteScenarioTest(TransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_delete_scenario_missing_id(self):
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({})
         response = self.client.post(
-            reverse("planning:delete_scenario"), {}, content_type="application/json"
+            reverse("planning:delete_scenario"),
+            payload,
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(Scenario.objects.count(), 4)
@@ -1946,7 +2114,7 @@ class DeleteScenarioTest(TransactionTestCase):
         self.assertRegex(str(response.content), r"Must specify scenario id")
 
 
-class CreateSharedLinkTest(TransactionTestCase):
+class CreateSharedLinkTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
@@ -1965,11 +2133,12 @@ class CreateSharedLinkTest(TransactionTestCase):
             "zoom": "+500",
         }
         view_json = json.dumps(view_state)
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         # generate the new link with a 'view-state'
+        payload = json.dumps({"view_state": view_json})
         response = self.client.post(
             reverse("planning:create_shared_link"),
-            {"view_state": view_json},
+            payload,
             content_type="application/json",
         )
         json_response = json.loads(response.content)
@@ -1991,11 +2160,12 @@ class CreateSharedLinkTest(TransactionTestCase):
             "zoom": "+500",
         }
         view_json = json.dumps(view_state)
-        self.client.force_login(self.user)
+        self.client.force_authenticate(self.user)
         # generate the new link with a 'view-state'
+        payload = json.dumps({"view_state": view_json})
         response = self.client.post(
             reverse("planning:create_shared_link"),
-            {"view_state": view_json},
+            payload,
             content_type="application/json",
         )
         # then fetch the data with the new url

@@ -1,16 +1,12 @@
 import json
 import os
 
-
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.sites.shortcuts import get_current_site
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
-
 from django.http import (
     HttpRequest,
     HttpResponse,
@@ -20,7 +16,6 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from pathlib import Path
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -39,16 +34,7 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
-from urllib.parse import urljoin
-from utils.cli_utils import call_forsys
-
-
-# Retrieve the logged in user from the HTTP request.
-def _get_user(request: HttpRequest) -> User:
-    user = None
-    if hasattr(request, "user") and request.user.is_authenticated:
-        user = request.user
-    return user
+from rest_framework.decorators import api_view
 
 
 # We always need to store multipolygons, so coerce a single polygon to
@@ -90,6 +76,7 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
 
 
 #### PLAN(NING AREA) Handlers ####
+@api_view(["POST"])
 def create_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Creates a planning area (aka plan), given a name, region, an optional geometry,
@@ -109,9 +96,9 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
     """
     try:
         # Check that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         # Get the name of the planning area.
         body = json.loads(request.body)
@@ -136,7 +123,6 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
         # MultiPolygon.
         geometry = _convert_polygon_to_multipolygon(geometry)
-
         # Create the planning area
         planning_area = PlanningArea.objects.create(
             user=user,
@@ -156,6 +142,7 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in create: " + str(e))
 
 
+@api_view(["POST"])
 def delete_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Deletes a planning area or areas.
@@ -170,9 +157,9 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
     """
     try:
         # Check that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         # Get the planning area IDs
         body = json.loads(request.body)
@@ -202,6 +189,7 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Error in delete: " + str(e))
 
 
+@api_view(["PATCH", "POST"])
 def update_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Updates a planning area's name or notes.  To date, these are the only fields that
@@ -218,12 +206,16 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
       id (int): ID of the planning area to retrieve.
     """
     try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         planning_area_id = body.get("id", None)
+
+        if planning_area_id is None:
+            return JsonResponse({"error": "No planning area ID provided"}, status=400)
+
         planning_area = get_object_or_404(user.planning_areas, id=planning_area_id)
         is_dirty = False
 
@@ -246,10 +238,13 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponse(
             json.dumps({"id": planning_area_id}), content_type="application/json"
         )
+    except Http404:
+        return HttpResponseBadRequest("Planning area not found for user.", status=404)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@api_view(["GET"])
 def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     """
     Retrieves a planning area by ID.
@@ -264,10 +259,14 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
       id (int): ID of the planning area to retrieve.
     """
     try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
-        user_id = user.pk
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
+
+        if "id" not in request.GET:
+            return JsonResponse(
+                {"error": "Missing required parameter 'id'"}, status=400
+            )
 
         return JsonResponse(
             _serialize_planning_area(
@@ -280,11 +279,14 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
                 True,
             )
         )
+    except Http404:
+        return HttpResponseBadRequest("Planning area not found for user.", status=404)
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 # No Params expected, since we're always using the logged in user.
+@api_view(["GET"])
 def list_planning_areas(request: HttpRequest) -> HttpResponse:
     """
     Retrieves all planning areas for a user.
@@ -299,10 +301,9 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     Required params: none
     """
     try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
-        user_id = user.pk
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         # TODO: This could be really slow; consider paging or perhaps
         # fetching everything but geometries (since they're huge) for performance gains.
@@ -310,7 +311,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         # when creating the planning area instead of calculating it each time?
 
         planning_areas = (
-            PlanningArea.objects.filter(user=user_id)
+            PlanningArea.objects.filter(user=user)
             .annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
                 scenario_latest_updated_at=Coalesce(
@@ -340,6 +341,7 @@ def _serialize_scenario(scenario: Scenario) -> dict:
     return data
 
 
+@api_view(["GET"])
 def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     """
     Retrieves a scenario by its ID.
@@ -351,9 +353,9 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
       id (int): The scenario ID to be retrieved.
     """
     try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=request.GET["id"]
@@ -366,6 +368,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@api_view(["GET"])
 def download_csv(request: HttpRequest) -> HttpResponse:
     """
     Generates a new Zip file for a scenario based on ID.
@@ -380,12 +383,9 @@ def download_csv(request: HttpRequest) -> HttpResponse:
     TODO: maybe generate a unique key and store that for each output dir name when we create it?
     """
     # Ensure that the user is logged in.
-    user = _get_user(request)
-    if user is None:
-        return HttpResponse(
-            "Unauthorized. User is not logged in.",
-            status=401,
-        )
+    user = request.user
+    if not user.is_authenticated:
+        return JsonResponse({"error": "Authentication Required"}, status=401)
 
     scenario = (
         Scenario.objects.select_related("planning_area__user")
@@ -427,6 +427,7 @@ def download_csv(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
 
 
+@api_view(["GET"])
 def download_shapefile(request: HttpRequest) -> HttpResponse:
     """
     Generates a new Zip file of the shapefile for a scenario based on ID.
@@ -439,12 +440,9 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
       id (int): The scenario ID to be retrieved.
     """
     # Ensure that the user is logged in.
-    user = _get_user(request)
-    if user is None:
-        return HttpResponse(
-            "Unauthorized. User is not logged in.",
-            status=401,
-        )
+    user = request.user
+    if not user.is_authenticated:
+        return JsonResponse({"error": "Authentication Required"}, status=401)
 
     scenario = Scenario.objects.select_related("planning_area__user").get(
         id=request.GET["id"]
@@ -476,6 +474,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
 
 
+@api_view(["POST"])
 def create_scenario(request: HttpRequest) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
@@ -492,11 +491,9 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
       notes (str): User-provided notes for this scenario.
     """
     try:
-        # Check that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
-
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
         body = json.loads(request.body)
 
         # Check for all needed fields
@@ -546,6 +543,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
+@api_view(["PATCH", "POST"])
 def update_scenario(request: HttpRequest) -> HttpResponse:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that
@@ -562,21 +560,22 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
       id (int): ID of the scenario to retrieve.
     """
     try:
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         scenario_id = body.get("id", None)
         if scenario_id is None:
-            raise ValueError("Scenario ID is required.")
+            return JsonResponse({"error": "Scenario ID is required."}, status=400)
 
         scenario = Scenario.objects.select_related("planning_area__user").get(
             id=scenario_id
         )
         if scenario.planning_area.user.pk != user.pk:
-            # This matches the same error string if the planning area doesn't exist in the DB for any user.
-            raise ValueError("Scenario matching query does not exist.")
+            return JsonResponse(
+                {"error": "Scenario matching query does not exist."}, status=404
+            )
 
         is_dirty = False
 
@@ -665,6 +664,7 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Update Scenario error: " + str(e))
 
 
+@api_view(["GET"])
 def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Lists all Scenarios for a Planning area.
@@ -679,9 +679,9 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
     """
     try:
         # Check that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         planning_area_id = request.GET["planning_area"]
         if planning_area_id is None:
@@ -697,6 +697,7 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
 
 
+@api_view(["DELETE", "POST"])
 def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
@@ -711,9 +712,9 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
     try:
         # Check that the user is logged in.
-        user = _get_user(request)
-        if user is None:
-            raise ValueError("User must be logged in.")
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         scenario_id_str = body.get("scenario_id", None)
@@ -776,9 +777,13 @@ def get_shared_link(request: HttpRequest, link_code: str) -> HttpResponse:
     return JsonResponse(serializer.data, safe=False)
 
 
+@api_view(["POST"])
 def create_shared_link(request: HttpRequest) -> HttpResponse:
     try:
-        user = _get_user(request)
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse({"error": "Authentication Required"}, status=401)
+
         body = json.loads(request.body)
         serializer = SharedLinkSerializer(data=body, context={"user": user})
         serializer.is_valid(raise_exception=True)
