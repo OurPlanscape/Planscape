@@ -4,8 +4,8 @@ from django.db import connection
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.test import APITransactionTestCase
 from planning.models import PlanningArea, Scenario, ScenarioResult
 from planning.tests.helpers import _create_planning_area, _create_scenario
 

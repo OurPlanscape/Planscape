@@ -9,9 +9,6 @@ from rest_framework.test import APITransactionTestCase
 from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
 from planning.tests.helpers import _create_planning_area, _create_scenario
 
-# Yes, we are pulling in an internal just for testing that a geometry write happened.
-from planning.views import _convert_polygon_to_multipolygon
-
 
 # TODO: add more tests when we start parsing configurations.
 class CreateScenarioTest(APITransactionTestCase):
