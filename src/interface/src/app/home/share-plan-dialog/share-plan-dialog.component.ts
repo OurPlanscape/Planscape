@@ -88,4 +88,9 @@ export class SharePlanDialogComponent {
   get showMessageBox() {
     return this.invalidEmail || this.emails.length > 0;
   }
+
+  startOver() {
+    this.invalidEmail = false;
+    this.emails = [];
+  }
 }

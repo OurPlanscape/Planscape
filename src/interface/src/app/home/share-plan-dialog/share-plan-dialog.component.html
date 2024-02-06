@@ -1,5 +1,14 @@
 <div class="main" *ngIf="!showHelp">
   <section class="header">
+    <button
+      mat-icon-button
+      (click)="startOver()"
+      aria-label="back"
+      *ngIf="showMessageBox">
+      <mat-icon class="back-btn" (click)="showHelp = false"
+        >arrow_back</mat-icon
+      >
+    </button>
     <h2>Share {{ data.name }}</h2>
     <button mat-icon-button (click)="showHelp = true" aria-label="help">
       <mat-icon class="help-btn">help_outlined</mat-icon>
@@ -29,7 +38,7 @@
           cdkFocusInitial
           type="email"
           matInput
-          placeholder="enter email"
+          [placeholder]="showMessageBox ? '' : 'enter email'"
           [matChipInputFor]="chipList"
           [matChipInputAddOnBlur]="true"
           (matChipInputTokenEnd)="addEmail($event)" />
@@ -53,17 +62,22 @@
   <section class="invited" *ngIf="!showMessageBox">
     <h3>People with access</h3>
     <div class="invite">
-      <div>Your Name <span>(You)</span></div>
+      <div class="name">Your Name <span>(You)</span></div>
       <div>Owner</div>
     </div>
     <div *ngFor="let invite of invites$ | async" class="invite">
-      <div>{{ invite.name }}</div>
+      <div class="name">{{ invite.name }}</div>
       <button mat-button [matMenuTriggerFor]="menu">
         {{ invite.role }} <mat-icon>arrow_drop_down </mat-icon>
       </button>
-      <mat-menu #menu="matMenu">
-        <button mat-menu-item *ngFor="let role of roles">{{ role }}</button>
-        <button mat-menu-item>Resend Code</button>
+      <mat-menu #menu="matMenu" class="invites-menu">
+        <button mat-menu-item *ngFor="let role of roles" class="menu-roles">
+          <div class="spacer">
+            <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
+          </div>
+          {{ role }}
+        </button>
+        <button mat-menu-item class="menu-divider">Resend Code</button>
         <button mat-menu-item>Remove Access</button>
       </mat-menu>
     </div>
@@ -83,8 +97,8 @@
 
 <div class="help" *ngIf="showHelp">
   <section class="header">
-    <button mat-icon-button (click)="showHelp = true" aria-label="help">
-      <mat-icon class="close-btn" (click)="showHelp = false"
+    <button mat-icon-button (click)="showHelp = true" aria-label="back">
+      <mat-icon class="back-btn" (click)="showHelp = false"
         >arrow_back</mat-icon
       >
     </button>
