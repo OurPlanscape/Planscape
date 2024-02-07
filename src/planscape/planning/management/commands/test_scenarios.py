@@ -2,6 +2,7 @@ import logging
 import json
 import os
 import time
+from datetime import datetime
 from typing import Any
 
 from django.conf import settings
@@ -19,13 +20,11 @@ log = logging.getLogger(__name__)
 class Command(BaseCommand):
     fixtures_to_test = []
     scenarios_to_test = []
-    test_user = ""
+    test_user_name = "e2etest@sig-gis.com"
     fixtures_path = str(settings.TREATMENTS_TEST_FIXTURES_PATH)
 
     def upsert_test_user(self):
-        self.test_user, _ = User.objects.update_or_create(
-            username="e2etest@sig-gis.com"
-        )
+        self.test_user, _ = User.objects.update_or_create(username=self.test_user_name)
         self.stdout.write(
             f"Setting test user id: {self.test_user.id} and username: {self.test_user.username}"
         )
@@ -52,11 +51,19 @@ class Command(BaseCommand):
             )
             with open(areas_file, "r", encoding="UTF-8") as f:
                 area_data = json.load(f)
+                # Remove attributes that might exist if our planning area is from the CSV output
+                if "pk" in area_data:
+                    del area_data["pk"]
+
+                # overwrite details for new planning area to be upserted
                 area_data["user_id"] = self.test_user.id
-                area_data["pk"] = None
-                area_data["name"] = f"testplan-{time.time()}"
+                area_data["name"] = f"testplan-{area_data.get('name')}"
+
+                # upsert this, using name and user as unique identifier
+                # we don't want to use a PK here, because it may interfere with new data
                 area_obj, _ = PlanningArea.objects.update_or_create(
-                    id=area_data.get("pk") or None,
+                    user_id=area_data["user_id"],
+                    name=area_data["name"],
                     defaults=area_data,
                 )
                 self.test_area_ids.append(area_obj.id)
@@ -72,13 +79,22 @@ class Command(BaseCommand):
             # Remove attributes that might exist if our scenario is from the CSV output
             if "planning_area" in scenario_data:
                 del scenario_data["planning_area"]
+            if "pk" in scenario_data:
+                del scenario_data["pk"]
+            if "uuid" in scenario_data:
+                del scenario_data["uuid"]
 
-            # overwrite details with new planning details
+            # overwrite details for new scenario to be upserted
             scenario_data["planning_area_id"] = area_id
-            scenario_data["name"] = f"test-scenario-{time.time()}"
+            scenario_data["name"] = f"test-scenario-{scenario_data.get('name')}"
+            scenario_data["user_id"] = self.test_user.id
+
+            # upsert this, using name and user as unique identifier
+            # we don't want to use a PK here, because it may interfere with new data
             scenario_obj, _ = Scenario.objects.update_or_create(
-                defaults=scenario_data, id=scenario_data.get("pk") or None
+                user=self.test_user, name=scenario_data["name"], defaults=scenario_data
             )
+
             validation_schema = load_schema(validation_file)
             self.scenarios_to_test.append(
                 {"id": scenario_obj.id, "schema": validation_schema}
@@ -86,7 +102,7 @@ class Command(BaseCommand):
 
     def run_tests(self):
         all_tasks = []
-        # here we are chaining the forsys run, then a results validation function
+        # here we are chaining the forsys run: we take the JSON results and send them to a validation function
         for s in self.scenarios_to_test:
             task = chain(
                 async_forsys_run.si(s["id"]), review_results.si(s["id"], s["schema"])
@@ -97,8 +113,11 @@ class Command(BaseCommand):
         task_results = task_group()
         self.final_results = task_results.get()
 
-        log.info(f"Final Results: {self.final_results}")
-        self.stdout.write(f"Final Results: {self.final_results}")
+        self.stdout.write(f"\nTest results {datetime.now()}:\n")
+        log.info(f"Test results {time.time()}")
+        for f in self.final_results:
+            log.info(f"{json.loads(f)}")
+            self.stdout.write(f"{json.loads(f)}")
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -107,9 +126,6 @@ class Command(BaseCommand):
             default=str(settings.TREATMENTS_TEST_FIXTURES_PATH),
             help="Overrides the default path to fixtures",
         )
-
-    def post_process(self):
-        self.stdout.write("Tests completed.")
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         self.fixtures_path = options["fixtures_path"]

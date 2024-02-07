@@ -18,19 +18,22 @@ def load_schema(schema_file):
         log.error("Error opening schema %s. %s", schema_file, e)
 
 
-def validation_results(validation_schema, output_result) -> bool:
+def validation_results(sid, validation_schema, output_result) -> object:
     try:
         v = Draft202012Validator(validation_schema)
         if not v.is_valid(output_result):
             for error in sorted(v.iter_errors(output_result)):
-                print(error.message)
                 log.error("\nRESULT VALIDATION ERROR: %s", error.message)
-            return False
-        return True
+            return json.dumps(
+                {"result": "FAILED", "scenario_id": sid, "details": error.message}
+            )
+        return json.dumps({"result": "OK", "scenario_id": sid})
     # here we catch any non-specific validation exceptions
     except ValidationError as ve:
         log.error("RESULT VALIDATION EXCEPTION %s", {ve.message})
-        return False
+        return json.dumps(
+            {"result": "FAILED", "scenario_id": sid, "details": error.message}
+        )
     except Exception as e:
         log.error("ERROR: Failed attempting to run validation script\n%s", e)
         raise Exception from e

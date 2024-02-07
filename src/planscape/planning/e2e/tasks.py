@@ -9,12 +9,11 @@ log = logging.getLogger(__name__)
 
 
 @app.task(max_retries=3, retry_backoff=True)
-def review_results(sid, validation_schema):
+def review_results(sid, validation_schema) -> object:
     try:
         scenario = Scenario.objects.get(id=sid)
         res = scenario.results.result
-        validation_results(validation_schema, res)
-        return validation_results(validation_schema, res)
-    except Exception:
+        return validation_results(sid, validation_schema, res)
+    except Exception as e:
         log.error("ERROR: Could not get a scenario result for scenario id %s", sid)
-        return False
+        raise Exception from e
