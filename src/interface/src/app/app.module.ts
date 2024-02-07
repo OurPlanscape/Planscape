@@ -63,6 +63,7 @@ import { InfoCardComponent } from './signup/info-card/info-card.component';
 import { ChangePasswordComponent } from './account/change-password/change-password.component';
 import { DeleteAccountDialogComponent } from './account/delete-account-dialog/delete-account-dialog.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
+import { ChipInputComponent } from './home/chip-input/chip-input.component';
 
 @NgModule({
   declarations: [
@@ -95,6 +96,7 @@ import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-di
     InfoCardComponent,
     ChangePasswordComponent,
     SharePlanDialogComponent,
+    ChipInputComponent,
   ],
   imports: [
     AppRoutingModule,

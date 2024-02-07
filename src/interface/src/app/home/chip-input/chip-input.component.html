@@ -1,0 +1,18 @@
+<mat-form-field appearance="outline">
+  <mat-chip-list #chipList aria-label="Emails">
+    <mat-chip *ngFor="let email of emails" (removed)="removeEmail.emit(email)">
+      {{ email }}
+      <button matChipRemove>
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-chip>
+    <input
+      cdkFocusInitial
+      type="email"
+      matInput
+      [placeholder]="placeholder"
+      [matChipInputFor]="chipList"
+      [matChipInputAddOnBlur]="true"
+      (matChipInputTokenEnd)="addIfValid($event)" />
+  </mat-chip-list>
+</mat-form-field>

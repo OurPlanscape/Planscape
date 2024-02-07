@@ -2,11 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { delay, of } from 'rxjs';
 import { FormMessageType } from '../../types';
-import {
-  EMAIL_VALIDATION_REGEX,
-  SNACK_NOTICE_CONFIG,
-} from '../../shared/constants';
-import { MatChipInputEvent } from '@angular/material/chips';
+import { SNACK_NOTICE_CONFIG } from '../../shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 const Roles: Record<'Viewer' | 'Collaborator' | 'Owner', string> = {
@@ -43,22 +39,8 @@ export class SharePlanDialogComponent {
 
   selectedRole = this.roles[0];
 
-  addEmail(event: MatChipInputEvent): void {
-    this.invalidEmail = false;
-    const value = (event.value || '').trim();
-    if (!value) {
-      return;
-    }
-
-    if (value.match(EMAIL_VALIDATION_REGEX)) {
-      this.emails.push(value);
-    } else {
-      this.invalidEmail = true;
-      return;
-    }
-
-    // Clear the input value
-    event.chipInput!.clear();
+  addEmail(email: string): void {
+    this.emails.push(email);
   }
 
   removeEmail(email: string): void {

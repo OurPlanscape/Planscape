@@ -26,24 +26,12 @@
   </app-form-message>
 
   <form class="grid">
-    <mat-form-field appearance="outline">
-      <mat-chip-list #chipList aria-label="Emails">
-        <mat-chip *ngFor="let email of emails" (removed)="removeEmail(email)">
-          {{ email }}
-          <button matChipRemove>
-            <mat-icon>close</mat-icon>
-          </button>
-        </mat-chip>
-        <input
-          cdkFocusInitial
-          type="email"
-          matInput
-          [placeholder]="showMessageBox ? '' : 'enter email'"
-          [matChipInputFor]="chipList"
-          [matChipInputAddOnBlur]="true"
-          (matChipInputTokenEnd)="addEmail($event)" />
-      </mat-chip-list>
-    </mat-form-field>
+    <app-chip-input
+      [emails]="emails"
+      [placeholder]="showMessageBox ? '' : 'enter email'"
+      (addEmail)="addEmail($event)"
+      (removeEmail)="removeEmail($event)"
+      (isInvalid)="invalidEmail = $event"></app-chip-input>
     <mat-form-field appearance="outline">
       <mat-select [(value)]="selectedRole">
         <mat-option [value]="role" *ngFor="let role of roles">{{

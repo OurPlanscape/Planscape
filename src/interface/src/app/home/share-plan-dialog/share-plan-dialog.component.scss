@@ -33,23 +33,22 @@
     .mat-form-field-infix {
       border-top-width: 4px;
     }
-    .mat-select-arrow-wrapper{
+    .mat-select-arrow-wrapper {
       transform: none;
     }
 
-    mat-chip{
-      background-color: white;
-      border: 1px solid $color-dark-gray;
+    .mat-form-field-flex{
+      min-height: 40px;
     }
+
     &.mat-form-field-appearance-outline .mat-form-field-wrapper {
       padding: 0;
     }
-    &.mat-chip.mat-standard-chip .mat-chip-remove {
-      opacity: 0.9;
+
+    .mat-form-field-type-mat-select  .mat-form-field-infix {
+      padding: 11px 0;
     }
   }
-
-
 
   ::ng-deep .message-box {
     margin: 0;
@@ -73,6 +72,9 @@
     .mat-form-field-outline-start,
     .mat-form-field-outline-end {
       background-color: $color-light-gray;
+    }
+    .mat-form-field-flex {
+      height: 100px;
     }
   }
 
@@ -127,6 +129,8 @@
     padding: 0 0 0 8px;
     line-height: 0;
   }
+
+
 }
 
 .menu-divider {
