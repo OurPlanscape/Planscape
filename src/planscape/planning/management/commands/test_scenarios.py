@@ -107,7 +107,8 @@ class Command(BaseCommand):
     def run_tests(self):
         """Triggers processing for each of the scenarios in our tests"""
         all_tasks = []
-        # here we are chaining the forsys run: we take the JSON results and send them to a validation function
+        # here we are pushing the forsys runs to Celery for processing
+        # We then chain the JSON results and send them to a validation function
         for s in self.scenarios_to_test:
             task = chain(
                 async_forsys_run.si(s["id"]), review_results.si(s["id"], s["schema"])
@@ -117,9 +118,12 @@ class Command(BaseCommand):
         task_group = group(all_tasks)
         task_results = task_group()
         self.final_results = task_results.get()
+        self.output_results()
 
-        self.stdout.write(f"\nTest results {datetime.now()}:\n")
-        log.info(f"Test results {time.time()}")
+    def output_results(self):
+        dt = datetime.now()
+        self.stdout.write(f"\nTest results {dt}:\n")
+        log.info(f"Test results {dt}")
         for f in self.final_results:
             log.info(f"{json.loads(f)}")
             self.stdout.write(f"{json.loads(f)}")
