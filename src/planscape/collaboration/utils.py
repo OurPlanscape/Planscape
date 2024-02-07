@@ -69,11 +69,11 @@ def can_add_scenario(user: User, planning_area: PlanningArea):
 
 # todo consider scenario owner
 def can_archive_scenario(user: User, planning_area: PlanningArea, scenario: Scenario):
-    if is_creator(user, planning_area):
+    if is_creator(user, planning_area) or scenario.user.pk == user.pk:
         return True
     try:
         entry = get_collaborator(user.id, planning_area.id)
-        return is_collaborator(entry) or is_owner(entry)
+        return is_owner(entry)
     except Collaborator.DoesNotExist:
         return False
 
