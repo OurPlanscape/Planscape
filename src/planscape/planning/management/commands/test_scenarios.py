@@ -8,7 +8,7 @@ from typing import Any
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.contrib.auth.models import User
-from celery import group, chain, chord
+from celery import group, chain
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
 from planning.e2e.tasks import review_results
@@ -23,13 +23,8 @@ class Command(BaseCommand):
     test_user_name = "e2etest@sig-gis.com"
     fixtures_path = str(settings.TREATMENTS_TEST_FIXTURES_PATH)
 
-    def upsert_test_user(self):
-        self.test_user, _ = User.objects.update_or_create(username=self.test_user_name)
-        self.stdout.write(
-            f"Setting test user id: {self.test_user.id} and username: {self.test_user.username}"
-        )
-
     def load_test_definitions(self):
+        """Reads the JSON file that describes our test areas, scenarios and expected results"""
         test_defs = os.path.join(
             settings.BASE_DIR, self.fixtures_path, "test_definitions.json"
         )
@@ -39,7 +34,15 @@ class Command(BaseCommand):
         except Exception as e:
             log.error(f"Failed to read test definitions at {test_defs}- {e}")
 
+    def upsert_test_user(self):
+        """Upserts the same test user for all test records"""
+        self.test_user, _ = User.objects.update_or_create(username=self.test_user_name)
+        self.stdout.write(
+            f"Setting test user id: {self.test_user.id} and username: {self.test_user.username}"
+        )
+
     def create_areas(self):
+        """Loads the test planning areas under our test user"""
         self.test_area_ids = []
         for tests in self.fixtures_to_test:
             planning_area_file = tests["planning_area"]
@@ -71,6 +74,7 @@ class Command(BaseCommand):
                     self.upsert_scenarios(s["treatment"], s["expected"], area_obj.id)
 
     def upsert_scenarios(self, scenario_file, validation_file, area_id):
+        """Upserts each scenario"""
         scenario_path = os.path.join(
             settings.BASE_DIR, self.fixtures_path, scenario_file
         )
@@ -101,6 +105,7 @@ class Command(BaseCommand):
             )
 
     def run_tests(self):
+        """Triggers processing for each of the scenarios in our tests"""
         all_tasks = []
         # here we are chaining the forsys run: we take the JSON results and send them to a validation function
         for s in self.scenarios_to_test:
@@ -120,6 +125,7 @@ class Command(BaseCommand):
             self.stdout.write(f"{json.loads(f)}")
 
     def add_arguments(self, parser: CommandParser) -> None:
+        """Defines any arguments for our CLI command"""
         parser.add_argument(
             "--fixtures-path",
             type=str,
@@ -128,13 +134,14 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **options: Any) -> str | None:
+        """Runs the CLI command. Outputs results to logs and stdout"""
         self.fixtures_path = options["fixtures_path"]
 
         if self.fixtures_path:
             self.stdout.write(f"Fixtures path is set to: {self.fixtures_path}")
 
-        self.upsert_test_user()
         self.load_test_definitions()
+        self.upsert_test_user()
         self.create_areas()
 
         self.run_tests()
