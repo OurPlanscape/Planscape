@@ -11,7 +11,7 @@ from collaboration.utils import (
     can_view_planning_area,
     can_view_scenario,
 )
-from planning.models import PlanningArea
+from planning.models import PlanningArea, Scenario
 from django.contrib.contenttypes.models import ContentType
 
 
@@ -35,8 +35,12 @@ class PermissionsTest(TransactionTestCase):
             geometry=None,
             notes="",
         )
-
         self.planning_area.save()
+
+        self.scenario = Scenario.objects.create(
+            user=self.user, planning_area=self.planning_area, name="a scenario"
+        )
+        self.scenario.save()
 
     def create_collaborator_record(self, role: Role):
         planning_area_type = ContentType.objects.get(
@@ -113,30 +117,45 @@ class PermissionsTest(TransactionTestCase):
         self.assertTrue(can_add_scenario(self.invitee, self.planning_area))
 
     # Change (Archive) Scenarios
-    # # TODO need to add owner to scenario  id
-    # def creator_can_archive_scenario(self):
-    #     self.assertFalse(can_archive_scenario(self.user, self.planning_area))
 
-    # def test_not_invited_cannot_archive_scenario(self):
-    #     self.assertFalse(can_archive_scenario(self.invitee, self.planning_area))
+    def test_creator_can_archive_scenario(self):
+        self.assertTrue(
+            can_archive_scenario(self.user, self.planning_area, self.scenario)
+        )
 
-    # def test_viewer_cannot_archive_scenario(self):
-    #     self.create_collaborator_record(Role.VIEWER)
-    #     self.assertFalse(can_archive_scenario(self.invitee, self.planning_area))
+    def test_not_invited_cannot_archive_scenario(self):
+        self.assertFalse(
+            can_archive_scenario(self.invitee, self.planning_area, self.scenario)
+        )
 
-    # def test_collaborator_cannot_archive_scenario(self):
-    #     self.create_collaborator_record(Role.COLLABORATOR)
-    #     self.assertTrue(can_archive_scenario(self.invitee, self.planning_area))
+    def test_viewer_cannot_archive_scenario(self):
+        self.create_collaborator_record(Role.VIEWER)
+        self.assertFalse(
+            can_archive_scenario(self.invitee, self.planning_area, self.scenario)
+        )
 
-    # # TODO need to add owner to scenario  id
-    # def test_scenario_owner_can_archive_scenario(self):
-    #     self.create_collaborator_record(Role.COLLABORATOR)
-    #     # create a scenario with this user
-    #     #....
-    #     # assert that it can archive
-    #     self.assertTrue( can_archive_scenario(self.invitee, self.planning_area) )
+    def test_collaborator_cannot_archive_scenario(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        self.assertFalse(
+            can_archive_scenario(self.invitee, self.planning_area, self.scenario)
+        )
+
+    def test_scenario_owner_can_archive_scenario(self):
+        self.create_collaborator_record(Role.COLLABORATOR)
+        # create a scenario with this user
+        scenario = Scenario.objects.create(
+            user=self.invitee,
+            planning_area=self.planning_area,
+            name="a different scenario",
+        )
+        scenario.save()
+        # assert that it can archive even as collaborator
+        self.assertTrue(
+            can_archive_scenario(self.invitee, self.planning_area, scenario)
+        )
 
     # View Collaborators
+
     def test_creator_can_view_collaborators(self):
         self.assertTrue(can_view_collaborators(self.user, self.planning_area))
 
