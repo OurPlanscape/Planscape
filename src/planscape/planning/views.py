@@ -4,8 +4,9 @@ import os
 from base.region_name import display_name_to_region, region_to_display_name
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.contenttypes.models import ContentType
 from django.db import IntegrityError
-from django.db.models import Count, Max
+from django.db.models import Count, Max, UniqueConstraint
 from django.db.models.functions import Coalesce
 from django.http import (
     HttpRequest,
@@ -16,6 +17,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
+
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -34,6 +36,7 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
+from collaboration.utils import get_permissions, add_collaborator
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -842,3 +845,56 @@ def create_shared_link(request: Request) -> Response:
 
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))
+
+
+@api_view(["POST"])
+def add_planningarea_collaborator(request: Request) -> Response:
+    try:
+        user = request.user
+        if not user.is_authenticated:
+            return JsonResponse(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        body = json.loads(request.body)
+
+        pid = body.get("planningarea_id")
+        print(f"Got this planning area: {pid}")
+
+        # TODO: try/catch
+        planning_area = PlanningArea.objects.get(id=pid)
+        content_type = ContentType.objects.get_for_model(PlanningArea)
+
+        # ensure user has access to planning area
+        area_permissions = get_permissions(
+            email=user.email,
+            planning_area=planning_area,
+            content_type_id=content_type.id,
+        )
+        print(f"User {user} has these permissions on planning area:")
+        for p in area_permissions:
+            print(f"permission: {p.permission}")
+
+        collaborator = body.get("collaborator")
+        role = body.get("role")
+        add_collaborator(
+            collaborator,
+            role=role,
+            object_id=planning_area.pk,
+            content_type_id=content_type.id,
+            inviter_id=user.id,
+        )
+        collab_permissions = get_permissions(
+            email=collaborator,
+            planning_area=planning_area,
+            content_type_id=content_type.id,
+        )
+        print(f"Collaborator {collaborator} now has these permissions ")
+        for cp in collab_permissions:
+            print(f"permission: {cp.permission}")
+
+        return Response("ok", status=status.HTTP_200_OK)
+    except Exception as e:
+        print(f"what {e}")
+        return Response("Error: " + str(e), status=status.HTTP_400_BAD_REQUEST)

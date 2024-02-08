@@ -2,7 +2,7 @@ from collaboration.models import Collaborator, Permissions, Role
 from planning.models import PlanningArea, Scenario
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-
+from django.db import IntegrityError
 
 User = get_user_model()
 
@@ -116,3 +116,38 @@ def can_delete_collaborators(user: User, planning_area: PlanningArea):
         return is_owner(entry)
     except Collaborator.DoesNotExist:
         return False
+
+
+def get_permissions(email, planning_area: PlanningArea, content_type_id):
+    collaboration = Collaborator.objects.get(
+        email=email,
+        object_pk=planning_area.pk,
+        content_type_id=content_type_id,
+    )
+    print(
+        f"Here is the collab record {collaboration.email} {collaboration.object_pk} {collaboration.role}"
+    )
+    # Get the role from the collaboration.
+    permissions = Permissions.objects.filter(role=collaboration.role)
+    return permissions
+
+
+def add_collaborator(email, role, object_id, content_type_id, inviter_id):
+    # TODO: make sure the role is actually a valid role
+    print(f"We got role: {role}")
+    try:
+        Collaborator.objects.update_or_create(
+            defaults={
+                "role": role,
+                "inviter_id": inviter_id,
+            },
+            email=email,
+            object_pk=object_id,
+            content_type_id=content_type_id,
+        )
+    except IntegrityError as ie:
+        print(f"we got this integriryError : {ie}")
+    except Exception as e:
+        print(
+            f"Ok, failed to add this {email} {role} {object_id} {content_type_id} because {e}"
+        )

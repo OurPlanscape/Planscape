@@ -4,6 +4,7 @@ from planning.views import (
     create_planning_area,
     delete_planning_area,
     get_planning_area_by_id,
+    add_planningarea_collaborator,
     download_csv,
     download_shapefile,
     list_planning_areas,
@@ -40,6 +41,11 @@ urlpatterns = [
     ),
     path("list_planning_areas/", list_planning_areas, name="list_planning_areas"),
     path("update_planning_area/", update_planning_area, name="update_planning_area"),
+    path(
+        "add_planningarea_collaborator",
+        add_planningarea_collaborator,
+        name="add_planningarea_collaborator",
+    ),
     # Scenarios
     path("create_scenario/", create_scenario, name="create_scenario"),
     path("delete_scenario/", delete_scenario, name="delete_scenario"),
