@@ -41,8 +41,7 @@
                   "standing_dead_and_ladder_fuels",
                   "available_standing_biomass",
                   "sawtimber_biomass",
-                  "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_habitat"
                 ]
               },
               "stand_thresholds": [
@@ -92,7 +91,6 @@
                   "sawtimber_biomass",
                   "heavy_fuel_load",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
                   "structure_exposure",
                   "damage_potential_wui"
                 ]
@@ -139,7 +137,6 @@
                   "probability_of_fire_severity_high",
                   "probability_of_fire_severity_moderate",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
                   "total_fuel_exposed_to_fire"
                 ]
               },
@@ -190,7 +187,6 @@
                   "available_standing_biomass",
                   "sawtimber_biomass",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
                   "total_fuel_exposed_to_fire",
                   "standing_dead_and_ladder_fuels",
                   "mean_percent_fire_return_interval_departure_condition_class"
@@ -246,7 +242,6 @@
                   "total_fuel_exposed_to_fire",
                   "sawtimber_biomass",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
                   "f3veg100"
                 ]
               },
@@ -301,7 +296,6 @@
                   "total_fuel_exposed_to_fire",
                   "sawtimber_biomass",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
                   "probability_of_fire_severity_high",
                   "probability_of_fire_severity_moderate"
                 ]
@@ -344,8 +338,7 @@
                   "live_tree_density_30in_dbh",
                   "dead_and_down_fuels",
                   "sawtimber_biomass",
-                  "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_habitat"
                 ]
               },
               "scenario_priorities": [
@@ -387,8 +380,7 @@
                   "live_tree_density_30in_dbh",
                   "dead_and_down_fuels",
                   "sawtimber_biomass",
-                  "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_habitat"
                 ]
               },
               "scenario_priorities": [
@@ -443,7 +435,6 @@
                   "basal_area",
                   "live_tree_density_30in_dbh",
                   "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory",
                   "wildlife_species_richness",
                   "aboveground_live_tree_carbon"
                 ]
@@ -483,8 +474,7 @@
                   "time_since_last_disturbance",
                   "wildlife_species_richness",
                   "endangered_vertebrate",
-                  "california_spotted_owl_habitat",
-                  "california_spotted_owl_territory"
+                  "california_spotted_owl_habitat"
                 ]
               },
               "scenario_priorities": [
