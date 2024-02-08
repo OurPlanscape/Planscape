@@ -9,12 +9,11 @@ class Migration(migrations.Migration):
         ("collaboration", "0001_initial"),
     ]
 
-    def insertData(apps, schema_editor):
+    def forward_func(apps, schema_editor):
         viewer = ["view_planningarea", "view_scenario"]
-        # TODO this is wrong! remove change_scenario
-        collaborator = viewer + ["add_scenario", "change_scenario"]
+        collaborator = viewer + ["add_scenario"]
         owner = collaborator + [
-            "view_collaborator",
+            "change_scenario" "view_collaborator",
             "add_collaborator",
             "delete_collaborator",
             "change_collaborator",
@@ -32,6 +31,8 @@ class Migration(migrations.Migration):
             entry = Permission(role=Role.OWNER, permission=x)
             entry.save()
 
-    operations = [
-        migrations.RunPython(insertData),
-    ]
+    def reverse_func(apps, schema_editor):
+        Permission = apps.get_model("collaboration", "Permissions")
+        Permission.objects.all().delete()
+
+    operations = [migrations.RunPython(forward_func, reverse_func)]
