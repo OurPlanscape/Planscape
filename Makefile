@@ -16,12 +16,14 @@ SYS_CTL=systemctl --user
 TAG=main
 
 checkout:
+	set -e; \
 	git fetch origin; \
 	git switch main; \
 	git pull origin main; \
 	git checkout $(TAG)
 
 taggit:
+	set -e; \
 	git checkout main; \
 	git pull origin main; \
 	git tag -a $(VERSION); \
