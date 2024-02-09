@@ -21,7 +21,7 @@ checkout:
 	git switch main; \
 	git pull origin main; \
 	git checkout $(TAG); \
-	@echo "Completed git checkout"
+	echo "Completed git checkout"
 
 taggit:
 	set -e; \
@@ -29,7 +29,7 @@ taggit:
 	git pull origin main; \
 	git tag -a $(VERSION); \
 	git push origin --tags; \
-	@echo "Completed taggit"
+	echo "Completed taggit"
 
 install-dependencies-frontend:
 	cd src/interface && npm install
