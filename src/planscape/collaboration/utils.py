@@ -134,20 +134,12 @@ def get_permissions(email, planning_area: PlanningArea, content_type_id):
 
 def add_collaborator(email, role, object_id, content_type_id, inviter_id):
     # TODO: make sure the role is actually a valid role
-    print(f"We got role: {role}")
-    try:
-        Collaborator.objects.update_or_create(
-            defaults={
-                "role": role,
-                "inviter_id": inviter_id,
-            },
-            email=email,
-            object_pk=object_id,
-            content_type_id=content_type_id,
-        )
-    except IntegrityError as ie:
-        print(f"we got this integriryError : {ie}")
-    except Exception as e:
-        print(
-            f"Ok, failed to add this {email} {role} {object_id} {content_type_id} because {e}"
-        )
+    _, did_add = Collaborator.objects.update_or_create(
+        defaults={
+            "role": role,
+            "inviter_id": inviter_id,
+        },
+        email=email,
+        object_pk=object_id,
+        content_type_id=content_type_id,
+    )
