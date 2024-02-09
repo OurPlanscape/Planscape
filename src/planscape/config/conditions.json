@@ -106,7 +106,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/airQuality/Tier1/PotentialTotalSmoke_202209.tif",
                   "raw_layer": ":airQuality_Tier1_PotentialTotalSmoke_202209",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=80",
                   "source": "",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -119,7 +119,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/airQuality/Tier1/PotentialAvoidedSmoke_202209.tif",
                   "raw_layer": ":airQuality_Tier1_PotentialAvoidedSmoke_202209",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=81",
                   "source": "",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -146,7 +146,7 @@
                   "min_value": 1,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/HabitatConnectivity_201908.tif",
                   "raw_layer": ":bioDiverConserv_Tier1_HabitatConnectivity_201908",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -159,7 +159,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/cavity_nesters_excavators_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_cavity_nesters_excavators_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -172,7 +172,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/herbivores_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_herbivores_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -185,7 +185,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/insectivores_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_insectivores_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -198,7 +198,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/predators_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_predators_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -211,7 +211,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/seed_spore_dispersers_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_seed_spore_dispersers_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -224,7 +224,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/soil_aerators_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_soil_aerators_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=68",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -237,7 +237,7 @@
                   "min_value": 3,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/PresentDayConnectivity_Omniscape_202301.tif",
                   "raw_layer": ":bioDiverConserv_Tier1_PresentDayConnectivity_Omniscape_202301",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=69",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -257,7 +257,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/wildlife_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=42",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -270,7 +270,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/t_e_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=42",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -283,7 +283,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/forest_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_forest_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=43",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -296,7 +296,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/open_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_open_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=44",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -309,7 +309,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/hummingbirds_species_richness_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_hummingbirds_species_richness_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=44",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -329,7 +329,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier3/SpottedOwl_habitat_suitability_CWHR_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier3_SpottedOwl_habitat_suitability_CWHR_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=57",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -342,7 +342,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Mountain_Lion_habitat_suitability_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Mountain_Lion_habitat_suitability_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=46",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -355,7 +355,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/california_red_legged_frog_habitat_200106.tif ",
                   "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat_200106",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=45",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -381,7 +381,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/MarbledMurreletCriticalHabitat_201101.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_MarbledMurreletCriticalHabitat_201101",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=48",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -394,7 +394,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/NSO_NestRoost_Suitability_2023.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_NSO_NestRoost_Suitability_2023",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=49",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -407,7 +407,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/NSO_habitatSuitability_2023.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_NSO_habitatSuitability_2023",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=53",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -420,7 +420,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier3/NSO_habitat_composite_2022.tif",
                   "raw_layer": ":bioDiverConserv_Tier3_NSO_habitat_composite_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=54",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -433,7 +433,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier3/current_topoclim_refugia_2019.tif",
                   "raw_layer": ":bioDiverConserv_Tier3_current_topoclim_refugia_2019",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=57",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -446,7 +446,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Northern_Goshawk_habitat_suitability_202304.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Northern_Goshawk_habitat_suitability_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=59",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -459,7 +459,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Pacific_Fisher_habitat_suitability_raw_201306.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Pacific_Fisher_habitat_suitability_raw_201306",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=60",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -472,7 +472,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Humboldt_Marten_habitat_suitability_2020.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_Humboldt_Marten_habitat_suitability_2020",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=60",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -485,7 +485,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/ChinookSalmonCriticalHabitat_200509.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_ChinookSalmonCriticalHabitat_200509",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=61",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -498,7 +498,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/CohoSalmonCriticalHabitat_199905.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_CohoSalmonCriticalHabitat_199905",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=61",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -511,7 +511,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/SteelheadCriticalHabitat_200509.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_SteelheadCriticalHabitat_200509",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=62",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -524,7 +524,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/ChinookSalmonDistribution_200509.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_ChinookSalmonDistribution_200509",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=63",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -537,7 +537,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/CohoSalmonDistribution_202211.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_CohoSalmonDistribution_202211",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=64  ",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -550,7 +550,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/WinterSteelheadDistribution_201206.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_WinterSteelheadDistribution_201206",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=66",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -563,7 +563,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/SummerSteelheadDistribution_200910.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_SummerSteelheadDistribution_200910",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=67",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -590,7 +590,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/carbonSeq/Tier1/CStocks_Total_Above_202009.tif",
                   "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_202009",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=76",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -610,7 +610,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/carbonSeq/Tier1/CStocks_Turnovertime_202009.tif",
                   "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_202009",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=77",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -637,7 +637,7 @@
                   "min_value": 132,
                   "raw_data_download_path": "northern-california/econDiversity/Tier2/biomassTreatmentCost_low.tif",
                   "raw_layer": ":econDiversity_Tier2_biomassTreatmentCost_low",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=71",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -650,7 +650,7 @@
                   "min_value": 142,
                   "raw_data_download_path": "northern-california/econDiversity/Tier2/biomassTreatmentCost_high.tif",
                   "raw_layer": ":econDiversity_Tier2_biomassTreatmentCost_high",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=71",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -663,7 +663,7 @@
                   "min_value": 66,
                   "raw_data_download_path": "northern-california/econDiversity/Tier2/sawlogTreatmentCost_low.tif",
                   "raw_layer": ":econDiversity_Tier2_sawlogTreatmentCost_low",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=71",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -676,7 +676,7 @@
                   "min_value": 71,
                   "raw_data_download_path": "northern-california/econDiversity/Tier2/sawlogTreatmentCost_high.tif",
                   "raw_layer": ":econDiversity_Tier2_sawlogTreatmentCost_high",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=71",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -689,7 +689,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/econDiversity/Tier1/BiomassResidues_201808.tif",
                   "raw_layer": ":econDiversity_Tier1_BiomassResidues_201808",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=74",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -716,7 +716,7 @@
                   "min_value": 1,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/StructureExposureScore_WUI_202308_reclass.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_202308_reclass",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=9",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -729,7 +729,7 @@
                   "min_value": 1,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/DamagePotential_WUI_202308_reclass.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_202308_reclass",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=11",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -742,7 +742,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/EmberLoadIndex_202308.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_EmberLoadIndex_202308",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=13",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -755,7 +755,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=13",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -768,7 +768,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=13",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -781,7 +781,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=13",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -794,7 +794,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/SourceEmberLoadToBuildings_202308.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_SourceEmberLoadToBuildings_202308",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=15",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -807,7 +807,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier1/WildfireHazardPotential_202208.tif",
                   "raw_layer": ":fireAdaptComm_Tier1_WildfireHazardPotential_202208",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=16",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -820,7 +820,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier3/PredictedHumanIgnitionProb_1km_1992_2015.tif",
                   "raw_layer": ":fireAdaptComm_Tier3_PredictedHumanIgnitionProb_1km_1992_2015",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=14",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -833,7 +833,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireAdaptComm/Tier3/PredictedLightningIgnitionProb_1km_1992_2015.tif",
                   "raw_layer": ":fireAdaptComm_Tier3_PredictedLightningIgnitionProb_1km_1992_2015",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=14",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -860,7 +860,7 @@
                   "min_value": -100,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier3/meanPFRID_2022.tif",
                   "raw_layer": ":fireDynamics_Tier3_meanPFRID_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=21",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -873,7 +873,7 @@
                   "min_value": -100,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier2/meanPFRID_1970_2022.tif",
                   "raw_layer": ":fireDynamics_Tier2_meanPFRID_1970_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=23",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -886,7 +886,7 @@
                   "min_value": -3,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier3/meanCC_FRI_2022.tif",
                   "raw_layer": ":fireDynamics_Tier3_meanCC_FRI_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=23",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -899,7 +899,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier2/TSLF_2022.tif",
                   "raw_layer": ":fireDynamics_Tier2_TSLF_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=25",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -912,7 +912,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier3/currentFRI_2022.tif",
                   "raw_layer": ":fireDynamics_Tier3_currentFRI_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=25",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -925,7 +925,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier2/currentFRI_1970_2022.tif",
                   "raw_layer": ":fireDynamics_Tier2_meanPFRID_1970_2022",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=25",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -945,7 +945,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier1/AnnualBurnProbability_202308.tif",
                   "raw_layer": ":fireDynamics_Tier1_AnnualBurnProbability_202308",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=26",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -958,7 +958,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/fireDynamics/Tier1/ProbabilityHighFireSev_202308.tif",
                   "raw_layer": ":fireDynamics_Tier1_ProbabilityHighFireSev_202308",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=27",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -985,7 +985,7 @@
                   "min_value": 1,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier2/LargeTreeDensity_24in_30in_202006.tif",
                   "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_24in_30in_202006",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=27",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -998,7 +998,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier2/LargeTreeDensity_30in_40in_202006.tif",
                   "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_30in_40in_202006",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=27",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1011,7 +1011,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier2/LargeTreeDensity_gt40in_202006.tif",
                   "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_gt40in_202006",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=27",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1024,7 +1024,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
                   "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=29",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1037,7 +1037,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
                   "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=29",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1050,7 +1050,7 @@
                   "min_value": 1,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
                   "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=30",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -1070,7 +1070,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/VegCover_Tree_202112.tif",
                   "raw_layer": ":forestShrubResil_Tier1_VegCover_Tree_202112",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=32",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1083,7 +1083,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/VegCover_Shrub_202112.tif",
                   "raw_layer": ":forestShrubResil_Tier1_VegCover_Shrub_202112",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=32",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1096,7 +1096,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/VegCover_Herb_202112.tif",
                   "raw_layer": ":forestShrubResil_Tier1_VegCover_Herb_202112",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=32",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1109,7 +1109,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier2/SeralStage_EML_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_SeralStage_EML_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=33",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1122,7 +1122,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier2/early_SeralStage_prop_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_early_SeralStage_prop_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=33",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1135,7 +1135,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier2/late_SeralStage_prop_202304.tif",
                   "raw_layer": ":forestShrubResil_Tier2_late_SeralStage_prop_202304",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=33",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -1155,7 +1155,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/DistHist_Severe_Tree_19912020.tif",
                   "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Tree_19912020",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=34",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1168,7 +1168,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/DistHist_Severe_Shrub_19912020.tif",
                   "raw_layer": ":forestShrubResil_Tier1_DistHist_Severe_Shrub_19912020",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=35",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1181,7 +1181,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier1/Vulner_TreeDieoff_SPI-2_202112.tif",
                   "raw_layer": ":forestShrubResil_Tier1_Vulner_TreeDieoff_SPI-2_202112",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=35",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1194,7 +1194,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier3/hst8110.tif",
                   "raw_layer": ":forestShrubResil_Tier3_hst8110",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=36",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1207,7 +1207,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier3/miroc_85_1039.tif",
                   "raw_layer": ":forestShrubResil_Tier3_miroc_85_1039",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=36",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1220,7 +1220,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier3/miroc_85_4069.tif",
                   "raw_layer": ":forestShrubResil_Tier3_miroc_85_4069",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=36",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1233,7 +1233,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier3/miroc_85_7099.tif",
                   "raw_layer": ":forestShrubResil_Tier3_miroc_85_7099",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=36",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1246,7 +1246,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/forestShrubResil/Tier3/combine85_all7_reclass.tif",
                   "raw_layer": ":forestShrubResil_Tier3_combine85_all7_reclass",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=39",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -1273,7 +1273,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier1/Poverty_Pctl_202110.tif",
                   "raw_layer": ":socialCultural_Tier1_Poverty_Pctl_202110",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=86",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1286,7 +1286,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier1/HousingBurdenPctl_202110.tif",
                   "raw_layer": ":socialCultural_Tier1_HousingBurdenPctl_202110",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=87",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1299,7 +1299,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier1/Unemployment_Pctl_202110.tif",
                   "raw_layer": ":socialCultural_Tier1_Unemployment_Pctl_202110",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=86",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1312,7 +1312,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/AmericanIndian_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=90",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1338,7 +1338,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/Black_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_Black_202109",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=92",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1351,7 +1351,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/HSPBIPOC_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_HSPBIPOC_202109",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=97",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1364,7 +1364,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/Asian_202109.tif",
                   "raw_layer": ":socialCultural_Tier2_Asian_202109",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=99",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1377,7 +1377,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/LowIncome_202203.tif",
                   "raw_layer": ":socialCultural_Tier2_LowIncome_202203",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=101",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1390,7 +1390,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/BIA_AIAN_LAR_202309.tif",
                   "raw_layer": ":socialCultural_Tier2_BIA_AIAN_LAR_202309",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=104",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1403,7 +1403,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/SB535tribalboundaries202205.tif",
                   "raw_layer": ":socialCultural_Tier2_SB535tribalboundaries202205",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=106",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -1430,7 +1430,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/waterSecurity/Tier1/WaterFlux_AETFrac_SPI-2_202109.tif",
                   "raw_layer": ":waterSecurity_Tier1_WaterFlux_AETFrac_SPI-2_202109",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=77",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1443,7 +1443,7 @@
                   "min_value": -2000,
                   "raw_data_download_path": "northern-california/waterSecurity/Tier1/WaterFlux_Runoff_SPI0_202109.tif",
                   "raw_layer": ":waterSecurity_Tier1_WaterFlux_Runoff_SPI0_202109",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=78",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1456,7 +1456,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/waterSecurity/Tier3/i08_B118_CA_GroundwaterBasins.tif",
                   "raw_layer": ":waterSecurity_Tier3_i08_B118_CA_GroundwaterBasins",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=79",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -1476,7 +1476,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/waterSecurity/Tier1/nlcd_2019_imperviousPercent_CA.tif",
                   "raw_layer": ":waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=80",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
@@ -1503,7 +1503,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/wetlandInteg/Tier1/aquatic_species_richness_2018.tif",
                   "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness_2018",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=84",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1516,7 +1516,7 @@
                   "min_value": 1,
                   "raw_data_download_path": "northern-california/wetlandInteg/Tier1/NWI_WetlandsType_2018_30m.tif",
                   "raw_layer": ":wetlandInteg_Tier1_NWI_WetlandsType_2018_30m",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=85",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 },
@@ -1529,7 +1529,7 @@
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/wetlandInteg/Tier1/RiparianAreas10m_2019.tif",
                   "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
-                  "reference_link": "",
+                  "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=85",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
                 }
