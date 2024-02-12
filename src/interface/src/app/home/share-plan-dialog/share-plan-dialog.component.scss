@@ -6,8 +6,8 @@
   &::after {
     height: 1px;
     background-color: $color-soft-gray;
-    left:-24px; // remove padding from modal
-    right: -24px; // remove padding from modal
+    left: -50%; // remove padding from modal
+    right: -50%; // remove padding from modal
     @if($position == 'bottom'){
       bottom: 0;
     }@else if($position == 'top'){
@@ -149,7 +149,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 9px;
+  gap: 16px;
 }
 
 .pending-changes {
@@ -162,9 +162,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  line-height: 24px;
 
    button {
      @include small-input-label();
+     line-height: 24px;
   }
 
   .name {
@@ -175,11 +177,17 @@
     color: $color-text-gray;
   }
 
+  ::ng-deep .mat-menu-trigger .mat-button-wrapper {
+    vertical-align: middle;
+  }
+
 }
 
 .help {
+  color: $color-black;
   h4 {
     @include small-input-label();
+    font-weight: 600;
     margin: 24px 0 0;
   }
   p {
@@ -198,5 +206,10 @@
   }
 }
 
+// the menu is on the cdk overlay layer, so we need to go outside this component
+// and look for the class used on the menu
+::ng-deep .invites-menu .mat-menu-content {
+  padding: 0;
+}
 
 

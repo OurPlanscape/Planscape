@@ -64,9 +64,9 @@
           *ngFor="let role of roles"
           class="menu-roles"
           (click)="changeRole(invite)">
-          <div class="spacer">
+          <span class="spacer">
             <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
-          </div>
+          </span>
           {{ role }}
         </button>
         <button mat-menu-item class="menu-divider">Resend Code</button>

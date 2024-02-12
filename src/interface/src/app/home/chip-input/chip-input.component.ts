@@ -23,7 +23,6 @@ export class ChipInputComponent {
     }
 
     if (value.match(EMAIL_VALIDATION_REGEX)) {
-      // this.emails.push(value);
       this.addEmail.emit(value);
     } else {
       this.isInvalid.emit(true);
@@ -33,6 +32,4 @@ export class ChipInputComponent {
     // Clear the input value
     event.chipInput!.clear();
   }
-
-  constructor() {}
 }

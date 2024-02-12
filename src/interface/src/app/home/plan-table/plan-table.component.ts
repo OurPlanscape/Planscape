@@ -6,8 +6,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 import { AuthService } from 'src/app/services';
 
-import { PlanService } from '../../services/plan.service';
-import { PlanPreview } from '../../types/plan.types';
+import { PlanService } from '../../services';
+import { PlanPreview } from '../../types';
 import { calculateAcres } from '../../plan/plan-helpers';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
@@ -104,24 +104,13 @@ export class PlanTableComponent implements OnInit {
     if (!this.selectedPlan) {
       return;
     }
-    const dialogRef: MatDialogRef<SharePlanDialogComponent> = this.dialog.open(
-      SharePlanDialogComponent,
-      {
-        data: {
-          name: '"' + this.selectedPlan.name + '"',
-        },
-        restoreFocus: false,
-        panelClass: 'small-padding-dialog',
-      }
-    );
-    dialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.snackbar.open(`Good lad`, 'Dismiss', SNACK_NOTICE_CONFIG);
-        }
-      });
+    this.dialog.open(SharePlanDialogComponent, {
+      data: {
+        name: '"' + this.selectedPlan.name + '"',
+      },
+      restoreFocus: false,
+      panelClass: 'small-padding-dialog',
+    });
   }
   refresh(): void {
     this.getPlansFromService();
