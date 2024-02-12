@@ -11,6 +11,12 @@ const Roles: Record<'Viewer' | 'Collaborator' | 'Owner', string> = {
   Owner: 'Owner',
 };
 
+export interface Invite {
+  name: string;
+  role: string;
+  email: string;
+}
+
 @Component({
   selector: 'app-share-plan-dialog',
   templateUrl: './share-plan-dialog.component.html',
@@ -33,11 +39,14 @@ export class SharePlanDialogComponent {
   invites$ = of([
     { name: 'John Doe', role: 'Owner', email: 'john@doe.com' },
     { name: 'Richard Doe', role: 'Collaborator', email: 'richard@doe.com' },
-  ]);
+  ] as Invite[]);
 
   roles = Object.keys(Roles);
 
   selectedRole = this.roles[0];
+
+  // placeholder until we develop this feature
+  invitesHaveChanges = false;
 
   addEmail(email: string): void {
     this.emails.push(email);
@@ -74,5 +83,10 @@ export class SharePlanDialogComponent {
   startOver() {
     this.invalidEmail = false;
     this.emails = [];
+  }
+
+  // TODO placeholder
+  changeRole(invite: Invite) {
+    this.invitesHaveChanges = !!invite;
   }
 }

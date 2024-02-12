@@ -9,17 +9,26 @@
     mat-form-field {
       display: block;
     }
+    .mat-chip-list-wrapper {
+      margin: 0;
+      gap: 4px;
+    }
+
+    .mat-chip {
+      @include small-input-label();
+      color: $color-dark-gray;
+    }
 
     .mat-form-field-infix {
       border-top-width: 4px;
-      padding: 4px;
+      padding: 0;
     }
     .mat-select-arrow-wrapper{
       transform: none;
     }
 
     input.mat-input-element {
-      padding: 7px 0;
+      padding: 3px 0;
     }
 
     mat-chip.mat-standard-chip {
@@ -33,8 +42,15 @@
         opacity: 0.9;
       }
     }
-    &.mat-form-field-appearance-outline .mat-form-field-wrapper {
-      padding: 0;
+
+    &.mat-form-field-appearance-outline  {
+      .mat-form-field-wrapper {
+        padding: 0;
+      }
+      .mat-form-field-flex {
+        padding: 4px 8px;
+      }
+
     }
   }
 }

@@ -47,6 +47,7 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin standard-input-label {
+  @include public-sans();
   font-size: 16px;
   font-style: normal;
   font-weight: 500;
@@ -54,6 +55,7 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin small-input-label {
+  @include public-sans();
   font-size: 14px;
   font-style: normal;
   font-weight: 500;

@@ -32,7 +32,7 @@
       (addEmail)="addEmail($event)"
       (removeEmail)="removeEmail($event)"
       (isInvalid)="invalidEmail = $event"></app-chip-input>
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" class="invite-role">
       <mat-select [(value)]="selectedRole">
         <mat-option [value]="role" *ngFor="let role of roles">{{
           role
@@ -58,8 +58,12 @@
       <button mat-button [matMenuTriggerFor]="menu">
         {{ invite.role }} <mat-icon>arrow_drop_down </mat-icon>
       </button>
-      <mat-menu #menu="matMenu" class="invites-menu">
-        <button mat-menu-item *ngFor="let role of roles" class="menu-roles">
+      <mat-menu #menu="matMenu" class="invites-menu" xPosition="before">
+        <button
+          mat-menu-item
+          *ngFor="let role of roles"
+          class="menu-roles"
+          (click)="changeRole(invite)">
           <div class="spacer">
             <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
           </div>
@@ -71,6 +75,9 @@
     </div>
   </section>
   <section class="footer">
+    <div *ngIf="invitesHaveChanges" class="pending-changes">
+      Pending changes
+    </div>
     <button
       class="action"
       mat-flat-button
