@@ -40,11 +40,25 @@ class Command(BaseCommand):
                 cursor.execute(sql)
                 rows = cursor.fetchall()
                 column_descriptions = cursor.description
+
+                # Get header names and maximum widths
                 headers = [desc[0] for desc in column_descriptions]
-                formatted_headers = " ".join(map(str, headers))
+                max_widths = [
+                    max(len(str(row[i])) for row in rows) for i in range(len(headers))
+                ]
+                for i, header in enumerate(headers):
+                    max_widths[i] = max(max_widths[i], len(header))
+
+                # Format headers and rows
+                formatted_headers = "  ".join(
+                    header.ljust(width) for header, width in zip(headers, max_widths)
+                )
                 print(formatted_headers)
+
                 for row in rows:
-                    formatted_row = "\t".join(map(str, row))
+                    formatted_row = "  ".join(
+                        str(value).ljust(width) for value, width in zip(row, max_widths)
+                    )
                     print(formatted_row)
 
             except Exception as e:
