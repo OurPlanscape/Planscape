@@ -41,25 +41,32 @@ class Command(BaseCommand):
                 rows = cursor.fetchall()
                 column_descriptions = cursor.description
 
-                # Get header names and maximum widths
-                headers = [desc[0] for desc in column_descriptions]
-                max_widths = [
-                    max(len(str(row[i])) for row in rows) for i in range(len(headers))
-                ]
-                for i, header in enumerate(headers):
-                    max_widths[i] = max(max_widths[i], len(header))
+                if rows:
+                    # Get header names and maximum widths
+                    headers = [desc[0] for desc in column_descriptions]
+                    max_widths = [
+                        max(len(str(row[i])) for row in rows)
+                        for i in range(len(headers))
+                    ]
 
-                # Format headers and rows
-                formatted_headers = "  ".join(
-                    header.ljust(width) for header, width in zip(headers, max_widths)
-                )
-                print(formatted_headers)
+                    for i, header in enumerate(headers):
+                        max_widths[i] = max(max_widths[i] or 0, len(header))
 
-                for row in rows:
-                    formatted_row = "  ".join(
-                        str(value).ljust(width) for value, width in zip(row, max_widths)
+                    # Format headers and rows
+                    formatted_headers = "  ".join(
+                        header.ljust(width)
+                        for header, width in zip(headers, max_widths)
                     )
-                    print(formatted_row)
+                    self.stdout.write(formatted_headers)
+
+                    for row in rows:
+                        formatted_row = "  ".join(
+                            str(value).ljust(width)
+                            for value, width in zip(row, max_widths)
+                        )
+                        self.stdout.write(formatted_row)
+                else:
+                    self.stdout.write("** No rows **")
 
             except Exception as e:
                 self.stderr.write("Error executing SQL: {}".format(e))
