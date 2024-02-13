@@ -4,26 +4,27 @@ from django.core.mail import send_mail
 from django.core.management.base import BaseCommand, CommandParser
 from django.db import connection
 from planscape import settings
+from utils.string_utils import snake_to_capitals
 
 
 class Command(BaseCommand):
-    message_text = ""
     help = "Runs some SQL reports about performance and either emails them or outputs to stdout"
+
+    message_text = ""
     emailing = False
     recipient = None
-    query_folder = "planning/report_queries/"
-    reports = [
-        {
-            "name": "Result Times by Stand Size",
-            "query_file": "result_time_by_stand_size.sql",
-        },
-        {"name": "Result Times by Acreage", "query_file": "result_time_by_acreage.sql"},
-    ]
 
-    def output_report(self, report):
-        query_path = os.path.join(
-            settings.BASE_DIR, self.query_folder, report["query_file"]
-        )
+    query_folder = "planning/report_queries/"
+
+    def process_queries(self):
+        query_path = os.path.join(settings.BASE_DIR, self.query_folder)
+        files = os.listdir(query_path)
+        for f in files:
+            self.output_report(f)
+
+    def output_report(self, query_file):
+        title = snake_to_capitals(query_file)
+        query_path = os.path.join(settings.BASE_DIR, self.query_folder, query_file)
         # Check if query file exists
         if not os.path.isfile(query_path):
             self.stderr.write(f"Error: File not found: {query_path}")
@@ -34,7 +35,7 @@ class Command(BaseCommand):
         except OSError as e:
             self.stderr.write(f"Error opening file: {e}")
 
-        self.write(f"\n\n{report['name']}\n")
+        self.write(f"\n\n{title}\n")
 
         with connection.cursor() as cursor:
             try:
@@ -53,7 +54,7 @@ class Command(BaseCommand):
                     for i, header in enumerate(headers):
                         max_widths[i] = max(max_widths[i] or 0, len(header))
 
-                    # Format headers and rows
+                    # Format headers and rows based on max widths found
                     formatted_headers = "  ".join(
                         header.ljust(width)
                         for header, width in zip(headers, max_widths)
@@ -86,15 +87,18 @@ class Command(BaseCommand):
         if self.recipient:
             recipient_email = self.recipient
 
-        try:
-            send_mail(
-                subject,
-                self.message_text,
-                sender_email,  # Sender email
-                [recipient_email],  # Recipient email(s)
-            )
-        except Exception as e:
-            self.stderr.write("Email sending exception: {}", format(e))
+        if recipient_email:
+            try:
+                send_mail(
+                    subject,
+                    self.message_text,
+                    sender_email,  # Sender email
+                    [recipient_email],  # Recipient email(s)
+                )
+            except Exception as e:
+                self.stderr.write("Email sending exception: {}", format(e))
+        else:
+            self.stderr.write("No recipient email designated. Refusing to send email.")
 
     def add_arguments(self, parser: CommandParser) -> None:
         parser.add_argument(
@@ -118,8 +122,7 @@ class Command(BaseCommand):
         if options.get("recipient"):
             self.recipient = options.get("recipient") or None
 
-        for report in self.reports:
-            self.output_report(report)
+        self.process_queries()
 
         if self.emailing:
             self.send_email()
