@@ -18,6 +18,7 @@ These settings are
   PLANSCAPE_CACHE_BACKEND: Backend type for cache
   PLANSCAPE_CACHE_LOCATION: Cache location (important for memcached, etc.)
 """
+
 import multiprocessing
 import os
 from pathlib import Path
@@ -391,3 +392,5 @@ SHARED_LINKS_NUM_DAYS_VALID = 60
 CRONJOBS = [
     ("0 0 * * *", "planning.cron.delete_old_shared_links"),  # Runs at midnight daily
 ]
+
+REPORT_RECIPIENT_EMAIL = "no-reply@planscape.org"
