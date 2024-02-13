@@ -32,13 +32,23 @@
       (addEmail)="addEmail($event)"
       (removeEmail)="removeEmail($event)"
       (isInvalid)="invalidEmail = $event"></app-chip-input>
-    <mat-form-field appearance="outline" class="invite-role">
-      <mat-select [(value)]="selectedRole">
-        <mat-option [value]="role" *ngFor="let role of roles">{{
-          role
-        }}</mat-option>
-      </mat-select>
-    </mat-form-field>
+
+    <button mat-button [matMenuTriggerFor]="roleMenu" class="invite-role">
+      {{ selectedRole }} <mat-icon>arrow_drop_down </mat-icon>
+    </button>
+    <mat-menu #roleMenu="matMenu" class="list-menu" xPosition="before">
+      <button
+        mat-menu-item
+        *ngFor="let role of roles"
+        class="menu-roles"
+        (click)="changeInvitationsRole(role)">
+        <span class="spacer">
+          <mat-icon *ngIf="role === selectedRole">check_small</mat-icon>
+        </span>
+        {{ role }}
+      </button>
+    </mat-menu>
+
     <mat-form-field
       appearance="outline"
       class="invite-message"
@@ -61,7 +71,7 @@
       <button mat-button [matMenuTriggerFor]="menu">
         {{ invite.role }} <mat-icon>arrow_drop_down </mat-icon>
       </button>
-      <mat-menu #menu="matMenu" class="invites-menu" xPosition="before">
+      <mat-menu #menu="matMenu" class="list-menu" xPosition="before">
         <button
           mat-menu-item
           *ngFor="let role of roles"
@@ -106,7 +116,7 @@
       <mat-icon class="close-btn" (click)="close()">close</mat-icon>
     </button>
   </section>
-  <section>
+  <section class="help-content">
     <h4>How do I restrict permission to access a planning area?</h4>
     <p>
       When you share a planning area with someone, you can choose their

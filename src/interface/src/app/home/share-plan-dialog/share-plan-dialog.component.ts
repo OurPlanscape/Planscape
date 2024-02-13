@@ -95,4 +95,7 @@ export class SharePlanDialogComponent {
   changeRole(invite: Invite) {
     this.invitesHaveChanges = !!invite;
   }
+  changeInvitationsRole(role: string) {
+    this.selectedRole = Roles[role as keyof typeof Roles];
+  }
 }
