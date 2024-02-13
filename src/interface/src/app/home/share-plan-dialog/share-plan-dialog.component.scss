@@ -20,6 +20,11 @@
     .mat-form-field  {
       @include public-sans();
     }
+    .mat-button-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
 
   }
 
@@ -27,11 +32,12 @@
     margin: 16px;
   }
 
+
 }
 
 .invitations-form {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr 142px;
   align-items: flex-start;
   gap: 16px 12px;
   margin: 16px;
@@ -146,11 +152,6 @@
   }
 }
 
-.pending-changes {
-  @include italic-sm();
-  color: $color-md-gray;
-}
-
 
 .invited-user {
   @include small-input-label();
@@ -175,7 +176,7 @@
   ::ng-deep .mat-menu-trigger .mat-button-wrapper {
     vertical-align: middle;
   }
-
+  
 }
 
 .help {

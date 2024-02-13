@@ -36,7 +36,10 @@
     <button mat-button [matMenuTriggerFor]="roleMenu" class="invite-role">
       {{ selectedRole }} <mat-icon>arrow_drop_down </mat-icon>
     </button>
-    <mat-menu #roleMenu="matMenu" class="list-menu" xPosition="before">
+    <mat-menu
+      #roleMenu="matMenu"
+      class="list-menu list-input"
+      xPosition="before">
       <button
         mat-menu-item
         *ngFor="let role of roles"
@@ -82,22 +85,23 @@
           </span>
           {{ role }}
         </button>
-        <button mat-menu-item class="menu-divider">Resend Code</button>
-        <button mat-menu-item>Remove Access</button>
+        <button mat-menu-item class="menu-divider" (click)="resendCode(invite)">
+          Resend Code
+        </button>
+        <button mat-menu-item (click)="removeAccess(invite)">
+          Remove Access
+        </button>
       </mat-menu>
     </div>
   </section>
   <section class="footer">
-    <div *ngIf="invitesHaveChanges" class="pending-changes">
-      Pending changes
-    </div>
     <button
       class="action"
       mat-flat-button
       type="button"
       color="primary"
       [disabled]="submitting"
-      (click)="invite()">
+      (click)="emails.length > 0 ? invite() : close()">
       {{ emails.length > 0 ? 'INVITE' : 'DONE' }}
     </button>
   </section>

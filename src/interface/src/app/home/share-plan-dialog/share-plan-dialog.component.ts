@@ -2,7 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { delay, of } from 'rxjs';
 import { FormMessageType } from '../../types';
-import { SNACK_NOTICE_CONFIG } from '../../shared/constants';
+import { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 const Roles: Record<'Viewer' | 'Collaborator' | 'Owner', string> = {
@@ -51,9 +51,6 @@ export class SharePlanDialogComponent {
 
   selectedRole = this.roles[0];
 
-  // placeholder until we develop this feature
-  invitesHaveChanges = false;
-
   addEmail(email: string): void {
     this.emails.push(email);
   }
@@ -76,8 +73,11 @@ export class SharePlanDialogComponent {
     of(payload)
       .pipe(delay(500))
       .subscribe((result) => {
-        // TODO add snack bar.
-        this.matSnackBar.open('Access Updated', 'Dismiss', SNACK_NOTICE_CONFIG);
+        this.matSnackBar.open(
+          'Users invited',
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
         this.close();
       });
   }
@@ -91,11 +91,29 @@ export class SharePlanDialogComponent {
     this.emails = [];
   }
 
-  // TODO placeholder
   changeRole(invite: Invite) {
-    this.invitesHaveChanges = !!invite;
+    this.matSnackBar.open(
+      'Access Updated',
+      'Dismiss',
+      SNACK_BOTTOM_NOTICE_CONFIG
+    );
   }
   changeInvitationsRole(role: string) {
     this.selectedRole = Roles[role as keyof typeof Roles];
+  }
+
+  resendCode(invite: Invite) {
+    this.matSnackBar.open(
+      `Email sent to ${invite.email}`,
+      'Dismiss',
+      SNACK_BOTTOM_NOTICE_CONFIG
+    );
+  }
+  removeAccess(invite: Invite) {
+    this.matSnackBar.open(
+      `Removed  ${invite.email}`,
+      'Dismiss',
+      SNACK_BOTTOM_NOTICE_CONFIG
+    );
   }
 }
