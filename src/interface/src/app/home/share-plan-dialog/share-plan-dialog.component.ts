@@ -39,6 +39,12 @@ export class SharePlanDialogComponent {
   invites$ = of([
     { name: 'John Doe', role: 'Owner', email: 'john@doe.com' },
     { name: 'Richard Doe', role: 'Collaborator', email: 'richard@doe.com' },
+    { name: 'John Doe', role: 'Owner', email: 'john@doe.com' },
+    { name: 'Richard Doe', role: 'Collaborator', email: 'richard@doe.com' },
+    { name: 'John Doe', role: 'Owner', email: 'john@doe.com' },
+    { name: 'Richard Doe', role: 'Collaborator', email: 'richard@doe.com' },
+    { name: 'John Doe', role: 'Owner', email: 'john@doe.com' },
+    { name: 'Richard Doe', role: 'Collaborator', email: 'richard@doe.com' },
   ] as Invite[]);
 
   roles = Object.keys(Roles);

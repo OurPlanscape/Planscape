@@ -109,7 +109,7 @@ export class PlanTableComponent implements OnInit {
         name: '"' + this.selectedPlan.name + '"',
       },
       restoreFocus: false,
-      panelClass: 'small-padding-dialog',
+      panelClass: 'no-padding-dialog',
     });
   }
   refresh(): void {

@@ -25,7 +25,7 @@
     message="An email must contain a single @">
   </app-form-message>
 
-  <form class="grid">
+  <form class="invitations-form">
     <app-chip-input
       [emails]="emails"
       [placeholder]="showMessageBox ? '' : 'enter email'"
@@ -39,7 +39,10 @@
         }}</mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-form-field appearance="outline" class="message" *ngIf="showMessageBox">
+    <mat-form-field
+      appearance="outline"
+      class="invite-message"
+      *ngIf="showMessageBox">
       <textarea
         matInput
         placeholder="Message"
@@ -47,13 +50,13 @@
         name="questionText"></textarea>
     </mat-form-field>
   </form>
-  <section class="invited" *ngIf="!showMessageBox">
+  <section class="invited-users-list" *ngIf="!showMessageBox">
     <h3>People with access</h3>
-    <div class="invite">
+    <div class="invited-user">
       <div class="name">Your Name <span>(You)</span></div>
       <div>Owner</div>
     </div>
-    <div *ngFor="let invite of invites$ | async" class="invite">
+    <div *ngFor="let invite of invites$ | async" class="invited-user">
       <div class="name">{{ invite.name }}</div>
       <button mat-button [matMenuTriggerFor]="menu">
         {{ invite.role }} <mat-icon>arrow_drop_down </mat-icon>
