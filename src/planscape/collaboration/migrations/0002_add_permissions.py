@@ -13,7 +13,8 @@ class Migration(migrations.Migration):
         viewer = ["view_planningarea", "view_scenario"]
         collaborator = viewer + ["add_scenario"]
         owner = collaborator + [
-            "change_scenario" "view_collaborator",
+            "change_scenario",
+            "view_collaborator",
             "add_collaborator",
             "delete_collaborator",
             "change_collaborator",

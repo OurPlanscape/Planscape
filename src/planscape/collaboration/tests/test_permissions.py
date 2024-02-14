@@ -1,6 +1,6 @@
 from django.test import TransactionTestCase
 from django.contrib.auth.models import User
-from collaboration.models import Collaborator, Role
+from collaboration.models import Collaborator, Permissions, Role
 from collaboration.utils import (
     can_add_collaborators,
     can_add_scenario,
@@ -18,12 +18,12 @@ from django.contrib.contenttypes.models import ContentType
 class PermissionsTest(TransactionTestCase):
     def setUp(self):
         # create user
-        self.user = User.objects.create(username="testuser")
+        self.user = User.objects.create(username="test-user")
         self.user.set_password("12345")
         self.user.save()
 
         # create second user (invitee?)
-        self.invitee = User.objects.create(username="invitee")
+        self.invitee = User.objects.create(username="test-invitee")
         self.invitee.set_password("12345")
         self.invitee.save()
 
@@ -36,6 +36,11 @@ class PermissionsTest(TransactionTestCase):
             notes="",
         )
         self.planning_area.save()
+
+        self.add_permission_records()
+
+        # print('permissions:')
+        # print(Permissions.objects.all().count())
 
         self.scenario = Scenario.objects.create(
             user=self.user, planning_area=self.planning_area, name="a scenario"
@@ -55,6 +60,29 @@ class PermissionsTest(TransactionTestCase):
             object_pk=self.planning_area.id,
         )
         collaborator.save()
+
+    def add_permission_records(self):
+        viewer = ["view_planningarea", "view_scenario"]
+        collaborator = viewer + ["add_scenario"]
+        owner = collaborator + [
+            "change_scenario",
+            "view_collaborator",
+            "add_collaborator",
+            "delete_collaborator",
+            "change_collaborator",
+        ]
+
+        for x in viewer:
+            entry = Permissions(role=Role.VIEWER, permission=x)
+            entry.save()
+
+        for x in collaborator:
+            entry = Permissions(role=Role.COLLABORATOR, permission=x)
+            entry.save()
+
+        for x in owner:
+            entry = Permissions(role=Role.OWNER, permission=x)
+            entry.save()
 
     # Viewing Planning Area
 
