@@ -1,4 +1,4 @@
-from django.test import TransactionTestCase
+from django.test import SimpleTestCase, TestCase, TransactionTestCase
 from django.contrib.auth.models import User
 from collaboration.models import Collaborator, Permissions, Role
 from collaboration.utils import (
@@ -15,17 +15,12 @@ from planning.models import PlanningArea, Scenario
 from django.contrib.contenttypes.models import ContentType
 
 
-class PermissionsTest(TransactionTestCase):
+class PermissionsTest(TestCase):
     def setUp(self):
         # create user
-        self.user = User.objects.create(username="test-user")
-        self.user.set_password("12345")
-        self.user.save()
-
-        # create second user (invitee?)
-        self.invitee = User.objects.create(username="test-invitee")
-        self.invitee.set_password("12345")
-        self.invitee.save()
+        self.user = self.setUser("test-user")
+        # create second user (invitee)
+        self.invitee = self.setUser("test-invitee")
 
         # create planning area
         self.planning_area = PlanningArea.objects.create(
@@ -37,15 +32,17 @@ class PermissionsTest(TransactionTestCase):
         )
         self.planning_area.save()
 
-        self.add_permission_records()
-
-        # print('permissions:')
-        # print(Permissions.objects.all().count())
-
+        # create scenario
         self.scenario = Scenario.objects.create(
             user=self.user, planning_area=self.planning_area, name="a scenario"
         )
         self.scenario.save()
+
+    def setUser(self, username):
+        user = User.objects.create(username=username)
+        user.set_password("12345")
+        user.save()
+        return user
 
     def create_collaborator_record(self, role: Role):
         planning_area_type = ContentType.objects.get(
@@ -60,29 +57,6 @@ class PermissionsTest(TransactionTestCase):
             object_pk=self.planning_area.id,
         )
         collaborator.save()
-
-    def add_permission_records(self):
-        viewer = ["view_planningarea", "view_scenario"]
-        collaborator = viewer + ["add_scenario"]
-        owner = collaborator + [
-            "change_scenario",
-            "view_collaborator",
-            "add_collaborator",
-            "delete_collaborator",
-            "change_collaborator",
-        ]
-
-        for x in viewer:
-            entry = Permissions(role=Role.VIEWER, permission=x)
-            entry.save()
-
-        for x in collaborator:
-            entry = Permissions(role=Role.COLLABORATOR, permission=x)
-            entry.save()
-
-        for x in owner:
-            entry = Permissions(role=Role.OWNER, permission=x)
-            entry.save()
 
     # Viewing Planning Area
 
