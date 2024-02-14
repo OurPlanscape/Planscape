@@ -4,6 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 
 from core.models import CreatedAtMixin, UpdatedAtMixin
+from planning.models import PlanningArea
 
 User = get_user_model()
 
