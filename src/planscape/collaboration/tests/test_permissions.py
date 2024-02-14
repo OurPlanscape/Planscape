@@ -1,6 +1,6 @@
-from django.test import SimpleTestCase, TestCase, TransactionTestCase
+from django.test import TestCase
 from django.contrib.auth.models import User
-from collaboration.models import Collaborator, Permissions, Role
+from collaboration.models import Role
 from collaboration.utils import (
     can_add_collaborators,
     can_add_scenario,
@@ -10,9 +10,9 @@ from collaboration.utils import (
     can_view_collaborators,
     can_view_planning_area,
     can_view_scenario,
+    create_collaborator_record,
 )
 from planning.models import PlanningArea, Scenario
-from django.contrib.contenttypes.models import ContentType
 
 
 class PermissionsTest(TestCase):
@@ -45,18 +45,7 @@ class PermissionsTest(TestCase):
         return user
 
     def create_collaborator_record(self, role: Role):
-        planning_area_type = ContentType.objects.get(
-            app_label="planning", model="planningarea"
-        )
-        collaborator = Collaborator.objects.create(
-            email="john@doe.com",
-            collaborator=self.invitee,
-            role=role,
-            inviter=self.user,
-            content_type=planning_area_type,
-            object_pk=self.planning_area.id,
-        )
-        collaborator.save()
+        create_collaborator_record(self.user, self.invitee, self.planning_area, role)
 
     # Viewing Planning Area
 
