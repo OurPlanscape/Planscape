@@ -389,7 +389,7 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
-    "'planning.e2e.*": {"queue": "forsys"},
+    "'planning.e2e.*": {"queue": "default"},
 }
 
 
