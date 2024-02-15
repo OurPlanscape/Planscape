@@ -2,9 +2,11 @@ from django.contrib.gis.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
+from collaboration.permissions import CheckPermissionMixin
 from core.models import CreatedAtMixin, UpdatedAtMixin
+from django.contrib.auth.models import User
 
-User = get_user_model()
+UserModel = get_user_model()
 
 
 class Role(models.TextChoices):
@@ -31,13 +33,13 @@ class Permissions(models.Model):
         ]
 
 
-class Collaborator(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class Collaborator(CreatedAtMixin, UpdatedAtMixin, models.Model, CheckPermissionMixin):
     # the email address invited to collaborate
     email = models.CharField(max_length=120)
     # the user that is being added as collaborator
     # might be empty if no user is found with the email
     collaborator = models.ForeignKey(
-        User,
+        UserModel,
         related_name="collaborator",
         on_delete=models.CASCADE,
         null=True,
@@ -50,7 +52,7 @@ class Collaborator(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
     # the user that invited the collaborator
     inviter = models.ForeignKey(
-        User,
+        UserModel,
         related_name="inviter",
         on_delete=models.CASCADE,
         null=False,

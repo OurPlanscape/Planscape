@@ -2,17 +2,22 @@ from pathlib import Path
 from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from collaboration.models import Collaborator, Permissions
 from utils.uuid_utils import generate_short_uuid
 from django.core.serializers.json import DjangoJSONEncoder
 from core.models import CreatedAtMixin, UpdatedAtMixin
 import uuid
+from django.contrib.auth.models import User
+from collaboration.permissions import CheckPermissionMixin
+from collaboration.utils import check_for_permission
+from django.contrib.contenttypes.models import ContentType
 
-User = get_user_model()
+UserModel = get_user_model()
 
 
-class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model, CheckPermissionMixin):
     user = models.ForeignKey(
-        User,
+        UserModel,
         related_name="planning_areas",
         on_delete=models.CASCADE,
         null=True,
@@ -45,6 +50,24 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["user", "-created_at"]
+
+    def is_creator(self, user: User):
+        return self.user.pk == user.pk
+
+    def can_view(self, user: User):
+        if self.is_creator(user):
+            return True
+
+        return check_for_permission(user.id, self, "view_planningarea")
+
+    def can_add(self, user: User):
+        return self.is_creator(user)
+
+    def can_change(self, user: User):
+        return self.is_creator(user)
+
+    def can_remove(self, user: User):
+        return self.is_creator(user)
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
@@ -82,6 +105,25 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["planning_area", "-created_at"]
+
+    def can_view(self, user: User):
+        if self.planning_area.is_creator(user):
+            return True
+        return check_for_permission(user.id, self.planning_area, "view_scenario")
+
+    def can_add(self, user: User):
+        if self.planning_area.is_creator(user):
+            return True
+        return check_for_permission(user.id, self.planning_area, "add_scenario")
+
+    def can_change(self, user: User):
+        if self.planning_area.is_creator(user):
+            return True
+
+        return check_for_permission(user.id, self.planning_area, "change_scenario")
+
+    def can_delete(self, user: User):
+        return self.planning_area.is_creator(user) or self.user.pk == user.pk
 
 
 class ScenarioResultStatus(models.TextChoices):
@@ -124,7 +166,7 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
 class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
     user = models.ForeignKey(
-        User,
+        UserModel,
         related_name="shared_links",
         on_delete=models.DO_NOTHING,
         null=True,
@@ -136,3 +178,50 @@ class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     class Meta:
         ordering = ["-created_at", "user"]
+
+
+class PlanningAreaCollaborator(Collaborator, CheckPermissionMixin):
+    def save(self, *args, **kwargs):
+        self.content_type = ContentType.objects.get(
+            app_label="planning", model="planningarea"
+        )
+        super().save(*args, **kwargs)
+
+    def get_planning_area(self):
+        return self.content_type.get_object_for_this_type(pk=self.object_pk)
+
+    def can_view(self, user: User):
+        planning_area = self.get_planning_area()
+        if planning_area.is_creator(user):
+            return True
+        try:
+            return check_for_permission(user.id, planning_area, "view_collaborator")
+        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
+            return False
+
+    def can_add(self, user: User):
+        planning_area = self.get_planning_area()
+        if planning_area.is_creator(user):
+            return True
+        try:
+            return check_for_permission(user.id, planning_area, "add_collaborator")
+        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
+            return False
+
+    def can_change(self, user: User):
+        planning_area = self.get_planning_area()
+        if planning_area.is_creator(user):
+            return True
+        try:
+            return check_for_permission(user.id, planning_area, "change_collaborator")
+        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
+            return False
+
+    def can_delete(self, user: User):
+        planning_area = self.get_planning_area()
+        if planning_area.is_creator(user):
+            return True
+        try:
+            return check_for_permission(user.id, planning_area, "delete_collaborator")
+        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
+            return False
