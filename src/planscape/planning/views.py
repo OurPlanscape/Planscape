@@ -781,8 +781,6 @@ def get_shared_link(request: HttpRequest, link_code: str) -> HttpResponse:
 def create_shared_link(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
-        if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
 
         body = json.loads(request.body)
         serializer = SharedLinkSerializer(data=body, context={"user": user})
