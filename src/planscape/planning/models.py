@@ -187,6 +187,9 @@ class PlanningAreaCollaborator(Collaborator, CheckPermissionMixin):
         )
         super().save(*args, **kwargs)
 
+    class Meta:
+        proxy = True
+
     def get_planning_area(self):
         return self.content_type.get_object_for_this_type(pk=self.object_pk)
 
