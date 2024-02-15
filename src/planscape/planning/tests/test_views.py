@@ -38,7 +38,33 @@ class CreateSharedLinkTest(APITransactionTestCase):
             json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
         )
 
-    def test_retrieving_new_link(self):
+    def test_create_shared_link_without_auth(self):
+        view_state = {
+            "page_attributes": ["x", "y", "z", "1"],
+            "control_values": [
+                {"question1": "ok"},
+                {"question2": "sure"},
+                {"question3": "yes"},
+            ],
+            "long": "-200.00",
+            "lat": "-200.01",
+            "zoom": "+1",
+        }
+        view_json = json.dumps(view_state)
+        # generate the new link with a 'view-state'
+        payload = json.dumps({"view_state": view_json})
+        response = self.client.post(
+            reverse("planning:create_shared_link"),
+            payload,
+            content_type="application/json",
+        )
+        json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(
+            json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
+        )
+
+    def test_getting_new_link(self):
         view_state = {
             "page_attributes": ["a", "b", "c", "d"],
             "control_values": [
@@ -67,6 +93,40 @@ class CreateSharedLinkTest(APITransactionTestCase):
             content_type="application/json",
         )
         json_get_response = json.loads(shared_link_response.content)
+        self.assertEqual(shared_link_response.status_code, 200)
+        self.assertJSONEqual(json_get_response["view_state"], view_state)
+
+    def test_getting_link_created_by_unauthd_user(self):
+        view_state = {
+            "page_attributes": ["w", "x", "y", "z"],
+            "control_values": [
+                {"question1": "hella"},
+                {"question2": "hola"},
+                {"question3": "olá"},
+            ],
+            "long": "-60.00",
+            "lat": "-60.01",
+            "zoom": "+300",
+        }
+        view_json = json.dumps(view_state)
+        # generate the new link with a 'view-state'
+        payload = json.dumps({"view_state": view_json})
+        response = self.client.post(
+            reverse("planning:create_shared_link"),
+            payload,
+            content_type="application/json",
+        )
+        json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        link_code = json_response["link_code"]
+
+        # then fetch the data with the new url
+        shared_link_response = self.client.get(
+            reverse("planning:get_shared_link", kwargs={"link_code": link_code}),
+            content_type="application/json",
+        )
+        json_get_response = json.loads(shared_link_response.content)
+        self.assertEqual(shared_link_response.status_code, 200)
         self.assertJSONEqual(json_get_response["view_state"], view_state)
 
     def test_retrieving_bad_link(self):
