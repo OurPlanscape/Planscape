@@ -37,6 +37,7 @@ class CreateSharedLinkTest(APITransactionTestCase):
         self.assertTrue(
             json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
         )
+        self.assertEqual(json_response["user_id"], self.user.pk)
 
     def test_create_shared_link_without_auth(self):
         view_state = {
@@ -63,6 +64,7 @@ class CreateSharedLinkTest(APITransactionTestCase):
         self.assertTrue(
             json_response["link_code"].isalnum(), "Returned string is not alphanumeric"
         )
+        self.assertEqual(json_response["user_id"], None)
 
     def test_getting_new_link(self):
         view_state = {
