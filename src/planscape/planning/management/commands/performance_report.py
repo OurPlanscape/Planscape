@@ -72,6 +72,7 @@ class Command(BaseCommand):
 
             except Exception as e:
                 self.stderr.write("Error executing SQL: {}".format(e))
+                self.write("** Error executing this query. **")
 
     def write(self, output):
         if self.emailing:
