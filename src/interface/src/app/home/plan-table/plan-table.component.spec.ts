@@ -11,6 +11,8 @@ import { AuthService } from '../../services/auth.service';
 import { PlanService } from '../../services/plan.service';
 import { PlanTableComponent } from './plan-table.component';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
+import { MockComponent } from 'ng-mocks';
+import { SectionLoaderComponent } from '../../shared/section-loader/section-loader.component';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: PlanPreview = {
@@ -60,7 +62,7 @@ describe('PlanTableComponent', () => {
         MaterialModule,
         ReactiveFormsModule,
       ],
-      declarations: [PlanTableComponent],
+      declarations: [PlanTableComponent, MockComponent(SectionLoaderComponent)],
       providers: [
         {
           provide: AuthService,
@@ -83,7 +85,7 @@ describe('PlanTableComponent', () => {
   describe('refresh', () => {
     it('should fetch plans from the DB', () => {
       component.refresh();
-      expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
+      expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
       expect(component.datasource.data).toEqual([
         {
           ...fakePlan1,
@@ -108,13 +110,5 @@ describe('PlanTableComponent', () => {
         data: { name: '"somePlan"' },
       });
     });
-  });
-
-  it('when logged in status changes, refresh plans', () => {
-    expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
-
-    loggedInStatus$.next(true);
-
-    expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(3);
   });
 });

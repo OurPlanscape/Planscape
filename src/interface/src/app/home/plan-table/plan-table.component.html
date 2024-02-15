@@ -1,6 +1,9 @@
 <app-section-loader
   [isLoading]="loading"
   [hasData]="datasource.data.length > 0"
+  [hasError]="error"
+  errorTitle="Error Loading Planning Areas"
+  errorMsg="We encountered an issue while loading your planning areas. Please try again later."
   emptyStateTitle="No planning areas yet"
   emptyStateContent="Click “Explore” to start creating your planning areas.
   Not ready to create new plans?

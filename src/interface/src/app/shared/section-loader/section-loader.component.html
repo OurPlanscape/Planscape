@@ -8,9 +8,13 @@
   </ng-container>
 
   <ng-template #noData>
-    <div class="empty-state">
+    <div class="empty-state" *ngIf="!hasError">
       <h4>{{ emptyStateTitle }}</h4>
       <p>{{ emptyStateContent }}</p>
+    </div>
+    <div class="empty-state" *ngIf="hasError">
+      <h4>{{ errorTitle }}</h4>
+      <p>{{ errorMsg }}</p>
     </div>
   </ng-template>
 </ng-template>
