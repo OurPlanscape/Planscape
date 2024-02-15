@@ -151,7 +151,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
 class SharedLinkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["user"] or None
-        # allow anonymous link creation, but don't include a user record on creatoin
+        # allow anonymous link creation, but don't include a user record on creation
         if user.is_anonymous or user is None:
             link_obj = SharedLink.objects.create(**validated_data)
         else:
