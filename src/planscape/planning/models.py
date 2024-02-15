@@ -5,7 +5,7 @@ from django.conf import settings
 from utils.uuid_utils import generate_short_uuid
 from django.core.serializers.json import DjangoJSONEncoder
 from core.models import CreatedAtMixin, UpdatedAtMixin
-import uuid, shortuuid
+import uuid
 
 User = get_user_model()
 

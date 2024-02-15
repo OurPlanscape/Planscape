@@ -1,4 +1,3 @@
-from collaboration.models import Collaborator, Permissions
 from collaboration.utils import check_for_permission, is_creator
 from planning.models import PlanningArea, Scenario
 from django.contrib.auth.models import User
@@ -27,10 +26,8 @@ class PlanningAreaPermission(CheckPermissionMixin):
     def can_view(user: User, planning_area: PlanningArea):
         if is_creator(user, planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "view_planningarea")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, planning_area, "view_planningarea")
 
     @staticmethod
     def can_add(user: User, planning_area: PlanningArea):
@@ -50,67 +47,53 @@ class CollaboratorPermission(CheckPermissionMixin):
     def can_view(user: User, planning_area: PlanningArea):
         if is_creator(user, planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "view_collaborator")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, planning_area, "view_collaborator")
 
     @staticmethod
     def can_add(user: User, planning_area: PlanningArea):
         if is_creator(user, planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "add_collaborator")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, planning_area, "add_collaborator")
 
     @staticmethod
     def can_change(user: User, planning_area: PlanningArea):
         if is_creator(user, planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "change_collaborator")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, planning_area, "change_collaborator")
 
     @staticmethod
     def can_delete(user: User, planning_area: PlanningArea):
         if is_creator(user, planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "delete_collaborator")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, planning_area, "delete_collaborator")
 
 
 class ScenarioPermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: User, planning_area: PlanningArea):
-        if is_creator(user, planning_area):
+    def can_view(user: User, scenario: Scenario):
+        if is_creator(user, scenario.planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "view_scenario")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, scenario.planning_area, "view_scenario")
 
     @staticmethod
-    def can_add(user: User, planning_area: PlanningArea):
-        if is_creator(user, planning_area):
+    def can_add(user: User, scenario: Scenario):
+        if is_creator(user, scenario.planning_area):
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "add_scenario")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, scenario.planning_area, "add_scenario")
 
     @staticmethod
-    def can_change(user: User, planning_area: PlanningArea, scenario: Scenario):
-        if is_creator(user, planning_area) or scenario.user.pk == user.pk:
+    def can_change(user: User, scenario: Scenario):
+        if is_creator(user, scenario.planning_area) or scenario.user.pk == user.pk:
             return True
-        try:
-            return check_for_permission(user.id, planning_area, "change_scenario")
-        except (Collaborator.DoesNotExist, Permissions.DoesNotExist):
-            return False
+
+        return check_for_permission(user.id, scenario.planning_area, "change_scenario")
 
     @staticmethod
-    def can_delete(user: User, planning_area: PlanningArea, scenario: Scenario):
-        return is_creator(user, planning_area) or scenario.user.pk == user.pk
+    def can_delete(user: User, scenario: Scenario):
+        return is_creator(user, scenario.planning_area) or scenario.user.pk == user.pk
