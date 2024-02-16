@@ -78,6 +78,14 @@
         class="action-button">
         delete
       </button>
+      <button
+        mat-raised-button
+        (click)="sharePlan()"
+        [disabled]="!selectedPlan"
+        *appFeatureFlag="'show_share_modal'"
+        class="action-button primary">
+        share
+      </button>
 
       <button
         mat-raised-button

@@ -6,6 +6,7 @@ import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MaterialModule } from '../../material/material.module';
 import { RouterTestingModule } from '@angular/router/testing';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('NavBarComponent', () => {
   let component: NavBarComponent;
@@ -13,7 +14,7 @@ describe('NavBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialModule, RouterTestingModule],
+      imports: [MaterialModule, RouterTestingModule, FeaturesModule],
       declarations: [NavBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [

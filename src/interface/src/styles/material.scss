@@ -1,0 +1,14 @@
+// material overrides
+
+.mat-tooltip {
+  font-size: 12px;
+}
+
+// custom padding for dialogs
+.small-padding-dialog .mat-dialog-container {
+  padding: 17px;
+}
+
+.no-padding-dialog .mat-dialog-container {
+  padding: 0;
+}

@@ -5,12 +5,13 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 
-import { PlanService } from '../../services/plan.service';
-import { PlanPreview } from '../../types/plan.types';
+import { PlanService } from '../../services';
+import { PlanPreview } from '../../types';
 import { calculateAcres } from '../../plan/plan-helpers';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
+import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 
 interface PlanRow extends PlanPreview {
   totalAcres: number;
@@ -101,6 +102,18 @@ export class PlanTableComponent implements OnInit {
       });
   }
 
+  sharePlan() {
+    if (!this.selectedPlan) {
+      return;
+    }
+    this.dialog.open(SharePlanDialogComponent, {
+      data: {
+        name: '"' + this.selectedPlan.name + '"',
+      },
+      restoreFocus: false,
+      panelClass: 'no-padding-dialog',
+    });
+  }
   refresh(): void {
     this.getPlansFromService();
   }
