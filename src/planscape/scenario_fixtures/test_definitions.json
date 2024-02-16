@@ -1,0 +1,15 @@
+[
+  {
+    "planning_area": "monobasin/monobasin.json",
+    "scenarios": [
+      {
+        "treatment": "monobasin/scenarios/100pct-slope-scenario.json",
+        "expected": "monobasin/scenarios/100pct-slope-validation.json"
+      },
+      {
+        "treatment": "monobasin/scenarios/expect-failure-scenario.json",
+        "expected": "monobasin/scenarios/expect-failure-validation.json"
+      }
+    ]
+  }
+]
