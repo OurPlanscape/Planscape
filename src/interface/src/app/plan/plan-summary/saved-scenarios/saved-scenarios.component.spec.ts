@@ -23,6 +23,8 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
 import { ScenarioService } from '../../../services/scenario.service';
+import { MockComponent } from 'ng-mocks';
+import { SectionLoaderComponent } from '../../../shared/section-loader/section-loader.component';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -72,6 +74,7 @@ describe('SavedScenariosComponent', () => {
         SavedScenariosComponent,
         CurrencyInKPipe,
         TypeSafeMatCellDef,
+        MockComponent(SectionLoaderComponent),
       ],
       providers: [
         CurrencyPipe,
