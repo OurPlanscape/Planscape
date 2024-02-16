@@ -13,6 +13,12 @@ export const SNACK_NOTICE_CONFIG: MatSnackBarConfig<any> = {
   verticalPosition: 'top',
 };
 
+export const SNACK_BOTTOM_NOTICE_CONFIG: MatSnackBarConfig<any> = {
+  duration: 4000,
+  panelClass: ['snackbar-notice'],
+  verticalPosition: 'bottom',
+};
+
 export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
   duration: 10000,
   panelClass: ['snackbar-error'],
