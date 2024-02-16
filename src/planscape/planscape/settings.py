@@ -384,8 +384,15 @@ CELERY_WORKER_MAX_TASKS_PER_CHILD = config(
 )
 CELERY_TASK_DEFAULT_QUEUE = "default"
 # if not specified here it will be sent to the default queue
-CELERY_TASK_ROUTES = {"planning.tasks.*": "forsys"}
+CELERY_TASK_AUTODISCOVER = True
 
+CELERY_TASK_ROUTES = {
+    "planning.tasks.*": {"queue": "forsys"},
+    "'planning.e2e.*": {"queue": "default"},
+}
+
+
+TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
 
 SHARED_LINKS_NUM_DAYS_VALID = 60
 CRONJOBS = [
