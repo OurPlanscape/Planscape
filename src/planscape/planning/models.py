@@ -26,6 +26,9 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     geometry = models.MultiPolygonField(srid=4269, null=True)
 
+    def creator_name(self):
+        return self.user.get_full_name()
+
     class Meta:
         indexes = [
             models.Index(
