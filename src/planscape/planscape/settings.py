@@ -398,3 +398,7 @@ SHARED_LINKS_NUM_DAYS_VALID = 60
 CRONJOBS = [
     ("0 0 * * *", "planning.cron.delete_old_shared_links"),  # Runs at midnight daily
 ]
+
+REPORT_RECIPIENT_EMAIL = config(
+    "REPORT_RECIPIENT_EMAIL", default="no-reply@planscape.org"
+)
