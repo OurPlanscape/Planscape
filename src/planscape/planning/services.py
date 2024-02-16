@@ -1,3 +1,4 @@
+import logging
 import math
 import os
 import zipfile
@@ -10,6 +11,8 @@ from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from stands.models import StandSizeChoices, area_from_size
+
+log = logging.getLogger(__name__)
 
 
 def zip_directory(file_obj, source_dir):
@@ -24,7 +27,9 @@ def zip_directory(file_obj, source_dir):
                         ),
                     )
                 except OSError as ose:
-                    print(f"There was an error writing the file {file}: {ose}")
+                    log.error(f"There was an error writing the file {file}: {ose}")
+                except Exception as e:
+                    log.error(f"Error: unkonwn issue writing file {file}: {e}")
 
 
 def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
