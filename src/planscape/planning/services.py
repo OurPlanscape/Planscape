@@ -16,12 +16,15 @@ def zip_directory(file_obj, source_dir):
     with zipfile.ZipFile(file_obj, "w", zipfile.ZIP_DEFLATED) as zipf:
         for root, _, files in os.walk(source_dir):
             for file in files:
-                zipf.write(
-                    os.path.join(root, file),
-                    os.path.relpath(
-                        os.path.join(root, file), os.path.join(source_dir, "..")
-                    ),
-                )
+                try:
+                    zipf.write(
+                        os.path.join(root, file),
+                        os.path.relpath(
+                            os.path.join(root, file), os.path.join(source_dir, "..")
+                        ),
+                    )
+                except OSError as ose:
+                    print(f"There was an error writing the file {file}: {ose}")
 
 
 def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
