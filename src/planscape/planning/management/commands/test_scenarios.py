@@ -11,7 +11,8 @@ from celery import group, chain
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
 from planning.e2e.tasks import review_results
-from planning.e2e.validation import load_schema
+from planning.e2e.validation import load_json_file, do_schema_validation
+from utils.file_utils import load_json_file
 
 log = logging.getLogger(__name__)
 
@@ -84,6 +85,8 @@ class Command(BaseCommand):
                 del scenario_data["planning_area"]
             if "pk" in scenario_data:
                 del scenario_data["pk"]
+            if "id" in scenario_data:
+                del scenario_data["id"]
             if "uuid" in scenario_data:
                 del scenario_data["uuid"]
 
@@ -95,10 +98,15 @@ class Command(BaseCommand):
             # upsert this, using name and user as unique identifier
             # we don't want to use a PK here, because it may interfere with new data
             scenario_obj, _ = Scenario.objects.update_or_create(
-                user=self.test_user, name=scenario_data["name"], defaults=scenario_data
+                user=self.test_user,
+                name=scenario_data["name"],
+                planning_area_id=area_id,
+                defaults=scenario_data,
             )
-
-            validation_schema = load_schema(validation_file)
+            validation_path = os.path.join(
+                settings.BASE_DIR, self.fixtures_path, validation_file
+            )
+            validation_schema = load_json_file(validation_path)
             self.scenarios_to_test.append(
                 {"id": scenario_obj.id, "schema": validation_schema}
             )
@@ -135,16 +143,47 @@ class Command(BaseCommand):
             default=str(settings.TREATMENTS_TEST_FIXTURES_PATH),
             help="Overrides the default path to fixtures",
         )
+        parser.add_argument(
+            "--check-result-file",
+            type=str,
+            help="For debugging tests. With --check-schema-file, this compares a json file against a given schema.",
+        )
+        parser.add_argument(
+            "--check-schema-file",
+            type=str,
+            help="For debugging tests. --check-result-file, this compares a json file against a given schema.",
+        )
+
+    def compare_validation(self, result_file, schema_file):
+        # load json, load schema
+        try:
+            schema_data = load_json_file(schema_file)
+            result_data = load_json_file(result_file)
+        except Exception as e:
+            print(f"Could not load file: {e}")
+        validation_results = do_schema_validation("Test", schema_data, result_data)
+        print(f"Results: {validation_results}")
 
     def handle(self, *args: Any, **options: Any) -> str | None:
         """Runs the CLI command. Outputs results to logs and stdout"""
         self.fixtures_path = options["fixtures_path"]
 
-        if self.fixtures_path:
-            self.stdout.write(f"Fixtures path is set to: {self.fixtures_path}")
+        # this will just run the validation to compare a json file against a schema file
+        if options["check_schema_file"] and options["check_result_file"]:
+            schema_path = options["check_schema_file"]
+            result_path = options["check_result_file"]
+            self.compare_validation(schema_path, result_path)
+        elif options["check_schema_file"] or options["check_result_file"]:
+            self.stdout.write(
+                "To compare schemas, you must provide both a schema file with --check-schema-file and a result file with --check-result-file."
+            )
+        else:
 
-        self.load_test_definitions()
-        self.upsert_test_user()
-        self.create_areas()
+            if self.fixtures_path:
+                self.stdout.write(f"Fixtures path is set to: {self.fixtures_path}")
 
-        self.run_tests()
+            self.load_test_definitions()
+            self.upsert_test_user()
+            self.create_areas()
+
+            self.run_tests()

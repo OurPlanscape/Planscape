@@ -3,7 +3,7 @@ from celery import shared_task
 
 from planning.models import Scenario
 from planscape.celery import app
-from planning.e2e.validation import validation_results
+from planning.e2e.validation import do_schema_validation
 
 log = logging.getLogger(__name__)
 
@@ -13,7 +13,7 @@ def review_results(sid, validation_schema) -> object:
     try:
         scenario = Scenario.objects.get(id=sid)
         res = scenario.results.result
-        return validation_results(sid, validation_schema, res)
+        return do_schema_validation(sid, validation_schema, res)
     except Exception as e:
         log.error("ERROR: Could not get a scenario result for scenario id %s", sid)
         raise Exception from e
