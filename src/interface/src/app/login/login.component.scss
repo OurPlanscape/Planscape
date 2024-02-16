@@ -6,6 +6,12 @@
   height: 100%;
 }
 
+:host {
+  ::ng-deep .mat-form-field-outline {
+    background-color: $color-light-gray;
+  }
+}
+
 .signin-card-container {
   background-image: url('/assets/jpg/planscape-background.jpg');
   background-repeat: no-repeat;
@@ -86,9 +92,7 @@ mat-divider {
 mat-form-field {
   width: 100%;
 }
-::ng-deep .mat-form-field-outline {
-  background-color: $color-light-gray;
-}
+
 
 .forget-password {
   text-align: center;
