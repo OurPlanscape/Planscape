@@ -10,4 +10,7 @@ export class SectionLoaderComponent {
   @Input() hasData = false;
   @Input() emptyStateTitle = '';
   @Input() emptyStateContent = '';
+  @Input() hasError? = false;
+  @Input() errorMsg?: string;
+  @Input() errorTitle?: string;
 }

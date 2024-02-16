@@ -4,7 +4,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
-import { AuthService } from 'src/app/services';
 
 import { PlanService } from '../../services';
 import { PlanPreview } from '../../types';
@@ -29,6 +28,7 @@ export class PlanTableComponent implements OnInit {
   datasource = new MatTableDataSource<PlanRow>();
   selectedPlan: PlanRow | null = null;
   loading = true;
+  error = false;
 
   displayedColumns: string[] = [
     'name',
@@ -41,31 +41,33 @@ export class PlanTableComponent implements OnInit {
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
-    private authService: AuthService,
     private router: Router,
     private snackbar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
     this.getPlansFromService();
-    this.authService.isLoggedIn$.subscribe((_) => {
-      this.refresh();
-    });
   }
 
   getPlansFromService(): void {
     this.planService
       .listPlansByUser()
       .pipe(take(1))
-      .subscribe((plans) => {
-        this.loading = false;
-        this.datasource.data = plans.map((plan) => {
-          return {
-            ...plan,
-            totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
-          };
-        });
-        this.datasource.sort = this.sort;
+      .subscribe({
+        next: (plans) => {
+          this.loading = false;
+          this.datasource.data = plans.map((plan) => {
+            return {
+              ...plan,
+              totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
+            };
+          });
+          this.datasource.sort = this.sort;
+        },
+        error: () => {
+          this.loading = false;
+          this.error = true;
+        },
       });
   }
 
