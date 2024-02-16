@@ -22,13 +22,11 @@ export class JwtInterceptor implements HttpInterceptor {
       catchError((error) => {
         if (
           error instanceof HttpErrorResponse &&
-          !request.url.includes('auth/signin') &&
+          !request.url.includes('login') &&
           error.status === 401
         ) {
-          console.log('catching error and requesting refrehs');
           return this.handle401Error(request, next);
         }
-
         throw error;
       })
     );
