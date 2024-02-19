@@ -402,3 +402,6 @@ CRONJOBS = [
 REPORT_RECIPIENT_EMAIL = config(
     "REPORT_RECIPIENT_EMAIL", default="no-reply@planscape.org"
 )
+
+
+AREA_SRID = 5070
