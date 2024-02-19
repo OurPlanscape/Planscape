@@ -7,7 +7,6 @@ import { take } from 'rxjs';
 
 import { PlanService } from '../../services';
 import { PlanPreview } from '../../types';
-import { calculateAcres } from '../../plan/plan-helpers';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
@@ -59,7 +58,7 @@ export class PlanTableComponent implements OnInit {
           this.datasource.data = plans.map((plan) => {
             return {
               ...plan,
-              totalAcres: plan.geometry ? calculateAcres(plan.geometry) : 0,
+              totalAcres: Math.round(plan.area_acres),
             };
           });
           this.datasource.sort = this.sort;

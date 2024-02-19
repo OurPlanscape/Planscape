@@ -21,6 +21,10 @@ export const STAND_SIZES = ['SMALL', 'MEDIUM', 'LARGE'];
 
 const SQUARE_METERS_PER_ACRE = 0.0002471054;
 
+/**
+ * @deprecated do not use
+ * @param planningArea
+ */
 export function calculateAcres(planningArea: GeoJSON.GeoJSON) {
   const squareMeters = area(planningArea as FeatureCollection);
   const acres = squareMeters * SQUARE_METERS_PER_ACRE;

@@ -33,6 +33,8 @@ describe('PlanMapComponent', () => {
       name: 'fake',
       ownerId: 'fake',
       region: Region.SIERRA_NEVADA,
+      area_acres: 123,
+      area_m2: 231,
       planningArea: new L.Polygon([
         new L.LatLng(38.715517043571914, -120.42857302225725),
         new L.LatLng(38.47079787227401, -120.5164425608172),
