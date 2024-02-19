@@ -1,0 +1,16 @@
+<div class="notes">
+  <div *ngFor="let note of notes" class="note">
+    <div class="note-head">
+      <div>{{ note.name }}</div>
+      <div class="date">{{ note.date }}</div>
+    </div>
+    <div class="note-content">
+      {{ note.message }}
+    </div>
+  </div>
+</div>
+<div>
+  <mat-form-field>
+    <input matInput placeholder="add a note" />
+  </mat-form-field>
+</div>

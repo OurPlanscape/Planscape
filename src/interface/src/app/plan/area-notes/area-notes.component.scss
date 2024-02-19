@@ -1,0 +1,36 @@
+@import "../../../styles/colors";
+@import "../../../styles/mixins";
+
+:host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
+.notes {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.note {
+  padding: 16px;
+  color: $color-black;
+
+}
+
+.note-head {
+  @include small-input-label();
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.note-content {
+  @include small-paragraph();
+}
+
+.date {
+  color: $color-md-gray;
+  font-weight: 400;
+}

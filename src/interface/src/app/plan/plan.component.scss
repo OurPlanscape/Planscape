@@ -10,11 +10,7 @@
 .plan-summary-panel {
   background-color: white;
   box-sizing: border-box;
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  height: 100%;
-  position: relative;
+  display: block;
   width: 300px;
 }
 
@@ -114,5 +110,15 @@
 
   .plan-map-container {
     page-break-before: always;
+  }
+}
+
+:host {
+  ::ng-deep .mat-tab-label {
+    min-width: auto;
+    flex: 1;
+  }
+  ::ng-deep .mat-tab-group{
+    height: 100%;
   }
 }
