@@ -267,7 +267,6 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
             return JsonResponse(
                 {"error": "Missing required parameter 'id'"}, status=400
             )
-
         return JsonResponse(
             _serialize_planning_area(
                 get_object_or_404(

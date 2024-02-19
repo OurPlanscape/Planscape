@@ -1,8 +1,9 @@
 from rest_framework import serializers
-from rest_framework.serializers import CharField, DateTimeField, IntegerField, JSONField
+from rest_framework.serializers import CharField, DateTimeField, IntegerField
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
+from planning.services import get_acreage
 from stands.models import StandSizeChoices
 
 
@@ -17,10 +18,14 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     created_at = DateTimeField(required=False)
 
     area_m2 = serializers.SerializerMethodField()
+    area_acres = serializers.SerializerMethodField()
 
     def get_area_m2(self, instance):
         geom = instance.geometry.transform(settings.AREA_SRID, clone=True)
         return geom.area
+
+    def get_area_acres(self, instance):
+        return get_acreage(instance.geometry)
 
     def get_latest_updated(self, instance):
         return instance.scenario_latest_updated_at or instance.updated_at
@@ -35,6 +40,8 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
             "scenario_count",
             "latest_updated",
             "created_at",
+            "area_m2",
+            "area_acres",
         )
         model = PlanningArea
         geo_field = "geometry"
