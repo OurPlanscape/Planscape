@@ -64,12 +64,22 @@ mat-row {
 .mat-column-name {
   border-left: 6px solid transparent;
   flex-basis: 8%;
+  position: relative;
+  &::after {
+    right: 0;
+    background: linear-gradient(90deg, #d5d5d5, transparent);
+    position: absolute;
+    display: block;
+    content: '';
+    width: 5px;
+    height: 100%;
+  }
 }
 
 .mat-header-cell.mat-column-name {
   font-weight: bold;
   color: black;
-  margin-right: 1px;
+  margin-right: -6px;
 
   ::ng-deep.mat-sort-header-container {
     align-self: end;
@@ -85,20 +95,14 @@ mat-row {
   color: #3b78e7;
 }
 
+.mat-column-creator {
+  flex-basis: 5%;
+}
+
 .mat-column-lastUpdated {
   flex-basis: 10%;
   position: relative;
   overflow: visible;
-
-  &::after {
-    left: -20px;
-    background: linear-gradient(90deg, #d5d5d5, transparent);
-    position: absolute;
-    display: block;
-    content: '';
-    width: 5px;
-    height: 100%;
-  }
 }
 
 .mat-header-cell:not(.mat-column-name) {

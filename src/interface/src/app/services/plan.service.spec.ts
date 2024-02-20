@@ -130,6 +130,7 @@ describe('PlanService', () => {
         scenarios: 1,
         lastUpdated: new Date(date),
         geometry: mockPlan.planningArea,
+        creator: 'John',
       };
 
       const backendPlan: BackendPlanPreview = {
@@ -141,6 +142,7 @@ describe('PlanService', () => {
         scenario_count: 1,
         latest_updated: date,
         notes: '',
+        creator: 'John',
       };
 
       service.listPlansByUser().subscribe((res) => {

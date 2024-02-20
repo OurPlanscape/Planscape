@@ -19,6 +19,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     area_m2 = serializers.SerializerMethodField()
     area_acres = serializers.SerializerMethodField()
+    creator = serializers.CharField(source="creator_name")
 
     def get_area_m2(self, instance):
         geom = instance.geometry.transform(settings.AREA_SRID, clone=True)
@@ -42,6 +43,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
             "created_at",
             "area_m2",
             "area_acres",
+            "creator",
         )
         model = PlanningArea
         geo_field = "geometry"
