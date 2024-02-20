@@ -150,6 +150,32 @@ class PasswordResetTest(TransactionTestCase):
         self.assertIn("http://localhost:4200/reset", mail.outbox[0].body)
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
+    def test_reset_link_for_unknown_user(self):
+        self.client.post(
+            reverse("rest_password_reset"),
+            {"email": "totallymadeup@test.test"},
+            HTTP_ORIGIN="http://localhost:4200",
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "[Planscape] Password Reset Request")
+        self.assertIn("http://localhost:4200/signup", mail.outbox[0].body)
+        self.assertIn("no existing Planscape account", mail.outbox[0].body)
+        self.assertIn("Team Planscape", mail.outbox[0].body)
+
+    # If a nefarious person sends a password reset request to our API
+    # with an invalid email address, we should ignore it.
+    # This `clean_email` function is provided by allauth,
+    # but since we override this class, this test ensures we don't override
+    # that feature
+    def test_reset_link_for_invalid_email(self):
+        self.client.post(
+            reverse("rest_password_reset"),
+            {"email": "invalid;\r\n\r\n@format;;.hihihi"},
+            HTTP_ORIGIN="http://localhost:4200",
+        )
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_reset_confirmation_email(self):
         # POST request to get reset password link.
         payload = json.dumps({"email": "testuser@test.com"})
