@@ -127,6 +127,7 @@ export class PlanService {
         : undefined,
       geometry: plan.geometry,
       ownerId: plan.user,
+      creator: plan.creator,
     };
   }
 

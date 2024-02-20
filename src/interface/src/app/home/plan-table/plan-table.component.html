@@ -20,6 +20,16 @@
         </mat-cell>
       </ng-container>
 
+      <!-- Creator Column -->
+      <ng-container matColumnDef="creator">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>
+          Creator
+        </mat-header-cell>
+        <mat-cell *matCellDef="let element">
+          {{ element.creator }}
+        </mat-cell>
+      </ng-container>
+
       <!-- Timestamp Column -->
       <!-- TODO replace with last modified-->
       <ng-container matColumnDef="lastUpdated">

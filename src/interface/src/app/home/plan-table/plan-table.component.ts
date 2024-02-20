@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
+import { FeatureService } from '../../features/feature.service';
 
 interface PlanRow extends PlanPreview {
   totalAcres: number;
@@ -30,19 +31,18 @@ export class PlanTableComponent implements OnInit {
   loading = true;
   error = false;
 
-  displayedColumns: string[] = [
-    'name',
-    'lastUpdated',
-    'totalAcres',
-    'scenarios',
-    'region',
-  ];
+  displayedColumns: string[] = this.featureService.isFeatureEnabled(
+    'show_share_modal'
+  )
+    ? ['name', 'creator', 'lastUpdated', 'totalAcres', 'scenarios', 'region']
+    : ['name', 'lastUpdated', 'totalAcres', 'scenarios', 'region'];
 
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
     private router: Router,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {

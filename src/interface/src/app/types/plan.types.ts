@@ -33,6 +33,7 @@ export interface PlanPreview {
   scenarios: number;
   lastUpdated?: Date;
   geometry?: GeoJSON.GeoJSON;
+  creator?: string;
 }
 
 export interface BackendPlan {
@@ -57,6 +58,7 @@ export interface BackendPlanPreview {
   scenario_count: number;
   latest_updated: string;
   geometry?: GeoJSON.GeoJSON;
+  creator?: string;
 }
 
 export interface BackendProjectArea {
