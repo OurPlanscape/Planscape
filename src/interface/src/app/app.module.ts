@@ -1,6 +1,10 @@
 import { LayoutModule } from '@angular/cdk/layout';
 import { CommonModule, CurrencyPipe } from '@angular/common';
-import { HttpClientModule, HttpClientXsrfModule } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  HttpClientModule,
+  HttpClientXsrfModule,
+} from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
@@ -64,6 +68,7 @@ import { ChangePasswordComponent } from './account/change-password/change-passwo
 import { DeleteAccountDialogComponent } from './account/delete-account-dialog/delete-account-dialog.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
+import { JwtInterceptor } from './services/jwt-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -134,6 +139,11 @@ import { ChipInputComponent } from './home/chip-input/chip-input.component';
     RedirectGuard,
     WINDOW_PROVIDERS,
     CurrencyPipe,
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: JwtInterceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
 })
