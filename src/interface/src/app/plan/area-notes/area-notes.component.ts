@@ -15,26 +15,6 @@ export class AreaNotesComponent {
   notes: Note[] = [
     {
       message: 'Insert a note ',
-      name: 'John Doe',
-      date: 'Jan 18, 2024',
-    },
-    {
-      message: 'Insert a note ',
-      name: 'Robert Doe',
-      date: 'Jan 18, 2024',
-    },
-    {
-      message: 'Insert a note ',
-      name: 'Janice Doe',
-      date: 'Jan 18, 2024',
-    },
-    {
-      message: 'Insert a note ',
-      name: 'Albert Doe',
-      date: 'Jan 18, 2024',
-    },
-    {
-      message: 'Insert a note ',
       name: 'Otto Doe',
       date: 'Jan 18, 2024',
     },
@@ -59,4 +39,16 @@ export class AreaNotesComponent {
       date: 'Jan 18, 2024',
     },
   ];
+
+  note = '';
+
+  addNote() {
+    const note = {
+      name: 'your name',
+      date: new Date().toDateString(),
+      message: this.note,
+    };
+    this.notes.push(note);
+    this.note = '';
+  }
 }

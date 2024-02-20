@@ -6,6 +6,20 @@
   flex-direction: column;
   overflow: hidden;
   height: 100%;
+
+  ::ng-deep .mat-form-field-wrapper{
+    margin: 0;
+    padding: 8px;
+
+  }
+
+  ::ng-deep {
+    .mat-form-field-outline-start,
+    .mat-form-field-outline-end {
+      background-color: $color-light-gray;
+    }
+  }
+
 }
 
 .notes {
@@ -33,4 +47,16 @@
 .date {
   color: $color-md-gray;
   font-weight: 400;
+}
+
+.arrow-up {
+  color: #767575;
+  &.active {
+    color: $color-standard-blue;
+  }
+}
+
+textarea {
+  resize: none;
+  overflow: hidden;
 }
