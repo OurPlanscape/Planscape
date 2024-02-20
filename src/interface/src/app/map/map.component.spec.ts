@@ -95,6 +95,8 @@ describe('MapComponent', () => {
       ownerId: 'owner',
       region: Region.SIERRA_NEVADA,
       planningArea: fakeGeoJson,
+      area_acres: 123,
+      area_m2: 231,
     };
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',

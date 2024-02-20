@@ -93,6 +93,8 @@ describe('PlanService', () => {
         createdTimestamp: undefined,
         lastUpdated: undefined,
         ownerId: '2',
+        area_acres: 123,
+        area_m2: 231,
       };
 
       const backendPlan: BackendPlan = {
@@ -101,6 +103,8 @@ describe('PlanService', () => {
         user: 2,
         region_name: expectedPlan.region,
         geometry: expectedPlan.planningArea,
+        area_acres: 123,
+        area_m2: 231,
       };
 
       service.getPlan('1').subscribe((res) => {
@@ -131,6 +135,8 @@ describe('PlanService', () => {
         lastUpdated: new Date(date),
         geometry: mockPlan.planningArea,
         creator: 'John',
+        area_acres: 123,
+        area_m2: 231,
       };
 
       const backendPlan: BackendPlanPreview = {
@@ -143,6 +149,8 @@ describe('PlanService', () => {
         latest_updated: date,
         notes: '',
         creator: 'John',
+        area_acres: 123,
+        area_m2: 231,
       };
 
       service.listPlansByUser().subscribe((res) => {

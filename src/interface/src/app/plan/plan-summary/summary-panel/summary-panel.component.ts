@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 import { Plan, Region, User } from '../../../types';
-import { calculateAcres, NOTE_SAVE_INTERVAL } from '../../plan-helpers';
+import { NOTE_SAVE_INTERVAL } from '../../plan-helpers';
 import { filter, interval, switchMap, tap } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -76,7 +76,7 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
         notes: this.plan!.notes,
         configs: this.plan!.configs,
         lastUpdated: this.plan!.lastUpdated!,
-        acres: calculateAcres(this.plan!.planningArea!),
+        acres: Math.round(this.plan.area_acres),
         status: 'In progress',
       };
     }
