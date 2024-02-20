@@ -24,6 +24,8 @@ describe('PlanTableComponent', () => {
     notes: '',
     scenarios: 1,
     ownerId: 1,
+    area_acres: 123,
+    area_m2: 231,
   };
   const fakePlan2: PlanPreview = {
     id: 2,
@@ -33,6 +35,8 @@ describe('PlanTableComponent', () => {
     notes: '',
     scenarios: 2,
     ownerId: 1,
+    area_acres: 123,
+    area_m2: 231,
   };
 
   let component: PlanTableComponent;
@@ -91,11 +95,11 @@ describe('PlanTableComponent', () => {
       expect(component.datasource.data).toEqual([
         {
           ...fakePlan1,
-          totalAcres: 0,
+          totalAcres: 123,
         },
         {
           ...fakePlan2,
-          totalAcres: 0,
+          totalAcres: 123,
         },
       ]);
     });

@@ -75,6 +75,8 @@ describe('CreateScenariosComponent', () => {
           ownerId: 'fakeowner',
           name: 'testplan',
           region: Region.SIERRA_NEVADA,
+          area_acres: 12814,
+          area_m2: 340000,
           planningArea: new L.Polygon([
             new L.LatLng(38.715517043571914, -120.42857302225725),
             new L.LatLng(38.47079787227401, -120.5164425608172),
@@ -210,10 +212,11 @@ describe('CreateScenariosComponent', () => {
       let isDisabled = await buttonHarness.isDisabled();
       expect(isDisabled).toBe(true);
 
+      // valid `max_treatment_area_ratio`
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 38857,
+        max_treatment_area_ratio: 3000,
       });
       isDisabled = await buttonHarness.isDisabled();
       expect(isDisabled).toBe(false);
@@ -246,7 +249,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 38857,
+        max_treatment_area_ratio: 3000,
       });
 
       fixture.detectChanges();
@@ -287,7 +290,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 38857,
+        max_treatment_area_ratio: 3000,
       });
 
       component.generatingScenario = false;

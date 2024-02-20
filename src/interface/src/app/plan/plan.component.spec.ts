@@ -48,6 +48,8 @@ describe('PlanComponent', () => {
     ownerId: 'owner',
     region: Region.SIERRA_NEVADA,
     planningArea: fakeGeoJson,
+    area_acres: 123,
+    area_m2: 231,
   };
 
   beforeEach(async () => {
