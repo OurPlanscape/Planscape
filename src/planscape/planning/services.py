@@ -42,9 +42,8 @@ def get_max_treatable_stand_count(
 
 
 def get_acreage(geometry: GEOSGeometry):
-    CONVERSION_SQM_ACRES = 4046.8564213562374
-    epsg_5070_area = geometry.transform(5070, clone=True).area
-    acres = epsg_5070_area / CONVERSION_SQM_ACRES
+    epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
+    acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
     return acres
 
 
