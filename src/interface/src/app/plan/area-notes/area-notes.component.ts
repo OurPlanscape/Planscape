@@ -42,13 +42,17 @@ export class AreaNotesComponent {
 
   note = '';
 
-  addNote() {
-    const note = {
-      name: 'your name',
-      date: new Date().toDateString(),
-      message: this.note,
-    };
-    this.notes.push(note);
-    this.note = '';
+  addNote(event: Event) {
+    if (this.note) {
+      const note = {
+        name: 'your name',
+        date: new Date().toDateString(),
+        message: this.note,
+      };
+
+      this.notes.push(note);
+      this.note = '';
+    }
+    event.preventDefault();
   }
 }

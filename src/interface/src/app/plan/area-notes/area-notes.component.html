@@ -9,9 +9,9 @@
     </div>
   </div>
 </div>
-
 <mat-form-field appearance="outline">
   <textarea
+    (keydown.enter)="addNote($event)"
     [(ngModel)]="note"
     cdkTextareaAutosize
     matInput
@@ -24,7 +24,7 @@
     viewBox="0 0 24 24"
     fill="none"
     class="arrow-up"
-    (click)="addNote()"
+    (click)="addNote($event)"
     [ngClass]="{ active: !!note }"
     matSuffix>
     <g clip-path="url(#clip0_229_19311)">
