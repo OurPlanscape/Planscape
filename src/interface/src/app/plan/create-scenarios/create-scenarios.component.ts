@@ -15,7 +15,7 @@ import {
   ScenarioResultStatus,
 } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { calculateAcres, POLLING_INTERVAL } from '../plan-helpers';
+import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PlanStateService } from '../../services/plan-state.service';
@@ -43,9 +43,7 @@ export class CreateScenariosComponent implements OnInit {
   scenarioId?: string | null;
   planId?: string | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
-  acres$ = this.plan$.pipe(
-    map((plan) => (plan ? calculateAcres(plan.planningArea!) : 0))
-  );
+  acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
   forms: FormGroup = this.fb.group({});
 

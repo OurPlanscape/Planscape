@@ -92,6 +92,8 @@ describe('SavedScenariosComponent', () => {
       name: 'Fake Plan',
       ownerId: '1',
       region: Region.SIERRA_NEVADA,
+      area_acres: 123,
+      area_m2: 231,
     };
   });
 

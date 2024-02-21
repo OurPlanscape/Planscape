@@ -102,6 +102,8 @@ export class PlanService {
       lastUpdated: plan.latest_updated
         ? new Date(plan.latest_updated)
         : undefined,
+      area_acres: plan.area_acres || 0,
+      area_m2: plan.area_m2 || 0,
     };
   }
 
@@ -127,6 +129,9 @@ export class PlanService {
         : undefined,
       geometry: plan.geometry,
       ownerId: plan.user,
+      creator: plan.creator,
+      area_acres: plan.area_acres,
+      area_m2: plan.area_m2,
     };
   }
 
@@ -148,6 +153,8 @@ export class PlanService {
             id: result['id'].toString(),
             ownerId: result.ownerId,
             savedScenarios: 0,
+            area_m2: result.area_m2,
+            area_acres: result.area_acres,
           };
         })
       );

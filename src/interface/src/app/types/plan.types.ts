@@ -11,6 +11,8 @@ export interface Plan extends BasePlan {
   scenarios?: number;
   configs?: number;
   notes?: string;
+  area_acres: number;
+  area_m2: number;
 }
 
 export interface BasePlan {
@@ -33,6 +35,9 @@ export interface PlanPreview {
   scenarios: number;
   lastUpdated?: Date;
   geometry?: GeoJSON.GeoJSON;
+  creator?: string;
+  area_acres: number;
+  area_m2: number;
 }
 
 export interface BackendPlan {
@@ -46,6 +51,8 @@ export interface BackendPlan {
   projects?: number;
   created_at?: string;
   latest_updated?: string;
+  area_acres?: number;
+  area_m2?: number;
 }
 
 export interface BackendPlanPreview {
@@ -57,6 +64,9 @@ export interface BackendPlanPreview {
   scenario_count: number;
   latest_updated: string;
   geometry?: GeoJSON.GeoJSON;
+  creator?: string;
+  area_acres: number;
+  area_m2: number;
 }
 
 export interface BackendProjectArea {

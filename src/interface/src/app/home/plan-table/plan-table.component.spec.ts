@@ -7,12 +7,13 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { PlanPreview, Region } from 'src/app/types';
 
-import { AuthService } from '../../services/auth.service';
-import { PlanService } from '../../services/plan.service';
+import { AuthService } from '../../services';
+import { PlanService } from '../../services';
 import { PlanTableComponent } from './plan-table.component';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { MockComponent } from 'ng-mocks';
 import { SectionLoaderComponent } from '../../shared/section-loader/section-loader.component';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: PlanPreview = {
@@ -23,6 +24,8 @@ describe('PlanTableComponent', () => {
     notes: '',
     scenarios: 1,
     ownerId: 1,
+    area_acres: 123,
+    area_m2: 231,
   };
   const fakePlan2: PlanPreview = {
     id: 2,
@@ -32,6 +35,8 @@ describe('PlanTableComponent', () => {
     notes: '',
     scenarios: 2,
     ownerId: 1,
+    area_acres: 123,
+    area_m2: 231,
   };
 
   let component: PlanTableComponent;
@@ -61,6 +66,7 @@ describe('PlanTableComponent', () => {
         FormsModule,
         MaterialModule,
         ReactiveFormsModule,
+        FeaturesModule,
       ],
       declarations: [PlanTableComponent, MockComponent(SectionLoaderComponent)],
       providers: [
@@ -89,11 +95,11 @@ describe('PlanTableComponent', () => {
       expect(component.datasource.data).toEqual([
         {
           ...fakePlan1,
-          totalAcres: 0,
+          totalAcres: 123,
         },
         {
           ...fakePlan2,
-          totalAcres: 0,
+          totalAcres: 123,
         },
       ]);
     });
