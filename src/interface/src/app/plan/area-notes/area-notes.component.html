@@ -13,11 +13,14 @@
   <textarea
     (keydown.enter)="addNote($event)"
     [(ngModel)]="note"
+    [disabled]="saving"
     cdkTextareaAutosize
     matInput
     placeholder="add a note">
   </textarea>
+  <mat-spinner diameter="20" matSuffix *ngIf="saving"></mat-spinner>
   <svg
+    *ngIf="!saving"
     xmlns="http://www.w3.org/2000/svg"
     width="24"
     height="24"

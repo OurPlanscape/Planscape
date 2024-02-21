@@ -42,16 +42,22 @@ export class AreaNotesComponent {
 
   note = '';
 
+  saving = false;
+
   addNote(event: Event) {
     if (this.note) {
+      this.saving = true;
       const note = {
         name: 'your name',
         date: new Date().toDateString(),
         message: this.note,
       };
-
-      this.notes.unshift(note);
-      this.note = '';
+      // simulate saving
+      setTimeout(() => {
+        this.notes.unshift(note);
+        this.note = '';
+        this.saving = false;
+      }, 1000);
     }
     event.preventDefault();
   }
