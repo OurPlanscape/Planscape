@@ -3,7 +3,6 @@
 
 :host {
   display: block;
-  padding: 16px;
 }
 
 .details {
@@ -14,7 +13,7 @@
   line-height: 16px;
   letter-spacing: 0.3px;
   margin-bottom: 24px;
-
+  padding: 16px;
   display: flex;
   gap: 36px;
   color: $color-md-gray;
@@ -43,3 +42,11 @@
   }
 }
 
+.summary {
+  padding: 0 16px 16px 16px;
+  border-bottom: 1px solid $color-soft-gray
+}
+
+.plan-map-wrapper{
+  padding: 16px;
+}

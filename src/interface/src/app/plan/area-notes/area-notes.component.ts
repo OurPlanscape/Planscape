@@ -50,7 +50,7 @@ export class AreaNotesComponent {
         message: this.note,
       };
 
-      this.notes.push(note);
+      this.notes.unshift(note);
       this.note = '';
     }
     event.preventDefault();
