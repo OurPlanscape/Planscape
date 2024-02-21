@@ -22,6 +22,7 @@ import {
 } from '../../../../app/shared/constants';
 
 import { ScenarioService } from '../../../services/scenario.service';
+import { FeatureService } from '../../../features/feature.service';
 
 interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -46,14 +47,26 @@ export class SavedScenariosComponent implements OnInit {
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
   scenarios: ScenarioRow[] = [];
-  displayedColumns: string[] = [
-    'name',
-    'projectAreas',
-    'acresTreated',
-    'estimatedCost',
-    'status',
-    'completedTimestamp',
-  ];
+  displayedColumns: string[] = this.featureService.isFeatureEnabled(
+    'show_share_modal'
+  )
+    ? [
+        'name',
+        'creator',
+        'projectAreas',
+        'acresTreated',
+        'estimatedCost',
+        'status',
+        'completedTimestamp',
+      ]
+    : [
+        'name',
+        'projectAreas',
+        'acresTreated',
+        'estimatedCost',
+        'status',
+        'completedTimestamp',
+      ];
 
   statusLabels: Record<ScenarioResultStatus, string> = {
     LOADING: 'Loading',
@@ -71,12 +84,13 @@ export class SavedScenariosComponent implements OnInit {
     private router: Router,
     private snackbar: MatSnackBar,
     private dialog: MatDialog,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
     this.fetchScenarios();
-    this.pollForChanges();
+    console.log(this.pollForChanges);
   }
 
   private pollForChanges() {
