@@ -3,6 +3,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from core.models import CreatedAtMixin, UpdatedAtMixin
+from django.contrib.contenttypes.fields import GenericForeignKey
+
 
 User = get_user_model()
 
@@ -31,7 +33,7 @@ class Permissions(models.Model):
         ]
 
 
-class Collaborator(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
     # the email address invited to collaborate
     email = models.CharField(max_length=120)
     # the user that is being added as collaborator
@@ -57,7 +59,8 @@ class Collaborator(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
     # use content types to potentially save other things that are not only planning_areas
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_pk = models.CharField(_("object ID"), max_length=255)
+    object_pk = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_pk")
 
     class Meta:
         constraints = [
