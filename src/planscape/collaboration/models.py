@@ -53,7 +53,7 @@ class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
     # the user that invited the collaborator
     inviter = models.ForeignKey(
         User,
-        related_name="inviter",
+        related_name="invites",
         on_delete=models.CASCADE,
         null=False,
     )
