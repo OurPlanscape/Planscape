@@ -138,7 +138,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
         source="results",
     )
 
-    creator = serializers.CharField(source="creator_name")
+    creator = serializers.CharField(source="creator_name", read_only=True)
 
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None

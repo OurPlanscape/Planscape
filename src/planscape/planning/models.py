@@ -60,9 +60,6 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
         User, related_name="scenarios", on_delete=models.CASCADE, null=True, blank=True
     )
 
-    def creator_name(self):
-        return self.user.get_full_name()
-
     name = models.CharField(max_length=120)
 
     notes = models.TextField(null=True)
@@ -70,6 +67,9 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     configuration = models.JSONField(default=dict)
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+
+    def creator_name(self):
+        return self.user.get_full_name()
 
     def get_shapefile_folder(self):
         return Path(settings.OUTPUT_DIR) / "shapefile" / Path(str(self.uuid))
