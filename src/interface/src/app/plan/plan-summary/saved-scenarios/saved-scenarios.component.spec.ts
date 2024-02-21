@@ -94,6 +94,7 @@ describe('SavedScenariosComponent', () => {
       region: Region.SIERRA_NEVADA,
       area_acres: 123,
       area_m2: 231,
+      creator: 'John Doe',
     };
   });
 
