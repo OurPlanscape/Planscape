@@ -90,7 +90,7 @@ export class SavedScenariosComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchScenarios();
-    console.log(this.pollForChanges);
+    this.pollForChanges();
   }
 
   private pollForChanges() {

@@ -159,7 +159,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "configuration",
             "scenario_result",
             "user",
-            "creator"
+            "creator",
         )
         model = Scenario
 

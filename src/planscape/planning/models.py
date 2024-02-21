@@ -63,7 +63,6 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     def creator_name(self):
         return self.user.get_full_name()
 
-
     name = models.CharField(max_length=120)
 
     notes = models.TextField(null=True)
