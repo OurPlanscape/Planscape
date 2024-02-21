@@ -10,19 +10,16 @@ from dj_rest_auth.forms import AllAuthPasswordResetForm
 
 
 class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
-    def send_unknown_account_mail(self, request, email):
+    def _send_unknown_account_mail(self, request, email):
         referrer = request.META.get("HTTP_ORIGIN")
-        create_url = f"{referrer}/signup"
-
+        signup_url = f"{referrer}/signup"
         context = {
             "current_site": referrer,
             "request": request,
-            "create_account_url": create_url,
+            "signup_url": signup_url,
             "given_email": email,
         }
-        get_adapter(request).send_mail(
-            "account/email/unknown_user_reset", email, context
-        )
+        get_adapter(request).send_mail("account/email/unknown_account", email, context)
 
     def save(self, request, **kwargs):
         """Adapted from dj_rest_auth's own password reset form, but with URL
@@ -34,10 +31,10 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
         token_generator = kwargs.get("token_generator", default_token_generator)
         email = self.cleaned_data["email"]
 
-        # if we don't locate an email record for this user, we still send an email
+        # if we don't locate an email record, we still send an email
         # letting the user know that someone is trying to reset a password for this account
         if not self.users and settings.EMAIL_UNKNOWN_ACCOUNTS:
-            self.send_unknown_account_mail(request, email)
+            self._send_unknown_account_mail(request, email)
 
         for user in self.users:
             token = token_generator.make_token(user)
@@ -46,8 +43,6 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
             # We don't specify a username because authentication is based
             # on email.
             context = {
-                # TODO: Change the template since the default template expects
-                # a Site object.
                 "current_site": referrer,
                 "user": user,
                 "password_reset_url": url,
