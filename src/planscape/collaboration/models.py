@@ -40,7 +40,7 @@ class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
     # might be empty if no user is found with the email
     collaborator = models.ForeignKey(
         User,
-        related_name="collaborator",
+        related_name="object_roles",
         on_delete=models.CASCADE,
         null=True,
     )
