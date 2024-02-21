@@ -18,7 +18,15 @@
     .mat-form-field-outline-end {
       background-color: $color-light-gray;
     }
+
+    .mat-form-field-infix {
+      padding-bottom: 10px;
+      border-top: 0;
+      top: -2px;
+      padding-top: 21px;
+    }
   }
+
 
 }
 

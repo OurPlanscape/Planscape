@@ -13,6 +13,7 @@ export interface Plan extends BasePlan {
   notes?: string;
   area_acres: number;
   area_m2: number;
+  creator: string;
 }
 
 export interface BasePlan {
@@ -53,6 +54,7 @@ export interface BackendPlan {
   latest_updated?: string;
   area_acres?: number;
   area_m2?: number;
+  creator?: string;
 }
 
 export interface BackendPlanPreview {

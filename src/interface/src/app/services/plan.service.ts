@@ -104,6 +104,7 @@ export class PlanService {
         : undefined,
       area_acres: plan.area_acres || 0,
       area_m2: plan.area_m2 || 0,
+      creator: plan.creator || '',
     };
   }
 
@@ -155,6 +156,7 @@ export class PlanService {
             savedScenarios: 0,
             area_m2: result.area_m2,
             area_acres: result.area_acres,
+            creator: result.creator,
           };
         })
       );

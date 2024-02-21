@@ -1,25 +1,25 @@
 <div class="details">
   <div>
-    <div class="number"></div>
+    <div class="number">{{ plan.area_acres | number }}</div>
     acres
   </div>
   <div>
-    <div class="number">4</div>
+    <div class="number">{{ plan.scenarios }}</div>
     scenarios
   </div>
 </div>
 <div class="summary">
   <div class="property">
     <div class="label">Region</div>
-    <div>Sierra</div>
+    <div>{{ plan.region }}</div>
   </div>
   <div class="property">
     <div class="label">Creator</div>
-    <div>John Smith</div>
+    <div>{{ plan.creator }}</div>
   </div>
   <div class="property">
-    <div class="label">Last Activity</div>
-    <div>2hs ago</div>
+    <div class="label">Last activity</div>
+    <div>{{ plan.lastUpdated | date: 'MM/dd/yyyy' }}</div>
   </div>
 </div>
 
