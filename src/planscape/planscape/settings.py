@@ -1,33 +1,16 @@
-"""
-Specific Planscape settings can be overridden by the .env file.
-These settings are
-
-  SECRET_KEY:               Django key
-  PLANSCAPE_DEBUG:          True or False
-
-  PLANSCAPE_DATABASE_HOST: PostGIS hostname
-  PLANSCAPE_DATABASE_NAME: PostGIS database name
-  PLANSCAPE_DATABASE_USER: PostGIS user name
-  PLANSCAPE_DATABASE_PASSWORD: PostGIS database password
-
-  PLANSCAPE_ALLOWED_HOSTS:        Comma-separated string of addresses
-  PLANSCAPE_CORS_ALLOWED_ORIGINS: Comma-separated string of addresses
-  PLANSCAPE_CORS_ALLOWED_HOSTS:   Comma-separated string of addresses
-  PLANSCAPE_CSRF_TRUSTED_ORIGINS: Comma-separated string of addresses
-
-  PLANSCAPE_CACHE_BACKEND: Backend type for cache
-  PLANSCAPE_CACHE_LOCATION: Cache location (important for memcached, etc.)
-"""
-
 import multiprocessing
 import os
 from pathlib import Path
+import sys
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
+from planscape.utils import NotInTestingFilter
 
+TESTING_MODE = "test" in sys.argv
+LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -272,6 +255,7 @@ EMAIL_BACKEND = config(
     "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
 )
 EMAIL_HOST = config("EMAIL_HOST", default="smtp.google.com")
+EMAIL_UNKNOWN_ACCOUNTS = True
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", "no-reply@planscape.org")
@@ -319,16 +303,17 @@ LOGGING = {
             "style": "{",
         },
     },
+    "filters": {
+        "testing": {
+            "()": NotInTestingFilter,
+        }
+    },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": LOGLEVEL,
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
-    },
-    "root": {
-        "handlers": ["console"],
-        "level": "WARNING",
     },
 }
 

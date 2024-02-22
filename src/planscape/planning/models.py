@@ -68,6 +68,9 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
+    def creator_name(self):
+        return self.user.get_full_name()
+
     def get_shapefile_folder(self):
         return Path(settings.OUTPUT_DIR) / "shapefile" / Path(str(self.uuid))
 
