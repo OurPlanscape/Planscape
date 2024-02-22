@@ -5,7 +5,7 @@ from django.conf import settings
 from utils.uuid_utils import generate_short_uuid
 from django.core.serializers.json import DjangoJSONEncoder
 from core.models import CreatedAtMixin, UpdatedAtMixin
-import uuid, shortuuid
+import uuid
 
 User = get_user_model()
 
@@ -67,6 +67,9 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     configuration = models.JSONField(default=dict)
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+
+    def creator_name(self):
+        return self.user.get_full_name()
 
     def get_shapefile_folder(self):
         return Path(settings.OUTPUT_DIR) / "shapefile" / Path(str(self.uuid))
