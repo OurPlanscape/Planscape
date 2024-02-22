@@ -11,9 +11,9 @@ User = get_user_model()
 
 class Role(models.TextChoices):
     # CREATOR - creator is not a role, but the user that created the planning area
-    OWNER = "Owner"
-    COLLABORATOR = "Collaborator"
-    VIEWER = "Viewer"
+    OWNER = "OWNER", "Owner"
+    COLLABORATOR = "COLLABORATOR", "Collaborator"
+    VIEWER = "VIEWER", "Viewer"
 
 
 class Permissions(models.Model):
