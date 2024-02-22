@@ -95,6 +95,7 @@ describe('PlanService', () => {
         ownerId: '2',
         area_acres: 123,
         area_m2: 231,
+        creator: 'John Doe',
       };
 
       const backendPlan: BackendPlan = {
@@ -105,6 +106,7 @@ describe('PlanService', () => {
         geometry: expectedPlan.planningArea,
         area_acres: 123,
         area_m2: 231,
+        creator: 'John Doe',
       };
 
       service.getPlan('1').subscribe((res) => {

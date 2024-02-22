@@ -30,6 +30,7 @@ export interface MapRef {
 export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() plan: Plan | null = null;
   @Input() mapId?: string;
+  @Input() mapHeight: string = '100%';
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
   @Input() showAttributionAndZoom: boolean = false;
