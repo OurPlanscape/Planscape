@@ -50,6 +50,7 @@ describe('PlanComponent', () => {
     planningArea: fakeGeoJson,
     area_acres: 123,
     area_m2: 231,
+    creator: 'John Doe',
   };
 
   beforeEach(async () => {
