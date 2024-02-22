@@ -25,6 +25,7 @@ import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe
 import { ScenarioService } from '../../../services/scenario.service';
 import { MockComponent } from 'ng-mocks';
 import { SectionLoaderComponent } from '../../../shared/section-loader/section-loader.component';
+import { FeaturesModule } from '../../../features/features.module';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -69,6 +70,7 @@ describe('SavedScenariosComponent', () => {
         MaterialModule,
         MatTableModule,
         NoopAnimationsModule,
+        FeaturesModule,
       ],
       declarations: [
         SavedScenariosComponent,
