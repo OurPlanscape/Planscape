@@ -3,7 +3,6 @@ from collaboration.models import Role
 
 
 class CreateUserObjectRolesSerializer(serializers.Serializer):
-
     target_entity = serializers.ChoiceField(
         choices=[("PlanningArea", "Planning Area")],
         required=False,
