@@ -10,6 +10,7 @@ class TestCreateUserObjectRolesSerializer(APITestCase):
             "emails": ["test@example.com"],
             "role": Role.OWNER,
             "message": "Hello, World!",
+            "target_object_pk": 1,
         }
 
     def test_valid_data(self):
