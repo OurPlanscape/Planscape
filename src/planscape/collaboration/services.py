@@ -43,11 +43,12 @@ def create_invite(
     send_invitation.delay(object_role.pk, collaborator_exists, message)
 
     logger.info(
-        "create_invite call to %s from %s with role %s was %s",
-        email,
+        "%s just invited %s with role %s to work on %s - %s",
         inviter.email,
+        email,
         role,
-        "created" if created else "updated",
+        target_entity,
+        object_pk,
     )
 
     return object_role
