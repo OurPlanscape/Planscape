@@ -5,6 +5,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
 from collaboration.tasks import send_invitation
 from planning.models import PlanningArea
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 User = get_user_model()
@@ -38,5 +41,13 @@ def create_invite(
     )
 
     send_invitation.delay(object_role.pk, collaborator_exists, message)
+
+    logger.info(
+        "create_invite call to %s from %s with role %s was %s",
+        email,
+        inviter.email,
+        role,
+        "created" if created else "updated",
+    )
 
     return object_role
