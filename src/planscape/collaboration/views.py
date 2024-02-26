@@ -34,7 +34,8 @@ class CreateInvite(APIView):
             )
             out_serializer = UserObjectRoleSerializer(instance=invite)
             return Response(out_serializer.data)
-        except InvalidOwnership:
+        except InvalidOwnership as ownEx:
+            logger.warning(ownEx)
             return Response(
                 {"message": f"You cannot invite other users to this {target_entity}"},
                 status=status.HTTP_403_FORBIDDEN,
@@ -42,4 +43,5 @@ class CreateInvite(APIView):
         except Exception as ex:
             # this collects exception info and forwards it to sentry.
             logger.exception("Something failed during the creation of a new invite.")
+            # this will return a 500
             raise
