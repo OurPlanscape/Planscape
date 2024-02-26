@@ -23,6 +23,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     area_acres = serializers.SerializerMethodField()
     creator = serializers.CharField(source="creator_name")
     permissions = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     def get_area_m2(self, instance):
         geom = instance.geometry.transform(settings.AREA_SRID, clone=True)
@@ -34,19 +35,23 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     def get_latest_updated(self, instance):
         return instance.scenario_latest_updated_at or instance.updated_at
 
-    def get_permissions(self, instance):
+    def get_role(self, instance):
         user = self.context["request"].user
 
         is_owner = validate_ownership(user, instance)
         if is_owner:
-            qs = Permissions.objects.filter(role=Role.OWNER)
+            self.context["role"] = Role.OWNER
+            return Role.OWNER
         else:
             content_type = ContentType.objects.get_for_model(instance)
-            user_object_role = UserObjectRole.objects.filter(
+            self.context["role"] = UserObjectRole.objects.filter(
                 collaborator=user, content_type=content_type, object_pk=instance.pk
             ).first()
-            qs = Permissions.objects.filter(role=user_object_role.role)
+        return self.context["role"]
 
+    def get_permissions(self, instance):
+        role = self.context.get("role")
+        qs = Permissions.objects.filter(role=role)
         return list(qs.values_list("permission", flat=True))
 
     class Meta:
@@ -62,6 +67,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
             "area_m2",
             "area_acres",
             "creator",
+            "role",
             "permissions",
         )
         model = PlanningArea
