@@ -5,7 +5,7 @@ from collaboration.services import get_permissions
 
 class CreateUserObjectRolesSerializer(serializers.Serializer):
     target_entity = serializers.ChoiceField(
-        choices=[("PlanningArea", "Planning Area")],
+        choices=[("planningarea", "Planning Area")],
         default="PlanningArea",
         required=False,
     )
