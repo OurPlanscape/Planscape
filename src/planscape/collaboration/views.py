@@ -15,25 +15,27 @@ logger = logging.getLogger(__name__)
 
 class CreateInvite(APIView):
 
-    def validate_ownership(self, current_user, target_entity, object_pk):
-        pass
-
     def post(self, request, format=None):
-
-        serializer = CreateUserObjectRolesSerializer(request.data)
+        serializer = CreateUserObjectRolesSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         target_entity = serializer.validated_data.get("target_entity")
         object_pk = serializer.validated_data.get("object_pk")
         current_user = request.user
-
+        emails = serializer.validated_data.get("emails")
+        role = serializer.validated_data.get("role")
+        message = serializer.validated_data.get("message")
         try:
-            invite = create_invite(
-                inviter=request.user,
-                **serializer.validated_data,
+            invites = [
+                create_invite(
+                    current_user, email, role, target_entity, object_pk, message
+                )
+                for email in emails
+            ]
+            out_serializer = UserObjectRoleSerializer(
+                instance=invites, many=True, context={"request": request}
             )
-            out_serializer = UserObjectRoleSerializer(instance=invite)
-            return Response(out_serializer.data)
+            return Response(out_serializer.data, status=status.HTTP_201_CREATED)
         except InvalidOwnership as ownEx:
             logger.warning(ownEx)
             return Response(
