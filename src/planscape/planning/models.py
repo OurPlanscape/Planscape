@@ -50,6 +50,11 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
         ordering = ["user", "-created_at"]
 
 
+class ScenarioStatus(models.TextChoices):
+    ACTIVE = "ACTIVE", "Active"
+    ARCHIVED = "ARCHIVED", "Archived"
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     planning_area = models.ForeignKey(
         PlanningArea,
@@ -67,6 +72,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     configuration = models.JSONField(default=dict)
 
     uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+
+    status = models.CharField(
+        choices=ScenarioStatus.choices,
+        max_length=32,
+        default=ScenarioStatus.ACTIVE,
+    )
 
     def creator_name(self):
         return self.user.get_full_name()
