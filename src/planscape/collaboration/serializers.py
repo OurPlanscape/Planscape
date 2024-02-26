@@ -24,7 +24,6 @@ class CreateUserObjectRolesSerializer(serializers.Serializer):
 
 
 class UserObjectRoleSerializer(serializers.ModelSerializer):
-
     collaborator = serializers.PrimaryKeyRelatedField(read_only=True)
 
     inviter = serializers.PrimaryKeyRelatedField(read_only=True)
