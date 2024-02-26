@@ -16,6 +16,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
+from collaboration.services import get_planningareas_for_user
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -310,7 +311,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         # when creating the planning area instead of calculating it each time?
 
         planning_areas = (
-            PlanningArea.objects.filter(user=user)
+            get_planningareas_for_user(user)
             .annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
                 scenario_latest_updated_at=Coalesce(

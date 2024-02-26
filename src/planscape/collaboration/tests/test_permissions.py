@@ -9,6 +9,7 @@ from collaboration.models import Role
 from collaboration.utils import (
     create_collaborator_record,
 )
+from collaboration.services import get_planningareas_for_user
 from planning.models import PlanningArea, Scenario
 
 
@@ -274,3 +275,64 @@ class PermissionsTest(TestCase):
         self.assertTrue(
             CollaboratorPermission.can_delete(self.invitee, self.planning_area)
         )
+
+
+# TODO: This could probably live in the PlanningArea view tests
+class PlanningAreaRolesTest(TestCase):
+    def setUp(self):
+        # create user
+        self.user = self.setUser("test-creator")
+        # create second user (invitee)
+        self.invitee = self.setUser("test-invitee")
+
+        # create multiple planning areas...
+        self.planning_area_created = PlanningArea.objects.create(
+            user=self.invitee,
+            name="User Created This Planning Area",
+            region_name="sierra-nevada",
+            geometry=None,
+            notes="",
+        )
+        self.planning_area_created.save()       
+        
+        self.planning_area_owned = PlanningArea.objects.create(
+            user=self.user,
+            name="User is an Owner of This Area",
+            region_name="sierra-nevada",
+            geometry=None,
+            notes="",
+        )
+        self.planning_area_owned.save()
+        create_collaborator_record(self.user, self.invitee, self.planning_area_owned, Role.OWNER)
+       
+        self.planning_area_editable = PlanningArea.objects.create(
+            user=self.user,
+            name="User Can Edit This Area",
+            region_name="sierra-nevada",
+            geometry=None,
+            notes="",
+        )
+        self.planning_area_editable.save()
+        create_collaborator_record(self.user, self.invitee, self.planning_area_editable, Role.COLLABORATOR)
+
+       
+        self.planning_area_viewable = PlanningArea.objects.create(
+            user=self.user,
+            name="User Can View This Area",
+            region_name="sierra-nevada",
+            geometry=None,
+            notes="",
+        )
+        self.planning_area_viewable.save()
+        create_collaborator_record(self.user, self.invitee, self.planning_area_viewable, Role.VIEWER)
+
+    def setUser(self, username):
+        user = User.objects.create(username=username)
+        user.set_password("12345")
+        user.save()
+        return user
+
+    def test_get_planningareas_for_user(self):
+        areas = get_planningareas_for_user(self.invitee)
+        for a in areas:
+            print(f"we have area {a.name}")
