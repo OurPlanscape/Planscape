@@ -14,7 +14,6 @@ logger = logging.getLogger(__name__)
 
 
 class CreateInvite(APIView):
-
     def post(self, request, format=None):
         serializer = CreateUserObjectRolesSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
