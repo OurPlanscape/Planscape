@@ -39,7 +39,7 @@ def create_invite(
     instance = Model.objects.filter(pk=object_pk).first()
     if not validate_ownership(user=inviter, instance=instance):
         raise InvalidOwnership(
-            f"inviter {inviter.email} does not have ownership of object {object_pk}"
+            f"inviter {inviter.email} does not have ownership of {target_entity} object {object_pk}"
         )
 
     entity_type = get_model_from_entity(target_entity)
