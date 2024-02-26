@@ -12,29 +12,6 @@
   min-height: 180px;
 }
 
-
-
-.highlight {
-
-  background-color: transparentize(
-    $color: mat.get-color-from-palette($primary-palette, 500),
-    $amount: 0.9
-  );
-
-  .mat-cell:first-of-type {
-    position: relative;
-    &::before {
-      position: absolute;
-      width: 4px;
-      height: calc(100% + 2px);
-      background-color: mat.get-color-from-palette($primary-palette, 500);
-      content: "";
-      left: 0;
-      top: -1px;
-    }
-  }
-}
-
 .mat-card-content {
   padding: 8px;
 }
@@ -76,37 +53,8 @@
   align-items: center;
 }
 
-.scenario-row {
-  cursor: pointer;
-
-  &:hover {
-    background-color: transparentize(
-      $color: mat.get-color-from-palette($primary-palette, 500),
-      $amount: 0.9
-    );
-  }
-}
-
-.hover-indicator {
-  height: 48px;
-  margin-left: -24px;
-  margin-right: 18px;
-  width: 4px;
-}
 
 .margin-top {
   margin-top: 30px;
 }
 
-.scenarios-table {
-  width: 100%;
-  text-align: center;
-  th:not(.mat-column-name) {
-    text-align: center;
-  }
-}
-
-.mat-column-name {
-  width: 30%;
-  text-align: left;
-}

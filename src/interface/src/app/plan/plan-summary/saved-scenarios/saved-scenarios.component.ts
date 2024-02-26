@@ -2,18 +2,9 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { interval, take } from 'rxjs';
-import {
-  Plan,
-  Scenario,
-  ScenarioResult,
-  ScenarioResultStatus,
-} from 'src/app/types';
+import { Plan, Scenario } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import {
-  parseResultsToProjectAreas,
-  parseResultsToTotals,
-  POLLING_INTERVAL,
-} from '../../plan-helpers';
+import { POLLING_INTERVAL } from '../../plan-helpers';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import {
@@ -22,9 +13,8 @@ import {
 } from '../../../../app/shared/constants';
 
 import { ScenarioService } from '../../../services/scenario.service';
-import { FeatureService } from '../../../features/feature.service';
 
-interface ScenarioRow extends Scenario {
+export interface ScenarioRow extends Scenario {
   selected?: boolean;
 }
 
@@ -37,55 +27,16 @@ interface ScenarioRow extends Scenario {
 export class SavedScenariosComponent implements OnInit {
   @Input() plan: Plan | null = null;
 
-  readonly text1: string = `
-    Scenarios consist of prioritized project areas for treatment within this planning area,
-    estimated cost ranges, and notes. Copy links to share, download shape files, and more.
-    View conditions of each priority within the Map Layers tab. Anyone with visibility access to
-    this planning area can also view all the scenarios within it.
-  `;
-
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
   scenarios: ScenarioRow[] = [];
-  displayedColumns: string[] = this.featureService.isFeatureEnabled(
-    'show_share_modal'
-  )
-    ? [
-        'name',
-        'creator',
-        'projectAreas',
-        'acresTreated',
-        'estimatedCost',
-        'status',
-        'completedTimestamp',
-      ]
-    : [
-        'name',
-        'projectAreas',
-        'acresTreated',
-        'estimatedCost',
-        'status',
-        'completedTimestamp',
-      ];
-
-  statusLabels: Record<ScenarioResultStatus, string> = {
-    LOADING: 'Loading',
-    NOT_STARTED: 'Not Started',
-    PENDING: 'Running',
-    RUNNING: 'Running',
-    SUCCESS: 'Done',
-    FAILURE: 'Failed',
-    PANIC: 'Failed',
-    TIMED_OUT: 'Failed',
-  };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private snackbar: MatSnackBar,
     private dialog: MatDialog,
-    private scenarioService: ScenarioService,
-    private featureService: FeatureService
+    private scenarioService: ScenarioService
   ) {}
 
   ngOnInit(): void {
@@ -126,10 +77,6 @@ export class SavedScenariosComponent implements OnInit {
     });
   }
 
-  highlightScenario(row: ScenarioRow): void {
-    this.highlightedScenarioRow = row;
-  }
-
   confirmDeleteScenario(): void {
     const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
       DeleteDialogComponent,
@@ -149,13 +96,6 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
-  hasResults(scenario: Scenario) {
-    return (
-      !!scenario.scenario_result &&
-      scenario.scenario_result.result?.features?.length > 0
-    );
-  }
-
   private deleteScenario(ids: string[]) {
     this.scenarioService.deleteScenarios(ids).subscribe({
       next: (deletedIds) => {
@@ -172,9 +112,7 @@ export class SavedScenariosComponent implements OnInit {
     });
   }
 
-  calculateTotals(results: ScenarioResult) {
-    const projectAreas = parseResultsToProjectAreas(results);
-    const total = parseResultsToTotals(projectAreas);
-    return total;
+  highlightScenario(row: ScenarioRow): void {
+    this.highlightedScenarioRow = row;
   }
 }
