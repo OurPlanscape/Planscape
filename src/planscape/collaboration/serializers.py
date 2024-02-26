@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from collaboration.models import Permissions, Role, UserObjectRole
+from collaboration.services import get_permissions
 
 
 class CreateUserObjectRolesSerializer(serializers.Serializer):
@@ -31,9 +32,9 @@ class UserObjectRoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
 
     def get_permissions(self, instance):
-        return Permissions.objects.filter(role=instance.role).values_list(
-            "permission", flat=True
-        )
+        request = self.context["request"]
+        user = request.user
+        return get_permissions(user, instance)
 
     class Meta:
         model = UserObjectRole
