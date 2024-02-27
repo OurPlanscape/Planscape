@@ -5,6 +5,7 @@ from rest_framework.request import Request
 from rest_framework import status
 from collaboration.exceptions import InvalidOwnership
 from collaboration.models import UserObjectRole
+from collaboration.permissions import CollaboratorPermission
 from collaboration.serializers import (
     CreateUserObjectRolesSerializer,
     UserObjectRoleSerializer,
@@ -52,15 +53,18 @@ class CreateInvite(APIView):
             raise
 
 
-class UserObjectRolesForObject(APIView):
+class GetInvitationsForObject(APIView):
 
     def get(self, request: Request, target_entity: str, object_pk: int):
 
         user = request.user
-        if not check_for_permission(user.pk, "add_collaborator"):
+        content_type = ContentType.objects.get(model=target_entity)
+        Model = content_type.model_class()
+        instance = Model.objects.get(pk=object_pk)
+
+        if not CollaboratorPermission.can_add(user, instance):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        content_type = ContentType.objects.get(model=target_entity)
         user_object_roles = UserObjectRole.objects.filter(
             content_type=content_type,
             object_pk=object_pk,
