@@ -40,10 +40,15 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
         self.context["role"] = get_role(user, instance)
         return self.context["role"]
 
+    # This exists separately from services get_permissions, since we don't want to
+    #  look up roles twice, but depends on a role record to exist
     def get_permissions(self, instance):
         role = self.context.get("role") or self.get_role(instance)
-        qs = Permissions.objects.filter(role=role)
-        return list(qs.values_list("permission", flat=True))
+        if role is None:
+            return list()
+        else:
+            qs = Permissions.objects.filter(role=role)
+            return list(qs.values_list("permission", flat=True))
 
     class Meta:
         fields = (

@@ -277,8 +277,7 @@ class PermissionsTest(TestCase):
         )
 
 
-# TODO: This could probably live in the PlanningArea view tests
-class PlanningAreaRolesTest(TestCase):
+class PlanningAreaPermisssionsTest(TestCase):
     def setUp(self):
         # create user
         self.user = self.setUser("test-creator")
@@ -293,8 +292,8 @@ class PlanningAreaRolesTest(TestCase):
             geometry=None,
             notes="",
         )
-        self.planning_area_created.save()       
-        
+        self.planning_area_created.save()
+
         self.planning_area_owned = PlanningArea.objects.create(
             user=self.user,
             name="User is an Owner of This Area",
@@ -303,8 +302,10 @@ class PlanningAreaRolesTest(TestCase):
             notes="",
         )
         self.planning_area_owned.save()
-        create_collaborator_record(self.user, self.invitee, self.planning_area_owned, Role.OWNER)
-       
+        create_collaborator_record(
+            self.user, self.invitee, self.planning_area_owned, Role.OWNER
+        )
+
         self.planning_area_editable = PlanningArea.objects.create(
             user=self.user,
             name="User Can Edit This Area",
@@ -313,9 +314,10 @@ class PlanningAreaRolesTest(TestCase):
             notes="",
         )
         self.planning_area_editable.save()
-        create_collaborator_record(self.user, self.invitee, self.planning_area_editable, Role.COLLABORATOR)
+        create_collaborator_record(
+            self.user, self.invitee, self.planning_area_editable, Role.COLLABORATOR
+        )
 
-       
         self.planning_area_viewable = PlanningArea.objects.create(
             user=self.user,
             name="User Can View This Area",
@@ -324,7 +326,18 @@ class PlanningAreaRolesTest(TestCase):
             notes="",
         )
         self.planning_area_viewable.save()
-        create_collaborator_record(self.user, self.invitee, self.planning_area_viewable, Role.VIEWER)
+        create_collaborator_record(
+            self.user, self.invitee, self.planning_area_viewable, Role.VIEWER
+        )
+
+        self.planning_area_noperms = PlanningArea.objects.create(
+            user=self.user,
+            name="User Has no Access to Area",
+            region_name="sierra-nevada",
+            geometry=None,
+            notes="",
+        )
+        self.planning_area_noperms.save()
 
     def setUser(self, username):
         user = User.objects.create(username=username)
@@ -334,5 +347,16 @@ class PlanningAreaRolesTest(TestCase):
 
     def test_get_planningareas_for_user(self):
         areas = get_planningareas_for_user(self.invitee)
-        for a in areas:
-            print(f"we have area {a.name}")
+        self.assertEqual(len(areas), 4)
+
+        view_name = "User Can View This Area"
+        view_result = next((a for a in areas if a.name == view_name), None)
+        self.assertIsNotNone(view_result)
+
+        edit_name = "User Can Edit This Area"
+        edit_result = next((a for a in areas if a.name == edit_name), None)
+        self.assertIsNotNone(edit_result)
+
+        noperms_name = "User Has no Access to Area"
+        noperms_result = next((a for a in areas if a.name == noperms_name), None)
+        self.assertIsNone(noperms_result)
