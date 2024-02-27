@@ -8,6 +8,7 @@
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
       <mat-tab-group
         mat-align-tabs="start"
+        mat-stretch-tabs
         disablePagination="true"
         *appFeatureFlag="'show_share_modal'">
         <mat-tab label="ACTIVE"
