@@ -4,6 +4,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
+import { ActivatedRoute } from '@angular/router';
 
 export interface Breadcrumb {
   name: string;
@@ -26,7 +27,8 @@ export class NavBarComponent {
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private route: ActivatedRoute
   ) {}
 
   print() {
@@ -41,6 +43,7 @@ export class NavBarComponent {
     this.dialog.open(SharePlanDialogComponent, {
       data: {
         name: '"' + this.breadcrumbs[0].name + '"',
+        id: this.route.snapshot.params['id'],
       },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',

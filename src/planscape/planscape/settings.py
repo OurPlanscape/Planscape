@@ -378,6 +378,7 @@ CELERY_TASK_ROUTES = {
     "'planning.e2e.*": {"queue": "default"},
 }
 
+CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
 
 TREATMENTS_TEST_FIXTURES_PATH = BASE_DIR / "scenario_fixtures"
 
