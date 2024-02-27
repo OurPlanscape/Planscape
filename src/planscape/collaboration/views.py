@@ -54,9 +54,7 @@ class CreateInvite(APIView):
 
 
 class GetInvitationsForObject(APIView):
-
     def get(self, request: Request, target_entity: str, object_pk: int):
-
         user = request.user
         content_type = ContentType.objects.get(model=target_entity)
         Model = content_type.model_class()
