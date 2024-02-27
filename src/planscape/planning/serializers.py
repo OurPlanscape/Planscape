@@ -43,7 +43,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
             "created_at",
             "area_m2",
             "area_acres",
-            "creator"
+            "creator",
         )
         model = PlanningArea
         geo_field = "geometry"
@@ -160,7 +160,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "scenario_result",
             "user",
             "creator",
-            "status"
+            "status",
         )
         model = Scenario
 
