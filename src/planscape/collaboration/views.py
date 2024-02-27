@@ -60,7 +60,7 @@ class GetInvitationsForObject(APIView):
         Model = content_type.model_class()
         instance = Model.objects.get(pk=object_pk)
 
-        if not CollaboratorPermission.can_add(user, instance):
+        if not CollaboratorPermission.can_view(user, instance):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         user_object_roles = UserObjectRole.objects.filter(
