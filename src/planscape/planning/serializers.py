@@ -37,7 +37,7 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def get_role(self, instance):
         user = self.context["request"].user
-        self.context["role"] = get_role(user=user, instance=instance)
+        self.context["role"] = get_role(user, instance)
         return self.context["role"]
 
     def get_permissions(self, instance):

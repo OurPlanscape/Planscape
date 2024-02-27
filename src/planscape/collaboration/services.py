@@ -1,4 +1,5 @@
-from collaboration.models import Role, UserObjectRole
+from collaboration.exceptions import InvalidOwnership
+from collaboration.models import Permissions, Role, UserObjectRole
 from django.db import transaction
 from django.db.models import Model, Q
 from django.contrib.contenttypes.models import ContentType
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-def get_model_from_entity(target_entity: str) -> Model:
+def get_content_type(target_entity: str) -> Model:
     return ContentType.objects.get(model=target_entity)
 
 
@@ -25,6 +26,32 @@ def validate_ownership(user, instance):
             return False
 
 
+def get_role(user, instance):
+    is_owner = validate_ownership(user, instance)
+    if is_owner:
+        return Role.OWNER
+    else:
+        content_type = ContentType.objects.get_for_model(instance)
+        return UserObjectRole.objects.filter(
+            collaborator=user, content_type=content_type, object_pk=instance.pk
+        ).first()
+
+
+def get_permissions(user, instance):
+    is_owner = validate_ownership(user, instance)
+    if is_owner:
+        qs = Permissions.objects.filter(role=Role.OWNER)
+    else:
+        content_type = ContentType.objects.get_for_model(instance)
+        user_object_role = UserObjectRole.objects.filter(
+            collaborator=user, content_type=content_type, object_pk=instance.pk
+        ).first()
+        if not user_object_role:
+            qs = Permissions.objects.none()
+        else:
+            qs = Permissions.objects.filter(role=user_object_role.role)
+
+    return qs.values_list("permission", flat=True)
 
 
 @transaction.atomic()
@@ -36,12 +63,19 @@ def create_invite(
     object_pk: int,
     message: str,
 ):
-    entity_type = get_model_from_entity(target_entity)
+    content_type = get_content_type(target_entity)
+    Model = content_type.model_class()
+    instance = Model.objects.filter(pk=object_pk).first()
+    if not validate_ownership(user=inviter, instance=instance):
+        raise InvalidOwnership(
+            f"inviter {inviter.email} does not have ownership of {target_entity} object {object_pk}"
+        )
+
     collaborator = User.objects.filter(email=email).first()
     collaborator_exists = collaborator is not None
     object_role, created = UserObjectRole.objects.update_or_create(
         email=email,
-        content_type=entity_type,
+        content_type=content_type,
         object_pk=object_pk,
         defaults={
             "role": role,
@@ -63,10 +97,15 @@ def create_invite(
 
     return object_role
 
+
 def get_planningareas_for_user(user):
-    entity_type = get_model_from_entity("planningarea")
+    content_type = get_content_type("planningarea")
     areas = PlanningArea.objects.filter(
-        Q(user=user) |
-        Q(pk__in=UserObjectRole.objects.filter(collaborator_id=user, content_type_id=entity_type.pk).values_list('object_pk', flat=True))
+        Q(user=user)
+        | Q(
+            pk__in=UserObjectRole.objects.filter(
+                collaborator_id=user, content_type_id=content_type.pk
+            ).values_list("object_pk", flat=True)
+        )
     )
     return areas
