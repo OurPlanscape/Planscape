@@ -64,6 +64,6 @@ class UserObjectRolesForObject(APIView):
         user_object_roles = UserObjectRole.objects.filter(
             content_type=content_type,
             object_pk=object_pk,
-        )
+        ).exclude(collaborator_id=user.pk)
         serializer = UserObjectRoleSerializer(instance=user_object_roles, many=True)
         return Response(serializer.data)
