@@ -3,7 +3,7 @@ from rest_framework.serializers import CharField, DateTimeField, IntegerField
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from collaboration.models import Permissions
-from collaboration.services import get_role
+from collaboration.services import get_role, get_permissions
 from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
 from planning.services import get_acreage
 from stands.models import StandSizeChoices
@@ -37,18 +37,11 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def get_role(self, instance):
         user = self.context["request"].user
-        self.context["role"] = get_role(user, instance)
-        return self.context["role"]
+        return get_role(user, instance)
 
-    # This exists separately from services get_permissions, since we don't want to
-    #  look up roles twice, but depends on a role record to exist
     def get_permissions(self, instance):
-        role = self.context.get("role") or self.get_role(instance)
-        if role is None:
-            return list()
-        else:
-            qs = Permissions.objects.filter(role=role)
-            return list(qs.values_list("permission", flat=True))
+        user = self.context["request"].user
+        return list(get_permissions(user, instance))
 
     class Meta:
         fields = (

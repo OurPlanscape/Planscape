@@ -2,12 +2,30 @@ from pathlib import Path
 from django.contrib.gis.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
-from utils.uuid_utils import generate_short_uuid
+from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Q
+from utils.uuid_utils import generate_short_uuid
+from collaboration.models import UserObjectRole
 from core.models import CreatedAtMixin, UpdatedAtMixin
 import uuid
 
 User = get_user_model()
+
+
+class PlanningAreaManager(models.Manager):
+    def get_for_user(self, user):
+        content_type_pk = ContentType.objects.get(model="planningarea").pk
+        qs = super().get_queryset()
+        filtered_qs = qs.filter(
+            Q(user=user)
+            | Q(
+                pk__in=UserObjectRole.objects.filter(
+                    collaborator_id=user, content_type_id=content_type_pk
+                ).values_list("object_pk", flat=True)
+            )
+        )
+        return filtered_qs
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
@@ -18,6 +36,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
         null=True,
     )
 
+    objects = PlanningAreaManager()
     region_name: models.CharField = models.CharField(max_length=120)
 
     name: models.CharField = models.CharField(max_length=120)
