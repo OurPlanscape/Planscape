@@ -9,7 +9,6 @@ from collaboration.models import Role
 from collaboration.utils import (
     create_collaborator_record,
 )
-from collaboration.services import get_planningareas_for_user
 from planning.models import PlanningArea, Scenario
 
 
@@ -346,7 +345,7 @@ class PlanningAreaPermisssionsTest(TestCase):
         return user
 
     def test_get_planningareas_for_user(self):
-        areas = get_planningareas_for_user(self.invitee)
+        areas = PlanningArea.objects.get_for_user(self.invitee)
         self.assertEqual(len(areas), 4)
 
         view_name = "User Can View This Area"

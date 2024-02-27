@@ -16,7 +16,6 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from collaboration.services import get_planningareas_for_user
 from planning.models import (
     PlanningArea,
     Scenario,
