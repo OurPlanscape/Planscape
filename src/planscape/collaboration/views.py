@@ -1,7 +1,10 @@
+from django.contrib.contenttypes.models import ContentType
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework import status
 from collaboration.exceptions import InvalidOwnership
+from collaboration.models import UserObjectRole
 from collaboration.serializers import (
     CreateUserObjectRolesSerializer,
     UserObjectRoleSerializer,
@@ -9,6 +12,7 @@ from collaboration.serializers import (
 import logging
 
 from collaboration.services import create_invite
+from collaboration.utils import check_for_permission
 
 logger = logging.getLogger(__name__)
 
@@ -46,3 +50,20 @@ class CreateInvite(APIView):
             logger.exception("Something failed during the creation of a new invite.")
             # this will return a 500
             raise
+
+
+class UserObjectRolesForObject(APIView):
+
+    def get(self, request: Request, target_entity: str, object_pk: int):
+
+        user = request.user
+        if not check_for_permission(user.pk, "add_collaborator"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        content_type = ContentType.objects.get(model=target_entity)
+        user_object_roles = UserObjectRole.objects.filter(
+            content_type=content_type,
+            object_pk=object_pk,
+        )
+        serializer = UserObjectRoleSerializer(instance=user_object_roles, many=True)
+        return Response(serializer.data)
