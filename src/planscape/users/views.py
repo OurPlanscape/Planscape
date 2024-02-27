@@ -54,7 +54,6 @@ def delete_user(request: HttpRequest) -> HttpResponse:
 
         return JsonResponse({"deleted": True})
     except Exception as e:
-        print(f"ERROR in delete_user: {e}")
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 

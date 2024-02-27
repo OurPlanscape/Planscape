@@ -6,10 +6,14 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
-from collaboration.models import Role
+from collaboration.models import Role, Permissions
 from collaboration.utils import create_collaborator_record
 from planning.models import PlanningArea, Scenario, ScenarioResult
-from planning.tests.helpers import _create_planning_area, _create_scenario
+from planning.tests.helpers import (
+    _create_planning_area,
+    _create_scenario,
+    reset_permissions,
+)
 
 # Yes, we are pulling in an internal just for testing that a geometry write happened.
 from planning.views import _convert_polygon_to_multipolygon
@@ -775,6 +779,9 @@ class ListPlanningAreaTest(APITransactionTestCase):
 
 class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
         self.creator_user = User.objects.create(
             username="makerofthings",
             email="creator@test.test",
@@ -838,10 +845,23 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             content_type="application/json",
         )
         planning_areas = json.loads(response.content)
+        expected_perms = [
+            "view_planningarea",
+            "view_scenario",
+            "add_scenario",
+            "change_scenario",
+            "view_collaborator",
+            "add_collaborator",
+            "delete_collaborator",
+            "change_collaborator",
+        ]
         self.assertEqual(len(planning_areas), 3)
         self.assertEqual(planning_areas[0]["role"], "Owner")
         self.assertEqual(planning_areas[1]["role"], "Owner")
         self.assertEqual(planning_areas[2]["role"], "Owner")
+        self.assertCountEqual(planning_areas[0]["permissions"], expected_perms)
+        self.assertCountEqual(planning_areas[1]["permissions"], expected_perms)
+        self.assertCountEqual(planning_areas[2]["permissions"], expected_perms)
 
     def test_planningareas_list_for_collaborator(self):
         self.client.force_authenticate(self.collab_user)
@@ -870,7 +890,9 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(len(planning_areas), 1)
         the_area = planning_areas[0]
         self.assertEqual(the_area["role"], "Viewer")
-        self.assertCountEqual(the_area["permissions"], [])
+        self.assertCountEqual(
+            the_area["permissions"], ["view_planningarea", "view_scenario"]
+        )
 
 
 # EndtoEnd test that lists, creates a planning_area, creates a scenario,

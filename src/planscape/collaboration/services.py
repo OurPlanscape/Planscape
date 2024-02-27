@@ -44,9 +44,7 @@ def get_role(user, instance):
 def get_permissions(user, instance):
     is_owner = validate_ownership(user, instance)
     if is_owner:
-        print(f"User {user} is owner.")
         qs = Permissions.objects.filter(role=Role.OWNER)
-        print(f"User {user} has perms {qs.values_list('permission', flat=True)}")
     else:
         content_type = ContentType.objects.get_for_model(instance)
         user_object_role = UserObjectRole.objects.filter(
@@ -56,9 +54,6 @@ def get_permissions(user, instance):
             qs = Permissions.objects.none()
         else:
             qs = Permissions.objects.filter(role=user_object_role.role)
-    print(
-        f"For user {user.username} with the permissions are: {qs.values_list('permission', flat=True)}\n--------------"
-    )
     return qs.values_list("permission", flat=True)
 
 
