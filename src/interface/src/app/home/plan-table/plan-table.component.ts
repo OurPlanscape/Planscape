@@ -108,11 +108,13 @@ export class PlanTableComponent implements OnInit {
     this.dialog.open(SharePlanDialogComponent, {
       data: {
         name: '"' + this.selectedPlan.name + '"',
+        id: this.selectedPlan.id,
       },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
   }
+
   refresh(): void {
     this.getPlansFromService();
   }
