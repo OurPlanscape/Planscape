@@ -1,10 +1,11 @@
 from rest_framework import serializers
-from collaboration.models import Role
+from collaboration.models import Permissions, Role, UserObjectRole
+from collaboration.services import get_permissions
 
 
 class CreateUserObjectRolesSerializer(serializers.Serializer):
     target_entity = serializers.ChoiceField(
-        choices=[("PlanningArea", "Planning Area")],
+        choices=[("planningarea", "Planning Area")],
         default="PlanningArea",
         required=False,
     )
@@ -20,3 +21,31 @@ class CreateUserObjectRolesSerializer(serializers.Serializer):
         allow_null=True,
         required=False,
     )
+
+
+class UserObjectRoleSerializer(serializers.ModelSerializer):
+    collaborator = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    inviter = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    permissions = serializers.SerializerMethodField()
+
+    def get_permissions(self, instance):
+        request = self.context["request"]
+        user = request.user
+        return get_permissions(user, instance)
+
+    class Meta:
+        model = UserObjectRole
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "email",
+            "collaborator",
+            "role",
+            "inviter",
+            "content_type",
+            "object_pk",
+            "permissions",
+        )
