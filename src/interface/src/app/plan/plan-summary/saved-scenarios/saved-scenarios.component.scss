@@ -1,6 +1,8 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 @import "../../../../theme";
+@import "../../../../styles/mixins";
+@import "../../../../styles/colors";
 
 
 .saved-scenarios-wrapper {
@@ -56,5 +58,13 @@
 
 .margin-top {
   margin-top: 30px;
+}
+
+.empty-state {
+  @include standard-input-label();
+  color: $color-dark-gray;
+  padding: 40px 20px;
+  margin: 20px;
+  text-align: center;
 }
 

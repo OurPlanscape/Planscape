@@ -1,3 +1,5 @@
+export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
+
 export interface Scenario {
   id?: string;
   name: string;
@@ -6,6 +8,7 @@ export interface Scenario {
   planning_area: string;
   configuration: ScenarioConfig;
   scenario_result?: ScenarioResult;
+  status: SCENARIO_STATUS;
 }
 
 /**
