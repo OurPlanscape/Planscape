@@ -44,7 +44,7 @@ describe('SavedScenariosComponent', () => {
     );
 
     fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
-      'PlanService',
+      'ScenarioService',
       {
         getScenariosForPlan: of([
           {
@@ -56,6 +56,7 @@ describe('SavedScenariosComponent', () => {
               id: 1,
               max_budget: 200,
             },
+            status: 'ACTIVE',
           },
         ]),
         deleteScenarios: of(['1']),
@@ -111,7 +112,7 @@ describe('SavedScenariosComponent', () => {
       '1'
     );
 
-    expect(component.scenarios.length).toEqual(1);
+    expect(component.activeScenarios.length).toEqual(1);
   });
 
   it('should delete selected scenarios', () => {
@@ -123,6 +124,7 @@ describe('SavedScenariosComponent', () => {
       configuration: {
         max_budget: 200,
       },
+      status: 'ACTIVE',
     };
 
     const dialog = TestBed.inject(MatDialog);

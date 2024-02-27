@@ -61,6 +61,7 @@ describe('ScenarioService', () => {
         planning_area: '1',
         configuration: scenarioConfig,
         scenario_result: undefined,
+        status: 'ACTIVE',
       };
 
       service.getScenario('1').subscribe((res) => {
@@ -101,6 +102,7 @@ describe('ScenarioService', () => {
         name: 'name',
         planning_area: '1',
         configuration: scenarioConfig,
+        status: 'ACTIVE',
       };
 
       const backendConfig = {
@@ -133,6 +135,7 @@ describe('ScenarioService', () => {
         name: 'name',
         planning_area: '1',
         configuration: backendConfig,
+        status: 'ACTIVE',
       });
       req.flush('1');
 
@@ -156,6 +159,7 @@ describe('ScenarioService', () => {
         planning_area: '1',
         configuration: scenarioConfig,
         notes: 'hello',
+        status: 'ACTIVE',
       };
 
       service.updateScenarioNotes(scenario).subscribe((res) => {
