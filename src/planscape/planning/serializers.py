@@ -2,8 +2,8 @@ from rest_framework import serializers
 from rest_framework.serializers import CharField, DateTimeField, IntegerField
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
-from collaboration.models import Permissions, Role, UserObjectRole
-from collaboration.services import validate_ownership
+from collaboration.models import Permissions
+from collaboration.services import get_role
 from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
 from planning.services import get_acreage
 from stands.models import StandSizeChoices
@@ -37,20 +37,11 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def get_role(self, instance):
         user = self.context["request"].user
-
-        is_owner = validate_ownership(user, instance)
-        if is_owner:
-            self.context["role"] = Role.OWNER
-            return Role.OWNER
-        else:
-            content_type = ContentType.objects.get_for_model(instance)
-            self.context["role"] = UserObjectRole.objects.filter(
-                collaborator=user, content_type=content_type, object_pk=instance.pk
-            ).first()
+        self.context["role"] = get_role(user=user, instance=instance)
         return self.context["role"]
 
     def get_permissions(self, instance):
-        role = self.context.get("role")
+        role = self.context.get("role") or self.get_role(instance)
         qs = Permissions.objects.filter(role=role)
         return list(qs.values_list("permission", flat=True))
 
