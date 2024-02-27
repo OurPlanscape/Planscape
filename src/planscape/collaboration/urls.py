@@ -1,11 +1,8 @@
-from django.urls import path, register_converter
+from django.urls import path
 from collaboration.views import (
     CreateInvite,
     GetInvitationsForObject,
 )
-from planscape.url_converters import ContentTypeURLConverter
-
-register_converter(ContentTypeURLConverter, "ctype")
 
 app_name = "collaboration"
 urlpatterns = [
