@@ -336,7 +336,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
             safe=False,
         )
     except Exception as e:
-        return HttpResponseBadRequest(f"Ill-formed request??: {e}")
+        return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
 def _serialize_scenario(scenario: Scenario) -> dict:
