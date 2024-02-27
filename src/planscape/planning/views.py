@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from base.region_name import display_name_to_region, region_to_display_name
@@ -16,6 +17,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
+from collaboration.permissions import PlanningAreaPermission
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -35,6 +37,10 @@ from planning.services import (
 )
 from planning.tasks import async_forsys_run
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+
+logger = logging.getLogger(__name__)
 
 
 # We always need to store multipolygons, so coerce a single polygon to
@@ -216,7 +222,14 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
         if planning_area_id is None:
             return JsonResponse({"error": "No planning area ID provided"}, status=400)
 
-        planning_area = get_object_or_404(user.planning_areas, id=planning_area_id)
+        planning_area = PlanningArea.objects.get(id=planning_area_id)
+
+        if not PlanningAreaPermission.can_change(user, planning_area):
+            return Response(
+                {"message:", "User has no permission to update this planning area"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         is_dirty = False
 
         if "notes" in body:
@@ -235,13 +248,14 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
         if is_dirty:
             planning_area.save()
 
-        return HttpResponse(
+        return Response(
             json.dumps({"id": planning_area_id}), content_type="application/json"
         )
-    except Http404:
-        return HttpResponseBadRequest("Planning area not found for user.", status=404)
+    except ValueError as ve:
+        return Response({"message": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.exception("Error updating planning area %s", e)
+        raise
 
 
 @api_view(["GET"])
@@ -267,21 +281,34 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
             return JsonResponse(
                 {"error": "Missing required parameter 'id'"}, status=400
             )
-        return JsonResponse(
-            _serialize_planning_area(
-                get_object_or_404(
-                    user.planning_areas.annotate(
-                        scenario_count=Count("scenarios", distinct=True)
-                    ).annotate(scenario_latest_updated_at=Max("scenarios__updated_at")),
-                    id=request.GET["id"],
-                ),
-                True,
+
+        planning_area = (
+            PlanningArea.objects.filter(id=request.GET["id"])
+            .annotate(scenario_count=Count("scenarios", distinct=True))
+            .annotate(
+                scenario_latest_updated_at=Coalesce(
+                    Max("scenarios__updated_at"), "updated_at"
+                )
             )
+            .first()
         )
-    except Http404:
-        return HttpResponseBadRequest("Planning area not found for user.", status=404)
+
+        if not planning_area:
+            return Response(
+                {"message": "Planning area not found with this ID"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not PlanningAreaPermission.can_view(user, planning_area):
+            return Response(
+                {"message": "User has no access to this planning area."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return Response(_serialize_planning_area(planning_area, True))
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.exception("Error getting area by id %s", e)
+        raise
 
 
 # No Params expected, since we're always using the logged in user.

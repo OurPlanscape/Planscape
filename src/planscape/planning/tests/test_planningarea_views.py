@@ -525,8 +525,11 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"Planning area not found for user.")
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            json.dumps(response.content)
+            {"message": "User has no permission to update this planning area"},
+        )
 
     def test_update_blank_name(self):
         self.client.force_authenticate(self.user)
@@ -597,7 +600,9 @@ class GetPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"Planning area not found for user.")
+        self.assertJSONEqual(
+            response.content, {"message": "Planning area not found with this ID"}
+        )
 
     def test_get_planning_area_wrong_user(self):
         self.client.force_authenticate(self.user)
@@ -606,8 +611,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
             {"id": self.planning_area2.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"Planning area not found for user.")
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content, {"message": "User has no access to this planning area."}
+        )
 
     def test_get_planning_area_not_logged_in(self):
         response = self.client.get(
