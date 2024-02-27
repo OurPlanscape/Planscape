@@ -13,7 +13,7 @@ urlpatterns = [
     ),
     path(
         "invitations/<ctype:target_entity>/<int:object_pk>",
-        GetInvitationsForObject,
+        GetInvitationsForObject.as_view(),
         name="get_invitations",
     ),
 ]
