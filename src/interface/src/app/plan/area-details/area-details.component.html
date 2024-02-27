@@ -5,7 +5,13 @@
   </div>
   <div>
     <div class="number">{{ plan.scenarios }}</div>
-    scenarios
+    {{
+      plan.scenarios
+        ? plan.scenarios > 1
+          ? 'scenarios'
+          : 'scenario'
+        : 'scenarios'
+    }}
   </div>
 </div>
 <div class="summary">
