@@ -38,6 +38,7 @@ from planning.services import (
 from planning.tasks import async_forsys_run
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.request import Request
 from rest_framework import status
 
 logger = logging.getLogger(__name__)
@@ -62,7 +63,9 @@ def _convert_polygon_to_multipolygon(geometry: dict):
 
 # TODO: Along with PlanningAreaSerializer, refactor this a bit more to
 # make it more maintainable.
-def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) -> dict:
+def _serialize_planning_area(
+    planning_area: PlanningArea, add_geometry: bool, context
+) -> dict:
     """
     Serializes a Planning Area (Plan) into a dictionary.
     1. Converts the Planning Area to a dictionary with fields 'id', 'geometry', and 'properties'
@@ -71,7 +74,10 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
     3. Adds the 'geometry' if requested.
     4. Replaces the internal region_name with the display version.
     """
-    data = PlanningAreaSerializer(planning_area).data
+
+    serializer = PlanningAreaSerializer(planning_area, context=context)
+
+    data = serializer.data
     result = data["properties"]
     result["id"] = data["id"]
     if "geometry" in data and add_geometry:
@@ -83,7 +89,7 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
 
 #### PLAN(NING AREA) Handlers ####
 @api_view(["POST"])
-def create_planning_area(request: HttpRequest) -> HttpResponse:
+def create_planning_area(request: Request) -> Response:
     """
     Creates a planning area (aka plan), given a name, region, an optional geometry,
     and an optional notes string.
@@ -149,7 +155,7 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["POST"])
-def delete_planning_area(request: HttpRequest) -> HttpResponse:
+def delete_planning_area(request: Request) -> Response:
     """
     Deletes a planning area or areas.
     Requires a logged in user.  Users can delete only their owned planning areas.
@@ -165,14 +171,22 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                content_type="application/json",
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # Get the planning area IDs
         body = json.loads(request.body)
         planning_area_id = body.get("id", None)
         planning_area_ids = []
         if planning_area_id is None:
-            raise ValueError("Must specify planning area id.")
+            return Response(
+                {"message": f"No ID given for planning area"},
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
         elif isinstance(planning_area_id, int):
             planning_area_ids = [planning_area_id]
         elif isinstance(planning_area_id, list):
@@ -181,9 +195,12 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
             raise ValueError("Planning Area ID must be an int or a list of ints.")
 
         # Get the planning area(s) for just the logged in user.
-        planning_areas = user.planning_areas.filter(pk__in=planning_area_ids)
-
-        planning_areas.delete()
+        planning_areas = PlanningArea.objects.get_for_user(user).filter(
+            pk__in=planning_area_ids
+        )
+        for p in planning_areas:
+            if PlanningAreaPermission.can_remove(user, p):
+                p.delete()
 
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.
@@ -191,12 +208,17 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         response_data = {"id": planning_area_ids}
 
         return HttpResponse(json.dumps(response_data), content_type="application/json")
+    except ValueError as e:
+        logger.exception(f"Error deleting planningarea: {ve}")
+        return Http
+
     except Exception as e:
-        return HttpResponseBadRequest("Error in delete: " + str(e))
+        logger.exception(f"Error deleting planningarea: {e}")
+        raise
 
 
 @api_view(["PATCH", "POST"])
-def update_planning_area(request: HttpRequest) -> HttpResponse:
+def update_planning_area(request: Request) -> Response:
     """
     Updates a planning area's name or notes.  To date, these are the only fields that
     can be modified after a planning area is created.  This can be also used to clear
@@ -226,7 +248,10 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
 
         if not PlanningAreaPermission.can_change(user, planning_area):
             return Response(
-                {"message:", "User has no permission to update this planning area"},
+                {
+                    "message": "User does not have permission to update this planning area",
+                },
+                content_type="application/json",
                 status=status.HTTP_403_FORBIDDEN,
             )
 
@@ -248,18 +273,20 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
         if is_dirty:
             planning_area.save()
 
-        return Response(
-            json.dumps({"id": planning_area_id}), content_type="application/json"
-        )
+        return Response({"id": planning_area_id}, content_type="application/json")
     except ValueError as ve:
-        return Response({"message": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {"message": str(ve)},
+            status=status.HTTP_400_BAD_REQUEST,
+            content_type="application/json",
+        )
     except Exception as e:
         logger.exception("Error updating planning area %s", e)
         raise
 
 
 @api_view(["GET"])
-def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
+def get_planning_area_by_id(request: Request) -> Response:
     """
     Retrieves a planning area by ID.
     Requires a logged in user.  Users can see only their owned planning_areas.
@@ -275,11 +302,15 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         if "id" not in request.GET:
-            return JsonResponse(
-                {"error": "Missing required parameter 'id'"}, status=400
+            return Response(
+                {"error": "Missing required parameter 'id'"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         planning_area = (
@@ -305,7 +336,9 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        return Response(_serialize_planning_area(planning_area, True))
+        return Response(
+            _serialize_planning_area(planning_area, True, context={"request": request})
+        )
     except Exception as e:
         logger.exception("Error getting area by id %s", e)
         raise
@@ -313,7 +346,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
 
 # No Params expected, since we're always using the logged in user.
 @api_view(["GET"])
-def list_planning_areas(request: HttpRequest) -> HttpResponse:
+def list_planning_areas(request: Request) -> Response:
     """
     Retrieves all planning areas for a user.
     Requires a logged in user.  Users can see only their owned planning_areas.
@@ -348,7 +381,9 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         )
         return JsonResponse(
             [
-                _serialize_planning_area(planning_area, True)
+                _serialize_planning_area(
+                    planning_area, True, context={"request": request}
+                )
                 for planning_area in planning_areas
             ],
             safe=False,
@@ -368,7 +403,7 @@ def _serialize_scenario(scenario: Scenario) -> dict:
 
 
 @api_view(["GET"])
-def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
+def get_scenario_by_id(request: Request) -> HttpResponse:
     """
     Retrieves a scenario by its ID.
     Requires a logged in user.  Users can see only scenarios belonging to their own planning areas.
@@ -395,7 +430,7 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["GET"])
-def download_csv(request: HttpRequest) -> HttpResponse:
+def download_csv(request: Request) -> HttpResponse:
     """
     Generates a new Zip file for a scenario based on ID.
 
@@ -454,7 +489,7 @@ def download_csv(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["GET"])
-def download_shapefile(request: HttpRequest) -> HttpResponse:
+def download_shapefile(request: Request) -> HttpResponse:
     """
     Generates a new Zip file of the shapefile for a scenario based on ID.
 
@@ -501,7 +536,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["POST"])
-def create_scenario(request: HttpRequest) -> HttpResponse:
+def create_scenario(request: Request) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -570,7 +605,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["PATCH", "POST"])
-def update_scenario(request: HttpRequest) -> HttpResponse:
+def update_scenario(request: Request) -> HttpResponse:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that
     can be modified after a scenario is created.  This can be also used to clear
@@ -633,7 +668,7 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
 # by the EP.
 #
 # TODO: require credential from EP so that random people cannot call this endpoint.
-def update_scenario_result(request: HttpRequest) -> HttpResponse:
+def update_scenario_result(request: Request) -> HttpResponse:
     """
     Updates a ScenarioResult's status.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -691,7 +726,7 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["GET"])
-def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
+def list_scenarios_for_planning_area(request: Request) -> HttpResponse:
     """
     Lists all Scenarios for a Planning area.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -724,7 +759,7 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["DELETE", "POST"])
-def delete_scenario(request: HttpRequest) -> HttpResponse:
+def delete_scenario(request: Request) -> HttpResponse:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
     Requires a logged in user, as a scenario must be associated with a user's planning area.

@@ -7,9 +7,13 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
-from collaboration.utils import create_collaborator_record, reset_permissions
+from collaboration.utils import create_collaborator_record
 from planning.models import PlanningArea, Scenario, ScenarioResult
-from planning.tests.helpers import _create_planning_area, _create_scenario
+from planning.tests.helpers import (
+    _create_planning_area,
+    _create_scenario,
+    reset_permissions,
+)
 
 # Yes, we are pulling in an internal just for testing that a geometry write happened.
 from planning.views import _convert_polygon_to_multipolygon
@@ -79,9 +83,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(planning_area.notes, self.notes)
         self.assertEqual(planning_area.name, "test plan")
         self.assertEqual(planning_area.user.pk, self.user.pk)
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area.pk})
 
     def test_create_planning_area_no_notes(self):
         self.client.force_authenticate(self.user)
@@ -108,9 +110,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
                 _convert_polygon_to_multipolygon(self.geometry)
             )
         )
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area.pk})
 
     def test_create_planning_area_multipolygon(self):
         self.client.force_authenticate(self.user)
@@ -137,9 +137,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
                 _convert_polygon_to_multipolygon(self.multipolygon_geometry)
             )
         )
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area.pk})
 
     def test_missing_user(self):
         payload = json.dumps(
@@ -289,9 +287,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": [self.planning_area2.pk]}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": [self.planning_area2.pk]})
         self.assertEqual(PlanningArea.objects.count(), 2)
 
     def test_delete_user_not_logged_in(self):
@@ -346,9 +342,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area_ids}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area_ids})
         self.assertEqual(PlanningArea.objects.count(), 1)
 
 
@@ -443,9 +437,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.new_name)
         self.assertEqual(planning_area.notes, self.new_notes)
@@ -459,9 +451,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, self.new_notes)
@@ -475,9 +465,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.new_name)
         self.assertEqual(planning_area.notes, self.old_notes)
@@ -491,9 +479,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, None)
@@ -509,9 +495,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, "")
@@ -527,9 +511,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, self.old_notes)
@@ -551,7 +533,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_update_missing_id(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
         response = self.client.patch(
             reverse("planning:update_planning_area"),
@@ -580,7 +562,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
             response.content,
-            {"message": "User has no permission to update this planning area"},
+            {"message": "User does not have permission to update this planning area"},
         )
 
     def test_update_collaborator_user(self):
@@ -600,7 +582,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
             response.content,
-            {"message": "User has no permission to update this planning area"},
+            {"message": "User does not have permission to update this planning area"},
         )
 
     def test_update_viewer_user(self):
@@ -618,13 +600,14 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
+
         self.assertJSONEqual(
             response.content,
-            {"message": "User has no permission to update this planning area"},
+            {"message": "User does not have permission to update this planning area"},
         )
 
     def test_update_blank_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.planning_area.pk, "name": None, "notes": self.new_notes}
         )
@@ -637,7 +620,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"name must be defined")
 
     def test_update_empty_string_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.planning_area.pk, "name": "", "notes": self.new_notes}
         )
@@ -764,7 +747,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
         self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
         self.assertEqual(returned_planning_area["role"], "Collaborator")
-        self.assertCountEqual(returned_planning_area["permissions"], [])
+        self.assertCountEqual(
+            returned_planning_area["permissions"],
+            ["view_planningarea", "view_scenario", "add_scenario"],
+        )
         self.assertIsNotNone(returned_planning_area["created_at"])
 
     def test_get_planning_area_as_viewer(self):
@@ -780,7 +766,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
         self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
         self.assertEqual(returned_planning_area["role"], "Viewer")
-        self.assertCountEqual(returned_planning_area["permissions"], [])
+        self.assertCountEqual(
+            returned_planning_area["permissions"],
+            ["view_planningarea", "view_scenario"],
+        )
         self.assertIsNotNone(returned_planning_area["created_at"])
 
     def test_get_planning_area_as_unlinked_owner(self):
