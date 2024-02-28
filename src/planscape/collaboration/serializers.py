@@ -35,6 +35,12 @@ class UserObjectRoleSerializer(serializers.ModelSerializer):
         user = request.user
         return get_permissions(user, instance)
 
+    collaborator_name = serializers.SerializerMethodField()
+
+    def get_collaborator_name(self, instance):
+        if instance.collaborator:
+            return instance.collaborator.get_full_name()
+
     class Meta:
         model = UserObjectRole
         fields = (
@@ -48,4 +54,5 @@ class UserObjectRoleSerializer(serializers.ModelSerializer):
             "content_type",
             "object_pk",
             "permissions",
+            "collaborator_name",
         )
