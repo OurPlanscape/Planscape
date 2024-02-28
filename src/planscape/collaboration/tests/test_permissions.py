@@ -6,9 +6,7 @@ from collaboration.permissions import (
     ScenarioPermission,
 )
 from collaboration.models import Role
-from collaboration.utils import (
-    create_collaborator_record,
-)
+from collaboration.utils import create_collaborator_record
 from planning.models import PlanningArea, Scenario
 
 

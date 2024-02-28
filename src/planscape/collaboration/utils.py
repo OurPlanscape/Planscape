@@ -1,5 +1,5 @@
 from collaboration.models import UserObjectRole, Permissions, Role
-from planning.models import PlanningArea, Scenario
+from planning.models import PlanningArea
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth.models import User
@@ -28,7 +28,7 @@ def create_collaborator_record(
 ):
     content_type = ContentType.objects.get_for_model(model)
     collaborator = UserObjectRole.objects.create(
-        email="john@doe.com",
+        email=invitee.email,
         collaborator=invitee,
         role=role,
         inviter=user,
@@ -36,3 +36,26 @@ def create_collaborator_record(
         object_pk=model.pk,
     )
     collaborator.save()
+
+
+def reset_permissions():
+    viewer = ["view_planningarea", "view_scenario"]
+    collaborator = viewer + ["add_scenario"]
+    owner = collaborator + [
+        "change_scenario",
+        "view_collaborator",
+        "add_collaborator",
+        "delete_collaborator",
+        "change_collaborator",
+    ]
+    for x in viewer:
+        entry = Permissions.objects.create(role=Role.VIEWER, permission=x)
+        entry.save()
+
+    for x in collaborator:
+        entry = Permissions.objects.create(role=Role.COLLABORATOR, permission=x)
+        entry.save()
+
+    for x in owner:
+        entry = Permissions.objects.create(role=Role.OWNER, permission=x)
+        entry.save()

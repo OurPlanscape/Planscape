@@ -6,6 +6,8 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
+from collaboration.models import Role, Permissions
+from collaboration.utils import create_collaborator_record, reset_permissions
 from planning.models import PlanningArea, Scenario, ScenarioResult
 from planning.tests.helpers import _create_planning_area, _create_scenario
 
@@ -527,7 +529,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
-            json.dumps(response.content)
+            response.content,
             {"message": "User has no permission to update this planning area"},
         )
 
@@ -560,27 +562,81 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
 
 class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        if not Permissions.objects.exists():
+            reset_permissions()
+
+        self.owner_user = User.objects.create(
+            username="area_owner",
+            first_name="Oliver",
+            last_name="Owner",
+            email="owner1@test.test",
+        )
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
+
+        self.owner_user2 = User.objects.create(
+            username="area2_owner",
+            first_name="Olga",
+            last_name="Owner",
+            email="owner2@test.test",
+        )
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+
+        self.collab_user = User.objects.create(
+            username="area_collab",
+            first_name="Chris",
+            last_name="Collab",
+            email="collab@test.test",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
+
+        self.viewer_user = User.objects.create(
+            username="area_viewer",
+            first_name="Veronica",
+            last_name="Viewer",
+            email="viewer@test.test",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.unprivileged_user = User.objects.create(
+            username="justauser",
+            first_name="Ned",
+            last_name="Nobody",
+            email="user@test.test",
+        )
+        self.unprivileged_user.set_password("12345")
+        self.unprivileged_user.save()
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", storable_geometry
+            self.owner_user, "Owned By Owner 1 plan", storable_geometry
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", storable_geometry
+            self.owner_user2, "Owned By Owner 2 plan", storable_geometry
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
         )
 
     def test_get_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": self.planning_area.pk},
@@ -588,12 +644,13 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         returned_planning_area = response.json()
-        self.assertEqual(returned_planning_area["name"], "test plan")
+        self.assertEqual(returned_planning_area["name"], "Owned By Owner 1 plan")
+        self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
         self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
         self.assertIsNotNone(returned_planning_area["created_at"])
 
     def test_get_nonexistent_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": 9999},
@@ -604,11 +661,55 @@ class GetPlanningAreaTest(APITransactionTestCase):
             response.content, {"message": "Planning area not found with this ID"}
         )
 
-    def test_get_planning_area_wrong_user(self):
-        self.client.force_authenticate(self.user)
+    def test_get_planning_area_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:get_planning_area_by_id"),
+            {"id": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_planning_area = response.json()
+        self.assertEqual(returned_planning_area["name"], "Owned By Owner 1 plan")
+        self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
+        self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
+        self.assertEqual(returned_planning_area["role"], "Collaborator")
+        self.assertCountEqual(returned_planning_area["permissions"], [])
+        self.assertIsNotNone(returned_planning_area["created_at"])
+
+    def test_get_planning_area_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse("planning:get_planning_area_by_id"),
+            {"id": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_planning_area = response.json()
+        self.assertEqual(returned_planning_area["name"], "Owned By Owner 1 plan")
+        self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
+        self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
+        self.assertEqual(returned_planning_area["role"], "Viewer")
+        self.assertCountEqual(returned_planning_area["permissions"], [])
+        self.assertIsNotNone(returned_planning_area["created_at"])
+
+    def test_get_planning_area_as_unlinked_owner(self):
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": self.planning_area2.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content, {"message": "User has no access to this planning area."}
+        )
+
+    def test_get_planning_area_as_unprivileged_user(self):
+        self.client.force_authenticate(self.unprivileged_user)
+        response = self.client.get(
+            reverse("planning:get_planning_area_by_id"),
+            {"id": self.planning_area.pk},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
@@ -673,7 +774,7 @@ class ListPlanningAreaTest(APITransactionTestCase):
             self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
         )
 
-        self.user2 = User.objects.create(username="testuser2")
+        self.user2 = User.objects.create(username="otherowner")
         self.user2.set_password("12345")
         self.user2.save()
         self.geometry = {
