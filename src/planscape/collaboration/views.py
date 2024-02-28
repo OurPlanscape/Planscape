@@ -67,5 +67,11 @@ class GetInvitationsForObject(APIView):
             content_type=content_type,
             object_pk=object_pk,
         ).exclude(collaborator_id=user.pk)
-        serializer = UserObjectRoleSerializer(instance=user_object_roles, many=True)
+        serializer = UserObjectRoleSerializer(
+            instance=user_object_roles,
+            many=True,
+            context={
+                "request": request,
+            },
+        )
         return Response(serializer.data)
