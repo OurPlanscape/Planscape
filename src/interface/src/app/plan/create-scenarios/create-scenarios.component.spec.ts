@@ -54,6 +54,7 @@ describe('CreateScenariosComponent', () => {
     name: 'name',
     planning_area: '1',
     configuration: {},
+    status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
       completed_at: '0',
@@ -109,6 +110,7 @@ describe('CreateScenariosComponent', () => {
               id: 1,
               max_budget: 200,
             },
+            status: 'ACTIVE',
           },
         ]),
       }

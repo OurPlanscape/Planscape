@@ -174,6 +174,7 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "scenario_result",
             "user",
             "creator",
+            "status",
         )
         model = Scenario
 

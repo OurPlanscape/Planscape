@@ -15,10 +15,12 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, register_converter
 from dj_rest_auth.registration.views import VerifyEmailView
+from planscape.url_converters import ContentTypeURLConverter
 from users import views as user_views
 
+register_converter(ContentTypeURLConverter, "ctype")
 
 urlpatterns = [
     path("planscape-backend/admin/", admin.site.urls),
