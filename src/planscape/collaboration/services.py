@@ -29,7 +29,7 @@ def validate_ownership(user, instance):
 def get_role(user, instance):
     is_owner = validate_ownership(user, instance)
     if is_owner:
-        return Role.OWNER
+        return "Creator"
     else:
         content_type = ContentType.objects.get_for_model(instance)
         return (

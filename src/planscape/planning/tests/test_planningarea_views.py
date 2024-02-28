@@ -856,9 +856,9 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             "change_collaborator",
         ]
         self.assertEqual(len(planning_areas), 3)
-        self.assertEqual(planning_areas[0]["role"], "Owner")
-        self.assertEqual(planning_areas[1]["role"], "Owner")
-        self.assertEqual(planning_areas[2]["role"], "Owner")
+        self.assertEqual(planning_areas[0]["role"], "Creator")
+        self.assertEqual(planning_areas[1]["role"], "Creator")
+        self.assertEqual(planning_areas[2]["role"], "Creator")
         self.assertCountEqual(planning_areas[0]["permissions"], expected_perms)
         self.assertCountEqual(planning_areas[1]["permissions"], expected_perms)
         self.assertCountEqual(planning_areas[2]["permissions"], expected_perms)
