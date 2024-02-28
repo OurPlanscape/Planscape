@@ -13,7 +13,6 @@ from collaboration.serializers import (
 import logging
 
 from collaboration.services import create_invite
-from collaboration.utils import check_for_permission
 
 logger = logging.getLogger(__name__)
 
