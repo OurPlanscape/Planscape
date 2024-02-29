@@ -15,6 +15,7 @@ from django.core.mail import EmailMessage
 from django.template import Context
 from django.template.loader import get_template
 from rest_framework import serializers
+from collaboration.services import link_invites
 
 from users.forms import CustomAllAuthPasswordResetForm
 
@@ -30,6 +31,8 @@ class NameRegistrationSerializer(RegisterSerializer):
         user.first_name = self.validated_data.get("first_name", "")
         user.last_name = self.validated_data.get("last_name", "")
         user.save(update_fields=["first_name", "last_name"])
+
+        link_invites(user)
 
 
 class UserSerializer(serializers.ModelSerializer):
