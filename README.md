@@ -31,6 +31,17 @@ for how to download, build, and test Planscape.
 - [ForSys](https://github.com/forsys-sp/forsysr) - greedy heuristic optimization software package for land management planning and prioritization
 - [PROMOTe](https://www.fs.usda.gov/psw/topics/restoration/tcsi/publications/TCSI-Blueprint.pdf) - used to compute conditions from basic data, and find new optimal areas for treatment
 
+## Fun things
+
+We have [django-extensions](https://github.com/django-extensions/django-extensions) installed, so there is a bunch of neat commands there.
+
+Useful ones:
+
+1. python manage.py show_urls
+2. python manage.py shell_plus
+
+Check the docs for more.
+
 ## How to run black?
 
 `black` is a uncompromising code formatter. For us to have a standardized repository, black is being used
