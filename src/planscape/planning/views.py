@@ -56,7 +56,9 @@ def _convert_polygon_to_multipolygon(geometry: dict):
 
 # TODO: Along with PlanningAreaSerializer, refactor this a bit more to
 # make it more maintainable.
-def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) -> dict:
+def _serialize_planning_area(
+    planning_area: PlanningArea, add_geometry: bool, context
+) -> dict:
     """
     Serializes a Planning Area (Plan) into a dictionary.
     1. Converts the Planning Area to a dictionary with fields 'id', 'geometry', and 'properties'
@@ -65,7 +67,10 @@ def _serialize_planning_area(planning_area: PlanningArea, add_geometry: bool) ->
     3. Adds the 'geometry' if requested.
     4. Replaces the internal region_name with the display version.
     """
-    data = PlanningAreaSerializer(planning_area).data
+
+    serializer = PlanningAreaSerializer(planning_area, context=context)
+
+    data = serializer.data
     result = data["properties"]
     result["id"] = data["id"]
     if "geometry" in data and add_geometry:
@@ -276,6 +281,7 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
                     id=request.GET["id"],
                 ),
                 True,
+                context={"request": request},
             )
         )
     except Http404:
@@ -310,7 +316,7 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         # when creating the planning area instead of calculating it each time?
 
         planning_areas = (
-            PlanningArea.objects.filter(user=user)
+            PlanningArea.objects.get_for_user(user)
             .annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
                 scenario_latest_updated_at=Coalesce(
@@ -321,7 +327,9 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
         )
         return JsonResponse(
             [
-                _serialize_planning_area(planning_area, True)
+                _serialize_planning_area(
+                    planning_area, True, context={"request": request}
+                )
                 for planning_area in planning_areas
             ],
             safe=False,

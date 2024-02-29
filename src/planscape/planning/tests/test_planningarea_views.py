@@ -6,8 +6,14 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
+from collaboration.models import Role, Permissions
+from collaboration.utils import create_collaborator_record
 from planning.models import PlanningArea, Scenario, ScenarioResult
-from planning.tests.helpers import _create_planning_area, _create_scenario
+from planning.tests.helpers import (
+    _create_planning_area,
+    _create_scenario,
+    reset_permissions,
+)
 
 # Yes, we are pulling in an internal just for testing that a geometry write happened.
 from planning.views import _convert_polygon_to_multipolygon
@@ -769,6 +775,124 @@ class ListPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
+
+
+class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.creator_user = User.objects.create(
+            username="makerofthings",
+            email="creator@test.test",
+            first_name="Creaty",
+            last_name="Creatington",
+        )
+        self.creator_user.set_password("12345")
+        self.creator_user.save()
+
+        self.collab_user = User.objects.create(
+            username="collaboratorofthings",
+            email="collab@test.test",
+            first_name="Collaby",
+            last_name="Collabington",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
+
+        self.viewer_user = User.objects.create(
+            username="viewerofthings",
+            email="viewer@test.test",
+            first_name="Viewy",
+            last_name="Viewington",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+
+        self.planning_area_w_collab = _create_planning_area(
+            self.creator_user, "Shared with Collaborator", stored_geometry
+        )
+        self.planning_area_w_viewer = _create_planning_area(
+            self.creator_user, "Area Shared with Viewer", stored_geometry
+        )
+        self.planning_area_notshared = _create_planning_area(
+            self.creator_user, "Not Shared Area", stored_geometry
+        )
+        create_collaborator_record(
+            self.creator_user,
+            self.collab_user,
+            self.planning_area_w_collab,
+            Role.COLLABORATOR,
+        )
+        create_collaborator_record(
+            self.creator_user,
+            self.viewer_user,
+            self.planning_area_w_viewer,
+            Role.VIEWER,
+        )
+
+    def test_planningareas_list_for_creator(self):
+        self.client.force_authenticate(self.creator_user)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"),
+            {},
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        expected_perms = [
+            "view_planningarea",
+            "view_scenario",
+            "add_scenario",
+            "change_scenario",
+            "view_collaborator",
+            "add_collaborator",
+            "delete_collaborator",
+            "change_collaborator",
+        ]
+        self.assertEqual(len(planning_areas), 3)
+        self.assertEqual(planning_areas[0]["role"], "Creator")
+        self.assertEqual(planning_areas[1]["role"], "Creator")
+        self.assertEqual(planning_areas[2]["role"], "Creator")
+        self.assertCountEqual(planning_areas[0]["permissions"], expected_perms)
+        self.assertCountEqual(planning_areas[1]["permissions"], expected_perms)
+        self.assertCountEqual(planning_areas[2]["permissions"], expected_perms)
+
+    def test_planningareas_list_for_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"),
+            {},
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(len(planning_areas), 1)
+        the_area = planning_areas[0]
+        self.assertEqual(the_area["role"], "Collaborator")
+        self.assertCountEqual(
+            the_area["permissions"],
+            ["view_planningarea", "view_scenario", "add_scenario"],
+        )
+
+    def test_planningareas_list_for_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse("planning:list_planning_areas"),
+            {},
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(len(planning_areas), 1)
+        the_area = planning_areas[0]
+        self.assertEqual(the_area["role"], "Viewer")
+        self.assertCountEqual(
+            the_area["permissions"], ["view_planningarea", "view_scenario"]
+        )
 
 
 # EndtoEnd test that lists, creates a planning_area, creates a scenario,
