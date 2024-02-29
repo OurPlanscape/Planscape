@@ -1,6 +1,7 @@
-from collaboration.models import UserObjectRole, Role
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User
+from django.db import models
+from collaboration.models import UserObjectRole, Role
 
 
 def create_collaborator_record(
