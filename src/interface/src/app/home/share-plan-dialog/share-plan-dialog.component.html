@@ -71,7 +71,7 @@
     <section class="invited-users-list" *ngIf="!showMessageBox">
       <h3>People with access</h3>
       <div class="invited-user">
-        <div class="name">Your Name <span>(You)</span></div>
+        <div class="name">{{ fullname$ | async }} <span>(You)</span></div>
         <div>Owner</div>
       </div>
       <div *ngFor="let invite of invites$ | async" class="invited-user">
