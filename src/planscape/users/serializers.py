@@ -48,6 +48,10 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
     def password_reset_form_class(self):
         return CustomAllAuthPasswordResetForm
 
+    def save(self):
+        log.info("Password reset requested for %s", self.data["email"])
+        super(CustomPasswordResetSerializer, self).save
+
 
 class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
     """Custom serializer to send email for password reset post-save."""
@@ -74,6 +78,7 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
 
     def save(self):
         super(CustomPasswordChangeSerializer, self).save()
+        log.info(f"Password reset for %s", self.request.user)
         self._send_email()
 
     def _send_email(self):
