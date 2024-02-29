@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import sys
 import sentry_sdk
+from celery.schedules import crontab
 from corsheaders.defaults import default_headers
 from decouple import config
 from sentry_sdk.integrations.django import DjangoIntegration
@@ -347,8 +348,6 @@ GDAL_NUM_THREADS = config(
 )
 
 FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
-
-# TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
 
 DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
@@ -375,7 +374,8 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
-    "'planning.e2e.*": {"queue": "default"},
+    "planning.e2e.*": {"queue": "default"},
+    "planning.cron.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)

@@ -1,8 +1,8 @@
+import logging
 from subprocess import CalledProcessError, TimeoutExpired
 from planning.models import Scenario, ScenarioResultStatus
-import logging
-from utils.cli_utils import call_forsys
 from planscape.celery import app
+from utils.cli_utils import call_forsys
 
 log = logging.getLogger(__name__)
 
