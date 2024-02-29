@@ -52,6 +52,37 @@ class CreateInvite(APIView):
             raise
 
 
+class InviteDetail(APIView):
+
+    def get(self, request, pk):
+        user = request.user
+        try:
+            invitation = UserObjectRole.objects.get(pk=pk)
+        except UserObjectRole.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        content_object = invitation.content_object
+        if not CollaboratorPermission.can_view(user, content_object):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        serializer = UserObjectRoleSerializer(
+            instance=invitation, context={"request": request}
+        )
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def delete(self, request, pk):
+        user = request.user
+        try:
+            invitation = UserObjectRole.objects.get(pk=pk)
+        except UserObjectRole.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        content_object = invitation.content_object
+        if not CollaboratorPermission.can_delete(user, content_object):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        invitation.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
 class GetInvitationsForObject(APIView):
     def get(self, request: Request, target_entity: str, object_pk: int):
         user = request.user
