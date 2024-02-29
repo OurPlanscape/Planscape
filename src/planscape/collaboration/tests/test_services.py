@@ -64,7 +64,6 @@ class TestGetPermissions(TransactionTestCase):
 
 
 class TestLinkInvites(TransactionTestCase):
-
     def setUp(self):
         self.user1 = User.objects.create(username="foo", email="foo@foo.com")
 
