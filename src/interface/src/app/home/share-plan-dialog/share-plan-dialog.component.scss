@@ -17,9 +17,10 @@
       padding: 0;
     }
 
-    .mat-form-field  {
+    .mat-form-field {
       @include public-sans();
     }
+
     .mat-button-wrapper {
       display: flex;
       align-items: center;
@@ -67,6 +68,7 @@
     .mat-form-field-outline-end {
       background-color: $color-light-gray;
     }
+
     .mat-form-field-flex {
       height: 100px;
     }
@@ -127,6 +129,7 @@
     margin: 0;
     color: $color-dark-gray;
   }
+
   ::ng-deep.mat-button {
     padding: 0 0 0 8px;
     line-height: 0;
@@ -160,9 +163,9 @@
   justify-content: space-between;
   line-height: 24px;
 
-   button {
-     @include small-input-label();
-     line-height: 24px;
+  button {
+    @include small-input-label();
+    line-height: 24px;
   }
 
   .name {
@@ -181,11 +184,13 @@
 
 .help {
   color: $color-black;
+
   h4 {
     @include small-input-label();
     font-weight: 600;
     margin: 24px 0 0;
   }
+
   p {
     margin: 0 0 8px;
   }
@@ -198,8 +203,9 @@
 
 .menu-roles {
   .mat-icon {
-    margin:0;
+    margin: 0;
   }
+
   .spacer {
     display: inline-block;
     width: 32px;
@@ -212,4 +218,6 @@
   padding: 0;
 }
 
-
+.loading {
+  padding-bottom: 20px;
+}
