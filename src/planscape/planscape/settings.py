@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_crontab",
+    "django_extensions",
     "leaflet",
     "lockdown",
     "password_policies",
