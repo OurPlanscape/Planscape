@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
-from collaboration.utils import create_collaborator_record
+from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea, Scenario, ScenarioResult
 from planning.tests.helpers import (
     _create_planning_area,
