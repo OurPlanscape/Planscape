@@ -1,4 +1,7 @@
-<div id="{{ mapId ? mapId : 'map' }}" class="plan-map"></div>
+<div
+  id="{{ mapId ? mapId : 'map' }}"
+  class="plan-map"
+  [style.height]="mapHeight"></div>
 <div *ngIf="!showAttributionAndZoom">
   &copy;
   <a href="https://leafletjs.com/" target="_blank" rel="noreferrer">Leaflet</a>

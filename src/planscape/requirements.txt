@@ -1,6 +1,6 @@
-dj-rest-auth~=3.0.0
+dj-rest-auth~=5.0.2
 django~=4.1.1
-django-allauth~=0.53.1
+django-allauth~=0.57.0
 django-cors-headers
 django-crontab
 django-filter~=21.1.0
@@ -31,3 +31,4 @@ redis==5.0.1
 kombu==5.3.4
 shortuuid==1.0.11
 jsonschema~=4.21
+django-extensions==3.2.3

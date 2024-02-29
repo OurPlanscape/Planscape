@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.serializers import CharField, DateTimeField, IntegerField
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
+from collaboration.models import Permissions
+from collaboration.services import get_role, get_permissions
 from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
 from planning.services import get_acreage
 from stands.models import StandSizeChoices
@@ -20,6 +22,8 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
     area_m2 = serializers.SerializerMethodField()
     area_acres = serializers.SerializerMethodField()
     creator = serializers.CharField(source="creator_name")
+    permissions = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
 
     def get_area_m2(self, instance):
         geom = instance.geometry.transform(settings.AREA_SRID, clone=True)
@@ -30,6 +34,14 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
 
     def get_latest_updated(self, instance):
         return instance.scenario_latest_updated_at or instance.updated_at
+
+    def get_role(self, instance):
+        user = self.context["request"].user
+        return get_role(user, instance)
+
+    def get_permissions(self, instance):
+        user = self.context["request"].user
+        return list(get_permissions(user, instance))
 
     class Meta:
         fields = (
@@ -44,6 +56,8 @@ class PlanningAreaSerializer(gis_serializers.GeoFeatureModelSerializer):
             "area_m2",
             "area_acres",
             "creator",
+            "role",
+            "permissions",
         )
         model = PlanningArea
         geo_field = "geometry"
@@ -138,6 +152,8 @@ class ScenarioSerializer(serializers.ModelSerializer):
         source="results",
     )
 
+    creator = serializers.CharField(source="creator_name", read_only=True)
+
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None
         return super().create(validated_data)
@@ -157,6 +173,8 @@ class ScenarioSerializer(serializers.ModelSerializer):
             "configuration",
             "scenario_result",
             "user",
+            "creator",
+            "status",
         )
         model = Scenario
 

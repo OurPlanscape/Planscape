@@ -17,92 +17,56 @@
 
     <app-section-loader
       [isLoading]="loading"
-      [hasData]="scenarios.length > 0"
-      [ngClass]="{ 'margin-top': scenarios.length === 0 }"
+      [hasData]="activeScenarios.length + archivedScenarios.length > 0"
+      [ngClass]="{
+        'margin-top': activeScenarios.length + archivedScenarios.length === 0
+      }"
       emptyStateTitle="No scenarios yet"
       emptyStateContent="Click “New scenario” to start creating your scenarios.">
-      <mat-card-content>
-        <mat-table [dataSource]="scenarios">
-          <!-- Name Column -->
-          <ng-container matColumnDef="name">
-            <mat-header-cell *matHeaderCellDef>Name</mat-header-cell>
-            <mat-cell
-              class="name-column"
-              *matCellDef="let element; dataSource: scenarios">
-              <div class="hover-indicator"></div>
-              {{ element.name }}
-            </mat-cell>
-          </ng-container>
+      <mat-tab-group
+        mat-align-tabs="start"
+        *appFeatureFlag="'show_share_modal'">
+        <mat-tab label="ACTIVE">
+          <mat-card-content>
+            <app-scenarios-table-list
+              *ngIf="activeScenarios.length > 0"
+              [scenarios]="activeScenarios"
+              [highlightedScenarioRow]="highlightedScenarioRow"
+              (viewScenario)="viewScenario()"
+              (selectScenario)="
+                highlightScenario($event)
+              "></app-scenarios-table-list>
 
-          <!-- Project Areas Column -->
-          <ng-container matColumnDef="projectAreas">
-            <mat-header-cell *matHeaderCellDef>Areas</mat-header-cell>
-            <mat-cell *matCellDef="let element; dataSource: scenarios">
-              {{ element?.scenario_result?.result?.features?.length || '--' }}
-            </mat-cell>
-          </ng-container>
+            <div class="empty-state" *ngIf="activeScenarios.length === 0">
+              No active scenarios
+            </div>
+          </mat-card-content>
+        </mat-tab>
+        <mat-tab label="ARCHIVED">
+          <mat-card-content>
+            <app-scenarios-table-list
+              *ngIf="archivedScenarios.length > 0"
+              [scenarios]="archivedScenarios"
+              [highlightedScenarioRow]="highlightedScenarioRow"
+              (viewScenario)="viewScenario()"
+              (selectScenario)="
+                highlightScenario($event)
+              "></app-scenarios-table-list>
+            <div class="empty-state" *ngIf="archivedScenarios.length === 0">
+              No archived scenarios
+            </div>
+          </mat-card-content>
+        </mat-tab>
+      </mat-tab-group>
 
-          <!-- Acres Treated Column -->
-          <ng-container matColumnDef="acresTreated">
-            <mat-header-cell *matHeaderCellDef>Acres</mat-header-cell>
-            <mat-cell *matCellDef="let element; dataSource: scenarios">
-              {{
-                hasResults(element)
-                  ? (calculateTotals(element.scenario_result!).acres | number)
-                  : '--'
-              }}
-            </mat-cell>
-          </ng-container>
-
-          <!-- Estimated Cost Column -->
-          <ng-container matColumnDef="estimatedCost">
-            <mat-header-cell *matHeaderCellDef>Est. Budget</mat-header-cell>
-            <mat-cell
-              class="data-cell"
-              *matCellDef="let element; dataSource: scenarios">
-              {{
-                hasResults(element)
-                  ? (calculateTotals(element.scenario_result!).estimatedCost
-                    | currencyInK: '1.0-0')
-                  : '--'
-              }}
-            </mat-cell>
-          </ng-container>
-
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <mat-header-cell *matHeaderCellDef>Status</mat-header-cell>
-            <mat-cell *matCellDef="let element; dataSource: scenarios">
-              {{
-                element.scenario_result
-                  ? statusLabels[element.scenario_result.status]
-                  : '--'
-              }}
-            </mat-cell>
-          </ng-container>
-
-          <!-- Timestamp Column -->
-          <ng-container matColumnDef="completedTimestamp">
-            <mat-header-cell *matHeaderCellDef>Completed</mat-header-cell>
-            <mat-cell *matCellDef="let element; dataSource: scenarios">
-              {{
-                element.scenario_result?.completed_at
-                  ? (element.scenario_result?.completed_at | date: 'short')
-                  : '--'
-              }}
-            </mat-cell>
-          </ng-container>
-
-          <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row
-            [ngClass]="{
-              'scenario-row': highlightedScenarioRow?.id !== row.id,
-              highlight: highlightedScenarioRow?.id === row.id
-            }"
-            *matRowDef="let row; columns: displayedColumns"
-            (click)="highlightScenario(row)"
-            (dblclick)="viewScenario()"></mat-row>
-        </mat-table>
+      <mat-card-content *appFeatureFlag="'show_share_modal'; hide: true">
+        <app-scenarios-table-list
+          [scenarios]="activeScenarios"
+          [highlightedScenarioRow]="highlightedScenarioRow"
+          (viewScenario)="viewScenario()"
+          (selectScenario)="
+            highlightScenario($event)
+          "></app-scenarios-table-list>
       </mat-card-content>
       <mat-card-actions align="end">
         <button

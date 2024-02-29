@@ -4,9 +4,21 @@
   [area]="(area$ | async) || 'SCENARIOS'"></app-nav-bar>
 <div class="root-container">
   <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
-  <ng-container *ngIf="currentPlan$ | async">
+  <ng-container *ngIf="currentPlan$ | async as plan">
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
+      <mat-tab-group
+        mat-align-tabs="start"
+        mat-stretch-tabs
+        disablePagination="true"
+        *appFeatureFlag="'show_share_modal'">
+        <mat-tab label="ACTIVE"
+          ><app-area-details [plan]="plan"></app-area-details>
+        </mat-tab>
+        <mat-tab label="NOTES"><app-area-notes></app-area-notes></mat-tab>
+      </mat-tab-group>
+
       <app-summary-panel
+        *appFeatureFlag="'show_share_modal'; hide: true"
         [plan]="currentPlan$ | async"
         [owner]="planOwner$ | async"></app-summary-panel>
     </div>

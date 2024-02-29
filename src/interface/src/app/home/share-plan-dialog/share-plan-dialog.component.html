@@ -6,8 +6,8 @@
       aria-label="back"
       *ngIf="showMessageBox">
       <mat-icon class="back-btn" (click)="showHelp = false"
-        >arrow_back</mat-icon
-      >
+        >arrow_back
+      </mat-icon>
     </button>
     <h2>Share {{ data.name }}</h2>
     <button mat-icon-button (click)="showHelp = true" aria-label="help">
@@ -34,7 +34,8 @@
       (isInvalid)="invalidEmail = $event"></app-chip-input>
 
     <button mat-button [matMenuTriggerFor]="roleMenu" class="invite-role">
-      {{ selectedRole }} <mat-icon>arrow_drop_down </mat-icon>
+      {{ selectedRole }}
+      <mat-icon>arrow_drop_down</mat-icon>
     </button>
     <mat-menu
       #roleMenu="matMenu"
@@ -63,37 +64,47 @@
         name="questionText"></textarea>
     </mat-form-field>
   </form>
-  <section class="invited-users-list" *ngIf="!showMessageBox">
-    <h3>People with access</h3>
-    <div class="invited-user">
-      <div class="name">Your Name <span>(You)</span></div>
-      <div>Owner</div>
-    </div>
-    <div *ngFor="let invite of invites$ | async" class="invited-user">
-      <div class="name">{{ invite.name }}</div>
-      <button mat-button [matMenuTriggerFor]="menu">
-        {{ invite.role }} <mat-icon>arrow_drop_down </mat-icon>
-      </button>
-      <mat-menu #menu="matMenu" class="list-menu" xPosition="before">
-        <button
-          mat-menu-item
-          *ngFor="let role of roles"
-          class="menu-roles"
-          (click)="changeRole(invite)">
-          <span class="spacer">
-            <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
-          </span>
-          {{ role }}
+  <app-section-loader
+    [isLoading]="isLoading"
+    [hasData]="true"
+    [ngClass]="{ loading: isLoading }">
+    <section class="invited-users-list" *ngIf="!showMessageBox">
+      <h3>People with access</h3>
+      <div class="invited-user">
+        <div class="name">{{ fullname$ | async }} <span>(You)</span></div>
+        <div>Owner</div>
+      </div>
+      <div *ngFor="let invite of invites$ | async" class="invited-user">
+        <div class="name">{{ invite.collaborator_name || invite.email }}</div>
+        <button mat-button [matMenuTriggerFor]="menu">
+          {{ invite.role }}
+          <mat-icon>arrow_drop_down</mat-icon>
         </button>
-        <button mat-menu-item class="menu-divider" (click)="resendCode(invite)">
-          Resend Code
-        </button>
-        <button mat-menu-item (click)="removeAccess(invite)">
-          Remove Access
-        </button>
-      </mat-menu>
-    </div>
-  </section>
+        <mat-menu #menu="matMenu" class="list-menu" xPosition="before">
+          <button
+            mat-menu-item
+            *ngFor="let role of roles"
+            class="menu-roles"
+            (click)="changeRole(invite)">
+            <span class="spacer">
+              <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
+            </span>
+            {{ role }}
+          </button>
+          <button
+            mat-menu-item
+            class="menu-divider"
+            (click)="resendCode(invite)">
+            Resend Code
+          </button>
+          <button mat-menu-item (click)="removeAccess(invite)">
+            Remove Access
+          </button>
+        </mat-menu>
+      </div>
+    </section>
+  </app-section-loader>
+
   <section class="footer">
     <button
       class="action"
@@ -111,8 +122,8 @@
   <section class="header">
     <button mat-icon-button (click)="showHelp = true" aria-label="back">
       <mat-icon class="back-btn" (click)="showHelp = false"
-        >arrow_back</mat-icon
-      >
+        >arrow_back
+      </mat-icon>
     </button>
 
     <h2>Help</h2>

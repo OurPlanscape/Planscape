@@ -30,7 +30,7 @@ class CreateUserTest(APITransactionTestCase):
         # Verification email is sent.
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(
-            mail.outbox[0].subject, "[Planscape] Please Confirm Your E-mail Address"
+            mail.outbox[0].subject, "[Planscape] Please Confirm Your Email Address"
         )
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
@@ -146,9 +146,31 @@ class PasswordResetTest(TransactionTestCase):
         )
 
         self.assertEqual(len(mail.outbox), 1)
-        self.assertEqual(mail.outbox[0].subject, "[Planscape] Password Reset E-mail")
+        self.assertEqual(mail.outbox[0].subject, "[Planscape] Password Reset Email")
         self.assertIn("http://localhost:4200/reset", mail.outbox[0].body)
         self.assertIn("Team Planscape", mail.outbox[0].body)
+
+    def test_reset_link_for_unknown_user(self):
+        self.client.post(
+            reverse("rest_password_reset"),
+            {"email": "totallymadeup@test.test"},
+            HTTP_ORIGIN="http://localhost:4200",
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "[Planscape] Password Reset Request")
+        self.assertIn("http://localhost:4200/signup", mail.outbox[0].body)
+        self.assertIn("no existing Planscape account", mail.outbox[0].body)
+        self.assertIn("Team Planscape", mail.outbox[0].body)
+
+    # Ensure that we ignore API requests to send malformed emails
+    def test_reset_link_for_invalid_email(self):
+        self.client.post(
+            reverse("rest_password_reset"),
+            {"email": "invalid;\r\n\r\n@format;;.\r\n"},
+            HTTP_ORIGIN="http://localhost:4200",
+        )
+        self.assertEqual(len(mail.outbox), 0)
 
     def test_reset_confirmation_email(self):
         # POST request to get reset password link.

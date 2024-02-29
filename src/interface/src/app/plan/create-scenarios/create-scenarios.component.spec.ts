@@ -54,6 +54,7 @@ describe('CreateScenariosComponent', () => {
     name: 'name',
     planning_area: '1',
     configuration: {},
+    status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
       completed_at: '0',
@@ -77,6 +78,7 @@ describe('CreateScenariosComponent', () => {
           region: Region.SIERRA_NEVADA,
           area_acres: 12814,
           area_m2: 340000,
+          creator: 'John Doe',
           planningArea: new L.Polygon([
             new L.LatLng(38.715517043571914, -120.42857302225725),
             new L.LatLng(38.47079787227401, -120.5164425608172),
@@ -108,6 +110,7 @@ describe('CreateScenariosComponent', () => {
               id: 1,
               max_budget: 200,
             },
+            status: 'ACTIVE',
           },
         ]),
       }

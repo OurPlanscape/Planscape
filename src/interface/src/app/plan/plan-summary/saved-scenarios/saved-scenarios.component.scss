@@ -1,15 +1,9 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 @import "../../../../theme";
+@import "../../../../styles/mixins";
+@import "../../../../styles/colors";
 
-.name-column {
-  justify-content: left;
-}
-
-mat-header-cell,
-mat-cell {
-  justify-content: center;
-}
 
 .saved-scenarios-wrapper {
   position: relative;
@@ -18,17 +12,6 @@ mat-cell {
 .mat-card {
   border-radius: 16px;
   min-height: 180px;
-}
-
-.highlight {
-  background-color: transparentize(
-    $color: mat.get-color-from-palette($primary-palette, 500),
-    $amount: 0.9
-  );
-
-  mat-cell div.hover-indicator {
-    background-color: mat.get-color-from-palette($primary-palette, 500);
-  }
 }
 
 .mat-card-content {
@@ -72,36 +55,16 @@ mat-cell {
   align-items: center;
 }
 
-.scenario-row {
-  cursor: pointer;
-
-  &:hover {
-    background-color: transparentize(
-      $color: mat.get-color-from-palette($primary-palette, 500),
-      $amount: 0.9
-    );
-  }
-}
-
-.hover-indicator {
-  height: 48px;
-  margin-left: -24px;
-  margin-right: 18px;
-  width: 4px;
-}
-
-.mat-column-id {
-  border-right: 2px solid #00000040;
-}
-
-.scenario-checkbox {
-  margin-left: 20px;
-}
-
-.mat-column-starred {
-  padding-left: 20px;
-}
 
 .margin-top {
   margin-top: 30px;
 }
+
+.empty-state {
+  @include standard-input-label();
+  color: $color-dark-gray;
+  padding: 40px 20px;
+  margin: 20px;
+  text-align: center;
+}
+

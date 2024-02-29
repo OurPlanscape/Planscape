@@ -32,6 +32,9 @@ import { ExploreComponent } from './explore/explore/explore.component';
 import { MapModule } from '../map/map.module';
 import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
 import { NgxMaskModule } from 'ngx-mask';
+import { AreaDetailsComponent } from './area-details/area-details.component';
+import { AreaNotesComponent } from './area-notes/area-notes.component';
+import { ScenariosTableListComponent } from './plan-summary/scenarios-table-list/scenarios-table-list.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -56,6 +59,9 @@ import { NgxMaskModule } from 'ngx-mask';
     ScenarioFailureComponent,
     ExploreComponent,
     ScenarioTooltipComponent,
+    AreaDetailsComponent,
+    AreaNotesComponent,
+    ScenariosTableListComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [

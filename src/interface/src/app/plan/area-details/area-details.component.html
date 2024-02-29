@@ -1,0 +1,40 @@
+<div class="details">
+  <div>
+    <div class="number">{{ plan.area_acres | number }}</div>
+    acres
+  </div>
+  <div>
+    <div class="number">{{ plan.scenarios }}</div>
+    {{
+      plan.scenarios
+        ? plan.scenarios > 1
+          ? 'scenarios'
+          : 'scenario'
+        : 'scenarios'
+    }}
+  </div>
+</div>
+<div class="summary">
+  <div class="property">
+    <div class="label">Region</div>
+    <div>{{ plan.region }}</div>
+  </div>
+  <div class="property">
+    <div class="label">Creator</div>
+    <div>{{ plan.creator }}</div>
+  </div>
+  <div class="property">
+    <div class="label">Last activity</div>
+    <div>{{ plan.lastUpdated | date: 'MM/dd/yyyy' }}</div>
+  </div>
+</div>
+
+<div class="plan-map-wrapper">
+  <app-plan-map
+    mapHeight="300px"
+    class="plan-map small"
+    [plan]="plan"
+    [mapId]="'planning-map'"
+    [mapPadding]="[20, 0]"
+    [showAttributionAndZoom]="false"></app-plan-map>
+</div>

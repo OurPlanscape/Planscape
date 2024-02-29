@@ -25,6 +25,7 @@ import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe
 import { ScenarioService } from '../../../services/scenario.service';
 import { MockComponent } from 'ng-mocks';
 import { SectionLoaderComponent } from '../../../shared/section-loader/section-loader.component';
+import { FeaturesModule } from '../../../features/features.module';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -43,7 +44,7 @@ describe('SavedScenariosComponent', () => {
     );
 
     fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
-      'PlanService',
+      'ScenarioService',
       {
         getScenariosForPlan: of([
           {
@@ -55,6 +56,7 @@ describe('SavedScenariosComponent', () => {
               id: 1,
               max_budget: 200,
             },
+            status: 'ACTIVE',
           },
         ]),
         deleteScenarios: of(['1']),
@@ -69,6 +71,7 @@ describe('SavedScenariosComponent', () => {
         MaterialModule,
         MatTableModule,
         NoopAnimationsModule,
+        FeaturesModule,
       ],
       declarations: [
         SavedScenariosComponent,
@@ -94,6 +97,7 @@ describe('SavedScenariosComponent', () => {
       region: Region.SIERRA_NEVADA,
       area_acres: 123,
       area_m2: 231,
+      creator: 'John Doe',
     };
   });
 
@@ -108,7 +112,7 @@ describe('SavedScenariosComponent', () => {
       '1'
     );
 
-    expect(component.scenarios.length).toEqual(1);
+    expect(component.activeScenarios.length).toEqual(1);
   });
 
   it('should delete selected scenarios', () => {
@@ -120,6 +124,7 @@ describe('SavedScenariosComponent', () => {
       configuration: {
         max_budget: 200,
       },
+      status: 'ACTIVE',
     };
 
     const dialog = TestBed.inject(MatDialog);

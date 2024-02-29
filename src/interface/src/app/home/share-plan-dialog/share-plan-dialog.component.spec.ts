@@ -5,6 +5,10 @@ import { MaterialModule } from '../../material/material.module';
 import { MockProvider } from 'ng-mocks';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { InvitesService } from '../../services/invites.service';
+import { BehaviorSubject, of } from 'rxjs';
+import { AuthService } from '../../services';
+import { User } from '../../types';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;
@@ -16,12 +20,25 @@ describe('SharePlanDialogComponent', () => {
       imports: [MaterialModule, MatSnackBarModule, NoopAnimationsModule],
       providers: [
         MockProvider(MatDialogRef),
-        { provide: MAT_DIALOG_DATA, useValue: { data: { name: 'Plan One' } } },
+        MockProvider(AuthService, {
+          loggedInUser$: new BehaviorSubject<User | null | undefined>({
+            firstName: 'Joe',
+            lastName: 'Smith',
+          }),
+        }),
+        MockProvider(InvitesService, {
+          getInvites: () => of([]),
+        }),
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: { data: { name: 'Plan One', id: 12 } },
+        },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SharePlanDialogComponent);
     component = fixture.componentInstance;
+    component.isLoading = false;
     fixture.detectChanges();
   });
 
