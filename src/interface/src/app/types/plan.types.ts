@@ -39,6 +39,8 @@ export interface PlanPreview {
   creator?: string;
   area_acres: number;
   area_m2: number;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface BackendPlan {
@@ -69,6 +71,8 @@ export interface BackendPlanPreview {
   creator?: string;
   area_acres: number;
   area_m2: number;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface BackendProjectArea {
