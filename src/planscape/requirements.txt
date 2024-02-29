@@ -1,6 +1,7 @@
 dj-rest-auth~=5.0.2
 django~=4.1.1
 django-allauth~=0.57.0
+django-celery-beat~=2.5.0
 django-cors-headers
 django-crontab
 django-filter~=21.1.0

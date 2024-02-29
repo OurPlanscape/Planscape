@@ -23,3 +23,6 @@ src/interface/src/app/features/features.dev.json
 .vscode/*
 .idea/*
 data/*
+
+# Celerybeat schedule
+celerybeat-schedule.*
