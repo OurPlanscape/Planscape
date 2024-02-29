@@ -26,6 +26,21 @@ def validate_ownership(user, instance):
             return False
 
 
+def get_role(user, instance):
+    is_owner = validate_ownership(user, instance)
+    if is_owner:
+        return "Creator"
+    else:
+        content_type = ContentType.objects.get_for_model(instance)
+        return (
+            UserObjectRole.objects.filter(
+                collaborator=user, content_type=content_type, object_pk=instance.pk
+            )
+            .first()
+            .role
+        )
+
+
 def get_permissions(user, instance):
     is_owner = validate_ownership(user, instance)
     if is_owner:
@@ -39,7 +54,6 @@ def get_permissions(user, instance):
             qs = Permissions.objects.none()
         else:
             qs = Permissions.objects.filter(role=user_object_role.role)
-
     return qs.values_list("permission", flat=True)
 
 
