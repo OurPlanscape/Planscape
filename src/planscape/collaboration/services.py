@@ -54,7 +54,6 @@ def get_permissions(user, instance):
             qs = Permissions.objects.none()
         else:
             qs = Permissions.objects.filter(role=user_object_role.role)
-
     return qs.values_list("permission", flat=True)
 
 

@@ -397,7 +397,7 @@ def list_planning_areas(request: Request) -> Response:
         # when creating the planning area instead of calculating it each time?
 
         planning_areas = (
-            PlanningArea.objects.filter(user=user)
+            PlanningArea.objects.get_for_user(user)
             .annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
                 scenario_latest_updated_at=Coalesce(

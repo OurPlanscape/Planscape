@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BackendConstants } from '../backend-constants';
-
-export type INVITE_ROLE = 'Viewer' | 'Collaborator' | 'Owner';
+import { Invite, INVITE_ROLE } from '../types/invite.types';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +15,7 @@ export class InvitesService {
     planningAreaId: number,
     message: string
   ) {
-    return this.http.post<any>(
+    return this.http.post<Invite>(
       BackendConstants.END_POINT.concat('/invites/create_invite/'),
       {
         emails,
@@ -24,6 +23,17 @@ export class InvitesService {
         message: message || null,
         object_pk: planningAreaId,
       },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  getInvites(planningAreaId: number) {
+    return this.http.get<Invite[]>(
+      BackendConstants.END_POINT.concat(
+        `/invites/invitations/planningarea/${planningAreaId}`
+      ),
       {
         withCredentials: true,
       }
