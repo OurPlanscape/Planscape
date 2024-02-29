@@ -264,21 +264,81 @@ class CreatePlanningAreaTest(APITransactionTestCase):
 
 class DeletePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.owner_user = User.objects.create(
+            username="area_owner",
+            first_name="Oliver",
+            last_name="Owner",
+            email="owner1@test.test",
+        )
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
 
-        self.planning_area1 = _create_planning_area(self.user, "test plan1", None)
-        self.planning_area2 = _create_planning_area(self.user, "test plan2", None)
+        self.owner_user2 = User.objects.create(
+            username="area2_owner",
+            first_name="Olga",
+            last_name="Owner",
+            email="owner2@test.test",
+        )
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.collab_user = User.objects.create(
+            username="area_collab",
+            first_name="Chris",
+            last_name="Collab",
+            email="collab@test.test",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
 
-        self.planning_area3 = _create_planning_area(self.user2, "test plan3", None)
+        self.viewer_user = User.objects.create(
+            username="area_viewer",
+            first_name="Veronica",
+            last_name="Viewer",
+            email="viewer@test.test",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.unprivileged_user = User.objects.create(
+            username="justauser",
+            first_name="Ned",
+            last_name="Nobody",
+            email="user@test.test",
+        )
+        self.unprivileged_user.set_password("12345")
+        self.unprivileged_user.save()
+
+        self.planning_area1 = _create_planning_area(
+            self.owner_user, "Owned by owner1-First", None
+        )
+        self.planning_area2 = _create_planning_area(
+            self.owner_user, "Owned by owner1-Second", None
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area1, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area1, Role.VIEWER
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+        )
+        self.planning_area3 = _create_planning_area(
+            self.owner_user2, "Owned by owner2-First", None
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area3, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area3, Role.VIEWER
+        )
 
     def test_delete(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         payload = json.dumps({"id": self.planning_area2.pk})
         response = self.client.post(
@@ -303,7 +363,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
 
     # Deleteing someone else's plan silently performs nothing.
     def test_delete_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.planning_area3.pk})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
@@ -315,7 +375,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
 
     # Only the user's own plans are deleted.
     def test_delete_multiple_planning_areas_with_some_owner_mismatches(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         planning_area_ids = [
             self.planning_area1.pk,
@@ -332,7 +392,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(PlanningArea.objects.count(), 1)
 
     def test_delete_multiple_planning_areas(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
         payload = json.dumps({"id": planning_area_ids})
@@ -344,6 +404,35 @@ class DeletePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {"id": planning_area_ids})
         self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_multiple_planning_areas_as_collab(self):
+        self.client.force_authenticate(self.collab_user)
+        self.assertEqual(PlanningArea.objects.count(), 3)
+        planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
+        payload = json.dumps({"id": planning_area_ids})
+        response = self.client.post(
+            reverse("planning:delete_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": planning_area_ids})
+        self.assertEqual(PlanningArea.objects.count(), 3)
+
+    def test_delete_multiple_planning_areas_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        self.assertEqual(PlanningArea.objects.count(), 3)
+        planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
+        payload = json.dumps({"id": planning_area_ids})
+        response = self.client.post(
+            reverse("planning:delete_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": planning_area_ids})
+        # Viewer has no permission to delete, so all records should still exist
+        self.assertEqual(PlanningArea.objects.count(), 3)
 
 
 class UpdatePlanningAreaTest(APITransactionTestCase):
@@ -617,7 +706,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"name must be defined")
+        self.assertJSONEqual(response.content, {"message": "Name must be defined"})
 
     def test_update_empty_string_name(self):
         self.client.force_authenticate(self.owner_user)
@@ -630,7 +719,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"name must be defined")
+        self.assertJSONEqual(response.content, {"message": "Name must be defined"})
 
 
 class GetPlanningAreaTest(APITransactionTestCase):

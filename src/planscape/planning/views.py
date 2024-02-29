@@ -116,22 +116,34 @@ def create_planning_area(request: Request) -> Response:
         body = json.loads(request.body)
         name = body.get("name")
         if name is None:
-            raise ValueError("Must specify a planning area name.")
-
+            return Response(
+                {"message": "Must specify a planning area name."},
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
         # Get the region name; it should be in the human-readable display name format.
         region_name_input = body.get("region_name")
         if region_name_input is None:
-            raise ValueError("Region name must be specified.")
-
+            return Response(
+                {"message": "Region name must be specified."},
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
         region_name = display_name_to_region(region_name_input)
         if region_name is None:
-            raise ValueError("Unknown region_name: " + region_name_input)
-
+            return Response(
+                {"message": f"Unknown region_name: {region_name_input}"},
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
         # Get the geometry of the planning area.
         geometry = body.get("geometry")
         if geometry is None:
-            raise ValueError("Must specify the planning area geometry.")
-
+            return Response(
+                {"message": "Must specify the planning area geometry."},
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
         # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
         # MultiPolygon.
         geometry = _convert_polygon_to_multipolygon(geometry)
@@ -183,7 +195,7 @@ def delete_planning_area(request: Request) -> Response:
         planning_area_ids = []
         if planning_area_id is None:
             return Response(
-                {"message": f"No ID given for planning area"},
+                {"message": "No ID given for planning area"},
                 status=status.HTTP_400_BAD_REQUEST,
                 content_type="application/json",
             )
@@ -192,25 +204,27 @@ def delete_planning_area(request: Request) -> Response:
         elif isinstance(planning_area_id, list):
             planning_area_ids = planning_area_id
         else:
-            raise ValueError("Planning Area ID must be an int or a list of ints.")
+            return Response(
+                {"message": "Planning Area ID must be an int or a list of ints."},
+                status=status.HTTP_400_BAD_REQUEST,
+                content_type="application/json",
+            )
 
-        # Get the planning area(s) for just the logged in user.
         planning_areas = PlanningArea.objects.get_for_user(user).filter(
             pk__in=planning_area_ids
         )
         for p in planning_areas:
             if PlanningAreaPermission.can_remove(user, p):
                 p.delete()
+            else:
+                logger.error(f"User {user} has no permission to delete {p.id}")
 
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.
         # The end result is that those planning areas don't exist as far as the user is concerned.
         response_data = {"id": planning_area_ids}
 
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
-    except ValueError as e:
-        logger.exception(f"Error deleting planningarea: {ve}")
-        return Http
+        return Response(response_data, content_type="application/json")
 
     except Exception as e:
         logger.exception(f"Error deleting planningarea: {e}")
@@ -266,7 +280,11 @@ def update_planning_area(request: Request) -> Response:
             # This must be always defined
             new_name = body.get("name")
             if (new_name is None) or (len(new_name) == 0):
-                raise ValueError("name must be defined")
+                return Response(
+                    {"message": "Name must be defined"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                    content_type="application/json",
+                )
             planning_area.name = new_name
             is_dirty = True
 
@@ -274,12 +292,6 @@ def update_planning_area(request: Request) -> Response:
             planning_area.save()
 
         return Response({"id": planning_area_id}, content_type="application/json")
-    except ValueError as ve:
-        return Response(
-            {"message": str(ve)},
-            status=status.HTTP_400_BAD_REQUEST,
-            content_type="application/json",
-        )
     except Exception as e:
         logger.exception("Error updating planning area %s", e)
         raise
@@ -389,7 +401,8 @@ def list_planning_areas(request: Request) -> Response:
             safe=False,
         )
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.error(f"Error: Failed to list planning areas: {e}")
+        raise
 
 
 def _serialize_scenario(scenario: Scenario) -> dict:
@@ -403,7 +416,7 @@ def _serialize_scenario(scenario: Scenario) -> dict:
 
 
 @api_view(["GET"])
-def get_scenario_by_id(request: Request) -> HttpResponse:
+def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     """
     Retrieves a scenario by its ID.
     Requires a logged in user.  Users can see only scenarios belonging to their own planning areas.
@@ -430,7 +443,7 @@ def get_scenario_by_id(request: Request) -> HttpResponse:
 
 
 @api_view(["GET"])
-def download_csv(request: Request) -> HttpResponse:
+def download_csv(request: HttpRequest) -> HttpResponse:
     """
     Generates a new Zip file for a scenario based on ID.
 
@@ -489,7 +502,7 @@ def download_csv(request: Request) -> HttpResponse:
 
 
 @api_view(["GET"])
-def download_shapefile(request: Request) -> HttpResponse:
+def download_shapefile(request: HttpRequest) -> HttpResponse:
     """
     Generates a new Zip file of the shapefile for a scenario based on ID.
 
@@ -536,7 +549,7 @@ def download_shapefile(request: Request) -> HttpResponse:
 
 
 @api_view(["POST"])
-def create_scenario(request: Request) -> HttpResponse:
+def create_scenario(request: HttpRequest) -> HttpResponse:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -605,7 +618,7 @@ def create_scenario(request: Request) -> HttpResponse:
 
 
 @api_view(["PATCH", "POST"])
-def update_scenario(request: Request) -> HttpResponse:
+def update_scenario(request: HttpRequest) -> HttpResponse:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that
     can be modified after a scenario is created.  This can be also used to clear
@@ -668,7 +681,7 @@ def update_scenario(request: Request) -> HttpResponse:
 # by the EP.
 #
 # TODO: require credential from EP so that random people cannot call this endpoint.
-def update_scenario_result(request: Request) -> HttpResponse:
+def update_scenario_result(request: HttpRequest) -> HttpResponse:
     """
     Updates a ScenarioResult's status.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -726,7 +739,7 @@ def update_scenario_result(request: Request) -> HttpResponse:
 
 
 @api_view(["GET"])
-def list_scenarios_for_planning_area(request: Request) -> HttpResponse:
+def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
     """
     Lists all Scenarios for a Planning area.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -759,7 +772,7 @@ def list_scenarios_for_planning_area(request: Request) -> HttpResponse:
 
 
 @api_view(["DELETE", "POST"])
-def delete_scenario(request: Request) -> HttpResponse:
+def delete_scenario(request: HttpRequest) -> HttpResponse:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
