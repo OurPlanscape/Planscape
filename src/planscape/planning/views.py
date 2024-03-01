@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from base.region_name import display_name_to_region, region_to_display_name
@@ -23,6 +24,7 @@ from planning.models import (
     ScenarioResultStatus,
     SharedLink,
 )
+from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
@@ -35,7 +37,11 @@ from planning.services import (
 )
 from planning.tasks import async_forsys_run
 from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework import status
 
+logger = logging.getLogger(__name__)
 
 # We always need to store multipolygons, so coerce a single polygon to
 # a multigolygon if needed.
@@ -349,11 +355,10 @@ def _serialize_scenario(scenario: Scenario) -> dict:
 
 
 @api_view(["GET"])
-def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
+def get_scenario_by_id(request: Request) -> Response:
     """
     Retrieves a scenario by its ID.
-    Requires a logged in user.  Users can see only scenarios belonging to their own planning areas.
-
+    Requires a logged in user with permission to view scenario.
     Returns: A scenario in JSON form.
 
     Required params:
@@ -362,21 +367,23 @@ def get_scenario_by_id(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
-
-        scenario = Scenario.objects.select_related("planning_area__user").get(
-            id=request.GET["id"]
-        )
-        if scenario.planning_area.user.pk != user.pk:
-            # This matches the same error string if the planning area doesn't exist in the DB for any user.
-            raise ValueError("Scenario matching query does not exist.")
-        return JsonResponse(_serialize_scenario(scenario), safe=False)
+            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+        if "id" not in request.GET:
+            return Response(
+                    {"error": "Missing required parameter 'id'"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        scenario = Scenario.objects.get(id=request.GET["id"])
+        if not ScenarioPermission.can_view(user, scenario):
+            return Response({"message":"You do not have permission to view this scenario"}, status=status.HTTP_403_FORBIDDEN )
+        
+        return Response(_serialize_scenario(scenario), content_type="application/json")
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
+        logger.error(f"Could not get scenario: {e}")
+        raise
 
 @api_view(["GET"])
-def download_csv(request: HttpRequest) -> HttpResponse:
+def download_csv(request: Request) -> Response:
     """
     Generates a new Zip file for a scenario based on ID.
 
@@ -392,36 +399,35 @@ def download_csv(request: HttpRequest) -> HttpResponse:
     # Ensure that the user is logged in.
     user = request.user
     if not user.is_authenticated:
-        return JsonResponse({"error": "Authentication Required"}, status=401)
-
-    scenario = (
-        Scenario.objects.select_related("planning_area__user")
-        .filter(id=request.GET["id"])
-        .first()
-    )
+        return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+    if "id" not in request.GET:
+        return Response(
+                {"error": "Missing required parameter 'id'"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    scenario = (Scenario.objects.get(id=request.GET["id"]))
 
     if not scenario:
-        return HttpResponse(
-            "Scenario matching query does not exist.",
-            status=404,
+        return Response(
+            {"error": "Scenario matching query does not exist."},
+            status=status.HTTP_404_NOT_FOUND
         )
 
     # Ensure that current user is associated with this scenario
-    if scenario.planning_area.user.pk != user.pk:
-        return HttpResponse(
+    if not ScenarioPermission.can_view(user, scenario):
+        return Response(
             "Scenario matching query does not exist.",
-            status=404,
+            status=status.HTTP_403_FORBIDDEN
         )
-
-    scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
 
     try:
         output_zip_name: str = str(scenario.uuid) + ".zip"
 
         if not scenario.get_forsys_folder().exists():
-            raise ValueError("Scenario files cannot be read.")
+            raise FileExistsError("Scenario files cannot be read.")
 
-        response = HttpResponse(content_type="application/zip")
+        response = Response(content_type="application/zip")
         #  here we're just writing directly to the response obj.
         # Do we want to write this locally -- either to (effectively) cache it, or to reduce server memory load?
         # Note that we don't close this, because `response` gets destroyed on its own
@@ -429,13 +435,16 @@ def download_csv(request: HttpRequest) -> HttpResponse:
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
         return response
-
+    except FileExistsError as fee:
+        logger.exception("Error: {fee}")
+        raise
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
+        logger.exception("Error: {e}")
+        raise
 
 
 @api_view(["GET"])
-def download_shapefile(request: HttpRequest) -> HttpResponse:
+def download_shapefile(request: Request) -> Response:
     """
     Generates a new Zip file of the shapefile for a scenario based on ID.
 
@@ -449,29 +458,33 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
     # Ensure that the user is logged in.
     user = request.user
     if not user.is_authenticated:
-        return JsonResponse({"error": "Authentication Required"}, status=401)
+        return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    scenario = Scenario.objects.select_related("planning_area__user").get(
-        id=request.GET["id"]
-    )
+    if "id" not in request.GET:
+        return Response(
+                {"error": "Missing required parameter 'id'"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    scenario = Scenario.objects.get(id=request.GET["id"])
     # Ensure that current user is associated with this scenario
-    if scenario.planning_area.user.pk != user.pk:
-        return HttpResponse(
-            "Scenario does not exist.",
-            status=404,
+    if not ScenarioPermission.can_view(user, scenario):
+        return Response(
+            {"error": "User has no permission to view scenario"},
+            status=status.HTTP_403_FORBIDDEN
         )
 
     scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
     if scenario_result.status != ScenarioResultStatus.SUCCESS:
-        return HttpResponse(
+        return Response(
             "Scenario was not successful, can't download data.",
-            status=424,
+            status=status.HTTP_424_FAILED_DEPENDENCY
         )
 
     try:
         output_zip_name = f"{str(scenario.uuid)}.zip"
         export_to_shapefile(scenario)
-        response = HttpResponse(content_type="application/zip")
+        response = Response(content_type="application/zip")
         zip_directory(response, scenario.get_shapefile_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
@@ -482,7 +495,7 @@ def download_shapefile(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["POST"])
-def create_scenario(request: HttpRequest) -> HttpResponse:
+def create_scenario(request: Request) -> Response:
     """
     Creates a Scenario.  This also creates a default (e.g. mostly empty) ScenarioResult associated with the scenario.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -500,7 +513,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
         body = json.loads(request.body)
 
         # Check for all needed fields
@@ -518,8 +531,8 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         )
 
         if not result:
-            return HttpResponse(
-                json.dumps({"reason": reason}),
+            return Response(
+                {"reason": reason},
                 content_type="application/json",
                 status=400,
             )
@@ -535,13 +548,13 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         if settings.USE_CELERY_FOR_FORSYS:
             async_forsys_run.delay(scenario.pk)
 
-        return JsonResponse({"id": scenario.pk})
+        return Response({"id": scenario.pk}, content_type="application/json")
 
     except IntegrityError as ve:
         reason = ve.args[0]
         if "(planning_area_id, name)" in ve.args[0]:
             reason = "A scenario with this name already exists."
-        return HttpResponse(
+        return Response(
             json.dumps({"reason": reason}),
             content_type="application/json",
             status=400,
@@ -551,7 +564,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
 
 
 @api_view(["PATCH", "POST"])
-def update_scenario(request: HttpRequest) -> HttpResponse:
+def update_scenario(request: Request) -> Response:
     """
     Updates a scenario's name or notes.  To date, these are the only fields that
     can be modified after a scenario is created.  This can be also used to clear
@@ -569,19 +582,20 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         body = json.loads(request.body)
         scenario_id = body.get("id", None)
         if scenario_id is None:
-            return JsonResponse({"error": "Scenario ID is required."}, status=400)
+            return Response({"error": "Scenario ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        scenario = Scenario.objects.select_related("planning_area__user").get(
-            id=scenario_id
-        )
-        if scenario.planning_area.user.pk != user.pk:
-            return JsonResponse(
-                {"error": "Scenario matching query does not exist."}, status=404
+        scenario = Scenario.objects.get(id=scenario_id)
+        if scenario is None:
+            return Response({"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if not ScenarioPermission.can_change(user, scenario):
+            return Response(
+                {"error": "You do not have permission to update this scenario."}, status=status.HTTP_403_FORBIDDEN
             )
 
         is_dirty = False
@@ -595,15 +609,16 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
             # This must be always defined
             new_name = body.get("name")
             if (new_name is None) or (len(new_name) == 0):
-                raise ValueError("name must be defined")
+                return Response({"error": "Name must be defined."}, status=status.HTTP_400_BAD_REQUEST)
+
             scenario.name = new_name
             is_dirty = True
 
         if is_dirty:
             scenario.save()
 
-        return HttpResponse(
-            json.dumps({"id": scenario_id}), content_type="application/json"
+        return Response(
+            {"id": scenario_id}, content_type="application/json"
         )
     except Exception as e:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
@@ -614,7 +629,8 @@ def update_scenario(request: HttpRequest) -> HttpResponse:
 # by the EP.
 #
 # TODO: require credential from EP so that random people cannot call this endpoint.
-def update_scenario_result(request: HttpRequest) -> HttpResponse:
+@api_view(["GET","POST"])
+def update_scenario_result(request: Request) -> Response:
     """
     Updates a ScenarioResult's status.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -647,13 +663,13 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
             match new_status:
                 case ScenarioResultStatus.RUNNING:
                     if old_status != ScenarioResultStatus.PENDING:
-                        raise ValueError("Invalid new state.")
+                        return Response({"error": "Invalid new state."}, status=status.HTTP_400_BAD_REQUEST)
                 case ScenarioResultStatus.SUCCESS:
                     if old_status != ScenarioResultStatus.RUNNING:
-                        raise ValueError("Invalid new state.")
+                        return Response({"error": "Invalid new state."}, status=status.HTTP_400_BAD_REQUEST)
                 case _:
                     if new_status != ScenarioResultStatus.FAILURE:
-                        raise ValueError("Invalid new state.")
+                        return Response({"error": "Invalid new state."}, status=status.HTTP_400_BAD_REQUEST)
             scenario_result.status = new_status
 
         if (run_details := body.get("run_details")) is not None:
@@ -664,15 +680,15 @@ def update_scenario_result(request: HttpRequest) -> HttpResponse:
 
         scenario_result.save()
 
-        return HttpResponse(
-            json.dumps({"id": scenario_id}), content_type="application/json"
+        return Response(
+            {"id": scenario_id}, content_type="application/json"
         )
     except Exception as e:
         return HttpResponseBadRequest("Update Scenario error: " + str(e))
 
 
 @api_view(["GET"])
-def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
+def list_scenarios_for_planning_area(request: Request) -> Response:
     """
     Lists all Scenarios for a Planning area.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -688,24 +704,25 @@ def list_scenarios_for_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         planning_area_id = request.GET["planning_area"]
         if planning_area_id is None:
-            raise ValueError("Missing planning_area")
+            return Response({"error": "Missing planning_area"}, status=status.HTTP_400_BAD_REQUEST)
 
         scenarios = Scenario.objects.filter(planning_area__user_id=user.pk).filter(
             planning_area__pk=planning_area_id
         )
-        return JsonResponse(
-            [_serialize_scenario(scenario) for scenario in scenarios], safe=False
+        return Response(
+            [_serialize_scenario(scenario) for scenario in scenarios],
+            content_type="application/json"
         )
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
 
 
 @api_view(["DELETE", "POST"])
-def delete_scenario(request: HttpRequest) -> HttpResponse:
+def delete_scenario(request: Request) -> Response:
     """
     Deletes a scenario or list of scenarios for a planning_area owned by the user.
     Requires a logged in user, as a scenario must be associated with a user's planning area.
@@ -721,12 +738,12 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
 
         body = json.loads(request.body)
         scenario_id_str = body.get("scenario_id", None)
         if scenario_id_str is None:
-            raise ValueError("Must specify scenario id(s)")
+            return Response({"error": "Must specify scenario id(s)"}, status=status.HTTP_400_BAD_REQUEST)
 
         scenario_ids = []
         if isinstance(scenario_id_str, int):
@@ -734,7 +751,7 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
         elif isinstance(scenario_ids, list):
             scenario_ids = scenario_id_str
         else:
-            raise ValueError("scenario_id must be an int or a list of ints.")
+            return Response({"error": "scenario_id must be an int or a list of ints."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get the scenarios matching the provided IDs and the logged-in user.
         scenarios = Scenario.objects.filter(pk__in=scenario_ids).filter(
@@ -748,8 +765,9 @@ def delete_scenario(request: HttpRequest) -> HttpResponse:
         # call completes.
         response_data = {"id": scenario_ids}
 
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
+        return Response(response_data, content_type="application/json")
     except Exception as e:
+        logger.error(f"Delete Scenario error: {str(e)}")
         return HttpResponseBadRequest("Delete Scenario error: " + str(e))
 
 
@@ -768,24 +786,25 @@ def get_treatment_goals_config_for_region(params: QueryDict):
     return None
 
 
-def treatment_goals_config(request: HttpRequest) -> HttpResponse:
+def treatment_goals_config(request: Request) -> Response:
     treatment_goals = get_treatment_goals_config_for_region(request.GET)
-    return JsonResponse(treatment_goals, safe=False)
+    return Response(treatment_goals, content_type="application/json")
 
 
 #### SHARED LINK Handlers ####
-def get_shared_link(request: HttpRequest, link_code: str) -> HttpResponse:
+@api_view(["GET"])
+def get_shared_link(request: Request, link_code: str) -> Response:
     try:
         link_obj = SharedLink.objects.get(link_code=link_code)
     except SharedLink.DoesNotExist:
         # Handle the case where the object doesn't exist
         raise Http404("This link does not exist")
     serializer = SharedLinkSerializer(link_obj)
-    return JsonResponse(serializer.data, safe=False)
+    return Response(serializer.data, content_type="application/json")
 
 
 @api_view(["POST"])
-def create_shared_link(request: HttpRequest) -> HttpResponse:
+def create_shared_link(request: Request) -> Response:
     try:
         user = request.user
 
@@ -795,7 +814,7 @@ def create_shared_link(request: HttpRequest) -> HttpResponse:
         shared_link = serializer.save()
 
         serializer = SharedLinkSerializer(shared_link)
-        return JsonResponse(serializer.data)
+        return Response(serializer.data, content_type="application/json")
 
     except Exception as e:
         return HttpResponseBadRequest("Error in create: " + str(e))

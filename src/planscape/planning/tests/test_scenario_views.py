@@ -281,8 +281,8 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.scenario.pk}).encode()
+        self.assertJSONEqual(
+            response.content, {"id": self.scenario.pk}
         )
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
@@ -298,8 +298,8 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.scenario.pk}).encode()
+        self.assertJSONEqual(
+            response.content, {"id": self.scenario.pk}
         )
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
@@ -315,8 +315,8 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.scenario.pk}).encode()
+        self.assertJSONEqual(
+            response.content, {"id": self.scenario.pk}
         )
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
@@ -331,8 +331,8 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.scenario.pk}).encode()
+        self.assertJSONEqual(
+            response.content, {"id": self.scenario.pk}
         )
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
@@ -347,8 +347,8 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.scenario.pk}).encode()
+        self.assertJSONEqual(
+            response.content, {"id": self.scenario.pk}
         )
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
@@ -365,8 +365,8 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.scenario.pk}).encode()
+        self.assertJSONEqual(
+            response.content, {"id": self.scenario.pk}
         )
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
@@ -410,9 +410,9 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
-            response.content, {"error": "Scenario matching query does not exist."}
+            response.content, {'error': 'You do not have permission to update this scenario.'}
         )
 
     def test_update_blank_name(self):
@@ -426,7 +426,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"name must be defined")
+        self.assertJSONEqual(response.content, {"error":"Name must be defined."})
 
     def test_update_empty_string_name(self):
         self.client.force_authenticate(self.user)
@@ -439,7 +439,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"name must be defined")
+        self.assertJSONEqual(response.content, {"error":"Name must be defined."})
 
 
 class UpdateScenarioResultTest(APITransactionTestCase):
@@ -893,8 +893,8 @@ class GetScenarioTest(APITransactionTestCase):
             {"id": self.scenario2.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"does not exist")
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(response.content, {"message":"You do not have permission to view this scenario"})
 
     def test_get_scenario_nonexistent_scenario(self):
         self.client.force_authenticate(self.user)
@@ -1008,7 +1008,7 @@ class GetScenarioDownloadTest(APITransactionTestCase):
             {"id": self.scenario2.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 403)
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_get_scenario_without_project_data(self):
