@@ -50,7 +50,7 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
 
     def save(self):
         log.info("Password reset requested for %s", self.data["email"])
-        super(CustomPasswordResetSerializer, self).save
+        super(CustomPasswordResetSerializer, self).save()
 
 
 class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
@@ -78,7 +78,7 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
 
     def save(self):
         super(CustomPasswordChangeSerializer, self).save()
-        log.info(f"Password reset for %s", self.request.user)
+        log.info("Password reset for %s", self.request.user)
         self._send_email()
 
     def _send_email(self):
