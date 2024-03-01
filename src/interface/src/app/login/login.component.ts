@@ -6,10 +6,11 @@ import { AuthService } from '../services';
 import { FormMessageType } from '../types/data.types';
 
 import {
-  SNACK_NOTICE_CONFIG,
-  SNACK_ERROR_CONFIG,
   EMAIL_VALIDATION_REGEX,
+  SNACK_ERROR_CONFIG,
+  SNACK_NOTICE_CONFIG,
 } from '../../app/shared/constants';
+import { RedirectService } from '../services/redirect.service';
 
 @Component({
   selector: 'app-login',
@@ -28,7 +29,8 @@ export class LoginComponent {
     private authService: AuthService,
     private formBuilder: FormBuilder,
     private router: Router,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private redirectService: RedirectService
   ) {
     this.form = this.formBuilder.group({
       email: this.formBuilder.control('', [
@@ -44,6 +46,7 @@ export class LoginComponent {
       this.emailError = 'Email must be in a proper format.';
     }
   }
+
   clearEmailErrors() {
     if (this.emailError !== '') {
       this.emailError = '';
@@ -74,7 +77,16 @@ export class LoginComponent {
     const password: string = this.form.get('password')?.value;
 
     this.authService.login(email, password).subscribe(
-      (_) => this.router.navigate(['home']),
+      (_) => {
+        const redirectUrl = this.redirectService.shouldRedirect(email);
+        // remove redirect
+        this.redirectService.removeRedirect();
+        if (redirectUrl) {
+          this.router.navigate([redirectUrl]);
+        } else {
+          this.router.navigate(['home']);
+        }
+      },
       (error) => {
         // determine the cause of the error...
         // errors from the backend can be in a variety of formats

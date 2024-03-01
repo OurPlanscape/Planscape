@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CanActivate, Router } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
 import {
@@ -18,6 +23,7 @@ import {
 
 import { BackendConstants } from '../backend-constants';
 import { User } from '../types';
+import { RedirectService } from './redirect.service';
 
 interface LogoutResponse {
   detail: string;
@@ -343,13 +349,18 @@ export class AuthService {
 export class AuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private redirectService: RedirectService
   ) {}
 
-  canActivate(): Observable<boolean> {
+  canActivate(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> {
     return this.authService.refreshLoggedInUser().pipe(
       map((_) => true),
       catchError((_) => {
+        this.redirectService.setRedirect(state.url);
         this.router.navigate(['login']);
         return of(false);
       })
