@@ -6,16 +6,22 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
+from collaboration.tests.helpers import create_collaborator_record
+from collaboration.models import Permissions, Role
 from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
-from planning.tests.helpers import _create_planning_area, _create_scenario
+from planning.tests.helpers import (
+    _create_planning_area,
+    _create_scenario,
+    _create_test_user_set,
+)
 
 
 # TODO: add more tests when we start parsing configurations.
 class CreateScenarioTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -23,14 +29,11 @@ class CreateScenarioTest(APITransactionTestCase):
         }
         self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.stored_geometry
+            self.owner_user, "test plan", self.stored_geometry
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan 2", self.stored_geometry
+            self.owner_user2, "test plan 2", self.stored_geometry
         )
 
         self.configuration = {
@@ -54,7 +57,7 @@ class CreateScenarioTest(APITransactionTestCase):
         return_value=(True, "all good"),
     )
     def test_create_scenario(self, validation):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
@@ -78,14 +81,14 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, "test notes")
-        self.assertEqual(scenario.user, self.user)
+        self.assertEqual(scenario.user, self.owner_user)
 
     @mock.patch(
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
     def test_create_scenario_no_notes(self, validation):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
@@ -108,10 +111,10 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, None)
-        self.assertEqual(scenario.user, self.user)
+        self.assertEqual(scenario.user, self.owner_user)
 
     def test_create_scenario_missing_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"configuration": self.configuration, "name": "test scenario"}
         )
@@ -124,7 +127,7 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_missing_configuration(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"planning_area": self.planning_area.pk, "name": "test scenario"}
         )
@@ -137,7 +140,7 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_missing_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
@@ -153,7 +156,7 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_duplicate_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         first_payload = json.dumps(
             {
                 "planning_area": self.planning_area.pk,
@@ -201,7 +204,7 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_create_scenario_for_nonexistent_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "planning_area": 999999,
@@ -218,7 +221,7 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_create_scenario_wrong_planning_area_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "planning_area": self.planning_area2.pk,
@@ -237,9 +240,13 @@ class CreateScenarioTest(APITransactionTestCase):
 
 class UpdateScenarioTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -248,20 +255,28 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.old_notes = "Truly, you have a dizzying intellect."
         self.old_name = "Man in black"
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.storable_geometry
+            self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, self.old_name, "{}", self.user, self.old_notes
+            self.planning_area, self.old_name, "{}", self.owner_user, self.old_notes
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", self.storable_geometry
+            self.owner_user2, "test plan2", self.storable_geometry
         )
-        self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.user2
+        self.owner_user2scenario = _create_scenario(
+            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
         self.assertEqual(Scenario.objects.count(), 2)
@@ -271,7 +286,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.new_name = "Vizzini"
 
     def test_update_notes_and_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.scenario.pk, "name": self.new_name, "notes": self.new_notes}
         )
@@ -281,16 +296,14 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            response.content, {"id": self.scenario.pk}
-        )
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
         self.assertEqual(scenario.notes, self.new_notes)
-        self.assertEqual(scenario.user, self.user)
+        self.assertEqual(scenario.user, self.owner_user)
 
     def test_update_notes_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.scenario.pk, "notes": self.new_notes})
         response = self.client.post(
             reverse("planning:update_scenario"),
@@ -298,16 +311,14 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            response.content, {"id": self.scenario.pk}
-        )
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, self.new_notes)
-        self.assertEqual(scenario.user, self.user)
+        self.assertEqual(scenario.user, self.owner_user)
 
     def test_update_name_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.scenario.pk, "name": self.new_name})
         response = self.client.post(
             reverse("planning:update_scenario"),
@@ -315,15 +326,13 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            response.content, {"id": self.scenario.pk}
-        )
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
         self.assertEqual(scenario.notes, self.old_notes)
 
     def test_update_clear_notes(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.scenario.pk, "notes": None})
         response = self.client.post(
             reverse("planning:update_scenario"),
@@ -331,15 +340,13 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            response.content, {"id": self.scenario.pk}
-        )
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, None)
 
     def test_update_empty_string_notes(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.scenario.pk, "notes": ""})
         response = self.client.post(
             reverse("planning:update_scenario"),
@@ -347,15 +354,13 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            response.content, {"id": self.scenario.pk}
-        )
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, "")
 
     def test_update_nothing_to_update(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.scenario.pk},
         )
@@ -365,13 +370,11 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(
-            response.content, {"id": self.scenario.pk}
-        )
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, self.old_notes)
-        self.assertEqual(scenario.user, self.user)
+        self.assertEqual(scenario.user, self.owner_user)
 
     def test_update_not_logged_in(self):
         payload = json.dumps(
@@ -386,7 +389,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_update_missing_id(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
         response = self.client.post(
             reverse("planning:update_scenario"),
@@ -396,11 +399,11 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"Scenario ID is required")
 
-    def test_update_wrong_user(self):
-        self.client.force_authenticate(self.user)
+    def test_update_collab_user(self):
+        self.client.force_authenticate(self.collab_user)
         payload = json.dumps(
             {
-                "id": self.user2scenario.pk,
+                "id": self.scenario.pk,
                 "name": self.new_name,
                 "notes": self.new_notes,
             }
@@ -412,11 +415,52 @@ class UpdateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
-            response.content, {'error': 'You do not have permission to update this scenario.'}
+            response.content,
+            {"error": "You do not have permission to update this scenario."},
+        )
+
+    def test_update_viewer_user(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps(
+            {
+                "id": self.scenario.pk,
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "You do not have permission to update this scenario."},
+        )
+
+    def test_update_wrong_user(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {
+                "id": self.owner_user2scenario.pk,
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.post(
+            reverse("planning:update_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "You do not have permission to update this scenario."},
         )
 
     def test_update_blank_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.scenario.pk, "name": None, "notes": self.new_notes}
         )
@@ -426,10 +470,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {"error":"Name must be defined."})
+        self.assertJSONEqual(response.content, {"error": "Name must be defined."})
 
     def test_update_empty_string_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.scenario.pk, "name": None, "notes": self.new_notes}
         )
@@ -439,50 +483,51 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {"error":"Name must be defined."})
+        self.assertJSONEqual(response.content, {"error": "Name must be defined."})
 
 
 class UpdateScenarioResultTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.storable_geometry
+            self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", "{}", user=self.user
+            self.planning_area, "test scenario", "{}", user=self.owner_user
         )
         self.scenario2 = _create_scenario(
-            self.planning_area, "test scenario2", "{}", user=self.user
+            self.planning_area, "test scenario2", "{}", user=self.owner_user
         )
         self.scenario3 = _create_scenario(
-            self.planning_area, "test scenario3", "{}", user=self.user
+            self.planning_area, "test scenario3", "{}", user=self.owner_user
         )
         self.empty_planning_area = _create_planning_area(
-            self.user, "empty test plan", self.storable_geometry
+            self.owner_user, "empty test plan", self.storable_geometry
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", self.storable_geometry
+            self.owner_user2, "test plan2", self.storable_geometry
         )
-        self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", self.user2
+        self.owner_user2scenario = _create_scenario(
+            self.planning_area2, "test user2scenario", "{}", self.owner_user2
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_update_scenario_result(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
@@ -507,7 +552,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         )
 
     def test_update_scenario_result_twice(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
@@ -559,7 +604,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         )
 
     def test_update_scenario_result_status_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.RUNNING}
         )
@@ -575,7 +620,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.assertEqual(scenario_result.run_details, None)
 
     def test_update_scenario_result_result_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
@@ -596,7 +641,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.assertEqual(scenario_result.run_details, None)
 
     def test_update_scenario_result_run_details_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "scenario_id": self.scenario.pk,
@@ -617,7 +662,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         )
 
     def test_update_scenario_result_bad_status_pending_to_pending(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.PENDING}
         )
@@ -630,7 +675,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"Invalid new state")
 
     def test_update_scenario_result_bad_status_pending_to_success(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"scenario_id": self.scenario.pk, "status": ScenarioResultStatus.SUCCESS}
         )
@@ -669,10 +714,10 @@ class UpdateScenarioResultTest(APITransactionTestCase):
     # This works since EPs don't have a user context.
     # TODO: Update when we have EPs sending a credential over.
     def test_update_scenario_result_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
-                "scenario_id": self.user2scenario.pk,
+                "scenario_id": self.owner_user2scenario.pk,
                 "result": json.dumps({"result1": "test result"}),
                 "run_details": json.dumps({"details": "super duper details"}),
                 "status": ScenarioResultStatus.RUNNING,
@@ -684,7 +729,9 @@ class UpdateScenarioResultTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        scenario_result = ScenarioResult.objects.get(scenario__id=self.user2scenario.pk)
+        scenario_result = ScenarioResult.objects.get(
+            scenario__id=self.owner_user2scenario.pk
+        )
         self.assertEqual(scenario_result.status, ScenarioResultStatus.RUNNING)
         self.assertEqual(scenario_result.result, json.dumps({"result1": "test result"}))
         self.assertEqual(
@@ -692,7 +739,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         )
 
     def test_update_scenario_result_nonexistent_scenario(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "scenario_id": 99999,
@@ -712,16 +759,17 @@ class UpdateScenarioResultTest(APITransactionTestCase):
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.storable_geometry
+            self.owner_user, "test plan", self.storable_geometry
         )
         self.configuration = {
             "question_id": 1,
@@ -739,33 +787,42 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", self.configuration, user=self.user
+            self.planning_area,
+            "test scenario",
+            self.configuration,
+            user=self.owner_user,
         )
         self.scenario2 = _create_scenario(
-            self.planning_area, "test scenario2", self.configuration, user=self.user
+            self.planning_area,
+            "test scenario2",
+            self.configuration,
+            user=self.owner_user,
         )
         self.scenario3 = _create_scenario(
-            self.planning_area, "test scenario3", self.configuration, user=self.user
+            self.planning_area,
+            "test scenario3",
+            self.configuration,
+            user=self.owner_user,
         )
         self.empty_planning_area = _create_planning_area(
-            self.user, "empty test plan", self.storable_geometry
+            self.owner_user, "empty test plan", self.storable_geometry
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", self.storable_geometry
+            self.owner_user2, "test plan2", self.storable_geometry
         )
-        self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.user2
+        self.owner_user2scenario = _create_scenario(
+            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_list_scenario(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": self.planning_area.pk},
@@ -787,7 +844,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_list_scenario_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": self.planning_area2.pk},
@@ -798,7 +855,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(len(scenarios), 0)
 
     def test_list_scenario_empty_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": self.empty_planning_area.pk},
@@ -809,7 +866,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(len(scenarios), 0)
 
     def test_list_scenario_nonexistent_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:list_scenarios_for_planning_area"),
             {"planning_area": 99999},
@@ -822,9 +879,14 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
 
 class GetScenarioTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unprivileged_user = self.test_users["unprivileged"]
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -846,27 +908,51 @@ class GetScenarioTest(APITransactionTestCase):
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.storable_geometry
+            self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", self.configuration, user=self.user
+            self.planning_area,
+            "test scenario",
+            self.configuration,
+            user=self.owner_user,
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", self.storable_geometry
+            self.owner_user2, "test plan2", self.storable_geometry
         )
         self.scenario2 = _create_scenario(
-            self.planning_area2, "test scenario2", self.configuration, user=self.user2
+            self.planning_area2,
+            "test scenario2",
+            self.configuration,
+            user=self.owner_user2,
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
         )
 
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
         self.assertEqual(Scenario.objects.count(), 2)
         self.assertEqual(ScenarioResult.objects.count(), 2)
 
     def test_get_scenario(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertIsNotNone(response_json["created_at"])
+        self.assertIsNotNone(response_json["updated_at"])
+
+    def test_get_scenario_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": self.scenario.pk},
@@ -887,17 +973,20 @@ class GetScenarioTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_get_scenario_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": self.scenario2.pk},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(response.content, {"message":"You do not have permission to view this scenario"})
+        self.assertJSONEqual(
+            response.content,
+            {"message": "You do not have permission to view this scenario"},
+        )
 
     def test_get_scenario_nonexistent_scenario(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": 99999},
@@ -907,7 +996,7 @@ class GetScenarioTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {'error': 'Scenario matching query does not exist.'})
 
     def test_get_scenario_with_results(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_scenario_by_id"),
             {"id": self.scenario.pk, "show_results": True},
@@ -916,7 +1005,7 @@ class GetScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         result = response.json()
         self.assertEqual(result["name"], "test scenario")
-        self.assertEqual(result["user"], self.user.pk)
+        self.assertEqual(result["user"], self.owner_user.pk)
         self.assertEqual(
             result["scenario_result"]["status"], ScenarioResultStatus.PENDING
         )
@@ -926,19 +1015,19 @@ class GetScenarioDownloadTest(APITransactionTestCase):
     def setUp(self):
         super().setUp()
         self.set_verbose = True
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.owner_user = User.objects.create(username="testuser")
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.storable_geometry
+            self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", "{}", user=self.user
+            self.planning_area, "test scenario", "{}", user=self.owner_user
         )
 
         # set scenario result status to success
@@ -959,14 +1048,14 @@ class GetScenarioDownloadTest(APITransactionTestCase):
 
         # create a second scenario with a different user
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", self.storable_geometry
+            self.owner_user2, "test plan2", self.storable_geometry
         )
         self.scenario2 = _create_scenario(
-            self.planning_area2, "test scenario2", "{}", user=self.user2
+            self.planning_area2, "test scenario2", "{}", user=self.owner_user2
         )
         # set scenario result status to success
         self.scenario2_result = ScenarioResult.objects.get(
@@ -984,7 +1073,7 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         return super().tearDown()
 
     def test_get_scenario_with_zip(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:download_csv"), {"id": self.scenario.pk}
         )
@@ -1002,7 +1091,7 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_get_scenario_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": self.scenario2.pk},
@@ -1012,11 +1101,11 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
     def test_get_scenario_without_project_data(self):
-        self.client.force_authenticate(self.user2)
+        self.client.force_authenticate(self.owner_user2)
         self.scenario2_result.status = ScenarioResultStatus.SUCCESS
         self.scenario2_result.save()
 
-        self.client.force_authenticate(self.user2)
+        self.client.force_authenticate(self.owner_user2)
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": self.scenario2.pk},
@@ -1026,7 +1115,7 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"Scenario files cannot be read")
 
     def test_get_scenario_without_success_status_still_returns_data(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.scenario_result.status = ScenarioResultStatus.FAILURE
         self.scenario_result.save()
 
@@ -1038,7 +1127,7 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_get_scenario_nonexistent_scenario(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:download_csv"),
             {"id": 99999},
@@ -1050,42 +1139,46 @@ class GetScenarioDownloadTest(APITransactionTestCase):
 
 class DeleteScenarioTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+
+        self.owner_user = User.objects.create(username="testuser")
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", self.storable_geometry
+            self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, "test scenario", "{}", user=self.user
+            self.planning_area, "test scenario", "{}", user=self.owner_user
         )
         self.scenario2 = _create_scenario(
-            self.planning_area, "test scenario2", "{}", user=self.user
+            self.planning_area, "test scenario2", "{}", user=self.owner_user
         )
         self.scenario3 = _create_scenario(
-            self.planning_area, "test scenario3", "{}", user=self.user
+            self.planning_area, "test scenario3", "{}", user=self.owner_user
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", self.storable_geometry
+            self.owner_user2, "test plan2", self.storable_geometry
         )
-        self.user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.user2
+        self.owner_user2scenario = _create_scenario(
+            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_delete_scenario(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"scenario_id": self.scenario.pk})
         response = self.client.post(
             reverse("planning:delete_scenario"),
@@ -1097,7 +1190,7 @@ class DeleteScenarioTest(APITransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 3)
 
     def test_delete_scenario_multiple_owned(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         scenario_ids = [self.scenario.pk, self.scenario2.pk]
         payload = json.dumps({"scenario_id": scenario_ids})
         response = self.client.post(
@@ -1111,8 +1204,12 @@ class DeleteScenarioTest(APITransactionTestCase):
 
     # Silently does nothing for the non-owned scenario.
     def test_delete_scenario_multiple_partially_owned(self):
-        self.client.force_authenticate(self.user)
-        scenario_ids = [self.scenario.pk, self.scenario2.pk, self.user2scenario.pk]
+        self.client.force_authenticate(self.owner_user)
+        scenario_ids = [
+            self.scenario.pk,
+            self.scenario2.pk,
+            self.owner_user2scenario.pk,
+        ]
         payload = json.dumps({"scenario_id": scenario_ids})
         response = self.client.post(
             reverse("planning:delete_scenario"),
@@ -1137,8 +1234,8 @@ class DeleteScenarioTest(APITransactionTestCase):
 
     # Silently does nothing.
     def test_delete_scenario_wrong_user(self):
-        self.client.force_authenticate(self.user)
-        payload = json.dumps({"scenario_id": self.user2scenario.pk})
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"scenario_id": self.owner_user2scenario.pk})
         response = self.client.post(
             reverse("planning:delete_scenario"),
             payload,
@@ -1150,7 +1247,7 @@ class DeleteScenarioTest(APITransactionTestCase):
 
     # Silently does nothing.
     def test_delete_scenario_nonexistent_id(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"scenario_id": 99999})
         response = self.client.post(
             reverse("planning:delete_scenario"),
@@ -1162,7 +1259,7 @@ class DeleteScenarioTest(APITransactionTestCase):
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
     def test_delete_scenario_missing_id(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({})
         response = self.client.post(
             reverse("planning:delete_scenario"),

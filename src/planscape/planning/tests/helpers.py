@@ -52,6 +52,60 @@ def _create_scenario(
     return scenario
 
 
+def _create_test_user_set():
+    owner_user = User.objects.create(
+        username="area_owner",
+        first_name="Oliver",
+        last_name="Owner",
+        email="owner1@test.test",
+    )
+    owner_user.set_password("12345")
+    owner_user.save()
+
+    owner_user2 = User.objects.create(
+        username="area2_owner",
+        first_name="Olga",
+        last_name="Owner",
+        email="owner2@test.test",
+    )
+    owner_user2.set_password("12345")
+    owner_user2.save()
+
+    collab_user = User.objects.create(
+        username="area_collab",
+        first_name="Chris",
+        last_name="Collab",
+        email="collab@test.test",
+    )
+    collab_user.set_password("12345")
+    collab_user.save()
+
+    viewer_user = User.objects.create(
+        username="area_viewer",
+        first_name="Veronica",
+        last_name="Viewer",
+        email="viewer@test.test",
+    )
+    viewer_user.set_password("12345")
+    viewer_user.save()
+
+    unprivileged_user = User.objects.create(
+        username="justauser",
+        first_name="Ned",
+        last_name="Nobody",
+        email="user@test.test",
+    )
+    unprivileged_user.set_password("12345")
+    unprivileged_user.save()
+    return {
+        "owner": owner_user,
+        "owner2": owner_user2,
+        "collaborator": collab_user,
+        "viewer": viewer_user,
+        "unprivileged": unprivileged_user,
+    }
+
+
 # this is in the migration, but it all gets removed whenever tests TearDown
 # should we DRY this up and call it from collaboration utils
 def reset_permissions():
