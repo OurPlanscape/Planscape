@@ -903,8 +903,8 @@ class GetScenarioTest(APITransactionTestCase):
             {"id": 99999},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"does not exist")
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(response.content, {'error': 'Scenario matching query does not exist.'})
 
     def test_get_scenario_with_results(self):
         self.client.force_authenticate(self.user)
