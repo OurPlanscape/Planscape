@@ -374,10 +374,7 @@ def get_scenario_by_id(request: Request) -> Response:
                     status=status.HTTP_400_BAD_REQUEST
                 )
         scenario = Scenario.objects.get(id=request.GET["id"])
-
-        can_view = ScenarioPermission.can_view(user, scenario)
-        print(f"what are the perms here? {can_view}")
-
+        
         if not ScenarioPermission.can_view(user, scenario):
             return Response({"message":"You do not have permission to view this scenario"}, status=status.HTTP_403_FORBIDDEN )
         
@@ -721,7 +718,10 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
         if planning_area_id is None:
             return Response({"error": "Missing planning_area"}, status=status.HTTP_400_BAD_REQUEST)
 
-    # TODO: Make sure user can see these...
+        planning_area = PlanningArea.objects.get(id=planning_area_id)
+        if not PlanningAreaPermission.can_view(user, planning_area):
+            return Response({"error": "User has no permission to view planning area"}, status=status.HTTP_403_FORBIDDEN)
+
         scenarios = Scenario.objects.filter(
             planning_area__pk=planning_area_id
         )
@@ -729,6 +729,11 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
             [_serialize_scenario(scenario) for scenario in scenarios],
             content_type="application/json"
         )
+    except PlanningArea.DoesNotExist:
+         return Response(
+            {"error": "Planning Area does not exist."},
+            status=status.HTTP_404_NOT_FOUND
+        ) 
     except Exception as e:
         return HttpResponseBadRequest("List Scenario error: " + str(e))
 

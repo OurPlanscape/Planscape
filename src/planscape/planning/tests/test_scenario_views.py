@@ -13,6 +13,7 @@ from planning.tests.helpers import (
     _create_planning_area,
     _create_scenario,
     _create_test_user_set,
+    reset_permissions
 )
 
 
@@ -491,7 +492,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
         self.owner_user2 = self.test_users["owner2"]
-
+       
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -521,6 +522,14 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", self.owner_user2
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
@@ -759,10 +768,16 @@ class UpdateScenarioResultTest(APITransactionTestCase):
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
 
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
         self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unprivileged_user = self.test_users["unprivileged"]
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -817,7 +832,13 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
         )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
 
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
@@ -850,9 +871,44 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             {"planning_area": self.planning_area2.pk},
             content_type="application/json",
         )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(response.content, {'error': 'User has no permission to view planning area'})
+
+    def test_list_scenario_collab_user(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:list_scenarios_for_planning_area"),
+            {"planning_area": self.planning_area.pk},
+            content_type="application/json",
+        )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(len(scenarios), 0)
+        self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
+
+    def test_list_scenario_viewer_user(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse("planning:list_scenarios_for_planning_area"),
+            {"planning_area": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
+
+    def test_list_scenario_unprivileged_user(self):
+        self.client.force_authenticate(self.unprivileged_user)
+        response = self.client.get(
+            reverse("planning:list_scenarios_for_planning_area"),
+            {"planning_area": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(response.content, {'error': 'User has no permission to view planning area'})
 
     def test_list_scenario_empty_planning_area(self):
         self.client.force_authenticate(self.owner_user)
@@ -872,13 +928,13 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             {"planning_area": 99999},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        scenarios = response.json()
-        self.assertEqual(len(scenarios), 0)
-
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(response.content, {'error': 'Planning Area does not exist.'})
 
 class GetScenarioTest(APITransactionTestCase):
     def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
 
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
@@ -1139,13 +1195,16 @@ class GetScenarioDownloadTest(APITransactionTestCase):
 
 class DeleteScenarioTest(APITransactionTestCase):
     def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
         self.owner_user2 = self.test_users["owner2"]
-
-        self.owner_user = User.objects.create(username="testuser")
-        self.owner_user.set_password("12345")
-        self.owner_user.save()
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unprivileged_user = self.test_users["unprivileged"]
+    
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -1172,6 +1231,13 @@ class DeleteScenarioTest(APITransactionTestCase):
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
@@ -1249,6 +1315,30 @@ class DeleteScenarioTest(APITransactionTestCase):
     def test_delete_scenario_nonexistent_id(self):
         self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"scenario_id": 99999})
+        response = self.client.post(
+            reverse("planning:delete_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        payload = json.dumps({"scenario_id": self.owner_user2scenario.pk})
+        response = self.client.post(
+            reverse("planning:delete_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps({"scenario_id": self.owner_user2scenario.pk})
         response = self.client.post(
             reverse("planning:delete_scenario"),
             payload,
