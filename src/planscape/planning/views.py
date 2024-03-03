@@ -491,9 +491,14 @@ def download_shapefile(request: Request) -> Response:
             {"error": "Scenario matching query does not exist."},
             status=status.HTTP_404_NOT_FOUND
         )
+    except ScenarioResult.DoesNotExist:
+         return Response(
+            {"error": "Scenario result matching query does not exist."},
+            status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e), status=400)
-
+        logger.error("Error in downloading shapefile %s", e)
+        raise
 
 @api_view(["POST"])
 def create_scenario(request: Request) -> Response:
@@ -523,7 +528,13 @@ def create_scenario(request: Request) -> Response:
 
         # Ensure that we have a viable planning area owned by the user.  Note that this gives a slightly different
         # error response for a nonowned planning area vs. when given a nonexistent planning area.
-        planning_area = get_object_or_404(user.planning_areas, id=body["planning_area"])
+        planning_area = PlanningArea.objects.get(id=body["planning_area"])
+        if not PlanningAreaPermission.can_view(user, planning_area):
+            return Response(
+                {"error": "User does not have permission to create scenarios from this Planning Area"},
+                content_type="application/json",
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         # TODO: Parse configuration field into further components.
         result, reason = validate_scenario_treatment_ratio(
@@ -535,7 +546,7 @@ def create_scenario(request: Request) -> Response:
             return Response(
                 {"reason": reason},
                 content_type="application/json",
-                status=400,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         scenario = serializer.save()
@@ -550,7 +561,12 @@ def create_scenario(request: Request) -> Response:
             async_forsys_run.delay(scenario.pk)
 
         return Response({"id": scenario.pk}, content_type="application/json")
-
+    except PlanningArea.DoesNotExist:
+        return Response(
+            {"error": "a matching Planning Area does not exist"},
+            content_type="application/json",
+            status=status.HTTP_404_NOT_FOUND,
+        )
     except IntegrityError as ve:
         reason = ve.args[0]
         if "(planning_area_id, name)" in ve.args[0]:
@@ -558,10 +574,11 @@ def create_scenario(request: Request) -> Response:
         return Response(
             json.dumps({"reason": reason}),
             content_type="application/json",
-            status=400,
+            status=status.HTTP_400_BAD_REQUEST,
         )
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.error("Error creating scenario: %s", e)
+        raise
 
 
 @api_view(["PATCH", "POST"])
@@ -626,8 +643,8 @@ def update_scenario(request: Request) -> Response:
         )
 
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
-
+        logger.error("Error updating scenario: %s", e)
+        raise
 
 # TODO: add more things to update other than state
 # Unlike other routines, this does not require a user login context, as it is expected to be called
@@ -688,9 +705,14 @@ def update_scenario_result(request: Request) -> Response:
         return Response(
             {"id": scenario_id}, content_type="application/json"
         )
+    except ScenarioResult.DoesNotExist:
+         return Response(
+            {"error": "Scenario result matching query does not exist."},
+            status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e:
-        return HttpResponseBadRequest("Update Scenario error: " + str(e))
-
+        logger.error("Error updating scenario result: %s", e)
+        raise
 
 @api_view(["GET"])
 def list_scenarios_for_planning_area(request: Request) -> Response:
@@ -732,8 +754,8 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
             status=status.HTTP_404_NOT_FOUND
         ) 
     except Exception as e:
-        return HttpResponseBadRequest("List Scenario error: " + str(e))
-
+        logger.error("Error updating scenario result: %s", e)
+        raise
 
 @api_view(["DELETE", "POST"])
 def delete_scenario(request: Request) -> Response:
@@ -783,9 +805,8 @@ def delete_scenario(request: Request) -> Response:
 
         return Response(response_data, content_type="application/json")
     except Exception as e:
-        logger.error(f"Delete Scenario error: {str(e)}")
-        return HttpResponseBadRequest("Delete Scenario error: " + str(e))
-
+        logger.error("Error deleting scenario: %s", e)
+        raise
 
 def get_treatment_goals_config_for_region(params: QueryDict):
     # Get region name
@@ -833,4 +854,5 @@ def create_shared_link(request: Request) -> Response:
         return Response(serializer.data, content_type="application/json")
 
     except Exception as e:
-        return HttpResponseBadRequest("Error in create: " + str(e))
+        logger.error("Error creating shared link: %s", e)
+        raise
