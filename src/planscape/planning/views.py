@@ -374,7 +374,6 @@ def get_scenario_by_id(request: Request) -> Response:
                     status=status.HTTP_400_BAD_REQUEST
                 )
         scenario = Scenario.objects.get(id=request.GET["id"])
-        
         if not ScenarioPermission.can_view(user, scenario):
             return Response({"message":"You do not have permission to view this scenario"}, status=status.HTTP_403_FORBIDDEN )
         
@@ -399,8 +398,6 @@ def download_csv(request: Request) -> HttpResponse:
 
     Required params:
       id (int): The scenario ID to be retrieved.
-
-    TODO: maybe generate a unique key and store that for each output dir name when we create it?
     """
     # Ensure that the user is logged in.
     user = request.user
@@ -596,7 +593,7 @@ def update_scenario(request: Request) -> Response:
         
         if not ScenarioPermission.can_change(user, scenario):
             return Response(
-                {"error": "You do not have permission to update this scenario."}, status=status.HTTP_403_FORBIDDEN
+                {"error": "User does not have permission to update this scenario."}, status=status.HTTP_403_FORBIDDEN
             )
 
         is_dirty = False

@@ -242,6 +242,9 @@ class CreateScenarioTest(APITransactionTestCase):
 class UpdateScenarioTest(APITransactionTestCase):
     def setUp(self):
 
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
         self.owner_user2 = self.test_users["owner2"]
@@ -403,11 +406,7 @@ class UpdateScenarioTest(APITransactionTestCase):
     def test_update_collab_user(self):
         self.client.force_authenticate(self.collab_user)
         payload = json.dumps(
-            {
-                "id": self.scenario.pk,
-                "name": self.new_name,
-                "notes": self.new_notes,
-            }
+            {"id": self.scenario.pk, "name": self.new_name, "notes": self.new_notes}
         )
         response = self.client.post(
             reverse("planning:update_scenario"),
@@ -417,7 +416,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
             response.content,
-            {"error": "You do not have permission to update this scenario."},
+            {"error": "User does not have permission to update this scenario."},
         )
 
     def test_update_viewer_user(self):
@@ -437,7 +436,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
             response.content,
-            {"error": "You do not have permission to update this scenario."},
+            {"error": "User does not have permission to update this scenario."},
         )
 
     def test_update_wrong_user(self):
@@ -457,7 +456,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
             response.content,
-            {"error": "You do not have permission to update this scenario."},
+            {"error": "User does not have permission to update this scenario."},
         )
 
     def test_update_blank_name(self):
@@ -514,22 +513,11 @@ class UpdateScenarioResultTest(APITransactionTestCase):
             self.owner_user, "empty test plan", self.storable_geometry
         )
 
-        self.owner_user2 = User.objects.create(username="testuser2")
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
         self.planning_area2 = _create_planning_area(
             self.owner_user2, "test plan2", self.storable_geometry
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", self.owner_user2
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
@@ -1071,6 +1059,8 @@ class GetScenarioDownloadTest(APITransactionTestCase):
     def setUp(self):
         super().setUp()
         self.set_verbose = True
+        if Permissions.objects.count() == 0:
+            reset_permissions()
         self.owner_user = User.objects.create(username="testuser")
         self.owner_user.set_password("12345")
         self.owner_user.save()
