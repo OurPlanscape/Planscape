@@ -1,3 +1,4 @@
+from typing import List
 from collaboration.exceptions import InvalidOwnership
 from collaboration.models import Permissions, Role, UserObjectRole
 from django.db import transaction
@@ -99,3 +100,14 @@ def create_invite(
     )
 
     return object_role
+
+
+@transaction.atomic()
+def link_invites(user) -> List[UserObjectRole]:
+    """Links all invites to a fresh created user.
+    Returns all the invitations that were linked.
+    """
+
+    object_roles = UserObjectRole.objects.filter(email=user.email)
+    object_roles.update(collaborator_id=user.pk)
+    return UserObjectRole.objects.filter(collaborator_id=user.pk)

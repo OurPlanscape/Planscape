@@ -1,7 +1,7 @@
 from django.test import TransactionTestCase
 from django.contrib.contenttypes.models import ContentType
 from collaboration.models import Permissions, UserObjectRole, Role
-from collaboration.services import validate_ownership, get_permissions
+from collaboration.services import link_invites, validate_ownership, get_permissions
 from planning.models import PlanningArea
 from django.contrib.auth.models import User
 
@@ -61,3 +61,35 @@ class TestGetPermissions(TransactionTestCase):
         self.assertEqual(len(permissions), 2)
         self.assertIn("view_planningarea", permissions)
         self.assertIn("view_scenario", permissions)
+
+
+class TestLinkInvites(TransactionTestCase):
+    def setUp(self):
+        self.user1 = User.objects.create(username="foo", email="foo@foo.com")
+
+        self.planning_area1 = PlanningArea.objects.create(
+            user=self.user1, region_name="a"
+        )
+        self.planning_area2 = PlanningArea.objects.create(
+            user=self.user1, region_name="b"
+        )
+        self.content_type = ContentType.objects.get_for_model(PlanningArea)
+        self.user_object_role1 = UserObjectRole.objects.create(
+            inviter=self.user1,
+            email="bar@bar.com",
+            content_type=self.content_type,
+            object_pk=self.planning_area1.pk,
+            role=Role.OWNER,
+        )
+        self.user_object_role2 = UserObjectRole.objects.create(
+            inviter=self.user1,
+            email="bar@bar.com",
+            content_type=self.content_type,
+            object_pk=self.planning_area2.pk,
+            role=Role.VIEWER,
+        )
+
+    def test_link_invites_updates_userobjectrole(self):
+        user = User.objects.create(username="bar", email="bar@bar.com")
+        invites = link_invites(user)
+        self.assertEqual(len(invites), 2)
