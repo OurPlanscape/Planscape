@@ -17,6 +17,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
+from collaboration.permissions import PlanningAreaPermission
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -40,7 +41,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-import rest_framework
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +90,7 @@ def _serialize_planning_area(
 
 #### PLAN(NING AREA) Handlers ####
 @api_view(["POST"])
-def create_planning_area(request: HttpRequest) -> HttpResponse:
+def create_planning_area(request: Request) -> Response:
     """
     Creates a planning area (aka plan), given a name, region, an optional geometry,
     and an optional notes string.
@@ -111,28 +111,39 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # Get the name of the planning area.
         body = json.loads(request.body)
         name = body.get("name")
         if name is None:
-            raise ValueError("Must specify a planning area name.")
-
+            return Response(
+                {"message": "Must specify a planning area name."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         # Get the region name; it should be in the human-readable display name format.
         region_name_input = body.get("region_name")
         if region_name_input is None:
-            raise ValueError("Region name must be specified.")
-
+            return Response(
+                {"message": "Region name must be specified."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         region_name = display_name_to_region(region_name_input)
         if region_name is None:
-            raise ValueError("Unknown region_name: " + region_name_input)
-
+            return Response(
+                {"message": f"Unknown region_name: {region_name_input}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         # Get the geometry of the planning area.
         geometry = body.get("geometry")
         if geometry is None:
-            raise ValueError("Must specify the planning area geometry.")
-
+            return Response(
+                {"message": "Must specify the planning area geometry."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
         # MultiPolygon.
         geometry = _convert_polygon_to_multipolygon(geometry)
@@ -146,17 +157,28 @@ def create_planning_area(request: HttpRequest) -> HttpResponse:
         )
         planning_area.save()
 
-        return HttpResponse(
-            json.dumps({"id": planning_area.pk}), content_type="application/json"
+        return Response({"id": planning_area.pk}, content_type="application/json")
+
+    except ValueError as ve:  # potentially from _convert_polygon_to_multipolygon
+        logger.error(f"ValueError creating planning area: {ve}")
+        return Response(
+            {"message": f"Error creating planning area: {str(ve)}"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    except KeyError as ke:  # potentially from _convert_polygon_to_multipolygon
+        logger.error(f"Error creating planning area: {ke}")
+        return Response(
+            {"message": f"Error creating planning area: {str(ke)}"},
+            status=status.HTTP_400_BAD_REQUEST,
         )
 
-        return HttpResponse(str(planning_area.pk))
     except Exception as e:
-        return HttpResponseBadRequest("Error in create: " + str(e))
+        logger.error(f"Error creating planning area: {e}")
+        raise
 
 
 @api_view(["POST"])
-def delete_planning_area(request: HttpRequest) -> HttpResponse:
+def delete_planning_area(request: Request) -> Response:
     """
     Deletes a planning area or areas.
     Requires a logged in user.  Users can delete only their owned planning areas.
@@ -172,38 +194,51 @@ def delete_planning_area(request: HttpRequest) -> HttpResponse:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # Get the planning area IDs
         body = json.loads(request.body)
         planning_area_id = body.get("id", None)
         planning_area_ids = []
         if planning_area_id is None:
-            raise ValueError("Must specify planning area id.")
+            return Response(
+                {"message": "No ID given for planning area"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         elif isinstance(planning_area_id, int):
             planning_area_ids = [planning_area_id]
         elif isinstance(planning_area_id, list):
             planning_area_ids = planning_area_id
         else:
-            raise ValueError("Planning Area ID must be an int or a list of ints.")
+            return Response(
+                {"message": "Planning Area ID must be an int or a list of ints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        # Get the planning area(s) for just the logged in user.
-        planning_areas = user.planning_areas.filter(pk__in=planning_area_ids)
-
-        planning_areas.delete()
+        planning_areas = PlanningArea.objects.get_for_user(user).filter(
+            pk__in=planning_area_ids
+        )
+        for p in planning_areas:
+            if PlanningAreaPermission.can_remove(user, p):
+                p.delete()
+            else:
+                logger.error(f"User {user} has no permission to delete {p.id}")
 
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.
         # The end result is that those planning areas don't exist as far as the user is concerned.
-        response_data = {"id": planning_area_ids}
+        return Response({"id": planning_area_ids}, content_type="application/json")
 
-        return HttpResponse(json.dumps(response_data), content_type="application/json")
     except Exception as e:
-        return HttpResponseBadRequest("Error in delete: " + str(e))
+        logger.exception(f"Error deleting planningarea: {e}")
+        raise
 
 
 @api_view(["PATCH", "POST"])
-def update_planning_area(request: HttpRequest) -> HttpResponse:
+def update_planning_area(request: Request) -> Response:
     """
     Updates a planning area's name or notes.  To date, these are the only fields that
     can be modified after a planning area is created.  This can be also used to clear
@@ -221,15 +256,30 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         body = json.loads(request.body)
         planning_area_id = body.get("id", None)
 
         if planning_area_id is None:
-            return JsonResponse({"error": "No planning area ID provided"}, status=400)
+            return Response(
+                {"error": "No planning area ID provided"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
-        planning_area = get_object_or_404(user.planning_areas, id=planning_area_id)
+        planning_area = PlanningArea.objects.get(id=planning_area_id)
+
+        if not PlanningAreaPermission.can_change(user, planning_area):
+            return Response(
+                {
+                    "message": "User does not have permission to update this planning area",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         is_dirty = False
 
         if "notes" in body:
@@ -241,24 +291,24 @@ def update_planning_area(request: HttpRequest) -> HttpResponse:
             # This must be always defined
             new_name = body.get("name")
             if (new_name is None) or (len(new_name) == 0):
-                raise ValueError("name must be defined")
+                return Response(
+                    {"message": "Name must be defined"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             planning_area.name = new_name
             is_dirty = True
 
         if is_dirty:
             planning_area.save()
 
-        return HttpResponse(
-            json.dumps({"id": planning_area_id}), content_type="application/json"
-        )
-    except Http404:
-        return HttpResponseBadRequest("Planning area not found for user.", status=404)
+        return Response({"id": planning_area_id}, content_type="application/json")
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.exception("Error updating planning area %s", e)
+        raise
 
 
 @api_view(["GET"])
-def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
+def get_planning_area_by_id(request: Request) -> Response:
     """
     Retrieves a planning area by ID.
     Requires a logged in user.  Users can see only their owned planning_areas.
@@ -274,33 +324,51 @@ def get_planning_area_by_id(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         if "id" not in request.GET:
-            return JsonResponse(
-                {"error": "Missing required parameter 'id'"}, status=400
+            return Response(
+                {"error": "Missing required parameter 'id'"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        return JsonResponse(
-            _serialize_planning_area(
-                get_object_or_404(
-                    user.planning_areas.annotate(
-                        scenario_count=Count("scenarios", distinct=True)
-                    ).annotate(scenario_latest_updated_at=Max("scenarios__updated_at")),
-                    id=request.GET["id"],
-                ),
-                True,
-                context={"request": request},
+
+        planning_area = (
+            PlanningArea.objects.filter(id=request.GET["id"])
+            .annotate(scenario_count=Count("scenarios", distinct=True))
+            .annotate(
+                scenario_latest_updated_at=Coalesce(
+                    Max("scenarios__updated_at"), "updated_at"
+                )
             )
+            .first()
         )
-    except Http404:
-        return HttpResponseBadRequest("Planning area not found for user.", status=404)
+
+        if not planning_area:
+            return Response(
+                {"message": "Planning area not found with this ID"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if not PlanningAreaPermission.can_view(user, planning_area):
+            return Response(
+                {"message": "User has no access to this planning area."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        return Response(
+            _serialize_planning_area(planning_area, True, context={"request": request})
+        )
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.exception("Error getting area by id %s", e)
+        raise
 
 
 # No Params expected, since we're always using the logged in user.
 @api_view(["GET"])
-def list_planning_areas(request: HttpRequest) -> HttpResponse:
+def list_planning_areas(request: Request) -> Response:
     """
     Retrieves all planning areas for a user.
     Requires a logged in user.  Users can see only their owned planning_areas.
@@ -316,7 +384,10 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
     try:
         user = request.user
         if not user.is_authenticated:
-            return JsonResponse({"error": "Authentication Required"}, status=401)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         # TODO: This could be really slow; consider paging or perhaps
         # fetching everything but geometries (since they're huge) for performance gains.
@@ -343,7 +414,8 @@ def list_planning_areas(request: HttpRequest) -> HttpResponse:
             safe=False,
         )
     except Exception as e:
-        return HttpResponseBadRequest("Ill-formed request: " + str(e))
+        logger.error(f"Error: Failed to list planning areas: {e}")
+        raise
 
 
 def _serialize_scenario(scenario: Scenario) -> dict:

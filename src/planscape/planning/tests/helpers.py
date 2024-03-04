@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from planning.models import PlanningArea, Scenario, ScenarioResult
 from collaboration.models import Permissions, Role
+from planning.models import PlanningArea, Scenario, ScenarioResult
 
 
 # Create test plans.  These are going straight to the test DB without
@@ -106,8 +106,6 @@ def _create_test_user_set():
     }
 
 
-# this is in the migration, but it all gets removed whenever tests TearDown
-# should we DRY this up and call it from collaboration utils
 def reset_permissions():
     viewer = ["view_planningarea", "view_scenario"]
     collaborator = viewer + ["add_scenario"]
