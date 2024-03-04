@@ -74,3 +74,33 @@ class GetInvitationsForObject(APIView):
             },
         )
         return Response(serializer.data)
+
+
+class UpdateCollaboratorRole(APIView):
+    def put(self, request: Request, target_entity: str, object_pk: int, role: str):
+        user = request.user
+        content_type = ContentType.objects.get(model=target_entity)
+        Model = content_type.model_class()
+        instance = Model.objects.get(pk=object_pk)
+
+        serializer = UserObjectRolesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        if not CollaboratorPermission.can_change(user, instance):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        user_object_roles = UserObjectRole.objects.filter(
+            content_type=content_type,
+            object_pk=object_pk,
+        ).exclude(collaborator_id=user.pk)
+
+        user_object_roles.update(role=role)
+
+        serializer = UserObjectRoleSerializer(
+            instance=user_object_roles,
+            many=True,
+            context={
+                "request": request,
+            },
+        )
+        return Response(serializer.data)

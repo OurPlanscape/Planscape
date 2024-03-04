@@ -96,3 +96,19 @@ class GetInvitationsTest(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         assert len(data) == 1
+
+
+class UpdatePermissionsTest(APITransactionTestCase):
+    def setUp(self):
+        self.user1 = User.objects.create(username="testuser1")
+        self.user1.set_password("12345")
+        self.user1.save()
+
+        self.user2 = User.objects.create(username="testuser2")
+        self.user2.set_password("12345")
+        self.user2.save()
+        self.pa1 = PlanningArea.objects.create(user=self.user1, region_name="foo")
+        self.pa2 = PlanningArea.objects.create(user=self.user2, region_name="foo")
+        # test update user Role
+        # test update user Role when user has no permission to do this
+        #
