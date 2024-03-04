@@ -13,7 +13,7 @@ from planning.tests.helpers import (
     _create_planning_area,
     _create_scenario,
     _create_test_user_set,
-    reset_permissions
+    reset_permissions,
 )
 
 
@@ -259,7 +259,6 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(scenario.name, "test collab scenario")
         self.assertEqual(scenario.user, self.collab_user)
 
-
     def test_create_scenario_viewer_user(self):
         self.client.force_authenticate(self.viewer_user)
         payload = json.dumps(
@@ -285,7 +284,6 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(scenario.name, "test viewer scenario")
         self.assertEqual(scenario.user, self.viewer_user)
 
-
     def test_create_scenario_unprivileged_user(self):
         self.client.force_authenticate(self.unprivileged_user)
         payload = json.dumps(
@@ -301,7 +299,12 @@ class CreateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(response.content, {"error":"User does not have permission to create scenarios from this Planning Area"})
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "User does not have permission to create scenarios from this Planning Area"
+            },
+        )
 
     def test_create_scenario_wrong_planning_area_user(self):
         self.client.force_authenticate(self.owner_user)
@@ -318,7 +321,12 @@ class CreateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(response.content, {"error":"User does not have permission to create scenarios from this Planning Area"})
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "User does not have permission to create scenarios from this Planning Area"
+            },
+        )
 
 
 class UpdateScenarioTest(APITransactionTestCase):
@@ -572,7 +580,7 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
         self.owner_user2 = self.test_users["owner2"]
-       
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -941,7 +949,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(response.content, {'error': 'User has no permission to view planning area'})
+        self.assertJSONEqual(
+            response.content, {"error": "User has no permission to view planning area"}
+        )
 
     def test_list_scenario_collab_user(self):
         self.client.force_authenticate(self.collab_user)
@@ -977,7 +987,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(response.content, {'error': 'User has no permission to view planning area'})
+        self.assertJSONEqual(
+            response.content, {"error": "User has no permission to view planning area"}
+        )
 
     def test_list_scenario_empty_planning_area(self):
         self.client.force_authenticate(self.owner_user)
@@ -998,7 +1010,10 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertJSONEqual(response.content, {'error': 'Planning Area does not exist.'})
+        self.assertJSONEqual(
+            response.content, {"error": "Planning Area does not exist."}
+        )
+
 
 class GetScenarioTest(APITransactionTestCase):
     def setUp(self):
@@ -1118,7 +1133,9 @@ class GetScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertJSONEqual(response.content, {'error': 'Scenario matching query does not exist.'})
+        self.assertJSONEqual(
+            response.content, {"error": "Scenario matching query does not exist."}
+        )
 
     def test_get_scenario_with_results(self):
         self.client.force_authenticate(self.owner_user)
@@ -1313,7 +1330,7 @@ class DeleteScenarioTest(APITransactionTestCase):
         self.collab_user = self.test_users["collaborator"]
         self.viewer_user = self.test_users["viewer"]
         self.unprivileged_user = self.test_users["unprivileged"]
-    
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],

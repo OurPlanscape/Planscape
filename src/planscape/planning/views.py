@@ -33,7 +33,8 @@ from planning.serializers import (
 from planning.services import (
     export_to_shapefile,
     validate_scenario_treatment_ratio,
-    zip_directory)
+    zip_directory,
+)
 from planning.tasks import async_forsys_run
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -42,6 +43,7 @@ from rest_framework import status
 import rest_framework
 
 logger = logging.getLogger(__name__)
+
 
 # We always need to store multipolygons, so coerce a single polygon to
 # a multigolygon if needed.
@@ -367,25 +369,32 @@ def get_scenario_by_id(request: Request) -> Response:
     try:
         user = request.user
         if not user.is_authenticated:
-            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         if "id" not in request.GET:
             return Response(
-                    {"error": "Missing required parameter 'id'"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                {"error": "Missing required parameter 'id'"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         scenario = Scenario.objects.get(id=request.GET["id"])
         if not ScenarioPermission.can_view(user, scenario):
-            return Response({"message":"You do not have permission to view this scenario"}, status=status.HTTP_403_FORBIDDEN )
-        
+            return Response(
+                {"message": "You do not have permission to view this scenario"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         return Response(_serialize_scenario(scenario), content_type="application/json")
     except Scenario.DoesNotExist:
-         return Response(
+        return Response(
             {"error": "Scenario matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
     except Exception as e:
         logger.error(f"Could not get scenario: {e}")
         raise
+
 
 @api_view(["GET"])
 def download_csv(request: Request) -> HttpResponse:
@@ -402,13 +411,15 @@ def download_csv(request: Request) -> HttpResponse:
     # Ensure that the user is logged in.
     user = request.user
     if not user.is_authenticated:
-        return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED
+        )
     if "id" not in request.GET:
         return Response(
-                {"error": "Missing required parameter 'id'"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-    
+            {"error": "Missing required parameter 'id'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     try:
         scenario = Scenario.objects.get(id=request.GET["id"])
 
@@ -416,24 +427,27 @@ def download_csv(request: Request) -> HttpResponse:
         if not ScenarioPermission.can_view(user, scenario):
             return Response(
                 "Scenario matching query does not exist.",
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         output_zip_name: str = str(scenario.uuid) + ".zip"
 
         if not scenario.get_forsys_folder().exists():
-            return Response({"error": "Scenario files cannot be read."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Scenario files cannot be read."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         response = HttpResponse(content_type="application/zip")
         zip_directory(response, scenario.get_forsys_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
         return response
-    
+
     except Scenario.DoesNotExist:
-         return Response(
+        return Response(
             {"error": "Scenario matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
     except Exception as e:
         logger.exception(f"Error: {e}")
@@ -455,13 +469,15 @@ def download_shapefile(request: Request) -> Response:
     # Ensure that the user is logged in.
     user = request.user
     if not user.is_authenticated:
-        return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+        return Response(
+            {"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED
+        )
 
     if "id" not in request.GET:
         return Response(
-                {"error": "Missing required parameter 'id'"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            {"error": "Missing required parameter 'id'"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
     try:
         scenario = Scenario.objects.get(id=request.GET["id"])
@@ -469,14 +485,14 @@ def download_shapefile(request: Request) -> Response:
         if not ScenarioPermission.can_view(user, scenario):
             return Response(
                 {"error": "User has no permission to view scenario"},
-                status=status.HTTP_403_FORBIDDEN
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         scenario_result = ScenarioResult.objects.get(scenario__id=scenario.pk)
         if scenario_result.status != ScenarioResultStatus.SUCCESS:
             return Response(
                 "Scenario was not successful, can't download data.",
-                status=status.HTTP_424_FAILED_DEPENDENCY
+                status=status.HTTP_424_FAILED_DEPENDENCY,
             )
 
         output_zip_name = f"{str(scenario.uuid)}.zip"
@@ -487,18 +503,19 @@ def download_shapefile(request: Request) -> Response:
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
         return response
     except Scenario.DoesNotExist:
-         return Response(
+        return Response(
             {"error": "Scenario matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
     except ScenarioResult.DoesNotExist:
-         return Response(
+        return Response(
             {"error": "Scenario result matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
     except Exception as e:
         logger.error("Error in downloading shapefile %s", e)
         raise
+
 
 @api_view(["POST"])
 def create_scenario(request: Request) -> Response:
@@ -519,7 +536,10 @@ def create_scenario(request: Request) -> Response:
     try:
         user = request.user
         if not user.is_authenticated:
-            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         body = json.loads(request.body)
 
         # Check for all needed fields
@@ -531,7 +551,9 @@ def create_scenario(request: Request) -> Response:
         planning_area = PlanningArea.objects.get(id=body["planning_area"])
         if not PlanningAreaPermission.can_view(user, planning_area):
             return Response(
-                {"error": "User does not have permission to create scenarios from this Planning Area"},
+                {
+                    "error": "User does not have permission to create scenarios from this Planning Area"
+                },
                 content_type="application/json",
                 status=status.HTTP_403_FORBIDDEN,
             )
@@ -600,17 +622,24 @@ def update_scenario(request: Request) -> Response:
     try:
         user = request.user
         if not user.is_authenticated:
-            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         body = json.loads(request.body)
         scenario_id = body.get("id", None)
         if scenario_id is None:
-            return Response({"error": "Scenario ID is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Scenario ID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         scenario = Scenario.objects.get(id=scenario_id)
-        
+
         if not ScenarioPermission.can_change(user, scenario):
             return Response(
-                {"error": "User does not have permission to update this scenario."}, status=status.HTTP_403_FORBIDDEN
+                {"error": "User does not have permission to update this scenario."},
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         is_dirty = False
@@ -624,7 +653,10 @@ def update_scenario(request: Request) -> Response:
             # This must be always defined
             new_name = body.get("name")
             if (new_name is None) or (len(new_name) == 0):
-                return Response({"error": "Name must be defined."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {"error": "Name must be defined."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
 
             scenario.name = new_name
             is_dirty = True
@@ -632,26 +664,25 @@ def update_scenario(request: Request) -> Response:
         if is_dirty:
             scenario.save()
 
-        return Response(
-            {"id": scenario_id}, content_type="application/json"
-        )
-    
+        return Response({"id": scenario_id}, content_type="application/json")
+
     except Scenario.DoesNotExist:
-         return Response(
+        return Response(
             {"error": "Scenario matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
 
     except Exception as e:
         logger.error("Error updating scenario: %s", e)
         raise
 
+
 # TODO: add more things to update other than state
 # Unlike other routines, this does not require a user login context, as it is expected to be called
 # by the EP.
 #
 # TODO: require credential from EP so that random people cannot call this endpoint.
-@api_view(["GET","POST"])
+@api_view(["GET", "POST"])
 def update_scenario_result(request: Request) -> Response:
     """
     Updates a ScenarioResult's status.
@@ -685,13 +716,22 @@ def update_scenario_result(request: Request) -> Response:
             match new_status:
                 case ScenarioResultStatus.RUNNING:
                     if old_status != ScenarioResultStatus.PENDING:
-                        return Response({"error": "Invalid new state."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            {"error": "Invalid new state."},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
                 case ScenarioResultStatus.SUCCESS:
                     if old_status != ScenarioResultStatus.RUNNING:
-                        return Response({"error": "Invalid new state."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            {"error": "Invalid new state."},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
                 case _:
                     if new_status != ScenarioResultStatus.FAILURE:
-                        return Response({"error": "Invalid new state."}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            {"error": "Invalid new state."},
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
             scenario_result.status = new_status
 
         if (run_details := body.get("run_details")) is not None:
@@ -702,17 +742,16 @@ def update_scenario_result(request: Request) -> Response:
 
         scenario_result.save()
 
-        return Response(
-            {"id": scenario_id}, content_type="application/json"
-        )
+        return Response({"id": scenario_id}, content_type="application/json")
     except ScenarioResult.DoesNotExist:
-         return Response(
+        return Response(
             {"error": "Scenario result matching query does not exist."},
-            status=status.HTTP_404_NOT_FOUND
+            status=status.HTTP_404_NOT_FOUND,
         )
     except Exception as e:
         logger.error("Error updating scenario result: %s", e)
         raise
+
 
 @api_view(["GET"])
 def list_scenarios_for_planning_area(request: Request) -> Response:
@@ -731,31 +770,37 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         planning_area_id = request.GET["planning_area"]
         if planning_area_id is None:
-            return Response({"error": "Missing planning_area"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Missing planning_area"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         planning_area = PlanningArea.objects.get(id=planning_area_id)
         if not PlanningAreaPermission.can_view(user, planning_area):
-            return Response({"error": "User has no permission to view planning area"}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"error": "User has no permission to view planning area"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
-        scenarios = Scenario.objects.filter(
-            planning_area__pk=planning_area_id
-        )
+        scenarios = Scenario.objects.filter(planning_area__pk=planning_area_id)
         return Response(
             [_serialize_scenario(scenario) for scenario in scenarios],
-            content_type="application/json"
+            content_type="application/json",
         )
     except PlanningArea.DoesNotExist:
-         return Response(
-            {"error": "Planning Area does not exist."},
-            status=status.HTTP_404_NOT_FOUND
-        ) 
+        return Response(
+            {"error": "Planning Area does not exist."}, status=status.HTTP_404_NOT_FOUND
+        )
     except Exception as e:
         logger.error("Error updating scenario result: %s", e)
         raise
+
 
 @api_view(["DELETE", "POST"])
 def delete_scenario(request: Request) -> Response:
@@ -774,12 +819,18 @@ def delete_scenario(request: Request) -> Response:
         # Check that the user is logged in.
         user = request.user
         if not user.is_authenticated:
-            return Response({"error": "Authentication Required"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         body = json.loads(request.body)
         scenario_id_str = body.get("scenario_id", None)
         if scenario_id_str is None:
-            return Response({"error": "Must specify scenario id(s)"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Must specify scenario id(s)"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         scenario_ids = []
         if isinstance(scenario_id_str, int):
@@ -787,7 +838,10 @@ def delete_scenario(request: Request) -> Response:
         elif isinstance(scenario_ids, list):
             scenario_ids = scenario_id_str
         else:
-            return Response({"error": "scenario_id must be an int or a list of ints."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "scenario_id must be an int or a list of ints."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Get the scenarios matching the provided IDs and the logged-in user.
         scenarios = Scenario.objects.filter(pk__in=scenario_ids).filter(
@@ -808,6 +862,7 @@ def delete_scenario(request: Request) -> Response:
         logger.error("Error deleting scenario: %s", e)
         raise
 
+
 def get_treatment_goals_config_for_region(params: QueryDict):
     # Get region name
     assert isinstance(params["region_name"], str)
@@ -822,6 +877,7 @@ def get_treatment_goals_config_for_region(params: QueryDict):
 
     return None
 
+
 @api_view(["GET"])
 def treatment_goals_config(request: Request) -> Response:
     treatment_goals = get_treatment_goals_config_for_region(request.GET)
@@ -835,7 +891,9 @@ def get_shared_link(request: Request, link_code: str) -> Response:
         link_obj = SharedLink.objects.get(link_code=link_code)
     except SharedLink.DoesNotExist:
         # Handle the case where the object doesn't exist
-        return Response({"error": "This link does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        return Response(
+            {"error": "This link does not exist"}, status=status.HTTP_404_NOT_FOUND
+        )
     serializer = SharedLinkSerializer(link_obj)
     return Response(serializer.data, content_type="application/json")
 
