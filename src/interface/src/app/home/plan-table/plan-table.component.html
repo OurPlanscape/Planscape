@@ -91,7 +91,7 @@
       <button
         mat-raised-button
         (click)="sharePlan()"
-        [disabled]="!selectedPlan"
+        [disabled]="!shareEnabled()"
         *appFeatureFlag="'show_share_modal'"
         class="action-button primary">
         share
