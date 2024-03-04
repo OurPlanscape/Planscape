@@ -7,7 +7,7 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
-from collaboration.utils import create_collaborator_record
+from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea, Scenario, ScenarioResult
 from planning.tests.helpers import (
     _create_planning_area,
@@ -83,9 +83,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(planning_area.notes, self.notes)
         self.assertEqual(planning_area.name, "test plan")
         self.assertEqual(planning_area.user.pk, self.user.pk)
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area.pk})
 
     def test_create_planning_area_no_notes(self):
         self.client.force_authenticate(self.user)
@@ -112,9 +110,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
                 _convert_polygon_to_multipolygon(self.geometry)
             )
         )
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area.pk})
 
     def test_create_planning_area_multipolygon(self):
         self.client.force_authenticate(self.user)
@@ -141,9 +137,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
                 _convert_polygon_to_multipolygon(self.multipolygon_geometry)
             )
         )
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area.pk})
 
     def test_missing_user(self):
         payload = json.dumps(
@@ -270,21 +264,81 @@ class CreatePlanningAreaTest(APITransactionTestCase):
 
 class DeletePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.owner_user = User.objects.create(
+            username="area_owner",
+            first_name="Oliver",
+            last_name="Owner",
+            email="owner1@test.test",
+        )
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
 
-        self.planning_area1 = _create_planning_area(self.user, "test plan1", None)
-        self.planning_area2 = _create_planning_area(self.user, "test plan2", None)
+        self.owner_user2 = User.objects.create(
+            username="area2_owner",
+            first_name="Olga",
+            last_name="Owner",
+            email="owner2@test.test",
+        )
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.collab_user = User.objects.create(
+            username="area_collab",
+            first_name="Chris",
+            last_name="Collab",
+            email="collab@test.test",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
 
-        self.planning_area3 = _create_planning_area(self.user2, "test plan3", None)
+        self.viewer_user = User.objects.create(
+            username="area_viewer",
+            first_name="Veronica",
+            last_name="Viewer",
+            email="viewer@test.test",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.unprivileged_user = User.objects.create(
+            username="justauser",
+            first_name="Ned",
+            last_name="Nobody",
+            email="user@test.test",
+        )
+        self.unprivileged_user.set_password("12345")
+        self.unprivileged_user.save()
+
+        self.planning_area1 = _create_planning_area(
+            self.owner_user, "Owned by owner1-First", None
+        )
+        self.planning_area2 = _create_planning_area(
+            self.owner_user, "Owned by owner1-Second", None
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area1, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area1, Role.VIEWER
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+        )
+        self.planning_area3 = _create_planning_area(
+            self.owner_user2, "Owned by owner2-First", None
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area3, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area3, Role.VIEWER
+        )
 
     def test_delete(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         payload = json.dumps({"id": self.planning_area2.pk})
         response = self.client.post(
@@ -293,9 +347,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": [self.planning_area2.pk]}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": [self.planning_area2.pk]})
         self.assertEqual(PlanningArea.objects.count(), 2)
 
     def test_delete_user_not_logged_in(self):
@@ -311,7 +363,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
 
     # Deleteing someone else's plan silently performs nothing.
     def test_delete_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.planning_area3.pk})
         response = self.client.post(
             reverse("planning:delete_planning_area"),
@@ -323,7 +375,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
 
     # Only the user's own plans are deleted.
     def test_delete_multiple_planning_areas_with_some_owner_mismatches(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         planning_area_ids = [
             self.planning_area1.pk,
@@ -340,7 +392,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(PlanningArea.objects.count(), 1)
 
     def test_delete_multiple_planning_areas(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         self.assertEqual(PlanningArea.objects.count(), 3)
         planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
         payload = json.dumps({"id": planning_area_ids})
@@ -350,17 +402,86 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": planning_area_ids}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": planning_area_ids})
         self.assertEqual(PlanningArea.objects.count(), 1)
+
+    def test_delete_multiple_planning_areas_as_collab(self):
+        self.client.force_authenticate(self.collab_user)
+        self.assertEqual(PlanningArea.objects.count(), 3)
+        planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
+        payload = json.dumps({"id": planning_area_ids})
+        response = self.client.post(
+            reverse("planning:delete_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": planning_area_ids})
+        self.assertEqual(PlanningArea.objects.count(), 3)
+
+    def test_delete_multiple_planning_areas_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        self.assertEqual(PlanningArea.objects.count(), 3)
+        planning_area_ids = [self.planning_area1.pk, self.planning_area2.pk]
+        payload = json.dumps({"id": planning_area_ids})
+        response = self.client.post(
+            reverse("planning:delete_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": planning_area_ids})
+        # Viewer has no permission to delete, so all records should still exist
+        self.assertEqual(PlanningArea.objects.count(), 3)
 
 
 class UpdatePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.owner_user = User.objects.create(
+            username="area_owner",
+            first_name="Oliver",
+            last_name="Owner",
+            email="owner1@test.test",
+        )
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
+
+        self.owner_user2 = User.objects.create(
+            username="area2_owner",
+            first_name="Olga",
+            last_name="Owner",
+            email="owner2@test.test",
+        )
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+
+        self.collab_user = User.objects.create(
+            username="area_collab",
+            first_name="Chris",
+            last_name="Collab",
+            email="collab@test.test",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
+
+        self.viewer_user = User.objects.create(
+            username="area_viewer",
+            first_name="Veronica",
+            last_name="Viewer",
+            email="viewer@test.test",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.unprivileged_user = User.objects.create(
+            username="justauser",
+            first_name="Ned",
+            last_name="Nobody",
+            email="user@test.test",
+        )
+        self.unprivileged_user.set_password("12345")
+        self.unprivileged_user.save()
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -369,21 +490,29 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.old_name = "Westley"
         self.old_notes = "I know something you don't know."
         self.planning_area = _create_planning_area(
-            self.user, self.old_name, storable_geometry, self.old_notes
+            self.owner_user, self.old_name, storable_geometry, self.old_notes
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", storable_geometry, self.old_notes
+            self.owner_user2, "Owned By Owner 2 plan", storable_geometry
         )
-
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+        )
         self.new_name = "Inigo"
         self.new_notes = "I am not left handed."
 
     def test_update_notes_and_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
                 "id": self.planning_area.pk,
@@ -397,15 +526,13 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.new_name)
         self.assertEqual(planning_area.notes, self.new_notes)
 
     def test_update_notes_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.planning_area.pk, "notes": self.new_notes})
         response = self.client.patch(
             reverse("planning:update_planning_area"),
@@ -413,15 +540,13 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, self.new_notes)
 
     def test_update_name_only(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.planning_area.pk, "name": self.new_name})
         response = self.client.patch(
             reverse("planning:update_planning_area"),
@@ -429,15 +554,13 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.new_name)
         self.assertEqual(planning_area.notes, self.old_notes)
 
     def test_update_clear_notes(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.planning_area.pk, "notes": None})
         response = self.client.patch(
             reverse("planning:update_planning_area"),
@@ -445,15 +568,13 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, None)
 
     def test_update_empty_string_notes(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.planning_area.pk, "notes": ""},
         )
@@ -463,15 +584,13 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, "")
 
     def test_update_nothing_to_update(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.planning_area.pk},
         )
@@ -481,9 +600,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(
-            response.content, json.dumps({"id": self.planning_area.pk}).encode()
-        )
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
         planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
         self.assertEqual(planning_area.name, self.old_name)
         self.assertEqual(planning_area.notes, self.old_notes)
@@ -505,7 +622,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
 
     def test_update_missing_id(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
         response = self.client.patch(
             reverse("planning:update_planning_area"),
@@ -518,7 +635,27 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         )
 
     def test_update_wrong_user(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user2)
+        payload = json.dumps(
+            {
+                "id": self.planning_area.pk,
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.patch(
+            reverse("planning:update_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"message": "User does not have permission to update this planning area"},
+        )
+
+    def test_update_collaborator_user(self):
+        self.client.force_authenticate(self.collab_user)
         payload = json.dumps(
             {
                 "id": self.planning_area2.pk,
@@ -531,11 +668,35 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"Planning area not found for user.")
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"message": "User does not have permission to update this planning area"},
+        )
+
+    def test_update_viewer_user(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps(
+            {
+                "id": self.planning_area2.pk,
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.patch(
+            reverse("planning:update_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+        self.assertJSONEqual(
+            response.content,
+            {"message": "User does not have permission to update this planning area"},
+        )
 
     def test_update_blank_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.planning_area.pk, "name": None, "notes": self.new_notes}
         )
@@ -545,10 +706,10 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"name must be defined")
+        self.assertJSONEqual(response.content, {"message": "Name must be defined"})
 
     def test_update_empty_string_name(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {"id": self.planning_area.pk, "name": "", "notes": self.new_notes}
         )
@@ -558,32 +719,86 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"name must be defined")
+        self.assertJSONEqual(response.content, {"message": "Name must be defined"})
 
 
 class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        if not Permissions.objects.exists():
+            reset_permissions()
+
+        self.owner_user = User.objects.create(
+            username="area_owner",
+            first_name="Oliver",
+            last_name="Owner",
+            email="owner1@test.test",
+        )
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
+
+        self.owner_user2 = User.objects.create(
+            username="area2_owner",
+            first_name="Olga",
+            last_name="Owner",
+            email="owner2@test.test",
+        )
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+
+        self.collab_user = User.objects.create(
+            username="area_collab",
+            first_name="Chris",
+            last_name="Collab",
+            email="collab@test.test",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
+
+        self.viewer_user = User.objects.create(
+            username="area_viewer",
+            first_name="Veronica",
+            last_name="Viewer",
+            email="viewer@test.test",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.unprivileged_user = User.objects.create(
+            username="justauser",
+            first_name="Ned",
+            last_name="Nobody",
+            email="user@test.test",
+        )
+        self.unprivileged_user.set_password("12345")
+        self.unprivileged_user.save()
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = _create_planning_area(
-            self.user, "test plan", storable_geometry
+            self.owner_user, "Owned By Owner 1 plan", storable_geometry
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
         self.planning_area2 = _create_planning_area(
-            self.user2, "test plan2", storable_geometry
+            self.owner_user2, "Owned By Owner 2 plan", storable_geometry
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
         )
 
     def test_get_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": self.planning_area.pk},
@@ -591,29 +806,84 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         returned_planning_area = response.json()
-        self.assertEqual(returned_planning_area["name"], "test plan")
+        self.assertEqual(returned_planning_area["name"], "Owned By Owner 1 plan")
+        self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
         self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
         self.assertIsNotNone(returned_planning_area["created_at"])
 
     def test_get_nonexistent_planning_area(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": 9999},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"Planning area not found for user.")
+        self.assertJSONEqual(
+            response.content, {"message": "Planning area not found with this ID"}
+        )
 
-    def test_get_planning_area_wrong_user(self):
-        self.client.force_authenticate(self.user)
+    def test_get_planning_area_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:get_planning_area_by_id"),
+            {"id": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_planning_area = response.json()
+        self.assertEqual(returned_planning_area["name"], "Owned By Owner 1 plan")
+        self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
+        self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
+        self.assertEqual(returned_planning_area["role"], "Collaborator")
+        self.assertCountEqual(
+            returned_planning_area["permissions"],
+            ["view_planningarea", "view_scenario", "add_scenario"],
+        )
+        self.assertIsNotNone(returned_planning_area["created_at"])
+
+    def test_get_planning_area_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse("planning:get_planning_area_by_id"),
+            {"id": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        returned_planning_area = response.json()
+        self.assertEqual(returned_planning_area["name"], "Owned By Owner 1 plan")
+        self.assertEqual(returned_planning_area["region_name"], "Sierra Nevada")
+        self.assertEqual(returned_planning_area["creator"], "Oliver Owner")
+        self.assertEqual(returned_planning_area["role"], "Viewer")
+        self.assertCountEqual(
+            returned_planning_area["permissions"],
+            ["view_planningarea", "view_scenario"],
+        )
+        self.assertIsNotNone(returned_planning_area["created_at"])
+
+    def test_get_planning_area_as_unlinked_owner(self):
+        self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse("planning:get_planning_area_by_id"),
             {"id": self.planning_area2.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 404)
-        self.assertRegex(str(response.content), r"Planning area not found for user.")
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content, {"message": "User has no access to this planning area."}
+        )
+
+    def test_get_planning_area_as_unprivileged_user(self):
+        self.client.force_authenticate(self.unprivileged_user)
+        response = self.client.get(
+            reverse("planning:get_planning_area_by_id"),
+            {"id": self.planning_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content, {"message": "User has no access to this planning area."}
+        )
 
     def test_get_planning_area_not_logged_in(self):
         response = self.client.get(
@@ -672,7 +942,7 @@ class ListPlanningAreaTest(APITransactionTestCase):
             self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
         )
 
-        self.user2 = User.objects.create(username="testuser2")
+        self.user2 = User.objects.create(username="otherowner")
         self.user2.set_password("12345")
         self.user2.save()
         self.geometry = {
