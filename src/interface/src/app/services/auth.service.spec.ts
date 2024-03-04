@@ -11,6 +11,8 @@ import { of, throwError } from 'rxjs';
 import { BackendConstants } from '../backend-constants';
 import { User } from '../types';
 import { AuthGuard, AuthService } from './auth.service';
+import { RedirectService } from './redirect.service';
+import { MockProvider } from 'ng-mocks';
 
 describe('AuthService', () => {
   let httpTestingController: HttpTestingController;
@@ -29,6 +31,7 @@ describe('AuthService', () => {
       imports: [HttpClientTestingModule],
       providers: [
         AuthService,
+        MockProvider(RedirectService),
         { provide: CookieService, useFactory: cookieServiceStub },
         {
           provide: MatSnackBar,
@@ -55,7 +58,7 @@ describe('AuthService', () => {
       };
 
       service.login('email', 'password').subscribe((res) => {
-        expect(res).toEqual(mockResponse);
+        expect(res).toEqual('home');
         done();
       });
 
@@ -68,6 +71,33 @@ describe('AuthService', () => {
         .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
         .flush({ email: 'test@test.com' });
       httpTestingController.verify();
+    });
+
+    it('should return redirect url if saved on redirectService', () => {
+      const redirectService = TestBed.inject(RedirectService);
+      const url = 'path/to/somewhere';
+      spyOn(redirectService, 'shouldRedirect').and.returnValue(url);
+      service.login('email', 'password').subscribe((res) => {
+        expect(res).toEqual(url);
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+      );
+      req.flush('');
+    });
+
+    it('should clear out redirect service', () => {
+      const redirectService = TestBed.inject(RedirectService);
+      const url = 'path/to/somewhere';
+      spyOn(redirectService, 'shouldRedirect').and.returnValue(url);
+      spyOn(redirectService, 'removeRedirect');
+      service.login('email', 'password').subscribe((res) => {
+        expect(redirectService.removeRedirect).toHaveBeenCalled();
+      });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+      );
+      req.flush('');
     });
 
     it('if successful, updates logged in status to true', (done) => {
@@ -155,6 +185,28 @@ describe('AuthService', () => {
         .signup('email', 'password1', 'password2', 'Foo', 'Bar')
         .subscribe((_) => {
           expect(service.loggedInStatus$.value).toBeNull();
+          done();
+        });
+
+      const req1 = httpTestingController.expectOne(
+        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
+      );
+      req1.flush(mockResponse);
+    });
+
+    it('if should redirect, set redirection with email', (done) => {
+      const mockResponse = {
+        accessToken: 'test',
+      };
+
+      const redirectService = TestBed.inject(RedirectService);
+      spyOn(redirectService, 'shouldRedirect').and.returnValue('some/url');
+      spyOn(redirectService, 'setRedirect');
+
+      service
+        .signup('email', 'password1', 'password2', 'Foo', 'Bar')
+        .subscribe((_) => {
+          expect(redirectService.setRedirect).toHaveBeenCalled();
           done();
         });
 
