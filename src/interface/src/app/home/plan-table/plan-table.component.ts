@@ -12,6 +12,7 @@ import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.compone
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
+import { canViewCollaborators } from '../../plan/permissions';
 
 interface PlanRow extends PlanPreview {
   totalAcres: number;
@@ -135,5 +136,12 @@ export class PlanTableComponent implements OnInit {
       return;
     }
     this.router.navigate(['plan', this.selectedPlan.id]);
+  }
+
+  shareEnabled() {
+    if (!this.selectedPlan) {
+      return false;
+    }
+    return canViewCollaborators(this.selectedPlan);
   }
 }
