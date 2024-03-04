@@ -173,10 +173,7 @@ def create_planning_area(request: Request) -> Response:
 
     except Exception as e:
         logger.error(f"Error creating planning area: {e}")
-        return Response(
-            {"message": f"Error creating planning area: {e}"},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        raise
 
 
 @api_view(["POST"])
@@ -602,6 +599,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
         if not result:
             return HttpResponse(
                 json.dumps({"reason": reason}),
+                content_type="application/json",
                 status=400,
             )
 
@@ -624,6 +622,7 @@ def create_scenario(request: HttpRequest) -> HttpResponse:
             reason = "A scenario with this name already exists."
         return HttpResponse(
             json.dumps({"reason": reason}),
+            content_type="application/json",
             status=400,
         )
     except Exception as e:
