@@ -133,6 +133,8 @@ export class PlanService {
       creator: plan.creator,
       area_acres: plan.area_acres,
       area_m2: plan.area_m2,
+      role: plan.role,
+      permissions: plan.permissions,
     };
   }
 

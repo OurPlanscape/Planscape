@@ -3879,6 +3879,7 @@
                   "display_name": "Wildland Urban Interface",
                   "data_provider": "SIG-GIS",
                   "data_units": "",
+                  "output_units": "Avg Damage Potential",
                   "max_value": 2,
                   "metric_name": "wui",
                   "min_value": 0,
