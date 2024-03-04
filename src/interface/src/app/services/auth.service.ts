@@ -1,7 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { CanActivate, Router } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  CanActivate,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
 import {
@@ -18,6 +23,7 @@ import {
 
 import { BackendConstants } from '../backend-constants';
 import { User } from '../types';
+import { RedirectService } from './redirect.service';
 
 interface LogoutResponse {
   detail: string;
@@ -41,7 +47,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private cookieService: CookieService,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private redirectService: RedirectService
   ) {}
 
   login(email: string, password: string) {
@@ -52,6 +59,12 @@ export class AuthService {
         { withCredentials: true }
       )
       .pipe(
+        map((response) => {
+          const redirectUrl = this.redirectService.shouldRedirect(email);
+          // remove redirect
+          this.redirectService.removeRedirect();
+          return redirectUrl || 'home';
+        }),
         tap((_) => {
           this.loggedInStatus$.next(true);
           this.getLoggedInUser()
@@ -70,13 +83,23 @@ export class AuthService {
     firstName: string,
     lastName: string
   ) {
-    return this.http.post(this.API_ROOT.concat('registration/'), {
-      password1,
-      password2,
-      email,
-      first_name: firstName,
-      last_name: lastName,
-    });
+    return this.http
+      .post(this.API_ROOT.concat('registration/'), {
+        password1,
+        password2,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+      })
+      .pipe(
+        tap(() => {
+          const redirect = this.redirectService.shouldRedirect(email);
+          if (redirect) {
+            // associate the redirect with the newly created user
+            this.redirectService.setRedirect(redirect, email);
+          }
+        })
+      );
   }
 
   resendValidationEmail(email: string) {
@@ -343,13 +366,20 @@ export class AuthService {
 export class AuthGuard implements CanActivate {
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private redirectService: RedirectService
   ) {}
 
-  canActivate(): Observable<boolean> {
+  canActivate(
+    route?: ActivatedRouteSnapshot,
+    state?: RouterStateSnapshot
+  ): Observable<boolean> {
     return this.authService.refreshLoggedInUser().pipe(
       map((_) => true),
       catchError((_) => {
+        if (state) {
+          this.redirectService.setRedirect(state.url);
+        }
         this.router.navigate(['login']);
         return of(false);
       })

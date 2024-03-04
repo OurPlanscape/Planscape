@@ -60,7 +60,7 @@ describe('LoginComponent', () => {
     it('calls auth service if form is valid', () => {
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password')?.setValue('password');
-      fakeAuthService.login.and.returnValue(of(true));
+      fakeAuthService.login.and.returnValue(of('home'));
       const router = TestBed.inject(Router);
       spyOn(router, 'navigate');
       component.login();
@@ -76,7 +76,7 @@ describe('LoginComponent', () => {
       spyOn(router, 'navigate');
       component.form.get('email')?.setValue('test@test.com');
       component.form.get('password')?.setValue('password');
-      fakeAuthService.login.and.returnValue(of(true));
+      fakeAuthService.login.and.returnValue(of('home'));
       component.login();
       expect(router.navigate).toHaveBeenCalledOnceWith(['home']);
     });

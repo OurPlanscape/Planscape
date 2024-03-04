@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormMessageType } from '../types/data.types';
 import { AuthService } from './../services';
-import { TimeoutError, timeout } from 'rxjs';
+import { timeout, TimeoutError } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
 import { passwordsMustMatchValidator } from '../validators/passwords';
 import { PasswordStateMatcher } from '../validators/error-matchers';
@@ -28,6 +28,7 @@ export class SignupComponent {
   ]);
 
   showHint = false;
+
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
