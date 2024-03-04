@@ -47,7 +47,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private cookieService: CookieService,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private redirectService: RedirectService
   ) {}
 
   login(email: string, password: string) {
@@ -58,6 +59,12 @@ export class AuthService {
         { withCredentials: true }
       )
       .pipe(
+        map((response) => {
+          const redirectUrl = this.redirectService.shouldRedirect(email);
+          // remove redirect
+          this.redirectService.removeRedirect();
+          return redirectUrl || 'home';
+        }),
         tap((_) => {
           this.loggedInStatus$.next(true);
           this.getLoggedInUser()
@@ -76,13 +83,23 @@ export class AuthService {
     firstName: string,
     lastName: string
   ) {
-    return this.http.post(this.API_ROOT.concat('registration/'), {
-      password1,
-      password2,
-      email,
-      first_name: firstName,
-      last_name: lastName,
-    });
+    return this.http
+      .post(this.API_ROOT.concat('registration/'), {
+        password1,
+        password2,
+        email,
+        first_name: firstName,
+        last_name: lastName,
+      })
+      .pipe(
+        tap(() => {
+          const redirect = this.redirectService.shouldRedirect(email);
+          if (redirect) {
+            // associate the redirect with the newly created user
+            this.redirectService.setRedirect(redirect, email);
+          }
+        })
+      );
   }
 
   resendValidationEmail(email: string) {
@@ -354,13 +371,15 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
+    route?: ActivatedRouteSnapshot,
+    state?: RouterStateSnapshot
   ): Observable<boolean> {
     return this.authService.refreshLoggedInUser().pipe(
       map((_) => true),
       catchError((_) => {
-        this.redirectService.setRedirect(state.url);
+        if (state) {
+          this.redirectService.setRedirect(state.url);
+        }
         this.router.navigate(['login']);
         return of(false);
       })

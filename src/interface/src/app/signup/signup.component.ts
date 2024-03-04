@@ -8,7 +8,6 @@ import { timeout, TimeoutError } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
 import { passwordsMustMatchValidator } from '../validators/passwords';
 import { PasswordStateMatcher } from '../validators/error-matchers';
-import { RedirectService } from '../services/redirect.service';
 
 @Component({
   selector: 'app-signup',
@@ -33,8 +32,7 @@ export class SignupComponent {
   constructor(
     private authService: AuthService,
     private formBuilder: FormBuilder,
-    private router: Router,
-    private redirectService: RedirectService
+    private router: Router
   ) {
     this.form = this.formBuilder.group(
       {
@@ -106,11 +104,6 @@ export class SignupComponent {
       .pipe(timeout(10000))
       .subscribe({
         next: () => {
-          const redirect = this.redirectService.shouldRedirect(email);
-          if (redirect) {
-            // associate the redirect with the newly created user
-            this.redirectService.setRedirect(redirect, email);
-          }
           this.router.navigate(['thankyou']);
         },
         error: (error: HttpErrorResponse) => {
