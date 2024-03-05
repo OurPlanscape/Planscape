@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
+from rest_framework.exceptions import ValidationError
 from collaboration.exceptions import InvalidOwnership
 from collaboration.models import UserObjectRole
 from planning.models import PlanningArea
@@ -77,48 +78,52 @@ class GetInvitationsForObject(APIView):
         )
         return Response(serializer.data)
 
-#TOASK: should we assume that we already have the record id and are just updating the role
+
+# It's assumed we already have the record id and are just updating the role
 class UpdateCollaboratorRole(APIView):
-    def put(self, request: Request):
+    def patch(self, request: Request):
         try:
             user = request.user
-
-            serializer = UserObjectRoleSerializer(data=request.data)
-            serializer.is_valid(raise_exception=True)
-            
-            content_type = serializer.validated_data.get("content_type")
-            object_pk = serializer.validated_data.get("object_pk")
-            role = serializer.validated_data.get("role")
-            email = serializer.validated_data.get("email")
-            serializer.is_valid(raise_exception=True)
-
-            user_object_role = UserObjectRole.objects.filter(
-                 content_type=content_type,
-                 object_pk=object_pk,
-                 email=email
-             ).first()
-
-            planning_area = PlanningArea.objects.get(id=object_pk)
-
-            if not CollaboratorPermission.can_change(user, planning_area):
-                 return Response(status=status.HTTP_403_FORBIDDEN)
-            
-            user_object_role.role = role
-            user_object_role.save()
+            user_object_role_id = request.data.get("id")
+            user_object_role_obj = UserObjectRole.objects.get(id=user_object_role_id)
 
             serializer = UserObjectRoleSerializer(
-                instance=user_object_role,
-                many=False,
-                context={
-                    "request": request,
-                },
+                instance=user_object_role_obj,
+                data={"role": request.data.get("role")},
+                partial=True,
+                context={"request": request},
             )
+            serializer.is_valid(raise_exception=True)
+
+            planning_area = PlanningArea.objects.get(
+                id=user_object_role_obj.content_object.pk
+            )
+
+            if not CollaboratorPermission.can_change(user, planning_area):
+                return Response(
+                    {"message": "User does not have permission to change this role."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            serializer.save()
             return Response(serializer.data)
-        
-        except PlanningArea.DoesNotExist as pdne:
-            print(f"We got this exception {pdne}")
-            return Response({"message":"Object matching key does not exist"}, 
-                            status=status.HTTP_404_NOT_FOUND)
+
+        except ValidationError as ve:
+            return Response(ve.detail, status=status.HTTP_400_BAD_REQUEST)
+
+        except PlanningArea.DoesNotExist as dne:
+            logger.exception("PlanningArea exception: %s", dne)
+            return Response(
+                {"message": "PlanningArea matching related permission does not exist"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except UserObjectRole.DoesNotExist as dne:
+            logger.exception("UserObjectRole exception: %s", dne)
+            return Response(
+                {"message": "Object matching key does not exist"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         except Exception as e:
             logger.exception(f"Exception updating permissions: {e}")

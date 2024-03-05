@@ -10,8 +10,6 @@ from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea
 
 
-
-
 class CreateSharedLinkTest(APITransactionTestCase):
     def setUp(self):
         self.user1 = User.objects.create(username="testuser1")
@@ -104,70 +102,76 @@ class GetInvitationsTest(APITransactionTestCase):
         assert len(data) == 1
 
 
-class UpdatePermissionsTest(APITransactionTestCase):
+class UpdateCollaboratorRoleTest(APITransactionTestCase):
     def setUp(self):
-        self.owner = User.objects.create(username="testuser1")
+        self.owner = User.objects.create(
+            username="testuser1", email="owner@example.text"
+        )
         self.owner.set_password("12345")
         self.owner.save()
 
-        self.invitee = User.objects.create(username="testuser2", email="iamatestuser@example.text")
+        self.invitee = User.objects.create(
+            username="testuser2", email="iamatestuser@example.text"
+        )
         self.invitee.set_password("12345")
         self.invitee.save()
-        self.planningarea = PlanningArea.objects.create(user=self.owner, region_name="foo")
+        self.planningarea = PlanningArea.objects.create(
+            user=self.owner, region_name="foo"
+        )
 
-        create_collaborator_record(self.owner, self.invitee, self.planningarea, Role.VIEWER)
+        self.user_object_role = create_collaborator_record(
+            self.owner, self.invitee, self.planningarea, Role.VIEWER
+        )
 
     def test_update_role_from_viewer_to_collaborator(self):
         self.client.force_authenticate(self.owner)
-        payload = {
-                "content_type": get_content_type("planningarea").pk,
-                "object_pk": self.planningarea.pk,
-                "role": "Collaborator",
-                "email": self.invitee.email,
-            }
-        response = self.client.put(
+        payload = {"id": self.user_object_role.id, "role": "Collaborator"}
+        response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                ),
-                payload,
-               format="json"
+            ),
+            payload,
+            format="json",
         )
         response_obj = json.loads(response.content)
         self.assertEqual(response_obj["role"], "Collaborator")
 
-
     def test_update_role_from_viewer_to_viewer(self):
         self.client.force_authenticate(self.owner)
-        payload = {
-                "content_type": get_content_type("planningarea").pk,
-                "object_pk": self.planningarea.pk,
-                "role": "Viewer",
-                "email": self.invitee.email,
-            }
-        response = self.client.put(
+        payload = {"id": self.user_object_role.id, "role": "Viewer"}
+        response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                ),
-                payload,
-               format="json"
+            ),
+            payload,
+            format="json",
         )
         response_obj = json.loads(response.content)
         self.assertEqual(response_obj["role"], "Viewer")
 
     def test_update_role_to_nonexistent_role(self):
         self.client.force_authenticate(self.owner)
-        payload = {
-                "content_type": get_content_type("planningarea").pk,
-                "object_pk": self.planningarea.pk,
-                "role": "Whatchamacallit",
-                "email": self.invitee.email,
-            }
-        response = self.client.put(
+        payload = {"id": self.user_object_role.id, "role": "Whatchamacallit"}
+        response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                ),
-                payload,
-               format="json"
+            ),
+            payload,
+            format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {'role': ['"Whatchamacallit" is not a valid choice.']})
+        self.assertJSONEqual(
+            response.content, {"role": ['"Whatchamacallit" is not a valid choice.']}
+        )
+
+    def test_update_role_as_unprivileged_user(self):
+        self.client.force_authenticate(self.invitee)
+        payload = {"id": self.user_object_role.id, "role": "Collaborator"}
+        response = self.client.patch(
+            reverse(
+                "collaboration:update_invitation",
+            ),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
