@@ -1,84 +1,26 @@
 import { Region } from './region.types';
 
-export interface Plan extends BasePlan {
-  id: string;
-  name: string;
-  ownerId: string;
-  region: Region;
-  planningArea?: GeoJSON.GeoJSON;
-  createdTimestamp?: Date;
-  lastUpdated?: Date;
-  scenarios?: number;
-  configs?: number;
-  notes?: string;
+export interface ActualPlan {
   area_acres: number;
   area_m2: number;
+  created_at: string;
   creator: string;
-  user?: number;
-  role?: string;
-  permissions?: string[];
-}
-
-export interface BasePlan {
-  id?: string;
-  name: string;
-  ownerId?: string;
-  region: Region;
-  scenarios?: number;
-  lastUpdated?: Date;
-  notes?: string;
-  planningArea?: GeoJSON.GeoJSON;
-}
-
-export interface PlanPreview {
+  geometry?: GeoJSON.GeoJSON;
   id: number;
-  name: string;
-  notes: string;
-  ownerId: number;
-  region: Region;
-  scenarios: number;
-  lastUpdated?: Date;
-  geometry?: GeoJSON.GeoJSON;
-  creator?: string;
-  area_acres: number;
-  area_m2: number;
-  role?: string;
-  permissions?: string[];
-  user?: number;
-}
-
-export interface BackendPlan {
-  id?: number;
-  name: string;
-  user?: number;
-  notes?: string;
-  region_name: Region;
-  geometry?: GeoJSON.GeoJSON;
-  scenario_count?: number;
-  projects?: number;
-  created_at?: string;
   latest_updated?: string;
-  area_acres?: number;
-  area_m2?: number;
-  creator?: string;
+  name: string;
+  notes?: string;
+  permissions: string[];
+  region_name: Region;
   role?: string;
-  permissions?: string[];
+  scenario_count: number;
+  user: number;
 }
 
-export interface BackendPlanPreview {
-  id: number;
+export interface CreatePlanPayload {
+  geometry: GeoJSON.GeoJSON;
   name: string;
-  notes: string;
-  user: number;
   region_name: Region;
-  scenario_count: number;
-  latest_updated: string;
-  geometry?: GeoJSON.GeoJSON;
-  creator?: string;
-  area_acres: number;
-  area_m2: number;
-  role?: string;
-  permissions?: string[];
 }
 
 export interface BackendProjectArea {

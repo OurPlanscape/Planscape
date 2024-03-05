@@ -6,7 +6,9 @@
     <div>
       <div class="grid-container">
         <div class="grid-item">
-          <span class="grid-title">{{ summaryInput?.acres | number }}</span>
+          <span class="grid-title">{{
+            summaryInput?.acres | number: '1.0-0'
+          }}</span>
           <span class="grid-subtitle">acres</span>
         </div>
         <div class="grid-item">

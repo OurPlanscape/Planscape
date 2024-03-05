@@ -30,12 +30,12 @@ import {
   SessionService,
 } from '../services';
 import {
+  ActualPlan,
   Legend,
   Map,
   MapConfig,
   MapViewOptions,
   NONE_BOUNDARY_CONFIG,
-  Plan,
   Region,
 } from '../types';
 import { MapManager } from './map-manager';
@@ -256,8 +256,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
       plan$.subscribe({
         next: (plan) => {
-          if (this.regionRecord != plan.region) {
-            this.sessionService.setRegion(plan.region);
+          if (this.regionRecord != plan.region_name) {
+            this.sessionService.setRegion(plan.region_name);
             this.mapService.setConfigs();
           }
 
@@ -273,20 +273,16 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
   }
 
-  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
-    if (!plan.planningArea) return;
+  private drawPlanningArea(plan: ActualPlan, color?: string, opacity?: number) {
+    if (!plan.geometry) return;
 
     if (!!this.drawingLayer) {
       this.drawingLayer.remove();
     }
 
     this.maps.forEach((map) => {
-      if (map.instance && plan.planningArea) {
-        this.drawingLayer = createDrawingLayer(
-          plan.planningArea,
-          color,
-          opacity
-        );
+      if (map.instance && plan.geometry) {
+        this.drawingLayer = createDrawingLayer(plan.geometry, color, opacity);
         addGeoJSONToMap(this.drawingLayer, map.instance);
       }
     });

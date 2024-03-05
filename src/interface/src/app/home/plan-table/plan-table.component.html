@@ -15,7 +15,7 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           Name
         </mat-header-cell>
-        <mat-cell *matCellDef="let element">
+        <mat-cell *matCellDef="let element; dataSource: planrows">
           {{ element.name }}
         </mat-cell>
       </ng-container>
@@ -25,7 +25,7 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           Creator
         </mat-header-cell>
-        <mat-cell *matCellDef="let element">
+        <mat-cell *matCellDef="let element; dataSource: planrows">
           {{ element.creator }}
         </mat-cell>
       </ng-container>
@@ -36,8 +36,8 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           Date Last Modified
         </mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          {{ element.lastUpdated | date: 'medium' }}
+        <mat-cell *matCellDef="let element; dataSource: planrows">
+          {{ element.latest_updated | date: 'medium' }}
         </mat-cell>
       </ng-container>
 
@@ -46,8 +46,8 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           Total Acres
         </mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          {{ element.totalAcres | number }}
+        <mat-cell *matCellDef="let element; dataSource: planrows">
+          {{ element.area_acres | number: '1.0-0' }}
         </mat-cell>
       </ng-container>
 
@@ -56,8 +56,8 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           # of Scenarios
         </mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          {{ element.scenarios }}
+        <mat-cell *matCellDef="let element; dataSource: planrows">
+          {{ element.scenario_count }}
         </mat-cell>
       </ng-container>
 
@@ -66,8 +66,8 @@
         <mat-header-cell *matHeaderCellDef mat-sort-header>
           Region
         </mat-header-cell>
-        <mat-cell *matCellDef="let element">
-          {{ element.region }}
+        <mat-cell *matCellDef="let element; dataSource: planrows">
+          {{ element.region_name }}
         </mat-cell>
       </ng-container>
 

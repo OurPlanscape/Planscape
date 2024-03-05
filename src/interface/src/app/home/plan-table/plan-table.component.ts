@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 
 import { PlanService } from '../../services';
-import { PlanPreview } from '../../types';
+import { ActualPlan } from '../../types';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
@@ -14,7 +14,7 @@ import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog
 import { FeatureService } from '../../features/feature.service';
 import { canViewCollaborators } from '../../plan/permissions';
 
-interface PlanRow extends PlanPreview {
+interface PlanRow extends ActualPlan {
   totalAcres: number;
 }
 
@@ -25,6 +25,8 @@ interface PlanRow extends PlanPreview {
 })
 export class PlanTableComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
+  // used just for typing the table on the template
+  planrows: PlanRow[] = [];
 
   datasource = new MatTableDataSource<PlanRow>();
   selectedPlan: PlanRow | null = null;

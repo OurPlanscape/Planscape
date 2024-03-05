@@ -3,9 +3,9 @@ import { PlanService } from './plan.service';
 import { ScenarioService } from './scenario.service';
 import { TreatmentGoalsService } from './treatment-goals.service';
 import {
+  ActualPlan,
   BackendProjectArea,
-  BasePlan,
-  Plan,
+  CreatePlanPayload,
   ProjectArea,
   Region,
   Scenario,
@@ -18,9 +18,9 @@ import { Feature } from 'geojson';
 
 export interface PlanState {
   all: {
-    [planId: string]: Plan;
+    [planId: number]: ActualPlan;
   };
-  currentPlanId: Plan['id'] | null;
+  currentPlanId: ActualPlan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
   mapConditionLayer: string | null;
   mapShapes: Feature[] | null;
@@ -58,10 +58,10 @@ export class PlanStateService {
       });
   }
 
-  createPlan(basePlan: BasePlan) {
+  createPlan(basePlan: CreatePlanPayload) {
     return this.planService.createPlan(basePlan).pipe(
-      tap(({ result: createdPlan }) => {
-        this.addPlanToState(createdPlan);
+      tap((result: ActualPlan) => {
+        this.addPlanToState(result);
       })
     );
   }
@@ -178,7 +178,7 @@ export class PlanStateService {
     }
   }
 
-  private addPlanToState(plan: Plan) {
+  private addPlanToState(plan: ActualPlan) {
     // Object.freeze() enforces shallow runtime immutability
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
@@ -192,7 +192,7 @@ export class PlanStateService {
     this.planState$.next(updatedState);
   }
 
-  updateStateWithPlan(planId: string | null) {
+  updateStateWithPlan(planId: number | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
       ...currentState,

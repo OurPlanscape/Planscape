@@ -1,12 +1,12 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { Plan, Region, User } from '../../../types';
+import { ActualPlan, Region, User } from '../../../types';
 import { NOTE_SAVE_INTERVAL } from '../../plan-helpers';
 import { filter, interval, switchMap, tap } from 'rxjs';
 import { PlanService } from 'src/app/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 export interface SummaryInput {
-  id?: string;
+  id?: number;
   type: string;
   name: string;
   owner: string;
@@ -45,7 +45,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   styleUrls: ['./summary-panel.component.scss'],
 })
 export class SummaryPanelComponent implements OnInit, OnChanges {
-  @Input() plan: Plan | null = null;
+  @Input() plan: ActualPlan | null = null;
   @Input() owner: User | null = null;
 
   summaryInput: SummaryInput | null = null;
@@ -60,6 +60,7 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
     this.notes = this.plan?.notes ? this.plan?.notes : '';
     this.autoSaveNotes();
   }
+
   ngOnChanges(): void {
     if (!!this.plan) {
       this.summaryInput = {
@@ -69,13 +70,12 @@ export class SummaryPanelComponent implements OnInit, OnChanges {
         owner: this.owner?.firstName
           ? this.owner?.firstName + ' ' + this.owner?.lastName
           : this.owner?.username ?? 'Guest',
-        region: this.plan!.region,
-        area: this.plan!.planningArea!,
-        createdTime: this.plan!.createdTimestamp,
-        scenarios: this.plan!.scenarios,
+        region: this.plan!.region_name,
+        area: this.plan!.geometry!,
+        createdTime: new Date(this.plan!.created_at),
+        scenarios: this.plan!.scenario_count,
         notes: this.plan!.notes,
-        configs: this.plan!.configs,
-        lastUpdated: this.plan!.lastUpdated!,
+        lastUpdated: new Date(this.plan!.latest_updated!),
         acres: Math.round(this.plan.area_acres),
         status: 'In progress',
       };

@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { interval, take } from 'rxjs';
-import { Plan, Scenario } from 'src/app/types';
+import { ActualPlan, Scenario } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
@@ -25,7 +25,7 @@ export interface ScenarioRow extends Scenario {
   styleUrls: ['./saved-scenarios.component.scss'],
 })
 export class SavedScenariosComponent implements OnInit {
-  @Input() plan: Plan | null = null;
+  @Input() plan: ActualPlan | null = null;
 
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;

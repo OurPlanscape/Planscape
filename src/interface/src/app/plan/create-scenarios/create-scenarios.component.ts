@@ -1,15 +1,15 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import {
+  AbstractControl,
   FormBuilder,
+  FormControl,
   FormGroup,
   Validators,
-  FormControl,
-  AbstractControl,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
 import {
-  Plan,
+  ActualPlan,
   Scenario,
   ScenarioResult,
   ScenarioResultStatus,
@@ -41,8 +41,8 @@ export class CreateScenariosComponent implements OnInit {
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
   scenarioId?: string | null;
-  planId?: string | null;
-  plan$ = new BehaviorSubject<Plan | null>(null);
+  planId?: number | null;
+  plan$ = new BehaviorSubject<ActualPlan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
   forms: FormGroup = this.fb.group({});
@@ -103,8 +103,10 @@ export class CreateScenariosComponent implements OnInit {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
         this.planId = planState.currentPlanId;
-        if (this.plan$.getValue()?.region) {
-          this.planStateService.setPlanRegion(this.plan$.getValue()?.region!);
+        if (this.plan$.getValue()?.region_name) {
+          this.planStateService.setPlanRegion(
+            this.plan$.getValue()?.region_name!
+          );
         }
       });
 
@@ -201,7 +203,7 @@ export class CreateScenariosComponent implements OnInit {
   private formValueToScenario(): Scenario {
     return {
       name: this.scenarioNameFormField?.value,
-      planning_area: this.planId || '', // nope I should have planID
+      planning_area: this.planId ? this.planId.toString() : '', // nope I should have planID
       status: 'ACTIVE',
       configuration: {
         ...this.constraintsPanelComponent.getFormData(),

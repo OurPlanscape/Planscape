@@ -8,7 +8,12 @@ import {
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { FrontendConstants, Plan, Region, regionToString } from 'src/app/types';
+import {
+  ActualPlan,
+  FrontendConstants,
+  Region,
+  regionToString,
+} from 'src/app/types';
 
 import { BackendConstants } from './../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
@@ -28,7 +33,7 @@ export interface MapRef {
   styleUrls: ['./plan-map.component.scss'],
 })
 export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
-  @Input() plan: Plan | null = null;
+  @Input() plan: ActualPlan | null = null;
   @Input() mapId?: string;
   @Input() mapHeight: string = '100%';
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
@@ -105,14 +110,14 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Add planning area to map and frame it in view
-  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
-    if (!plan.planningArea) return;
+  private drawPlanningArea(plan: ActualPlan, color?: string, opacity?: number) {
+    if (!plan.geometry) return;
 
     if (!!this.drawingLayer) {
       this.drawingLayer.remove();
     }
 
-    this.drawingLayer = L.geoJSON(plan.planningArea, {
+    this.drawingLayer = L.geoJSON(plan.geometry, {
       pane: 'overlayPane',
       style: {
         color: color ?? '#000000',
