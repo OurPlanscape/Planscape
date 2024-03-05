@@ -5,6 +5,7 @@ from django.db import transaction
 from django.db.models import Model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
+from collaboration.permissions import CollaboratorPermission
 from collaboration.tasks import send_invitation
 from planning.models import PlanningArea
 import logging
@@ -70,7 +71,7 @@ def create_invite(
     content_type = get_content_type(target_entity)
     Model = content_type.model_class()
     instance = Model.objects.filter(pk=object_pk).first()
-    if not validate_ownership(user=inviter, instance=instance):
+    if not CollaboratorPermission.can_add(inviter, instance):
         raise InvalidOwnership(
             f"inviter {inviter.email} does not have ownership of {target_entity} object {object_pk}"
         )
