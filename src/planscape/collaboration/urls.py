@@ -2,7 +2,7 @@ from django.urls import path
 from collaboration.views import (
     CreateInvite,
     GetInvitationsForObject,
-    UpdateCollaboratorRole
+    UpdateCollaborationRole,
 )
 
 app_name = "collaboration"
@@ -17,9 +17,9 @@ urlpatterns = [
         GetInvitationsForObject.as_view(),
         name="get_invitations",
     ),
-     path(
-        "update_invitation/",
-        UpdateCollaboratorRole.as_view(),
+    path(
+        "update_invitation/<int:object_pk>",
+        UpdateCollaborationRole.as_view(),
         name="update_invitation",
     ),
 ]

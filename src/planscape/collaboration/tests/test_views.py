@@ -110,25 +110,36 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         self.owner.set_password("12345")
         self.owner.save()
 
+        self.collab_user = User.objects.create(
+            username="someotheruser", email="acollaborator@example.text"
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
+
         self.invitee = User.objects.create(
             username="testuser2", email="iamatestuser@example.text"
         )
         self.invitee.set_password("12345")
         self.invitee.save()
+
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
         )
 
+        self.user_object_role = create_collaborator_record(
+            self.owner, self.collab_user, self.planningarea, Role.COLLABORATOR
+        )
         self.user_object_role = create_collaborator_record(
             self.owner, self.invitee, self.planningarea, Role.VIEWER
         )
 
     def test_update_role_from_viewer_to_collaborator(self):
         self.client.force_authenticate(self.owner)
-        payload = {"id": self.user_object_role.id, "role": "Collaborator"}
+        payload = {"role": "Collaborator"}
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
+                kwargs={"object_pk": self.user_object_role.id},
             ),
             payload,
             format="json",
@@ -138,10 +149,11 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
 
     def test_update_role_from_viewer_to_viewer(self):
         self.client.force_authenticate(self.owner)
-        payload = {"id": self.user_object_role.id, "role": "Viewer"}
+        payload = {"role": "Viewer"}
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
+                kwargs={"object_pk": self.user_object_role.id},
             ),
             payload,
             format="json",
@@ -151,25 +163,41 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
 
     def test_update_role_to_nonexistent_role(self):
         self.client.force_authenticate(self.owner)
-        payload = {"id": self.user_object_role.id, "role": "Whatchamacallit"}
+        payload = {"role": "NonexistentMadeupRole"}
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
+                kwargs={"object_pk": self.user_object_role.id},
             ),
             payload,
             format="json",
         )
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
-            response.content, {"role": ['"Whatchamacallit" is not a valid choice.']}
+            response.content,
+            {"role": ['"NonexistentMadeupRole" is not a valid choice.']},
         )
 
-    def test_update_role_as_unprivileged_user(self):
-        self.client.force_authenticate(self.invitee)
-        payload = {"id": self.user_object_role.id, "role": "Collaborator"}
+    def test_update_role_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        payload = {"role": "Collaborator"}
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
+                kwargs={"object_pk": self.user_object_role.id},
+            ),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_update_role_as_unprivileged_user(self):
+        self.client.force_authenticate(self.invitee)
+        payload = {"role": "Collaborator"}
+        response = self.client.patch(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={"object_pk": self.user_object_role.id},
             ),
             payload,
             format="json",

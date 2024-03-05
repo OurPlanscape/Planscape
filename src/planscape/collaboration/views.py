@@ -80,12 +80,11 @@ class GetInvitationsForObject(APIView):
 
 
 # It's assumed we already have the record id and are just updating the role
-class UpdateCollaboratorRole(APIView):
-    def patch(self, request: Request):
+class UpdateCollaborationRole(APIView):
+    def patch(self, request: Request, object_pk):
         try:
             user = request.user
-            user_object_role_id = request.data.get("id")
-            user_object_role_obj = UserObjectRole.objects.get(id=user_object_role_id)
+            user_object_role_obj = UserObjectRole.objects.get(pk=object_pk)
 
             serializer = UserObjectRoleSerializer(
                 instance=user_object_role_obj,
