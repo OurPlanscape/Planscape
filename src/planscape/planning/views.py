@@ -62,30 +62,6 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     return actual_geometry
 
 
-# TODO: Along with PlanningAreaSerializer, refactor this a bit more to
-# make it more maintainable.
-def _serialize_planning_area(
-    planning_area: PlanningArea, add_geometry: bool, context
-) -> dict:
-    """
-    Serializes a Planning Area (Plan) into a dictionary.
-    1. Converts the Planning Area to a dictionary with fields 'id', 'geometry', and 'properties'
-       (the latter of which is a dictionary).
-    2. Creates the partial result from the properties and 'id' fields.
-    3. Adds the 'geometry' if requested.
-    4. Replaces the internal region_name with the display version.
-    """
-
-    serializer = PlanningAreaSerializer(planning_area, context=context)
-    data = serializer.data
-    result = data["properties"]
-    result["id"] = data["id"]
-    if "geometry" in data and add_geometry:
-        result["geometry"] = data["geometry"]
-
-    return result
-
-
 #### PLAN(NING AREA) Handlers ####
 @api_view(["POST"])
 def create_planning_area(request: Request) -> Response:
