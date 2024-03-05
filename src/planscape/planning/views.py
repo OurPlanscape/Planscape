@@ -77,14 +77,12 @@ def _serialize_planning_area(
     """
 
     serializer = PlanningAreaSerializer(planning_area, context=context)
-
     data = serializer.data
     result = data["properties"]
     result["id"] = data["id"]
     if "geometry" in data and add_geometry:
         result["geometry"] = data["geometry"]
-    if "region_name" in result:
-        result["region_name"] = region_to_display_name(result["region_name"])
+
     return result
 
 
@@ -144,10 +142,7 @@ def create_planning_area(request: Request) -> Response:
                 {"message": "Must specify the planning area geometry."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        # Convert to a MultiPolygon if it is a simple Polygon, since the model column type is
-        # MultiPolygon.
         geometry = _convert_polygon_to_multipolygon(geometry)
-        # Create the planning area
         planning_area = PlanningArea.objects.create(
             user=user,
             name=name,
@@ -155,9 +150,10 @@ def create_planning_area(request: Request) -> Response:
             geometry=geometry,
             notes=body.get("notes", None),
         )
-        planning_area.save()
-
-        return Response({"id": planning_area.pk}, content_type="application/json")
+        serializer = PlanningAreaSerializer(
+            instance=planning_area, context={"request": request}
+        )
+        return Response(serializer.data)
 
     except ValueError as ve:  # potentially from _convert_polygon_to_multipolygon
         logger.error(f"ValueError creating planning area: {ve}")
@@ -357,10 +353,10 @@ def get_planning_area_by_id(request: Request) -> Response:
                 {"message": "User has no access to this planning area."},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
-        return Response(
-            _serialize_planning_area(planning_area, True, context={"request": request})
+        serializer = PlanningAreaSerializer(
+            instance=planning_area, context={"request": request}
         )
+        return Response(serializer.data)
     except Exception as e:
         logger.exception("Error getting area by id %s", e)
         raise
@@ -404,28 +400,13 @@ def list_planning_areas(request: Request) -> Response:
             )
             .order_by("-scenario_latest_updated_at")
         )
-        return JsonResponse(
-            [
-                _serialize_planning_area(
-                    planning_area, True, context={"request": request}
-                )
-                for planning_area in planning_areas
-            ],
-            safe=False,
+        serializer = PlanningAreaSerializer(
+            instance=planning_areas, many=True, context={"request": request}
         )
+        return Response(serializer.data)
     except Exception as e:
         logger.error(f"Error: Failed to list planning areas: {e}")
         raise
-
-
-def _serialize_scenario(scenario: Scenario) -> dict:
-    """
-    Serializes a Scenario into a dictionary.
-    # TODO: Add more logic here as our Scenario model expands beyond just the
-    #       JSON "configuration" field.
-    """
-    data = ScenarioSerializer(scenario).data
-    return data
 
 
 @api_view(["GET"])
@@ -456,8 +437,8 @@ def get_scenario_by_id(request: Request) -> Response:
                 {"message": "You do not have permission to view this scenario"},
                 status=status.HTTP_403_FORBIDDEN,
             )
-
-        return Response(_serialize_scenario(scenario), content_type="application/json")
+        serializer = ScenarioSerializer(instance=scenario)
+        return Response(serializer.data, content_type="application/json")
     except Scenario.DoesNotExist:
         return Response(
             {"error": "Scenario matching query does not exist."},
@@ -861,10 +842,8 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
             )
 
         scenarios = Scenario.objects.filter(planning_area__pk=planning_area_id)
-        return Response(
-            [_serialize_scenario(scenario) for scenario in scenarios],
-            content_type="application/json",
-        )
+        serializer = ScenarioSerializer(instance=scenarios, many=True)
+        return Response(serializer.data)
     except PlanningArea.DoesNotExist:
         return Response(
             {"error": "Planning Area does not exist."}, status=status.HTTP_404_NOT_FOUND
