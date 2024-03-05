@@ -3589,7 +3589,7 @@
                   "metric_name": "time_since_last_fire",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/fireDynamics/Tier2/TSLF_2022.tif",
-                  "raw_layer": ":fireDynamics_Tier2_TLSF_2022",
+                  "raw_layer": ":fireDynamics_Tier2_TSLF_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=19",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
