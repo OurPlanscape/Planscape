@@ -5,6 +5,9 @@ import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explo
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
 import { ActivatedRoute } from '@angular/router';
+import { map, of } from 'rxjs';
+import { PlanStateService } from '../../services/plan-state.service';
+import { canViewCollaborators } from '../../plan/permissions';
 
 export interface Breadcrumb {
   name: string;
@@ -24,11 +27,19 @@ export class NavBarComponent {
   hasSharePlanFeatureFLag =
     this.featureService.isFeatureEnabled('show_share_modal');
 
+  canShowSharePlan$ =
+    this.route.snapshot?.params && this.route.snapshot?.params['id']
+      ? this.planStateService
+          .getPlan(this.route.snapshot.params['id'])
+          .pipe(map((plan) => canViewCollaborators(plan)))
+      : of(false);
+
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private featureService: FeatureService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private planStateService: PlanStateService
   ) {}
 
   print() {

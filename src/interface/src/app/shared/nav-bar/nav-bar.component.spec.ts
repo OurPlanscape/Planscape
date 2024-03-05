@@ -7,6 +7,9 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MaterialModule } from '../../material/material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FeaturesModule } from '../../features/features.module';
+import { MockProvider } from 'ng-mocks';
+import { PlanStateService } from '../../services/plan-state.service';
+import { NEVER } from 'rxjs';
 
 describe('NavBarComponent', () => {
   let component: NavBarComponent;
@@ -32,11 +35,16 @@ describe('NavBarComponent', () => {
             print: () => {},
           },
         },
+        MockProvider(PlanStateService, {
+          getPlan: () => NEVER,
+        }),
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NavBarComponent);
+
     component = fixture.componentInstance;
+
     fixture.detectChanges();
   });
 
