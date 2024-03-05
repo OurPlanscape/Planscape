@@ -55,7 +55,7 @@ class CreateInvite(APIView):
             raise
 
 
-class GetInvitationsForObject(APIView):
+class InvitationsForObject(APIView):
     def get(self, request: Request, target_entity: str, object_pk: int):
         user = request.user
         content_type = ContentType.objects.get(model=target_entity)
@@ -78,13 +78,12 @@ class GetInvitationsForObject(APIView):
         )
         return Response(serializer.data)
 
-
-# It's assumed we already have the record id and are just updating the role
-class UpdateCollaborationRole(APIView):
-    def patch(self, request: Request, object_pk):
+    def patch(
+        self, request: Request, target_entity: str, object_pk: int, invite_id: int
+    ):
         try:
             user = request.user
-            user_object_role_obj = UserObjectRole.objects.get(pk=object_pk)
+            user_object_role_obj = UserObjectRole.objects.get(pk=invite_id)
 
             serializer = UserObjectRoleSerializer(
                 instance=user_object_role_obj,
@@ -94,11 +93,11 @@ class UpdateCollaborationRole(APIView):
             )
             serializer.is_valid(raise_exception=True)
 
-            planning_area = PlanningArea.objects.get(
-                id=user_object_role_obj.content_object.pk
-            )
+            content_type = ContentType.objects.get(model=target_entity)
+            Model = content_type.model_class()
+            instance = Model.objects.get(pk=object_pk)
 
-            if not CollaboratorPermission.can_change(user, planning_area):
+            if not CollaboratorPermission.can_change(user, instance):
                 return Response(
                     {"message": "User does not have permission to change this role."},
                     status=status.HTTP_403_FORBIDDEN,

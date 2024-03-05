@@ -139,11 +139,16 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                kwargs={"object_pk": self.user_object_role.id},
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": self.planningarea.pk,
+                    "invite_id": self.user_object_role.id,
+                },
             ),
             payload,
             format="json",
         )
+        self.assertEqual(response.status_code, 200)
         response_obj = json.loads(response.content)
         self.assertEqual(response_obj["role"], "Collaborator")
 
@@ -153,11 +158,16 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                kwargs={"object_pk": self.user_object_role.id},
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": self.planningarea.pk,
+                    "invite_id": self.user_object_role.id,
+                },
             ),
             payload,
             format="json",
         )
+        self.assertEqual(response.status_code, 200)
         response_obj = json.loads(response.content)
         self.assertEqual(response_obj["role"], "Viewer")
 
@@ -167,7 +177,11 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                kwargs={"object_pk": self.user_object_role.id},
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": self.planningarea.pk,
+                    "invite_id": self.user_object_role.id,
+                },
             ),
             payload,
             format="json",
@@ -184,7 +198,11 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                kwargs={"object_pk": self.user_object_role.id},
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": self.planningarea.pk,
+                    "invite_id": self.user_object_role.id,
+                },
             ),
             payload,
             format="json",
@@ -197,7 +215,11 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         response = self.client.patch(
             reverse(
                 "collaboration:update_invitation",
-                kwargs={"object_pk": self.user_object_role.id},
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": self.planningarea.pk,
+                    "invite_id": self.user_object_role.id,
+                },
             ),
             payload,
             format="json",
