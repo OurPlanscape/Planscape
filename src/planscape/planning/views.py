@@ -618,10 +618,8 @@ def create_scenario(request: Request) -> Response:
         serializer = ScenarioSerializer(data=body, context={"user": user})
         serializer.is_valid(raise_exception=True)
 
-        # Ensure that we have a viable planning area owned by the user.  Note that this gives a slightly different
-        # error response for a nonowned planning area vs. when given a nonexistent planning area.
         planning_area = PlanningArea.objects.get(id=body["planning_area"])
-        if not PlanningAreaPermission.can_view(user, planning_area):
+        if not PlanningAreaPermission.can_add_scenario(user, planning_area):
             return Response(
                 {
                     "error": "User does not have permission to create scenarios from this Planning Area"

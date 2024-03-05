@@ -41,6 +41,12 @@ class PlanningAreaPermission(CheckPermissionMixin):
     def can_remove(user: User, planning_area: PlanningArea):
         return is_creator(user, planning_area)
 
+    @staticmethod
+    def can_add_scenario(user: User, planning_area: PlanningArea):
+        if is_creator(user, planning_area):
+            return True
+
+        return check_for_permission(user.id, planning_area, "add_scenario")
 
 class CollaboratorPermission(CheckPermissionMixin):
     @staticmethod
