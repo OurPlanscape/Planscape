@@ -1,9 +1,15 @@
+import json
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from unittest import mock
-from collaboration.models import UserObjectRole
+from collaboration.models import UserObjectRole, Role
+from collaboration.services import get_content_type
+from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea
+
+
 
 
 class CreateSharedLinkTest(APITransactionTestCase):
@@ -100,15 +106,68 @@ class GetInvitationsTest(APITransactionTestCase):
 
 class UpdatePermissionsTest(APITransactionTestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username="testuser1")
-        self.user1.set_password("12345")
-        self.user1.save()
+        self.owner = User.objects.create(username="testuser1")
+        self.owner.set_password("12345")
+        self.owner.save()
 
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
-        self.pa1 = PlanningArea.objects.create(user=self.user1, region_name="foo")
-        self.pa2 = PlanningArea.objects.create(user=self.user2, region_name="foo")
-        # test update user Role
-        # test update user Role when user has no permission to do this
-        #
+        self.invitee = User.objects.create(username="testuser2", email="iamatestuser@example.text")
+        self.invitee.set_password("12345")
+        self.invitee.save()
+        self.planningarea = PlanningArea.objects.create(user=self.owner, region_name="foo")
+
+        create_collaborator_record(self.owner, self.invitee, self.planningarea, Role.VIEWER)
+
+    def test_update_role_from_viewer_to_collaborator(self):
+        self.client.force_authenticate(self.owner)
+        payload = {
+                "content_type": get_content_type("planningarea").pk,
+                "object_pk": self.planningarea.pk,
+                "role": "Collaborator",
+                "email": self.invitee.email,
+            }
+        response = self.client.put(
+            reverse(
+                "collaboration:update_invitation",
+                ),
+                payload,
+               format="json"
+        )
+        response_obj = json.loads(response.content)
+        self.assertEqual(response_obj["role"], "Collaborator")
+
+
+    def test_update_role_from_viewer_to_viewer(self):
+        self.client.force_authenticate(self.owner)
+        payload = {
+                "content_type": get_content_type("planningarea").pk,
+                "object_pk": self.planningarea.pk,
+                "role": "Viewer",
+                "email": self.invitee.email,
+            }
+        response = self.client.put(
+            reverse(
+                "collaboration:update_invitation",
+                ),
+                payload,
+               format="json"
+        )
+        response_obj = json.loads(response.content)
+        self.assertEqual(response_obj["role"], "Viewer")
+
+    def test_update_role_to_nonexistent_role(self):
+        self.client.force_authenticate(self.owner)
+        payload = {
+                "content_type": get_content_type("planningarea").pk,
+                "object_pk": self.planningarea.pk,
+                "role": "Whatchamacallit",
+                "email": self.invitee.email,
+            }
+        response = self.client.put(
+            reverse(
+                "collaboration:update_invitation",
+                ),
+                payload,
+               format="json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {'role': ['"Whatchamacallit" is not a valid choice.']})
