@@ -48,6 +48,7 @@ class PlanningAreaPermission(CheckPermissionMixin):
 
         return check_for_permission(user.id, planning_area, "add_scenario")
 
+
 class CollaboratorPermission(CheckPermissionMixin):
     @staticmethod
     def can_view(user: User, planning_area: PlanningArea):
