@@ -29,7 +29,6 @@ class PlanningAreaManager(models.Manager):
 
 
 class RegionChoices(models.TextChoices):
-
     SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
     SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
     CENTRAL_COAST = "central-coast", "Central Coast"
