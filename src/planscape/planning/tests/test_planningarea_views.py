@@ -64,16 +64,17 @@ class CreatePlanningAreaTest(APITransactionTestCase):
                 "notes": self.notes,
             }
         )
+
         response = self.client.post(
             reverse("planning:create_planning_area"),
-            payload,
+            data=payload,
             content_type="application/json",
         )
+        data = response.json()
+
         self.assertEqual(response.status_code, 200)
-        planning_areas = PlanningArea.objects.all()
-        self.assertEqual(planning_areas.count(), 1)
-        planning_area = planning_areas.first()
-        assert planning_area is not None
+        planning_area = PlanningArea.objects.all().first()
+        self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(planning_area.region_name, "sierra-nevada")
         self.assertTrue(
             planning_area.geometry.equals(
@@ -83,7 +84,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(planning_area.notes, self.notes)
         self.assertEqual(planning_area.name, "test plan")
         self.assertEqual(planning_area.user.pk, self.user.pk)
-        self.assertJSONEqual(response.content, {"id": planning_area.pk})
+        self.assertIn("id", data)
 
     def test_create_planning_area_no_notes(self):
         self.client.force_authenticate(self.user)
@@ -99,18 +100,18 @@ class CreatePlanningAreaTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
+        data = response.json()
+        planning_area = PlanningArea.objects.all().first()
         self.assertEqual(response.status_code, 200)
-        planning_areas = PlanningArea.objects.all()
-        self.assertEqual(planning_areas.count(), 1)
-        planning_area = planning_areas.first()
-        assert planning_area is not None
+        self.assertEqual(PlanningArea.objects.all().count(), 1)
+        self.assertEqual(data["id"], planning_area.id)
         self.assertEqual(planning_area.region_name, "sierra-nevada")
         self.assertTrue(
             planning_area.geometry.equals(
                 _convert_polygon_to_multipolygon(self.geometry)
             )
         )
-        self.assertJSONEqual(response.content, {"id": planning_area.pk})
+        self.assertIn("id", data)
 
     def test_create_planning_area_multipolygon(self):
         self.client.force_authenticate(self.user)
@@ -126,18 +127,17 @@ class CreatePlanningAreaTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
+        data = response.json()
+        planning_area = PlanningArea.objects.all().first()
         self.assertEqual(response.status_code, 200)
-        planning_areas = PlanningArea.objects.all()
-        self.assertEqual(planning_areas.count(), 1)
-        planning_area = planning_areas.first()
-        assert planning_area is not None
+        self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(planning_area.region_name, "southern-california")
         self.assertTrue(
             planning_area.geometry.equals(
                 _convert_polygon_to_multipolygon(self.multipolygon_geometry)
             )
         )
-        self.assertJSONEqual(response.content, {"id": planning_area.pk})
+        self.assertIn("id", data)
 
     def test_missing_user(self):
         payload = json.dumps(

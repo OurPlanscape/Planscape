@@ -17,10 +17,12 @@ def _create_planning_area(
     Creates a planning_area with the given user, name, geometry, notes.  All regions
     are in Sierra Nevada.
     """
+    from planning.models import RegionChoices
+
     planning_area = PlanningArea.objects.create(
         user=user,
         name=name,
-        region_name="sierra-nevada",
+        region_name=RegionChoices.SIERRA_NEVADA,
         geometry=geometry,
         notes=notes,
     )
