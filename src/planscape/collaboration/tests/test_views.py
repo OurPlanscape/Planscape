@@ -142,7 +142,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invite_id": self.user_object_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -161,7 +161,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invite_id": self.user_object_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -180,7 +180,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invite_id": self.user_object_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -201,7 +201,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invite_id": self.user_object_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -218,7 +218,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invite_id": self.user_object_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,

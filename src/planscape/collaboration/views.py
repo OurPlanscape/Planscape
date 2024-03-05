@@ -79,11 +79,11 @@ class InvitationsForObject(APIView):
         return Response(serializer.data)
 
     def patch(
-        self, request: Request, target_entity: str, object_pk: int, invite_id: int
+        self, request: Request, target_entity: str, object_pk: int, invitation_id: int
     ):
         try:
             user = request.user
-            user_object_role_obj = UserObjectRole.objects.get(pk=invite_id)
+            user_object_role_obj = UserObjectRole.objects.get(pk=invitation_id)
 
             serializer = UserObjectRoleSerializer(
                 instance=user_object_role_obj,
