@@ -111,11 +111,24 @@ export class SharePlanDialogComponent {
   }
 
   resendCode(invite: Invite) {
-    this.matSnackBar.open(
-      `Email sent to ${invite.email}`,
-      'Dismiss',
-      SNACK_BOTTOM_NOTICE_CONFIG
-    );
+    this.inviteService
+      .inviteUsers([invite.email], this.selectedRole, this.data.id)
+      .subscribe({
+        next: (result) => {
+          this.matSnackBar.open(
+            `Email sent to ${invite.email}`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+        },
+        error: () => {
+          this.matSnackBar.open(
+            `There was an error trying to resend code to ${invite.email}. Please try again.`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+        },
+      });
   }
 
   removeAccess(invite: Invite) {
