@@ -110,6 +110,8 @@ export class PlanTableComponent implements OnInit {
       data: {
         name: '"' + this.selectedPlan.name + '"',
         id: this.selectedPlan.id,
+        creatorId: this.selectedPlan.user,
+        creatorName: this.selectedPlan.creator,
       },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
