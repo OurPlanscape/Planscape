@@ -1,13 +1,13 @@
-import { PlanPreview, Plan } from '../types';
+import { Plan, PlanPreview } from '../types';
 
-export function canViewCollaborators(plan: PlanPreview) {
+export function canViewCollaborators(plan: PlanPreview | Plan) {
   if (!plan.permissions) {
     return false;
   }
   return plan.permissions?.includes('view_collaborator');
 }
 
-export function canAddScenario(plan: Plan) {
+export function canAddScenario(plan: PlanPreview | Plan) {
   if (!plan.permissions) {
     return false;
   }

@@ -280,6 +280,7 @@ describe('AuthService', () => {
         username: 'test',
         first_name: 'Foo',
         last_name: 'Bar',
+        pk: 10,
       };
 
       service.refreshLoggedInUser().subscribe((res) => {
@@ -288,6 +289,7 @@ describe('AuthService', () => {
           username: 'test',
           firstName: 'Foo',
           lastName: 'Bar',
+          id: 10,
         });
         done();
       });
@@ -315,6 +317,7 @@ describe('AuthService', () => {
         username: 'test',
         first_name: 'Foo',
         last_name: 'Bar',
+        pk: 12,
       };
 
       service.refreshLoggedInUser().subscribe((_) => {
@@ -324,6 +327,7 @@ describe('AuthService', () => {
           username: 'test',
           firstName: 'Foo',
           lastName: 'Bar',
+          id: 12,
         });
         done();
       });
@@ -461,6 +465,7 @@ describe('AuthService', () => {
         lastName: 'Bar',
         username: 'test',
         email: 'test@test.com',
+        id: 10,
       };
 
       service.deleteUser(user, 'password').subscribe((res) => {
