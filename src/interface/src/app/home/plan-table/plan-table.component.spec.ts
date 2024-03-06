@@ -72,16 +72,7 @@ describe('PlanTableComponent', () => {
     it('should fetch plans from the DB', () => {
       component.refresh();
       expect(fakePlanService.listPlansByUser).toHaveBeenCalledTimes(2);
-      expect(component.datasource.data).toEqual([
-        {
-          ...fakePlan1,
-          totalAcres: 123,
-        },
-        {
-          ...fakePlan2,
-          totalAcres: 123,
-        },
-      ]);
+      expect(component.datasource.data).toEqual([fakePlan1, fakePlan2]);
     });
   });
 
@@ -89,7 +80,7 @@ describe('PlanTableComponent', () => {
     it('should open a dialog with a single ID to delete', () => {
       const dialogSpy: MatDialog = fixture.debugElement.injector.get(MatDialog);
       spyOn(dialogSpy, 'open').and.callThrough();
-      component.selectedPlan = { ...fakePlan1, totalAcres: 100 };
+      component.selectedPlan = fakePlan1;
       component.deletePlan();
 
       expect(dialogSpy.open).toHaveBeenCalledOnceWith(DeleteDialogComponent, {
