@@ -1,6 +1,6 @@
-import { ActualPlan, Region } from '../types';
+import { Plan, Region } from '../types';
 
-export const MOCK_PLAN: ActualPlan = {
+export const MOCK_PLAN: Plan = {
   id: 1,
   name: 'tempName',
   user: 2,

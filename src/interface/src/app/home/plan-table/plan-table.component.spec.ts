@@ -5,7 +5,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { ActualPlan } from 'src/app/types';
+import { Plan } from 'src/app/types';
 
 import { AuthService, PlanService } from '../../services';
 import { PlanTableComponent } from './plan-table.component';
@@ -16,8 +16,8 @@ import { FeaturesModule } from '../../features/features.module';
 import { MOCK_PLAN } from '../../services/mocks';
 
 describe('PlanTableComponent', () => {
-  const fakePlan1: ActualPlan = MOCK_PLAN;
-  const fakePlan2: ActualPlan = { ...MOCK_PLAN, id: 2 };
+  const fakePlan1: Plan = MOCK_PLAN;
+  const fakePlan2: Plan = { ...MOCK_PLAN, id: 2 };
 
   let component: PlanTableComponent;
   let fixture: ComponentFixture<PlanTableComponent>;

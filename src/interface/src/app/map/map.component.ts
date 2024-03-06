@@ -30,7 +30,7 @@ import {
   SessionService,
 } from '../services';
 import {
-  ActualPlan,
+  Plan,
   Legend,
   Map,
   MapConfig,
@@ -273,7 +273,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
   }
 
-  private drawPlanningArea(plan: ActualPlan, color?: string, opacity?: number) {
+  private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
     if (!plan.geometry) return;
 
     if (!!this.drawingLayer) {

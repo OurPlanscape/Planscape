@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { ActualPlan } from '../../../types';
+import { Plan } from '../../../types';
 
 @Component({
   selector: 'app-plan-overview',
@@ -9,7 +9,7 @@ import { ActualPlan } from '../../../types';
   styleUrls: ['./plan-overview.component.scss'],
 })
 export class PlanOverviewComponent {
-  @Input() plan$ = new BehaviorSubject<ActualPlan | null>(null);
+  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
 
   constructor(
     private route: ActivatedRoute,

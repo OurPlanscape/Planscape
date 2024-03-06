@@ -1,6 +1,6 @@
 import { Region } from './region.types';
 
-export interface ActualPlan {
+export interface Plan {
   area_acres: number;
   area_m2: number;
   created_at: string;

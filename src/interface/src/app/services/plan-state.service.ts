@@ -3,7 +3,7 @@ import { PlanService } from './plan.service';
 import { ScenarioService } from './scenario.service';
 import { TreatmentGoalsService } from './treatment-goals.service';
 import {
-  ActualPlan,
+  Plan,
   BackendProjectArea,
   CreatePlanPayload,
   ProjectArea,
@@ -18,9 +18,9 @@ import { Feature } from 'geojson';
 
 export interface PlanState {
   all: {
-    [planId: number]: ActualPlan;
+    [planId: number]: Plan;
   };
-  currentPlanId: ActualPlan['id'] | null;
+  currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
   mapConditionLayer: string | null;
   mapShapes: Feature[] | null;
@@ -60,7 +60,7 @@ export class PlanStateService {
 
   createPlan(basePlan: CreatePlanPayload) {
     return this.planService.createPlan(basePlan).pipe(
-      tap((result: ActualPlan) => {
+      tap((result: Plan) => {
         this.addPlanToState(result);
       })
     );
@@ -178,7 +178,7 @@ export class PlanStateService {
     }
   }
 
-  private addPlanToState(plan: ActualPlan) {
+  private addPlanToState(plan: Plan) {
     // Object.freeze() enforces shallow runtime immutability
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({

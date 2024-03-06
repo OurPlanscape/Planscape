@@ -1,6 +1,6 @@
-import { ActualPlan } from '../types';
+import { Plan } from '../types';
 
-export function canViewCollaborators(plan: ActualPlan) {
+export function canViewCollaborators(plan: Plan) {
   if (!plan.permissions) {
     return false;
   }

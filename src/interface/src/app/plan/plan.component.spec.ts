@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
-import { ActualPlan, Region } from 'src/app/types';
+import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
 import { AuthService } from '../services';
@@ -45,7 +45,7 @@ describe('PlanComponent', () => {
     ],
   };
 
-  const fakePlan: ActualPlan = { ...MOCK_PLAN, id: 24, geometry: fakeGeoJson };
+  const fakePlan: Plan = { ...MOCK_PLAN, id: 24, geometry: fakeGeoJson };
 
   beforeEach(async () => {
     const fakeRoute = jasmine.createSpyObj(

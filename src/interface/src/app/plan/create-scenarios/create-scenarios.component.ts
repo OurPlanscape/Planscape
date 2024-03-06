@@ -9,7 +9,7 @@ import {
 import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
 import {
-  ActualPlan,
+  Plan,
   Scenario,
   ScenarioResult,
   ScenarioResultStatus,
@@ -42,7 +42,7 @@ export class CreateScenariosComponent implements OnInit {
   generatingScenario: boolean = false;
   scenarioId?: string | null;
   planId?: number | null;
-  plan$ = new BehaviorSubject<ActualPlan | null>(null);
+  plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
   forms: FormGroup = this.fb.group({});

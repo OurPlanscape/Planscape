@@ -28,7 +28,7 @@ import {
   SessionService,
 } from '../services';
 import {
-  ActualPlan,
+  Plan,
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
@@ -91,7 +91,7 @@ describe('MapComponent', () => {
         },
       ],
     };
-    const fakePlan: ActualPlan = MOCK_PLAN;
+    const fakePlan: Plan = MOCK_PLAN;
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       {},

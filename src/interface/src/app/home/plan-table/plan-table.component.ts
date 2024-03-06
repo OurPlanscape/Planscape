@@ -6,7 +6,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 
 import { PlanService } from '../../services';
-import { ActualPlan } from '../../types';
+import { Plan } from '../../types';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
@@ -14,7 +14,7 @@ import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog
 import { FeatureService } from '../../features/feature.service';
 import { canViewCollaborators } from '../../plan/permissions';
 
-interface PlanRow extends ActualPlan {
+interface PlanRow extends Plan {
   totalAcres: number;
 }
 

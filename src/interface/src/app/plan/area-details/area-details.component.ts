@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { ActualPlan } from '../../types';
+import { Plan } from '../../types';
 
 @Component({
   selector: 'app-area-details',
@@ -7,5 +7,5 @@ import { ActualPlan } from '../../types';
   styleUrls: ['./area-details.component.scss'],
 })
 export class AreaDetailsComponent {
-  @Input() plan!: ActualPlan;
+  @Input() plan!: Plan;
 }

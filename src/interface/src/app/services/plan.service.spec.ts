@@ -5,7 +5,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import { ActualPlan } from '../types';
+import { Plan } from '../types';
 import { PlanService } from './plan.service';
 import { MapService } from './map.service';
 import { MOCK_PLAN } from './mocks';
@@ -18,7 +18,7 @@ import { MOCK_PLAN } from './mocks';
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
   let service: PlanService;
-  let mockPlan: ActualPlan;
+  let mockPlan: Plan;
 
   beforeEach(() => {
     mockPlan = MOCK_PLAN;

@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { ActualPlan, Region, User } from '../../../types';
+import { Plan, Region, User } from '../../../types';
 import { NOTE_SAVE_INTERVAL } from '../../plan-helpers';
 import { filter, interval, switchMap, tap } from 'rxjs';
 import { PlanService } from 'src/app/services';
@@ -45,7 +45,7 @@ export const conditionScoreColorMap: Record<ConditionName, string> = {
   styleUrls: ['./summary-panel.component.scss'],
 })
 export class SummaryPanelComponent implements OnInit, OnChanges {
-  @Input() plan: ActualPlan | null = null;
+  @Input() plan: Plan | null = null;
   @Input() owner: User | null = null;
 
   summaryInput: SummaryInput | null = null;

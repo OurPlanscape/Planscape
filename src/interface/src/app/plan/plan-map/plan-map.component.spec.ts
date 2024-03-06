@@ -4,7 +4,7 @@ import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { ActualPlan, Region } from 'src/app/types';
+import { Plan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -16,7 +16,7 @@ describe('PlanMapComponent', () => {
   let fixture: ComponentFixture<PlanMapComponent>;
   let fakePlanService: PlanStateService;
   let fakePlanState$: BehaviorSubject<PlanState>;
-  let fakePlan: ActualPlan;
+  let fakePlan: Plan;
 
   const emptyPlanState = {
     all: {},
