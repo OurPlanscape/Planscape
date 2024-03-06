@@ -1,6 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AuthService } from '../../../services';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -26,14 +27,17 @@ export interface ScenarioRow extends Scenario {
 })
 export class SavedScenariosComponent implements OnInit {
   @Input() plan: Plan | null = null;
+  user$ = this.authService.loggedInUser$;
 
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
   activeScenarios: ScenarioRow[] = [];
   archivedScenarios: ScenarioRow[] = [];
+  showOnlyMyScenarios: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
+    private authService: AuthService,
     private router: Router,
     private snackbar: MatSnackBar,
     private dialog: MatDialog,
@@ -57,6 +61,8 @@ export class SavedScenariosComponent implements OnInit {
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
       .subscribe((scenarios) => {
+        console.log("what is showOnlyMyScenarios?:", this.showOnlyMyScenarios)
+        scenarios.map((s) => console.log("Scanerio user = ", s.user, " and current user is: ", this.user$.value?.id ))
         this.activeScenarios = scenarios.filter((s) => s.status === 'ACTIVE');
         this.archivedScenarios = scenarios.filter(
           (s) => s.status === 'ARCHIVED'
