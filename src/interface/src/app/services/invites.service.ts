@@ -13,7 +13,7 @@ export class InvitesService {
     emails: string[],
     role: INVITE_ROLE,
     planningAreaId: number,
-    message: string
+    message?: string
   ) {
     return this.http.post<Invite>(
       BackendConstants.END_POINT.concat('/invites/create_invite/'),

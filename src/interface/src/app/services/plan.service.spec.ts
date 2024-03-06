@@ -96,6 +96,7 @@ describe('PlanService', () => {
         area_acres: 123,
         area_m2: 231,
         creator: 'John Doe',
+        user: 2,
       };
 
       const backendPlan: BackendPlan = {

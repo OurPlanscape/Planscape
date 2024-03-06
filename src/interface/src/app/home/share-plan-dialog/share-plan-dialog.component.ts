@@ -5,8 +5,9 @@ import { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { InvitesService } from '../../services/invites.service';
 import { Invite, INVITE_ROLE } from '../../types/invite.types';
-import { filter, map, tap } from 'rxjs';
+import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
 import { AuthService } from '../../services';
+import { PlanStateService } from '../../services/plan-state.service';
 
 const Roles: Record<INVITE_ROLE, string> = {
   Viewer: 'Viewer',
@@ -25,7 +26,12 @@ export class SharePlanDialogComponent {
     private dialogRef: MatDialogRef<SharePlanDialogComponent>,
     private inviteService: InvitesService,
     private authService: AuthService,
-    @Inject(MAT_DIALOG_DATA) public data: { name: string; id: number }
+    private planStateService: PlanStateService,
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      name: string;
+      id: number;
+    }
   ) {}
 
   emails: string[] = [];
@@ -36,6 +42,10 @@ export class SharePlanDialogComponent {
   message = '';
   isLoading = true;
 
+  plan$ = this.planStateService.getPlan(this.data.id + '').pipe(shareReplay());
+
+  planCreator$ = this.plan$.pipe(map((plan) => plan.creator));
+
   invites$ = this.inviteService
     .getInvites(this.data.id)
     .pipe(tap((_) => (this.isLoading = false)));
@@ -43,6 +53,17 @@ export class SharePlanDialogComponent {
   fullname$ = this.authService.loggedInUser$.pipe(
     filter((user): user is User => !!user),
     map((user) => [user.firstName, user.lastName].join(' '))
+  );
+
+  showCreator$ = this.authService.loggedInUser$.pipe(
+    filter((user): user is User => !!user),
+    switchMap((user) =>
+      this.plan$.pipe(
+        map((plan) => {
+          return user.id != plan.user;
+        })
+      )
+    )
   );
 
   roles = Object.keys(Roles);
@@ -111,11 +132,24 @@ export class SharePlanDialogComponent {
   }
 
   resendCode(invite: Invite) {
-    this.matSnackBar.open(
-      `Email sent to ${invite.email}`,
-      'Dismiss',
-      SNACK_BOTTOM_NOTICE_CONFIG
-    );
+    this.inviteService
+      .inviteUsers([invite.email], this.selectedRole, this.data.id)
+      .subscribe({
+        next: (result) => {
+          this.matSnackBar.open(
+            `Email sent to ${invite.email}`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+        },
+        error: () => {
+          this.matSnackBar.open(
+            `There was an error trying to resend code to ${invite.email}. Please try again.`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+        },
+      });
   }
 
   removeAccess(invite: Invite) {
