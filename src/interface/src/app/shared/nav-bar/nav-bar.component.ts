@@ -24,10 +24,10 @@ export class NavBarComponent {
   @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' = 'EXPLORE';
   @Output() goBack = new EventEmitter<void>();
 
-  hasSharePlanFeatureFLag =
+  hasSharePlanFeatureFlag =
     this.featureService.isFeatureEnabled('show_share_modal');
 
-  canShowSharePlan$ =
+  canSharePlan$ =
     this.route.snapshot?.params && this.route.snapshot?.params['id']
       ? this.planStateService
           .getPlan(this.route.snapshot.params['id'])
