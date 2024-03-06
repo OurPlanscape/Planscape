@@ -67,11 +67,11 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   canAddScenarioForPlan(): boolean {
-      if (!this.plan) {
-        return false;
-      }
-      return canAddScenario(this.plan);
+    if (!this.plan) {
+      return false;
     }
+    return canAddScenario(this.plan);
+  }
 
   openConfig(configId?: number): void {
     if (!configId) {
