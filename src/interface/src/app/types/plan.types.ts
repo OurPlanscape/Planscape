@@ -28,8 +28,6 @@ export interface BasePlan {
   lastUpdated?: Date;
   notes?: string;
   planningArea?: GeoJSON.GeoJSON;
-  role?: string;
-  permissions?: string[];
 }
 
 export interface PlanPreview {
