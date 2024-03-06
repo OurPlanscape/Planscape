@@ -106,6 +106,8 @@ export class PlanService {
       area_m2: plan.area_m2 || 0,
       creator: plan.creator || '',
       user: plan.user,
+      role: plan.role,
+      permissions: plan.permissions,
     };
   }
 
