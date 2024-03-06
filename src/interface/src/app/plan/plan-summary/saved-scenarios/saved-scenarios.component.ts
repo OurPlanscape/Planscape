@@ -31,10 +31,10 @@ export class SavedScenariosComponent implements OnInit {
 
   highlightedScenarioRow: ScenarioRow | null = null;
   loading = true;
+  showOnlyMyScenarios: boolean = false;
   activeScenarios: ScenarioRow[] = [];
   archivedScenarios: ScenarioRow[] = [];
-  showOnlyMyScenarios: boolean = false;
-
+  scenariosForUser: ScenarioRow[] = [];
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
@@ -57,12 +57,18 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   fetchScenarios(): void {
+    console.log('fetching scenarios');
     this.scenarioService
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
       .subscribe((scenarios) => {
-        this.activeScenarios = scenarios.filter((s) => s.status === 'ACTIVE');
-        this.archivedScenarios = scenarios.filter(
+        this.scenariosForUser = this.showOnlyMyScenarios
+          ? scenarios.filter((s) => s.user === this.user$.value?.id)
+          : scenarios;
+        this.activeScenarios = this.scenariosForUser.filter(
+          (s) => s.status === 'ACTIVE'
+        );
+        this.archivedScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ARCHIVED'
         );
         this.loading = false;
