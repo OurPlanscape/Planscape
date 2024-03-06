@@ -14,6 +14,8 @@ export interface Plan extends BasePlan {
   area_acres: number;
   area_m2: number;
   creator: string;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface BasePlan {
@@ -25,6 +27,8 @@ export interface BasePlan {
   lastUpdated?: Date;
   notes?: string;
   planningArea?: GeoJSON.GeoJSON;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface PlanPreview {
@@ -57,6 +61,8 @@ export interface BackendPlan {
   area_acres?: number;
   area_m2?: number;
   creator?: string;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface BackendPlanPreview {

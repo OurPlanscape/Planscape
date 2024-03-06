@@ -31,6 +31,7 @@ export class SavedScenariosComponent implements OnInit {
   loading = true;
   activeScenarios: ScenarioRow[] = [];
   archivedScenarios: ScenarioRow[] = [];
+  canAddScenario = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,6 +44,7 @@ export class SavedScenariosComponent implements OnInit {
   ngOnInit(): void {
     this.fetchScenarios();
     this.pollForChanges();
+    this.getPermissions();
   }
 
   private pollForChanges() {
@@ -63,6 +65,17 @@ export class SavedScenariosComponent implements OnInit {
         );
         this.loading = false;
       });
+  }
+
+  getPermissions(): void {
+    if (
+      this.plan?.permissions &&
+      this.plan?.permissions.includes('add_scenario')
+    ) {
+      this.canAddScenario = true;
+    } else {
+      this.canAddScenario = false;
+    }
   }
 
   openConfig(configId?: number): void {
