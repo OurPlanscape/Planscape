@@ -26,16 +26,19 @@ import * as shp from 'shpjs';
 import {
   AuthService,
   MapService,
+  PlanStateService,
   PopupService,
+  RegionService,
   SessionService,
+  ShareMapService,
 } from '../services';
 import {
-  Plan,
   Legend,
   Map,
   MapConfig,
   MapViewOptions,
   NONE_BOUNDARY_CONFIG,
+  Plan,
   Region,
 } from '../types';
 import { MapManager } from './map-manager';
@@ -61,12 +64,8 @@ import {
   hideRegionLayer,
   showRegionLayer,
 } from './map.layers';
-import { PlanStateService } from '../services/plan-state.service';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
-import { RegionService } from '../services/region.service';
-
-import { ShareMapService } from '../services/share-map.service';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 import { Location } from '@angular/common';
 

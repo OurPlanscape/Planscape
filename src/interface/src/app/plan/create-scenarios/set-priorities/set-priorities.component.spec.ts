@@ -9,13 +9,11 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
-import { MapService } from '../../../services';
-import { ConditionsConfig } from '../../../types';
-import { ColormapConfig } from '../../../types';
+import { MapService, PlanStateService } from '../../../services';
+import { ColormapConfig, ConditionsConfig } from '../../../types';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
-import { PlanStateService } from '../../../services/plan-state.service';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}

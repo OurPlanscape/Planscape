@@ -21,7 +21,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
-import { ScenarioService } from '../../../services/scenario.service';
+import { ScenarioService } from '../../../services';
 import { MockComponent } from 'ng-mocks';
 import { SectionLoaderComponent } from '../../../shared/section-loader/section-loader.component';
 import { FeaturesModule } from '../../../features/features.module';

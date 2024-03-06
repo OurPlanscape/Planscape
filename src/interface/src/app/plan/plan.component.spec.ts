@@ -6,12 +6,11 @@ import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
-import { AuthService } from '../services';
+import { AuthService, PlanStateService } from '../services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
-import { PlanStateService } from '../services/plan-state.service';
 import { MockComponent } from 'ng-mocks';
 import { NavBarComponent } from '../shared/nav-bar/nav-bar.component';
 import { MOCK_PLAN } from '../services/mocks';

@@ -8,7 +8,7 @@ import { Plan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { PlanState, PlanStateService } from '../../services/plan-state.service';
+import { PlanState, PlanStateService } from '../../services';
 import { MOCK_PLAN } from '../../services/mocks';
 
 describe('PlanMapComponent', () => {

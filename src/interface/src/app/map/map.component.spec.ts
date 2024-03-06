@@ -25,16 +25,19 @@ import {
   AuthService,
   MapService,
   PlanService,
+  PlanState,
+  PlanStateService,
   SessionService,
+  ShareMapService,
 } from '../services';
 import {
-  Plan,
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
   Map,
   MapConfig,
   MapViewOptions,
+  Plan,
   Region,
 } from '../types';
 import { MapManager } from './map-manager';
@@ -43,7 +46,6 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeaturesModule } from '../features/features.module';
-import { PlanState, PlanStateService } from '../services/plan-state.service';
 import {
   defaultMapConfig,
   defaultMapConfigsDictionary,
@@ -51,7 +53,6 @@ import {
 } from './map.helper';
 import * as esri from 'esri-leaflet';
 import { MockProvider } from 'ng-mocks';
-import { ShareMapService } from '../services/share-map.service';
 import { MOCK_PLAN } from '../services/mocks';
 
 describe('MapComponent', () => {

@@ -12,7 +12,7 @@ export interface Plan {
   notes?: string;
   permissions: string[];
   region_name: Region;
-  role?: string;
+  role: string;
   scenario_count: number;
   user: number;
 }

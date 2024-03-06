@@ -20,9 +20,7 @@ import {
 } from 'rxjs';
 
 import { Plan, User } from '../types';
-import { AuthService } from '../services';
-import { ScenarioService } from '../services/scenario.service';
-import { PlanStateService } from '../services/plan-state.service';
+import { AuthService, PlanStateService, ScenarioService } from '../services';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from './plan-helpers';
 
