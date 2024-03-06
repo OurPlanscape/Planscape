@@ -1,4 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -6,13 +7,11 @@ from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from collaboration.exceptions import InvalidOwnership
 from collaboration.models import UserObjectRole
-from planning.models import PlanningArea
 from collaboration.permissions import CollaboratorPermission
 from collaboration.serializers import (
     CreateUserObjectRolesSerializer,
     UserObjectRoleSerializer,
 )
-from collaboration.services import get_content_type
 import logging
 
 from collaboration.services import create_invite
@@ -109,17 +108,17 @@ class InvitationsForObject(APIView):
         except ValidationError as ve:
             return Response(ve.detail, status=status.HTTP_400_BAD_REQUEST)
 
-        except PlanningArea.DoesNotExist as dne:
-            logger.exception("PlanningArea exception: %s", dne)
-            return Response(
-                {"message": "PlanningArea matching related permission does not exist"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
         except UserObjectRole.DoesNotExist as dne:
             logger.exception("UserObjectRole exception: %s", dne)
             return Response(
-                {"message": "Object matching key does not exist"},
+                {"message": "User Object Role record matching id does not exist"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        
+        except ObjectDoesNotExist as odne:
+            logger.exception(" exception: %s", odne)
+            return Response(
+                {"message": "A model object related to this user permission does not exist"},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

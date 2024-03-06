@@ -5,7 +5,6 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from unittest import mock
 from collaboration.models import UserObjectRole, Role
-from collaboration.services import get_content_type
 from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea
 
@@ -225,3 +224,22 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 403)
+
+
+    def test_nonexistent_related_object(self):
+        self.client.force_authenticate(self.invitee)
+        payload = {"role": "Collaborator"}
+        response = self.client.patch(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": 9999,
+                    "invitation_id": self.user_object_role.id,
+                },
+            ),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 404)
+        
