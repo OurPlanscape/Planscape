@@ -57,7 +57,6 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   fetchScenarios(): void {
-    console.log('fetching scenarios');
     this.scenarioService
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
