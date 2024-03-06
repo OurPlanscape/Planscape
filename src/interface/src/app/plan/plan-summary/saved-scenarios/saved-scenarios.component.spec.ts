@@ -98,6 +98,7 @@ describe('SavedScenariosComponent', () => {
       area_acres: 123,
       area_m2: 231,
       creator: 'John Doe',
+      permissions: ['add_scenario'],
     };
   });
 
@@ -164,4 +165,22 @@ describe('SavedScenariosComponent', () => {
     expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
     discardPeriodicTasks();
   }));
+
+  it('should show New Scenario button with add_scenario permission', () => {
+    component.plan!.permissions = ['add_scenario', 'something_else'];
+    fixture.detectChanges();
+    const newScenarioButton = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    expect(newScenarioButton).not.toBeNull();
+  });
+
+  it('should hide New Scenario button without add_scenario permission', () => {
+    component.plan!.permissions = ['nothing_here'];
+    fixture.detectChanges();
+    const newScenarioButton = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    expect(newScenarioButton).toBeNull();
+  });
 });
