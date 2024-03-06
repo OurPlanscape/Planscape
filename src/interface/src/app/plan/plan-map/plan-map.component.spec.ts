@@ -4,18 +4,19 @@ import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { Plan, Region } from 'src/app/types';
+import { ActualPlan, Region } from 'src/app/types';
 
 import { PlanMapComponent } from './plan-map.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PlanState, PlanStateService } from '../../services/plan-state.service';
+import { MOCK_PLAN } from '../../services/mocks';
 
 describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
   let fixture: ComponentFixture<PlanMapComponent>;
   let fakePlanService: PlanStateService;
   let fakePlanState$: BehaviorSubject<PlanState>;
-  let fakePlan: Plan;
+  let fakePlan: ActualPlan;
 
   const emptyPlanState = {
     all: {},
@@ -29,19 +30,16 @@ describe('PlanMapComponent', () => {
 
   beforeEach(async () => {
     fakePlan = {
-      id: 'fake',
-      name: 'fake',
-      ownerId: 'fake',
-      region: Region.SIERRA_NEVADA,
+      ...MOCK_PLAN,
       area_acres: 123,
       area_m2: 231,
-      creator: 'John Doe',
-      planningArea: new L.Polygon([
+      geometry: new L.Polygon([
         new L.LatLng(38.715517043571914, -120.42857302225725),
         new L.LatLng(38.47079787227401, -120.5164425608172),
         new L.LatLng(38.52668443555346, -120.11828371421737),
       ]).toGeoJSON(),
     };
+
     fakePlanState$ = new BehaviorSubject<PlanState>({
       ...emptyPlanState,
     });
@@ -88,7 +86,7 @@ describe('PlanMapComponent', () => {
       if (layer instanceof L.GeoJSON) {
         if (
           (layer as L.GeoJSON).toGeoJSON().bbox ===
-          component.plan!.planningArea!.bbox
+          component.plan!.geometry!.bbox
         ) {
           foundPlanningAreaLayer = true;
         }

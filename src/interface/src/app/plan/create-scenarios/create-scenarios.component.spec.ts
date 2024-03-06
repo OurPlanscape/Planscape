@@ -11,7 +11,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 
 import {
-  Region,
   Scenario,
   ScenarioResult,
   TreatmentGoalConfig,
@@ -28,6 +27,7 @@ import { ScenarioService } from '../../services/scenario.service';
 import { PlanState, PlanStateService } from '../../services/plan-state.service';
 import { CurrencyPipe } from '@angular/common';
 import * as L from 'leaflet';
+import { MOCK_PLAN } from '../../services/mocks';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -72,21 +72,17 @@ describe('CreateScenariosComponent', () => {
     fakePlanState$ = new BehaviorSubject<PlanState>({
       all: {
         '1': {
-          id: '1',
-          ownerId: 'fakeowner',
-          name: 'testplan',
-          region: Region.SIERRA_NEVADA,
+          ...MOCK_PLAN,
           area_acres: 12814,
           area_m2: 340000,
-          creator: 'John Doe',
-          planningArea: new L.Polygon([
+          geometry: new L.Polygon([
             new L.LatLng(38.715517043571914, -120.42857302225725),
             new L.LatLng(38.47079787227401, -120.5164425608172),
             new L.LatLng(38.52668443555346, -120.11828371421737),
           ]).toGeoJSON(),
         },
       },
-      currentPlanId: '1',
+      currentPlanId: 1,
       currentScenarioId: null,
       mapConditionLayer: null,
       mapShapes: null,

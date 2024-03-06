@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
-import { Plan, Region } from 'src/app/types';
+import { ActualPlan, Region } from 'src/app/types';
 
 import { MaterialModule } from '../material/material.module';
 import { AuthService } from '../services';
@@ -14,6 +14,7 @@ import { PlanModule } from './plan.module';
 import { PlanStateService } from '../services/plan-state.service';
 import { MockComponent } from 'ng-mocks';
 import { NavBarComponent } from '../shared/nav-bar/nav-bar.component';
+import { MOCK_PLAN } from '../services/mocks';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -44,16 +45,7 @@ describe('PlanComponent', () => {
     ],
   };
 
-  const fakePlan: Plan = {
-    id: '24',
-    name: 'somePlan',
-    ownerId: 'owner',
-    region: Region.SIERRA_NEVADA,
-    planningArea: fakeGeoJson,
-    area_acres: 123,
-    area_m2: 231,
-    creator: 'John Doe',
-  };
+  const fakePlan: ActualPlan = { ...MOCK_PLAN, id: 24, geometry: fakeGeoJson };
 
   beforeEach(async () => {
     const fakeRoute = jasmine.createSpyObj(
@@ -117,7 +109,7 @@ describe('PlanComponent', () => {
     const planStateService =
       fixture.debugElement.injector.get(PlanStateService);
 
-    expect(planStateService.updateStateWithPlan).toHaveBeenCalledOnceWith('24');
+    expect(planStateService.updateStateWithPlan).toHaveBeenCalledOnceWith(24);
     expect(component.showOverview$.value).toBeTrue();
   });
 
@@ -127,6 +119,6 @@ describe('PlanComponent', () => {
 
     component.backToOverview();
 
-    expect(router.navigate).toHaveBeenCalledOnceWith(['plan', '24']);
+    expect(router.navigate).toHaveBeenCalledOnceWith(['plan', fakePlan.id]);
   });
 });
