@@ -61,8 +61,15 @@ export class SavedScenariosComponent implements OnInit {
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
       .subscribe((scenarios) => {
-        console.log("what is showOnlyMyScenarios?:", this.showOnlyMyScenarios)
-        scenarios.map((s) => console.log("Scanerio user = ", s.user, " and current user is: ", this.user$.value?.id ))
+        console.log('what is showOnlyMyScenarios?:', this.showOnlyMyScenarios);
+        scenarios.map((s) =>
+          console.log(
+            'Scanerio user = ',
+            s.user,
+            ' and current user is: ',
+            this.user$.value?.id
+          )
+        );
         this.activeScenarios = scenarios.filter((s) => s.status === 'ACTIVE');
         this.archivedScenarios = scenarios.filter(
           (s) => s.status === 'ARCHIVED'
