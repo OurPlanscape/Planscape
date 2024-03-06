@@ -504,55 +504,21 @@
               "short_question_text": "High-severity Fire Areas",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity_conservation",
-                  "economic_diversity",
-                  "social_and_cultural_wellbeing",
-                  "wetland_integrity"
+                  "fire_dynamics"
                 ],
                 "elements": [
-                  "hazard",
-                  "functional_fire",
-                  "severity",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "environmental_justice",
-                  "composition"
+                  "severity"
                 ],
                 "metrics": [
-                  "structure_exposure_score",
-                  "housing_unit_density",
-                  "wildland_urban_interface",
-                  "predicted_ignition_probability_human_caused",
-                  "annual_burn_probability",
-                  "california_spotted_owl",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "mountain_lion",
-                  "coastal_california_gnatcatcher",
-                  "mountain_yellow_legged_frog",
-                  "california_red_legged_frog",
-                  "joshua_tree",
-                  "hermes_copper_butterfly",
-                  "cost_of_potential_treatments",
-                  "tribal_land_designations",
-                  "aquatic_species_richness",
-                  "mean_fri_departure_condition_class",
                   "probability_of_fire_severity_high"
                 ]
               },
               "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "annual_burn_probability",
-                "predicted_ignition_probability_human_caused"
+                "probability_of_fire_severity_high"
               ],
               "weights": [],
               "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "annual_burn_probability > 0",
-                "predicted_ignition_probability_human_caused > 0",
-                "(mean_fri_departure_condition_class == 2 | mean_fri_departure_condition_class == 3)"
+                "probability_of_fire_severity_high > 0"
               ],
               "global_thresholds": []
             },
