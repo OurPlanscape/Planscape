@@ -7,6 +7,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
+import { canAddScenario } from '../../../plan/permissions';
 import {
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
@@ -31,7 +32,6 @@ export class SavedScenariosComponent implements OnInit {
   loading = true;
   activeScenarios: ScenarioRow[] = [];
   archivedScenarios: ScenarioRow[] = [];
-  canAddScenario = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -44,7 +44,6 @@ export class SavedScenariosComponent implements OnInit {
   ngOnInit(): void {
     this.fetchScenarios();
     this.pollForChanges();
-    this.getPermissions();
   }
 
   private pollForChanges() {
@@ -67,16 +66,12 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
-  getPermissions(): void {
-    if (
-      this.plan?.permissions &&
-      this.plan?.permissions.includes('add_scenario')
-    ) {
-      this.canAddScenario = true;
-    } else {
-      this.canAddScenario = false;
+  canAddScenarioForPlan(): boolean {
+      if (!this.plan) {
+        return false;
+      }
+      return canAddScenario(this.plan);
     }
-  }
 
   openConfig(configId?: number): void {
     if (!configId) {
