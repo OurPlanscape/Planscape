@@ -225,7 +225,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-
     def test_nonexistent_related_object(self):
         self.client.force_authenticate(self.invitee)
         payload = {"role": "Collaborator"}
@@ -242,4 +241,3 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 404)
-        

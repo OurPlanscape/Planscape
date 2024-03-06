@@ -114,11 +114,13 @@ class InvitationsForObject(APIView):
                 {"message": "User Object Role record matching id does not exist"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        
+
         except ObjectDoesNotExist as odne:
             logger.exception(" exception: %s", odne)
             return Response(
-                {"message": "A model object related to this user permission does not exist"},
+                {
+                    "message": "A model object related to this user permission does not exist"
+                },
                 status=status.HTTP_404_NOT_FOUND,
             )
 
