@@ -12,6 +12,8 @@ import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overvie
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
 import { PlanStateService } from '../services/plan-state.service';
+import { MockComponent } from 'ng-mocks';
+import { NavBarComponent } from '../shared/nav-bar/nav-bar.component';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -89,7 +91,12 @@ describe('PlanComponent', () => {
         PlanModule,
         RouterTestingModule.withRoutes([]),
       ],
-      declarations: [PlanComponent, PlanMapComponent, PlanOverviewComponent],
+      declarations: [
+        PlanComponent,
+        PlanMapComponent,
+        PlanOverviewComponent,
+        MockComponent(NavBarComponent),
+      ],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: AuthService, useValue: mockAuthService },
