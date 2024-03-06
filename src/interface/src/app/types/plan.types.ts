@@ -14,6 +14,9 @@ export interface Plan extends BasePlan {
   area_acres: number;
   area_m2: number;
   creator: string;
+  user?: number;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface BasePlan {
@@ -41,6 +44,7 @@ export interface PlanPreview {
   area_m2: number;
   role?: string;
   permissions?: string[];
+  user?: number;
 }
 
 export interface BackendPlan {
@@ -57,6 +61,8 @@ export interface BackendPlan {
   area_acres?: number;
   area_m2?: number;
   creator?: string;
+  role?: string;
+  permissions?: string[];
 }
 
 export interface BackendPlanPreview {
