@@ -273,16 +273,7 @@ class CreateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        output = response.json()
-        scenario_id = output["id"]
-        self.assertEqual(Scenario.objects.count(), 1)
-        self.assertEqual(ScenarioResult.objects.count(), 1)
-        scenario = Scenario.objects.get(pk=scenario_id)
-        self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
-        self.assertEqual(scenario.configuration, self.configuration)
-        self.assertEqual(scenario.name, "test viewer scenario")
-        self.assertEqual(scenario.user, self.viewer_user)
+        self.assertEqual(response.status_code, 403)
 
     def test_create_scenario_unprivileged_user(self):
         self.client.force_authenticate(self.unprivileged_user)

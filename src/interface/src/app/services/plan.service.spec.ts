@@ -96,6 +96,9 @@ describe('PlanService', () => {
         area_acres: 123,
         area_m2: 231,
         creator: 'John Doe',
+        user: 2,
+        role: 'Creator',
+        permissions: [],
       };
 
       const backendPlan: BackendPlan = {
@@ -107,6 +110,8 @@ describe('PlanService', () => {
         area_acres: 123,
         area_m2: 231,
         creator: 'John Doe',
+        role: 'Creator',
+        permissions: [],
       };
 
       service.getPlan('1').subscribe((res) => {

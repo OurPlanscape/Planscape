@@ -174,6 +174,7 @@ export class AuthService {
             username: response.username,
             firstName: response.first_name,
             lastName: response.last_name,
+            id: response.pk,
           };
           this.loggedInUser$.next(user);
           return user;
