@@ -6,7 +6,7 @@ import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-pla
 import { FeatureService } from '../../features/feature.service';
 import { ActivatedRoute } from '@angular/router';
 import { map, of } from 'rxjs';
-import { PlanStateService } from '../../services/plan-state.service';
+import { PlanStateService } from '../../services';
 import { canViewCollaborators } from '../../plan/permissions';
 
 export interface Breadcrumb {
