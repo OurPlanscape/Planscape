@@ -20,9 +20,7 @@ import {
 } from 'rxjs';
 
 import { Plan, User } from '../types';
-import { AuthService } from '../services';
-import { ScenarioService } from '../services/scenario.service';
-import { PlanStateService } from '../services/plan-state.service';
+import { AuthService, PlanStateService, ScenarioService } from '../services';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from './plan-helpers';
 
@@ -102,7 +100,7 @@ export class PlanComponent implements OnInit, OnDestroy {
 
     this.planOwner$ = plan$.pipe(
       concatMap((plan) => {
-        return this.authService.getUser(plan.ownerId);
+        return this.authService.getUser(plan.user);
       })
     );
   }
@@ -138,7 +136,10 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   private updatePlanStateFromRoute() {
-    this.planStateService.updateStateWithPlan(this.planId);
+    if (this.planId) {
+      this.planStateService.updateStateWithPlan(parseInt(this.planId, 10));
+    }
+
     const routeChild = this.route.snapshot.firstChild;
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;

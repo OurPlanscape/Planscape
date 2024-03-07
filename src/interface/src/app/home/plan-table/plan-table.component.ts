@@ -6,17 +6,13 @@ import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 
 import { PlanService } from '../../services';
-import { PlanPreview } from '../../types';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
 import { canViewCollaborators } from '../../plan/permissions';
-
-interface PlanRow extends PlanPreview {
-  totalAcres: number;
-}
+import { Plan } from '../../types';
 
 @Component({
   selector: 'app-plan-table',
@@ -25,9 +21,11 @@ interface PlanRow extends PlanPreview {
 })
 export class PlanTableComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
+  // used just for typing the table on the template
+  planrows: Plan[] = [];
 
-  datasource = new MatTableDataSource<PlanRow>();
-  selectedPlan: PlanRow | null = null;
+  datasource = new MatTableDataSource<Plan>();
+  selectedPlan: Plan | null = null;
   loading = true;
   error = false;
 
@@ -56,12 +54,7 @@ export class PlanTableComponent implements OnInit {
       .subscribe({
         next: (plans) => {
           this.loading = false;
-          this.datasource.data = plans.map((plan) => {
-            return {
-              ...plan,
-              totalAcres: Math.round(plan.area_acres),
-            };
-          });
+          this.datasource.data = plans;
           this.datasource.sort = this.sort;
         },
         error: () => {
@@ -122,7 +115,7 @@ export class PlanTableComponent implements OnInit {
     this.getPlansFromService();
   }
 
-  selectPlan(plan: PlanRow) {
+  selectPlan(plan: Plan) {
     this.selectedPlan = plan;
   }
 
