@@ -64,12 +64,12 @@ export class PlanCreateDialogComponent {
     this.planService
       .createPlan({
         name: name,
-        region: region,
-        planningArea: shape,
+        region_name: region,
+        geometry: shape,
       })
       .subscribe({
         next: (result) => {
-          this.dialogRef.close(result.result!.id);
+          this.dialogRef.close(result!.id);
           this.submitting = false;
         },
         error: (e) => {

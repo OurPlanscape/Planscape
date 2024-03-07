@@ -142,8 +142,8 @@ describe('PlanCreateDialogComponent', () => {
     tick();
     expect(planService.createPlan).toHaveBeenCalledWith({
       name: 'some plan',
-      region: Region.SIERRA_NEVADA,
-      planningArea: fakeGeoJson,
+      region_name: Region.SIERRA_NEVADA,
+      geometry: fakeGeoJson,
     });
   }));
 });

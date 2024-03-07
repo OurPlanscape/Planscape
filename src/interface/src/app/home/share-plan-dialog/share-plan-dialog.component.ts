@@ -3,11 +3,9 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormMessageType, User } from '../../types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { InvitesService } from '../../services/invites.service';
+import { AuthService, InvitesService, PlanStateService } from '../../services';
 import { Invite, INVITE_ROLE } from '../../types/invite.types';
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
-import { AuthService } from '../../services';
-import { PlanStateService } from '../../services/plan-state.service';
 
 const Roles: Record<INVITE_ROLE, string> = {
   Viewer: 'Viewer',

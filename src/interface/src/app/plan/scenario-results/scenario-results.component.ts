@@ -2,7 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { ProjectAreaReport } from '../project-areas/project-areas.component';
 import { ScenarioResult } from '../../types';
 import { parseResultsToProjectAreas } from '../plan-helpers';
-import { ScenarioService } from '../../services/scenario.service';
+import { ScenarioService } from '../../services';
 import { FileSaverService } from '../../services/file-saver.service';
 
 @Component({
