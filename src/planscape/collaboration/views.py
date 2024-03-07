@@ -1,10 +1,10 @@
+import logging
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from collaboration.exceptions import InvalidOwnership
 from collaboration.models import UserObjectRole
 from collaboration.permissions import CollaboratorPermission
@@ -12,7 +12,6 @@ from collaboration.serializers import (
     CreateUserObjectRolesSerializer,
     UserObjectRoleSerializer,
 )
-import logging
 
 from collaboration.services import create_invite
 
@@ -105,8 +104,45 @@ class InvitationsForObject(APIView):
             serializer.save()
             return Response(serializer.data)
 
-        except ValidationError as ve:
-            return Response(ve.detail, status=status.HTTP_400_BAD_REQUEST)
+        except UserObjectRole.DoesNotExist as dne:
+            logger.exception("UserObjectRole exception: %s", dne)
+            return Response(
+                {"message": "User Object Role record matching id does not exist"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except ObjectDoesNotExist as odne:
+            logger.exception(" exception: %s", odne)
+            return Response(
+                {
+                    "message": "A model object related to this user permission does not exist"
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        except Exception as e:
+            logger.exception("Exception updating permissions: %s", e)
+            raise
+
+    def delete(
+        self, request: Request, target_entity: str, object_pk: int, invitation_id: int
+    ):
+        try:
+            user = request.user
+            user_object_role_obj = UserObjectRole.objects.get(pk=invitation_id)
+            content_type = ContentType.objects.get(model=target_entity)
+            Model = content_type.model_class()
+            instance = Model.objects.get(pk=object_pk)
+
+            if not CollaboratorPermission.can_delete(user, instance):
+                return Response(
+                    {
+                        "message": "User does not have permission to delete this assignment."
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            user_object_role_obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
         except UserObjectRole.DoesNotExist as dne:
             logger.exception("UserObjectRole exception: %s", dne)
@@ -123,7 +159,6 @@ class InvitationsForObject(APIView):
                 },
                 status=status.HTTP_404_NOT_FOUND,
             )
-
         except Exception as e:
-            logger.exception(f"Exception updating permissions: {e}")
+            logger.exception("Exception deleting user_object_role: %s", e)
             raise

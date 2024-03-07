@@ -39,4 +39,15 @@ export class InvitesService {
       }
     );
   }
+
+  deleteInvite(planningAreaId: number, inviteId: number) {
+    return this.http.delete<Invite[]>(
+      BackendConstants.END_POINT.concat(
+        `/invites/invitations/planningarea/${planningAreaId}/${inviteId}`
+      ),
+      {
+        withCredentials: true,
+      }
+    );
+  }
 }
