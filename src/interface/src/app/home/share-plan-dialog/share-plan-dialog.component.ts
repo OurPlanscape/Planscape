@@ -7,7 +7,7 @@ import { AuthService, InvitesService, PlanStateService } from '../../services';
 import { Invite, INVITE_ROLE } from '../../types/invite.types';
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
 
-const Roles: Record<INVITE_ROLE, string> = {
+const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
   Viewer: 'Viewer',
   Collaborator: 'Collaborator',
   Owner: 'Owner',
@@ -27,8 +27,8 @@ export class SharePlanDialogComponent {
     private planStateService: PlanStateService,
     @Inject(MAT_DIALOG_DATA)
     public data: {
-      name: string;
-      id: number;
+      planningAreaName: string;
+      planningAreaId: number;
     }
   ) {}
 
@@ -40,12 +40,14 @@ export class SharePlanDialogComponent {
   message = '';
   isLoading = true;
 
-  plan$ = this.planStateService.getPlan(this.data.id + '').pipe(shareReplay());
+  plan$ = this.planStateService
+    .getPlan(this.data.planningAreaId + '')
+    .pipe(shareReplay());
 
   planCreator$ = this.plan$.pipe(map((plan) => plan.creator));
 
   invites$ = this.inviteService
-    .getInvites(this.data.id)
+    .getInvites(this.data.planningAreaId)
     .pipe(tap((_) => (this.isLoading = false)));
 
   fullname$ = this.authService.loggedInUser$.pipe(
@@ -87,7 +89,12 @@ export class SharePlanDialogComponent {
   invite() {
     this.submitting = true;
     this.inviteService
-      .inviteUsers(this.emails, this.selectedRole, this.data.id, this.message)
+      .inviteUsers(
+        this.emails,
+        this.selectedRole,
+        this.data.planningAreaId,
+        this.message
+      )
       .subscribe({
         next: (result) => {
           this.showSnackbar('Users invited');
@@ -112,26 +119,28 @@ export class SharePlanDialogComponent {
   }
 
   changeRole(invite: Invite, newRole: INVITE_ROLE) {
-    this.inviteService.changeRole(this.data.id, invite.id, newRole).subscribe({
-      next: (result) => {
-        invite.role = newRole;
-        this.showSnackbar('Access Updated');
-      },
-      error: (error) => {
-        this.showSnackbar(
-          `There was an error trying to update the role of ${invite.email}. Please try again.`
-        );
-      },
-    });
+    this.inviteService
+      .changeRole(this.data.planningAreaId, invite.id, newRole)
+      .subscribe({
+        next: (result) => {
+          invite.role = newRole;
+          this.showSnackbar('Access Updated');
+        },
+        error: () => {
+          this.showSnackbar(
+            `There was an error trying to update the role of ${invite.email}. Please try again.`
+          );
+        },
+      });
   }
 
-  changeInvitationsRole(role: string) {
-    this.selectedRole = Roles[role as keyof typeof Roles] as INVITE_ROLE;
+  changeInvitationsRole(role: INVITE_ROLE) {
+    this.selectedRole = Roles[role];
   }
 
   resendCode(invite: Invite) {
     this.inviteService
-      .inviteUsers([invite.email], this.selectedRole, this.data.id)
+      .inviteUsers([invite.email], this.selectedRole, this.data.planningAreaId)
       .subscribe({
         next: (result) => {
           this.showSnackbar(`Email sent to ${invite.email}`);
