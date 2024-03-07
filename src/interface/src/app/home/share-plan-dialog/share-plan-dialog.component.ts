@@ -64,7 +64,7 @@ export class SharePlanDialogComponent {
     )
   );
 
-  roles = Object.keys(Roles);
+  roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
 
   selectedRole = this.roles[0] as INVITE_ROLE;
 
@@ -90,18 +90,12 @@ export class SharePlanDialogComponent {
       .inviteUsers(this.emails, this.selectedRole, this.data.id, this.message)
       .subscribe({
         next: (result) => {
-          this.matSnackBar.open(
-            'Users invited',
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
+          this.showSnackbar('Users invited');
           this.close();
         },
         error: () => {
-          this.matSnackBar.open(
-            'There was an error trying to send the invites. Please try again.',
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
+          this.showSnackbar(
+            'There was an error trying to send the invites. Please try again.'
           );
           this.submitting = false;
         },
@@ -117,12 +111,18 @@ export class SharePlanDialogComponent {
     this.emails = [];
   }
 
-  changeRole(invite: Invite) {
-    this.matSnackBar.open(
-      'Access Updated',
-      'Dismiss',
-      SNACK_BOTTOM_NOTICE_CONFIG
-    );
+  changeRole(invite: Invite, newRole: INVITE_ROLE) {
+    this.inviteService.changeRole(this.data.id, invite.id, newRole).subscribe({
+      next: (result) => {
+        invite.role = newRole;
+        this.showSnackbar('Access Updated');
+      },
+      error: (error) => {
+        this.showSnackbar(
+          `There was an error trying to update the role of ${invite.email}. Please try again.`
+        );
+      },
+    });
   }
 
   changeInvitationsRole(role: string) {
@@ -134,27 +134,21 @@ export class SharePlanDialogComponent {
       .inviteUsers([invite.email], this.selectedRole, this.data.id)
       .subscribe({
         next: (result) => {
-          this.matSnackBar.open(
-            `Email sent to ${invite.email}`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
+          this.showSnackbar(`Email sent to ${invite.email}`);
         },
         error: () => {
-          this.matSnackBar.open(
-            `There was an error trying to resend code to ${invite.email}. Please try again.`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
+          this.showSnackbar(
+            `There was an error trying to resend code to ${invite.email}. Please try again.`
           );
         },
       });
   }
 
   removeAccess(invite: Invite) {
-    this.matSnackBar.open(
-      `Removed  ${invite.email}`,
-      'Dismiss',
-      SNACK_BOTTOM_NOTICE_CONFIG
-    );
+    this.showSnackbar(`Removed  ${invite.email}`);
+  }
+
+  private showSnackbar(message: string) {
+    this.matSnackBar.open(message, 'Dismiss', SNACK_BOTTOM_NOTICE_CONFIG);
   }
 }

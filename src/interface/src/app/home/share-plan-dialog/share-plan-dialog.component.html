@@ -89,7 +89,7 @@
             mat-menu-item
             *ngFor="let role of roles"
             class="menu-roles"
-            (click)="changeRole(invite)">
+            (click)="changeRole(invite, role)">
             <span class="spacer">
               <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
             </span>
