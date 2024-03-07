@@ -5,11 +5,9 @@ import { MaterialModule } from '../../material/material.module';
 import { MockProvider } from 'ng-mocks';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { InvitesService } from '../../services/invites.service';
+import { AuthService, InvitesService, PlanStateService } from '../../services';
 import { BehaviorSubject, NEVER, of } from 'rxjs';
-import { AuthService } from '../../services';
 import { User } from '../../types';
-import { PlanStateService } from '../../services/plan-state.service';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;

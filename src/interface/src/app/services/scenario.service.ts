@@ -12,11 +12,10 @@ export class ScenarioService {
   constructor(private http: HttpClient) {}
 
   /** Fetches the scenarios for a plan from the backend. */
-  getScenariosForPlan(planId: string): Observable<Scenario[]> {
+  getScenariosForPlan(planId: number): Observable<Scenario[]> {
     return this.http.get<Scenario[]>(
       BackendConstants.END_POINT.concat(
-        '/planning/list_scenarios_for_planning_area/?planning_area=',
-        planId
+        `/planning/list_scenarios_for_planning_area/?planning_area=${planId}`
       ),
       {
         withCredentials: true,
