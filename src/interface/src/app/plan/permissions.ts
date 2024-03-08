@@ -5,8 +5,5 @@ export function canViewCollaborators(plan: Plan) {
 }
 
 export function canAddScenario(plan: Plan) {
-  if (!plan.permissions) {
-    return false;
-  }
   return plan.permissions?.includes('add_scenario');
 }
