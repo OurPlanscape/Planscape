@@ -101,7 +101,9 @@ class InvitationsForObject(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            serializer.save()
+            serializer.update(
+                instance=user_object_role_obj, validated_data=serializer.validated_data
+            )
             return Response(serializer.data)
 
         except UserObjectRole.DoesNotExist as dne:
