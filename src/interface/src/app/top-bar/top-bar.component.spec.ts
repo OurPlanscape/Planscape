@@ -4,7 +4,7 @@ import { By } from '@angular/platform-browser';
 import { BehaviorSubject, of } from 'rxjs';
 
 import { MaterialModule } from '../material/material.module';
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 import { User } from '../types';
 import { TopBarComponent } from './top-bar.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';

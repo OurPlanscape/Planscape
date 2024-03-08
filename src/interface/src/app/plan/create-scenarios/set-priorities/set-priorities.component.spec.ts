@@ -9,7 +9,7 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { SharedModule } from 'src/app/shared/shared.module';
 import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
 
-import { MapService, PlanStateService } from '../../../services';
+import { MapService, PlanStateService } from '@services';
 import { ColormapConfig, ConditionsConfig } from '../../../types';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';

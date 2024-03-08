@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChangePasswordComponent } from './change-password.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MockProvider } from 'ng-mocks';
-import { AuthService } from '../../services';
+import { AuthService } from '@services';
 import { BehaviorSubject } from 'rxjs';
 import { User } from '../../types';
 

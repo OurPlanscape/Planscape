@@ -1,7 +1,7 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component, Inject } from '@angular/core';
-import { PlanService, SessionService } from '../../services';
+import { PlanService, SessionService } from '@services';
 import { firstValueFrom } from 'rxjs';
 import { SNACK_ERROR_CONFIG } from '../../../app/shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
