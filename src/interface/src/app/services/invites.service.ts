@@ -40,6 +40,20 @@ export class InvitesService {
     );
   }
 
+  changeRole(planningAreaId: number, inviteId: number, newRole: INVITE_ROLE) {
+    return this.http.patch<Invite>(
+      BackendConstants.END_POINT.concat(
+        `/invites/invitations/planningarea/${planningAreaId}/${inviteId}`
+      ),
+      {
+        role: newRole,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   deleteInvite(planningAreaId: number, inviteId: number) {
     return this.http.delete<Invite[]>(
       BackendConstants.END_POINT.concat(
