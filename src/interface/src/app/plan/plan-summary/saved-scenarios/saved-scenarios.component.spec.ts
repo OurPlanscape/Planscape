@@ -90,7 +90,7 @@ describe('SavedScenariosComponent', () => {
     fixture = TestBed.createComponent(SavedScenariosComponent);
     component = fixture.componentInstance;
 
-    component.plan = MOCK_PLAN;
+    component.plan = { ...MOCK_PLAN, permissions: ['add_scenario'] };
   });
 
   it('should create', () => {
@@ -154,4 +154,22 @@ describe('SavedScenariosComponent', () => {
     expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
     discardPeriodicTasks();
   }));
+
+  it('should show New Scenario button with add_scenario permission', () => {
+    component.plan!.permissions = ['add_scenario', 'something_else'];
+    fixture.detectChanges();
+    const newScenarioButton = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    expect(newScenarioButton).not.toBeNull();
+  });
+
+  it('should hide New Scenario button without add_scenario permission', () => {
+    component.plan!.permissions = ['nothing_here'];
+    fixture.detectChanges();
+    const newScenarioButton = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    expect(newScenarioButton).toBeNull();
+  });
 });
