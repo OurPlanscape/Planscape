@@ -5,6 +5,8 @@ from django.template.loader import render_to_string
 from planscape.celery import app
 import logging
 
+from planscape.utils import get_frontend_url
+
 logger = logging.getLogger(__name__)
 
 
@@ -25,8 +27,8 @@ def send_invitation(
             ),
             "planning_area": planning_area,
             "message": message,
-            "planning_area_link": "",
-            "create_account_link": "",
+            "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
+            "create_account_link": get_frontend_url("signup"),
         }
         txt = render_to_string("email/new_invite.txt", context)
         html = render_to_string("email/new_invite.html", context)
