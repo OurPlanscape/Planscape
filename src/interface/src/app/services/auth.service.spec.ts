@@ -445,7 +445,7 @@ describe('AuthService', () => {
         lastName: undefined,
       };
 
-      service.getUser('1').subscribe((res) => {
+      service.getUser(1).subscribe((res) => {
         expect(res).toEqual(user);
       });
 

@@ -12,7 +12,6 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { Region } from 'src/app/types';
 import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
@@ -22,10 +21,11 @@ import { MatTableModule } from '@angular/material/table';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
-import { ScenarioService } from '../../../services/scenario.service';
+import { ScenarioService } from '../../../services';
 import { MockComponent } from 'ng-mocks';
 import { SectionLoaderComponent } from '../../../shared/section-loader/section-loader.component';
 import { FeaturesModule } from '../../../features/features.module';
+import { MOCK_PLAN } from '../../../services/mocks';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -90,15 +90,7 @@ describe('SavedScenariosComponent', () => {
     fixture = TestBed.createComponent(SavedScenariosComponent);
     component = fixture.componentInstance;
 
-    component.plan = {
-      id: '1',
-      name: 'Fake Plan',
-      ownerId: '1',
-      region: Region.SIERRA_NEVADA,
-      area_acres: 123,
-      area_m2: 231,
-      creator: 'John Doe',
-    };
+    component.plan = { ...MOCK_PLAN, permissions: ['add_scenario'] };
   });
 
   it('should create', () => {
@@ -108,9 +100,7 @@ describe('SavedScenariosComponent', () => {
 
   it('should call service for list of scenarios', () => {
     fixture.detectChanges();
-    expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(
-      '1'
-    );
+    expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(1);
 
     expect(component.activeScenarios.length).toEqual(1);
   });
@@ -164,4 +154,22 @@ describe('SavedScenariosComponent', () => {
     expect(component.fetchScenarios).toHaveBeenCalledTimes(2);
     discardPeriodicTasks();
   }));
+
+  it('should show New Scenario button with add_scenario permission', () => {
+    component.plan!.permissions = ['add_scenario', 'something_else'];
+    fixture.detectChanges();
+    const newScenarioButton = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    expect(newScenarioButton).not.toBeNull();
+  });
+
+  it('should hide New Scenario button without add_scenario permission', () => {
+    component.plan!.permissions = ['nothing_here'];
+    fixture.detectChanges();
+    const newScenarioButton = fixture.debugElement.query(
+      By.css('[data-id="new-scenario"]')
+    );
+    expect(newScenarioButton).toBeNull();
+  });
 });
