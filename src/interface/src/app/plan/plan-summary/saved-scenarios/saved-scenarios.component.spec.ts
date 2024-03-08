@@ -91,7 +91,7 @@ describe('SavedScenariosComponent', () => {
     component = fixture.componentInstance;
 
     component.plan = MOCK_PLAN;
-    component.plan.permissions = ['add_scenario'],
+    component.plan.permissions = ['add_scenario'];
   });
 
   it('should create', () => {
