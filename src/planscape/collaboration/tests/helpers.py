@@ -17,3 +17,4 @@ def create_collaborator_record(
         object_pk=model.pk,
     )
     collaborator.save()
+    return collaborator

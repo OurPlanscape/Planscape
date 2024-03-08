@@ -11,9 +11,9 @@ import { canAddScenario } from '../../../plan/permissions';
 import {
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
-} from '../../../../app/shared/constants';
+} from '../../../shared/constants';
 
-import { ScenarioService } from '../../../services/scenario.service';
+import { ScenarioService } from '../../../services';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;

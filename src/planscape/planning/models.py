@@ -28,6 +28,13 @@ class PlanningAreaManager(models.Manager):
         return filtered_qs
 
 
+class RegionChoices(models.TextChoices):
+    SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
+    SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
+    CENTRAL_COAST = "central-coast", "Central Coast"
+    NORTHERN_CALIFORNIA = "northern-california", "Northern California"
+
+
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
     user = models.ForeignKey(
         User,
@@ -37,7 +44,10 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
 
     objects = PlanningAreaManager()
-    region_name: models.CharField = models.CharField(max_length=120)
+
+    region_name: models.CharField = models.CharField(
+        max_length=120, choices=RegionChoices.choices
+    )
 
     name: models.CharField = models.CharField(max_length=120)
 

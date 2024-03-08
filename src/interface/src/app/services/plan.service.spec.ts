@@ -5,16 +5,10 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import {
-  BackendPlan,
-  BackendPlanPreview,
-  BasePlan,
-  Plan,
-  Region,
-} from '../types';
-import { PlanPreview } from './../types/plan.types';
+import { Plan } from '../types';
 import { PlanService } from './plan.service';
 import { MapService } from './map.service';
+import { MOCK_PLAN } from './mocks';
 
 // TODO Make test for getting scenario results
 // TODO Make test for call to create project area
@@ -24,20 +18,10 @@ import { MapService } from './map.service';
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
   let service: PlanService;
-  let mockPlan: BasePlan;
-  let fakeGeoJson: GeoJSON.GeoJSON;
+  let mockPlan: Plan;
 
   beforeEach(() => {
-    fakeGeoJson = {
-      type: 'FeatureCollection',
-      features: [],
-    };
-    mockPlan = {
-      name: 'tempName',
-      ownerId: '2',
-      region: Region.SIERRA_NEVADA,
-      planningArea: fakeGeoJson,
-    };
+    mockPlan = MOCK_PLAN;
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [PlanService, MapService],
@@ -84,38 +68,8 @@ describe('PlanService', () => {
 
   describe('getPlan', () => {
     it('should make HTTP get request to DB', () => {
-      const expectedPlan: Plan = {
-        ...mockPlan,
-        id: '1',
-        scenarios: 0,
-        notes: '',
-        configs: 0,
-        createdTimestamp: undefined,
-        lastUpdated: undefined,
-        ownerId: '2',
-        area_acres: 123,
-        area_m2: 231,
-        creator: 'John Doe',
-        user: 2,
-        role: 'Creator',
-        permissions: [],
-      };
-
-      const backendPlan: BackendPlan = {
-        id: 1,
-        name: expectedPlan.name,
-        user: 2,
-        region_name: expectedPlan.region,
-        geometry: expectedPlan.planningArea,
-        area_acres: 123,
-        area_m2: 231,
-        creator: 'John Doe',
-        role: 'Creator',
-        permissions: [],
-      };
-
       service.getPlan('1').subscribe((res) => {
-        expect(res).toEqual(expectedPlan);
+        expect(res).toEqual(mockPlan);
       });
 
       const req = httpTestingController.expectOne(
@@ -123,55 +77,21 @@ describe('PlanService', () => {
           '/planning/get_planning_area_by_id/?id=1'
         )
       );
-      req.flush(backendPlan);
+      req.flush(mockPlan);
       httpTestingController.verify();
     });
   });
 
   describe('listPlansByUser', () => {
     it('should make HTTP get request to DB', () => {
-      const date = '2023-09-11T14:01:31.360004Z';
-
-      const expectedPlan: PlanPreview = {
-        id: 1,
-        name: mockPlan.name,
-        region: mockPlan.region,
-        notes: '',
-        ownerId: 2,
-        scenarios: 1,
-        lastUpdated: new Date(date),
-        geometry: mockPlan.planningArea,
-        creator: 'John',
-        area_acres: 123,
-        area_m2: 231,
-        role: 'Creator',
-        permissions: [],
-      };
-
-      const backendPlan: BackendPlanPreview = {
-        id: 1,
-        name: expectedPlan.name,
-        user: 2,
-        region_name: mockPlan.region,
-        geometry: mockPlan.planningArea,
-        scenario_count: 1,
-        latest_updated: date,
-        notes: '',
-        creator: 'John',
-        area_acres: 123,
-        area_m2: 231,
-        role: 'Creator',
-        permissions: [],
-      };
-
       service.listPlansByUser().subscribe((res) => {
-        expect(res).toEqual([expectedPlan]);
+        expect(res).toEqual([mockPlan]);
       });
 
       const req = httpTestingController.expectOne(
         BackendConstants.END_POINT.concat('/planning/list_planning_areas')
       );
-      req.flush([backendPlan]);
+      req.flush([mockPlan]);
       httpTestingController.verify();
     });
   });
