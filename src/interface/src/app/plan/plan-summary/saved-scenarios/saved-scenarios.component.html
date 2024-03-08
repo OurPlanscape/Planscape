@@ -7,6 +7,7 @@
           matSuffix
           mat-raised-button
           color="primary"
+          *ngIf="canAddScenarioForPlan()"
           data-id="new-scenario"
           (click)="openConfig()">
           <mat-icon class="material-symbols-outlined">add_box</mat-icon>
@@ -29,21 +30,46 @@
         'margin-top': activeScenarios.length + archivedScenarios.length === 0
       }"
       emptyStateTitle="No scenarios yet"
-      emptyStateContent="Click “New scenario” to start creating your scenarios.">
-      <div>
-        <mat-tab-group
-          mat-align-tabs="start"
-          *appFeatureFlag="'show_share_modal'">
-          <mat-tab label="ACTIVE">
-            <mat-card-content>
-              <app-scenarios-table-list
-                *ngIf="activeScenarios.length > 0"
-                [scenarios]="activeScenarios"
-                [highlightedScenarioRow]="highlightedScenarioRow"
-                (viewScenario)="viewScenario()"
-                (selectScenario)="
-                  highlightScenario($event)
-                "></app-scenarios-table-list>
+      [emptyStateContent]="
+        canAddScenarioForPlan()
+          ? 'Click “New scenario” to start creating your scenarios.'
+          : ''
+      ">
+      <mat-tab-group
+        mat-align-tabs="start"
+        *appFeatureFlag="'show_share_modal'">
+        <mat-tab label="ACTIVE">
+          <mat-card-content>
+            <app-scenarios-table-list
+              *ngIf="activeScenarios.length > 0"
+              [scenarios]="activeScenarios"
+              [highlightedScenarioRow]="highlightedScenarioRow"
+              (viewScenario)="viewScenario()"
+              (selectScenario)="
+                highlightScenario($event)
+              "></app-scenarios-table-list>
+
+            <div class="empty-state" *ngIf="activeScenarios.length === 0">
+              No active scenarios
+            </div>
+          </mat-card-content>
+        </mat-tab>
+        <mat-tab label="ARCHIVED">
+          <mat-card-content>
+            <app-scenarios-table-list
+              *ngIf="archivedScenarios.length > 0"
+              [scenarios]="archivedScenarios"
+              [highlightedScenarioRow]="highlightedScenarioRow"
+              (viewScenario)="viewScenario()"
+              (selectScenario)="
+                highlightScenario($event)
+              "></app-scenarios-table-list>
+            <div class="empty-state" *ngIf="archivedScenarios.length === 0">
+              No archived scenarios
+            </div>
+          </mat-card-content>
+        </mat-tab>
+      </mat-tab-group>
 
               <div class="empty-state" *ngIf="activeScenarios.length === 0">
                 No active scenarios

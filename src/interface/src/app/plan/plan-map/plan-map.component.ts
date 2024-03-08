@@ -10,9 +10,9 @@ import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { FrontendConstants, Plan, Region, regionToString } from 'src/app/types';
 
-import { BackendConstants } from './../../backend-constants';
+import { BackendConstants } from '../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { PlanStateService } from '../../services/plan-state.service';
+import { PlanStateService } from '../../services';
 import { regionMapCenters } from '../../map/map.helper';
 import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
@@ -106,13 +106,13 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // Add planning area to map and frame it in view
   private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
-    if (!plan.planningArea) return;
+    if (!plan.geometry) return;
 
     if (!!this.drawingLayer) {
       this.drawingLayer.remove();
     }
 
-    this.drawingLayer = L.geoJSON(plan.planningArea, {
+    this.drawingLayer = L.geoJSON(plan.geometry, {
       pane: 'overlayPane',
       style: {
         color: color ?? '#000000',

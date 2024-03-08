@@ -8,7 +8,7 @@ import { MaterialModule } from '../../material/material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
-import { PlanStateService } from '../../services/plan-state.service';
+import { PlanStateService } from '../../services';
 import { NEVER } from 'rxjs';
 
 describe('NavBarComponent', () => {

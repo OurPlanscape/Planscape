@@ -3,9 +3,9 @@ import { PlanService } from './plan.service';
 import { ScenarioService } from './scenario.service';
 import { TreatmentGoalsService } from './treatment-goals.service';
 import {
-  BackendProjectArea,
-  BasePlan,
   Plan,
+  BackendProjectArea,
+  CreatePlanPayload,
   ProjectArea,
   Region,
   Scenario,
@@ -18,7 +18,7 @@ import { Feature } from 'geojson';
 
 export interface PlanState {
   all: {
-    [planId: string]: Plan;
+    [planId: number]: Plan;
   };
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
@@ -58,10 +58,10 @@ export class PlanStateService {
       });
   }
 
-  createPlan(basePlan: BasePlan) {
+  createPlan(basePlan: CreatePlanPayload) {
     return this.planService.createPlan(basePlan).pipe(
-      tap(({ result: createdPlan }) => {
-        this.addPlanToState(createdPlan);
+      tap((result: Plan) => {
+        this.addPlanToState(result);
       })
     );
   }
@@ -192,7 +192,7 @@ export class PlanStateService {
     this.planState$.next(updatedState);
   }
 
-  updateStateWithPlan(planId: string | null) {
+  updateStateWithPlan(planId: number | null) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
       ...currentState,
