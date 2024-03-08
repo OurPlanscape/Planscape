@@ -7,7 +7,7 @@ from corsheaders.defaults import default_headers
 from decouple import config
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
-from utils.frontend import NotInTestingFilter
+from utils.logging import NotInTestingFilter
 
 TESTING_MODE = "test" in sys.argv
 LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
