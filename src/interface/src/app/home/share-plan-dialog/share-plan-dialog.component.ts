@@ -152,30 +152,27 @@ export class SharePlanDialogComponent {
 
   reloadInvites() {
     this.invites$ = this.inviteService
-    .getInvites(this.data.id)
-    .pipe(tap((_) => (this.isLoading = false)));
+      .getInvites(this.data.id)
+      .pipe(tap((_) => (this.isLoading = false)));
   }
 
   removeAccess(invite: Invite) {
-    this.inviteService
-      .deleteInvite(this.data.id, invite.id)
-      .subscribe({
-        next: (result) => {
-          this.matSnackBar.open(
-            `Removed  ${invite.email}`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
-          this.reloadInvites();
-        },
-        error: () => {
-          this.matSnackBar.open(
-            `There was an error trying to revoke access for ${invite.email}. Please try again.`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
-        },
-      });
-    
+    this.inviteService.deleteInvite(this.data.id, invite.id).subscribe({
+      next: (result) => {
+        this.matSnackBar.open(
+          `Removed  ${invite.email}`,
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+        this.reloadInvites();
+      },
+      error: () => {
+        this.matSnackBar.open(
+          `There was an error trying to revoke access for ${invite.email}. Please try again.`,
+          'Dismiss',
+          SNACK_BOTTOM_NOTICE_CONFIG
+        );
+      },
+    });
   }
 }
