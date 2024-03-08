@@ -2,7 +2,7 @@ Hello!
 
 {{inviter.get_full_name() }} invited you to planning area {{planning_area.name}}.
 
-{{link}}
+{{planning_area_link}}
 
 {{message}}
 
