@@ -23,7 +23,11 @@
         'margin-top': activeScenarios.length + archivedScenarios.length === 0
       }"
       emptyStateTitle="No scenarios yet"
-      emptyStateContent="Click “New scenario” to start creating your scenarios.">
+      [emptyStateContent]="
+        canAddScenarioForPlan()
+          ? 'Click “New scenario” to start creating your scenarios.'
+          : 'No scenarios exist yet for this planning area.'
+      ">
       <mat-tab-group
         mat-align-tabs="start"
         *appFeatureFlag="'show_share_modal'">
