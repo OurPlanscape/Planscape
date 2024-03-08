@@ -30,8 +30,8 @@ def send_invitation(
             "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
             "create_account_link": get_frontend_url("signup"),
         }
-        txt = render_to_string("email/new_invite.txt", context)
-        html = render_to_string("email/new_invite.html", context)
+        txt = render_to_string("email/invites/new_invite.txt", context)
+        html = render_to_string("email/invites/new_invite.html", context)
         send_mail(
             subject,
             settings.DEFAULT_FROM_EMAIL,
