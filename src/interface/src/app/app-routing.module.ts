@@ -25,6 +25,7 @@ import { DetailsComponent } from './account/details/details.component';
 import { CredentialsComponent } from './account/credentials/credentials.component';
 import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { ThankYouComponent } from './signup/thank-you/thank-you.component';
+import { redirectResolver } from './services/redirect.resolver';
 
 const routes: Routes = [
   {
@@ -57,6 +58,7 @@ const routes: Routes = [
         path: 'signup',
         title: 'Signup',
         component: SignupComponent,
+        resolve: { redirectUrl: redirectResolver },
       },
       {
         path: 'thankyou',
