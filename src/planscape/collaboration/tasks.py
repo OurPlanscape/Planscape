@@ -5,7 +5,7 @@ from django.template.loader import render_to_string
 from planscape.celery import app
 import logging
 
-from planscape.utils import get_frontend_url
+from utils.frontend import get_frontend_url
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,8 @@ def send_invitation(
             "message": message,
             "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
             "create_account_link": get_frontend_url(
-                "signup?redirect=plan/{planning_area.pk}"
+                "signup",
+                query_params={"redirect": f"plan/{planning_area.pk}"},
             ),
         }
         txt = render_to_string("email/invites/new_invite.txt", context)

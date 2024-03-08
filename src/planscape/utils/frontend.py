@@ -1,4 +1,6 @@
 import logging
+import urllib.parse
+from typing import Any, Dict
 from django.conf import settings
 
 
@@ -21,9 +23,13 @@ def get_base_url(env):
             return "https://dev.planscape.org"
 
 
-def get_frontend_url(url: str):
+def get_frontend_url(url: str, query_params: Dict[str, Any] = None):
     if url.startswith("/"):
         raise ValueError("URLs should not start with /. This is done internally here.")
-
     env = settings.ENV
-    return f"{get_base_url(env)}/{url}"
+    match query_params:
+        case dict():
+            encoded_query = urllib.parse.urlencode(query_params)
+            return f"{get_base_url(env)}/{url}?{encoded_query}"
+        case _:
+            return f"{get_base_url(env)}/{url}"
