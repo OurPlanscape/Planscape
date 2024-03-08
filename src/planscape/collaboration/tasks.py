@@ -27,7 +27,9 @@ def send_invitation(
             ),
             "planning_area": planning_area,
             "message": message,
-            "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
+            "planning_area_link": get_frontend_url(
+                f"plan/{planning_area.pk}?redirect=plan/{planning_area.pk}"
+            ),
             "create_account_link": get_frontend_url("signup"),
         }
         txt = render_to_string("email/invites/new_invite.txt", context)
