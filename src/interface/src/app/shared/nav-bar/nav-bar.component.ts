@@ -53,8 +53,8 @@ export class NavBarComponent {
   sharePlan() {
     this.dialog.open(SharePlanDialogComponent, {
       data: {
-        name: '"' + this.breadcrumbs[0].name + '"',
-        id: this.route.snapshot.params['id'],
+        planningAreaName: '"' + this.breadcrumbs[0].name + '"',
+        planningAreaId: this.route.snapshot.params['id'],
       },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
