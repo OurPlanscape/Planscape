@@ -112,7 +112,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
         )
-        self.user_object_viewer_role = create_collaborator_record(
+        self.user_object_role = create_collaborator_record(
             self.owner, self.invitee, self.planningarea, Role.VIEWER
         )
 
@@ -125,7 +125,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invitation_id": self.user_object_viewer_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -144,7 +144,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invitation_id": self.user_object_viewer_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -163,7 +163,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invitation_id": self.user_object_viewer_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -184,7 +184,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invitation_id": self.user_object_viewer_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -201,7 +201,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
-                    "invitation_id": self.user_object_viewer_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -218,7 +218,7 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
                 kwargs={
                     "target_entity": "planningarea",
                     "object_pk": 9999,
-                    "invitation_id": self.user_object_viewer_role.id,
+                    "invitation_id": self.user_object_role.id,
                 },
             ),
             payload,
@@ -298,6 +298,21 @@ class DeleteInviteTest(APITransactionTestCase):
                     "target_entity": "planningarea",
                     "object_pk": self.planningarea.pk,
                     "invitation_id": 9999999,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_invite_nonexistent_planningarea(self):
+        self.client.force_authenticate(self.invitee)
+        response = self.client.delete(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "target_entity": "planningarea",
+                    "object_pk": 99999999,
+                    "invitation_id": self.user_object_role_collab.id,
                 },
             ),
             format="json",
