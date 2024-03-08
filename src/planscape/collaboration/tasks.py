@@ -39,6 +39,8 @@ def send_invitation(
             message=txt,
             html_message=html,
         )
+        logger.info("Email sent inviting user to planning area %s", planning_area.pk)
     except UserObjectRole.DoesNotExist:
         logger.exception("Can't find UserObjectRole with id %s", user_object_role_id)
-        pass
+    except Exception:
+        logger.exception("Something unexpected happened. Take a look!")
