@@ -28,16 +28,17 @@
           ? 'Click “New scenario” to start creating your scenarios.'
           : ''
       ">
-      <mat-slide-toggle
-        [(ngModel)]="showOnlyMyScenarios"
-        (change)="fetchScenarios()">
-        Show only my scenarios
-      </mat-slide-toggle>
       <mat-tab-group
         mat-align-tabs="start"
         *appFeatureFlag="'show_share_modal'">
         <mat-tab label="ACTIVE">
           <mat-card-content>
+            <mat-slide-toggle
+              class="slide-toggle-my-scenarios"
+              [(ngModel)]="showOnlyMyScenarios"
+              (change)="fetchScenarios()">
+              Show only my scenarios
+            </mat-slide-toggle>
             <app-scenarios-table-list
               *ngIf="activeScenarios.length > 0"
               [scenarios]="activeScenarios"
@@ -54,6 +55,12 @@
         </mat-tab>
         <mat-tab label="ARCHIVED">
           <mat-card-content>
+            <mat-slide-toggle
+              class="slide-toggle-my-scenarios"
+              [(ngModel)]="showOnlyMyScenarios"
+              (change)="fetchScenarios()">
+              Show only my scenarios
+            </mat-slide-toggle>
             <app-scenarios-table-list
               *ngIf="archivedScenarios.length > 0"
               [scenarios]="archivedScenarios"
