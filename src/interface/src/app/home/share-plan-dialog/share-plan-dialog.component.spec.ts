@@ -5,7 +5,7 @@ import { MaterialModule } from '../../material/material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { AuthService, InvitesService, PlanStateService } from '../../services';
+import { AuthService, InvitesService, PlanStateService } from '@services';
 import { BehaviorSubject, NEVER, of } from 'rxjs';
 import { User } from '../../types';
 import { ChipInputComponent } from '../chip-input/chip-input.component';

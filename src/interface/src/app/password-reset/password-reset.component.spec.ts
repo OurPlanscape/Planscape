@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 
-import { AuthService, PasswordResetToken } from '../services';
+import { AuthService, PasswordResetToken } from '@services';
 import { PasswordResetComponent } from './password-reset.component';
 import { MatInputModule } from '@angular/material/input';
 

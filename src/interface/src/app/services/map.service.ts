@@ -5,7 +5,7 @@ import 'leaflet.vectorgrid';
 import { BehaviorSubject, EMPTY, Observable, take, of, tap } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { SessionService } from '../services';
+import { SessionService } from '@services';
 import {
   BoundaryConfig,
   ColormapConfig,
