@@ -1,6 +1,6 @@
 Hello!
 
-{{inviter.get_full_name() }} invited you to planning area {{planning_area.name}}.
+{{inviter.get_full_name }} invited you to planning area {{planning_area.name}}.
 
 {{planning_area_link}}
 

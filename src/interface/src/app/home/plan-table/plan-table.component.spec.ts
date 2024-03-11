@@ -7,13 +7,13 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
 import { Plan } from 'src/app/types';
 
-import { AuthService, PlanService } from '../../services';
+import { AuthService, PlanService } from '@services';
 import { PlanTableComponent } from './plan-table.component';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { MockComponent } from 'ng-mocks';
 import { SectionLoaderComponent } from '../../shared/section-loader/section-loader.component';
 import { FeaturesModule } from '../../features/features.module';
-import { MOCK_PLAN } from '../../services/mocks';
+import { MOCK_PLAN } from '@services/mocks';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: Plan = MOCK_PLAN;

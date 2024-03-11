@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 
-import { PlanService } from '../../services';
+import { PlanService } from '@services';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';

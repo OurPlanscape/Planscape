@@ -10,7 +10,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PlanCreateDialogComponent } from './plan-create-dialog.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
-import { PlanService, SessionService } from '../../services';
+import { PlanService, SessionService } from '@services';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from '../../material/material.module';
 import { DialogModule } from '@angular/cdk/dialog';

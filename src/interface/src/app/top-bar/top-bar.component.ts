@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, switchMap } from 'rxjs';
 
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 
 @Component({
   selector: 'app-top-bar',
