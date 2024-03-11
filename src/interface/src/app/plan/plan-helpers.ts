@@ -140,6 +140,6 @@ export function conditionsConfigToPriorityData(
   return data;
 }
 
-export function getPlanPath(planId: string) {
+export function getPlanPath(planId: number) {
   return '/plan/' + planId;
 }

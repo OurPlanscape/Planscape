@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EditUserFieldComponent } from './edit-user-field.component';
 import { MockProvider } from 'ng-mocks';
-import { AuthService } from '../../services';
+import { AuthService } from '@services';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';

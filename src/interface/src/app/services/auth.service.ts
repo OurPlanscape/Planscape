@@ -239,10 +239,9 @@ export class AuthService {
   }
 
   /** Gets a user given the id. */
-  getUser(userId: string): Observable<User> {
+  getUser(userId: number): Observable<User> {
     const url = BackendConstants.END_POINT.concat(
-      '/users/get_user_by_id/?id=',
-      userId
+      `/users/get_user_by_id/?id=${userId}`
     );
     return this.http
       .get(url, {

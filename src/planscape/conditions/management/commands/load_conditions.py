@@ -81,9 +81,9 @@ class Command(BaseCommand):
 
         condition, _created = Condition.objects.update_or_create(
             condition_dataset=base_condition,
-            raster_name=raster_name,
             condition_score_type=score_type,
             is_raw=raw,
+            defaults={"raster_name": raster_name},
         )
 
         self.stdout.write(f"[OK] {metric['region_name']}:{metric['metric_name']}")

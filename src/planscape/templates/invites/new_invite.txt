@@ -1,0 +1,9 @@
+Hello!
+
+{{inviter.get_full_name }} invited you to planning area {{planning_area.name}}.
+
+{{planning_area_link}}
+
+{{message}}
+
+if you don't have an account create one here: {{create_account_link}}

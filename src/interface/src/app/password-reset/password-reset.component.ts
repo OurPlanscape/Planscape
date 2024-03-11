@@ -5,7 +5,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FormMessageType } from '../types';
-import { AuthService, PasswordResetToken } from '../services';
+import { AuthService, PasswordResetToken } from '@services';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 import { PasswordStateMatcher } from '../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../validators/passwords';
