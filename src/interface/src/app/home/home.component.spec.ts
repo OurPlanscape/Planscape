@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HomeComponent } from './home.component';
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';

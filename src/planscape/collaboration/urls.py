@@ -1,7 +1,7 @@
 from django.urls import path
 from collaboration.views import (
     CreateInvite,
-    GetInvitationsForObject,
+    InvitationsForObject,
 )
 
 app_name = "collaboration"
@@ -13,7 +13,12 @@ urlpatterns = [
     ),
     path(
         "invitations/<ctype:target_entity>/<int:object_pk>",
-        GetInvitationsForObject.as_view(),
+        InvitationsForObject.as_view(),
         name="get_invitations",
+    ),
+    path(
+        "invitations/<ctype:target_entity>/<int:object_pk>/<int:invitation_id>",
+        InvitationsForObject.as_view(),
+        name="update_invitation",
     ),
 ]

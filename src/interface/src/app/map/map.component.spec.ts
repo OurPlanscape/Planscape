@@ -29,7 +29,7 @@ import {
   PlanStateService,
   SessionService,
   ShareMapService,
-} from '../services';
+} from '@services';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -53,7 +53,7 @@ import {
 } from './map.helper';
 import * as esri from 'esri-leaflet';
 import { MockProvider } from 'ng-mocks';
-import { MOCK_PLAN } from '../services/mocks';
+import { MOCK_PLAN } from '@services/mocks';
 
 describe('MapComponent', () => {
   let component: MapComponent;

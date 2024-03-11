@@ -5,7 +5,7 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { take } from 'rxjs';
 
-import { PlanService } from '../../services';
+import { PlanService } from '@services';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
@@ -101,10 +101,8 @@ export class PlanTableComponent implements OnInit {
     }
     this.dialog.open(SharePlanDialogComponent, {
       data: {
-        name: '"' + this.selectedPlan.name + '"',
-        id: this.selectedPlan.id,
-        creatorId: this.selectedPlan.user,
-        creatorName: this.selectedPlan.creator,
+        planningAreaName: '"' + this.selectedPlan.name + '"',
+        planningAreaId: this.selectedPlan.id,
       },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',

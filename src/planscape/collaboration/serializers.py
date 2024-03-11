@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from collaboration.models import Permissions, Role, UserObjectRole
+from collaboration.models import Role, UserObjectRole
 from collaboration.services import get_permissions
+from django.contrib.auth.models import User
 
 
 class CreateUserObjectRolesSerializer(serializers.Serializer):
@@ -27,6 +28,8 @@ class UserObjectRoleSerializer(serializers.ModelSerializer):
     collaborator = serializers.PrimaryKeyRelatedField(read_only=True)
 
     inviter = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    role = serializers.ChoiceField(choices=Role.choices)
 
     permissions = serializers.SerializerMethodField()
 
