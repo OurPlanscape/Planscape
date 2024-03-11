@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { of } from 'rxjs';
 
 import { MaterialModule } from '../material/material.module';
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 import { SignupComponent } from './signup.component';
 import { InfoCardComponent } from './info-card/info-card.component';
 import { MockComponent } from 'ng-mocks';

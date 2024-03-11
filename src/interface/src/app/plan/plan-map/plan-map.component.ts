@@ -12,7 +12,7 @@ import { FrontendConstants, Plan, Region, regionToString } from 'src/app/types';
 
 import { BackendConstants } from '../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { PlanStateService } from '../../services';
+import { PlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
 import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';

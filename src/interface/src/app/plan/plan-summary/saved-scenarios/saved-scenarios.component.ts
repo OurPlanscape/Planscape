@@ -14,7 +14,7 @@ import {
   SNACK_NOTICE_CONFIG,
 } from '../../../shared/constants';
 
-import { ScenarioService } from '../../../services';
+import { ScenarioService } from '@services';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;

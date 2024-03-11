@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { By } from '@angular/platform-browser';
 
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 import { LoginComponent } from './login.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';

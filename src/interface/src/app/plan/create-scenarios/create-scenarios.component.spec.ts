@@ -23,10 +23,10 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { MatButtonHarness } from '@angular/material/button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { PlanState, PlanStateService, ScenarioService } from '../../services';
+import { PlanState, PlanStateService, ScenarioService } from '@services';
 import { CurrencyPipe } from '@angular/common';
 import * as L from 'leaflet';
-import { MOCK_PLAN } from '../../services/mocks';
+import { MOCK_PLAN } from '@services/mocks';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**

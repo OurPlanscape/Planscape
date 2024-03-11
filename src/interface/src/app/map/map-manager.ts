@@ -10,7 +10,7 @@ import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { PopupService, SessionService } from '../services';
+import { PopupService, SessionService } from '@services';
 import {
   BaseLayerType,
   DEFAULT_COLORMAP,
