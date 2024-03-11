@@ -123,8 +123,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -142,8 +140,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -161,8 +157,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -182,8 +176,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -199,8 +191,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -208,23 +198,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 403)
-
-    def test_nonexistent_related_object(self):
-        self.client.force_authenticate(self.invitee)
-        payload = {"role": "Collaborator"}
-        response = self.client.patch(
-            reverse(
-                "collaboration:update_invitation",
-                kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": 9999,
-                    "invitation_id": self.user_object_role.id,
-                },
-            ),
-            payload,
-            format="json",
-        )
-        self.assertEqual(response.status_code, 404)
 
 
 class DeleteInviteTest(APITransactionTestCase):
@@ -250,8 +223,6 @@ class DeleteInviteTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role_collab.id,
                 },
             ),
@@ -265,8 +236,6 @@ class DeleteInviteTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role_viewer.id,
                 },
             ),
@@ -280,8 +249,6 @@ class DeleteInviteTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role_collab.id,
                 },
             ),
@@ -295,24 +262,7 @@ class DeleteInviteTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": 9999999,
-                },
-            ),
-            format="json",
-        )
-        self.assertEqual(response.status_code, 404)
-
-    def test_delete_invite_nonexistent_planningarea(self):
-        self.client.force_authenticate(self.invitee)
-        response = self.client.delete(
-            reverse(
-                "collaboration:update_invitation",
-                kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": 99999999,
-                    "invitation_id": self.user_object_role_collab.id,
                 },
             ),
             format="json",

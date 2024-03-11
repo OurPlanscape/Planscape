@@ -17,7 +17,7 @@ urlpatterns = [
         name="get_invitations",
     ),
     path(
-        "invitations/<ctype:target_entity>/<int:object_pk>/<int:invitation_id>",
+        "invitations/<int:invitation_id>",
         InvitationsForObject.as_view(),
         name="update_invitation",
     ),

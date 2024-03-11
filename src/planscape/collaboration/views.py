@@ -76,9 +76,7 @@ class InvitationsForObject(APIView):
         )
         return Response(serializer.data)
 
-    def patch(
-        self, request: Request, target_entity: str, object_pk: int, invitation_id: int
-    ):
+    def patch(self, request: Request, invitation_id: int):
         try:
             user = request.user
             user_object_role_obj = UserObjectRole.objects.get(pk=invitation_id)
@@ -91,9 +89,8 @@ class InvitationsForObject(APIView):
             )
             serializer.is_valid(raise_exception=True)
 
-            content_type = ContentType.objects.get(model=target_entity)
-            Model = content_type.model_class()
-            instance = Model.objects.get(pk=object_pk)
+            Model = user_object_role_obj.content_type.model_class()
+            instance = Model.objects.get(pk=user_object_role_obj.object_pk)
 
             if not CollaboratorPermission.can_change(user, instance):
                 return Response(
@@ -125,15 +122,13 @@ class InvitationsForObject(APIView):
             logger.exception("Exception updating permissions: %s", e)
             raise
 
-    def delete(
-        self, request: Request, target_entity: str, object_pk: int, invitation_id: int
-    ):
+    def delete(self, request: Request, invitation_id: int):
         try:
             user = request.user
             user_object_role_obj = UserObjectRole.objects.get(pk=invitation_id)
-            content_type = ContentType.objects.get(model=target_entity)
-            Model = content_type.model_class()
-            instance = Model.objects.get(pk=object_pk)
+
+            Model = user_object_role_obj.content_type.model_class()
+            instance = Model.objects.get(pk=user_object_role_obj.object_pk)
 
             if not CollaboratorPermission.can_delete(user, instance):
                 return Response(

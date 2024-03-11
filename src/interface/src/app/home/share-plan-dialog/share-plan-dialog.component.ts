@@ -119,19 +119,17 @@ export class SharePlanDialogComponent {
   }
 
   changeRole(invite: Invite, newRole: INVITE_ROLE) {
-    this.inviteService
-      .changeRole(this.data.planningAreaId, invite.id, newRole)
-      .subscribe({
-        next: (result) => {
-          invite.role = newRole;
-          this.showSnackbar('Access Updated');
-        },
-        error: () => {
-          this.showSnackbar(
-            `There was an error trying to update the role of ${invite.email}. Please try again.`
-          );
-        },
-      });
+    this.inviteService.changeRole(invite.id, newRole).subscribe({
+      next: () => {
+        invite.role = newRole;
+        this.showSnackbar('Access Updated');
+      },
+      error: () => {
+        this.showSnackbar(
+          `There was an error trying to update the role of ${invite.email}. Please try again.`
+        );
+      },
+    });
   }
 
   changeInvitationsRole(role: INVITE_ROLE) {
@@ -160,19 +158,17 @@ export class SharePlanDialogComponent {
   }
 
   removeAccess(invite: Invite) {
-    this.inviteService
-      .deleteInvite(this.data.planningAreaId, invite.id)
-      .subscribe({
-        next: (result) => {
-          this.showSnackbar(`Removed  ${invite.email}`);
-          this.reloadInvites();
-        },
-        error: () => {
-          this.showSnackbar(
-            `There was an error trying to revoke access for ${invite.email}. Please try again.`
-          );
-        },
-      });
+    this.inviteService.deleteInvite(invite.id).subscribe({
+      next: () => {
+        this.showSnackbar(`Removed  ${invite.email}`);
+        this.reloadInvites();
+      },
+      error: () => {
+        this.showSnackbar(
+          `There was an error trying to revoke access for ${invite.email}. Please try again.`
+        );
+      },
+    });
   }
 
   private showSnackbar(message: string) {
