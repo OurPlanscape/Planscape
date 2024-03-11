@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AreaDetailsComponent } from './area-details.component';
 import { Plan } from '../../types';
-import { MOCK_PLAN } from '../../services/mocks';
+import { MOCK_PLAN } from '@services/mocks';
 
 describe('AreaDetailsComponent', () => {
   let component: AreaDetailsComponent;

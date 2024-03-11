@@ -31,7 +31,7 @@ import {
   RegionService,
   SessionService,
   ShareMapService,
-} from '../services';
+} from '@services';
 import {
   Legend,
   Map,
