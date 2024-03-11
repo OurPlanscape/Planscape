@@ -3,7 +3,7 @@ import { ShareExploreDialogComponent } from './share-explore-dialog.component';
 import { MaterialModule } from '../../material/material.module';
 import { MockProvider } from 'ng-mocks';
 import { MatDialogRef } from '@angular/material/dialog';
-import { ShareMapService } from '../../services';
+import { ShareMapService } from '@services';
 
 describe('ShareExploreDialogComponent', () => {
   let component: ShareExploreDialogComponent;

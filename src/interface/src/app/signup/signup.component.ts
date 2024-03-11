@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormMessageType } from '../types';
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 import { timeout, TimeoutError } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
 import { passwordsMustMatchValidator } from '../validators/passwords';

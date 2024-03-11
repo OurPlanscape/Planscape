@@ -19,7 +19,7 @@ import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-pane
 import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
 import { PlanComponent } from './plan.component';
 import { FeaturesModule } from '../features/features.module';
-import { WINDOW_PROVIDERS } from '../services/window.service';
+import { WINDOW_PROVIDERS } from '@services/window.service';
 import { ScenarioNotStartedComponent } from './scenario-not-started/scenario-not-started.component';
 import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.component';
 import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';

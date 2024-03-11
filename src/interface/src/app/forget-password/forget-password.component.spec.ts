@@ -6,7 +6,7 @@ import { Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject } from 'rxjs';
 
-import { AuthService } from '../services';
+import { AuthService } from '@services';
 import { ForgetPasswordComponent } from './forget-password.component';
 
 describe('ForgetPasswordComponent', () => {

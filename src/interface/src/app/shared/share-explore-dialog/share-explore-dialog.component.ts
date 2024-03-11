@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import { SessionService } from '../../services';
+import { SessionService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '../constants';
 import { firstValueFrom } from 'rxjs';
-import { ShareMapService } from '../../services/share-map.service';
+import { ShareMapService } from '@services/share-map.service';
 
 @Component({
   selector: 'app-share-explore-dialog',
