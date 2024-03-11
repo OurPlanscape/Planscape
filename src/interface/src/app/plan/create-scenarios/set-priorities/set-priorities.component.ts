@@ -3,15 +3,13 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { distinctUntilChanged, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { MapService } from '../../../services';
+import { MapService, PlanStateService } from '@services';
 import {
   PriorityRow,
   ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '../../../types';
-
-import { PlanStateService } from '../../../services/plan-state.service';
 import {
   conditionsConfigToPriorityData,
   findQuestionOnTreatmentGoalsConfig,

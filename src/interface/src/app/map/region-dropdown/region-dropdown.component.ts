@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { Region } from '../../types';
-import { MapService, SessionService } from '../../services';
-import { RegionService } from '../../services/region.service';
+import { MapService, SessionService } from '@services';
+import { RegionService } from '@services/region.service';
 
 @Component({
   selector: 'app-region-dropdown',

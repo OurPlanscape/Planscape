@@ -35,7 +35,7 @@
     <td mat-cell *matCellDef="let element; dataSource: scenarios">
       {{
         hasResults(element)
-          ? (calculateTotals(element.scenario_result!).acres | number)
+          ? (calculateTotals(element.scenario_result!).acres | number: '1.0-0')
           : '--'
       }}
     </td>

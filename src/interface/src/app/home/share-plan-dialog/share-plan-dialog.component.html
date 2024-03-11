@@ -9,7 +9,7 @@
         >arrow_back
       </mat-icon>
     </button>
-    <h2>Share {{ data.name }}</h2>
+    <h2>Share {{ data.planningAreaName }}</h2>
     <button mat-icon-button (click)="showHelp = true" aria-label="help">
       <mat-icon class="help-btn">help_outlined</mat-icon>
     </button>
@@ -89,7 +89,7 @@
             mat-menu-item
             *ngFor="let role of roles"
             class="menu-roles"
-            (click)="changeRole(invite)">
+            (click)="changeRole(invite, role)">
             <span class="spacer">
               <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
             </span>

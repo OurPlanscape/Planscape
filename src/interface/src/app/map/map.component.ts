@@ -26,9 +26,12 @@ import * as shp from 'shpjs';
 import {
   AuthService,
   MapService,
+  PlanStateService,
   PopupService,
+  RegionService,
   SessionService,
-} from '../services';
+  ShareMapService,
+} from '@services';
 import {
   Legend,
   Map,
@@ -61,12 +64,8 @@ import {
   hideRegionLayer,
   showRegionLayer,
 } from './map.layers';
-import { PlanStateService } from '../services/plan-state.service';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
-import { RegionService } from '../services/region.service';
-
-import { ShareMapService } from '../services/share-map.service';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 import { Location } from '@angular/common';
 
@@ -256,8 +255,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
       plan$.subscribe({
         next: (plan) => {
-          if (this.regionRecord != plan.region) {
-            this.sessionService.setRegion(plan.region);
+          if (this.regionRecord != plan.region_name) {
+            this.sessionService.setRegion(plan.region_name);
             this.mapService.setConfigs();
           }
 
@@ -274,19 +273,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   }
 
   private drawPlanningArea(plan: Plan, color?: string, opacity?: number) {
-    if (!plan.planningArea) return;
+    if (!plan.geometry) return;
 
     if (!!this.drawingLayer) {
       this.drawingLayer.remove();
     }
 
     this.maps.forEach((map) => {
-      if (map.instance && plan.planningArea) {
-        this.drawingLayer = createDrawingLayer(
-          plan.planningArea,
-          color,
-          opacity
-        );
+      if (map.instance && plan.geometry) {
+        this.drawingLayer = createDrawingLayer(plan.geometry, color, opacity);
         addGeoJSONToMap(this.drawingLayer, map.instance);
       }
     });

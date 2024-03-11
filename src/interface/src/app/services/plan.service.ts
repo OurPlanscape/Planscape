@@ -3,8 +3,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { BackendPlan, BackendPlanPreview, BasePlan, Plan } from '../types';
-import { PlanPreview } from './../types/plan.types';
+import { Plan, CreatePlanPayload } from '../types';
 
 @Injectable({
   providedIn: 'root',
@@ -19,18 +18,13 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to create a plan and updates state. */
-  createPlan(basePlan: BasePlan): Observable<{
-    success: boolean;
-    result: Plan;
-  }> {
-    return this.createPlanApi(basePlan).pipe(
-      take(1),
-      map((createdPlan) => {
-        return {
-          success: true,
-          result: createdPlan,
-        };
-      })
+  createPlan(payload: CreatePlanPayload): Observable<Plan> {
+    return this.http.post<Plan>(
+      BackendConstants.END_POINT + '/planning/create_planning_area/',
+      payload,
+      {
+        withCredentials: true,
+      }
     );
   }
 
@@ -52,125 +46,33 @@ export class PlanService {
 
   /** Makes a request to the backend to fetch a plan with the given ID. */
   getPlan(planId: string): Observable<Plan> {
-    return this.http
-      .get<BackendPlan>(
-        BackendConstants.END_POINT.concat(
-          '/planning/get_planning_area_by_id/?id=',
-          planId
-        ),
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(
-        take(1),
-        map((dbPlan) => this.convertToPlan(dbPlan))
-      );
+    return this.http.get<Plan>(
+      BackendConstants.END_POINT.concat(
+        '/planning/get_planning_area_by_id/?id=',
+        planId
+      ),
+      {
+        withCredentials: true,
+      }
+    );
   }
 
   /** Makes a request to the backend for a list of all plans owned by a user.
    *  If the user is not provided, return all plans with owner=null.
    */
-  listPlansByUser(): Observable<PlanPreview[]> {
+  listPlansByUser(): Observable<Plan[]> {
     let url = BackendConstants.END_POINT.concat(
       '/planning/list_planning_areas'
     );
-
-    return this.http
-      .get<BackendPlanPreview[]>(url, {
-        withCredentials: true,
-      })
-      .pipe(
-        take(1),
-        map((dbPlanList) =>
-          dbPlanList.map((dbPlan) => this.convertToPlanPreview(dbPlan))
-        )
-      );
-  }
-
-  private convertToPlan(plan: BackendPlan): Plan {
-    return {
-      id: String(plan.id),
-      ownerId: String(plan.user),
-      name: plan.name,
-      region: plan.region_name,
-      planningArea: plan.geometry,
-      scenarios: plan.scenario_count ?? 0,
-      notes: plan.notes ?? '',
-      configs: plan.projects ?? 0,
-      createdTimestamp: plan.created_at ? new Date(plan.created_at) : undefined,
-      lastUpdated: plan.latest_updated
-        ? new Date(plan.latest_updated)
-        : undefined,
-      area_acres: plan.area_acres || 0,
-      area_m2: plan.area_m2 || 0,
-      creator: plan.creator || '',
-      user: plan.user,
-      role: plan.role,
-      permissions: plan.permissions,
-    };
-  }
-
-  private convertToDbPlan(plan: BasePlan): BackendPlan {
-    return {
-      user: Number(plan.ownerId),
-      name: plan.name,
-      region_name: plan.region,
-      geometry: plan.planningArea,
-      notes: plan.notes,
-    };
-  }
-
-  private convertToPlanPreview(plan: BackendPlanPreview): PlanPreview {
-    return {
-      id: plan.id,
-      name: plan.name,
-      region: plan.region_name,
-      scenarios: plan.scenario_count,
-      notes: plan.notes,
-      lastUpdated: plan.latest_updated
-        ? new Date(plan.latest_updated)
-        : undefined,
-      geometry: plan.geometry,
-      ownerId: plan.user,
-      creator: plan.creator,
-      area_acres: plan.area_acres,
-      area_m2: plan.area_m2,
-      role: plan.role,
-      permissions: plan.permissions,
-    };
-  }
-
-  private createPlanApi(plan: BasePlan): Observable<Plan> {
-    const createPlanRequest = this.convertToDbPlan(plan);
-    return this.http
-      .post(
-        BackendConstants.END_POINT + '/planning/create_planning_area/',
-        createPlanRequest,
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(
-        take(1),
-        map((result: any) => {
-          return {
-            ...plan,
-            id: result['id'].toString(),
-            ownerId: result.ownerId,
-            savedScenarios: 0,
-            area_m2: result.area_m2,
-            area_acres: result.area_acres,
-            creator: result.creator,
-          };
-        })
-      );
+    return this.http.get<Plan[]>(url, {
+      withCredentials: true,
+    });
   }
 
   /** Updates a planning area with new parameters. */
   updatePlanningArea(
-    planningAreaConfig: BasePlan,
-    planId: string
+    planningAreaConfig: Plan,
+    planId: number
   ): Observable<number> {
     const url = BackendConstants.END_POINT.concat(
       '/planning/update_planning_area/'

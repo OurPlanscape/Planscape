@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../../services';
+import { AuthService } from '@services';
 import { map, take } from 'rxjs';
 import {
   passwordMustBeNewValidator,

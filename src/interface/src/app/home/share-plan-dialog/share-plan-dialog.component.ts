@@ -3,13 +3,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormMessageType, User } from '../../types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { InvitesService } from '../../services/invites.service';
+import { AuthService, InvitesService, PlanStateService } from '@services';
 import { Invite, INVITE_ROLE } from '../../types/invite.types';
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
-import { AuthService } from '../../services';
-import { PlanStateService } from '../../services/plan-state.service';
 
-const Roles: Record<INVITE_ROLE, string> = {
+const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
   Viewer: 'Viewer',
   Collaborator: 'Collaborator',
   Owner: 'Owner',
@@ -29,8 +27,8 @@ export class SharePlanDialogComponent {
     private planStateService: PlanStateService,
     @Inject(MAT_DIALOG_DATA)
     public data: {
-      name: string;
-      id: number;
+      planningAreaName: string;
+      planningAreaId: number;
     }
   ) {}
 
@@ -42,12 +40,14 @@ export class SharePlanDialogComponent {
   message = '';
   isLoading = true;
 
-  plan$ = this.planStateService.getPlan(this.data.id + '').pipe(shareReplay());
+  plan$ = this.planStateService
+    .getPlan(this.data.planningAreaId + '')
+    .pipe(shareReplay());
 
   planCreator$ = this.plan$.pipe(map((plan) => plan.creator));
 
   invites$ = this.inviteService
-    .getInvites(this.data.id)
+    .getInvites(this.data.planningAreaId)
     .pipe(tap((_) => (this.isLoading = false)));
 
   fullname$ = this.authService.loggedInUser$.pipe(
@@ -66,7 +66,7 @@ export class SharePlanDialogComponent {
     )
   );
 
-  roles = Object.keys(Roles);
+  roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
 
   selectedRole = this.roles[0] as INVITE_ROLE;
 
@@ -89,21 +89,20 @@ export class SharePlanDialogComponent {
   invite() {
     this.submitting = true;
     this.inviteService
-      .inviteUsers(this.emails, this.selectedRole, this.data.id, this.message)
+      .inviteUsers(
+        this.emails,
+        this.selectedRole,
+        this.data.planningAreaId,
+        this.message
+      )
       .subscribe({
         next: (result) => {
-          this.matSnackBar.open(
-            'Users invited',
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
+          this.showSnackbar('Users invited');
           this.close();
         },
         error: () => {
-          this.matSnackBar.open(
-            'There was an error trying to send the invites. Please try again.',
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
+          this.showSnackbar(
+            'There was an error trying to send the invites. Please try again.'
           );
           this.submitting = false;
         },
@@ -119,44 +118,46 @@ export class SharePlanDialogComponent {
     this.emails = [];
   }
 
-  changeRole(invite: Invite) {
-    this.matSnackBar.open(
-      'Access Updated',
-      'Dismiss',
-      SNACK_BOTTOM_NOTICE_CONFIG
-    );
+  changeRole(invite: Invite, newRole: INVITE_ROLE) {
+    this.inviteService
+      .changeRole(this.data.planningAreaId, invite.id, newRole)
+      .subscribe({
+        next: (result) => {
+          invite.role = newRole;
+          this.showSnackbar('Access Updated');
+        },
+        error: () => {
+          this.showSnackbar(
+            `There was an error trying to update the role of ${invite.email}. Please try again.`
+          );
+        },
+      });
   }
 
-  changeInvitationsRole(role: string) {
-    this.selectedRole = Roles[role as keyof typeof Roles] as INVITE_ROLE;
+  changeInvitationsRole(role: INVITE_ROLE) {
+    this.selectedRole = Roles[role];
   }
 
   resendCode(invite: Invite) {
     this.inviteService
-      .inviteUsers([invite.email], this.selectedRole, this.data.id)
+      .inviteUsers([invite.email], this.selectedRole, this.data.planningAreaId)
       .subscribe({
         next: (result) => {
-          this.matSnackBar.open(
-            `Email sent to ${invite.email}`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
+          this.showSnackbar(`Email sent to ${invite.email}`);
         },
         error: () => {
-          this.matSnackBar.open(
-            `There was an error trying to resend code to ${invite.email}. Please try again.`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
+          this.showSnackbar(
+            `There was an error trying to resend code to ${invite.email}. Please try again.`
           );
         },
       });
   }
 
   removeAccess(invite: Invite) {
-    this.matSnackBar.open(
-      `Removed  ${invite.email}`,
-      'Dismiss',
-      SNACK_BOTTOM_NOTICE_CONFIG
-    );
+    this.showSnackbar(`Removed  ${invite.email}`);
+  }
+
+  private showSnackbar(message: string) {
+    this.matSnackBar.open(message, 'Dismiss', SNACK_BOTTOM_NOTICE_CONFIG);
   }
 }
