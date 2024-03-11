@@ -7,6 +7,7 @@
           matSuffix
           mat-raised-button
           color="primary"
+          *ngIf="canAddScenarioForPlan()"
           data-id="new-scenario"
           (click)="openConfig()">
           <mat-icon class="material-symbols-outlined">add_box</mat-icon>
@@ -22,7 +23,11 @@
         'margin-top': activeScenarios.length + archivedScenarios.length === 0
       }"
       emptyStateTitle="No scenarios yet"
-      emptyStateContent="Click “New scenario” to start creating your scenarios.">
+      [emptyStateContent]="
+        canAddScenarioForPlan()
+          ? 'Click “New scenario” to start creating your scenarios.'
+          : ''
+      ">
       <mat-tab-group
         mat-align-tabs="start"
         *appFeatureFlag="'show_share_modal'">

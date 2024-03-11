@@ -2723,6 +2723,58 @@
               "display": false,
               "metrics": [
                 {
+                  "display_name": "Wildfire Ignitions",
+                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
+                  "data_units": "Count of Fires",
+                  "max_value": 105,
+                  "metric_name": "wildfire_ignitions",
+                  "min_value": 0,
+                  "raw_layer": ":fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Wildfire Igntions (Human-caused)",
+                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
+                  "data_units": "Count of Fires",
+                  "max_value": 65,
+                  "metric_name": "wildfire_ignitions_human_caused",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Wildfire Ignitions (Nonhuman-caused)",
+                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
+                  "data_units": "Count of Fires",
+                  "max_value": 11,
+                  "metric_name": "wildfire_ignitions_nonhuman_caused",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Housing Unit Density",
+                  "data_provider": "Pyrologix",
+                  "data_units": "Housing Units/Sq km",
+                  "max_value": 23000,
+                  "metric_name": "housing_unit_density",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/HUden_2020.tif",
+                  "raw_layer": ":fireAdaptComm_Tier1_HUden_2020",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
                   "display_name": "Slope",
                   "data_provider": "LANDFIRE",
                   "data_units": "%",
@@ -2803,7 +2855,7 @@
               "metrics": [
                 {
                   "display_name": "Potential Total Smoke Production Index",
-                  "data_provider": "?",
+                  "data_provider": "LANDFIRE FCCS 2022",
                   "data_units": "Index",
                   "max_value": 1,
                   "metric_name": "potential_total_smoke",
@@ -2816,7 +2868,7 @@
                 },
                 {
                   "display_name": "Potential Avoid Smoke Production Index",
-                  "data_provider": "?",
+                  "data_provider": "LANDFIRE FCCS 2022",
                   "data_units": "Index",
                   "max_value": 1,
                   "metric_name": "potential_total_smoke",
@@ -2843,7 +2895,7 @@
               "metrics": [
                 {
                   "display_name": "Present Day connectivity in California",
-                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_provider": "The Nature Conservancy, Omniscape",
                   "data_units": "Categorical",
                   "max_value": 11,
                   "metric_name": "present_day_connectivity",
@@ -2954,7 +3006,7 @@
               "metrics": [
                 {
                   "display_name": "Forest Raptor Species Richness",
-                  "data_provider": "California Department of Fish and Wildlife, CAL FIRE",
+                  "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 13,
                   "metric_name": "forest_raptors_species_richness",
@@ -2967,7 +3019,7 @@
                 },
                 {
                   "display_name": "Open Range Raptor Species Richness",
-                  "data_provider": "California Department of Fish and Wildlife, CAL FIRE",
+                  "data_provider": "FVEG 2023, California Department of Fish and Wildlife",
                   "data_units": "Number of Species",
                   "max_value": 15,
                   "metric_name": "open_range_rapter_species_richness",
@@ -3026,7 +3078,7 @@
               "metrics": [
                 {
                   "display_name": "Least Bell's Virio Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "Conservation Science and Data Visualization",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "least_bells_virio_habitat",
@@ -3209,7 +3261,7 @@
                 },
                 {
                   "display_name": "Aboveground Live Biomass 2001",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 18222,
                   "metric_name": "aboveground_live_biomass_2001",
@@ -3222,7 +3274,7 @@
                 },
                 {
                   "display_name": "Aboveground Live Biomass 2021",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 16975,
                   "metric_name": "aboveground_live_biomass_2021",
@@ -3235,7 +3287,7 @@
                 },
                 {
                   "display_name": "Belowground Live Biomass 2001",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 23082,
                   "metric_name": "belowground_live_biomass_2001",
@@ -3248,7 +3300,7 @@
                 },
                 {
                   "display_name": "Belowground Live Biomass 2021",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 23653,
                   "metric_name": "belowground_live_biomass_2021",
@@ -3261,7 +3313,7 @@
                 },
                 {
                   "display_name": "Litter Biomass 2001",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 13542,
                   "metric_name": "litter_biomass_2001",
@@ -3274,7 +3326,7 @@
                 },
                 {
                   "display_name": "Litter Biomass 2021",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 13070,
                   "metric_name": "litter_biomass_2021",
@@ -3287,7 +3339,7 @@
                 },
                 {
                   "display_name": "Standing Dead Biomass 2001",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 4912,
                   "metric_name": "standing_dead_biomass_2001",
@@ -3300,7 +3352,7 @@
                 },
                 {
                   "display_name": "Standing Dead Biomass 2021",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "US Forest Service, CalFire",
                   "data_units": "kg/m2",
                   "max_value": 4714,
                   "metric_name": "standing_dead_biomass_2021",
@@ -3373,6 +3425,32 @@
               "display_name": "Hazard",
               "metrics": [
                 {
+                  "display_name": "Predicted Ignition Probability: Human-caused",
+                  "data_provider": "UC Davis",
+                  "data_units": "Probability",
+                  "max_value": 1,
+                  "metric_name": "predicted_ignition_probability_human_caused",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/fireDynamics/Tier3/PredictedHumanIgnitionProb_1km.tif",
+                  "raw_layer": ":fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Predicted Ignition Probability: Lightning-caused",
+                  "data_provider": "UC Davis",
+                  "data_units": "Probability",
+                  "max_value": 1,
+                  "metric_name": "predicted_ignition_probability_lightning_caused",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/fireDynamics/Tier3/PredictedLightningIgnitionProb_1km.tif",
+                  "raw_layer": ":fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
                   "display_name": "Source of Ember Load to Buildings",
                   "data_provider": "Pyrologix",
                   "data_units": "Index",
@@ -3438,58 +3516,6 @@
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
                 },
                 {
-                  "display_name": "Housing Unit Density",
-                  "data_provider": "Pyrologix",
-                  "data_units": "Housing Units/Sq km",
-                  "max_value": 23000,
-                  "metric_name": "housing_unit_density",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/HUden_2020.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_HUden_2020",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Wildfire Ignitions",
-                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
-                  "data_units": "Count of Fires",
-                  "max_value": 105,
-                  "metric_name": "wildfire_ignitions",
-                  "min_value": 0,
-                  "raw_layer": ":fireAdaptComm_Tier1_WldfireAllCausesCount_1992_2020",
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldfireAllCausesCount_1992_2020.tif",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Wildfire Igntions (Human-caused)",
-                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
-                  "data_units": "Count of Fires",
-                  "max_value": 65,
-                  "metric_name": "wildfire_ignitions_human_caused",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldFireOccCause_Human_1992_2020.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Human_1992_2020",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Wildfire Ignitions (Nonhuman-caused)",
-                  "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
-                  "data_units": "Count of Fires",
-                  "max_value": 11,
-                  "metric_name": "wildfire_ignitions_nonhuman_caused",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/WldFireOccCause_Natural_1992_2020.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_WldFireOccCause_Natural_1992_2020",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
                   "display_name": "Wildland Urban Interface",
                   "data_provider": "WUI, Carlson et al",
                   "data_units": "Categorical",
@@ -3516,32 +3542,6 @@
               "display": true,
               "display_name": "Functional Fire",
               "metrics": [
-                {
-                  "display_name": "Predicted Ignition Probability: Human-caused",
-                  "data_provider": "UC Davis",
-                  "data_units": "Probability",
-                  "max_value": 1,
-                  "metric_name": "predicted_ignition_probability_human_caused",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireDynamics/Tier3/PredictedHumanIgnitionProb_1km.tif",
-                  "raw_layer": ":fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Predicted Ignition Probability: Lightning-caused",
-                  "data_provider": "UC Davis",
-                  "data_units": "Probability",
-                  "max_value": 1,
-                  "metric_name": "predicted_ignition_probability_lightning_caused",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireDynamics/Tier3/PredictedLightningIgnitionProb_1km.tif",
-                  "raw_layer": ":fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
                 {
                   "display_name": "Mean % FRI Departure since 1908",
                   "data_provider": "CAL FIRE, USDA Forest Service Region 5",
@@ -3668,280 +3668,6 @@
               "display_name": "Disturbance",
               "metrics": [
                 {
-                  "display_name": "Potential Climate Refugia (Baseline)",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "",
-                  "max_value": 1,
-                  "metric_name": "potential_climate_refugia_baseline",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/hst8110.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_hst8110",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Potential Climate Refugia (Early Century)",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "",
-                  "max_value": 1,
-                  "metric_name": "potential_climate_refugia_early_century",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/miroc_85_1039.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_1039",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Potential Climate Refugia (Mid-century)",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "",
-                  "max_value": 1,
-                  "metric_name": "potential_climate_refugia_mid-century",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/miroc_85_4069.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_4069",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Potential Climate Refugia (Late Century)",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "",
-                  "max_value": 1,
-                  "metric_name": "potential_climate_refugia_late_century",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/miroc_85_7099.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_7099",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Potential Climate Refugia (MIROC and CNRM-CM5)",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "",
-                  "max_value": 1,
-                  "metric_name": "potential_climate_refugia_miroc_and_cnrm-cm5",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/combine85_all7.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_combine85_all7",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                }
-              ]
-            },
-            {
-              "element_name": "structure",
-              "display": true,
-              "display_name": "Structure",
-              "metrics": [
-                {
-                  "display_name": "Live Tree Density >30in DBH",
-                  "data_provider": "California Forest Observatory",
-                  "data_units": "% Live Trees/Acre",
-                  "max_value": 100,
-                  "metric_name": "live_tree_density_30in_dbh",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/LargeTreeDensity_2022.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_2022",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=23",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Canopy Layers",
-                  "data_provider": "California Forest Observatory",
-                  "data_units": "Count",
-                  "max_value": 5,
-                  "metric_name": "canopy_layers",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
-                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=23",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Canopy Height",
-                  "data_provider": "California Forest Observatory",
-                  "data_units": "Meters",
-                  "max_value": 80,
-                  "metric_name": "canopy_height",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
-                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=24",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Canopy Cover",
-                  "data_provider": "California Forest Observatory",
-                  "data_units": "Percent",
-                  "max_value": 100,
-                  "metric_name": "canopy_cover",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
-                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=25",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                }
-              ]
-            },
-            {
-              "element_name": "composition",
-              "display": true,
-              "display_name": "Composition",
-              "metrics": [
-                {
-                  "display_name": "Percentage of Obligate Resprouter Biomass",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent per Pixel",
-                  "max_value": 82,
-                  "metric_name": "percent_obligate_resprouter_biomass",
-                  "min_value": 12,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_ObResprouters_pp_v1.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_SoCal_ObResprouters_pp_v1",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Percentage of Obligate Seeder Biomass",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent per Pixel",
-                  "max_value": 99,
-                  "metric_name": "percent_obligate_seeder_biomass",
-                  "min_value": 8,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_ObSeeders_pp_v1.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_SoCal_ObSeeders_pp_v1",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Percentage of Facultative Seeder Biomass",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent per Pixel",
-                  "max_value": 99,
-                  "metric_name": "percent_facultative_seeder_biomass",
-                  "min_value": 8,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_FacSeeders_pp_v1.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_SoCal_FacSeeders_pp_v1",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Percentage of tree biomass",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent per Pixel",
-                  "max_value": 100,
-                  "metric_name": "percent_tree_biomass",
-                  "min_value": 1,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_Tree_pp_v1.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_SoCal_Tree_pp_v1",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Percentage of herb biomass",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent per Pixel",
-                  "max_value": 96,
-                  "metric_name": "percent_herb_biomass",
-                  "min_value": 1,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_Herb_pp_v1.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_SoCal_Herb_pp_v1",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Shrublands w/low natural post-fire regen potential",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Binary",
-                  "max_value": 1,
-                  "metric_name": "shrubland_low_natural_regeneration",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/prepregen2020.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_prepregen2020.tif",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "% Tree Cover",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent",
-                  "max_value": 1,
-                  "metric_name": "percent_tree_cover",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Tree_2021.tif",
-                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Tree_2021",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "% Shrub Cover",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent",
-                  "max_value": 1,
-                  "metric_name": "percent_shrub_cover",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Shrub_2021.tif",
-                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Shrub_2021",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "% Herbaceous Cover",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
-                  "data_units": "Percent",
-                  "max_value": 1,
-                  "metric_name": "percent_herbaceous_cover",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Herb_2021.tif",
-                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Herb_2021",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Herbaceous Cover Change (1986-2020)",
-                  "data_provider": "San Diego State University",
-                  "data_units": "Percent",
-                  "max_value": 120,
-                  "metric_name": "herbaceous_cover_change_1986_2020",
-                  "min_value": -100,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/AbsChgeInHerbCover1986_90To2016_20.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_AbsChgeInHerbCover1986_90To2016_20",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=27",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Change in Average Annual Climatic Water Deficit",
-                  "data_provider": "San Diego State University",
-                  "data_units": "mm",
-                  "max_value": 100,
-                  "metric_name": "change_in_average_annual_climatic_water_deficit",
-                  "min_value": -80,
-                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/ChangeInAverageAnnualCWD-NearFutureDrier.tif",
-                  "raw_layer": ":forestShrubResil_Tier3_ChangeInAverageAnnualCWD-NearFutureDrier",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=28",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
                   "display_name": "Cumulative Tree Cover Loss",
                   "data_provider": "Center for Ecosystem Climate Solutions",
                   "data_units": "Percent",
@@ -4020,6 +3746,267 @@
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
                 },
                 {
+                  "display_name": "Potential Climate Refugia (Baseline)",
+                  "data_provider": "Information Center for the Environment, UC Davis",
+                  "data_units": "",
+                  "max_value": 1,
+                  "metric_name": "potential_climate_refugia_baseline",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/hst8110.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_hst8110",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Potential Climate Refugia (Early Century)",
+                  "data_provider": "Information Center for the Environment, UC Davis",
+                  "data_units": "",
+                  "max_value": 1,
+                  "metric_name": "potential_climate_refugia_early_century",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/miroc_85_1039.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_1039",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Potential Climate Refugia (Mid-century)",
+                  "data_provider": "Information Center for the Environment, UC Davis",
+                  "data_units": "",
+                  "max_value": 1,
+                  "metric_name": "potential_climate_refugia_mid-century",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/miroc_85_4069.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_4069",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Potential Climate Refugia (Late Century)",
+                  "data_provider": "Information Center for the Environment, UC Davis",
+                  "data_units": "",
+                  "max_value": 1,
+                  "metric_name": "potential_climate_refugia_late_century",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/miroc_85_7099.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_miroc_85_7099",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Potential Climate Refugia (MIROC and CNRM-CM5)",
+                  "data_provider": "Information Center for the Environment, UC Davis",
+                  "data_units": "",
+                  "max_value": 1,
+                  "metric_name": "potential_climate_refugia_miroc_and_cnrm-cm5",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/combine85_all7.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_combine85_all7",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                }
+              ]
+            },
+            {
+              "element_name": "structure",
+              "display": true,
+              "display_name": "Structure",
+              "metrics": [
+                {
+                  "display_name": "Live Tree Density >30in DBH",
+                  "data_provider": "California Forest Observatory",
+                  "data_units": "% Live Trees/Acre",
+                  "max_value": 100,
+                  "metric_name": "live_tree_density_30in_dbh",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/LargeTreeDensity_2022.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_LargeTreeDensity_2022",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=23",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Canopy Layers",
+                  "data_provider": "California Forest Observatory",
+                  "data_units": "Count",
+                  "max_value": 5,
+                  "metric_name": "canopy_layers",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyLayerCount2020Summer.tif",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyLayerCount2020Summer",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=23",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Canopy Height",
+                  "data_provider": "California Forest Observatory",
+                  "data_units": "Meters",
+                  "max_value": 80,
+                  "metric_name": "canopy_height",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyHeight2020Summer.tif",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyHeight2020Summer",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=24",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Canopy Cover",
+                  "data_provider": "California Forest Observatory",
+                  "data_units": "Percent",
+                  "max_value": 100,
+                  "metric_name": "canopy_cover",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/CFO_CanopyCover2020Summer.tif",
+                  "raw_layer": ":forestShrubResil_Tier1_CFO_CanopyCover2020Summer",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=25",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                }
+              ]
+            },
+            {
+              "element_name": "composition",
+              "display": true,
+              "display_name": "Composition",
+              "metrics": [
+                {
+                  "display_name": "Percentage of Obligate Resprouter Biomass",
+                  "data_provider": "US Forest Service, CalFire",
+                  "data_units": "Percent per Pixel",
+                  "max_value": 82,
+                  "metric_name": "percent_obligate_resprouter_biomass",
+                  "min_value": 12,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_ObResprouters_pp_v1.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_SoCal_ObResprouters_pp_v1",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Percentage of Obligate Seeder Biomass",
+                  "data_provider": "US Forest Service, CalFire",
+                  "data_units": "Percent per Pixel",
+                  "max_value": 99,
+                  "metric_name": "percent_obligate_seeder_biomass",
+                  "min_value": 8,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_ObSeeders_pp_v1.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_SoCal_ObSeeders_pp_v1",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Percentage of Facultative Seeder Biomass",
+                  "data_provider": "US Forest Service, CalFire",
+                  "data_units": "Percent per Pixel",
+                  "max_value": 99,
+                  "metric_name": "percent_facultative_seeder_biomass",
+                  "min_value": 8,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_FacSeeders_pp_v1.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_SoCal_FacSeeders_pp_v1",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Percentage of tree biomass",
+                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_units": "Percent per Pixel",
+                  "max_value": 100,
+                  "metric_name": "percent_tree_biomass",
+                  "min_value": 1,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_Tree_pp_v1.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_SoCal_Tree_pp_v1",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Percentage of herb biomass",
+                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_units": "Percent per Pixel",
+                  "max_value": 96,
+                  "metric_name": "percent_herb_biomass",
+                  "min_value": 1,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/SoCal_Herb_pp_v1.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_SoCal_Herb_pp_v1",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Shrublands w/low natural post-fire regen potential",
+                  "data_provider": "US Forest Service, CalFire",
+                  "data_units": "Binary",
+                  "max_value": 1,
+                  "metric_name": "shrubland_low_natural_regeneration",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier2/prepregen2020.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_prepregen2020.tif",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "% Tree Cover",
+                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_units": "Percent",
+                  "max_value": 1,
+                  "metric_name": "percent_tree_cover",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Tree_2021.tif",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Tree_2021",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "% Shrub Cover",
+                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_units": "Percent",
+                  "max_value": 1,
+                  "metric_name": "percent_shrub_cover",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Shrub_2021.tif",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Shrub_2021",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "% Herbaceous Cover",
+                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_units": "Percent",
+                  "max_value": 1,
+                  "metric_name": "percent_herbaceous_cover",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier1/VegCover_Herb_2021.tif",
+                  "raw_layer": ":forestShrubResil_Tier1_VegCover_Herb_2021",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
+                  "display_name": "Herbaceous Cover Change (1986-2020)",
+                  "data_provider": "San Diego State University",
+                  "data_units": "Percent",
+                  "max_value": 120,
+                  "metric_name": "herbaceous_cover_change_1986_2020",
+                  "min_value": -100,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/AbsChgeInHerbCover1986_90To2016_20.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_AbsChgeInHerbCover1986_90To2016_20",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=27",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
                   "display_name": "Seral Stage Distribution",
                   "data_provider": "?",
                   "data_units": "Categorical",
@@ -4074,7 +4061,7 @@
               "metrics": [
                 {
                   "display_name": "American Indian or Alaska Native Race Alone and Multi-race Population Concentration",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 7,
                   "metric_name": "american_indian_alaska_native_concentration",
@@ -4087,7 +4074,7 @@
                 },
                 {
                   "display_name": "Hispanic/Latino Population Concentration",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 7,
                   "metric_name": "hispano_latino_concentration",
@@ -4100,7 +4087,7 @@
                 },
                 {
                   "display_name": "Black/African American Population Concentration",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "black_african_concentration",
@@ -4113,7 +4100,7 @@
                 },
                 {
                   "display_name": "Hispanic/Black, Indigenous or Person of Color",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 6,
                   "metric_name": "hispanic_black_indigenous_concentration",
@@ -4126,7 +4113,7 @@
                 },
                 {
                   "display_name": "Asian Population Concentration",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "asian_concentration",
@@ -4139,7 +4126,7 @@
                 },
                 {
                   "display_name": "Multi-Race, Except Part-American Indian Population Concentration",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 7,
                   "metric_name": "multi_race_not_american_indian_concentration",
@@ -4152,7 +4139,7 @@
                 },
                 {
                   "display_name": "Low Income Population Concentration",
-                  "data_provider": "California Environmental Protection Agency",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 9,
                   "metric_name": "low_income_population",
@@ -4243,6 +4230,19 @@
               "display_name": "Quantity",
               "metrics": [
                 {
+                  "display_name": "Change in Average Annual Climatic Water Deficit",
+                  "data_provider": "San Diego State University",
+                  "data_units": "mm",
+                  "max_value": 100,
+                  "metric_name": "change_in_average_annual_climatic_water_deficit",
+                  "min_value": -80,
+                  "raw_data_download_path": "southern-california/forestShrubResil/Tier3/ChangeInAverageAnnualCWD-NearFutureDrier.tif",
+                  "raw_layer": ":forestShrubResil_Tier3_ChangeInAverageAnnualCWD-NearFutureDrier",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=28",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                },
+                {
                   "display_name": "Actual Evapotranspiration Fraction (drought conditions)",
                   "data_provider": "Center for Ecosystem Climate Solutions",
                   "data_units": "Fraction (Dimensionless)",
@@ -4257,7 +4257,7 @@
                 },
                 {
                   "display_name": "Groundwater Basin Boundaries",
-                  "data_provider": "Center for Ecosystem Climate Solutions",
+                  "data_provider": "California Department of Water Resources",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "basin",
@@ -4303,7 +4303,7 @@
               "metrics": [
                 {
                   "display_name": "Percent Impervious Surface",
-                  "data_provider": "San Diego State University",
+                  "data_provider": "National Land Cover Database (NLCD)",
                   "data_units": "Percent imperviousness",
                   "max_value": 100,
                   "metric_name": "percent_impervious_surface",

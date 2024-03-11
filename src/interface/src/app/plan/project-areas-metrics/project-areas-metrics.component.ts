@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { MatSelectChange } from '@angular/material/select';
 import { ChartData } from './chart-data';
 import { map } from 'rxjs';
-import { PlanStateService } from '../../services/plan-state.service';
+import { PlanStateService } from '@services';
 
 @Component({
   selector: 'app-project-areas-metrics',

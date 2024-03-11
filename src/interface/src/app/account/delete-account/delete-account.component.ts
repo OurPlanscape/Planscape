@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../services';
+import { AuthService } from '@services';
 import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { DeleteAccountDialogComponent } from '../delete-account-dialog/delete-account-dialog.component';

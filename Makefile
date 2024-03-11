@@ -55,7 +55,7 @@ load-rasters:
 install-dependencies-backend:
 	pip install -r src/planscape/requirements.txt
 
-deploy-backend: install-dependencies-backend migrate load-conditions restart
+deploy-backend: install-dependencies-backend migrate restart
 
 deploy-all: deploy-backend deploy-frontend
 

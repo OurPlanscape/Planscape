@@ -25,8 +25,11 @@ import {
   AuthService,
   MapService,
   PlanService,
+  PlanState,
+  PlanStateService,
   SessionService,
-} from '../services';
+  ShareMapService,
+} from '@services';
 import {
   BaseLayerType,
   BoundaryConfig,
@@ -43,7 +46,6 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { FeaturesModule } from '../features/features.module';
-import { PlanState, PlanStateService } from '../services/plan-state.service';
 import {
   defaultMapConfig,
   defaultMapConfigsDictionary,
@@ -51,7 +53,7 @@ import {
 } from './map.helper';
 import * as esri from 'esri-leaflet';
 import { MockProvider } from 'ng-mocks';
-import { ShareMapService } from '../services/share-map.service';
+import { MOCK_PLAN } from '@services/mocks';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -60,6 +62,7 @@ describe('MapComponent', () => {
   let loader: HarnessLoader;
   let sessionInterval = new BehaviorSubject<number>(0);
   let userSignedIn$ = new BehaviorSubject<boolean | null>(false);
+  const currentPlanId = 100;
 
   beforeEach(() => {
     const fakeLayer: L.Layer = L.vectorGrid.protobuf(
@@ -89,16 +92,7 @@ describe('MapComponent', () => {
         },
       ],
     };
-    const fakePlan: Plan = {
-      id: 'temp',
-      name: 'somePlan',
-      ownerId: 'owner',
-      region: Region.SIERRA_NEVADA,
-      planningArea: fakeGeoJson,
-      area_acres: 123,
-      area_m2: 231,
-      creator: 'John Doe',
-    };
+    const fakePlan: Plan = MOCK_PLAN;
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
       {},
@@ -142,11 +136,11 @@ describe('MapComponent', () => {
     );
     const fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
       'PlanService',
-      { createPlan: of({ success: true, result: fakePlan }) },
+      { createPlan: of(fakePlan) },
       {
         planState$: new BehaviorSubject<PlanState>({
           all: {}, // All plans indexed by id
-          currentPlanId: 'temp',
+          currentPlanId: currentPlanId,
           currentScenarioId: null,
           mapConditionLayer: null,
           mapShapes: null,
@@ -170,7 +164,7 @@ describe('MapComponent', () => {
       'MatDialog',
       {
         open: {
-          afterClosed: () => of('temp'),
+          afterClosed: () => of(currentPlanId),
         } as MatDialogRef<any>,
       },
       {}
@@ -686,7 +680,10 @@ describe('MapComponent', () => {
 
       fixture.componentInstance.openCreatePlanDialog();
       tick();
-      expect(routerStub.navigate).toHaveBeenCalledOnceWith(['plan', 'temp']);
+      expect(routerStub.navigate).toHaveBeenCalledOnceWith([
+        'plan',
+        currentPlanId,
+      ]);
     }));
   });
 

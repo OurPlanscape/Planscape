@@ -7,12 +7,13 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
+import { canAddScenario } from '../../../plan/permissions';
 import {
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
-} from '../../../../app/shared/constants';
+} from '../../../shared/constants';
 
-import { ScenarioService } from '../../../services/scenario.service';
+import { ScenarioService } from '@services';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -63,6 +64,13 @@ export class SavedScenariosComponent implements OnInit {
         );
         this.loading = false;
       });
+  }
+
+  canAddScenarioForPlan(): boolean {
+    if (!this.plan) {
+      return false;
+    }
+    return canAddScenario(this.plan);
   }
 
   openConfig(configId?: number): void {
