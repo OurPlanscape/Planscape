@@ -4,7 +4,7 @@ import { DeleteAccountComponent } from './delete-account.component';
 import { MaterialModule } from '../../material/material.module';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MockProvider } from 'ng-mocks';
-import { AuthService } from '../../services';
+import { AuthService } from '@services';
 import { Router } from '@angular/router';
 
 describe('DeleteAccountComponent', () => {
