@@ -33,8 +33,8 @@ def send_invitation(
                 query_params={"redirect": f"plan/{planning_area.pk}"},
             ),
         }
-        txt = render_to_string("invites/new_invite.txt", context)
-        html = render_to_string("invites/new_invite.html", context)
+        txt = render_to_string("invites/new_invite_message.txt", context)
+        html = render_to_string("invites/new_invite_message.html", context)
         send_mail(
             subject=subject,
             from_email=settings.DEFAULT_FROM_EMAIL,
