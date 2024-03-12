@@ -117,7 +117,6 @@ describe('SharePlanDialogComponent', () => {
       component.changeRole(mockInvite, 'Collaborator');
       fixture.detectChanges();
       expect(service.changeRole).toHaveBeenCalledWith(
-        planningAreaId,
         mockInvite.id,
         'Collaborator'
       );
