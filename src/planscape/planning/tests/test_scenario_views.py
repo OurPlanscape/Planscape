@@ -887,6 +887,12 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             self.configuration,
             user=self.owner_user,
         )
+        self.scenario_collab_user = _create_scenario(
+            self.planning_area,
+            "test scenario by collaborator",
+            self.configuration,
+            user=self.collab_user,
+        )
         self.empty_planning_area = _create_planning_area(
             self.owner_user, "empty test plan", self.storable_geometry
         )
@@ -907,8 +913,8 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         create_collaborator_record(
             self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
-        self.assertEqual(Scenario.objects.count(), 4)
-        self.assertEqual(ScenarioResult.objects.count(), 4)
+        self.assertEqual(Scenario.objects.count(), 5)
+        self.assertEqual(ScenarioResult.objects.count(), 5)
 
     def test_list_scenario(self):
         self.client.force_authenticate(self.owner_user)
@@ -919,7 +925,39 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
+        self.assertEqual(len(scenarios), 4)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
+
+    def test_list_just_owner_scenarios(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:list_scenarios_for_planning_area"),
+            {
+                "planning_area": self.planning_area.pk,
+                "my_scenarios": True,
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
         self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
+
+    def test_list_just_collab_scenarios(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:list_scenarios_for_planning_area"),
+            {
+                "planning_area": self.planning_area.pk,
+                "my_scenarios": True,
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(len(scenarios), 1)
         self.assertIsNotNone(scenarios[0]["created_at"])
         self.assertIsNotNone(scenarios[0]["updated_at"])
 
@@ -953,7 +991,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(len(scenarios), 3)
+        self.assertEqual(len(scenarios), 4)
         self.assertIsNotNone(scenarios[0]["created_at"])
         self.assertIsNotNone(scenarios[0]["updated_at"])
 
@@ -966,7 +1004,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(len(scenarios), 3)
+        self.assertEqual(len(scenarios), 4)
         self.assertIsNotNone(scenarios[0]["created_at"])
         self.assertIsNotNone(scenarios[0]["updated_at"])
 

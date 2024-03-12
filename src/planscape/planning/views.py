@@ -816,6 +816,10 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
             )
 
         scenarios = Scenario.objects.filter(planning_area__pk=planning_area_id)
+
+        if "my_scenarios" in request.GET and request.GET["my_scenarios"]:
+            scenarios = scenarios.filter(user=user)
+
         serializer = ScenarioSerializer(instance=scenarios, many=True)
         return Response(serializer.data)
     except PlanningArea.DoesNotExist:
