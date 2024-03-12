@@ -19,7 +19,8 @@ def send_invitation(
     try:
         user_object_role = UserObjectRole.objects.get(pk=user_object_role_id)
         planning_area = user_object_role.content_object
-        subject = f"{user_object_role.inviter} invited you to collaborate on '{planning_area}'"
+
+        subject = f"[Planscape] {user_object_role.inviter.get_full_name() } invited you to collaborate on '{planning_area.name}'"
         context = {
             "inviter": user_object_role.inviter,
             "collaborator": (
@@ -27,7 +28,7 @@ def send_invitation(
             ),
             "planning_area": planning_area,
             "message": message,
-            "frontend_assets": get_frontend_url("/assets"),
+            "frontend_assets": get_frontend_url("assets"),
             "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
             "create_account_link": get_frontend_url(
                 "signup",
