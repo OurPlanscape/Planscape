@@ -7,6 +7,7 @@ import {
 } from '@angular/router';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   concatMap,
   filter,
@@ -45,6 +46,9 @@ export class PlanComponent implements OnInit, OnDestroy {
         return this.scenarioService.getScenario(state.currentScenarioId);
       }
       return of(null);
+    }),
+    catchError((e) => {
+      return of(undefined);
     })
   );
   breadcrumbs$ = combineLatest([
@@ -59,6 +63,9 @@ export class PlanComponent implements OnInit, OnDestroy {
           path: path === 'config' ? getPlanPath(plan.id) : undefined,
         },
       ];
+      if (scenario === undefined) {
+        return crumbs;
+      }
       if (path === 'config' && !scenario) {
         crumbs.push({ name: 'New Scenario' });
       }
