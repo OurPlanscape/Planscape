@@ -555,6 +555,35 @@
                 "wildland_urban_interface != 0"
               ],
               "global_thresholds": []
+            },
+            {
+              "id": 50,
+              "long_question_text": " What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
+              "short_question_text": "Reduce Fire Risk in Carbon Sinks",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "carbon_sequestration"
+                ],
+                "elements": [
+                  "severity",
+                  "carbon_storage"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "total_aboveground_carbon"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "total_aboveground_carbon"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "total_aboveground_carbon > 0"
+              ],
+              "global_thresholds": []
             }
           ]
         },
