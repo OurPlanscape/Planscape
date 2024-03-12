@@ -1,4 +1,10 @@
-<div class="create-scenarios-panel mat-elevation-z2">
+<app-resource-unavailable
+  resource="scenario"
+  *ngIf="scenarioNotFound"></app-resource-unavailable>
+
+<div
+  class="create-scenarios-panel mat-elevation-z2"
+  [ngClass]="{ hidden: scenarioNotFound }">
   <div class="create-scenarios-panel-content">
     <div class="scenario-name">
       <form [formGroup]="forms!">

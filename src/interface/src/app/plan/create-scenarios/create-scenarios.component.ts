@@ -62,6 +62,8 @@ export class CreateScenariosComponent implements OnInit {
 
   tabAnimation = this.tabAnimationOptions.off;
 
+  scenarioNotFound = false;
+
   @ViewChild(SetPrioritiesComponent, { static: true })
   prioritiesComponent!: SetPrioritiesComponent;
 
@@ -160,9 +162,8 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
-    this.planStateService
-      .getScenario(this.scenarioId!)
-      .subscribe((scenario) => {
+    this.planStateService.getScenario(this.scenarioId!).subscribe({
+      next: (scenario) => {
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
           return;
@@ -196,7 +197,11 @@ export class CreateScenariosComponent implements OnInit {
         }
         // setting constraints
         this.constraintsPanelComponent.setFormData(scenario.configuration);
-      });
+      },
+      error: () => {
+        this.scenarioNotFound = true;
+      },
+    });
   }
 
   private formValueToScenario(): Scenario {

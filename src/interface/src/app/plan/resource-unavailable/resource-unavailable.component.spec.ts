@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PlanUnavailableComponent } from './plan-unavailable.component';
+import { ResourceUnavailableComponent } from './resource-unavailable.component';
 
 describe('PlanUnavailableComponent', () => {
-  let component: PlanUnavailableComponent;
-  let fixture: ComponentFixture<PlanUnavailableComponent>;
+  let component: ResourceUnavailableComponent;
+  let fixture: ComponentFixture<ResourceUnavailableComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [PlanUnavailableComponent],
+      declarations: [ResourceUnavailableComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PlanUnavailableComponent);
+    fixture = TestBed.createComponent(ResourceUnavailableComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
