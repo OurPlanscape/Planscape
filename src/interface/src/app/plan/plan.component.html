@@ -3,7 +3,9 @@
   [breadcrumbs]="(breadcrumbs$ | async) || []"
   [area]="(area$ | async) || 'SCENARIOS'"></app-nav-bar>
 <div class="root-container">
-  <app-plan-unavailable *ngIf="planNotFound"></app-plan-unavailable>
+  <app-resource-unavailable
+    *ngIf="planNotFound"
+    resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
     <div class="plan-summary-panel" *ngIf="showOverview$ | async">
       <mat-tab-group
@@ -11,10 +13,12 @@
         mat-stretch-tabs
         disablePagination="true"
         *appFeatureFlag="'show_share_modal'">
-        <mat-tab label="ACTIVE"
-          ><app-area-details [plan]="plan"></app-area-details>
+        <mat-tab label="ACTIVE">
+          <app-area-details [plan]="plan"></app-area-details>
         </mat-tab>
-        <mat-tab label="NOTES"><app-area-notes></app-area-notes></mat-tab>
+        <mat-tab label="NOTES">
+          <app-area-notes></app-area-notes>
+        </mat-tab>
       </mat-tab-group>
 
       <app-summary-panel
