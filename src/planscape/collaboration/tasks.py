@@ -19,7 +19,7 @@ def send_invitation(
     try:
         user_object_role = UserObjectRole.objects.get(pk=user_object_role_id)
         planning_area = user_object_role.content_object
-        subject = "[Planscape] You have a a new invite!"
+        subject = f"{user_object_role.inviter} invited you to collaborate on '{planning_area}'"
         context = {
             "inviter": user_object_role.inviter,
             "collaborator": (
@@ -27,14 +27,15 @@ def send_invitation(
             ),
             "planning_area": planning_area,
             "message": message,
+            "frontend_assets": get_frontend_url("/assets"),
             "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
             "create_account_link": get_frontend_url(
                 "signup",
                 query_params={"redirect": f"plan/{planning_area.pk}"},
             ),
         }
-        txt = render_to_string("invites/new_invite.txt", context)
-        html = render_to_string("invites/new_invite.html", context)
+        txt = render_to_string("invites/new_invite_message.txt", context)
+        html = render_to_string("invites/new_invite_message.html", context)
         send_mail(
             subject=subject,
             from_email=settings.DEFAULT_FROM_EMAIL,
