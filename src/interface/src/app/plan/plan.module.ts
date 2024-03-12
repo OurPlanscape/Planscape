@@ -1,86 +1,86 @@
-import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { AreaDetailsComponent } from './area-details/area-details.component';
+import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from 'src/app/material/material.module';
-import { RouterModule } from '@angular/router';
-import { HttpClientXsrfModule } from '@angular/common/http';
-import { SharedModule } from './../shared/shared.module';
+import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
+import { ExploreComponent } from './explore/explore/explore.component';
+import { FeaturesModule } from '../features/features.module';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientXsrfModule } from '@angular/common/http';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
-import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
+import { MapModule } from '../map/map.module';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MaterialModule } from 'src/app/material/material.module';
+import { NgChartsModule } from 'ng2-charts';
+import { NgModule } from '@angular/core';
+import { NgxMaskModule } from 'ngx-mask';
+import { PlanComponent } from './plan.component';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanNavigationBarComponent } from './plan-navigation-bar/plan-navigation-bar.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
-import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
-import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
-import { PlanUnavailableComponent } from './plan-unavailable/plan-unavailable.component';
-import { PlanComponent } from './plan.component';
-import { FeaturesModule } from '../features/features.module';
-import { WINDOW_PROVIDERS } from '@services/window.service';
-import { ScenarioNotStartedComponent } from './scenario-not-started/scenario-not-started.component';
-import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.component';
-import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';
 import { ProjectAreasComponent } from './project-areas/project-areas.component';
 import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-areas-metrics.component';
 import { ReportChartComponent } from './report-chart/report-chart.component';
-import { NgChartsModule } from 'ng2-charts';
+import { ResourceUnavailableComponent } from './resource-unavailable/resource-unavailable.component';
+import { RouterModule } from '@angular/router';
+import { SavedScenariosComponent } from './plan-summary/saved-scenarios/saved-scenarios.component';
 import { ScenarioFailureComponent } from './scenario-failure/scenario-failure.component';
-import { ExploreComponent } from './explore/explore/explore.component';
-import { MapModule } from '../map/map.module';
+import { ScenarioNotStartedComponent } from './scenario-not-started/scenario-not-started.component';
+import { ScenarioPendingComponent } from './scenario-pending/scenario-pending.component';
+import { ScenarioResultsComponent } from './scenario-results/scenario-results.component';
 import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
-import { NgxMaskModule } from 'ngx-mask';
-import { AreaDetailsComponent } from './area-details/area-details.component';
-import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { ScenariosTableListComponent } from './plan-summary/scenarios-table-list/scenarios-table-list.component';
+import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
+import { SharedModule } from '../shared/shared.module';
+import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
+import { WINDOW_PROVIDERS } from '@services/window.service';
 
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [
+    AreaDetailsComponent,
+    AreaNotesComponent,
+    ConstraintsPanelComponent,
+    CreateScenariosComponent,
+    ExploreComponent,
+    IdentifyProjectAreasComponent,
     PlanComponent,
     PlanMapComponent,
-    SavedScenariosComponent,
-    SummaryPanelComponent,
-    PlanUnavailableComponent,
-    PlanOverviewComponent,
-    CreateScenariosComponent,
     PlanNavigationBarComponent,
-    SetPrioritiesComponent,
-    ConstraintsPanelComponent,
-    IdentifyProjectAreasComponent,
-    ScenarioNotStartedComponent,
-    ScenarioPendingComponent,
-    ScenarioResultsComponent,
+    PlanOverviewComponent,
     ProjectAreasComponent,
     ProjectAreasMetricsComponent,
     ReportChartComponent,
+    ResourceUnavailableComponent,
+    SavedScenariosComponent,
     ScenarioFailureComponent,
-    ExploreComponent,
+    ScenarioNotStartedComponent,
+    ScenarioPendingComponent,
+    ScenarioResultsComponent,
     ScenarioTooltipComponent,
-    AreaDetailsComponent,
-    AreaNotesComponent,
     ScenariosTableListComponent,
+    SetPrioritiesComponent,
+    SummaryPanelComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
+    FeaturesModule,
     HttpClientXsrfModule.withOptions({
       cookieName: 'csrftoken',
       headerName: 'X-CSRFToken',
     }),
+    MapModule,
     MatButtonToggleModule,
     MaterialModule,
+    NgChartsModule,
+    NgxMaskModule.forRoot(),
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
-    FeaturesModule,
-    NgChartsModule,
-    MapModule,
-    NgxMaskModule.forRoot(),
   ],
 })
 export class PlanModule {}
