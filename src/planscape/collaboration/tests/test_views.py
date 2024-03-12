@@ -7,6 +7,7 @@ from unittest import mock
 from collaboration.models import UserObjectRole, Role
 from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea
+from planning.tests.helpers import _create_test_user_set
 
 
 class CreateSharedLinkTest(APITransactionTestCase):
@@ -103,30 +104,13 @@ class GetInvitationsTest(APITransactionTestCase):
 
 class UpdateCollaboratorRoleTest(APITransactionTestCase):
     def setUp(self):
-        self.owner = User.objects.create(
-            username="testuser1", email="owner@example.text"
-        )
-        self.owner.set_password("12345")
-        self.owner.save()
-
-        self.collab_user = User.objects.create(
-            username="someotheruser", email="acollaborator@example.text"
-        )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
-
-        self.invitee = User.objects.create(
-            username="testuser2", email="iamatestuser@example.text"
-        )
-        self.invitee.set_password("12345")
-        self.invitee.save()
+        self.test_users = _create_test_user_set()
+        self.owner = self.test_users["owner"]
+        self.collab_user = self.test_users["collaborator"]
+        self.invitee = self.test_users["viewer"]
 
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
-        )
-
-        self.user_object_role = create_collaborator_record(
-            self.owner, self.collab_user, self.planningarea, Role.COLLABORATOR
         )
         self.user_object_role = create_collaborator_record(
             self.owner, self.invitee, self.planningarea, Role.VIEWER
@@ -139,8 +123,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -158,8 +140,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -177,8 +157,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -198,8 +176,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -215,8 +191,6 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": self.planningarea.pk,
                     "invitation_id": self.user_object_role.id,
                 },
             ),
@@ -225,19 +199,72 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
-    def test_nonexistent_related_object(self):
-        self.client.force_authenticate(self.invitee)
-        payload = {"role": "Collaborator"}
-        response = self.client.patch(
+
+class DeleteInviteTest(APITransactionTestCase):
+    def setUp(self):
+        self.test_users = _create_test_user_set()
+        self.owner = self.test_users["owner"]
+        self.collab_user = self.test_users["collaborator"]
+        self.invitee = self.test_users["viewer"]
+
+        self.planningarea = PlanningArea.objects.create(
+            user=self.owner, region_name="foo"
+        )
+        self.user_object_role_collab = create_collaborator_record(
+            self.owner, self.collab_user, self.planningarea, Role.COLLABORATOR
+        )
+        self.user_object_role_viewer = create_collaborator_record(
+            self.owner, self.invitee, self.planningarea, Role.VIEWER
+        )
+
+    def test_delete_collab_invite_as_owner(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(
             reverse(
                 "collaboration:update_invitation",
                 kwargs={
-                    "target_entity": "planningarea",
-                    "object_pk": 9999,
-                    "invitation_id": self.user_object_role.id,
+                    "invitation_id": self.user_object_role_collab.id,
                 },
             ),
-            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_viewer_invite_as_owner(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.delete(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "invitation_id": self.user_object_role_viewer.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 204)
+
+    def test_delete_collab_invite_as_viewer(self):
+        self.client.force_authenticate(self.invitee)
+        response = self.client.delete(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "invitation_id": self.user_object_role_collab.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_nonexistent_invite(self):
+        self.client.force_authenticate(self.invitee)
+        response = self.client.delete(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "invitation_id": 9999999,
+                },
+            ),
             format="json",
         )
         self.assertEqual(response.status_code, 404)
