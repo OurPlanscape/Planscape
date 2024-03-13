@@ -19,6 +19,19 @@
               "display": false,
               "metrics": [
                 {
+                  "display_name": "CWHR Vegetation Type",
+                  "data_provider": "CWHR",
+                  "data_units": "%",
+                  "max_value": 100,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "northern-california/operational/cwhr_vegetation_type_reclass.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "CWHR",
+                  "source_link": ""
+                },
+                {
                   "display_name": "Slope",
                   "data_provider": "LANDFIRE",
                   "data_units": "%",
@@ -1556,6 +1569,19 @@
               "display": false,
               "metrics": [
                 {
+                  "display_name": "CWHR Vegetation Type",
+                  "data_provider": "CWHR",
+                  "data_units": "%",
+                  "max_value": 100,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/operational/cwhr_vegetation_type_reclass.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "CWHR",
+                  "source_link": ""
+                },
+                {
                   "display_name": "Slope",
                   "data_provider": "LANDFIRE",
                   "data_units": "%",
@@ -2722,6 +2748,19 @@
               "element_name": "Forsys",
               "display": false,
               "metrics": [
+                {
+                  "display_name": "CWHR Vegetation Type",
+                  "data_provider": "CWHR",
+                  "data_units": "%",
+                  "max_value": 100,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/operational/cwhr_vegetation_type_reclass.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "CWHR",
+                  "source_link": ""
+                },
                 {
                   "display_name": "Wildfire Ignitions",
                   "data_provider": "Rocky Mountain Research Station, U.S. Forest Service",
@@ -4390,6 +4429,19 @@
               "element_name": "Forsys",
               "display": false,
               "metrics": [
+                {
+                  "display_name": "CWHR Vegetation Type",
+                  "data_provider": "CWHR",
+                  "data_units": "%",
+                  "max_value": 100,
+                  "metric_name": "slope",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/operational/cwhr_vegetation_type_reclass.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "CWHR",
+                  "source_link": ""
+                },
                 {
                   "display_name": "Vegetation Types",
                   "data_provider": "California Department of Fish and Wildlife CWHR",
