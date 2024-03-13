@@ -9,6 +9,8 @@ def is_creator(user: User, planning_area: PlanningArea):
 
 
 def check_for_permission(user_id, model, permission):
+    if user_id is None:
+        return False
     try:
         content_type = ContentType.objects.get_for_model(model)
         entry = UserObjectRole.objects.get(

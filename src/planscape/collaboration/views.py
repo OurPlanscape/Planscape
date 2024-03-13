@@ -26,9 +26,16 @@ class CreateInvite(APIView):
         target_entity = serializer.validated_data.get("target_entity")
         object_pk = serializer.validated_data.get("object_pk")
         current_user = request.user
+        if not current_user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
         emails = serializer.validated_data.get("emails")
         role = serializer.validated_data.get("role")
         message = serializer.validated_data.get("message")
+
         try:
             invites = [
                 create_invite(
@@ -56,6 +63,11 @@ class CreateInvite(APIView):
 class InvitationsForObject(APIView):
     def get(self, request: Request, target_entity: str, object_pk: int):
         user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         content_type = ContentType.objects.get(model=target_entity)
         Model = content_type.model_class()
         instance = Model.objects.get(pk=object_pk)
@@ -79,8 +91,12 @@ class InvitationsForObject(APIView):
     def patch(self, request: Request, invitation_id: int):
         try:
             user = request.user
+            if not user.is_authenticated:
+                return Response(
+                    {"error": "Authentication Required"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             user_object_role_obj = UserObjectRole.objects.get(pk=invitation_id)
-
             serializer = UserObjectRoleSerializer(
                 instance=user_object_role_obj,
                 data={"role": request.data.get("role")},
@@ -125,6 +141,11 @@ class InvitationsForObject(APIView):
     def delete(self, request: Request, invitation_id: int):
         try:
             user = request.user
+            if not user.is_authenticated:
+                return Response(
+                    {"error": "Authentication Required"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
             user_object_role_obj = UserObjectRole.objects.get(pk=invitation_id)
 
             Model = user_object_role_obj.content_type.model_class()
