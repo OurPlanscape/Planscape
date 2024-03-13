@@ -259,9 +259,9 @@ EMAIL_HOST = config("EMAIL_HOST", default="smtp.google.com")
 EMAIL_UNKNOWN_ACCOUNTS = True
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", "no-reply@planscape.org")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="no-reply@planscape.org")
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
-DEFAULT_FROM_EMAIL = "no-reply@planscape.org"
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@planscape.org")
 
 SESSION_REMEMBER = True
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
