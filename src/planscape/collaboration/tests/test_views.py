@@ -62,6 +62,25 @@ class CreateSharedLinkTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    @mock.patch(
+        "collaboration.services.send_invitation.delay",
+        return_value=(True, "all good"),
+    )
+    def test_create_invite_unauthenticated(self, send_invitation):
+        data = {
+            "target_entity": "planningarea",
+            "object_pk": self.pa1.pk,
+            "emails": [
+                "foo@foo.com",
+            ],
+            "role": "Viewer",
+            "message": "Hi!",
+        }
+        response = self.client.post(
+            reverse("collaboration:create_invite"), data, format="json"
+        )
+        self.assertEqual(response.status_code, 401)
+
 
 class GetInvitationsTest(APITransactionTestCase):
     def setUp(self):
@@ -100,6 +119,15 @@ class GetInvitationsTest(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         assert len(data) == 1
+
+    def test_returns_all_invites_unauthenticated(self):
+        response = self.client.get(
+            reverse(
+                "collaboration:get_invitations",
+                kwargs={"target_entity": "planningarea", "object_pk": self.pa1.pk},
+            ),
+        )
+        self.assertEqual(response.status_code, 401)
 
 
 class UpdateCollaboratorRoleTest(APITransactionTestCase):
@@ -199,6 +227,20 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 403)
 
+    def test_update_role_unauthenticated(self):
+        payload = {"role": "Collaborator"}
+        response = self.client.patch(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "invitation_id": self.user_object_role.id,
+                },
+            ),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+
 
 class DeleteInviteTest(APITransactionTestCase):
     def setUp(self):
@@ -268,3 +310,15 @@ class DeleteInviteTest(APITransactionTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_delete_unathenticated(self):
+        response = self.client.delete(
+            reverse(
+                "collaboration:update_invitation",
+                kwargs={
+                    "invitation_id": self.user_object_role_collab.id,
+                },
+            ),
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)

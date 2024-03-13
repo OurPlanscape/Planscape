@@ -9,6 +9,7 @@ export interface Scenario {
   configuration: ScenarioConfig;
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
+  user?: number;
 }
 
 /**
