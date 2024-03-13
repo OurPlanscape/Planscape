@@ -9,6 +9,11 @@
   position: relative;
 }
 
+.slide-toggle-my-scenarios {
+  @include standard-input-label();
+  float: right;
+}
+
 .mat-card {
   border-radius: 16px;
   min-height: 180px;
