@@ -27,7 +27,9 @@
     />
     <title></title>
     <style type="text/css">
-      .ExternalClass {width: 100%;}
+      .ExternalClass {
+        width: 100%;
+      }
       body {
         font-family: "Public Sans", Arial, Helvetica, sans-serif;
         mso-font-alt: "Arial", Helvetica, sans-serif;
@@ -53,7 +55,6 @@
           width: 80%;
         }
       }
-
     </style>
   </head>
   <!--[if true]>
@@ -62,36 +63,32 @@
         <td>
 <![endif]-->
   <body style="-webkit-text-size-adjust: 100%">
-    <div
-      class="message-container"
-    >
+    <div class="message-container">
       <div style="width: 100%; justify-content: center; gap: 16px">
+        <div style="width: 100%; padding: 10px">
+
         <img
           class="fallback-image"
-          src="{{ frontend_assets }}/png/Planscape-logo-color-black-green-icon.png"
+          src="https://www.planscape.org/wp-content/uploads/2023/05/Planscape-logo-black-1024x195.gif"
           alt="Planscape Logo"
-          style="max-width: 100%; display: block"
+          style="max-width: 140px; height: auto"
         />
-        <div style="width: 100%">
-          <span style="font-size: 22px; font-weight: 500; line-height: 32px"
+        </div>
+
+        <div style="width: 100%; padding: 10px">
+          <span style="font-size: 22px; font-weight: 500"
             >{{ inviter.get_full_name }}</span
-          ><span style="font-size: 22px; font-weight: 600; line-height: 32px">
-          </span
-          ><span style="font-size: 22px; font-weight: 500; line-height: 32px"
-            >invited you to</span
-          ><span style="font-size: 22px; font-weight: 600; line-height: 32px">
-          </span
-          ><span style="font-size: 22px; font-weight: 700; line-height: 32px"
-            >collaborate</span
-          ><span style="font-size: 22px; font-weight: 600; line-height: 32px">
-          </span
-          ><span style="font-size: 22px; font-weight: 500; line-height: 32px"
-            >on </span
-          ><span style="font-size: 22px; font-weight: 400; line-height: 32px"
+          ><span style="font-size: 22px; font-weight: 600"> </span
+          ><span style="font-size: 22px; font-weight: 500">invited you to</span
+          ><span style="font-size: 22px; font-weight: 600"> </span
+          ><span style="font-size: 22px; font-weight: 700">collaborate</span
+          ><span style="font-size: 22px; font-weight: 600"> </span
+          ><span style="font-size: 22px; font-weight: 500">on </span
+          ><span style="font-size: 22px; font-weight: 400"
             >“{{ planning_area.name }}”</span
           >
         </div>
-        <div style="width: 100%">
+        <div style="width: 100%; padding: 10px">
           <span style="color: #4a4a4a; font-weight: 400; line-height: 22px"
             >Log in to Planscape.org is required to view the planning area. If
             you don’t have a Planscape account, please </span
@@ -102,7 +99,7 @@
             >.</span
           >
         </div>
-        <div style="width: 100%">
+        <div style="width: 100%; padding: 10px">
           <span style="color: #4a4a4a; font-weight: 400; line-height: 22px"
             >Can’t access the planning area? Please contact </span
           ><span style="color: #4a4a4a; font-weight: 600; line-height: 22px"
@@ -111,54 +108,65 @@
             >.</span
           >
         </div>
+        {% if message %}
+
         <div
-          style="padding-top: 16px; padding-right: 25px; padding-bottom: 20px"
-        >
-          {% if message %}
-          <div
-            style="border-bottom: 1px #e1e1e1 solid; padding-bottom: 2px"
-          ></div>
-          <div style="width: 415px; font-weight: 600; line-height: 14px">
-            Message
-          </div>
-          <div style="width: 415px; font-weight: 400; line-height: 22px">
-            {{message}}
+          style="border-bottom: 1px #e1e1e1 solid; padding-bottom: 2px"
+        ></div>
+        <div style="width: 100%; padding: 10px">
+          <div style="padding-top: 16px; padding-bottom: 20px">
+            <div
+              style="
+                font-size: 16px;
+                width: 100%;
+                font-weight: 600;
+                line-height: 14px;
+              "
+            >
+              Message
+            </div>
+            <div
+              style="
+                width: 94%;
+                font-weight: 400;
+                line-height: 22px;
+                padding: 12px;
+              "
+            >
+              {{message}}
+              Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+
+
+            </div>
           </div>
           {% endif %}
         </div>
-
-        <div
-          style="
-            padding-top: 10px;
-            padding-bottom: 10px;
-            background: #064bba;
-            border-radius: 4px;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-          "
-        >
+        <div style="width: 100%;">
           <div
             style="
-              padding-top: 2px;
-              padding-bottom: 2px;
-              justify-content: center;
-              align-items: center;
-              gap: 8px;
+              padding-top: 10px;
+              padding-bottom: 10px;
+              background: #064bba;
+              border-radius: 4px;
+              width: 100%;
             "
           >
-            <a href="{{planning_area_link}}">
-              <div
-                style="
-                  color: white;
-                  font-weight: 500;
-                  line-height: 16px;
-                  text-align: center;
-                "
-              >
-                View planning area
-              </div>
-            </a>
+            <div
+              style="padding-top: 2px; padding-bottom: 2px; align-items: center"
+            >
+              <a href="{{planning_area_link}}">
+                <div
+                  style="
+                    color: white;
+                    font-weight: 500;
+                    line-height: 16px;
+                    text-align: center;
+                  "
+                >
+                  View planning area
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>
