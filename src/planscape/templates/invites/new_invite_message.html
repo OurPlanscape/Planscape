@@ -36,24 +36,8 @@
         color: black;
       }
 
-      @media only screen and (max-width: 600px)  {
-        .message-container {
-          width: 60%;
-        }
-      }
-
-    </style>
-  </head>
-  <!--[if true]>
-<table>
-    <tr>
-        <td>
-<![endif]-->
-  <body style="-webkit-text-size-adjust: 100%">
-    <div
-      class="message-container"
-      style="
-        width: 40%;
+      .message-container {
+        width: 50%;
         height: 100%;
         padding: 24px;
         background: white;
@@ -62,7 +46,24 @@
         margin-left: auto;
         margin-right: auto;
         border: 1px lightgray solid;
-      "
+      }
+
+      @media screen and (max-width: 800px) {
+        body .message-container {
+          width: 80%;
+        }
+      }
+
+    </style>
+  </head>
+  <!--[if true]>
+<table role=" presentation" border="1px" cellpadding="10" cellspacing="0" maxWidth="700" margin=" auto">
+    <tr>
+        <td>
+<![endif]-->
+  <body style="-webkit-text-size-adjust: 100%">
+    <div
+      class="message-container"
     >
       <div style="width: 100%; justify-content: center; gap: 16px">
         <img
