@@ -17,7 +17,8 @@
   @include standard-input-label();
   position: absolute;
   right: 0px;
-  bottom: 0px;
+  top: 12px;
+  z-index: 10;
 }
 
 .mat-card {
