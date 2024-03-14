@@ -1,5 +1,5 @@
 from collaboration.utils import check_for_permission, is_creator
-from planning.models import PlanningArea, Scenario
+from planning.models import PlanningArea, PlanningAreaNote, Scenario
 from django.contrib.auth.models import User
 
 
@@ -47,6 +47,38 @@ class PlanningAreaPermission(CheckPermissionMixin):
             return True
 
         return check_for_permission(user.id, planning_area, "add_scenario")
+
+
+class PlanningAreaNotePermission(CheckPermissionMixin):
+    @staticmethod
+    def can_view(user: User, planning_area_note: PlanningAreaNote):
+        if is_creator(user, planning_area_note.planning_area):
+            return True
+        return check_for_permission(
+            user.id, planning_area_note.planning_area, "view_planningarea"
+        )
+
+    @staticmethod
+    def can_add(user: User, planning_area_note: PlanningAreaNote):
+        if is_creator(user, planning_area_note.planning_area):
+            return True
+        return check_for_permission(
+            user.id, planning_area_note.planning_area, "view_planningarea"
+        )
+
+    @staticmethod
+    def can_change(user: User, planning_area_note: PlanningAreaNote):
+        ## TODO nobody will be changing notes?
+        return is_creator(user, planning_area_note.planning_area) or is_creator(
+            user, planning_area_note
+        )
+
+    ##creators of the planning area or authors of notes can remove a note
+    @staticmethod
+    def can_remove(user: User, planning_area_note: PlanningAreaNote):
+        return is_creator(user, planning_area_note.planning_area) or is_creator(
+            user, planning_area_note
+        )
 
 
 class CollaboratorPermission(CheckPermissionMixin):
