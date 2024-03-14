@@ -9,9 +9,17 @@
   position: relative;
 }
 
+
+.filter-controls-container {
+  height: 2em;
+  position: relative
+}
+
 .slide-toggle-my-scenarios {
   @include standard-input-label();
-  float: right;
+  position: absolute;
+  right: 0px;
+  bottom: 0px;
 }
 
 .mat-card {
