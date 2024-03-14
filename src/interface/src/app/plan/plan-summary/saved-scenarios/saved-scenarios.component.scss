@@ -1,25 +1,23 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-@import "../../../../theme";
-@import "../../../../styles/mixins";
-@import "../../../../styles/colors";
-
+@import '../../../../theme';
+@import '../../../../styles/mixins';
+@import '../../../../styles/colors';
 
 .saved-scenarios-wrapper {
   position: relative;
 }
 
-
 .filter-controls-container {
   height: 2em;
-  position: relative
+  position: relative;
 }
 
 .slide-toggle-my-scenarios {
   @include standard-input-label();
   position: absolute;
   right: 0px;
-  bottom: -20px;
+  bottom: 0px;
 }
 
 .mat-card {
@@ -68,7 +66,6 @@
   align-items: center;
 }
 
-
 .margin-top {
   margin-top: 30px;
 }
@@ -80,4 +77,3 @@
   margin: 20px;
   text-align: center;
 }
-
