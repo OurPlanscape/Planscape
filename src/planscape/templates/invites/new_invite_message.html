@@ -5,6 +5,7 @@
   xmlns:o="urn:schemas-microsoft-com:office:office"
 >
   <head>
+ 
     <!--[if gte mso 9]>
       <xml>
         <o:OfficeDocumentSettings>
@@ -27,7 +28,14 @@
     />
     <title></title>
     <style type="text/css">
-      .ExternalClass {width: 100%;}
+      <!--[if mso]>
+        table {border-collapse:collapse; border-spacing:0; margin:0}
+        tr {height:60px;}
+        div, td {padding:0;}
+        div {margin:0 !important; padding: 10px;}
+        .ExternalClass {width: 80%;}
+      <![endif]-->
+
       body {
         font-family: "Public Sans", Arial, Helvetica, sans-serif;
         mso-font-alt: "Arial", Helvetica, sans-serif;
@@ -64,7 +72,12 @@
   <body style="-webkit-text-size-adjust: 100%">
     <div
       class="message-container"
+      style="font-family: 'Public Sans', Arial, Helvetica, sans-serif;"
     >
+
+    <!--[if gte mso 9]>
+    </td></tr><tr><td>
+    <![endif]-->
       <div style="width: 100%; justify-content: center; gap: 16px">
         <img
           class="fallback-image"
@@ -72,6 +85,9 @@
           alt="Planscape Logo"
           style="max-width: 100%; display: block"
         />
+            <!--[if gte mso 9]>
+    </td></tr><tr><td>
+    <![endif]-->
         <div style="width: 100%">
           <span style="font-size: 22px; font-weight: 500; line-height: 32px"
             >{{ inviter.get_full_name }}</span
@@ -91,6 +107,9 @@
             >“{{ planning_area.name }}”</span
           >
         </div>
+            <!--[if gte mso 9]>
+    </td></tr><tr><td>
+    <![endif]-->
         <div style="width: 100%">
           <span style="color: #4a4a4a; font-weight: 400; line-height: 22px"
             >Log in to Planscape.org is required to view the planning area. If
@@ -102,6 +121,9 @@
             >.</span
           >
         </div>
+            <!--[if gte mso 9]>
+    </td></tr><tr><td>
+    <![endif]-->
         <div style="width: 100%">
           <span style="color: #4a4a4a; font-weight: 400; line-height: 22px"
             >Can’t access the planning area? Please contact </span
@@ -126,7 +148,9 @@
           </div>
           {% endif %}
         </div>
-
+    <!--[if gte mso 9]>
+    </td></tr><tr><td>
+    <![endif]-->
         <div
           style="
             padding-top: 10px;
