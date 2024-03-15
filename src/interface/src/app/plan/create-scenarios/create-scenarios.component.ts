@@ -303,24 +303,27 @@ export class CreateScenariosComponent implements OnInit {
         .pipe(take(1))
         .subscribe((metric_data) => {
           for (let metric in metric_data) {
-            var displayName = metric_data[metric]['display_name'];
-            var dataUnits =
+            let displayName = metric_data[metric]['display_name'];
+            let dataUnits =
               metric_data[metric]['output_units'] ||
               metric_data[metric]['data_units'];
-            var metricLayer = metric_data[metric]['raw_layer'];
-            var metricName = metric_data[metric]['metric_name'];
-            var metricData: string[] = [];
-            this.scenarioResults?.result.features.map((featureCollection) => {
-              const props = featureCollection.properties;
-              metricData.push(props[metric]);
-            });
-            labels.push([
-              displayName,
-              dataUnits,
-              metricLayer,
-              metricData,
-              metricName,
-            ]);
+            let metricLayer = metric_data[metric]['raw_layer'];
+            let metricName = metric_data[metric]['metric_name'];
+            let metricData: string[] = [];
+            if (!metric_data[metric]['hide_chart']) {
+              this.scenarioResults?.result.features.map((featureCollection) => {
+                const props = featureCollection.properties;
+
+                metricData.push(props[metric]);
+              });
+              labels.push([
+                displayName,
+                dataUnits,
+                metricLayer,
+                metricData,
+                metricName,
+              ]);
+            }
           }
           this.scenarioChartData = labels.map((label, _) => ({
             label: label[0],
