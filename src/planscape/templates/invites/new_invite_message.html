@@ -4,7 +4,6 @@
   xmlns:o="urn:schemas-microsoft-com:office:office">
 
 <head>
-
   <!--[if gte mso 9]>
       <xml>
         <o:OfficeDocumentSettings>
@@ -25,99 +24,65 @@
     rel="stylesheet" />
   <title></title>
   <style type="text/css">
-    <!--[if mso]>
-    table {
-      border-collapse: collapse;
-      border-spacing: 0;
-      margin: 0
+    body {
+      font-family: "Public Sans", Arial, Helvetica, sans-serif;
+      mso-font-alt: "Arial", Helvetica, sans-serif;
+      margin-top: 4%;
+      font-size: 14px;
+      color: black;
     }
 
-    tr {
-      height: 40px;
+    .message-container {
+      width: 50%;
+      height: 100%;
+      padding: 24px;
+      background: white;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-left: auto;
+      margin-right: auto;
+      border: 1px lightgray solid;
+      color:black;
     }
 
-    .ExternalClass {
-      width: 80%;
+    @media screen and(max-width:800px) {
+      body.message-container {
+        width: 70%;
+      }
     }
-
-    < ![endif]
-    -->
-    body
-    {
-    font-family:
-    "Public
-    Sans",
-    Arial,
-    Helvetica,
-    sans-serif;
-    mso-font-alt:
-    "Arial",
-    Helvetica,
-    sans-serif;
-    margin-top:
-    4%;
-    font-size:
-    14px;
-    color:
-    black;
-    }
-    .message-container
-    {
-    width:
-    50%;
-    height:
-    100%;
-    padding:
-    24px;
-    background:
-    white;
-    border-radius:
-    4px;
-    overflow:
-    hidden;
-    margin-left:
-    auto;
-    margin-right:
-    auto;
-    border:
-    1px
-    lightgray
-    solid;
-    }
-    @media
-    screen
-    and
-    (max-width:
-    800px)
-    {
-    body
-    .message-container
-    {
-    width:
-    80%;
-    }
+    @media screen and(max-width:500px) {
+      body.message-container {
+        width: 80%;
+      }
     }
   </style>
+  <!--[if mso]>
+  <style>
+    table {  border-collapse: collapse;  border-spacing: 0;  margin: 0}
+    tr {  height: 40px;}
+    .ExternalClass {  width: 80%;}
+  </style>
+ <![endif] -->
+
 </head>
 
 <body style="-webkit-text-size-adjust: 100%">
   <!--[if true]>
-  <table role=" presentation" border="1px" cellpadding="10" cellspacing="0" maxWidth="700" margin=" auto">
-  <tr><td><![endif]-->
-  <div class="message-container" style="font-family: 'Public Sans', Arial, Helvetica, sans-serif;">
+  <table role="presentation" cellpadding="10" cellspacing="0" maxWidth="700" margin="auto" style="border-style:solid;border-color:#aaaaaa;" border="0.5px">
+    <![endif]-->
+  <div class="message-container" style="font-family: 'Public Sans', Arial, Helvetica, sans-serif; width:70%; border: 1px lightgray solid; padding: 20px;">
 
     <!--[if gte mso 9]>
-    </td></tr><tr><td>
+   <tr height="30px"><td>
     <![endif]-->
     <div style="width: 100%; padding:10px;">
-      <img class="fallback-image"
-        src="https://lh5.googleusercontent.com/9c30uoJP_p_vgPv9rZpHdOEQW2NbIYJBJTw_Ho8w76WUOJJp4nNy8sY_IPOnt5WFlgCaLq6QxnEpWTowA-bpJHYOm_aVJYQD-qTZP5mMk8a2KVU6epFczmPqndxn3ji_cw=w1280"
-        alt="[Planscape]" style="max-width: 100%; display: block" />
+      <img class="fallback-image" src="https://i.ibb.co/9cQF9mJ/Planscape-logo-color-black-green-200.png"
+        alt="[Planscape]" style="width: 120px; max-width: 100%; display: block" />
     </div>
     <!--[if gte mso 9]>
     </td></tr><tr><td>
     <![endif]-->
-    <div style="width: 100%; padding: 10px;">
+    <div style="width: 100%; padding: 10px; color: black;">
       <span style="font-size: 22px; font-weight: 500; line-height: 32px">{{ inviter.get_full_name }}</span><span
         style="font-size: 22px; font-weight: 600"> </span><span style="font-size: 22px; font-weight: 500">invited you
         to</span><span style="font-size: 22px; font-weight: 600"> </span><span
@@ -146,7 +111,7 @@
     {% if message %}
 
     <div style="border-bottom: 1px #e1e1e1 solid; padding-bottom: 2px"></div>
-     <!--[if gte mso 9]>
+    <!--[if gte mso 9]>
     </td></tr><tr><td>
     <![endif]-->
     <div style="width: 100%; padding: 10px">
@@ -170,10 +135,11 @@
     </div>
     {% endif %}
     <!--[if gte mso 9]>
-    </td></tr><tr><td>
+    </td></tr>
+    <tr valign="middle"><td valign="middle">
     <![endif]-->
 
-    <div style="width: 100%; padding: 10px;">
+    <div style="width: 100%;">
       <div style="
               padding-top: 10px;
               padding-bottom: 10px;
@@ -188,6 +154,7 @@
                     font-weight: 500;
                     line-height: 16px;
                     text-align: center;
+                    text-decoration: none;
                   ">
               View planning area
             </div>
