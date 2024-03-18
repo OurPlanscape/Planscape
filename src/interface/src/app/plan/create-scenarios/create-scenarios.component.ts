@@ -137,7 +137,7 @@ export class CreateScenariosComponent implements OnInit {
       }
     });
 
-    if (typeof this.planId === 'string') {
+    if (this.planId !== null && this.planId !== undefined) {
       this.scenarioService
         .getScenariosForPlan(this.planId)
         .pipe(take(1))
