@@ -2759,7 +2759,8 @@
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "CWHR",
-                  "source_link": ""
+                  "source_link": "",
+                  "hide_chart": true
                 },
                 {
                   "display_name": "Wildfire Ignitions",
