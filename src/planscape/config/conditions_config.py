@@ -67,6 +67,7 @@ class PillarConfig:
         "invert_raw",
         "data_units",
         "output_units",
+        "hide_chart",
     }.union(COMMON_METADATA)
 
     @classmethod
