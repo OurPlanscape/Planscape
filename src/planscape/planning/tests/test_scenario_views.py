@@ -197,8 +197,9 @@ class CreateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(second_response.status_code, 400)
-        self.assertRegex(
-            str(second_response.content), r"A scenario with this name already exists."
+        self.assertJSONEqual(
+            second_response.content,
+            {"reason": "A scenario with this name already exists."},
         )
 
     def test_create_scenario_not_logged_in(self):
