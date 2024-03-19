@@ -77,7 +77,7 @@ export interface TreatmentQuestionConfig {
   stand_thresholds?: string[];
   weights?: number[];
 
-  description?: string;
+  description?: string[];
 }
 
 export interface ProjectArea {

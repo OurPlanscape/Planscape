@@ -7,7 +7,7 @@
   </header>
   <section>
     <p>{{ goal?.long_question_text }}</p>
-    <div [innerHTML]="goal?.description"></div>
+    <p *ngFor="let p of goal?.description" [innerHTML]="p"></p>
     <p>
       For more information, see the
       <a
