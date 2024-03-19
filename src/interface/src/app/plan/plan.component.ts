@@ -24,6 +24,7 @@ import { Plan, User } from '../types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from './plan-helpers';
+import { GoalOverlayService } from './create-scenarios/goal-overlay/goal-overlay.service';
 
 @Component({
   selector: 'app-plan',
@@ -76,6 +77,8 @@ export class PlanComponent implements OnInit, OnDestroy {
     })
   );
 
+  showGoalOverlay$ = this.goalOverlayService.showOverlay$;
+
   private readonly destroy$ = new Subject<void>();
 
   planId = this.route.snapshot.paramMap.get('id');
@@ -86,7 +89,8 @@ export class PlanComponent implements OnInit, OnDestroy {
     private planStateService: PlanStateService,
     private route: ActivatedRoute,
     private router: Router,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private goalOverlayService: GoalOverlayService
   ) {
     // TODO: Move everything in the constructor to ngOnInit
 

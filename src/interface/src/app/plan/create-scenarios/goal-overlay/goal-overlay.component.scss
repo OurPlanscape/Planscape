@@ -4,7 +4,32 @@
 :host {
   @include public-sans();
   display: block;
-  width: 540px;
+  max-width: 540px;
+  position: absolute;
+  top: 110px;
+  left: 0;
+  z-index: 200;
+  margin: 0 8px;
+
+  @media screen and (max-width: 800px) {
+    right: initial;
+    top: initial;
+    left: 0;
+    bottom: 0;
+    position: fixed;
+    max-width: initial;
+    width: 100%;
+    margin: 0;
+  }
+
+
+  ::ng-deep {
+    p {
+      @include small-paragraph();
+      margin-bottom: 16px;
+    }
+
+  }
 }
 
 h4 {
@@ -30,6 +55,7 @@ section {
   padding: 24px;
 }
 
-p {
-  @include small-paragraph();
+
+p:last-child {
+  margin-bottom: 0;
 }

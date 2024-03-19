@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { TreatmentQuestionConfig } from '../../../types';
+import { Component } from '@angular/core';
+import { GoalOverlayService } from './goal-overlay.service';
 
 @Component({
   selector: 'app-goal-overlay',
@@ -7,8 +7,11 @@ import { TreatmentQuestionConfig } from '../../../types';
   styleUrls: ['./goal-overlay.component.scss'],
 })
 export class GoalOverlayComponent {
-  @Input() goal!: TreatmentQuestionConfig | null;
-  @Output() closeOverlay = new EventEmitter();
+  goal$ = this.service.selectedQuestion$;
 
-  constructor() {}
+  constructor(private service: GoalOverlayService) {}
+
+  close() {
+    this.service.close();
+  }
 }

@@ -1,19 +1,5 @@
 <div class="panel-container">
   <form [formGroup]="goalsForm!">
-    <!-- This template displays the overlay content and is connected to the button -->
-    <ng-template
-      cdkConnectedOverlay
-      [cdkConnectedOverlayOrigin]="trigger"
-      [cdkConnectedOverlayOpen]="isOpen">
-      <app-goal-overlay
-        [goal]="selectedGoal"
-        (closeOverlay)="isOpen = false"></app-goal-overlay>
-    </ng-template>
-
-    <div
-      cdkOverlayOrigin
-      #trigger="cdkOverlayOrigin"
-      class="overlay-dock"></div>
     <div class="config-group">
       <mat-radio-group
         name="treatmentGoalSelect"
@@ -37,13 +23,7 @@
               <mat-radio-button
                 [value]="treatmentQuestion"
                 (click)="selectGoal(treatmentQuestion)">
-                <div
-                  [matTooltip]="treatmentQuestion.long_question_text || ''"
-                  matTooltipPosition="right"
-                  matTooltipClass="long-question-tooltip"
-                  class="short-question">
-                  {{ treatmentQuestion.short_question_text }}
-                </div>
+                {{ treatmentQuestion.short_question_text }}
               </mat-radio-button>
             </div>
           </mat-expansion-panel>
