@@ -621,7 +621,7 @@ def create_scenario(request: Request) -> Response:
         if "(planning_area_id, name)" in ve.args[0]:
             reason = "A scenario with this name already exists."
         return Response(
-            json.dumps({"reason": reason}),
+            {"reason": reason},
             content_type="application/json",
             status=status.HTTP_400_BAD_REQUEST,
         )
