@@ -22,7 +22,6 @@ import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
-  isOpen = false;
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
@@ -41,8 +40,6 @@ export class SetPrioritiesComponent implements OnInit {
   });
 
   datasource = new MatTableDataSource<PriorityRow>();
-
-  selectedGoal: TreatmentQuestionConfig | null = null;
 
   constructor(
     private mapService: MapService,
@@ -98,6 +95,8 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   selectGoal(goal: TreatmentQuestionConfig) {
-    this.goalOverlayService.setQuestion(goal);
+    if (this.goalsForm.enabled) {
+      this.goalOverlayService.setQuestion(goal);
+    }
   }
 }

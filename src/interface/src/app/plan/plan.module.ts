@@ -36,7 +36,6 @@ import { SharedModule } from '../shared/shared.module';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
 import { WINDOW_PROVIDERS } from '@services/window.service';
 import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
-import { OverlayModule } from '@angular/cdk/overlay';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -84,7 +83,6 @@ import { OverlayModule } from '@angular/cdk/overlay';
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
-    OverlayModule,
   ],
 })
 export class PlanModule {}

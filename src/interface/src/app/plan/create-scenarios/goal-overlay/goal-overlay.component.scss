@@ -22,14 +22,6 @@
     margin: 0;
   }
 
-
-  ::ng-deep {
-    p {
-      @include small-paragraph();
-      margin-bottom: 16px;
-    }
-
-  }
 }
 
 h4 {
@@ -55,6 +47,11 @@ section {
   padding: 24px;
 }
 
+
+p {
+  @include small-paragraph();
+  margin-bottom: 16px;
+}
 
 p:last-child {
   margin-bottom: 0;

@@ -23,6 +23,7 @@ import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { FeatureService } from '../../features/feature.service';
+import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -76,7 +77,8 @@ export class CreateScenariosComponent implements OnInit {
     private scenarioService: ScenarioService,
     private router: Router,
     private matSnackBar: MatSnackBar,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private goalOverlayService: GoalOverlayService
   ) {}
 
   createForms() {
@@ -224,6 +226,7 @@ export class CreateScenariosComponent implements OnInit {
       return;
     }
     this.generatingScenario = true;
+    this.goalOverlayService.close();
     this.planStateService
       .createScenario(this.formValueToScenario())
       .pipe(
@@ -240,37 +243,6 @@ export class CreateScenariosComponent implements OnInit {
         this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
       });
-
-    // this.createUploadedProjectAreas()
-    //   .pipe(
-    //     take(1),
-    //     concatMap(() => {
-    //       return this.planService.createScenario(
-    //         this.formValueToProjectConfig()
-    //       );
-    //     }),
-
-    // TODO Implement more specific error catching (currently raises shapefile error message for any thrown error)
-    // catchError(() => {
-    //   this.matSnackBar.open(
-    //     '[Error] Project area shapefile should only include polygons or multipolygons',
-    //     'Dismiss',
-    //     {
-    //       duration: 10000,
-    //       panelClass: ['snackbar-error'],
-    //       verticalPosition: 'top',
-    //     }
-    //   );
-    //   return throwError(
-    //     () => new Error('Problem creating uploaded project areas')
-    //   );
-    // })
-    // )
-    // .subscribe(() => {
-    //   // Navigate to scenario confirmation page
-    //   const planId = this.plan$.getValue()?.id;
-    //   this.router.navigate(['scenario-confirmation', planId]);
-    // });
   }
 
   disableForms() {
@@ -278,17 +250,6 @@ export class CreateScenariosComponent implements OnInit {
     this.prioritiesForm?.disable();
     this.constrainsForm?.disable();
   }
-
-  // createUploadedProjectAreas() {
-  //   const uploadedArea = this.formGroups[2].get('uploadedArea')?.value;
-  //   if (this.scenarioConfigId && uploadedArea) {
-  //     return this.planService.bulkCreateProjectAreas(
-  //       this.scenarioConfigId,
-  //       this.convertSingleGeoJsonToGeoJsonArray(uploadedArea)
-  //     );
-  //   }
-  //   return of(null);
-  // }
 
   /**
    * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
