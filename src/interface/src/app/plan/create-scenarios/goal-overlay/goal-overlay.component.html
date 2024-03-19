@@ -7,5 +7,14 @@
   </header>
   <section>
     <p>{{ goal?.long_question_text }}</p>
+    <div [innerHTML]="goal?.description"></div>
+    <p>
+      For more information, see the
+      <a
+        href="https://www.planscape.org/documentation/user-guide/"
+        target="_blank"
+        >User Guide</a
+      >.
+    </p>
   </section>
 </mat-card>
