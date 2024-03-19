@@ -86,7 +86,7 @@ class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
         on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
-        User, related_name="author", on_delete=models.SET_NULL, null=True, blank=True
+        User, related_name="notes", on_delete=models.SET_NULL, null=True, blank=True
     )
     content = models.TextField(null=True)
 
