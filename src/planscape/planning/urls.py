@@ -17,6 +17,7 @@ from planning.views import (
     update_scenario_result,
     create_shared_link,
     get_shared_link,
+    PlanningAreaNotes,
 )
 
 app_name = "planning"
@@ -78,5 +79,21 @@ urlpatterns = [
         "shared_link/<str:link_code>",
         get_shared_link,
         name="get_shared_link",
+    ),
+    # Planning Area Notes C/R/D
+    path(
+        "planning_area/<int:planningarea_pk>/note",
+        PlanningAreaNotes.as_view(),
+        name="create_planningareanote",
+    ),
+    path(
+        "planning_area/<int:planningarea_pk>/note/<int:planningareanote_pk>",
+        PlanningAreaNotes.as_view(),
+        name="get_planningareanote",
+    ),
+    path(
+        "planning_area/<int:planningarea_pk>/note/<int:planningareanote_pk>",
+        PlanningAreaNotes.as_view(),
+        name="delete_planningareanote",
     ),
 ]

@@ -17,7 +17,7 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from collaboration.permissions import PlanningAreaPermission
+from collaboration.permissions import PlanningAreaPermission, PlanningAreaNotePermission
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -30,6 +30,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
+    PlanningAreaNoteSerializer,
 )
 from planning.services import (
     export_to_shapefile,
@@ -37,6 +38,7 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -939,3 +941,72 @@ def create_shared_link(request: Request) -> Response:
     except Exception as e:
         logger.error("Error creating shared link: %s", e)
         raise
+
+
+class PlanningAreaNotes(APIView):
+    def post(self, request: Request, planningarea_pk: int):
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        note_data = request.data.copy()
+        note_data["planning_area"] = planningarea_pk
+
+        try:
+            serializer = PlanningAreaNoteSerializer(
+                data=note_data, context={"user": user}
+            )
+            serializer.is_valid(raise_exception=True)
+            if not PlanningAreaNotePermission.can_add(user, serializer.validated_data):
+                return Response(
+                    {"error": "Authentication Required"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            new_note = serializer.save()
+            out_serializer = PlanningAreaNoteSerializer(new_note)
+            return Response(
+                out_serializer.data,
+                content_type="application/json",
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            logger.error("Error creating PlanningAreaNote: %s", e)
+            raise
+
+    def get(
+        self, request: Request, planningarea_pk: int, planningareanote_pk: int = None
+    ):
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        try:
+            notes = PlanningAreaNotes.objects.filter(planning_area=planningarea_pk)
+            # TODO: don't chain these...
+            if planningareanote_pk:
+                notes.filter(id=planningareanote_pk)
+
+            serializer = ScenarioSerializer(instance=notes, many=True)
+            return Response(serializer.data)
+
+        except Exception as e:
+            logger.error("Error getting notes for planning area: %s", e)
+            raise
+
+    def delete(self, request: Request, planningarea_pk: int, planningareanote_pk: int):
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        try:
+            # TODO: finish this
+            pass
+        except Exception as e:
+            logger.error("Exception deleting planning area note: %s", e)
+            raise

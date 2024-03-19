@@ -2,7 +2,13 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from collaboration.services import get_role, get_permissions
-from planning.models import PlanningArea, Scenario, ScenarioResult, SharedLink
+from planning.models import (
+    PlanningArea,
+    Scenario,
+    ScenarioResult,
+    SharedLink,
+    PlanningAreaNote,
+)
 from planning.services import get_acreage
 from stands.models import StandSizeChoices
 
@@ -65,6 +71,23 @@ class PlanningAreaSerializer(gis_serializers.GeoModelSerializer):
         )
         model = PlanningArea
         geo_field = "geometry"
+
+
+class PlanningAreaNoteSerializer(serializers.ModelSerializer):
+    def create(self, validated_data):
+        validated_data["user"] = self.context["user"] or None
+        return super().create(validated_data)
+
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "planning_area",
+            "user",
+        )
+        model = PlanningAreaNote
 
 
 class ScenarioResultSerializer(serializers.ModelSerializer):

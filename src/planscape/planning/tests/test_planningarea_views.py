@@ -12,6 +12,7 @@ from planning.models import PlanningArea, Scenario, ScenarioResult
 from planning.tests.helpers import (
     _create_planning_area,
     _create_scenario,
+    _create_test_user_set,
     reset_permissions,
 )
 
@@ -1163,6 +1164,88 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertCountEqual(
             the_area["permissions"], ["view_planningarea", "view_scenario"]
         )
+
+
+class CreatePlanningAreaNote(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+
+        self.planningarea = PlanningArea.objects.create(
+            user=self.owner_user, region_name="foo"
+        )
+        create_collaborator_record(
+            self.owner_user,
+            self.collab_user,
+            self.planningarea,
+            Role.COLLABORATOR,
+        )
+        create_collaborator_record(
+            self.owner_user,
+            self.viewer_user,
+            self.planningarea,
+            Role.VIEWER,
+        )
+
+    def test_create_note_for_planningarea(self):
+        self.client.force_authenticate(self.owner_user)
+        payload_create_note = json.dumps(
+            {
+                "content": "Here is a note about a planning area.",
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "planning:create_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            payload_create_note,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201)
+        planning_area_note = response.json()
+        self.assertEqual(
+            planning_area_note["content"], "Here is a note about a planning area."
+        )
+
+    def test_create_note_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload_create_note = json.dumps(
+            {
+                "content": "Here is a note from a viewer.",
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "planning:create_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            payload_create_note,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201)
+        planning_area_note = response.json()
+        self.assertEqual(planning_area_note["content"], "Here is a note from a viewer.")
+
+    def test_create_note_unauthenticated(self):
+        payload_create_note = json.dumps(
+            {
+                "content": "Lets create a note without authentication",
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "planning:create_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            payload_create_note,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
 
 
 # EndtoEnd test that lists, creates a planning_area, creates a scenario,
