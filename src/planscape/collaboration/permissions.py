@@ -68,7 +68,6 @@ class PlanningAreaNotePermission(CheckPermissionMixin):
 
     @staticmethod
     def can_change(user: User, planning_area_note: PlanningAreaNote):
-        ## TODO nobody will be changing notes?
         return is_creator(user, planning_area_note.planning_area) or is_creator(
             user, planning_area_note
         )
