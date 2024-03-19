@@ -20,6 +20,7 @@ from django.shortcuts import get_object_or_404
 from collaboration.permissions import PlanningAreaPermission, PlanningAreaNotePermission
 from planning.models import (
     PlanningArea,
+    PlanningAreaNote,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
@@ -985,12 +986,13 @@ class PlanningAreaNotes(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         try:
-            notes = PlanningAreaNotes.objects.filter(planning_area=planningarea_pk)
-            # TODO: don't chain these...
+            # TODO: perms
+            notes = None
             if planningareanote_pk:
-                notes.filter(id=planningareanote_pk)
-
-            serializer = ScenarioSerializer(instance=notes, many=True)
+                notes.filter(planning_area=planningarea_pk, id=planningareanote_pk)
+            else:
+                notes = PlanningAreaNote.objects.filter(planning_area=planningarea_pk)
+            serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
             return Response(serializer.data)
 
         except Exception as e:
@@ -1005,8 +1007,16 @@ class PlanningAreaNotes(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         try:
-            # TODO: finish this
-            pass
+            note = get_object_or_404(PlanningAreaNote, planningareanote_pk)
+
+            if not PlanningAreaNotePermission.can_remove(user, note):
+                return Response(
+                    {"error": "User does not have access to delete this note."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if note.delete():
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
         except Exception as e:
             logger.error("Exception deleting planning area note: %s", e)
             raise
