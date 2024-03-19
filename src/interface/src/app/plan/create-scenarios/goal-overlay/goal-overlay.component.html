@@ -1,0 +1,11 @@
+<mat-card>
+  <header>
+    <h4>{{ goal?.short_question_text }}</h4>
+    <button mat-icon-button (click)="closeOverlay.emit()" aria-label="close">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
+  </header>
+  <section>
+    <p>{{ goal?.long_question_text }}</p>
+  </section>
+</mat-card>

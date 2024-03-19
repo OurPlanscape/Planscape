@@ -21,6 +21,7 @@ import {
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
+  isOpen = false;
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
@@ -39,6 +40,8 @@ export class SetPrioritiesComponent implements OnInit {
   });
 
   datasource = new MatTableDataSource<PriorityRow>();
+
+  selectedGoal: TreatmentQuestionConfig | null = null;
 
   constructor(
     private mapService: MapService,
@@ -90,5 +93,10 @@ export class SetPrioritiesComponent implements OnInit {
       }
       this.goalsForm.disable();
     }
+  }
+
+  selectGoal(goal: TreatmentQuestionConfig) {
+    this.selectedGoal = goal;
+    this.isOpen = true;
   }
 }

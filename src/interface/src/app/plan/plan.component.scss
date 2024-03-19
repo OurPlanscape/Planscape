@@ -19,7 +19,6 @@
 }
 
 
-
 .plan-progress-panel {
   background-color: white;
   box-sizing: border-box;
@@ -123,7 +122,8 @@
   ::ng-deep .mat-tab-label {
     min-width: auto;
   }
-  ::ng-deep .mat-tab-group{
+
+  ::ng-deep .mat-tab-group {
     height: 100%;
   }
 }
