@@ -6,7 +6,6 @@
 }
 
 .details {
-  @include public-sans();
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
@@ -17,6 +16,7 @@
   display: flex;
   gap: 36px;
   color: $color-md-gray;
+
   .number {
     color: $color-brand-green;
     font-size: 20px;
@@ -27,14 +27,13 @@
 }
 
 .property {
-  @include public-sans();
   font-size: 12px;
   font-style: normal;
   font-weight: 400;
   line-height: normal;
   letter-spacing: 0.3px;
   display: flex;
-  gap:8px;
+  gap: 8px;
   margin-bottom: 8px;
 
   .label {
@@ -47,6 +46,6 @@
   border-bottom: 1px solid $color-soft-gray
 }
 
-.plan-map-wrapper{
+.plan-map-wrapper {
   padding: 16px;
 }
