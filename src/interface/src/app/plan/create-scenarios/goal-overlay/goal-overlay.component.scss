@@ -2,7 +2,6 @@
 @import "../../../../styles/mixins";
 
 :host {
-  @include public-sans();
   display: block;
   max-width: 540px;
   position: absolute;
@@ -25,8 +24,6 @@
 }
 
 h4 {
-  @include h4();
-  font-weight: 600;
   margin: 0;
 }
 
@@ -39,7 +36,6 @@ header {
 }
 
 mat-card {
-  @include public-sans();
   padding: 0;
 }
 
