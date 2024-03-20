@@ -20,14 +20,10 @@
             <div
               *ngFor="let treatmentQuestion of treatmentGoal['questions']"
               class="layer-control-container">
-              <mat-radio-button [value]="treatmentQuestion">
-                <div
-                  [matTooltip]="treatmentQuestion.long_question_text || ''"
-                  matTooltipPosition="right"
-                  matTooltipClass="long-question-tooltip"
-                  class="short-question">
-                  {{ treatmentQuestion.short_question_text }}
-                </div>
+              <mat-radio-button
+                [value]="treatmentQuestion"
+                (click)="selectGoal(treatmentQuestion)">
+                {{ treatmentQuestion.short_question_text }}
               </mat-radio-button>
             </div>
           </mat-expansion-panel>

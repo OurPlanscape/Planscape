@@ -1,0 +1,20 @@
+<mat-card *ngIf="goal$ | async as goal">
+  <header>
+    <h4>{{ goal?.short_question_text }}</h4>
+    <button mat-icon-button (click)="close()" aria-label="close">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
+  </header>
+  <section>
+    <p>{{ goal?.long_question_text }}</p>
+    <p *ngFor="let p of goal?.description" [innerHTML]="p"></p>
+    <p>
+      For more information, see the
+      <a
+        href="https://www.planscape.org/documentation/user-guide/#treatment"
+        target="_blank"
+        >User Guide</a
+      >.
+    </p>
+  </section>
+</mat-card>

@@ -38,6 +38,7 @@
           <router-outlet #outlet="outlet"></router-outlet>
         </div>
         <div class="plan-map-container">
+          <app-goal-overlay></app-goal-overlay>
           <app-plan-map
             [plan]="currentPlan$ | async"
             [mapId]="'planning-map'"
