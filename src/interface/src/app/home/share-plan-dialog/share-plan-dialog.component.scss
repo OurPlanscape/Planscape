@@ -17,10 +17,6 @@
       padding: 0;
     }
 
-    .mat-form-field {
-      @include public-sans();
-    }
-
     .mat-button-wrapper {
       display: flex;
       align-items: center;
@@ -149,10 +145,6 @@
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
-
-  button {
-    @include public-sans();
-  }
 }
 
 

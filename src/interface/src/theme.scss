@@ -107,15 +107,16 @@ $custom-typography: mat.define-typography-config(
   $title: mat.define-typography-level(26px, 28px, 700),
     // h3
   $subheading-2: mat.define-typography-level(22px, 24px, 600),
+    // h4
   $subheading-1: mat.define-typography-level(18px, 24px, 600),
     // body main (baseline text)
   $body-1: mat.define-typography-level(14px, 20px, 400),
     // body secondary, regular paragraph
   $body-2: mat.define-typography-level(16px, 26px, 400),
     // button text
-  $button: mat.define-typography-level(16px, 16px, 600),
+  $button: mat.define-typography-level(14px, 16px, 500),
     // input
-  $input: mat.define-typography-level(16px, 1em, 500),
+  $input: mat.define-typography-level(14px, 1em, 500),
   $caption: mat.define-typography-level(12px, 22px, 400),
 );
 

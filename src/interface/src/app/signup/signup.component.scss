@@ -8,7 +8,6 @@
 
 .info-card-container {
   background-image: url('/assets/jpg/planscape-background.jpg');
-  @include public-sans();
   background-repeat: no-repeat;
   background-size: cover;
   display: flex;
@@ -55,7 +54,7 @@
 }
 
 .button-row {
-  display:flex;
+  display: flex;
   width: 100%;
 }
 
@@ -107,7 +106,7 @@ button {
   background-color: $color-highlight-30pct;
 }
 
-/* trims the space underneath the field, 
+/* trims the space underneath the field,
   which we no longer use for displaying errors
 */
 :host ::ng-deep .mat-form-field-wrapper {

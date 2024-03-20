@@ -12,3 +12,15 @@
 .no-padding-dialog .mat-dialog-container {
   padding: 0;
 }
+
+
+.mat-card mat-card-title.mat-card-title {
+  // $subheading-1: mat.define-typography-level(18px, 24px, 600),
+  font-size: 24px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+//.mat-icon-button .mat-button-wrapper .mat-icon {
+//  line-height: 22px;
+//}
