@@ -252,6 +252,8 @@ ACCOUNT_USERNAME_REQUIRED = False
 LOGOUT_ON_PASSWORD_CHANGE = False
 ACCOUNT_ADAPTER = "users.allauth_adapter.CustomAllauthAdapter"
 PASSWORD_RESET_TIMEOUT = 1800  # 30 minutes.
+
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="no-reply@planscape.org")
 EMAIL_BACKEND = config(
     "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
 )
@@ -259,9 +261,8 @@ EMAIL_HOST = config("EMAIL_HOST", default="smtp.google.com")
 EMAIL_UNKNOWN_ACCOUNTS = True
 EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_PORT = config("EMAIL_PORT", cast=int, default=587)
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", "no-reply@planscape.org")
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default=DEFAULT_FROM_EMAIL)
 EMAIL_HOST_PASSWORD = config("EMAIL_BACKEND_APP_PASSWORD", default="UNSET")
-DEFAULT_FROM_EMAIL = "no-reply@planscape.org"
 
 SESSION_REMEMBER = True
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 90  # 90 days
@@ -388,9 +389,7 @@ CRONJOBS = [
     ("0 0 * * *", "planning.cron.delete_old_shared_links"),  # Runs at midnight daily
 ]
 
-REPORT_RECIPIENT_EMAIL = config(
-    "REPORT_RECIPIENT_EMAIL", default="no-reply@planscape.org"
-)
+REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_EMAIL)
 
 
 AREA_SRID = 5070

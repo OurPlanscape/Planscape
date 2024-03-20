@@ -35,6 +35,7 @@ import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-pr
 import { SharedModule } from '../shared/shared.module';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
 import { WINDOW_PROVIDERS } from '@services/window.service';
+import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -62,6 +63,7 @@ import { WINDOW_PROVIDERS } from '@services/window.service';
     ScenariosTableListComponent,
     SetPrioritiesComponent,
     SummaryPanelComponent,
+    GoalOverlayComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
