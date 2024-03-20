@@ -5,7 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../material/material.module';
 import { DialogModule } from '@angular/cdk/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 
 describe('OutsideRegionDialogComponent', () => {
   let component: OutsideRegionDialogComponent;

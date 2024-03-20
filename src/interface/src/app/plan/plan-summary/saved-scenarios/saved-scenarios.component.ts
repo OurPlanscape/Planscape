@@ -1,12 +1,12 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../services';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../../plan-helpers';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog, MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { canAddScenario } from '../../../plan/permissions';
 import {

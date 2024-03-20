@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { SessionService } from '@services';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '../constants';
 import { firstValueFrom } from 'rxjs';
 import { ShareMapService } from '@services/share-map.service';
