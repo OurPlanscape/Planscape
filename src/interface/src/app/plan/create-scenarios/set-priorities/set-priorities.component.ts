@@ -14,6 +14,7 @@ import {
   conditionsConfigToPriorityData,
   findQuestionOnTreatmentGoalsConfig,
 } from '../../plan-helpers';
+import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
 
 @Component({
   selector: 'app-set-priorities',
@@ -43,7 +44,8 @@ export class SetPrioritiesComponent implements OnInit {
   constructor(
     private mapService: MapService,
     private fb: FormBuilder,
-    private planStateService: PlanStateService
+    private planStateService: PlanStateService,
+    private goalOverlayService: GoalOverlayService
   ) {}
 
   createForm() {
@@ -89,6 +91,12 @@ export class SetPrioritiesComponent implements OnInit {
         this.goalsForm.get('selectedQuestion')?.setValue(selectedQuestion);
       }
       this.goalsForm.disable();
+    }
+  }
+
+  selectGoal(goal: TreatmentQuestionConfig) {
+    if (this.goalsForm.enabled) {
+      this.goalOverlayService.setQuestion(goal);
     }
   }
 }
