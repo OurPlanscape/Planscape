@@ -11,12 +11,17 @@
   z-index: 200;
   padding-left: 18px;
   gap: 10px;
+
+  .mat-icon-button .mat-icon {
+    line-height: 22px;
+  }
 }
 
 
 .back-button {
   line-height: 0; // override line height from .mat-icon-button
 }
+
 
 .actions {
   margin-left: auto;
