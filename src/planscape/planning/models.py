@@ -79,6 +79,28 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
         ordering = ["user", "-created_at"]
 
 
+class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    planning_area = models.ForeignKey(
+        PlanningArea,
+        related_name="planning_area",
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        User, related_name="notes", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    content = models.TextField(null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "user",
+                ]
+            )
+        ]
+        ordering = ["user", "-created_at"]
+
+
 class ScenarioStatus(models.TextChoices):
     ACTIVE = "ACTIVE", "Active"
     ARCHIVED = "ARCHIVED", "Archived"
