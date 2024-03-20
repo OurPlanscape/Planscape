@@ -2759,7 +2759,8 @@
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "CWHR",
-                  "source_link": ""
+                  "source_link": "",
+                  "hide_chart": true
                 },
                 {
                   "display_name": "Wildfire Ignitions",
@@ -5291,7 +5292,8 @@
                   "raw_layer": ":fireDynamics_Tier2_meanCC_FRI",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=17",
                   "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "hide_chart": true
                 },
                 {
                   "display_name": "Time Since Last Fire",
