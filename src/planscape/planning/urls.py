@@ -87,6 +87,11 @@ urlpatterns = [
         name="create_planningareanote",
     ),
     path(
+        "planning_area/<int:planningarea_pk>/note",
+        PlanningAreaNotes.as_view(),
+        name="get_planningareanote",
+    ),
+    path(
         "planning_area/<int:planningarea_pk>/note/<int:planningareanote_pk>",
         PlanningAreaNotes.as_view(),
         name="get_planningareanote",

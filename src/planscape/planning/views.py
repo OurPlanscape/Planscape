@@ -985,15 +985,49 @@ class PlanningAreaNotes(APIView):
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+
         try:
-            # TODO: perms
-            notes = None
             if planningareanote_pk:
-                notes.filter(planning_area=planningarea_pk, id=planningareanote_pk)
+                planningareanote = PlanningAreaNote.objects.get(
+                    id=planningareanote_pk, planning_area=planningarea_pk
+                )
+                if not PlanningAreaNotePermission.can_view(user, planningareanote):
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+                serializer = PlanningAreaNoteSerializer(
+                    instance=planningareanote, many=False
+                )
+                return Response(serializer.data)
+
             else:
-                notes = PlanningAreaNote.objects.filter(planning_area=planningarea_pk)
-            serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
-            return Response(serializer.data)
+                planningarea = PlanningArea.objects.get(id=planningarea_pk)
+                # TODO: all of the notes in this query will have the same PlanningArea, so for now,
+                #  having view access to the PlanningArea means a viewer could see the notes,
+                #  so we could just check for access to Planningarea here.
+                # However, if this permission structure *ever* changes we'll need to update this, and that may not be easy to remember
+                # One alternative here is to query for can_view on each note, but it's a lot of queries.
+                # Another alternative? write a function to intelligently check for permissions for sevearl notes?
+                if not PlanningAreaPermission.can_view(user, planningarea):
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+
+                notes = PlanningAreaNote.objects.filter(
+                    planning_area=planningarea_pk
+                ).order_by("created_at")
+                serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
+                return Response(serializer.data)
+
+        except PlanningArea.DoesNotExist as pa_dne:
+            logger.error("Error getting notes for planning area: %s", pa_dne)
+            return Response(
+                {"message": "Planning area with this id could not be found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except PlanningAreaNote.DoesNotExist as pan_dne:
+            logger.error("Error getting notes for planning area: %s", pan_dne)
+            return Response(
+                {"message": "Planning area note could not be found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         except Exception as e:
             logger.error("Error getting notes for planning area: %s", e)

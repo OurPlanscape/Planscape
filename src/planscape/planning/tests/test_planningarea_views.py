@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
 from collaboration.tests.helpers import create_collaborator_record
-from planning.models import PlanningArea, Scenario, ScenarioResult
+from planning.models import PlanningArea, Scenario, ScenarioResult, PlanningAreaNote
 from planning.tests.helpers import (
     _create_planning_area,
     _create_scenario,
@@ -1246,6 +1246,233 @@ class CreatePlanningAreaNote(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
+
+
+class GetPlanningAreaNotes(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unassociated_user = self.test_users["owner2"]  # no perms for Planning Area
+
+        self.planningarea = PlanningArea.objects.create(
+            user=self.owner_user, region_name="foo"
+        )
+        self.note = PlanningAreaNote.objects.create(
+            user=self.owner_user,
+            planning_area=self.planningarea,
+            content="Just a comment about this planning area.",
+        )
+        self.note2 = PlanningAreaNote.objects.create(
+            user=self.collab_user,
+            planning_area=self.planningarea,
+            content="Collaborator comment -- so much to say.",
+        )
+        self.note3 = PlanningAreaNote.objects.create(
+            user=self.viewer_user,
+            planning_area=self.planningarea,
+            content="Viewer comment, just commenting",
+        )
+        create_collaborator_record(
+            self.owner_user,
+            self.collab_user,
+            self.planningarea,
+            Role.COLLABORATOR,
+        )
+        create_collaborator_record(
+            self.owner_user,
+            self.viewer_user,
+            self.planningarea,
+            Role.VIEWER,
+        )
+
+    def test_get_all_notes_for_a_planningarea(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        planning_area_notes = response.json()
+        self.assertEqual(len(planning_area_notes), 3)
+        # these should be ordered by created_at, so we ought to be able to test by index id
+        self.assertEqual(
+            planning_area_notes[0]["content"],
+            "Just a comment about this planning area.",
+        )
+        self.assertEqual(
+            planning_area_notes[2]["content"],
+            "Viewer comment, just commenting",
+        )
+        self.assertEqual(
+            planning_area_notes[0]["user"],
+            self.owner_user.pk,
+        )
+        self.assertEqual(
+            planning_area_notes[2]["user"],
+            self.viewer_user.pk,
+        )
+
+    def test_get_notes_unauthenticated(self):
+        response = self.client.post(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_get_specific_note_for_a_planningarea(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.note2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        planning_area_note = response.json()
+        self.assertEqual(
+            planning_area_note["content"], "Collaborator comment -- so much to say."
+        )
+
+    def test_get_specific_note_for_noncollaborator(self):
+        self.client.force_authenticate(self.unassociated_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.note2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_specific_note_unauthenticated(self):
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.note2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+
+class DeletePlanningAreaNotes(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unassociated_user = self.test_users["owner2"]  # no perms for Planning Area
+
+        self.planningarea = PlanningArea.objects.create(
+            user=self.owner_user, region_name="foo"
+        )
+        self.owner_note = PlanningAreaNote.objects.create(
+            user=self.owner_user,
+            planning_area=self.planningarea,
+            content="Just a comment about this planning area.",
+        )
+        self.collab_note = PlanningAreaNote.objects.create(
+            user=self.collab_user,
+            planning_area=self.planningarea,
+            content="Collaborator comment -- so much to say.",
+        )
+        self.viewer_note = PlanningAreaNote.objects.create(
+            user=self.viewer_user,
+            planning_area=self.planningarea,
+            content="Viewer comment, just commenting",
+        )
+        create_collaborator_record(
+            self.owner_user,
+            self.collab_user,
+            self.planningarea,
+            Role.COLLABORATOR,
+        )
+        create_collaborator_record(
+            self.owner_user,
+            self.viewer_user,
+            self.planningarea,
+            Role.VIEWER,
+        )
+
+    def test_delete_note_as_owner(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.owner_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note_as_nonauthor_planningarea_owner(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.collab_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note_as_nonauthor_nonowner(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.viewer_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note_as_author_nonowner(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse(
+                "planning:delete_planningareanote",
+                kwargs={
+                    "planningarea_pk": self.planningarea.pk,
+                    "planningareanote_pk": self.viewer_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
 
 
 # EndtoEnd test that lists, creates a planning_area, creates a scenario,
