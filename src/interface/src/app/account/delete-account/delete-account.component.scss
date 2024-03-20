@@ -1,8 +1,10 @@
 @import "../../../styles/mixins";
 @import "../../../styles/colors";
 
-h3 {
-  @include h3();
+:host {
+  .mat-icon {
+    line-height: 21px;
+  }
 }
 
 p {
