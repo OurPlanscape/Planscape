@@ -45,7 +45,7 @@
     "moment": "^2.29.4",
     "ng-mocks": "^14.3.2",
     "ng2-charts": "^4.0.0",
-    "ngx-cookie-service": "^14.0.1",
+    "ngx-cookie-service": "^15.0.0",
     "ngx-google-analytics": "^14.0.1",
     "ngx-mask": "^14.3.2",
     "rxjs": "~7.5.0",
