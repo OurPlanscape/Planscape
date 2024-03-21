@@ -1,12 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import {
-  ActivatedRouteSnapshot,
-  CanActivate,
-  Router,
-  RouterStateSnapshot,
-} from '@angular/router';
+import { ActivatedRouteSnapshot, Router, RouterStateSnapshot } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
 import {
@@ -363,7 +358,7 @@ export class AuthService {
  *  in, redirect to the sign-in page.
  */
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class AuthGuard  {
   constructor(
     private authService: AuthService,
     private router: Router,
