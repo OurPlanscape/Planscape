@@ -1,5 +1,4 @@
 @use '@angular/material' as mat;
-@import "../../../theme";
 @import "../../../styles/mixins";
 @import "../../../styles/colors";
 
@@ -27,8 +26,8 @@ h2 {
 
   &:hover {
     background-color: transparentize(
-            $color: mat.get-color-from-palette($primary-palette, 500),
-            $amount: 0.9
+      $color: $color-standard-blue,
+      $amount: 0.9
     );
   }
 
@@ -36,14 +35,13 @@ h2 {
 
 .selected .mat-column-name,
 .selected {
-
-  border-left-color: mat.get-color-from-palette($primary-palette, 500);
+  border-left-color: $color-standard-blue;
 }
 
 .selected {
   background-color: transparentize(
-          $color: mat.get-color-from-palette($primary-palette, 500),
-          $amount: 0.9
+    $color: $color-standard-blue,
+    $amount: 0.9
   );
 }
 

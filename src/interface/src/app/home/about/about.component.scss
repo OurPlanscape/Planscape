@@ -49,6 +49,5 @@ p.regular {
 }
 
 p.small {
-  @include small-paragraph();
   text-align: left;
 }
