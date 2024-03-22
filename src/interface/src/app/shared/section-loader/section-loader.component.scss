@@ -1,7 +1,7 @@
 @import "../../../styles/mixins";
 @import "../../../styles/colors";
 
-:host{
+:host {
   display: block;
   height: 100%;
   position: relative;
@@ -32,7 +32,6 @@
   }
 
   p {
-    @include small-paragraph();
     color: $color-md-gray;
     margin: 0;
     max-width: 560px;
