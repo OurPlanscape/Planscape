@@ -1,32 +1,6 @@
 @use '@angular/material' as mat;
 @use 'sass:map';
 
-// Define the palettes for your theme using the Material Design palettes available in palette.scss
-// (imported above). For each palette, you can optionally specify a default, lighter, and darker
-// hue. Available color palettes: https://material.io/design/color/
-$planscape-frontend-primary: mat.define-palette(mat.$indigo-palette);
-$planscape-frontend-accent: mat.define-palette(
-    mat.$pink-palette,
-    A200,
-    A100,
-    A400
-);
-
-// The warn palette is optional (defaults to red).
-$planscape-frontend-warn: mat.define-palette(mat.$red-palette);
-
-// Create the theme object. A theme consists of configurations for individual
-// theming systems such as "color" or "typography".
-$planscape-frontend-theme: mat.define-light-theme(
-    (
-      color: (
-        primary: $planscape-frontend-primary,
-        accent: $planscape-frontend-accent,
-        warn: $planscape-frontend-warn,
-      ),
-    )
-);
-
 $styleguide: (
   'header-1': mat.define-typography-level(30px, 32px, 700),
   'header-2' : mat.define-typography-level(26px, 28px, 700),
@@ -35,7 +9,7 @@ $styleguide: (
   'header-5': mat.define-typography-level(16px, 24px, 600),
   'standard-input-label': mat.define-typography-level(18px, 22px, 400),
   'standard-label': mat.define-typography-level(16px, 24px, 500),
-  'standard-label-sm': mat.define-typography-level(14px, 24px, 400),
+  'standard-label-sm': mat.define-typography-level(14px, 24px, 500),
   'xs-label': mat.define-typography-level(14px, 14px, 600),
   'regular-paragraph': mat.define-typography-level(16px, 26px, 400),
   'small-paragraph': mat.define-typography-level(14px, 22px, 400),
@@ -46,9 +20,8 @@ $styleguide: (
   'top-level-label': mat.define-typography-level(16px, 20px, 700),
 );
 
-$color-config: mat.get-color-config($planscape-frontend-theme);
-$primary-palette: map.get($color-config, 'primary');
-$custom-typography: mat.define-typography-config(
+// see https://v16.material.angular.io/guide/typography#using-typography-styles-in-your-application
+$planscape-typography: mat.define-typography-config(
   // base font family
   $font-family: '"Public Sans", sans-serif',
     // h1
@@ -70,3 +43,26 @@ $custom-typography: mat.define-typography-config(
     // smaller text used in table headers
   $caption: mat.define-typography-level(12px, 22px, 400),
 );
+
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://material.io/design/color/
+$planscape-frontend-primary: mat.define-palette(mat.$indigo-palette);
+
+
+// Create the theme object. A theme consists of configurations for individual
+// theming systems such as "color" or "typography".
+$planscape-frontend-theme: mat.define-light-theme(
+    (
+      color: (
+        primary: $planscape-frontend-primary,
+        accent: $planscape-frontend-primary, // not really used
+        warn: $planscape-frontend-primary, // not really used
+      ),
+    )
+);
+
+$color-config: mat.get-color-config($planscape-frontend-theme);
+$primary-palette: map.get($color-config, 'primary');
+

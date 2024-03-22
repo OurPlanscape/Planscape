@@ -46,7 +46,7 @@
 }
 
 .navbar-item {
-  @include h4();
+  @include important-paragraph();
   color: $color-white;
   text-decoration: none;
   background: none;

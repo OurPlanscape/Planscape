@@ -1,7 +1,18 @@
 /*
 Typography mixins.
 Declare mixins based on styleguide and apply to classes
- */
+*/
+
+@use 'sass:map';
+@import "theme";
+
+// helper mixin to parse and use `mat.define-typography-level` results
+@mixin defToStyles($definition) {
+  font-size: map.get($definition, 'font-size');
+  line-height: map.get($definition, 'line-height');
+  font-weight: map.get($definition, 'font-weight');
+  letter-spacing: map.get($definition, 'letter-spacing');
+}
 
 
 @mixin button-text {
@@ -18,47 +29,32 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin important-paragraph {
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 32px;
-  letter-spacing: 0px;
+  @include defToStyles(map.get($styleguide, 'important-paragraph'))
 }
 
 @mixin regular-paragraph {
-  font-size: 16px;
-  font-weight: 300;
-  line-height: 26px;
-  letter-spacing: 0;
+  @include defToStyles(map.get($styleguide, 'regular-paragraph'))
 }
 
 @mixin small-paragraph {
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  letter-spacing: 0;
+  @include defToStyles(map.get($styleguide, 'small-paragraph'))
 }
 
-@mixin standard-input-label {
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 22px;
-}
 
 @mixin small-input-label {
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 22px;
+  @include defToStyles(map.get($styleguide, 'standard-label-sm'))
 }
 
+
+// todo fix, this ones are the other way around
+@mixin standard-input-label {
+  @include defToStyles(map.get($styleguide, 'standard-label'))
+}
 
 @mixin standard-label {
-  font-size: 18px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 24px; /* 133.333% */
+  @include defToStyles(map.get($styleguide, 'standard-input-label'))
 }
+
 
 @mixin standard-label-bold {
   @include standard-label();
@@ -73,55 +69,25 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin h1 {
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 32px;
-  letter-spacing: 0;
+  @include defToStyles(map.get($styleguide, 'header-1'))
 }
 
 @mixin h2 {
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 32px;
+  @include defToStyles(map.get($styleguide, 'header-2'))
 }
 
 @mixin h3 {
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 24px;
+  @include defToStyles(map.get($styleguide, 'header-3'))
 }
 
 @mixin h4 {
-  font-size: 18px;
-  font-style: normal;
-  font-weight: normal;
-  line-height: 32px;
+  @include defToStyles(map.get($styleguide, 'header-4'))
 }
 
 @mixin top-level-label {
   font-size: 16px;
   line-height: 26px;
   font-weight: 500;
-}
-
-@mixin small-paragraph {
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  letter-spacing: 0;
-}
-
-@mixin regular-paragraph {
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.625rem;
-}
-
-@mixin p {
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 26px;
 }
 
 
@@ -136,10 +102,4 @@ Declare mixins based on styleguide and apply to classes
   background-color: $color-light-gray;
   color: $color-text-gray;
   border: 1px $color-text-gray solid;
-}
-
-@mixin button-text {
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1rem;
 }
