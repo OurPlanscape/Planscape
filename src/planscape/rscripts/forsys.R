@@ -80,7 +80,7 @@ POSTPROCESSING_FUNCTIONS <- list(
   california_spotted_owl_habitat = total_acres_per_project,
   california_spotted_owl_territory = total_acres_per_project,
   cavity_nesters_excavators_species_richness = average_per_stand,
-  coastal_california_gnatcatcher = total_acres_per_project,
+  coastal_california_gnatcatcher = average_per_stand,
   cost_of_potential_treatments = average_per_stand,
   damage_potential_wui = average_per_stand,
   dead_and_down_carbon = average_per_stand,
