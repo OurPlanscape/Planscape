@@ -548,13 +548,47 @@
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_dynamics"
+                  "fire_dynamics",
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
+                  "carbon_sequestration"
                 ],
                 "elements": [
-                  "severity"
+                  "severity",
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
+                  "carbon_storage"
                 ],
                 "metrics": [
-                  "probability_of_fire_severity_high"
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
+                  "probability_of_fire_severity_high",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -577,17 +611,46 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
-                  "fire_adapted_communities"
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
-                  "hazard"
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
+                  "carbon_storage"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
                   "structure_exposure_score",
-                  "wui_damage_potential",
-                  "wildland_urban_interface"
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -620,15 +683,47 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
-                  "forsys"
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
-                  "Forsys"
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
+                  "carbon_storage"
                 ],
                 "metrics": [
+                  "cwhr_vegetation_type",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
-                  "cwhr_vegetation_type"
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -652,15 +747,46 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
-                  "biodiversity_conservation"
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
-                  "focal_species"
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
+                  "carbon_storage"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
-                  "california_spotted_owl"
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -684,15 +810,46 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
-                  "biodiversity_conservation"
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
-                  "species_diversity"
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
+                  "carbon_storage"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
-                  "wildlife_species_richness"
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -717,15 +874,46 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
-                  "biodiversity_conservation"
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
-                  "species_diversity"
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
+                  "carbon_storage"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
-                  "threatened_endangered_vertebrate_species_richness"
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -755,15 +943,46 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
                   "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
                   "carbon_storage"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
-                  "total_aboveground_carbon"
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -787,15 +1006,46 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
+                  "fire_adapted_communities",
+                  "forsys",
+                  "biodiversity_conservation",
+                  "economic_diversity",
+                  "wetland_integrity",
                   "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
+                  "hazard",
+                  "Forsys",
+                  "species_diversity",
+                  "focal_species",
+                  "wood_product_industry",
+                  "composition",
+                  "functional_fire",
                   "carbon_storage"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "coastal_california_gnatcatcher",
+                  "cost_of_potential_treatments",
+                  "hermes_copper_butterfly",
+                  "housing_unit_density",
+                  "joshua_tree",
+                  "mean_fri_departure_condition_class",
+                  "mountain_lion",
+                  "mountain_yellow_legged_frog",
+                  "predicted_ignition_probability_human_caused",
+                  "predicted_ignition_probability_lightning_caused",
                   "probability_of_fire_severity_high",
-                  "total_aboveground_carbon"
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "wildland_urban_interface",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
