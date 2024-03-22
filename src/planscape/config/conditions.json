@@ -3566,7 +3566,8 @@
                   "raw_layer": ":fireAdaptComm_Tier1_MSB_WUI_CA_100m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "hide_chart": true
                 }
               ]
             }
