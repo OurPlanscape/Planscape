@@ -153,10 +153,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  line-height: 24px;
 
   button {
-    @include small-input-label();
     line-height: 24px;
   }
 
