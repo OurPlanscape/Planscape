@@ -2,7 +2,7 @@
 @import "colors";
 
 .form-field-label {
-  @include standard-label();
+  @include standard-input-label();
   color: $color-dark-gray;
   padding-bottom: 0;
   padding-right: 1em;
@@ -33,6 +33,7 @@ mat-form-field.form-field-input {
   .mat-form-field-infix {
     border-top-width: 4px;
   }
+
   /* selected */
   .mat-form-field-outline.mat-form-field-outline-thick {
     background-color: $color-highlight-30pct;

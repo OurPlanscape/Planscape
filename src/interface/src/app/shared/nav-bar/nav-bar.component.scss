@@ -50,7 +50,7 @@
 }
 
 .breadcrumb {
-  @include standard-label();
+  @include standard-input-label();
 
   a {
     color: $color-standard-blue;

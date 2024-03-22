@@ -87,7 +87,7 @@ button {
 }
 
 .standard-label {
-  @include standard-label();
+  @include standard-input-label();
   color: $color-dark-gray;
 }
 
