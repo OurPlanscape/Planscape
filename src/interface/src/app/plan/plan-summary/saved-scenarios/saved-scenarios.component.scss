@@ -8,7 +8,7 @@
 }
 
 .slide-toggle-my-scenarios {
-  @include standard-input-label();
+  @include standard-label();
   position: absolute;
   right: 0;
   top: 12px;
@@ -76,7 +76,7 @@
 }
 
 .empty-state {
-  @include standard-input-label();
+  @include standard-label();
   color: $color-dark-gray;
   padding: 40px 20px;
   margin: 20px;

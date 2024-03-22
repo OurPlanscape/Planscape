@@ -13,7 +13,7 @@ h4.form-field-title {
 }
 
 .form-field-p {
-  @include standard-label();
+  @include standard-input-label();
   margin: 10px 0;
   color: $color-dark-gray;
 }
