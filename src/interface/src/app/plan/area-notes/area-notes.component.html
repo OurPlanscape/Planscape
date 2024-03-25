@@ -3,6 +3,19 @@
     <div class="note-head">
       <div>{{ note.name }}</div>
       <div class="date">{{ note.date }}</div>
+      <button
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        aria-label="more note options"
+        style="float: right; position: absolute; right: 4px">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="openDeleteNoteDialog()">
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
     </div>
     <div class="note-content">
       {{ note.message }}

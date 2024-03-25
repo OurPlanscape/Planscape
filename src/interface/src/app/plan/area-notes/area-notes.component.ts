@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 
 interface Note {
   message: string;
@@ -12,6 +14,8 @@ interface Note {
   styleUrls: ['./area-notes.component.scss'],
 })
 export class AreaNotesComponent {
+  constructor(private dialog: MatDialog) {}
+
   notes: Note[] = [
     {
       message: 'Insert a note ',
@@ -43,6 +47,10 @@ export class AreaNotesComponent {
   note = '';
 
   saving = false;
+
+  openDeleteNoteDialog() {
+    this.dialog.open(DeleteNoteDialogComponent, {}).afterClosed();
+  }
 
   addNote(event: Event) {
     if (this.note) {

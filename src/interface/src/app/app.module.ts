@@ -69,6 +69,7 @@ import { DeleteAccountDialogComponent } from './account/delete-account-dialog/de
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 import { JwtInterceptor } from './services/jwt-interceptor.service';
+import { DeleteNoteDialogComponent } from './plan/delete-note-dialog/delete-note-dialog.component';
 
 @NgModule({
   declarations: [
@@ -80,6 +81,7 @@ import { JwtInterceptor } from './services/jwt-interceptor.service';
     HomeComponent,
     PlanTableComponent,
     DeleteAccountDialogComponent,
+    DeleteNoteDialogComponent,
     WelcomeComponent,
     PlanningAreasComponent,
     ResetPasswordDialogComponent,
