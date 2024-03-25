@@ -1,8 +1,11 @@
 import { Component, Inject } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import {
+  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { FormMessageType, User } from '../../types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { AuthService, InvitesService, PlanStateService } from '@services';
 import { Invite, INVITE_ROLE } from '../../types/invite.types';
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs';

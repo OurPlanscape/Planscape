@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DeleteAccountComponent } from './delete-account.component';
 import { MaterialModule } from '../../material/material.module';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { Router } from '@angular/router';

@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '@services';
-import { MatDialog } from '@angular/material/dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ResetPasswordDialogComponent } from './reset-password-dialog/reset_password_dialog.component';
 import * as signInMessages from '../shared/constants';
 import { EMAIL_VALIDATION_REGEX } from '../../app/shared/constants';

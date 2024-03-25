@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
 import { BehaviorSubject } from 'rxjs';
 
 import { StringifyMapConfigPipe } from './../../stringify-map-config.pipe';
