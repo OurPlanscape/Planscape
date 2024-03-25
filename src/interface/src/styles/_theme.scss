@@ -24,24 +24,30 @@ $styleguide: (
 $planscape-typography: mat.define-typography-config(
   // base font family
   $font-family: '"Public Sans", sans-serif',
-    // h1
-  $headline: map.get($styleguide, 'header-1'),
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-1: null,
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-2: null,
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-3: null,
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-4: null,
+    //  h1
+  $headline-5: map.get($styleguide, 'header-1'),
     // h2
-  $title: map.get($styleguide, 'header-2'),
-    // h3
-  $subheading-2: map.get($styleguide, 'header-3'),
+  $headline-6: map.get($styleguide, 'header-2'),
+    //h3
+  $subtitle-1: map.get($styleguide, 'header-3'),
     // h4
-  $subheading-1: map.get($styleguide, 'header-4'),
-    // body main (baseline text)
-  $body-1: map.get($styleguide, 'small-paragraph'),
-    // body secondary, regular paragraph
-  $body-2: map.get($styleguide, 'regular-paragraph'),
-    // button text
-  $button: map.get($styleguide, 'button-text-sm'),
-    // input
-  $input: map.get($styleguide, 'input'),
-    // smaller text used in table headers
+  $subtitle-2: map.get($styleguide, 'header-3'),
+    // body
+  $body-1: map.get($styleguide, 'regular-paragraph'),
+    // body 2
+  $body-2: map.get($styleguide, 'small-paragraph'),
+    // caption
   $caption: mat.define-typography-level(12px, 22px, 400),
+    // button
+  $button: map.get($styleguide, 'button-text-sm'),
 );
 
 
