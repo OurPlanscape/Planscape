@@ -1,4 +1,4 @@
-import { MatSnackBarConfig } from '@angular/material/snack-bar';
+import { MatLegacySnackBarConfig as MatSnackBarConfig } from '@angular/material/legacy-snack-bar';
 
 /**
  * @desc Error message indicating some unknown error occurred while attempting a

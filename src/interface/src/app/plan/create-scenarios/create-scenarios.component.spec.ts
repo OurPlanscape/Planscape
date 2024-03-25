@@ -20,7 +20,7 @@ import {
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
-import { MatButtonHarness } from '@angular/material/button/testing';
+import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { PlanState, PlanStateService, ScenarioService } from '@services';

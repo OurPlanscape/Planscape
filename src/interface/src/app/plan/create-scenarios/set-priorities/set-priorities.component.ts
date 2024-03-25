@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { MatTableDataSource } from '@angular/material/table';
+import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { distinctUntilChanged, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { MapService, PlanStateService } from '@services';
