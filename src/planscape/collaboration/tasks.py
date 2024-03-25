@@ -28,6 +28,7 @@ def send_invitation(
             ),
             "planning_area": planning_area,
             "message": message,
+            "frontend_url": get_frontend_url("home"),
             "frontend_assets": get_frontend_url("assets"),
             "planning_area_link": get_frontend_url(f"plan/{planning_area.pk}"),
             "create_account_link": get_frontend_url(
