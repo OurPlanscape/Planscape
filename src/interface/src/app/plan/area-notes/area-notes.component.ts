@@ -45,7 +45,6 @@ export class AreaNotesComponent implements OnInit {
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed) => {
-        console.log('what is confirmed?', confirmed);
         if (confirmed) {
           this.planNotesService.deleteNote(this.planId, note.id).subscribe({
             next: () => {
