@@ -582,16 +582,16 @@
                 },
                 {
                   "display_name": "Distribution of Redwoods",
-                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_provider": "Save the Redwoods League",
                   "data_units": "Categorical",
                   "max_value": 24,
-                  "metric_name": "summer_steelhead_distribution",
+                  "metric_name": "distribution_redwood_structure",
                   "min_value": 19,
                   "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/DistributionRedwoodStructureClasses_2012.tif",
                   "raw_layer": ":bioDiverConserv_Tier2_DistributionRedwoodStructureClasses_2012",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=67",
-                  "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source": "State of Redwoods Conservation Report",
+                  "source_link": "https://www.savetheredwoods.org/about-us/publications/state-of-redwoods-conservation-report-2018/"
                 }
               ]
             }
