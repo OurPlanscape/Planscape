@@ -90,6 +90,9 @@ class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
     content = models.TextField(null=True)
 
+    def user_name(self):
+        return self.user.get_full_name()
+
     class Meta:
         indexes = [
             models.Index(
