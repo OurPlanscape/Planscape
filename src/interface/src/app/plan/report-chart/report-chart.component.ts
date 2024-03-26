@@ -22,6 +22,7 @@ export class ReportChartComponent implements OnInit {
       },
     },
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       tooltip: {
         enabled: false,
