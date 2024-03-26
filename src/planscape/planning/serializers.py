@@ -86,6 +86,7 @@ class PlanningAreaNoteSerializer(serializers.ModelSerializer):
             "content",
             "planning_area",
             "user",
+            "user_name",
         )
         model = PlanningAreaNote
 

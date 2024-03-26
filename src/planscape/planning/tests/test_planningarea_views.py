@@ -1302,22 +1302,22 @@ class GetPlanningAreaNotes(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         planning_area_notes = response.json()
         self.assertEqual(len(planning_area_notes), 3)
-        # these should be ordered by created_at, so we ought to be able to test by index id
+        # these should be ordered by created_at, latest on top, so we ought to be able to test by index id
         self.assertEqual(
             planning_area_notes[0]["content"],
-            "Just a comment about this planning area.",
-        )
-        self.assertEqual(
-            planning_area_notes[2]["content"],
             "Viewer comment, just commenting",
         )
         self.assertEqual(
+            planning_area_notes[2]["content"],
+            "Just a comment about this planning area.",
+        )
+        self.assertEqual(
             planning_area_notes[0]["user"],
-            self.owner_user.pk,
+            self.viewer_user.pk,
         )
         self.assertEqual(
             planning_area_notes[2]["user"],
-            self.viewer_user.pk,
+            self.owner_user.pk,
         )
 
     def test_get_notes_unauthenticated(self):

@@ -1,8 +1,8 @@
 <div class="notes">
   <div *ngFor="let note of notes" class="note">
     <div class="note-head">
-      <div>{{ note.name }}</div>
-      <div class="date">{{ note.date }}</div>
+      <div>{{ note.user_name }}</div>
+      <div class="date">{{ note.created_at | date }}</div>
       <button
         *ngIf="canDelete(note)"
         mat-icon-button
@@ -19,7 +19,7 @@
       </mat-menu>
     </div>
     <div class="note-content">
-      {{ note.message }}
+      {{ note.content }}
     </div>
   </div>
 </div>

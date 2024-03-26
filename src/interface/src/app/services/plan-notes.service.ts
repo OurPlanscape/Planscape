@@ -42,7 +42,7 @@ export class PlanNotesService {
   deleteNote(planningAreaId: number, noteId: number) {
     return this.http.delete<Note>(
       BackendConstants.END_POINT.concat(
-        `/planning/planning_area/${planningAreaId}/note/${note.id}`
+        `/planning/planning_area/${planningAreaId}/note/${noteId}`
       ),
       {
         withCredentials: true,
