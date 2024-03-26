@@ -1,8 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
-// import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Note, PlanNotesService } from '@services/plan-notes.service';
+import {
+  SNACK_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from 'src/app/shared/constants';
 
 @Component({
   selector: 'app-area-notes',
@@ -10,7 +15,11 @@ import { Note, PlanNotesService } from '@services/plan-notes.service';
   styleUrls: ['./area-notes.component.scss'],
 })
 export class AreaNotesComponent implements OnInit {
-  constructor(private planNotesService: PlanNotesService) {}
+  constructor(
+    private planNotesService: PlanNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar
+  ) {}
 
   @Input() planId!: number;
 
@@ -38,14 +47,14 @@ export class AreaNotesComponent implements OnInit {
       .subscribe((confirmed) => {
         console.log('what is confirmed?', confirmed);
         if (confirmed) {
-          this.PlanNotesService.deleteNote(ids).subscribe({
-            next: (deletedIds) => {
+          this.planNotesService.deleteNote(this.planId, note.id).subscribe({
+            next: () => {
               this.snackbar.open(
-                `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`,
+                `Deleted note`,
                 'Dismiss',
                 SNACK_NOTICE_CONFIG
               );
-              this.fetchScenarios();
+              this.loadNotes();
             },
             error: (err) => {
               this.snackbar.open(
