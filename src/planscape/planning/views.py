@@ -1,19 +1,14 @@
 import json
 import logging
 import os
-
-from base.region_name import display_name_to_region, region_to_display_name
+from base.region_name import display_name_to_region
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
 from django.http import (
-    HttpRequest,
     HttpResponse,
-    HttpResponseBadRequest,
-    Http404,
-    JsonResponse,
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
