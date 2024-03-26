@@ -4,6 +4,7 @@
       <div>{{ note.name }}</div>
       <div class="date">{{ note.date }}</div>
       <button
+        *ngIf="canDelete(note)"
         mat-icon-button
         [matMenuTriggerFor]="menu"
         aria-label="more note options"
@@ -11,7 +12,7 @@
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="openDeleteNoteDialog()">
+        <button mat-menu-item (click)="openDeleteNoteDialog(note)">
           <mat-icon>delete</mat-icon>
           <span>Delete</span>
         </button>

@@ -22,12 +22,15 @@ export class DeleteNoteDialogComponent {
   }
 
   cancel(): void {
-    this.dialogRef.close();
+    this.dialogRef.close(false);
   }
 
   deleteNote(): void {
     this.disableDeleteButton = true;
     // TODO: actually delete things, and then move this to subscribe...
-    this.dialogRef.close({});
+    console.log('deleting note...');
+
+    //TODO: then
+    this.dialogRef.close(true);
   }
 }
