@@ -1000,12 +1000,8 @@ class PlanningAreaNotes(APIView):
 
             else:
                 planningarea = PlanningArea.objects.get(id=planningarea_pk)
-                # TODO: all of the notes in this query will have the same PlanningArea, so for now,
-                #  having view access to the PlanningArea means a viewer could see the notes,
-                #  so we could just check for access to Planningarea here.
-                # However, if this permission structure *ever* changes we'll need to update this, and that may not be easy to remember
-                # One alternative here is to query for can_view on each note, but it's a lot of queries.
-                # Another alternative? write a function to intelligently check for permissions for sevearl notes?
+                # Note: all of the notes in this query will have the same PlanningArea, so for now,
+                #  having view access to the PlanningArea means a viewer can see the notes,
                 if not PlanningAreaPermission.can_view(user, planningarea):
                     return Response(status=status.HTTP_403_FORBIDDEN)
 
