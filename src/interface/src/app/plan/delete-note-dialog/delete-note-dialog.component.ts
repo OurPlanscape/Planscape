@@ -27,10 +27,6 @@ export class DeleteNoteDialogComponent {
 
   deleteNote(): void {
     this.disableDeleteButton = true;
-    // TODO: actually delete things, and then move this to subscribe...
-    console.log('deleting note...');
-
-    //TODO: then
     this.dialogRef.close(true);
   }
 }
