@@ -12,7 +12,11 @@ from django.http import (
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from collaboration.permissions import PlanningAreaPermission, PlanningAreaNotePermission
+from collaboration.permissions import (
+    PlanningAreaPermission,
+    ScenarioPermission,
+    PlanningAreaNotePermission,
+)
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
@@ -21,7 +25,6 @@ from planning.models import (
     ScenarioResultStatus,
     SharedLink,
 )
-from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
