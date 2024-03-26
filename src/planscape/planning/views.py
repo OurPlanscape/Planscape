@@ -1,35 +1,35 @@
 import json
 import logging
 import os
-
-from base.region_name import display_name_to_region, region_to_display_name
+from base.region_name import display_name_to_region
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
 from django.http import (
-    HttpRequest,
     HttpResponse,
-    HttpResponseBadRequest,
-    Http404,
-    JsonResponse,
     QueryDict,
 )
 from django.shortcuts import get_object_or_404
-from collaboration.permissions import PlanningAreaPermission
+from collaboration.permissions import (
+    PlanningAreaPermission,
+    ScenarioPermission,
+    PlanningAreaNotePermission,
+)
 from planning.models import (
     PlanningArea,
+    PlanningAreaNote,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
     SharedLink,
 )
-from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
+    PlanningAreaNoteSerializer,
 )
 from planning.services import (
     export_to_shapefile,
@@ -37,6 +37,7 @@ from planning.services import (
     zip_directory,
 )
 from planning.tasks import async_forsys_run
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
@@ -939,3 +940,111 @@ def create_shared_link(request: Request) -> Response:
     except Exception as e:
         logger.error("Error creating shared link: %s", e)
         raise
+
+
+class PlanningAreaNotes(APIView):
+    def post(self, request: Request, planningarea_pk: int):
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        note_data = request.data.copy()
+        note_data["planning_area"] = planningarea_pk
+
+        try:
+            serializer = PlanningAreaNoteSerializer(
+                data=note_data, context={"user": user}
+            )
+            serializer.is_valid(raise_exception=True)
+            if not PlanningAreaNotePermission.can_add(user, serializer.validated_data):
+                return Response(
+                    {"error": "Authentication Required"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            new_note = serializer.save()
+            out_serializer = PlanningAreaNoteSerializer(new_note)
+            return Response(
+                out_serializer.data,
+                content_type="application/json",
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            logger.error("Error creating PlanningAreaNote: %s", e)
+            raise
+
+    def get(
+        self, request: Request, planningarea_pk: int, planningareanote_pk: int = None
+    ):
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            if planningareanote_pk:
+                planningareanote = PlanningAreaNote.objects.get(
+                    id=planningareanote_pk, planning_area=planningarea_pk
+                )
+                if not PlanningAreaNotePermission.can_view(user, planningareanote):
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+                serializer = PlanningAreaNoteSerializer(
+                    instance=planningareanote, many=False
+                )
+                return Response(serializer.data)
+
+            else:
+                planningarea = PlanningArea.objects.get(id=planningarea_pk)
+                # Note: all of the notes in this query will have the same PlanningArea, so for now,
+                #  having view access to the PlanningArea means a viewer can see the notes,
+                if not PlanningAreaPermission.can_view(user, planningarea):
+                    return Response(status=status.HTTP_403_FORBIDDEN)
+
+                notes = PlanningAreaNote.objects.filter(
+                    planning_area=planningarea_pk
+                ).order_by("created_at")
+                serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
+                return Response(serializer.data)
+
+        except PlanningArea.DoesNotExist as pa_dne:
+            logger.error("Error getting notes for planning area: %s", pa_dne)
+            return Response(
+                {"message": "Planning area with this id could not be found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except PlanningAreaNote.DoesNotExist as pan_dne:
+            logger.error("Error getting notes for planning area: %s", pan_dne)
+            return Response(
+                {"message": "Planning area note could not be found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        except Exception as e:
+            logger.error("Error getting notes for planning area: %s", e)
+            raise
+
+    def delete(self, request: Request, planningarea_pk: int, planningareanote_pk: int):
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        try:
+            note = get_object_or_404(PlanningAreaNote, planningareanote_pk)
+
+            if not PlanningAreaNotePermission.can_remove(user, note):
+                return Response(
+                    {"error": "User does not have access to delete this note."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            if note.delete():
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            logger.error("Exception deleting planning area note: %s", e)
+            raise
