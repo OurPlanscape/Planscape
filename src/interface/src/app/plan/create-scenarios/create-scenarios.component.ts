@@ -17,7 +17,7 @@ import {
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { PlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '../../shared/constants';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';

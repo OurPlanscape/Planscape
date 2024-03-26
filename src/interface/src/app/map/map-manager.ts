@@ -1,4 +1,4 @@
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import booleanIntersects from '@turf/boolean-intersects';
 import booleanWithin from '@turf/boolean-within';

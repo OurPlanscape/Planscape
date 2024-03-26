@@ -2812,7 +2812,8 @@
                   "raw_layer": ":fireAdaptComm_Tier1_HUden_2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=14",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Avg Housing Units/Sq km"
                 },
                 {
                   "display_name": "Slope",
@@ -3094,7 +3095,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=32",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Avg number of species"
                 },
                 {
                   "display_name": "Threatened/Endangered Vertebrate Species Richness",
@@ -3107,7 +3109,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=33",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Avg number of species"
                 }
               ]
             },
@@ -3140,7 +3143,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_CSO_suitable_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=34",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Sum of suitable acres"
                 },
                 {
                   "display_name": "Coastal California Gnatcatcher",
@@ -3153,7 +3157,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_Gnatcatcher_Habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=35",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Avg suitability"
                 },
                 {
                   "display_name": "Mountain Lion",
@@ -3166,7 +3171,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_Mountain_lion_suitable_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=36",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Sum of suitable acres"
                 },
                 {
                   "display_name": "Mountain Yellow-Legged Frog",
@@ -3179,7 +3185,8 @@
                   "raw_layer": ":bioDiverConserv_Tier1_mountain_yellow_legged_frog_potential_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=36",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Sum of potential habitat acres"
                 },
                 {
                   "display_name": "Unarmored Threespine Stickleback",
@@ -3218,7 +3225,8 @@
                   "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=39",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Sum of suitable acres"
                 },
                 {
                   "display_name": "Joshua Tree",
@@ -3231,7 +3239,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_joshua_tree_range",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=40",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Sum of current range acres"
                 },
                 {
                   "display_name": "Hermes Copper Butterfly",
@@ -3244,7 +3253,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_hermes_copper_current_range",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=41",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Sum of current range acres"
                 },
                 {
                   "display_name": "Laguna Mountains Skipper",
@@ -3448,7 +3458,8 @@
                   "raw_layer": ":econDiversity_Tier2_cost_per_acre_vegtype",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=46",
                   "source": "Southern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Average dollars per acre"
                 }
               ]
             }
@@ -3475,7 +3486,8 @@
                   "raw_layer": ":fireDynamics_Tier3_PredictedHumanIgnitionProb_1km",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Average probability"
                 },
                 {
                   "display_name": "Predicted Ignition Probability: Lightning-caused",
@@ -3488,7 +3500,8 @@
                   "raw_layer": ":fireDynamics_Tier3_PredictedLightningIgnitionProb_1km",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=16",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Average probability"
                 },
                 {
                   "display_name": "Source of Ember Load to Buildings",
@@ -3527,7 +3540,8 @@
                   "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_2023_reclass",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=09",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Structure Exposure Score"
                 },
                 {
                   "display_name": "WUI Damage Potential",
@@ -3540,7 +3554,8 @@
                   "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_2023_reclass",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=11",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Damage potential"
                 },
                 {
                   "display_name": "Ember Load Index",
@@ -3567,6 +3582,7 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
                   "hide_chart": true
                 }
               ]
@@ -3620,7 +3636,8 @@
                   "raw_layer": ":fireDynamics_Tier3_meanCC_FRI_2022",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=18",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Fire frequency departure"
                 },
                 {
                   "display_name": "Time Since Last Fire",
@@ -3679,7 +3696,8 @@
                   "raw_layer": ":fireDynamics_Tier1_AnnualBurnProbability_2023",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=21",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Average probability"
                 },
                 {
                   "display_name": "Probability of Fire Severity (High)",
@@ -3692,7 +3710,8 @@
                   "raw_layer": ":fireDynamics_Tier1_ProbabilityHighFireSev_2023",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=21",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Average probability"
                 }
               ]
             }
@@ -4380,7 +4399,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness_CA_2018",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=54",
                   "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Avg species richness"
                 },
                 {
                   "display_name": "Wetland Type Composition",
