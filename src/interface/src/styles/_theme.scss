@@ -25,13 +25,13 @@ $planscape-typography: mat.define-typography-config(
   // base font family
   $font-family: '"Public Sans", sans-serif',
     //  One-off header, usually at the top of the page (e.g. a hero header).
-  $headline-1: null,
+  $headline-1: map.get($styleguide, 'header-1'),
     //  One-off header, usually at the top of the page (e.g. a hero header).
-  $headline-2: null,
+  $headline-2: map.get($styleguide, 'header-2'),
     //  One-off header, usually at the top of the page (e.g. a hero header).
-  $headline-3: null,
+  $headline-3: map.get($styleguide, 'header-3'),
     //  One-off header, usually at the top of the page (e.g. a hero header).
-  $headline-4: null,
+  $headline-4: map.get($styleguide, 'header-4'),
     //  h1
   $headline-5: map.get($styleguide, 'header-1'),
     // h2
@@ -39,7 +39,7 @@ $planscape-typography: mat.define-typography-config(
     //h3
   $subtitle-1: map.get($styleguide, 'header-3'),
     // h4
-  $subtitle-2: map.get($styleguide, 'header-3'),
+  $subtitle-2: map.get($styleguide, 'header-4'),
     // body
   $body-1: map.get($styleguide, 'regular-paragraph'),
     // body 2
