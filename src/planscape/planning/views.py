@@ -1005,7 +1005,7 @@ class PlanningAreaNotes(APIView):
 
                 notes = PlanningAreaNote.objects.filter(
                     planning_area=planningarea_pk
-                ).order_by("created_at")
+                ).order_by("-created_at")
                 serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
                 return Response(serializer.data)
 
