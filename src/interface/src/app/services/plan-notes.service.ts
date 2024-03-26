@@ -4,6 +4,7 @@ import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
 
 export interface Note {
+  id: number;
   content: string;
   user_name: string;
   created_at: string;
