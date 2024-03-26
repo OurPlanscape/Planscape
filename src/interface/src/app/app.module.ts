@@ -42,7 +42,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
 import { environment } from 'src/environments/environment';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';

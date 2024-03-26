@@ -17,8 +17,11 @@ import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
 import { CurrencyInKPipe } from '../../../pipes/currency-in-k.pipe';
 import { CurrencyPipe } from '@angular/common';
-import { MatTableModule } from '@angular/material/table';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
+import {
+  MatLegacyDialog as MatDialog,
+  MatLegacyDialogRef as MatDialogRef,
+} from '@angular/material/legacy-dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
 import { ScenarioService } from '@services';
