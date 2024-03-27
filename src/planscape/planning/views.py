@@ -24,6 +24,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     SharedLink,
+    ScenarioStatus,
 )
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -634,9 +635,9 @@ def create_scenario(request: Request) -> Response:
 @api_view(["PATCH", "POST"])
 def update_scenario(request: Request) -> Response:
     """
-    Updates a scenario's name or notes.  To date, these are the only fields that
-    can be modified after a scenario is created.  This can be also used to clear
-    the notes field, but the name needs to be defined always.
+    Handles updates to a scenario's notes, name, or status fields.
+    To date, these are the only fields that can be modified after a scenario is created.
+    This can be also used to clear the notes field, but the name needs to be defined always.
 
     Calling this without anything to update will not throw an error.
 
@@ -687,6 +688,16 @@ def update_scenario(request: Request) -> Response:
                 )
 
             scenario.name = new_name
+            is_dirty = True
+
+        if "status" in body:
+            new_status = body.get("status").upper()
+            if (new_status is None) or (new_status not in dict(ScenarioStatus.choices)):
+                return Response(
+                    {"error": "Status is not valid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            scenario.status = new_status
             is_dirty = True
 
         if is_dirty:
