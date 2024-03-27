@@ -1,5 +1,13 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
+import { take } from 'rxjs';
 import { Note, PlanNotesService } from '@services/plan-notes.service';
+import {
+  SNACK_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from 'src/app/shared/constants';
 
 @Component({
   selector: 'app-area-notes',
@@ -7,7 +15,11 @@ import { Note, PlanNotesService } from '@services/plan-notes.service';
   styleUrls: ['./area-notes.component.scss'],
 })
 export class AreaNotesComponent implements OnInit {
-  constructor(private planNotesService: PlanNotesService) {}
+  constructor(
+    private planNotesService: PlanNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar
+  ) {}
 
   @Input() planId!: number;
 
@@ -27,6 +39,34 @@ export class AreaNotesComponent implements OnInit {
 
   saving = false;
 
+  openDeleteNoteDialog(note: Note) {
+    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.planNotesService.deleteNote(this.planId, note.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: (err) => {
+              this.snackbar.open(
+                `Error: ${err}`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
+        }
+      });
+  }
+
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
@@ -42,5 +82,10 @@ export class AreaNotesComponent implements OnInit {
         });
     }
     event.preventDefault();
+  }
+
+  canDelete(note: Note) {
+    // TODO check current logged in user
+    return true;
   }
 }
