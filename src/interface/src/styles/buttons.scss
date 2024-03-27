@@ -1,0 +1,23 @@
+@import "colors";
+
+// Styleguide button
+.ghost-button, .ghost-button:not(.mat-button-disabled) {
+  text-transform: uppercase;
+  color: $color-standard-blue;
+  border-color: $color-md-gray;
+
+  &:active, &:hover {
+    color: $color-white;
+    background-color: $color-main-blue;
+  }
+
+  mat-icon {
+    font-size: 21px;
+  }
+
+  &:disabled {
+    color: $color-text-gray;
+    border-color: $color-text-gray;
+    background-color: $color-light-gray;
+  }
+}

@@ -39,6 +39,7 @@ export class SavedScenariosComponent implements OnInit {
   activeScenarios: ScenarioRow[] = [];
   archivedScenarios: ScenarioRow[] = [];
   scenariosForUser: ScenarioRow[] = [];
+
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
@@ -138,5 +139,9 @@ export class SavedScenariosComponent implements OnInit {
 
   highlightScenario(row: ScenarioRow): void {
     this.highlightedScenarioRow = row;
+  }
+
+  archiveScenario() {
+    console.log('archive');
   }
 }

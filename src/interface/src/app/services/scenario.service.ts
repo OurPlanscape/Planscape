@@ -74,6 +74,31 @@ export class ScenarioService {
     );
   }
 
+  archiveScenario(scenarioId: number) {
+    return this.changeScenarioStatus(scenarioId, 'archive');
+  }
+
+  restoreScenario(scenarioId: number) {
+    return this.changeScenarioStatus(scenarioId, 'active');
+  }
+
+  private changeScenarioStatus(
+    scenarioId: number,
+    status: 'archive' | 'active'
+  ) {
+    const url = BackendConstants.END_POINT.concat('/planning/update_scenario/');
+    return this.http.patch<number>(
+      url,
+      {
+        id: scenarioId,
+        status: status,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
   /** Updates a scenario with new notes. */
   updateScenarioNotes(scenario: Scenario): Observable<number> {
     const url = BackendConstants.END_POINT.concat('/planning/update_scenario/');

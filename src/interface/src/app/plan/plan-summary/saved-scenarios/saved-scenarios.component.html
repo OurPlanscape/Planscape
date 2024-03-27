@@ -79,7 +79,9 @@
             highlightScenario($event)
           "></app-scenarios-table-list>
       </mat-card-content>
-      <mat-card-actions align="end">
+      <mat-card-actions
+        align="end"
+        *appFeatureFlag="'show_share_modal'; hide: true">
         <button
           mat-button
           [disabled]="highlightedScenarioRow === null"
@@ -93,6 +95,24 @@
           color="primary"
           (click)="viewScenario()">
           VIEW
+        </button>
+      </mat-card-actions>
+      <mat-card-actions align="end" *appFeatureFlag="'show_share_modal'">
+        <button
+          mat-stroked-button
+          class="ghost-button"
+          [disabled]="highlightedScenarioRow === null"
+          (click)="archiveScenario()">
+          <mat-icon>archive</mat-icon>
+          Archive
+        </button>
+        <button
+          mat-stroked-button
+          [disabled]="highlightedScenarioRow === null"
+          class="ghost-button"
+          (click)="viewScenario()">
+          <mat-icon>description</mat-icon>
+          View Scenario
         </button>
       </mat-card-actions>
     </app-section-loader>
