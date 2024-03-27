@@ -24,6 +24,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     SharedLink,
+    ScenarioStatus,
 )
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -687,6 +688,16 @@ def update_scenario(request: Request) -> Response:
                 )
 
             scenario.name = new_name
+            is_dirty = True
+
+        if "status" in body:
+            new_status = body.get("status").upper()
+            if (new_status is None) or (new_status not in dict(ScenarioStatus.choices)):
+                return Response(
+                    {"error": "Status is not valid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            scenario.status = new_status
             is_dirty = True
 
         if is_dirty:
