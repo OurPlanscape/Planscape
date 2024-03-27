@@ -635,9 +635,9 @@ def create_scenario(request: Request) -> Response:
 @api_view(["PATCH", "POST"])
 def update_scenario(request: Request) -> Response:
     """
-    Updates a scenario's name or notes.  To date, these are the only fields that
-    can be modified after a scenario is created.  This can be also used to clear
-    the notes field, but the name needs to be defined always.
+    Handles updates to a scenario's notes, name, or status fields.
+    To date, these are the only fields that can be modified after a scenario is created.
+    This can be also used to clear the notes field, but the name needs to be defined always.
 
     Calling this without anything to update will not throw an error.
 
