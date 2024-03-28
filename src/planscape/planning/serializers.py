@@ -184,18 +184,38 @@ class ConfigurationSerializer(serializers.Serializer):
         return data
 
 
-class ScenarioSerializer(serializers.ModelSerializer):
-    configuration = ConfigurationSerializer()
+class ListScenarioSerializer(serializers.ModelSerializer):
     notes = serializers.CharField(required=False)
     updated_at = serializers.DateTimeField(required=False)
     created_at = serializers.DateTimeField(required=False)
+    creator = serializers.CharField(source="creator_name", read_only=True)
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
         source="results",
     )
 
-    creator = serializers.CharField(source="creator_name", read_only=True)
+    class Meta:
+        fields = (
+            "id",
+            "updated_at",
+            "created_at",
+            "planning_area",
+            "name",
+            "notes",
+            "user",
+            "creator",
+            "status",
+            "scenario_result",
+        )
+        model = Scenario
+
+
+class ScenarioSerializer(
+    ListScenarioSerializer,
+    serializers.ModelSerializer,
+):
+    configuration = ConfigurationSerializer()
 
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None
