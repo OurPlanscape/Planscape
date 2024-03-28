@@ -28,6 +28,7 @@ from planning.models import (
 )
 from planning.serializers import (
     ListPlanningAreaSerializer,
+    ListScenarioSerializer,
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
@@ -814,7 +815,7 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
             )
 
         scenarios = Scenario.objects.filter(planning_area__pk=planning_area_id)
-        serializer = ScenarioSerializer(instance=scenarios, many=True)
+        serializer = ListScenarioSerializer(instance=scenarios, many=True)
         return Response(serializer.data)
     except PlanningArea.DoesNotExist:
         return Response(
