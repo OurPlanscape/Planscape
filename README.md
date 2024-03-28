@@ -23,7 +23,6 @@ for how to download, build, and test Planscape.
 ## Built With
 
 - [PostGIS](https://postgis.net/) - database for storing user sessions and plans
-- [ESRI](https://www.esri.com/en-us/home) - GIS mapping software, web GIS and geodatabase management applications
 - [Django REST framework](https://www.django-rest-framework.org/) - backend framework
 - [black](https://black.readthedocs.io/en/stable/index.html) - code formatter
 - [Angular](https://angular.io/) - frontend framework
