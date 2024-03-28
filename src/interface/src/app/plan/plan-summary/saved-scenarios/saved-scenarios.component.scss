@@ -8,14 +8,6 @@
   position: relative;
 }
 
-.slide-toggle-my-scenarios {
-  @include standard-input-label();
-  position: absolute;
-  right: 0px;
-  top: 12px;
-  z-index: 10;
-}
-
 .mat-card {
   border-radius: 16px;
   min-height: 180px;
@@ -62,14 +54,9 @@
   align-items: center;
 }
 
-.margin-top {
-  margin-top: 30px;
-}
 
 .empty-state {
   @include standard-input-label();
   color: $color-dark-gray;
-  padding: 40px 20px;
-  margin: 20px;
   text-align: center;
 }

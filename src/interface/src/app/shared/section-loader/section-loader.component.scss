@@ -1,13 +1,22 @@
-@import "../../../styles/mixins";
-@import "../../../styles/colors";
+@import '../../../styles/mixins';
+@import '../../../styles/colors';
 
-:host{
+:host {
   display: block;
   height: 100%;
   position: relative;
 }
 
-.spinner, .empty-state {
+.slide-toggle-my-scenarios {
+  @include standard-input-label();
+  position: absolute;
+  right: 0px;
+  top: 12px;
+  z-index: 10;
+}
+
+.spinner,
+.empty-state {
   align-items: center;
   justify-content: flex-end;
   display: flex;
@@ -21,14 +30,13 @@
   padding-top: 20px;
 }
 
-
 .empty-state {
-
+  position: relative;
+  padding: 40px;
   h4 {
     @include standard-input-label();
     margin: 0 0 8px;
     color: $color-black;
-
   }
 
   p {
@@ -38,4 +46,3 @@
     max-width: 560px;
   }
 }
-

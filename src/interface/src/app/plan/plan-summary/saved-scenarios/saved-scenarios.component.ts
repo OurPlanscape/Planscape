@@ -78,6 +78,11 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
+  onMyScenariosToggle(showingOnlyMine: boolean) {
+    this.showOnlyMyScenarios = showingOnlyMine;
+    this.fetchScenarios();
+  }
+
   canAddScenarioForPlan(): boolean {
     if (!this.plan) {
       return false;
