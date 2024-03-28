@@ -1,10 +1,30 @@
 @import "colors";
+@import "mixins";
 
-// Styleguide button
-.ghost-button, .ghost-button:not(.mat-button-disabled) {
+// Styleguide buttons
+@mixin base() {
+  @include public-sans();
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
   text-transform: uppercase;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  border-radius: 4px;
+  padding: 9px 7px;
+  cursor: pointer;
+  gap: 8px;
+
+}
+
+.ghost-button, .ghost-button:not(.mat-button-disabled) {
+  @include base();
   color: $color-standard-blue;
-  border-color: $color-md-gray;
+  border: 1px solid $color-md-gray;
+  border-radius: 4px;
+  background-color: $color-white;
+
 
   &:active, &:hover {
     color: $color-white;
@@ -12,7 +32,9 @@
   }
 
   mat-icon {
-    font-size: 21px;
+    font-size: 20px;
+    height: 20px;
+    width: 20px;
   }
 
   &:disabled {
@@ -20,4 +42,23 @@
     border-color: $color-text-gray;
     background-color: $color-light-gray;
   }
+}
+
+.negative, .negative:not(.mat-button-disabled) {
+  @include base();
+  border: none;
+  text-transform: uppercase;
+  background-color: #D50000;
+  color: $color-white;
+
+  &:active, &:hover {
+    border-radius: 4px;
+    background: #B40000;
+  }
+
+  &:disabled {
+    color: $color-text-gray;
+    background-color: $color-soft-gray;
+  }
+
 }

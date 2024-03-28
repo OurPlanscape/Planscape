@@ -36,7 +36,8 @@
       </mat-slide-toggle>
       <mat-tab-group
         mat-align-tabs="start"
-        *appFeatureFlag="'show_share_modal'">
+        *appFeatureFlag="'show_share_modal'"
+        (selectedTabChange)="tabChange($event)">
         <mat-tab label="ACTIVE">
           <mat-card-content>
             <app-scenarios-table-list
@@ -99,15 +100,15 @@
       </mat-card-actions>
       <mat-card-actions align="end" *appFeatureFlag="'show_share_modal'">
         <button
-          mat-stroked-button
           class="ghost-button"
           [disabled]="highlightedScenarioRow === null"
-          (click)="archiveScenario()">
-          <mat-icon>archive</mat-icon>
-          Archive
+          (click)="toggleScenarioStatus(selectedTabIndex === 0)">
+          <mat-icon>{{
+            selectedTabIndex === 0 ? 'archive' : 'unarchive'
+          }}</mat-icon>
+          {{ selectedTabIndex === 0 ? 'archive' : 'restore' }}
         </button>
         <button
-          mat-stroked-button
           [disabled]="highlightedScenarioRow === null"
           class="ghost-button"
           (click)="viewScenario()">
