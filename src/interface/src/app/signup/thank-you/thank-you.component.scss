@@ -24,7 +24,6 @@
 }
 
 .thankyou-card {
-  @include public_sans(); 
   gap: 20px;
   background-color: white;
   display: flex;
@@ -41,19 +40,20 @@
 
 h2 {
   @include h2();
+
   &.title {
     color: $color-dark-gray;
   }
 }
 
 p.regular {
-    @include regular-paragraph();
-    color: $color-dark-gray;
+  @include regular-paragraph();
+  color: $color-dark-gray;
 }
 
 a.standard-link {
-    @include standard-link();
-    color: $color-standard-blue;
+  @include standard-link();
+  color: $color-standard-blue;
 }
 
 .info-text-container {

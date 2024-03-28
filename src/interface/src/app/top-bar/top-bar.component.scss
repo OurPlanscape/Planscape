@@ -32,6 +32,11 @@
   .logo {
     height: 100%;
   }
+
+  .mat-icon {
+    line-height: 22px;
+  }
+
 }
 
 
@@ -41,7 +46,7 @@
 }
 
 .navbar-item {
-  @include h4();
+  @include important-paragraph();
   color: $color-white;
   text-decoration: none;
   background: none;

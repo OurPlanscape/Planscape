@@ -73,7 +73,7 @@ mat-label {
 }
 
 .standard-label {
-  @include standard-label();
+  @include standard-input-label();
 }
 
 .required-blurb {

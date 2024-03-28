@@ -6,6 +6,10 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+
+  .mat-icon {
+    line-height: 22px;
+  }
 }
 
 .planning {
@@ -31,9 +35,7 @@
   align-items: center;
 }
 
-h3 {
-  font-size: 18px;
-  line-height: 24px;
+h4 {
   margin: 0;
 }
 
