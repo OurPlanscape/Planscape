@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { Plan, CreatePlanPayload } from '../types';
+import { CreatePlanPayload, Plan, PreviewPlan } from '../types';
 
 @Injectable({
   providedIn: 'root',
@@ -60,7 +60,7 @@ export class PlanService {
   /** Makes a request to the backend for a list of all plans owned by a user.
    *  If the user is not provided, return all plans with owner=null.
    */
-  listPlansByUser(): Observable<Plan[]> {
+  listPlansByUser(): Observable<PreviewPlan[]> {
     let url = BackendConstants.END_POINT.concat(
       '/planning/list_planning_areas'
     );
