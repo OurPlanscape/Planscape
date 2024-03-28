@@ -68,7 +68,6 @@ class PlanningAreaSerializer(
     ListPlanningAreaSerializer,
     gis_serializers.GeoModelSerializer,
 ):
-
     class Meta:
         fields = (
             "id",
