@@ -82,34 +82,29 @@
 
     <div class="button-row">
       <button
-        mat-button
         (click)="deletePlan()"
         [disabled]="!selectedPlan"
-        class="action-button">
-        delete
+        class="negative">
+        Delete
       </button>
       <button
-        mat-raised-button
         (click)="sharePlan()"
         [disabled]="!shareEnabled()"
         *appFeatureFlag="'show_share_modal'"
-        class="action-button primary">
-        share
+        class="ghost-button">
+        Share
       </button>
-
       <button
-        mat-raised-button
         (click)="viewMap()"
         [disabled]="!selectedPlan"
-        class="action-button primary">
-        view map
+        class="ghost-button">
+        View map
       </button>
       <button
-        mat-raised-button
+        class="ghost-button"
         (click)="goToScenario()"
-        [disabled]="!selectedPlan"
-        class="action-button primary">
-        scenarios
+        [disabled]="!selectedPlan">
+        Scenarios
       </button>
     </div>
   </div>

@@ -1,5 +1,7 @@
 from pathlib import Path
 from django.contrib.gis.db import models
+from django.db.models import Count, Max
+from django.db.models.functions import Coalesce
 from django.contrib.auth import get_user_model
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -27,6 +29,18 @@ class PlanningAreaManager(models.Manager):
         )
         return filtered_qs
 
+    def get_list_for_user(self, user):
+        queryset = PlanningArea.objects.get_for_user(user)
+        return (
+            queryset.annotate(scenario_count=Count("scenarios", distinct=True))
+            .annotate(
+                scenario_latest_updated_at=Coalesce(
+                    Max("scenarios__updated_at"), "updated_at"
+                )
+            )
+            .order_by("-scenario_latest_updated_at")
+        )
+
 
 class RegionChoices(models.TextChoices):
     SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
@@ -49,7 +63,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
         max_length=120, choices=RegionChoices.choices
     )
 
-    name: models.CharField = models.CharField(max_length=120)
+    name = models.CharField(max_length=120)
 
     notes = models.TextField(null=True)
 

@@ -24,8 +24,11 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     SharedLink,
+    ScenarioStatus,
 )
 from planning.serializers import (
+    ListPlanningAreaSerializer,
+    ListScenarioSerializer,
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
@@ -361,23 +364,8 @@ def list_planning_areas(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        # TODO: This could be really slow; consider paging or perhaps
-        # fetching everything but geometries (since they're huge) for performance gains.
-        # given that we need geometry to calculate total acres, should we save this value
-        # when creating the planning area instead of calculating it each time?
-
-        planning_areas = (
-            PlanningArea.objects.get_for_user(user)
-            .annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
-                )
-            )
-            .order_by("-scenario_latest_updated_at")
-        )
-        serializer = PlanningAreaSerializer(
+        planning_areas = PlanningArea.objects.get_list_for_user(user)
+        serializer = ListPlanningAreaSerializer(
             instance=planning_areas, many=True, context={"request": request}
         )
         return Response(serializer.data)
@@ -634,9 +622,9 @@ def create_scenario(request: Request) -> Response:
 @api_view(["PATCH", "POST"])
 def update_scenario(request: Request) -> Response:
     """
-    Updates a scenario's name or notes.  To date, these are the only fields that
-    can be modified after a scenario is created.  This can be also used to clear
-    the notes field, but the name needs to be defined always.
+    Handles updates to a scenario's notes, name, or status fields.
+    To date, these are the only fields that can be modified after a scenario is created.
+    This can be also used to clear the notes field, but the name needs to be defined always.
 
     Calling this without anything to update will not throw an error.
 
@@ -687,6 +675,16 @@ def update_scenario(request: Request) -> Response:
                 )
 
             scenario.name = new_name
+            is_dirty = True
+
+        if "status" in body:
+            new_status = body.get("status").upper()
+            if (new_status is None) or (new_status not in dict(ScenarioStatus.choices)):
+                return Response(
+                    {"error": "Status is not valid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            scenario.status = new_status
             is_dirty = True
 
         if is_dirty:
@@ -817,7 +815,7 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
             )
 
         scenarios = Scenario.objects.filter(planning_area__pk=planning_area_id)
-        serializer = ScenarioSerializer(instance=scenarios, many=True)
+        serializer = ListScenarioSerializer(instance=scenarios, many=True)
         return Response(serializer.data)
     except PlanningArea.DoesNotExist:
         return Response(

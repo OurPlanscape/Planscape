@@ -17,6 +17,8 @@ export interface Plan {
   user: number;
 }
 
+export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;
+
 export interface CreatePlanPayload {
   geometry: GeoJSON.GeoJSON;
   name: string;

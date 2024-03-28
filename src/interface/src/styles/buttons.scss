@@ -1,0 +1,61 @@
+@import "colors";
+@import "mixins";
+
+// Styleguide buttons
+@mixin base() {
+  @include public-sans();
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  border-radius: 4px;
+  padding: 9px 7px;
+  cursor: pointer;
+  gap: 8px;
+
+}
+
+.ghost-button {
+  @include base();
+  color: $color-standard-blue;
+  border: 1px solid $color-standard-blue;
+  background-color: $color-white;
+
+
+  &:active, &:hover {
+    color: $color-white;
+    background-color: $color-main-blue;
+  }
+
+  mat-icon {
+    font-size: 21px;
+    height: 20px;
+    width: 20px;
+  }
+
+  &:disabled {
+    color: $color-text-gray;
+    border-color: $color-soft-gray;
+    background-color: $color-soft-gray;
+  }
+}
+
+.negative {
+  @include base();
+  border: none;
+  background-color: #D50000;
+  color: $color-white;
+
+  &:active, &:hover {
+    border-radius: 4px;
+    background: #B40000;
+  }
+
+  &:disabled {
+    color: $color-text-gray;
+    background-color: $color-soft-gray;
+  }
+
+}
