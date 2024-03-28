@@ -27,6 +27,7 @@ from planning.models import (
     ScenarioStatus,
 )
 from planning.serializers import (
+    ListPlanningAreaSerializer,
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
@@ -362,23 +363,8 @@ def list_planning_areas(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        # TODO: This could be really slow; consider paging or perhaps
-        # fetching everything but geometries (since they're huge) for performance gains.
-        # given that we need geometry to calculate total acres, should we save this value
-        # when creating the planning area instead of calculating it each time?
-
-        planning_areas = (
-            PlanningArea.objects.get_for_user(user)
-            .annotate(scenario_count=Count("scenarios", distinct=True))
-            .annotate(
-                scenario_latest_updated_at=Coalesce(
-                    Max("scenarios__updated_at"), "updated_at"
-                )
-            )
-            .order_by("-scenario_latest_updated_at")
-        )
-        serializer = PlanningAreaSerializer(
+        planning_areas = PlanningArea.objects.get_list_for_user(user)
+        serializer = ListPlanningAreaSerializer(
             instance=planning_areas, many=True, context={"request": request}
         )
         return Response(serializer.data)

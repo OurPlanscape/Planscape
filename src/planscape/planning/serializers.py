@@ -13,8 +13,7 @@ from planning.services import get_acreage
 from stands.models import StandSizeChoices
 
 
-# TODO: flesh all serializers more for better maintainability.
-class PlanningAreaSerializer(gis_serializers.GeoModelSerializer):
+class ListPlanningAreaSerializer(serializers.ModelSerializer):
     scenario_count = serializers.IntegerField(read_only=True, required=False)
     region_name = serializers.SerializerMethodField()
     # latest_updated takes into account the plan's scenario's updated timestamps and should
@@ -23,7 +22,6 @@ class PlanningAreaSerializer(gis_serializers.GeoModelSerializer):
     notes = serializers.CharField(required=False)
     created_at = serializers.DateTimeField(required=False)
 
-    area_m2 = serializers.SerializerMethodField()
     area_acres = serializers.SerializerMethodField()
     creator = serializers.CharField(source="creator_name")
     permissions = serializers.SerializerMethodField()
@@ -31,10 +29,6 @@ class PlanningAreaSerializer(gis_serializers.GeoModelSerializer):
 
     def get_region_name(self, instance):
         return instance.get_region_name_display()
-
-    def get_area_m2(self, instance):
-        geom = instance.geometry.transform(settings.AREA_SRID, clone=True)
-        return geom.area
 
     def get_area_acres(self, instance):
         return get_acreage(instance.geometry)
@@ -62,7 +56,29 @@ class PlanningAreaSerializer(gis_serializers.GeoModelSerializer):
             "scenario_count",
             "latest_updated",
             "created_at",
-            "area_m2",
+            "area_acres",
+            "creator",
+            "role",
+            "permissions",
+        )
+        model = PlanningArea
+
+
+class PlanningAreaSerializer(
+    ListPlanningAreaSerializer,
+    gis_serializers.GeoModelSerializer,
+):
+
+    class Meta:
+        fields = (
+            "id",
+            "user",
+            "name",
+            "notes",
+            "region_name",
+            "scenario_count",
+            "latest_updated",
+            "created_at",
             "area_acres",
             "creator",
             "role",
