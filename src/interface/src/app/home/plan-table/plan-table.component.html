@@ -85,26 +85,26 @@
         (click)="deletePlan()"
         [disabled]="!selectedPlan"
         class="negative">
-        delete
+        Delete
       </button>
       <button
         (click)="sharePlan()"
         [disabled]="!shareEnabled()"
         *appFeatureFlag="'show_share_modal'"
         class="ghost-button">
-        share
+        Share
       </button>
       <button
         (click)="viewMap()"
         [disabled]="!selectedPlan"
         class="ghost-button">
-        view map
+        View map
       </button>
       <button
         class="ghost-button"
         (click)="goToScenario()"
         [disabled]="!selectedPlan">
-        scenarios
+        Scenarios
       </button>
     </div>
   </div>

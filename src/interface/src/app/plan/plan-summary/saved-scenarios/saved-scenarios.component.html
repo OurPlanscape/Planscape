@@ -106,14 +106,14 @@
           <mat-icon>{{
             selectedTabIndex === 0 ? 'archive' : 'unarchive'
           }}</mat-icon>
-          {{ selectedTabIndex === 0 ? 'archive' : 'restore' }}
+          {{ selectedTabIndex === 0 ? 'Archive' : 'Restore' }}
         </button>
         <button
           [disabled]="highlightedScenarioRow === null"
           class="ghost-button"
           (click)="viewScenario()">
           <mat-icon>description</mat-icon>
-          View Scenario
+          View scenario
         </button>
       </mat-card-actions>
     </app-section-loader>
