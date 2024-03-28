@@ -13,11 +13,13 @@ import {
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
 import { canAddScenario } from '../../../plan/permissions';
 import {
+  SNACK_BOTTOM_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
 } from '../../../shared/constants';
 
 import { ScenarioService } from '@services';
+import { MatTab } from '@angular/material/tabs';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -39,6 +41,8 @@ export class SavedScenariosComponent implements OnInit {
   activeScenarios: ScenarioRow[] = [];
   archivedScenarios: ScenarioRow[] = [];
   scenariosForUser: ScenarioRow[] = [];
+  selectedTabIndex = 0;
+
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
@@ -138,5 +142,38 @@ export class SavedScenariosComponent implements OnInit {
 
   highlightScenario(row: ScenarioRow): void {
     this.highlightedScenarioRow = row;
+  }
+
+  toggleScenarioStatus(archive: boolean) {
+    const id = this.highlightedScenarioRow?.id;
+
+    if (id) {
+      this.scenarioService.toggleScenarioStatus(Number(id), archive).subscribe({
+        next: () => {
+          this.snackbar.open(
+            `"${this.highlightedScenarioRow?.name}" has been ${
+              archive ? 'archived' : 'restored'
+            }`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+          this.highlightedScenarioRow = null;
+          this.fetchScenarios();
+        },
+        error: (err) => {
+          this.snackbar.open(
+            `Error: ${err.error.error}`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
+    }
+  }
+
+  tabChange(data: { index: number; tab: MatTab }) {
+    this.selectedTabIndex = data.index;
+    // reset selected row when changing tabs.
+    this.highlightedScenarioRow = null;
   }
 }

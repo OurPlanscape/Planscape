@@ -36,7 +36,8 @@
       </mat-slide-toggle>
       <mat-tab-group
         mat-align-tabs="start"
-        *appFeatureFlag="'show_share_modal'">
+        *appFeatureFlag="'show_share_modal'"
+        (selectedTabChange)="tabChange($event)">
         <mat-tab label="ACTIVE">
           <mat-card-content>
             <app-scenarios-table-list
@@ -64,7 +65,7 @@
                 highlightScenario($event)
               "></app-scenarios-table-list>
             <div class="empty-state" *ngIf="archivedScenarios.length === 0">
-              No archived scenarios
+              No scenarios in Archived.
             </div>
           </mat-card-content>
         </mat-tab>
@@ -79,7 +80,9 @@
             highlightScenario($event)
           "></app-scenarios-table-list>
       </mat-card-content>
-      <mat-card-actions align="end">
+      <mat-card-actions
+        align="end"
+        *appFeatureFlag="'show_share_modal'; hide: true">
         <button
           mat-button
           [disabled]="highlightedScenarioRow === null"
@@ -93,6 +96,24 @@
           color="primary"
           (click)="viewScenario()">
           VIEW
+        </button>
+      </mat-card-actions>
+      <mat-card-actions align="end" *appFeatureFlag="'show_share_modal'">
+        <button
+          class="ghost-button"
+          [disabled]="highlightedScenarioRow === null"
+          (click)="toggleScenarioStatus(selectedTabIndex === 0)">
+          <mat-icon>{{
+            selectedTabIndex === 0 ? 'archive' : 'unarchive'
+          }}</mat-icon>
+          {{ selectedTabIndex === 0 ? 'Archive' : 'Restore' }}
+        </button>
+        <button
+          [disabled]="highlightedScenarioRow === null"
+          class="ghost-button"
+          (click)="viewScenario()">
+          <mat-icon>description</mat-icon>
+          View scenario
         </button>
       </mat-card-actions>
     </app-section-loader>

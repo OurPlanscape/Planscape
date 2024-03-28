@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, take } from 'rxjs';
-import { Region, regionToString, Scenario, ScenarioConfig } from '../types';
+import {
+  Region,
+  regionToString,
+  Scenario,
+  SCENARIO_STATUS,
+  ScenarioConfig,
+} from '../types';
 import { BackendConstants } from '../backend-constants';
 import { CreateScenarioError } from './errors';
 
@@ -67,6 +73,27 @@ export class ScenarioService {
       BackendConstants.END_POINT.concat('/planning/delete_scenario/'),
       {
         scenario_id: scenarioIds,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  toggleScenarioStatus(scenarioId: number, archive: boolean) {
+    return this.changeScenarioStatus(
+      scenarioId,
+      archive ? 'ARCHIVED' : 'ACTIVE'
+    );
+  }
+
+  private changeScenarioStatus(scenarioId: number, status: SCENARIO_STATUS) {
+    const url = BackendConstants.END_POINT.concat('/planning/update_scenario/');
+    return this.http.patch<number>(
+      url,
+      {
+        id: scenarioId,
+        status: status,
       },
       {
         withCredentials: true,
