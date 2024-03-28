@@ -54,14 +54,9 @@
   align-items: center;
 }
 
-.margin-top {
-  margin-top: 30px;
-}
 
 .empty-state {
   @include standard-input-label();
   color: $color-dark-gray;
-  padding: 40px 20px;
-  margin: 20px;
   text-align: center;
 }
