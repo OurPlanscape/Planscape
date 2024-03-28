@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-section-loader',
@@ -6,6 +6,8 @@ import { Component, Input } from '@angular/core';
   styleUrls: ['./section-loader.component.scss'],
 })
 export class SectionLoaderComponent {
+  showOnlyMine = false;
+
   @Input() isLoading = false;
   @Input() hasData = false;
   @Input() emptyStateTitle = '';
@@ -13,4 +15,9 @@ export class SectionLoaderComponent {
   @Input() hasError? = false;
   @Input() errorMsg?: string;
   @Input() errorTitle?: string;
+  @Output() onlyMyScenariosToggle = new EventEmitter<boolean>();
+
+  handleShowOnlyMineToggle() {
+    this.onlyMyScenariosToggle.emit(this.showOnlyMine);
+  }
 }

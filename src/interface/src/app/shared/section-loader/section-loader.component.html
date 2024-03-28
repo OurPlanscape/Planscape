@@ -1,7 +1,13 @@
+<mat-slide-toggle
+  color="primary"
+  class="slide-toggle-my-scenarios"
+  [(ngModel)]="showOnlyMine"
+  (change)="handleShowOnlyMineToggle()">
+  Show only my scenarios
+</mat-slide-toggle>
 <div *ngIf="isLoading; else loaded" class="spinner">
   <mat-spinner diameter="40"></mat-spinner>
 </div>
-
 <ng-template #loaded>
   <ng-container *ngIf="hasData; else noData">
     <ng-content></ng-content>

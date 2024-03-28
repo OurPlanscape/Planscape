@@ -15,8 +15,10 @@
         </button>
       </div>
     </div>
+
     <app-section-loader
       [isLoading]="loading"
+      (onlyMyScenariosToggle)="onMyScenariosToggle($event)"
       [hasData]="activeScenarios.length + archivedScenarios.length > 0"
       [ngClass]="{
         'margin-top': activeScenarios.length + archivedScenarios.length === 0
@@ -27,13 +29,6 @@
           ? 'Click “New scenario” to start creating your scenarios.'
           : ''
       ">
-      <mat-slide-toggle
-        color="primary"
-        class="slide-toggle-my-scenarios"
-        [(ngModel)]="showOnlyMyScenarios"
-        (change)="fetchScenarios()">
-        Show only my scenarios
-      </mat-slide-toggle>
       <mat-tab-group
         mat-align-tabs="start"
         *appFeatureFlag="'show_share_modal'">
