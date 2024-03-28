@@ -416,6 +416,50 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(scenario.name, self.new_name)
         self.assertEqual(scenario.notes, self.old_notes)
 
+    def test_update_status_only_by_owner(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"id": self.scenario.pk, "status": "ARCHIVED"})
+        response = self.client.post(
+            reverse("planning:update_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.status, "ARCHIVED")
+
+    def test_update_status_bad_value(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"id": self.scenario.pk, "status": "UNKNOWN_STATUS"})
+        response = self.client.post(
+            reverse("planning:update_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {"error": "Status is not valid."})
+        # Ensure status is unchanged
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.status, "ACTIVE")
+
+    def test_update_status_only_by_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps({"id": self.scenario.pk, "status": "ARCHIVED"})
+        response = self.client.post(
+            reverse("planning:update_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"error": "User does not have permission to update this scenario."},
+        )
+        # Ensure status is unchanged
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.status, "ACTIVE")
+
     def test_update_clear_notes(self):
         self.client.force_authenticate(self.owner_user)
         payload = json.dumps({"id": self.scenario.pk, "notes": None})
