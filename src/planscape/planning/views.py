@@ -955,7 +955,7 @@ class PlanningAreaNotes(APIView):
 
         try:
             serializer = PlanningAreaNoteSerializer(
-                data=note_data, context={"user": user}
+                data=note_data, context={"request": request}
             )
             serializer.is_valid(raise_exception=True)
             if not PlanningAreaNotePermission.can_add(user, serializer.validated_data):
@@ -964,7 +964,9 @@ class PlanningAreaNotes(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
             new_note = serializer.save()
-            out_serializer = PlanningAreaNoteSerializer(new_note)
+            out_serializer = PlanningAreaNoteSerializer(
+                new_note, context={"request": request}
+            )
             return Response(
                 out_serializer.data,
                 content_type="application/json",
@@ -992,7 +994,7 @@ class PlanningAreaNotes(APIView):
                 if not PlanningAreaNotePermission.can_view(user, planningareanote):
                     return Response(status=status.HTTP_403_FORBIDDEN)
                 serializer = PlanningAreaNoteSerializer(
-                    instance=planningareanote, many=False
+                    instance=planningareanote, many=False, context={"request": request}
                 )
                 return Response(serializer.data)
 
@@ -1006,7 +1008,9 @@ class PlanningAreaNotes(APIView):
                 notes = PlanningAreaNote.objects.filter(
                     planning_area=planningarea_pk
                 ).order_by("-created_at")
-                serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
+                serializer = PlanningAreaNoteSerializer(
+                    instance=notes, many=True, context={"request": request}
+                )
                 return Response(serializer.data)
 
         except PlanningArea.DoesNotExist as pa_dne:

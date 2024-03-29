@@ -8,6 +8,7 @@ export interface Note {
   content: string;
   user_name: string;
   created_at: string;
+  can_remove: boolean;
 }
 
 @Injectable({

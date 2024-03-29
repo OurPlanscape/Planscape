@@ -22,9 +22,7 @@ export class AreaNotesComponent implements OnInit {
   ) {}
 
   @Input() planId!: number;
-
   notes: Note[] = [];
-
   note = '';
 
   ngOnInit() {
@@ -85,7 +83,6 @@ export class AreaNotesComponent implements OnInit {
   }
 
   canDelete(note: Note) {
-    // TODO check current logged in user
-    return true;
+    return note.can_remove;
   }
 }
