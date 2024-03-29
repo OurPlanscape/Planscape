@@ -10,7 +10,7 @@
       ],
       "parserOptions": {
         "project": [
-         "**/tsconfig.json"
+          "**/tsconfig.json"
         ],
         "createDefaultProgram": true
       },
@@ -20,7 +20,14 @@
         "plugin:prettier/recommended"
       ],
       "rules": {
-        "no-console": ["error", { "allow": ["error"] }],
+        "no-console": [
+          "error",
+          {
+            "allow": [
+              "error"
+            ]
+          }
+        ],
         "no-alert": "error",
         "no-debugger": "error",
         "@angular-eslint/directive-selector": [
@@ -49,16 +56,32 @@
         "plugin:@angular-eslint/template/recommended"
       ],
       "rules": {
-        "@angular-eslint/template/no-negated-async": ["warn"]
+        "@angular-eslint/template/no-negated-async": [
+          "warn"
+        ]
       }
     },
     {
-      "files": ["*.html"],
-      "excludedFiles": ["*inline-template-*.component.html"],
-      "extends": ["plugin:prettier/recommended"],
+      "files": [
+        "*.html"
+      ],
+      "excludedFiles": [
+        "*inline-template-*.component.html"
+      ],
+      "extends": [
+        "plugin:prettier/recommended"
+      ],
       "rules": {
-        "prettier/prettier": ["error", { "parser": "angular" }]
+        "prettier/prettier": [
+          "error",
+          {
+            "parser": "angular"
+          }
+        ]
       }
     }
+  ],
+  "extends": [
+    "plugin:storybook/recommended"
   ]
 }
