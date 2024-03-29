@@ -17,9 +17,9 @@
     </div>
     <app-section-loader
       [isLoading]="loading"
-      [hasData]="activeScenarios.length + archivedScenarios.length > 0"
+      [hasData]="totalScenarios > 0"
       [ngClass]="{
-        'margin-top': activeScenarios.length + archivedScenarios.length === 0
+        'margin-top': totalScenarios === 0
       }"
       emptyStateTitle="No scenarios yet"
       [emptyStateContent]="
@@ -31,7 +31,8 @@
         color="primary"
         class="slide-toggle-my-scenarios"
         [(ngModel)]="showOnlyMyScenarios"
-        (change)="fetchScenarios()">
+        (change)="fetchScenarios()"
+        *appFeatureFlag="'show_share_modal'">
         Show only my scenarios
       </mat-slide-toggle>
       <mat-tab-group

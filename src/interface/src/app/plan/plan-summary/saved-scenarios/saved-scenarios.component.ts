@@ -42,6 +42,7 @@ export class SavedScenariosComponent implements OnInit {
   archivedScenarios: ScenarioRow[] = [];
   scenariosForUser: ScenarioRow[] = [];
   selectedTabIndex = 0;
+  totalScenarios = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -69,6 +70,8 @@ export class SavedScenariosComponent implements OnInit {
       .getScenariosForPlan(this.plan?.id!)
       .pipe(take(1))
       .subscribe((scenarios) => {
+        this.totalScenarios = scenarios.length;
+
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
