@@ -12,8 +12,11 @@
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
-        <button mat-menu-item (click)="openDeleteNoteDialog(note)">
-          <mat-icon>delete</mat-icon>
+        <button
+          mat-menu-item
+          (click)="openDeleteNoteDialog(note)"
+          class="delete-note-button">
+          <mat-icon class="delete-icon">delete_outline</mat-icon>
           <span>Delete</span>
         </button>
       </mat-menu>

@@ -90,7 +90,6 @@ class PlanningAreaSerializer(
 
 
 class PlanningAreaNoteSerializer(serializers.ModelSerializer):
-
     can_remove = serializers.SerializerMethodField()
 
     def create(self, validated_data):
