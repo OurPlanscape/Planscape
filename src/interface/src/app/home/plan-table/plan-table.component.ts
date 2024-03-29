@@ -15,7 +15,7 @@ import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
 import { canViewCollaborators } from '../../plan/permissions';
-import { Plan } from '../../types';
+import { Plan, PreviewPlan } from '../../types';
 
 @Component({
   selector: 'app-plan-table',
@@ -27,7 +27,7 @@ export class PlanTableComponent implements OnInit {
   // used just for typing the table on the template
   planrows: Plan[] = [];
 
-  datasource = new MatTableDataSource<Plan>();
+  datasource = new MatTableDataSource<PreviewPlan>();
   selectedPlan: Plan | null = null;
   loading = true;
   error = false;
