@@ -31,7 +31,8 @@
         color="primary"
         class="slide-toggle-my-scenarios"
         [(ngModel)]="showOnlyMyScenarios"
-        (change)="fetchScenarios()">
+        (change)="fetchScenarios()"
+        *appFeatureFlag="'show_share_modal'">
         Show only my scenarios
       </mat-slide-toggle>
       <mat-tab-group
