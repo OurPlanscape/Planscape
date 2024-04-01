@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 
-import { ButtonComponent } from '../styleguide/button/button.component';
+import { ButtonComponent } from './button/button.component';
 
 /**
  *
@@ -26,19 +26,34 @@ type Story = StoryObj<ButtonComponent>;
 export const Default: Story = {
   args: {},
   render: (args) => ({
-    template: `<sg-button variant='${args.variant}'>Hello</sg-button>`,
+    template: `<button sg-button>A button</button>`,
+  }),
+};
+
+export const Primary: Story = {
+  args: { variant: 'primary' },
+  render: (args) => ({
+    template: `<button sg-button  variant='${args.variant}'>A button</button>`,
   }),
 };
 
 export const Ghost: Story = {
   args: { variant: 'ghost' },
   render: (args) => ({
-    template: `<sg-button variant='${args.variant}'>Hello</sg-button>`,
+    template: `<button sg-button variant='${args.variant}' >Ghost button</button>`,
   }),
 };
-export const Primary: Story = {
-  args: { variant: 'primary' },
+
+export const Negative: Story = {
+  args: { variant: 'negative' },
   render: (args) => ({
-    template: `<sg-button variant='${args.variant}'>Hello</sg-button>`,
+    template: `<button sg-button variant='${args.variant}'>A distructive action</button>`,
   }),
 };
+
+// export const Primary: Story = {
+//   args: { variant: 'primary' },
+//   render: (args) => ({
+//     template: `<sg-button variant='${args.variant}'>Hello</sg-button>`,
+//   }),
+// };

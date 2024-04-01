@@ -1,0 +1,41 @@
+import { Component, HostBinding, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+
+export type ButtonVariant =
+  | 'primary'
+  | 'ghost'
+  | 'text'
+  | 'negative'
+  | 'positive';
+
+@Component({
+  // eslint-disable-next-line @angular-eslint/component-selector
+  selector: 'button[sg-button]',
+  standalone: true,
+  imports: [CommonModule, MatIconModule],
+  templateUrl: './button.component.html',
+  styleUrl: './button.component.scss',
+})
+export class ButtonComponent {
+  /**
+   * The variant used for the button.
+   *
+   */
+  @Input() variant: ButtonVariant = 'ghost';
+
+  @HostBinding('class.ghost-button')
+  get isVariantGhost() {
+    return this.variant === 'ghost';
+  }
+
+  @HostBinding('class.primary-button')
+  get isVariantPrimary() {
+    return this.variant === 'primary';
+  }
+
+  @HostBinding('class.negative')
+  get isVariantNegative() {
+    return this.variant === 'negative';
+  }
+}

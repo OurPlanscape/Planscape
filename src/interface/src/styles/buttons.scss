@@ -18,6 +18,18 @@
 
 }
 
+.primary-button {
+  @include base();
+  color: $color-white;
+  background-color: $color-standard-blue;
+  border: 1px solid $color-standard-blue;
+
+  &:active, &:hover {
+    background-color: $color-main-blue;
+    border-color: $color-main-blue;
+  }
+}
+
 .ghost-button {
   @include base();
   color: $color-standard-blue;
