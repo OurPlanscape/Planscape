@@ -313,22 +313,11 @@ LOGGING = {
     "handlers": {
         "console": {
             "level": LOGLEVEL,
-            "formatter": "verbose",
             "class": "logging.StreamHandler",
-        },
-        "file": {
-            "level": LOGLEVEL,
             "formatter": "verbose",
-            "class": "logging.FileHandler",
-            "filename": "/tmp/local-debug-log.log",
         },
-    },
-    "root": {
-        "handlers": ["console", "file"],
-        "level": LOGLEVEL,
     },
 }
-
 
 ENV = config("ENV", "dev")
 SENTRY_DSN = config("SENTRY_DSN", None)
