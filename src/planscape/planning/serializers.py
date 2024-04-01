@@ -9,7 +9,6 @@ from planning.models import (
     SharedLink,
     PlanningAreaNote,
 )
-from collaboration.permissions import PlanningAreaNotePermission
 from planning.services import get_acreage
 from stands.models import StandSizeChoices
 
@@ -91,7 +90,7 @@ class PlanningAreaSerializer(
 
 class PlanningAreaNoteSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
-        validated_data["user"] = self.context["request"].user or None
+        validated_data["user"] = self.context["user"] or None
         return super().create(validated_data)
 
     class Meta:

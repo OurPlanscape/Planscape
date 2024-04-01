@@ -58,7 +58,7 @@ export class AreaNotesComponent implements OnInit {
             },
             error: (err) => {
               this.snackbar.open(
-                `Error: ${err}`,
+                `Error: ${err.statusText}`,
                 'Dismiss',
                 SNACK_ERROR_CONFIG
               );
