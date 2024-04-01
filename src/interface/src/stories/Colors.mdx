@@ -1,0 +1,69 @@
+import { Meta, Unstyled } from '@storybook/blocks';
+
+export const colors = [
+  'color-black',
+  'color-soft-gray',
+  'color-dark-gray',
+  'color-md-gray',
+  'color-text-gray',
+  'color-text-dark',
+  'color-fields-gray',
+  'color-light-gray',
+  'color-white',
+  'color-error',
+  'color-standard-blue',
+  'color-original-purple',
+  'color-original-purple-50pct',
+  'color-soft-purple',
+  'color-soft-purple-30pct',
+  'color-main-blue',
+  'color-main-yellow',
+  'color-orange',
+  'color-light-blue',
+  'color-highlight',
+  'color-highlight-30pct',
+  'color-brand-teal',
+  'color-brand-green',
+  'color-brand-soft-green',
+  'color-brand-soft-orange',
+  'color-brand-soft-yellow',
+  'color-drop-shadow',
+]
+
+<Meta title="Colors" />
+<Unstyled>
+
+  <section className="mat-typography grid">
+
+
+    {colors.map(color => <div className={color + ' box'}>
+      <div className="color-name">{color}</div>
+    </div>)}
+
+  </section>
+</Unstyled>
+<style>{`
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.box {
+  aspect-ratio:1;
+
+  display: flex;
+  align-items:end;
+}
+
+  .color-name {
+  background-color: white;
+  width: 100%;
+  padding: 5px;
+
+  }
+
+
+
+`}
+</style>
