@@ -90,7 +90,6 @@ class PlanningAreaSerializer(
 
 
 class PlanningAreaNoteSerializer(serializers.ModelSerializer):
-
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user or None
         return super().create(validated_data)
