@@ -122,6 +122,7 @@ export class SharePlanDialogComponent {
   }
 
   changeRole(invite: Invite, newRole: INVITE_ROLE) {
+    this.selectedRole = Roles[newRole];
     this.inviteService.changeRole(invite.id, newRole).subscribe({
       next: () => {
         invite.role = newRole;

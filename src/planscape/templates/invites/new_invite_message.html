@@ -85,10 +85,17 @@
     <div style="width: 100%; padding: 10px; color: black;">
       <span style="font-size: 22px; font-weight: 500; line-height: 32px">{{ inviter.get_full_name }}</span><span
         style="font-size: 22px; font-weight: 600"> </span><span style="font-size: 22px; font-weight: 500">invited you
-        to</span><span style="font-size: 22px; font-weight: 600"> </span><span
+        to</span>
+      {% if role == 'VIEWER' %}
+      <span
+      style="font-size: 22px; font-weight: 700">view</span><span style="font-size: 22px; font-weight: 600">
+      {% else %}
+      <span
         style="font-size: 22px; font-weight: 700">collaborate</span><span style="font-size: 22px; font-weight: 600">
-      </span><span style="font-size: 22px; font-weight: 500">on </span><span
-        style="font-size: 22px; font-weight: 400">“{{ planning_area.name }}”</span>
+      </span>
+      <span style="font-size: 22px; font-weight: 500">on</span>
+       {% endif %}
+      <span style="font-size: 22px; font-weight: 400"> “{{ planning_area.name }}”</span>
     </div>
     <!--[if gte mso 9]>
     </td></tr><tr><td>

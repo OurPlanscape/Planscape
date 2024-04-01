@@ -26,6 +26,7 @@ def send_invitation(
             "collaborator": (
                 user_object_role.collaborator if collaborator_exists else None
             ),
+            "role": user_object_role.role.upper(),
             "planning_area": planning_area,
             "message": message,
             "frontend_url": get_frontend_url("home"),
