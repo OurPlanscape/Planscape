@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 
 export interface Note {
   id: number;
+  user: number;
   content: string;
   user_name: string;
   created_at: string;

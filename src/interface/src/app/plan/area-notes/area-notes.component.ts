@@ -3,7 +3,9 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
+import { Plan } from '../../types/plan.types'
 import { Note, PlanNotesService } from '@services/plan-notes.service';
+import { AuthService } from '@services';
 import {
   SNACK_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
@@ -18,10 +20,11 @@ export class AreaNotesComponent implements OnInit {
   constructor(
     private planNotesService: PlanNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private authService: AuthService,
   ) {}
 
-  @Input() planId!: number;
+  @Input() plan!: Plan;
   notes: Note[] = [];
   note = '';
 
@@ -31,7 +34,7 @@ export class AreaNotesComponent implements OnInit {
 
   loadNotes() {
     this.planNotesService
-      .getNotes(this.planId)
+      .getNotes(this.plan.id)
       .subscribe((notes) => (this.notes = notes));
   }
 
@@ -44,7 +47,7 @@ export class AreaNotesComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.planNotesService.deleteNote(this.planId, note.id).subscribe({
+          this.planNotesService.deleteNote(this.plan.id, note.id).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,
@@ -69,7 +72,7 @@ export class AreaNotesComponent implements OnInit {
     if (this.note) {
       this.saving = true;
       this.planNotesService
-        .addNote(this.planId, this.note)
+        .addNote(this.plan.id, this.note)
         .subscribe((note) => {
           // add the note
           this.notes.unshift(note);
@@ -83,6 +86,8 @@ export class AreaNotesComponent implements OnInit {
   }
 
   canDelete(note: Note) {
-    return note.can_remove;
+    const curUser = this.authService.loggedInUser$.value?.id;
+    return note.user === curUser || this.plan.user === curUser;
+
   }
 }

@@ -90,15 +90,10 @@ class PlanningAreaSerializer(
 
 
 class PlanningAreaNoteSerializer(serializers.ModelSerializer):
-    can_remove = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user or None
         return super().create(validated_data)
-
-    def get_can_remove(self, instance):
-        current_user = self.context["request"].user
-        return PlanningAreaNotePermission.can_remove(current_user, instance)
 
     class Meta:
         fields = (
@@ -109,7 +104,6 @@ class PlanningAreaNoteSerializer(serializers.ModelSerializer):
             "planning_area",
             "user",
             "user_name",
-            "can_remove",
         )
         model = PlanningAreaNote
 
