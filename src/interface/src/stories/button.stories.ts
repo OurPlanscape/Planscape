@@ -1,11 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 
 import { ButtonComponent } from '../styleguide/button/button.component';
-import { fn } from '@storybook/test';
 
-// More on how to set up stories at: https://storybook.js.org/docs/writing-stories
+/**
+ *
+ * Buttons communicates actions that users can take, such as sharing a document and adding a comment.
+ * They can have several variants as well as optionally an icon.
+ */
 const meta: Meta<ButtonComponent> = {
-  title: 'Example/Button',
+  title: 'Components/Buttons',
   component: ButtonComponent,
   tags: ['autodocs'],
   argTypes: {
@@ -13,8 +16,6 @@ const meta: Meta<ButtonComponent> = {
     //   control: 'color',
     // },
   },
-  // Use `fn` to spy on the onClick arg, which will appear in the actions panel once invoked: https://storybook.js.org/docs/essentials/actions#action-args
-  args: { click: fn() },
 };
 
 export default meta;
