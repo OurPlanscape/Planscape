@@ -3,7 +3,7 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
-import { Plan } from '../../types/plan.types'
+import { Plan } from '../../types/plan.types';
 import { Note, PlanNotesService } from '@services/plan-notes.service';
 import { AuthService } from '@services';
 import {
@@ -21,7 +21,7 @@ export class AreaNotesComponent implements OnInit {
     private planNotesService: PlanNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
-    private authService: AuthService,
+    private authService: AuthService
   ) {}
 
   @Input() plan!: Plan;
@@ -88,6 +88,5 @@ export class AreaNotesComponent implements OnInit {
   canDelete(note: Note) {
     const curUser = this.authService.loggedInUser$.value?.id;
     return note.user === curUser || this.plan.user === curUser;
-
   }
 }
