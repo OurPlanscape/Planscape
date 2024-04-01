@@ -1033,7 +1033,7 @@ class PlanningAreaNotes(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         try:
-            note = get_object_or_404(PlanningAreaNote, planningareanote_pk)
+            note = get_object_or_404(PlanningAreaNote, pk=planningareanote_pk)
 
             if not PlanningAreaNotePermission.can_remove(user, note):
                 return Response(

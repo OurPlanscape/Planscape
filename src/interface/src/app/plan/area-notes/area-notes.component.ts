@@ -86,7 +86,7 @@ export class AreaNotesComponent implements OnInit {
   }
 
   canDelete(note: Note) {
-    const curUser = this.authService.loggedInUser$.value?.id;
-    return note.user === curUser || this.plan.user === curUser;
+    const userId = this.authService.loggedInUser$.value?.id;
+    return note.user_id === userId || this.plan.user === userId;
   }
 }
