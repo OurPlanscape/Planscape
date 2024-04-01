@@ -34,7 +34,7 @@ export class AreaNotesComponent implements OnInit {
 
   loadNotes() {
     this.planNotesService
-      .getNotes(this.plan.id)
+      .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
 
