@@ -50,6 +50,10 @@ export class AuthService {
     private redirectService: RedirectService
   ) {}
 
+  currentUser() {
+    return this.loggedInUser$.value;
+  }
+
   login(email: string, password: string) {
     return this.http
       .post(
