@@ -1,5 +1,15 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
+import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
+import { take } from 'rxjs';
+import { Plan } from '../../types/plan.types';
 import { Note, PlanNotesService } from '@services/plan-notes.service';
+import { AuthService } from '@services';
+import {
+  SNACK_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from 'src/app/shared/constants';
 
 @Component({
   selector: 'app-area-notes',
@@ -7,12 +17,15 @@ import { Note, PlanNotesService } from '@services/plan-notes.service';
   styleUrls: ['./area-notes.component.scss'],
 })
 export class AreaNotesComponent implements OnInit {
-  constructor(private planNotesService: PlanNotesService) {}
+  constructor(
+    private planNotesService: PlanNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar,
+    private authService: AuthService
+  ) {}
 
-  @Input() planId!: number;
-
+  @Input() plan!: Plan;
   notes: Note[] = [];
-
   note = '';
 
   ngOnInit() {
@@ -21,17 +34,45 @@ export class AreaNotesComponent implements OnInit {
 
   loadNotes() {
     this.planNotesService
-      .getNotes(this.planId)
+      .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
 
   saving = false;
 
+  openDeleteNoteDialog(note: Note) {
+    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.planNotesService.deleteNote(this.plan.id, note.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: (err) => {
+              this.snackbar.open(
+                `Error: ${err.statusText}`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
+        }
+      });
+  }
+
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
       this.planNotesService
-        .addNote(this.planId, this.note)
+        .addNote(this.plan.id, this.note)
         .subscribe((note) => {
           // add the note
           this.notes.unshift(note);
@@ -42,5 +83,10 @@ export class AreaNotesComponent implements OnInit {
         });
     }
     event.preventDefault();
+  }
+
+  canDelete(note: Note) {
+    const userId = this.authService.loggedInUser$.value?.id;
+    return note.user_id === userId || this.plan.user === userId;
   }
 }
