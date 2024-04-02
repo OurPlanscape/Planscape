@@ -33,10 +33,12 @@ export const colors = [
 <Meta title="Colors" />
 <Unstyled>
 
+  <h1>Colors</h1>
   <section className="mat-typography grid">
 
 
-    {colors.map(color => <div className={color + ' box'}>
+    {colors.map(color => <div className="box">
+      <div className={color + " swatch"}></div>
       <div className="color-name">{color}</div>
     </div>)}
 
@@ -46,22 +48,20 @@ export const colors = [
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(6, minmax(100px, 1fr));
   gap: 10px;
 }
-.box {
+.swatch {
+  width: 100%;
   aspect-ratio:1;
-
-  display: flex;
-  align-items:end;
 }
 
-  .color-name {
+
+.color-name {
   background-color: white;
   width: 100%;
   padding: 5px;
-
-  }
+}
 
 
 

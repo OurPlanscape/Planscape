@@ -24,16 +24,15 @@ type Story = StoryObj<ButtonComponent>;
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 
 export const Default: Story = {
-  args: {},
   render: (args) => ({
-    template: `<button sg-button>A button</button>`,
+    template: `<button sg-button>A default button</button><br> <button sg-button icon='archive'>A default button with icon</button>`,
   }),
 };
 
 export const Primary: Story = {
   args: { variant: 'primary' },
   render: (args) => ({
-    template: `<button sg-button  variant='${args.variant}'>A button</button>`,
+    template: `<button sg-button variant='${args.variant}'>Primary button</button>`,
   }),
 };
 
@@ -50,10 +49,3 @@ export const Negative: Story = {
     template: `<button sg-button variant='${args.variant}'>A distructive action</button>`,
   }),
 };
-
-// export const Primary: Story = {
-//   args: { variant: 'primary' },
-//   render: (args) => ({
-//     template: `<sg-button variant='${args.variant}'>Hello</sg-button>`,
-//   }),
-// };

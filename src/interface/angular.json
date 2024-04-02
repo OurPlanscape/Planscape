@@ -151,7 +151,7 @@
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss",
-              "src/stories/colors.scss"
+              "src/styleguide/styles/index.scss"
             ],
             "port": 6006
           }
@@ -171,7 +171,7 @@
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
               "src/styles.scss",
-              "src/stories/colors.scss"
+              "src/styleguide/styles/index.scss"
             ],
             "outputDir": "storybook-static"
           }

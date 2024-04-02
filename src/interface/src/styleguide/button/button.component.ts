@@ -23,6 +23,11 @@ export class ButtonComponent {
    *
    */
   @Input() variant: ButtonVariant = 'ghost';
+  /**
+   * The optional icon used in the button.
+   * If blank the button will not have an icon
+   */
+  @Input() icon: string = '';
 
   @HostBinding('class.ghost-button')
   get isVariantGhost() {
