@@ -105,7 +105,8 @@ def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
     first = features[0]
     field_type_pairs = list(map(map_property, first.get("properties", {}).items()))
     schema = {
-        "geometry": first.get("geometry", {}).get("type", "Polygon") or "Polygon",
+        "geometry": first.get("geometry", {}).get("type", "MultiPolygon")
+        or "MultiPolygon",
         "properties": field_type_pairs,
     }
     return schema
