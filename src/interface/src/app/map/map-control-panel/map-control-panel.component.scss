@@ -1,10 +1,6 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-
-@import '../../../theme.scss';
-
-$color-config: mat.get-color-config($planscape-frontend-theme);
-$primary-palette: map.get($color-config, 'primary');
+@import "../../../styles/colors";
 
 .controls-container {
   background-color: white;
@@ -146,7 +142,7 @@ h3 {
 
 ::ng-deep .mat-radio-checked {
   label {
-    color: mat.get-color-from-palette($primary-palette, 500);
+    color: $color-standard-blue;
   }
 }
 

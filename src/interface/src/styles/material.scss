@@ -12,3 +12,14 @@
 .no-padding-dialog .mat-dialog-container {
   padding: 0;
 }
+
+
+.mat-card mat-card-title.mat-card-title {
+  font-size: 24px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+.mat-table .mat-header-cell {
+  font-weight: 700;
+}

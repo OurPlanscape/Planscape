@@ -1,0 +1,74 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+$styleguide: (
+  'header-1': mat.define-typography-level(30px, 32px, 700),
+  'header-2' : mat.define-typography-level(26px, 28px, 700),
+  'header-3': mat.define-typography-level(22px, 24px, 600),
+  'header-4': mat.define-typography-level(18px, 24px, 600),
+  'header-5': mat.define-typography-level(16px, 24px, 600),
+  'standard-input-label': mat.define-typography-level(18px, 22px, 400),
+  'standard-label': mat.define-typography-level(16px, 24px, 500),
+  'standard-label-sm': mat.define-typography-level(14px, 24px, 500),
+  'xs-label': mat.define-typography-level(14px, 14px, 600),
+  'regular-paragraph': mat.define-typography-level(16px, 26px, 400),
+  'small-paragraph': mat.define-typography-level(14px, 22px, 400),
+  'important-paragraph': mat.define-typography-level(18px, 32px, 400),
+  'button-text': mat.define-typography-level(16px, 16px, 500),
+  'button-text-sm' : mat.define-typography-level(14px, 16px, 500),
+  'input': mat.define-typography-level(14px, 1em, 500),
+  'top-level-label': mat.define-typography-level(16px, 20px, 700),
+);
+
+// see https://v16.material.angular.io/guide/typography#using-typography-styles-in-your-application
+$planscape-typography: mat.define-typography-config(
+  // base font family
+  $font-family: '"Public Sans", sans-serif',
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-1: map.get($styleguide, 'header-1'),
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-2: map.get($styleguide, 'header-2'),
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-3: map.get($styleguide, 'header-3'),
+    //  One-off header, usually at the top of the page (e.g. a hero header).
+  $headline-4: map.get($styleguide, 'header-4'),
+    //  h1
+  $headline-5: map.get($styleguide, 'header-1'),
+    // h2
+  $headline-6: map.get($styleguide, 'header-2'),
+    //h3
+  $subtitle-1: map.get($styleguide, 'header-3'),
+    // h4
+  $subtitle-2: map.get($styleguide, 'header-4'),
+    // body
+  $body-1: map.get($styleguide, 'regular-paragraph'),
+    // body 2
+  $body-2: map.get($styleguide, 'small-paragraph'),
+    // caption
+  $caption: mat.define-typography-level(12px, 22px, 400),
+    // button
+  $button: map.get($styleguide, 'button-text-sm'),
+);
+
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue. Available color palettes: https://material.io/design/color/
+$planscape-frontend-primary: mat.define-palette(mat.$indigo-palette);
+
+
+// Create the theme object. A theme consists of configurations for individual
+// theming systems such as "color" or "typography".
+$planscape-frontend-theme: mat.define-light-theme(
+    (
+      color: (
+        primary: $planscape-frontend-primary,
+        accent: $planscape-frontend-primary, // not really used
+        warn: $planscape-frontend-primary, // not really used
+      ),
+    )
+);
+
+$color-config: mat.get-color-config($planscape-frontend-theme);
+$primary-palette: map.get($color-config, 'primary');
+
