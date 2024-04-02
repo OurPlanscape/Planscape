@@ -1,6 +1,5 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-@import '../../../../theme';
 @import '../../../../styles/mixins';
 @import '../../../../styles/colors';
 
@@ -9,9 +8,9 @@
 }
 
 .slide-toggle-my-scenarios {
-  @include standard-input-label();
+  @include standard-label();
   position: absolute;
-  right: 0px;
+  right: 0;
   top: 12px;
   z-index: 10;
 }
@@ -19,6 +18,10 @@
 .mat-card {
   border-radius: 16px;
   min-height: 180px;
+
+  .mat-card-title {
+    margin: 0;
+  }
 }
 
 .mat-card-content {
@@ -55,12 +58,17 @@
 .new-scenario-button {
   right: 5px;
   margin-left: auto;
+
+  .mat-icon {
+    line-height: 21px;
+  }
 }
 
 .scenario-table-head {
   display: flex;
   gap: 50%;
   align-items: center;
+  margin-bottom: 20px
 }
 
 .margin-top {
@@ -68,7 +76,7 @@
 }
 
 .empty-state {
-  @include standard-input-label();
+  @include standard-label();
   color: $color-dark-gray;
   padding: 40px 20px;
   margin: 20px;
