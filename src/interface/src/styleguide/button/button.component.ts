@@ -39,8 +39,13 @@ export class ButtonComponent {
     return this.variant === 'primary';
   }
 
-  @HostBinding('class.negative')
+  @HostBinding('class.negative-button')
   get isVariantNegative() {
     return this.variant === 'negative';
+  }
+
+  @HostBinding('class.text-button')
+  get isVariantText() {
+    return this.variant === 'text';
   }
 }
