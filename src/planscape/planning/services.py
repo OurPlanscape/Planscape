@@ -10,6 +10,7 @@ from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from planning.models import PlanningArea, Scenario, ScenarioResultStatus
 from stands.models import StandSizeChoices, area_from_size
+from utils.geometry import to_multi
 
 
 def zip_directory(file_obj, source_dir):
@@ -135,6 +136,8 @@ def export_to_shapefile(scenario: Scenario) -> Path:
         schema=schema,
     ) as c:
         for feature in geojson.get("features", []):
+            geometry = to_multi(feature.get("geometry"))
+            feature = {**feature, "geometry": geometry}
             c.write(feature)
 
     return shapefile_folder
