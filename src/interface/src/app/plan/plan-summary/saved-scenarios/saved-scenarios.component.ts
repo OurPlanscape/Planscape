@@ -107,7 +107,8 @@ export class SavedScenariosComponent implements OnInit {
     }
     const user = this.authService.currentUser();
     return (
-      user?.id === this.plan.id || user?.id == this.highlightedScenarioRow?.user
+      user?.id === this.plan.user ||
+      user?.id == this.highlightedScenarioRow?.user
     );
   }
 
