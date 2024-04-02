@@ -515,7 +515,7 @@ def download_shapefile(request: Request) -> Response:
 
         output_zip_name = f"{str(scenario.uuid)}.zip"
         export_to_shapefile(scenario)
-        response = Response(content_type="application/zip")
+        response = HttpResponse(content_type="application/zip")
         zip_directory(response, scenario.get_shapefile_folder())
 
         response["Content-Disposition"] = f"attachment; filename={output_zip_name}"
