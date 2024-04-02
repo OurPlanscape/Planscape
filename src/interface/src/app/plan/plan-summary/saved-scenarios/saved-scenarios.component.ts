@@ -85,11 +85,30 @@ export class SavedScenariosComponent implements OnInit {
       });
   }
 
-  canAddScenarioForPlan(): boolean {
+  get canAddScenarioForPlan(): boolean {
     if (!this.plan) {
       return false;
     }
     return canAddScenario(this.plan);
+  }
+
+  get showArchiveScenario() {
+    if (!this.plan) {
+      return false;
+    }
+    // Users that can add scenarios can potentially archive them.
+    // Users that cannot add scenarios can never archive/restore.
+    return this.plan.permissions.includes('add_scenario');
+  }
+
+  get canArchiveScenario() {
+    if (!this.plan || !this.highlightedScenarioRow) {
+      return false;
+    }
+    const user = this.authService.currentUser();
+    return (
+      user?.id === this.plan.id || user?.id == this.highlightedScenarioRow?.user
+    );
   }
 
   openConfig(configId?: number): void {
