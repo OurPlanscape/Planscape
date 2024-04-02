@@ -51,7 +51,6 @@
 }
 
 .message-details {
-  @include small-paragraph();
   text-align: left;
   vertical-align: middle;
   color: $color-dark-gray;

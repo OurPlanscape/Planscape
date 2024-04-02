@@ -179,6 +179,10 @@
   &:disabled {
     background-color: #b9b9b9;
   }
+
+  mat-icon {
+    line-height: 20px;
+  }
 }
 
 .selected {
