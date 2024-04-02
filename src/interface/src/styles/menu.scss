@@ -13,7 +13,7 @@
   }
 
   .mat-menu-item {
-    @include standard-input-label;
+    @include standard-label();
     color: $color-md-gray;
     line-height: 48px;
     min-width: 160px;

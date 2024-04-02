@@ -1,21 +1,27 @@
 /*
 Typography mixins.
 Declare mixins based on styleguide and apply to classes
- */
+*/
 
-@mixin public-sans() {
-  font-family: 'Public Sans';
+@use 'sass:map';
+@import "theme";
+
+// helper mixin to parse and use `mat.define-typography-level` results
+@mixin defToStyles($definition) {
+  font-size: map.get($definition, 'font-size');
+  line-height: map.get($definition, 'line-height');
+  font-weight: map.get($definition, 'font-weight');
+  letter-spacing: map.get($definition, 'letter-spacing');
 }
 
+
 @mixin button-text {
-  @include public-sans();
   font-weight: 400;
   font-size: 1rem;
   line-height: 1rem;
 }
 
 @mixin italic-sm {
-  @include public-sans();
   font-size: 14px;
   font-style: italic;
   font-weight: normal;
@@ -23,53 +29,29 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin important-paragraph {
-  @include public-sans();
-  font-size: 18px;
-  font-weight: 400;
-  line-height: 32px;
-  letter-spacing: 0px;
+  @include defToStyles(map.get($styleguide, 'important-paragraph'))
 }
 
 @mixin regular-paragraph {
-  @include public-sans();
-  font-size: 16px;
-  font-weight: 300;
-  line-height: 26px;
-  letter-spacing: 0px;
+  @include defToStyles(map.get($styleguide, 'regular-paragraph'))
 }
 
 @mixin small-paragraph {
-  @include public-sans();
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  letter-spacing: 0px;
-}
-
-@mixin standard-input-label {
-  @include public-sans();
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 22px;
+  @include defToStyles(map.get($styleguide, 'small-paragraph'))
 }
 
 @mixin small-input-label {
-  @include public-sans();
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 22px;
+  @include defToStyles(map.get($styleguide, 'standard-label-sm'))
 }
 
+@mixin standard-input-label {
+  @include defToStyles(map.get($styleguide, 'standard-input-label'))
+}
 
 @mixin standard-label {
-  @include public-sans();
-  font-size: 18px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 24px; /* 133.333% */
+  @include defToStyles(map.get($styleguide, 'standard-label'))
 }
+
 
 @mixin standard-label-bold {
   @include standard-label();
@@ -77,71 +59,32 @@ Declare mixins based on styleguide and apply to classes
 }
 
 @mixin standard-link {
-  @include public-sans();
   font-size: 14px;
   font-weight: 500;
   line-height: 16px;
-  letter-spacing: 0px;
+  letter-spacing: 0;
 }
 
 @mixin h1 {
-  @include public-sans();
-  font-size: 30px;
-  font-weight: 700;
-  line-height: 32px;
-  letter-spacing: 0px;
+  @include defToStyles(map.get($styleguide, 'header-1'))
 }
 
 @mixin h2 {
-  @include public-sans();
-  font-size: 26px;
-  font-weight: 700;
-  line-height: 32px;
+  @include defToStyles(map.get($styleguide, 'header-2'))
 }
 
 @mixin h3 {
-  @include public-sans();
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 24px;
+  @include defToStyles(map.get($styleguide, 'header-3'))
 }
 
 @mixin h4 {
-  @include public-sans();
-  font-size: 18px;
-  font-style: normal;
-  font-weight: normal;
-  line-height: 32px;
+  @include defToStyles(map.get($styleguide, 'header-4'))
 }
 
 @mixin top-level-label {
-  @include public-sans();
   font-size: 16px;
   line-height: 26px;
   font-weight: 500;
-}
-
-@mixin small-paragraph {
-  @include public-sans();
-  font-size: 14px;
-  line-height: 22px;
-  font-weight: 400;
-  letter-spacing: 0px;
-}
-
-@mixin regular-paragraph {
-  @include public-sans();
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.625rem;
-}
-
-@mixin p {
-  @include public-sans();
-  font-size: 16px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 26px;
 }
 
 
@@ -156,11 +99,4 @@ Declare mixins based on styleguide and apply to classes
   background-color: $color-light-gray;
   color: $color-text-gray;
   border: 1px $color-text-gray solid;
-}
-
-@mixin button-text {
-  @include public-sans();
-  font-weight: 400;
-  font-size: 1rem;
-  line-height: 1rem;
 }
