@@ -35,7 +35,7 @@ export class DeleteAccountDialogComponent {
   deleteAccount(): void {
     this.disableDeleteButton = true;
     this.authService
-      .deleteUser(
+      .deactivateUser(
         this.data.user,
         this.deleteAccountForm.get('currentPassword')?.value
       )

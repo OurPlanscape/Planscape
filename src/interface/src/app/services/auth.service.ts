@@ -328,10 +328,10 @@ export class AuthService {
    * "Deletes" user from backend. The behavior of this command is to disable the user account,
    *  not fully delete it, so data can be restored later if necessary.
    */
-  deleteUser(user: User, password: string): Observable<boolean> {
+  deactivateUser(user: User, password: string): Observable<boolean> {
     return this.http
       .post(
-        BackendConstants.END_POINT.concat('/users/delete/'),
+        BackendConstants.END_POINT.concat('/users/deactivate/'),
         {
           password: password,
           email: user.email,
@@ -339,7 +339,7 @@ export class AuthService {
         {
           withCredentials: true,
         }
-      )
+      ) // TODO: we probably need to expect and gracefully accept a 401 here,
       .pipe(
         take(1),
         map((result: any) => {
