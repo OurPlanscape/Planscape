@@ -63,7 +63,9 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     actual_geometry = GEOSGeometry(json.dumps(geom))
     if actual_geometry.geom_type != "MultiPolygon":
         raise ValueError("Could not parse geometry")
-    return actual_geometry.make_valid()
+    if not actual_geometry.valid:
+        actual_geometry = actual_geometry.buffer(0)
+    return actual_geometry
 
 
 #### PLAN(NING AREA) Handlers ####
