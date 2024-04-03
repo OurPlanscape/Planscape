@@ -100,7 +100,7 @@ class PlanningAreaNoteSerializer(serializers.ModelSerializer):
             "updated_at",
             "content",
             "planning_area",
-            "user",
+            "user_id",
             "user_name",
         )
         model = PlanningAreaNote
