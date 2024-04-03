@@ -1312,11 +1312,11 @@ class GetPlanningAreaNotes(APITransactionTestCase):
             "Just a comment about this planning area.",
         )
         self.assertEqual(
-            planning_area_notes[0]["user"],
+            planning_area_notes[0]["user_id"],
             self.viewer_user.pk,
         )
         self.assertEqual(
-            planning_area_notes[2]["user"],
+            planning_area_notes[2]["user_id"],
             self.owner_user.pk,
         )
 
