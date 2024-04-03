@@ -61,7 +61,7 @@ def _convert_polygon_to_multipolygon(geometry: dict):
         geom["type"] = "MultiPolygon"
         geom["coordinates"] = [feature["geometry"]["coordinates"]]
     actual_geometry = GEOSGeometry(json.dumps(geom)).buffer(0).unary_union
-    
+
     if not actual_geometry.valid:
         raise ValueError("Geometry is invalid and cannot be used.")
     if actual_geometry.geom_type != "MultiPolygon":
