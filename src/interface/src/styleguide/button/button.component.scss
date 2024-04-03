@@ -1,0 +1,88 @@
+@import "../../styles/colors";
+@import "../../styles/mixins";
+
+
+:host {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  border-radius: 4px;
+  padding: 9px 7px;
+  cursor: pointer;
+  gap: 8px;
+  border: 1px solid $color-white;
+
+  &.primary-button {
+    color: $color-white;
+    background-color: $color-standard-blue;
+    border-color: $color-standard-blue;
+
+    &:active, &:hover {
+      background-color: $color-main-blue;
+      border-color: $color-main-blue;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+      border-color: $color-soft-gray;
+      background-color: $color-soft-gray;
+    }
+  }
+
+  &.ghost-button {
+    color: $color-standard-blue;
+    border-color: $color-standard-blue;
+    background-color: $color-white;
+
+
+    &:active, &:hover {
+      color: $color-white;
+      background-color: $color-main-blue;
+    }
+
+
+    &:disabled {
+      color: $color-text-gray;
+      border-color: $color-soft-gray;
+      background-color: $color-soft-gray;
+    }
+  }
+
+  &.negative-button {
+    border-color: #D50000;
+    background-color: #D50000;
+    color: $color-white;
+
+    &:active, &:hover {
+      border-radius: 4px;
+      background: #B40000;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+      background-color: $color-soft-gray;
+      border-color: $color-soft-gray;
+    }
+  }
+
+  &.text-button {
+    background-color: transparent;
+    border-color: transparent;
+    color: $color-standard-blue;
+
+    &:active, &:hover {
+      background-color: $color-soft-gray;
+      border-color: $color-soft-gray;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+    }
+  }
+
+}
+
+

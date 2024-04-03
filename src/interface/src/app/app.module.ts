@@ -49,6 +49,7 @@ import { InfoCardComponent } from './signup/info-card/info-card.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 import { JwtInterceptor } from '@services/jwt-interceptor.service';
+import { ButtonComponent } from '../styleguide/button/button.component';
 
 @NgModule({
   declarations: [
@@ -98,6 +99,7 @@ import { JwtInterceptor } from '@services/jwt-interceptor.service';
     NgChartsModule,
     MapModule,
     NgxMaskModule.forRoot(),
+    ButtonComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

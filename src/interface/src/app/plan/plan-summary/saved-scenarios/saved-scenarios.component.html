@@ -104,20 +104,18 @@
       </mat-card-actions>
       <mat-card-actions align="end" *appFeatureFlag="'show_share_modal'">
         <button
-          class="ghost-button"
+          sg-button
           *ngIf="showArchiveScenario"
           [disabled]="!canArchiveScenario"
-          (click)="toggleScenarioStatus(selectedTabIndex === 0)">
-          <mat-icon>{{
-            selectedTabIndex === 0 ? 'archive' : 'unarchive'
-          }}</mat-icon>
+          (click)="toggleScenarioStatus(selectedTabIndex === 0)"
+          [icon]="selectedTabIndex === 0 ? 'archive' : 'unarchive'">
           {{ selectedTabIndex === 0 ? 'Archive' : 'Restore' }}
         </button>
         <button
+          sg-button
           [disabled]="highlightedScenarioRow === null"
-          class="ghost-button"
-          (click)="viewScenario()">
-          <mat-icon>description</mat-icon>
+          (click)="viewScenario()"
+          icon="description">
           View scenario
         </button>
       </mat-card-actions>

@@ -15,7 +15,7 @@ export type ButtonVariant =
   standalone: true,
   imports: [CommonModule, MatIconModule],
   templateUrl: './button.component.html',
-  styleUrl: './button.component.scss',
+  styleUrls: ['./button.component.scss'],
 })
 export class ButtonComponent {
   /**
