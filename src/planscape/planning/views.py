@@ -3,7 +3,7 @@ import logging
 import os
 from base.region_name import display_name_to_region
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
@@ -60,7 +60,10 @@ def _convert_polygon_to_multipolygon(geometry: dict):
     if geom["type"] == "Polygon":
         geom["type"] = "MultiPolygon"
         geom["coordinates"] = [feature["geometry"]["coordinates"]]
-    actual_geometry = GEOSGeometry(json.dumps(geom)).buffer(0).unary_union
+
+    actual_geometry = MultiPolygon(
+        [GEOSGeometry(json.dumps(geom)).buffer(0).unary_union]
+    )
 
     if not actual_geometry.valid:
         raise ValueError("Geometry is invalid and cannot be used.")
