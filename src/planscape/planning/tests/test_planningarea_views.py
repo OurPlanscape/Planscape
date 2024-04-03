@@ -31,12 +31,15 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.user.save()
 
         self.token = RefreshToken.for_user(self.user).access_token
+
         self.geometry = {
             "features": [
                 {
                     "geometry": {
                         "type": "Polygon",
-                        "coordinates": [[[1, 2], [2, 3], [3, 4], [1, 2]]],
+                        "coordinates": [
+                            [[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]],
+                        ],
                     }
                 }
             ]
@@ -46,7 +49,11 @@ class CreatePlanningAreaTest(APITransactionTestCase):
                 {
                     "geometry": {
                         "type": "MultiPolygon",
-                        "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+                        "coordinates": [
+                            [
+                                [[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]],
+                            ]
+                        ],
                     }
                 }
             ]
@@ -1486,7 +1493,11 @@ class EndtoEndPlanningAreaAndScenarioTest(APITransactionTestCase):
         self.user.save()
         self.internal_geometry = {
             "type": "MultiPolygon",
-            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+            "coordinates": [
+                [
+                    [[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]],
+                ],
+            ],
         }
         self.geometry = {"features": [{"geometry": self.internal_geometry}]}
         self.scenario_configuration = {
