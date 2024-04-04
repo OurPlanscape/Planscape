@@ -1,5 +1,5 @@
 import json
-
+import logging
 from allauth.account.utils import has_verified_email
 from django.conf import settings
 from django.contrib.auth import get_user_model, logout
@@ -15,6 +15,9 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.serializers import UserSerializer
+
+# Configure global logging.
+logger = logging.getLogger(__name__)
 
 
 @api_view(["GET", "POST"])
@@ -62,84 +65,84 @@ def delete_user(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-# TODO: super ugly PoC, will clean this up
-def deactivate_account(request):
-    logged_in_user = request.user
-    if logged_in_user is None:
-        raise ValueError("Must be logged in")
-    body = json.loads(request.body)
-    user_email_to_delete = body.get("email", None)
-    password = body.get("password", None)
-    if user_email_to_delete is None or not isinstance(user_email_to_delete, str):
-        raise ValueError("User email must be provided as a string")
-    if not logged_in_user.check_password(password):
-        raise ValueError("Invalid password")
-    if user_email_to_delete != logged_in_user.email:
-        raise ValueError("Cannot delete another user account")
-
-    # Deactivate user account
-    logged_in_user.is_active = False
-    logged_in_user.save()
-    return logged_in_user
-
-
 # TODO: we need to handle exceptions for any unset settings here
 def unset_jwt_cookies(response):
-    cookie_name = settings.REST_AUTH["JWT_AUTH_COOKIE"]
-    refresh_cookie_name = settings.REST_AUTH["JWT_AUTH_REFRESH_COOKIE"]
-    refresh_cookie_path = settings.REST_AUTH["JWT_AUTH_REFRESH_COOKIE_PATH"]
-    cookie_samesite = settings.REST_AUTH["JWT_AUTH_SAMESITE"]
+    try:
+        cookie_name = settings.REST_AUTH["JWT_AUTH_COOKIE"]
+        refresh_cookie_name = settings.REST_AUTH["JWT_AUTH_REFRESH_COOKIE"]
+        refresh_cookie_path = settings.REST_AUTH["JWT_AUTH_REFRESH_COOKIE_PATH"]
+        cookie_samesite = settings.REST_AUTH["JWT_AUTH_SAMESITE"]
 
-    if cookie_name:
-        response.delete_cookie(cookie_name, samesite=cookie_samesite)
-    if refresh_cookie_name:
-        response.delete_cookie(
-            refresh_cookie_name, path=refresh_cookie_path, samesite=cookie_samesite
-        )
+        if cookie_name:
+            response.delete_cookie(cookie_name, samesite=cookie_samesite)
+        if refresh_cookie_name:
+            response.delete_cookie(
+                refresh_cookie_name, path=refresh_cookie_path, samesite=cookie_samesite
+            )
+    except KeyError as ke:
+        logger.error("Could not read cookie settings: {ke}")
+        raise
 
 
 #     There was no endpoint that allows us to deactivate the currently logged in user and also
 #     invalidate/blacklist their existing cookies, so this combines approaches for deactivation and
 #     adapts some code from dj-rest-auth to deal with the JWT auth and refresh tokens.
 @api_view(["POST"])
-def deactivate_user(request: Request) -> HttpResponse:
-    # try:
-    #     request.user.auth_token.delete()
-    # except (AttributeError, ObjectDoesNotExist):
-    #     pass
-    try:
-        deactivate_account(request)
-    except Exception as e:
-        print(f"Failed to deactivate {e}")
+def deactivate_user(request: Request) -> Response:
+    logged_in_user = request.user
+    if not logged_in_user.is_authenticated:
+        return Response(
+            {"error": "Authentication Required"},
+            status=status.HTTP_401_UNAUTHORIZED,
+        )
+
+    body = json.loads(request.body)
+
+    password = body.get("password", None)
+    if not logged_in_user.check_password(password):
+        return Response(
+            {"error": "Credentials Incorrect"}, status=status.HTTP_403_FORBIDDEN
+        )
+
+    user_email_to_delete = body.get("email", None)
+    if user_email_to_delete is None or user_email_to_delete != logged_in_user.email:
+        raise ValueError("User email must be provided as a string")
+    if user_email_to_delete != logged_in_user.email:
+        raise ValueError("Cannot delete another user account")
+
+    # Update DB record
+    logged_in_user.is_active = False
+    logged_in_user.save()
 
     response = Response(
         {"detail": "Successfully logged out."},
         status=status.HTTP_200_OK,
     )
+    # Remove auth cookies
     unset_jwt_cookies(response)
 
-    ## TODO: clean this up, we likely don't need all of these cases
-    try:
-        token = RefreshToken(request.data["refresh"])
-        token.blacklist()
-    except KeyError:
-        response.data = {"detail": ("Refresh token was not included in request data.")}
-        response.status_code = status.HTTP_401_UNAUTHORIZED
-    except (TokenError, AttributeError, TypeError) as error:
-        if hasattr(error, "args"):
-            if (
-                "Token is blacklisted" in error.args
-                or "Token is invalid or expired" in error.args
-            ):
-                response.data = {"detail": (error.args[0])}
-                response.status_code = status.HTTP_401_UNAUTHORIZED
-            else:
-                response.data = {"detail": "An error has occurred."}
-                response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    # ## TODO: clean this up, we likely don't need all of these cases
+    # try:
+    #     token = RefreshToken(request.data["refresh"])
+    #     token.blacklist()
+    # except KeyError:
+    #     response.data = {"detail": ("Refresh token was not included in request data.")}
+    #     response.status_code = status.HTTP_401_UNAUTHORIZED
+    # except (TokenError, AttributeError, TypeError) as error:
+    #     if hasattr(error, "args"):
+    #         if (
+    #             "Token is blacklisted" in error.args
+    #             or "Token is invalid or expired" in error.args
+    #         ):
+    #             response.data = {"detail": (error.args[0])}
+    #             response.status_code = status.HTTP_401_UNAUTHORIZED
+    #         else:
+    #             response.data = {"detail": "An error has occurred."}
+    #             response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
-        else:
-            response.data = {"detail": "An error has occurred."}
-            response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    #     else:
+    #         response.data = {"detail": "An error has occurred."}
+    #         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     return response
 
 

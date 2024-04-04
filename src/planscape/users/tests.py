@@ -35,7 +35,7 @@ class CreateUserTest(APITransactionTestCase):
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
 
-class DeleteUserTest(APITransactionTestCase):
+class DeactivateUserTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(email="testuser@test.com")
         self.user.set_password("12345")
@@ -44,7 +44,7 @@ class DeleteUserTest(APITransactionTestCase):
     def test_missing_user(self):
         payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
@@ -53,7 +53,7 @@ class DeleteUserTest(APITransactionTestCase):
     def test_missing_email(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
-            reverse("users:delete"), json.dumps({}), content_type="application/json"
+            reverse("users:deactivate"), json.dumps({}), content_type="application/json"
         )
         self.assertEqual(response.status_code, 400)
 
@@ -61,7 +61,7 @@ class DeleteUserTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
@@ -71,7 +71,7 @@ class DeleteUserTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "diffuser@test.com"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
@@ -81,7 +81,7 @@ class DeleteUserTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "testuser@test.com", "password": "12345"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
