@@ -38,7 +38,7 @@
 
 .signin-card {
   margin: auto;
-  width: 300px;
+  max-width: 300px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -52,8 +52,7 @@
 h1 {
   &.signin-title {
     @include h1();
-    margin-bottom: 48px;
-    text-align: center;
+    margin-bottom: 6%;
     text-align: center;
     vertical-align: middle;
     color: $color-text-dark;
@@ -91,7 +90,6 @@ mat-divider {
 mat-form-field {
   width: 100%;
 }
-
 
 .forget-password {
   text-align: center;
@@ -142,6 +140,7 @@ mat-form-field {
   :host {
     gap: 10%;
     flex-direction: column;
+    height: fit-content;
   }
 
   .signin-card-container {
@@ -149,15 +148,24 @@ mat-form-field {
     height: 100%;
     min-height: calc(100vh - 48px);
   }
-  
+
   .info-text-container {
     position: relative;
     width: 100%;
-
   }
 
   .credits-blurb {
     width: 100%;
   }
-  
+}
+
+@media screen and (max-height: 700px) {
+  .signin-subcontainer {
+    margin-top: 1%;
+  }
+
+  .planscape-white-logo {
+    display: none;
+  }
+
 }
