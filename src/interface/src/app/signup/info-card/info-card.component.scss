@@ -48,3 +48,13 @@ h3 {
   @include standard-link();
   color: $color-standard-blue;
 }
+
+@media screen and (max-width: 840px) {
+  :host {
+    margin-top: 0;
+  }
+
+  .info-card {
+    margin: 10%;
+  }
+}
