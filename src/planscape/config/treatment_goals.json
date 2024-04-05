@@ -1825,20 +1825,27 @@
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
+                  "biodiversity",
                   "fire_dynamics"
                 ],
                 "elements": [
+                  "species_diversity",
                   "severity"
                 ],
                 "metrics": [
+                  "threatened_endangered_vertebrate_species_richness",
                   "probability_of_fire_severity_high"
                 ]
               },
               "scenario_priorities": [
+                "threatened_endangered_vertebrate_species_richness",
                 "probability_of_fire_severity_high"
               ],
               "weights": [],
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "threatened_endangered_vertebrate_species_richness > 0"
+              ],
               "global_thresholds": []
             }
           ]
@@ -1869,6 +1876,39 @@
               ],
               "weights": [],
               "stand_thresholds": [
+                "total_aboveground_carbon > 0",
+                "aboveground_carbon_turnover_time > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 37,
+              "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
+              "short_question_text": "Fire Risk in Carbon Sinks",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "carbon_sequestration"
+                ],
+                "elements": [
+                  "severity",
+                  "carbon_storage",
+                  "carbon_stability"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "total_aboveground_carbon",
+                  "aboveground_carbon_turnover_time"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "total_aboveground_carbon",
+                "aboveground_carbon_turnover_time"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
                 "total_aboveground_carbon > 0",
                 "aboveground_carbon_turnover_time > 0"
               ],
