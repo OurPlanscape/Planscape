@@ -67,3 +67,35 @@ a.standard-link {
   background-repeat: no-repeat;
   background-size: 50%;
 }
+
+
+@media screen and (max-width: 840px) {
+  :host {
+    gap: 10%;
+    display: inline-block;
+    width: 100%;
+  }
+
+  .thankyou-container {
+    width: 100%;
+    height: 100%;
+  }
+
+.thankyou-subcontainer {
+  width: 80%;
+}
+
+  .thankyou-card {
+    padding: 10% 8% 10% 10%;
+  }
+  
+  .info-text-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .credits-blurb {
+    width: 100%;
+  }
+  
+}
