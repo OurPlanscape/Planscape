@@ -1734,20 +1734,23 @@
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_dynamics",
-                  "biodiversity"
+                  "biodiversity",
+                  "forsys"
                 ],
                 "elements": [
                   "severity",
-                  "focal_species"
+                  "focal_species",
+                  "Forsys"
                 ],
                 "metrics": [
                   "probability_of_fire_severity_high",
-                  "north_spotted_owl_nesting_suitablity_index"
+                  "north_spotted_owl_nesting_suitablity_index",
+                  "inverse_nso_nest_roost_suitability"
                 ]
               },
               "scenario_priorities": [
                 "probability_of_fire_severity_high",
-                "north_spotted_owl_nesting_suitablity_index"
+                "inverse_nso_nest_roost_suitability"
               ],
               "weights": [],
               "stand_thresholds": [

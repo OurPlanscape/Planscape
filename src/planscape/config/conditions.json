@@ -29,7 +29,8 @@
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG",
-                  "source_link": ""
+                  "source_link": "",
+                  "hide_chart": true
                 },
                 {
                   "display_name": "Wildland Urban Interface",
