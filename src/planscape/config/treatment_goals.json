@@ -1601,6 +1601,37 @@
             },
             {
               "id": 28,
+              "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface (WUI)?",
+              "short_question_text": "Reduce WUI Fire Risk",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_adapted_communities",
+                  "fire_dynamics"
+                ],
+                "elements": [
+                  "hazard",
+                  "severity"
+                ],
+                "metrics": [
+                  "structure_exposure_score",
+                  "wui_damage_potential",
+                  "probability_of_fire_severity_high"
+                ]
+              },
+              "scenario_priorities": [
+                "structure_exposure_score",
+                "wui_damage_potential"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "structure_exposure_score > 0",
+                "wui_damage_potential > 1",
+                "probability_of_fire_severity_high > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 29,
               "long_question_text": "Where are the priority areas to reduce overall fuel loads?",
               "short_question_text": "Fuel-load Reduction Opportunities",
               "scenario_output_fields_paths": {
@@ -1629,7 +1660,7 @@
               "global_thresholds": []
             },
             {
-              "id": 29,
+              "id": 30,
               "long_question_text": "What areas need and are suitable for prescribed burning?",
               "short_question_text": "Areas for Prescribed Burns",
               "scenario_output_fields_paths": {
@@ -1666,7 +1697,7 @@
           "category_name": "Biodiversity",
           "questions": [
             {
-              "id": 30,
+              "id": 31,
               "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to Pacific Fisher habitat?",
               "short_question_text": "Reduce Fire Risk to Pacific Fisher Habitat",
               "scenario_output_fields_paths": {
@@ -1695,7 +1726,7 @@
               "global_thresholds": []
             },
             {
-              "id": 31,
+              "id": 32,
               "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "scenario_output_fields_paths": {
@@ -1728,7 +1759,7 @@
               "global_thresholds": []
             },
             {
-              "id": 32,
+              "id": 33,
               "long_question_text": "Where are opportunities to reduce high severity fire risk to Northern Spotted Owl (NSPO) nesting/roosting habitat?",
               "short_question_text": "Reduce Fire Risk to Northern Spotted Owl Habitat",
               "scenario_output_fields_paths": {
@@ -1760,7 +1791,7 @@
               "global_thresholds": []
             },
             {
-              "id": 33,
+              "id": 34,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -1789,7 +1820,7 @@
               "global_thresholds": []
             },
             {
-              "id": 34,
+              "id": 35,
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -1816,7 +1847,7 @@
           "category_name": "Carbon/Biomass",
           "questions": [
             {
-              "id": 35,
+              "id": 36,
               "long_question_text": "What areas support elevated levels if aboveground carbon?",
               "short_question_text": "Areas supporting elevated aboveground carbon",
               "scenario_output_fields_paths": {
