@@ -21195,7 +21195,7 @@
         },
         {
             "name": "SharePlanDialogComponent",
-            "id": "component-SharePlanDialogComponent-81392b1d612a1c7fe7092cad47817174173209fe64f0b738aa048be0ea76cb5788e3e27659658cb6ece3258a52bd40441993626dc4c537a9a0092fa2a6893c88",
+            "id": "component-SharePlanDialogComponent-665b8913515b92a8d1efb72bd577447ea6947b45324f3f4a08e47d7ca1fdf9f311963dcf9c733cb79f1b7dc28abf34fe05213dc3a89c8fe2203cfca7d9c79214",
             "file": "src/app/home/share-plan-dialog/share-plan-dialog.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -21332,7 +21332,7 @@
                     "type": "INVITE_ROLE[]",
                     "optional": false,
                     "description": "",
-                    "line": 72
+                    "line": 74
                 },
                 {
                     "name": "selectedRole",
@@ -21342,7 +21342,7 @@
                     "type": "",
                     "optional": false,
                     "description": "",
-                    "line": 74
+                    "line": 76
                 },
                 {
                     "name": "showCreator$",
@@ -21352,7 +21352,7 @@
                     "type": "",
                     "optional": false,
                     "description": "",
-                    "line": 61
+                    "line": 63
                 },
                 {
                     "name": "showHelp",
@@ -21373,6 +21373,16 @@
                     "optional": false,
                     "description": "",
                     "line": 42
+                },
+                {
+                    "name": "userRole$",
+                    "defaultValue": "this.plan$.pipe(map((plan) => plan.role))",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "",
+                    "optional": false,
+                    "description": "",
+                    "line": 61
                 }
             ],
             "methodsClass": [
@@ -21389,7 +21399,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 76,
+                    "line": 78,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -21417,7 +21427,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 138,
+                    "line": 140,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -21451,7 +21461,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 124,
+                    "line": 126,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -21481,7 +21491,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 88,
+                    "line": 90,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -21491,7 +21501,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 92,
+                    "line": 94,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -21501,7 +21511,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 157,
+                    "line": 159,
                     "deprecated": false,
                     "deprecationMessage": ""
                 },
@@ -21518,7 +21528,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 163,
+                    "line": 165,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -21546,7 +21556,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 80,
+                    "line": 82,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -21574,7 +21584,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 142,
+                    "line": 144,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "jsdoctags": [
@@ -21602,7 +21612,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 177,
+                    "line": 179,
                     "deprecated": false,
                     "deprecationMessage": "",
                     "modifierKind": [
@@ -21626,7 +21636,7 @@
                     "optional": false,
                     "returnType": "void",
                     "typeParameters": [],
-                    "line": 119,
+                    "line": 121,
                     "deprecated": false,
                     "deprecationMessage": ""
                 }
@@ -21640,7 +21650,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Inject } from '@angular/core';\nimport {\n  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,\n  MatLegacyDialogRef as MatDialogRef,\n} from '@angular/material/legacy-dialog';\nimport { FormMessageType, User } from '../../types';\nimport { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';\nimport { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';\nimport { AuthService, InvitesService, PlanStateService } from '@services';\nimport { Invite, INVITE_ROLE } from '../../types/invite.types';\nimport { filter, map, shareReplay, switchMap, tap } from 'rxjs';\n\nconst Roles: Record<INVITE_ROLE, INVITE_ROLE> = {\n  Viewer: 'Viewer',\n  Collaborator: 'Collaborator',\n  Owner: 'Owner',\n};\n\n@Component({\n  selector: 'app-share-plan-dialog',\n  templateUrl: './share-plan-dialog.component.html',\n  styleUrls: ['./share-plan-dialog.component.scss'],\n})\nexport class SharePlanDialogComponent {\n  constructor(\n    private matSnackBar: MatSnackBar,\n    private dialogRef: MatDialogRef<SharePlanDialogComponent>,\n    private inviteService: InvitesService,\n    private authService: AuthService,\n    private planStateService: PlanStateService,\n    @Inject(MAT_DIALOG_DATA)\n    public data: {\n      planningAreaName: string;\n      planningAreaId: number;\n    }\n  ) {}\n\n  emails: string[] = [];\n  errorType = FormMessageType.ERROR;\n  invalidEmail = false;\n  showHelp = false;\n  submitting = false;\n  message = '';\n  isLoading = true;\n\n  plan$ = this.planStateService\n    .getPlan(this.data.planningAreaId + '')\n    .pipe(shareReplay());\n\n  planCreator$ = this.plan$.pipe(map((plan) => plan.creator));\n\n  invites$ = this.inviteService\n    .getInvites(this.data.planningAreaId)\n    .pipe(tap((_) => (this.isLoading = false)));\n\n  fullname$ = this.authService.loggedInUser$.pipe(\n    filter((user): user is User => !!user),\n    map((user) => [user.firstName, user.lastName].join(' '))\n  );\n\n  showCreator$ = this.authService.loggedInUser$.pipe(\n    filter((user): user is User => !!user),\n    switchMap((user) =>\n      this.plan$.pipe(\n        map((plan) => {\n          return user.id != plan.user;\n        })\n      )\n    )\n  );\n\n  roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];\n\n  selectedRole = this.roles[0] as INVITE_ROLE;\n\n  addEmail(email: string): void {\n    this.emails.push(email);\n  }\n\n  removeEmail(email: string): void {\n    const index = this.emails.indexOf(email);\n\n    if (index >= 0) {\n      this.emails.splice(index, 1);\n    }\n  }\n\n  close() {\n    this.dialogRef.close();\n  }\n\n  invite() {\n    this.submitting = true;\n    this.inviteService\n      .inviteUsers(\n        this.emails,\n        this.selectedRole,\n        this.data.planningAreaId,\n        this.message\n      )\n      .subscribe({\n        next: (result) => {\n          this.showSnackbar('Users invited');\n          this.close();\n        },\n        error: () => {\n          this.showSnackbar(\n            'There was an error trying to send the invites. Please try again.'\n          );\n          this.submitting = false;\n        },\n      });\n  }\n\n  get showMessageBox() {\n    return this.invalidEmail || this.emails.length > 0;\n  }\n\n  startOver() {\n    this.invalidEmail = false;\n    this.emails = [];\n  }\n\n  changeRole(invite: Invite, newRole: INVITE_ROLE) {\n    this.inviteService.changeRole(invite.id, newRole).subscribe({\n      next: () => {\n        invite.role = newRole;\n        this.showSnackbar('Access Updated');\n      },\n      error: () => {\n        this.showSnackbar(\n          `There was an error trying to update the role of ${invite.email}. Please try again.`\n        );\n      },\n    });\n  }\n\n  changeInvitationsRole(role: INVITE_ROLE) {\n    this.selectedRole = Roles[role];\n  }\n\n  resendCode(invite: Invite) {\n    this.inviteService\n      .inviteUsers([invite.email], this.selectedRole, this.data.planningAreaId)\n      .subscribe({\n        next: (result) => {\n          this.showSnackbar(`Email sent to ${invite.email}`);\n        },\n        error: () => {\n          this.showSnackbar(\n            `There was an error trying to resend code to ${invite.email}. Please try again.`\n          );\n        },\n      });\n  }\n\n  reloadInvites() {\n    this.invites$ = this.inviteService\n      .getInvites(this.data.planningAreaId)\n      .pipe(tap((_) => (this.isLoading = false)));\n  }\n\n  removeAccess(invite: Invite) {\n    this.inviteService.deleteInvite(invite.id).subscribe({\n      next: () => {\n        this.showSnackbar(`Removed  ${invite.email}`);\n        this.reloadInvites();\n      },\n      error: () => {\n        this.showSnackbar(\n          `There was an error trying to revoke access for ${invite.email}. Please try again.`\n        );\n      },\n    });\n  }\n\n  private showSnackbar(message: string) {\n    this.matSnackBar.open(message, 'Dismiss', SNACK_BOTTOM_NOTICE_CONFIG);\n  }\n}\n",
+            "sourceCode": "import { Component, Inject } from '@angular/core';\nimport {\n  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,\n  MatLegacyDialogRef as MatDialogRef,\n} from '@angular/material/legacy-dialog';\nimport { FormMessageType, User } from '../../types';\nimport { SNACK_BOTTOM_NOTICE_CONFIG } from '../../shared/constants';\nimport { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';\nimport { AuthService, InvitesService, PlanStateService } from '@services';\nimport { Invite, INVITE_ROLE } from '../../types/invite.types';\nimport { filter, map, shareReplay, switchMap, tap } from 'rxjs';\n\nconst Roles: Record<INVITE_ROLE, INVITE_ROLE> = {\n  Viewer: 'Viewer',\n  Collaborator: 'Collaborator',\n  Owner: 'Owner',\n};\n\n@Component({\n  selector: 'app-share-plan-dialog',\n  templateUrl: './share-plan-dialog.component.html',\n  styleUrls: ['./share-plan-dialog.component.scss'],\n})\nexport class SharePlanDialogComponent {\n  constructor(\n    private matSnackBar: MatSnackBar,\n    private dialogRef: MatDialogRef<SharePlanDialogComponent>,\n    private inviteService: InvitesService,\n    private authService: AuthService,\n    private planStateService: PlanStateService,\n    @Inject(MAT_DIALOG_DATA)\n    public data: {\n      planningAreaName: string;\n      planningAreaId: number;\n    }\n  ) {}\n\n  emails: string[] = [];\n  errorType = FormMessageType.ERROR;\n  invalidEmail = false;\n  showHelp = false;\n  submitting = false;\n  message = '';\n  isLoading = true;\n\n  plan$ = this.planStateService\n    .getPlan(this.data.planningAreaId + '')\n    .pipe(shareReplay());\n\n  planCreator$ = this.plan$.pipe(map((plan) => plan.creator));\n\n  invites$ = this.inviteService\n    .getInvites(this.data.planningAreaId)\n    .pipe(tap((_) => (this.isLoading = false)));\n\n  fullname$ = this.authService.loggedInUser$.pipe(\n    filter((user): user is User => !!user),\n    map((user) => [user.firstName, user.lastName].join(' '))\n  );\n\n  userRole$ = this.plan$.pipe(map((plan) => plan.role));\n\n  showCreator$ = this.authService.loggedInUser$.pipe(\n    filter((user): user is User => !!user),\n    switchMap((user) =>\n      this.plan$.pipe(\n        map((plan) => {\n          return user.id != plan.user;\n        })\n      )\n    )\n  );\n\n  roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];\n\n  selectedRole = this.roles[0] as INVITE_ROLE;\n\n  addEmail(email: string): void {\n    this.emails.push(email);\n  }\n\n  removeEmail(email: string): void {\n    const index = this.emails.indexOf(email);\n\n    if (index >= 0) {\n      this.emails.splice(index, 1);\n    }\n  }\n\n  close() {\n    this.dialogRef.close();\n  }\n\n  invite() {\n    this.submitting = true;\n    this.inviteService\n      .inviteUsers(\n        this.emails,\n        this.selectedRole,\n        this.data.planningAreaId,\n        this.message\n      )\n      .subscribe({\n        next: (result) => {\n          this.showSnackbar('Users invited');\n          this.close();\n        },\n        error: () => {\n          this.showSnackbar(\n            'There was an error trying to send the invites. Please try again.'\n          );\n          this.submitting = false;\n        },\n      });\n  }\n\n  get showMessageBox() {\n    return this.invalidEmail || this.emails.length > 0;\n  }\n\n  startOver() {\n    this.invalidEmail = false;\n    this.emails = [];\n  }\n\n  changeRole(invite: Invite, newRole: INVITE_ROLE) {\n    this.inviteService.changeRole(invite.id, newRole).subscribe({\n      next: () => {\n        invite.role = newRole;\n        this.showSnackbar('Access Updated');\n      },\n      error: () => {\n        this.showSnackbar(\n          `There was an error trying to update the role of ${invite.email}. Please try again.`\n        );\n      },\n    });\n  }\n\n  changeInvitationsRole(role: INVITE_ROLE) {\n    this.selectedRole = Roles[role];\n  }\n\n  resendCode(invite: Invite) {\n    this.inviteService\n      .inviteUsers([invite.email], this.selectedRole, this.data.planningAreaId)\n      .subscribe({\n        next: (result) => {\n          this.showSnackbar(`Email sent to ${invite.email}`);\n        },\n        error: () => {\n          this.showSnackbar(\n            `There was an error trying to resend code to ${invite.email}. Please try again.`\n          );\n        },\n      });\n  }\n\n  reloadInvites() {\n    this.invites$ = this.inviteService\n      .getInvites(this.data.planningAreaId)\n      .pipe(tap((_) => (this.isLoading = false)));\n  }\n\n  removeAccess(invite: Invite) {\n    this.inviteService.deleteInvite(invite.id).subscribe({\n      next: () => {\n        this.showSnackbar(`Removed  ${invite.email}`);\n        this.reloadInvites();\n      },\n      error: () => {\n        this.showSnackbar(\n          `There was an error trying to revoke access for ${invite.email}. Please try again.`\n        );\n      },\n    });\n  }\n\n  private showSnackbar(message: string) {\n    this.matSnackBar.open(message, 'Dismiss', SNACK_BOTTOM_NOTICE_CONFIG);\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
@@ -21758,11 +21768,11 @@
                         "name": "showMessageBox",
                         "type": "",
                         "returnType": "",
-                        "line": 115
+                        "line": 117
                     }
                 }
             },
-            "templateData": "<div class=\"main\" *ngIf=\"!showHelp\">\n  <section class=\"header\">\n    <button\n      mat-icon-button\n      (click)=\"startOver()\"\n      aria-label=\"back\"\n      *ngIf=\"showMessageBox\">\n      <mat-icon class=\"back-btn\" (click)=\"showHelp = false\"\n        >arrow_back\n      </mat-icon>\n    </button>\n    <h2>Share {{ data.planningAreaName }}</h2>\n    <button mat-icon-button (click)=\"showHelp = true\" aria-label=\"help\">\n      <mat-icon class=\"help-btn\">help_outlined</mat-icon>\n    </button>\n    <button mat-icon-button (click)=\"close()\" aria-label=\"close\">\n      <mat-icon class=\"close-btn\">close</mat-icon>\n    </button>\n  </section>\n\n  <app-form-message\n    [messageType]=\"errorType\"\n    *ngIf=\"invalidEmail\"\n    title=\"Invalid email\"\n    message=\"An email must contain a single @\">\n  </app-form-message>\n\n  <form class=\"invitations-form\">\n    <app-chip-input\n      [emails]=\"emails\"\n      [placeholder]=\"showMessageBox ? '' : 'enter email'\"\n      (addEmail)=\"addEmail($event)\"\n      (removeEmail)=\"removeEmail($event)\"\n      (isInvalid)=\"invalidEmail = $event\"></app-chip-input>\n\n    <button mat-button [matMenuTriggerFor]=\"roleMenu\" class=\"invite-role\">\n      {{ selectedRole }}\n      <mat-icon>arrow_drop_down</mat-icon>\n    </button>\n    <mat-menu\n      #roleMenu=\"matMenu\"\n      class=\"list-menu list-input\"\n      xPosition=\"before\">\n      <button\n        mat-menu-item\n        *ngFor=\"let role of roles\"\n        class=\"menu-roles\"\n        (click)=\"changeInvitationsRole(role)\">\n        <span class=\"spacer\">\n          <mat-icon *ngIf=\"role === selectedRole\">check_small</mat-icon>\n        </span>\n        {{ role }}\n      </button>\n    </mat-menu>\n\n    <mat-form-field\n      appearance=\"outline\"\n      class=\"invite-message\"\n      *ngIf=\"showMessageBox\">\n      <textarea\n        matInput\n        placeholder=\"Message\"\n        [(ngModel)]=\"message\"\n        name=\"questionText\"></textarea>\n    </mat-form-field>\n  </form>\n  <app-section-loader\n    [isLoading]=\"isLoading\"\n    [hasData]=\"true\"\n    [ngClass]=\"{ loading: isLoading }\">\n    <section class=\"invited-users-list\" *ngIf=\"!showMessageBox\">\n      <h3>People with access</h3>\n      <div class=\"invited-user\" *ngIf=\"showCreator$ | async\">\n        <div class=\"name\">{{ planCreator$ | async }}</div>\n        <div class=\"non-editable\">Owner</div>\n      </div>\n      <div class=\"invited-user\">\n        <div class=\"name\">{{ fullname$ | async }} <span>(You)</span></div>\n        <div class=\"non-editable\">Owner</div>\n      </div>\n      <div *ngFor=\"let invite of invites$ | async\" class=\"invited-user\">\n        <div class=\"name\">{{ invite.collaborator_name || invite.email }}</div>\n        <button mat-button [matMenuTriggerFor]=\"menu\">\n          {{ invite.role }}\n          <mat-icon>arrow_drop_down</mat-icon>\n        </button>\n        <mat-menu #menu=\"matMenu\" class=\"list-menu\" xPosition=\"before\">\n          <button\n            mat-menu-item\n            *ngFor=\"let role of roles\"\n            class=\"menu-roles\"\n            (click)=\"changeRole(invite, role)\">\n            <span class=\"spacer\">\n              <mat-icon *ngIf=\"role === invite.role\">check_small</mat-icon>\n            </span>\n            {{ role }}\n          </button>\n          <button\n            mat-menu-item\n            class=\"menu-divider\"\n            (click)=\"resendCode(invite)\">\n            Resend Code\n          </button>\n          <button mat-menu-item (click)=\"removeAccess(invite)\">\n            Remove Access\n          </button>\n        </mat-menu>\n      </div>\n    </section>\n  </app-section-loader>\n\n  <section class=\"footer\">\n    <button\n      class=\"action\"\n      mat-flat-button\n      type=\"button\"\n      color=\"primary\"\n      [disabled]=\"submitting\"\n      (click)=\"emails.length > 0 ? invite() : close()\">\n      {{ emails.length > 0 ? 'INVITE' : 'DONE' }}\n    </button>\n  </section>\n</div>\n\n<div class=\"help\" *ngIf=\"showHelp\">\n  <section class=\"header\">\n    <button mat-icon-button (click)=\"showHelp = true\" aria-label=\"back\">\n      <mat-icon class=\"back-btn\" (click)=\"showHelp = false\"\n        >arrow_back\n      </mat-icon>\n    </button>\n\n    <h2>Help</h2>\n    <button mat-icon-button (click)=\"showHelp = true\" aria-label=\"help\">\n      <mat-icon class=\"close-btn\" (click)=\"close()\">close</mat-icon>\n    </button>\n  </section>\n  <section class=\"help-content\">\n    <h4>How do I restrict permission to access a planning area?</h4>\n    <p>\n      When you share a planning area with someone, you can choose their\n      permission level.\n    </p>\n\n    <h4>Owner:</h4>\n    <p>\n      People who created the planning area. The owner can choose who can\n      collaborate or only view the scenarios of a planning area.\n    </p>\n\n    <h4>Collaborator:</h4>\n    <p>\n      Collaborators can create and archive scenarios of a planning area shared\n      with them, but they cannot share the planning area/scenarios with others.\n    </p>\n\n    <h4>Viewer:</h4>\n    <p>\n      Viewers can view a planning area, but they can’t create or archive\n      scenarios, and share the planning area with others.\n    </p>\n  </section>\n</div>\n"
+            "templateData": "<div class=\"main\" *ngIf=\"!showHelp\">\n  <section class=\"header\">\n    <button\n      mat-icon-button\n      (click)=\"startOver()\"\n      aria-label=\"back\"\n      *ngIf=\"showMessageBox\">\n      <mat-icon class=\"back-btn\" (click)=\"showHelp = false\"\n        >arrow_back\n      </mat-icon>\n    </button>\n    <h2>Share {{ data.planningAreaName }}</h2>\n    <button mat-icon-button (click)=\"showHelp = true\" aria-label=\"help\">\n      <mat-icon class=\"help-btn\">help_outlined</mat-icon>\n    </button>\n    <button mat-icon-button (click)=\"close()\" aria-label=\"close\">\n      <mat-icon class=\"close-btn\">close</mat-icon>\n    </button>\n  </section>\n\n  <app-form-message\n    [messageType]=\"errorType\"\n    *ngIf=\"invalidEmail\"\n    title=\"Invalid email\"\n    message=\"An email must contain a single @\">\n  </app-form-message>\n\n  <form class=\"invitations-form\">\n    <app-chip-input\n      [emails]=\"emails\"\n      [placeholder]=\"showMessageBox ? '' : 'enter email'\"\n      (addEmail)=\"addEmail($event)\"\n      (removeEmail)=\"removeEmail($event)\"\n      (isInvalid)=\"invalidEmail = $event\"></app-chip-input>\n\n    <button mat-button [matMenuTriggerFor]=\"roleMenu\" class=\"invite-role\">\n      {{ selectedRole }}\n      <mat-icon>arrow_drop_down</mat-icon>\n    </button>\n    <mat-menu\n      #roleMenu=\"matMenu\"\n      class=\"list-menu list-input\"\n      xPosition=\"before\">\n      <button\n        mat-menu-item\n        *ngFor=\"let role of roles\"\n        class=\"menu-roles\"\n        (click)=\"changeInvitationsRole(role)\">\n        <span class=\"spacer\">\n          <mat-icon *ngIf=\"role === selectedRole\">check_small</mat-icon>\n        </span>\n        {{ role }}\n      </button>\n    </mat-menu>\n\n    <mat-form-field\n      appearance=\"outline\"\n      class=\"invite-message\"\n      *ngIf=\"showMessageBox\">\n      <textarea\n        matInput\n        placeholder=\"Message\"\n        [(ngModel)]=\"message\"\n        name=\"questionText\"></textarea>\n    </mat-form-field>\n  </form>\n  <app-section-loader\n    [isLoading]=\"isLoading\"\n    [hasData]=\"true\"\n    [ngClass]=\"{ loading: isLoading }\">\n    <section class=\"invited-users-list\" *ngIf=\"!showMessageBox\">\n      <h3>People with access</h3>\n      <div class=\"invited-user\" *ngIf=\"showCreator$ | async\">\n        <div class=\"name\">{{ planCreator$ | async }}</div>\n        <div class=\"non-editable\">Creator</div>\n      </div>\n      <div class=\"invited-user\">\n        <div class=\"name\">{{ fullname$ | async }} <span>(You)</span></div>\n        <div class=\"non-editable\">{{ userRole$ | async }}</div>\n      </div>\n      <div *ngFor=\"let invite of invites$ | async\" class=\"invited-user\">\n        <div class=\"name\">{{ invite.collaborator_name || invite.email }}</div>\n        <button mat-button [matMenuTriggerFor]=\"menu\">\n          {{ invite.role }}\n          <mat-icon>arrow_drop_down</mat-icon>\n        </button>\n        <mat-menu #menu=\"matMenu\" class=\"list-menu\" xPosition=\"before\">\n          <button\n            mat-menu-item\n            *ngFor=\"let role of roles\"\n            class=\"menu-roles\"\n            (click)=\"changeRole(invite, role)\">\n            <span class=\"spacer\">\n              <mat-icon *ngIf=\"role === invite.role\">check_small</mat-icon>\n            </span>\n            {{ role }}\n          </button>\n          <button\n            mat-menu-item\n            class=\"menu-divider\"\n            (click)=\"resendCode(invite)\">\n            Resend Code\n          </button>\n          <button mat-menu-item (click)=\"removeAccess(invite)\">\n            Remove Access\n          </button>\n        </mat-menu>\n      </div>\n    </section>\n  </app-section-loader>\n\n  <section class=\"footer\">\n    <button\n      class=\"action\"\n      mat-flat-button\n      type=\"button\"\n      color=\"primary\"\n      [disabled]=\"submitting\"\n      (click)=\"emails.length > 0 ? invite() : close()\">\n      {{ emails.length > 0 ? 'INVITE' : 'DONE' }}\n    </button>\n  </section>\n</div>\n\n<div class=\"help\" *ngIf=\"showHelp\">\n  <section class=\"header\">\n    <button mat-icon-button (click)=\"showHelp = true\" aria-label=\"back\">\n      <mat-icon class=\"back-btn\" (click)=\"showHelp = false\"\n        >arrow_back\n      </mat-icon>\n    </button>\n\n    <h2>Help</h2>\n    <button mat-icon-button (click)=\"showHelp = true\" aria-label=\"help\">\n      <mat-icon class=\"close-btn\" (click)=\"close()\">close</mat-icon>\n    </button>\n  </section>\n  <section class=\"help-content\">\n    <h4>How do I restrict permission to access a planning area?</h4>\n    <p>\n      When you share a planning area with someone, you can choose their\n      permission level.\n    </p>\n\n    <h4>Owner:</h4>\n    <p>\n      People who created the planning area. The owner can choose who can\n      collaborate or only view the scenarios of a planning area.\n    </p>\n\n    <h4>Collaborator:</h4>\n    <p>\n      Collaborators can create and archive scenarios of a planning area shared\n      with them, but they cannot share the planning area/scenarios with others.\n    </p>\n\n    <h4>Viewer:</h4>\n    <p>\n      Viewers can view a planning area, but they can’t create or archive\n      scenarios, and share the planning area with others.\n    </p>\n  </section>\n</div>\n"
         },
         {
             "name": "SignInDialogComponent",
@@ -28594,7 +28604,7 @@
                 "linktype": "component",
                 "name": "SharePlanDialogComponent",
                 "coveragePercent": 0,
-                "coverageCount": "0/28",
+                "coverageCount": "0/29",
                 "status": "low"
             },
             {
