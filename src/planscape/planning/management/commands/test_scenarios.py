@@ -22,17 +22,6 @@ class Command(BaseCommand):
     test_user_name = "e2etest@sig-gis.com"
     fixtures_path = str(settings.TREATMENTS_TEST_FIXTURES_PATH)
 
-    def load_test_definitions(self):
-        """Reads the JSON file that describes our test areas, scenarios and expected results"""
-        test_defs = os.path.join(
-            settings.BASE_DIR, self.fixtures_path, "test_definitions.json"
-        )
-        try:
-            with open(test_defs, "r", encoding="UTF-8") as f:
-                self.fixtures_to_test = json.load(f)
-        except Exception as e:
-            log.error(f"Failed to read test definitions at {test_defs}- {e}")
-
     def upsert_test_user(self):
         """Upserts the same test user for all test records"""
         self.test_user, _ = User.objects.update_or_create(username=self.test_user_name)
@@ -40,39 +29,43 @@ class Command(BaseCommand):
             f"Setting test user id: {self.test_user.id} and username: {self.test_user.username}"
         )
 
-    def create_areas(self):
-        """Loads the test planning areas under our test user"""
+    def load_tests_from_directory(self):
         self.test_area_ids = []
-        for tests in self.fixtures_to_test:
-            planning_area_file = tests["planning_area"]
-            scenarios = tests["scenarios"]
-            areas_file = os.path.join(
-                settings.BASE_DIR,
-                self.fixtures_path,
-                planning_area_file,
-            )
-            with open(areas_file, "r", encoding="UTF-8") as f:
-                area_data = json.load(f)
-                # Remove attributes that might exist if our planning area is from the CSV output
-                if "pk" in area_data:
-                    del area_data["pk"]
+        self.fixtures_to_test = os.listdir(self.fixtures_path)
+        for f in self.fixtures_to_test:
+            print(f" fixture: {f}")
+            self.create_area(f)
+            self.create_scenarios(f)
 
-                # overwrite details for new planning area to be upserted
-                area_data["user_id"] = self.test_user.id
-                area_data["name"] = f"testplan-{area_data.get('name')}"
+    def create_area(self, fixture_dir):
+        for filename in os.listdir(os.path.join(self.fixtures_path, fixture_dir)):
+            print(f"looking at filename: {filename}")
+            if filename.endswith("planningarea.json"):
+                with open(
+                    os.path.join(self.fixtures_path, fixture_dir, filename),
+                    "r",
+                    encoding="UTF-8",
+                ) as f:
+                    area_data = json.load(f)
+                    print(f"here are the area data: {area_data}")
+                    # Remove attributes that might exist if our planning area is from the CSV output
+                    if "pk" in area_data:
+                        del area_data["pk"]
 
-                # upsert this, using name and user as unique identifier
-                # we don't want to use a PK here, because it may interfere with new data
-                area_obj, _ = PlanningArea.objects.update_or_create(
-                    user_id=area_data["user_id"],
-                    name=area_data["name"],
-                    defaults=area_data,
-                )
-                self.test_area_ids.append(area_obj.id)
-                for s in scenarios:
-                    self.upsert_scenarios(s["treatment"], s["expected"], area_obj.id)
+                    # overwrite details for new planning area to be upserted
+                    area_data["user_id"] = self.test_user.id
+                    area_data["name"] = f"testplan-{area_data.get('name')}"
 
-    def upsert_scenarios(self, scenario_file, validation_file, area_id):
+                    # upsert this, using name and user as unique identifier
+                    # we don't want to use a PK here, because it may interfere with new data
+                    area_obj, _ = PlanningArea.objects.update_or_create(
+                        user_id=area_data["user_id"],
+                        name=area_data["name"],
+                        defaults=area_data,
+                    )
+                    self.test_area_ids.append(area_obj.id)
+
+    def create_scenarios(self, scenario_file, validation_file, area_id):
         """Upserts each scenario"""
         scenario_path = os.path.join(
             settings.BASE_DIR, self.fixtures_path, scenario_file
@@ -142,9 +135,10 @@ class Command(BaseCommand):
 
         if self.fixtures_path:
             self.stdout.write(f"Fixtures path is set to: {self.fixtures_path}")
-
-        self.load_test_definitions()
         self.upsert_test_user()
-        self.create_areas()
+        self.load_tests_from_directory()
 
-        self.run_tests()
+        # self.load_test_definitions()
+        # self.create_areas()
+
+        # self.run_tests()
