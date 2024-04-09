@@ -1,5 +1,3 @@
-import area from '@turf/area';
-import { FeatureCollection } from 'geojson';
 import {
   ConditionsConfig,
   PriorityRow,
@@ -17,19 +15,12 @@ export const NOTE_SAVE_INTERVAL = 5000;
 
 export const POLLING_INTERVAL = 3000;
 
-export const STAND_SIZES = ['SMALL', 'MEDIUM', 'LARGE'];
-
-const SQUARE_METERS_PER_ACRE = 0.0002471054;
-
-/**
- * @deprecated do not use
- * @param planningArea
- */
-export function calculateAcres(planningArea: GeoJSON.GeoJSON) {
-  const squareMeters = area(planningArea as FeatureCollection);
-  const acres = squareMeters * SQUARE_METERS_PER_ACRE;
-  return Math.round(acres);
-}
+// sizes in hectares
+export const STAND_SIZES: Record<string, number> = {
+  SMALL: 10,
+  MEDIUM: 100,
+  LARGE: 500,
+};
 
 export function parseResultsToProjectAreas(
   results: ScenarioResult
