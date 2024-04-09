@@ -330,6 +330,10 @@ export class CreateScenariosComponent implements OnInit {
     this.router.navigate(['plan', this.plan$.value?.id]);
   }
 
+  goToConfig() {
+    this.router.navigate(['plan', this.plan$.value?.id, 'config']);
+  }
+
   get projectAreasForm(): FormGroup {
     return this.forms.get('projectAreas') as FormGroup;
   }
