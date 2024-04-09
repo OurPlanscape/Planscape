@@ -58,3 +58,22 @@
   }
 
 }
+
+.primary-button {
+  @include base();
+  color: $color-white;
+  background-color: $color-standard-blue;
+  border-color: $color-standard-blue;
+
+  &:active, &:hover {
+    background-color: $color-main-blue;
+    border-color: $color-main-blue;
+  }
+
+  &:disabled {
+    color: $color-text-gray;
+    border-color: $color-soft-gray;
+    background-color: $color-soft-gray;
+  }
+}
+
