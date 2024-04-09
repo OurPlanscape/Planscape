@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ScenarioService } from '@services';
 import { FileSaverService } from '@services/file-saver.service';
+import { FormMessageType } from '../../types';
 
 @Component({
   selector: 'app-scenario-failure',
@@ -11,6 +12,7 @@ export class ScenarioFailureComponent {
   @Input() scenarioName: string = '';
   @Input() scenarioId: string = '';
   @Output() goBack = new EventEmitter();
+  @Output() tryAgain = new EventEmitter();
 
   constructor(
     private scenarioService: ScenarioService,
@@ -31,4 +33,6 @@ export class ScenarioFailureComponent {
         });
     }
   }
+
+  protected readonly FormMessageType = FormMessageType;
 }
