@@ -1,11 +1,11 @@
-@import "../../../styles/colors";
-@import "../../../styles/mixins";
+@import '../../../styles/colors';
+@import '../../../styles/mixins';
 
 .about-container {
   gap: 30px;
   display: flex;
   flex-direction: column;
-  padding: 100px 60px 80px 60px;
+  margin: 15% 10% 4% 10%;
 }
 
 h3 {
@@ -50,4 +50,11 @@ p.regular {
 
 p.small {
   text-align: left;
+}
+
+@media screen and (max-width: 840px) {
+  ::root {
+    gap: 10%;
+  }
+
 }
