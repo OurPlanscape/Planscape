@@ -19,6 +19,32 @@
               "display": false,
               "metrics": [
                 {
+                  "display_name": "Inverse North Spotted Owl Nest/Roosting Suitability",
+                  "data_provider": "SIG",
+                  "data_units": "absolute",
+                  "max_value": 8649,
+                  "metric_name": "inverse_nso_nest_roost_suitability",
+                  "min_value": 0,
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier2/Inv_NestRoost_Suitability_2023.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "SIG",
+                  "data_units": "absolute",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "northern-california/operational/msb_wui.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG",
+                  "source_link": ""
+                },
+                {
                   "display_name": "CWHR Vegetation Type",
                   "data_provider": "CWHR",
                   "data_units": "%",

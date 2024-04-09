@@ -8,13 +8,16 @@ import { MatSort } from '@angular/material/sort';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { take } from 'rxjs';
 
-import { PlanService } from '@services';
+import { AuthService, PlanService } from '@services';
 import { Router } from '@angular/router';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { SNACK_NOTICE_CONFIG } from 'src/app/shared/constants';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
-import { canViewCollaborators } from '../../plan/permissions';
+import {
+  canDeletePlanningArea,
+  canViewCollaborators,
+} from '../../plan/permissions';
 import { Plan, PreviewPlan } from '../../types';
 
 @Component({
@@ -43,7 +46,8 @@ export class PlanTableComponent implements OnInit {
     private planService: PlanService,
     private router: Router,
     private snackbar: MatSnackBar,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -139,5 +143,16 @@ export class PlanTableComponent implements OnInit {
       return false;
     }
     return canViewCollaborators(this.selectedPlan);
+  }
+
+  get canDeletePlanningArea() {
+    if (!this.selectedPlan) {
+      return false;
+    }
+    const user = this.authService.currentUser();
+    if (!user) {
+      return false;
+    }
+    return canDeletePlanningArea(this.selectedPlan, user);
   }
 }

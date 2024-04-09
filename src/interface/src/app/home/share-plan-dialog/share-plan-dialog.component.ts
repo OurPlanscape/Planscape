@@ -58,6 +58,8 @@ export class SharePlanDialogComponent {
     map((user) => [user.firstName, user.lastName].join(' '))
   );
 
+  userRole$ = this.plan$.pipe(map((plan) => plan.role));
+
   showCreator$ = this.authService.loggedInUser$.pipe(
     filter((user): user is User => !!user),
     switchMap((user) =>
