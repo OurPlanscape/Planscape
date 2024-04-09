@@ -90,6 +90,6 @@ class TestLinkInvites(TransactionTestCase):
         )
 
     def test_link_invites_updates_userobjectrole(self):
-        user = User.objects.create(username="bar", email="bar@bar.com")
+        user = User.objects.create(username="bar", email="Bar@Bar.com")
         invites = link_invites(user)
         self.assertEqual(len(invites), 2)
