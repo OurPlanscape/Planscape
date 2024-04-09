@@ -1754,7 +1754,7 @@
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0",
                 "wildfire_hazard_potential > 0",
-                "riparian_habitat == 1"
+                "riparian_habitat == 0"
               ],
               "global_thresholds": []
             },
