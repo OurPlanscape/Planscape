@@ -1,113 +1,111 @@
-<div class="signin-root">
-  <div class="signin-card-container">
-    <div class="signin-subcontainer">
-      <div class="signin-card-logo">
-        <div class="planscape-white-logo">
-          <img src="assets/svg/planscape-white-logo.svg" alt="planscape logo" />
-        </div>
-      </div>
-
-      <div class="signin-card">
-        <h1 class="signin-title">Sign in to Planscape</h1>
-
-        <form [formGroup]="form" (ngSubmit)="login()" autocomplete="on">
-          <mat-label class="standard-label"
-            >Email
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input
-              type="text"
-              required
-              formControlName="email"
-              matInput
-              (blur)="checkEmailErrors()"
-              (keyup)="clearEmailErrors()"
-              autocomplete="email" />
-          </mat-form-field>
-          <app-field-alert
-            *ngIf="
-              this.emailError &&
-              this.form.controls['email'].errors &&
-              this.form.controls['email'].dirty
-            "
-            message="{{ emailError }}"
-            title="email error"></app-field-alert>
-
-          <mat-label class="standard-label"
-            >Password
-            <span class="required-blurb">required</span>
-          </mat-label>
-          <mat-form-field appearance="outline">
-            <input
-              type="password"
-              required
-              formControlName="password"
-              autocomplete="current-password"
-              matInput />
-          </mat-form-field>
-          <app-field-alert
-            *ngIf="passwordError"
-            message="{{ passwordError }}"
-            title="password error"></app-field-alert>
-
-          <app-form-message
-            [messageType]="FormMessageType.ERROR"
-            *ngIf="loginError ? true : false"
-            title="Credentials error"
-            message="{{ loginError }}">
-            <div *ngIf="offerReverify">
-              <a [routerLink]="[]" (click)="resendVerification()"
-                >Click here to re-send your verification email.</a
-              >
-            </div>
-          </app-form-message>
-
-          <mat-card-actions class="login-form-buttons">
-            <button
-              mat-flat-button
-              color="primary"
-              type="submit"
-              [disabled]="!form.valid"
-              class="login-form-button">
-              LOG IN
-            </button>
-          </mat-card-actions>
-
-          <p class="forget-password">
-            <a
-              i18n="Text on a button to reset password"
-              href="reset/"
-              class="forget-password-link"
-              >Forgot your password?</a
-            >
-          </p>
-
-          <div class="login-form-buttons">
-            <button
-              mat-stroked-button
-              color="primary"
-              data-id="explore"
-              [routerLink]="'/map'"
-              class="login-form-button guest-button">
-              Explore
-            </button>
-            <button
-              mat-stroked-button
-              color="primary"
-              data-id="create-account"
-              [routerLink]="'/signup'"
-              class="login-form-button guest-button">
-              Create an Account
-            </button>
-          </div>
-        </form>
+<div class="signin-card-container">
+  <div class="signin-subcontainer">
+    <div class="signin-card-logo">
+      <div class="planscape-white-logo">
+        <img src="assets/svg/planscape-white-logo.svg" alt="planscape logo" />
       </div>
     </div>
-    <app-credits-blurb></app-credits-blurb>
-  </div>
 
-  <div class="info-text-container">
-    <app-planscape-about></app-planscape-about>
+    <div class="signin-card">
+      <h1 class="signin-title">Sign in to Planscape</h1>
+
+      <form [formGroup]="form" (ngSubmit)="login()" autocomplete="on">
+        <mat-label class="standard-label"
+          >Email
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input
+            type="text"
+            required
+            formControlName="email"
+            matInput
+            (blur)="checkEmailErrors()"
+            (keyup)="clearEmailErrors()"
+            autocomplete="email" />
+        </mat-form-field>
+        <app-field-alert
+          *ngIf="
+            this.emailError &&
+            this.form.controls['email'].errors &&
+            this.form.controls['email'].dirty
+          "
+          message="{{ emailError }}"
+          title="email error"></app-field-alert>
+
+        <mat-label class="standard-label"
+          >Password
+          <span class="required-blurb">required</span>
+        </mat-label>
+        <mat-form-field appearance="outline">
+          <input
+            type="password"
+            required
+            formControlName="password"
+            autocomplete="current-password"
+            matInput />
+        </mat-form-field>
+        <app-field-alert
+          *ngIf="passwordError"
+          message="{{ passwordError }}"
+          title="password error"></app-field-alert>
+
+        <app-form-message
+          [messageType]="FormMessageType.ERROR"
+          *ngIf="loginError ? true : false"
+          title="Credentials error"
+          message="{{ loginError }}">
+          <div *ngIf="offerReverify">
+            <a [routerLink]="[]" (click)="resendVerification()"
+              >Click here to re-send your verification email.</a
+            >
+          </div>
+        </app-form-message>
+
+        <mat-card-actions class="login-form-buttons">
+          <button
+            mat-flat-button
+            color="primary"
+            type="submit"
+            [disabled]="!form.valid"
+            class="login-form-button">
+            LOG IN
+          </button>
+        </mat-card-actions>
+
+        <p class="forget-password">
+          <a
+            i18n="Text on a button to reset password"
+            href="reset/"
+            class="forget-password-link"
+            >Forgot your password?</a
+          >
+        </p>
+
+        <div class="login-form-buttons">
+          <button
+            mat-stroked-button
+            color="primary"
+            data-id="explore"
+            [routerLink]="'/map'"
+            class="login-form-button guest-button">
+            Explore
+          </button>
+          <button
+            mat-stroked-button
+            color="primary"
+            data-id="create-account"
+            [routerLink]="'/signup'"
+            class="login-form-button guest-button">
+            Create an Account
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
+  <app-credits-blurb></app-credits-blurb>
+</div>
+
+<div class="info-text-container">
+  <app-planscape-about></app-planscape-about>
 </div>
