@@ -1,12 +1,101 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "type": { "type": "string", "const": "FeatureCollection" },
+    "type": {
+      "type": "string"
+    },
     "features": {
       "type": "array",
-      "items": { "type": "object" },
-      "minItems": 10
-    },
-    "required": ["result", "status"]
-  }
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "Feature"
+          },
+          "geometry": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "Polygon"
+              },
+              "coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "minItems": 4,
+                  "maxItems": 4,
+                  "items": {
+                    "type": "array",
+                    "minItems": 2,
+                    "maxItems": 2,
+                    "items": {
+                      "type": "number"
+                    }
+                  }
+                }
+              }
+            },
+            "required": ["type", "coordinates"],
+            "additionalProperties": false
+          },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "YR": { "type": "integer" },
+              "proj_id": { "type": "integer" },
+              "pct_area": { "type": "number" },
+              "area_acres": { "type": "number" },
+              "total_cost": { "type": "number" },
+              "stand_count": { "type": "integer" },
+              "pct_excluded": { "type": "number" },
+              "cost_per_acre": { "type": "number" },
+              "treatment_rank": { "type": "integer" },
+              "weightedPriority": { "type": "number" },
+              "sawtimber_biomass": { "type": "number" },
+              "structure_exposure": { "type": "integer" },
+              "damage_potential_wui": { "type": "number" },
+              "dead_and_down_carbon": { "type": "number" },
+              "available_standing_biomass": { "type": "number" },
+              "total_fuel_exposed_to_fire": { "type": "number" },
+              "california_spotted_owl_habitat": { "type": "integer" },
+              "standing_dead_and_ladder_fuels": { "type": "number" },
+              "california_spotted_owl_territory": { "type": "integer" },
+              "probability_of_fire_severity_high": { "type": "integer" }
+            },
+            "required": [
+              "YR",
+              "proj_id",
+              "pct_area",
+              "area_acres",
+              "total_cost",
+              "stand_count",
+              "pct_excluded",
+              "cost_per_acre",
+              "treatment_rank",
+              "weightedPriority",
+              "sawtimber_biomass",
+              "structure_exposure",
+              "damage_potential_wui",
+              "dead_and_down_carbon",
+              "available_standing_biomass",
+              "total_fuel_exposed_to_fire",
+              "california_spotted_owl_habitat",
+              "standing_dead_and_ladder_fuels",
+              "california_spotted_owl_territory",
+              "probability_of_fire_severity_high"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": ["type", "geometry", "properties"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["type", "features"],
+  "additionalProperties": false
 }
