@@ -13,6 +13,7 @@
   padding: 9px 7px;
   cursor: pointer;
   gap: 8px;
+  text-decoration: none;
 
 }
 
@@ -26,6 +27,7 @@
   &:active, &:hover {
     color: $color-white;
     background-color: $color-main-blue;
+    border-color: $color-main-blue;
   }
 
   mat-icon {
