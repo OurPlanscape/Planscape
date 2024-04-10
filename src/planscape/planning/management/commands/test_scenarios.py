@@ -35,12 +35,12 @@ class Command(BaseCommand):
         for f in self.fixtures_to_test:
             print(f" fixture: {f}")
             self.create_area(f)
-            self.create_scenarios(f)
+            self.import_scenarios(f)
+            # self.create_scenarios(f)
 
     def create_area(self, fixture_dir):
         for filename in os.listdir(os.path.join(self.fixtures_path, fixture_dir)):
-            print(f"looking at filename: {filename}")
-            if filename.endswith("planningarea.json"):
+            if filename.endswith(".json"):
                 with open(
                     os.path.join(self.fixtures_path, fixture_dir, filename),
                     "r",
@@ -64,6 +64,10 @@ class Command(BaseCommand):
                         defaults=area_data,
                     )
                     self.test_area_ids.append(area_obj.id)
+
+    def import_scenarios(self, given):
+
+        print(f"What we have: {given}")
 
     def create_scenarios(self, scenario_file, validation_file, area_id):
         """Upserts each scenario"""
