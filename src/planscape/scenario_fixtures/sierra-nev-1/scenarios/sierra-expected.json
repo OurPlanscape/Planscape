@@ -8,10 +8,11 @@
         "result": {
           "type": "object",
           "properties": {
-            "type": { "type": "string", "const": "FeatureCollection" },
-            "features": {"type":"array",
-            "items": {"type": "object"},
-            "minItems": 10
+            "type": { "type": "string", "const": "features" },
+            "features": {
+              "type": "array",
+              "items": { "type": "object" },
+              "minItems": 10
             }
           }
         }
@@ -19,5 +20,5 @@
       "required": ["result", "status"]
     }
   },
-  "required": ["scenario_result"]
+  "required": ["type", "features"]
 }
