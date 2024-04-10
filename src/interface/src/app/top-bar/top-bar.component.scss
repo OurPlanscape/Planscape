@@ -99,4 +99,15 @@ button.navbar-item, a.navbar-item {
   .site-link img {
     filter: invert(1);
   }
+
+
+}
+
+@media screen and (max-width: 480px) {
+
+  .mat-toolbar .site-link {
+      margin-left: 0px;
+      padding: 10px 10px 12px;
+    }
+  
 }
