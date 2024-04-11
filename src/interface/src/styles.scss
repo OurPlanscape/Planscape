@@ -39,6 +39,10 @@ body {
   font-family: 'Public Sans', Roboto, 'Helvetica Neue', sans-serif;
 }
 
+body.no-scroll-bounce {
+  overscroll-behavior: none;
+}
+
 .is-hidden {
   display: none !important;
 }
