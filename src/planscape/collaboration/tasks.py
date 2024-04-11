@@ -20,12 +20,12 @@ def send_invitation(
         user_object_role = UserObjectRole.objects.get(pk=user_object_role_id)
         planning_area = user_object_role.content_object
 
-        subject = f"[Planscape] {user_object_role.inviter.get_full_name() } invited you to collaborate on '{planning_area.name}'"
         context = {
             "inviter": user_object_role.inviter,
             "collaborator": (
                 user_object_role.collaborator if collaborator_exists else None
             ),
+            "role": user_object_role.role.upper(),
             "planning_area": planning_area,
             "message": message,
             "frontend_url": get_frontend_url("home"),
@@ -36,6 +36,13 @@ def send_invitation(
                 query_params={"redirect": f"plan/{planning_area.pk}"},
             ),
         }
+
+        subject_role = f"a { user_object_role.role.lower() }"
+        if user_object_role.role.lower() == "owner":
+            subject_role = "an owner"
+
+        subject = f"[Planscape] {user_object_role.inviter.get_full_name() } invited you to be { subject_role } on '{planning_area.name}'"
+
         txt = render_to_string("invites/new_invite_message.txt", context)
         html = render_to_string("invites/new_invite_message.html", context)
         send_mail(

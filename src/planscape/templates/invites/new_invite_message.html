@@ -84,11 +84,22 @@
     <![endif]-->
     <div style="width: 100%; padding: 10px; color: black;">
       <span style="font-size: 22px; font-weight: 500; line-height: 32px">{{ inviter.get_full_name }}</span><span
-        style="font-size: 22px; font-weight: 600"> </span><span style="font-size: 22px; font-weight: 500">invited you
-        to</span><span style="font-size: 22px; font-weight: 600"> </span><span
-        style="font-size: 22px; font-weight: 700">collaborate</span><span style="font-size: 22px; font-weight: 600">
-      </span><span style="font-size: 22px; font-weight: 500">on </span><span
-        style="font-size: 22px; font-weight: 400">“{{ planning_area.name }}”</span>
+        style="font-size: 22px; font-weight: 600"> </span>
+      {% if role == 'VIEWER' %}
+      <span style="font-size: 22px; font-weight: 500">invited you to be a </span>
+      <span
+      style="font-size: 22px; font-weight: 700">viewer</span><span style="font-size: 22px; font-weight: 600">
+      {% elif role == 'COLLABORATOR' %}
+      <span style="font-size: 22px; font-weight: 500">invited you to be a </span>
+      <span
+        style="font-size: 22px; font-weight: 700">collaborator</span><span style="font-size: 22px; font-weight: 600">
+      </span>
+      {% elif role == 'OWNER' %}
+      <span style="font-size: 22px; font-weight: 500">invited you to be an </span>
+      <span style="font-size: 22px; font-weight: 700">owner</span><span style="font-size: 22px; font-weight: 600">
+        {% endif %}
+       <span style="font-size: 22px; font-weight: 500"> on </span>
+       <span style="font-size: 22px; font-weight: 400"> “{{ planning_area.name }}”</span>
     </div>
     <!--[if gte mso 9]>
     </td></tr><tr><td>
