@@ -85,19 +85,9 @@
     <div style="width: 100%; padding: 10px; color: black;">
       <span style="font-size: 22px; font-weight: 500; line-height: 32px">{{ inviter.get_full_name }}</span><span
         style="font-size: 22px; font-weight: 600"> </span>
-      {% if role == 'VIEWER' %}
-      <span style="font-size: 22px; font-weight: 500">invited you to be a </span>
+      <span style="font-size: 22px; font-weight: 500">invited you to be {{ role_article }} </span>
       <span
-      style="font-size: 22px; font-weight: 700">viewer</span><span style="font-size: 22px; font-weight: 600">
-      {% elif role == 'COLLABORATOR' %}
-      <span style="font-size: 22px; font-weight: 500">invited you to be a </span>
-      <span
-        style="font-size: 22px; font-weight: 700">collaborator</span><span style="font-size: 22px; font-weight: 600">
-      </span>
-      {% elif role == 'OWNER' %}
-      <span style="font-size: 22px; font-weight: 500">invited you to be an </span>
-      <span style="font-size: 22px; font-weight: 700">owner</span><span style="font-size: 22px; font-weight: 600">
-        {% endif %}
+      style="font-size: 22px; font-weight: 700">{{ role }}</span>
        <span style="font-size: 22px; font-weight: 500"> on </span>
        <span style="font-size: 22px; font-weight: 400"> “{{ planning_area.name }}”</span>
     </div>
@@ -110,6 +100,12 @@
         style="color: #064bba; font-weight: 500; text-decoration: underline"><a href="{{ create_account_link }}">click
           here</a></span><span style="color: #4a4a4a; font-weight: 400; line-height: 22px">.</span>
     </div>
+    <!--[if gte mso 9]>
+    </td></tr><tr><td>
+    <![endif]-->
+    <div style="width: 100%; padding: 10px">
+      <span style="color: #4a4a4a; font-weight: 400; line-height: 22px">To find out more about collaboration and roles, click <a href="https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide#collaboration">here</a>.
+    </span></div>
     <!--[if gte mso 9]>
     </td></tr><tr><td>
     <![endif]-->
