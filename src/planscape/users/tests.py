@@ -85,7 +85,7 @@ class DeactivateUserTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 205)
+        self.assertEqual(response.status_code, 200)
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
 
 
