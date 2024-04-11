@@ -58,6 +58,8 @@ export class SharePlanDialogComponent {
     map((user) => [user.firstName, user.lastName].join(' '))
   );
 
+  userRole$ = this.plan$.pipe(map((plan) => plan.role));
+
   showCreator$ = this.authService.loggedInUser$.pipe(
     filter((user): user is User => !!user),
     switchMap((user) =>
@@ -122,6 +124,7 @@ export class SharePlanDialogComponent {
   }
 
   changeRole(invite: Invite, newRole: INVITE_ROLE) {
+    this.selectedRole = Roles[newRole];
     this.inviteService.changeRole(invite.id, newRole).subscribe({
       next: () => {
         invite.role = newRole;
