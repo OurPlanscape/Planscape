@@ -82,12 +82,9 @@ def unset_jwt_cookies(response):
         raise
 
 
-#     There was no endpoint that allows us to deactivate the currently logged in user and also
-#     invalidate/blacklist their existing cookies, so this combines approaches for deactivation and
-#     adapts some code from dj-rest-auth to deal with the JWT auth and refresh tokens.
-
-
-# TODO: tidy this up a little...
+# There was no endpoint that allows us to deactivate the currently logged in user and also
+# invalidate/blacklist their existing cookies, so this combines approaches for deactivation and
+# adapts some code from dj-rest-auth to deal with the JWT auth and refresh tokens.
 @api_view(["POST"])
 def deactivate_user(request: Request) -> Response:
     logged_in_user = request.user

@@ -339,7 +339,7 @@ export class AuthService {
         {
           withCredentials: true,
         }
-      ) // TODO: we probably need to expect and gracefully accept a 401 here,
+      )
       .pipe(
         take(1),
         map((result: any) => {
