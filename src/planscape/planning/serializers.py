@@ -100,7 +100,7 @@ class PlanningAreaNoteSerializer(serializers.ModelSerializer):
             "updated_at",
             "content",
             "planning_area",
-            "user",
+            "user_id",
             "user_name",
         )
         model = PlanningAreaNote
@@ -164,7 +164,7 @@ class ConfigurationSerializer(serializers.Serializer):
         min_length=1,
     )
     max_treatment_area_ratio = serializers.FloatField(
-        min_value=500,
+        min_value=100,
         required=False,
     )
 

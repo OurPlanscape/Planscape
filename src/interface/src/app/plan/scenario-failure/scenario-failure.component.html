@@ -1,18 +1,46 @@
-<mat-icon class="material-symbols-outlined">error</mat-icon>
+<button
+  (click)="downloadCsv()"
+  data-id="downloadCsv"
+  class="ghost-button button-left"
+  [disabled]="scenarioState !== 'FAILURE'">
+  <mat-icon class="material-symbols-outlined">download</mat-icon>
+  DOWNLOAD CSV DATA
+</button>
 
-<h2>There was an error generating your scenario.</h2>
-<div class="error">
-  It may be that your constraints are preventing the generation of a valid
-  scenario. Please review your constraints and try again.
-</div>
-<div class="actions">
-  <button mat-raised-button (click)="downloadCsv()" data-id="downloadCsv">
-    Download CSV data
-  </button>
-</div>
+<section>
+  <ng-container *ngIf="scenarioState === 'FAILURE'; else generic">
+    <h4>
+      <mat-icon class="material-symbols-filled warning">warning</mat-icon>
+      No optimal project areas for treatment were found
+    </h4>
+    <p>
+      The constraints you set may be preventing the tool from finding enough
+      valid land for the run to complete successfully. Please eliminate some
+      constraints (slope, roads, areas), and try again.
+    </p>
 
-<div class="actions">
-  <a mat-raised-button color="primary" (click)="goBack.emit()" class="return">
-    RETURN TO SCENARIOS
-  </a>
-</div>
+    <p>
+      Additionally, review your planning area with the primary metrics layers
+      for your treatment goal. If the area you have selected doesn’t have enough
+      density of the key metrics, the tool won’t be able to find enough land to
+      select for treatment.
+    </p>
+  </ng-container>
+
+  <ng-template #generic>
+    <h4>
+      <mat-icon class="material-symbols-filled error">error</mat-icon>
+      There was an error generating your scenario
+    </h4>
+    <p>Sorry, we were unable to generate your scenario. Please try again.</p>
+  </ng-template>
+
+  <div class="actions">
+    <a (click)="goBack.emit()" data-id="downloadCsv" class="ghost-button">
+      RETURN TO PLAN OVERVIEW
+    </a>
+    <a (click)="tryAgain.emit()" data-id="downloadCsv" class="primary-button">
+      TRY AGAIN
+    </a>
+  </div>
+</section>

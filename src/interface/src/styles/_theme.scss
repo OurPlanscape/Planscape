@@ -64,7 +64,7 @@ $planscape-frontend-theme: mat.define-light-theme(
       color: (
         primary: $planscape-frontend-primary,
         accent: $planscape-frontend-primary, // not really used
-        warn: $planscape-frontend-primary, // not really used
+        warn: mat.define-palette(mat.$red-palette)
       ),
     )
 );
