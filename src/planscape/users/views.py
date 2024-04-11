@@ -65,7 +65,6 @@ def delete_user(request: HttpRequest) -> HttpResponse:
         return HttpResponseBadRequest("Ill-formed request: " + str(e))
 
 
-# TODO: we need to handle exceptions for any unset settings here
 def unset_jwt_cookies(response):
     try:
         cookie_name = settings.REST_AUTH["JWT_AUTH_COOKIE"]
@@ -87,6 +86,9 @@ def unset_jwt_cookies(response):
 #     There was no endpoint that allows us to deactivate the currently logged in user and also
 #     invalidate/blacklist their existing cookies, so this combines approaches for deactivation and
 #     adapts some code from dj-rest-auth to deal with the JWT auth and refresh tokens.
+
+
+# TODO: tidy this up a little...
 @api_view(["POST"])
 def deactivate_user(request: Request) -> Response:
     logged_in_user = request.user
@@ -121,28 +123,28 @@ def deactivate_user(request: Request) -> Response:
     # Remove auth cookies
     unset_jwt_cookies(response)
 
-    # ## TODO: clean this up, we likely don't need all of these cases
-    # try:
-    #     token = RefreshToken(request.data["refresh"])
-    #     token.blacklist()
-    # except KeyError:
-    #     response.data = {"detail": ("Refresh token was not included in request data.")}
-    #     response.status_code = status.HTTP_401_UNAUTHORIZED
-    # except (TokenError, AttributeError, TypeError) as error:
-    #     if hasattr(error, "args"):
-    #         if (
-    #             "Token is blacklisted" in error.args
-    #             or "Token is invalid or expired" in error.args
-    #         ):
-    #             response.data = {"detail": (error.args[0])}
-    #             response.status_code = status.HTTP_401_UNAUTHORIZED
-    #         else:
-    #             response.data = {"detail": "An error has occurred."}
-    #             response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    # we also need to blacklist the refresh token
+    try:
+        token = RefreshToken(request.data["my-refresh-token"])
+        token.blacklist()
+    except KeyError:
+        response.data = {"detail": ("Refresh token removed.")}
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+    except (TokenError, AttributeError, TypeError) as error:
+        if hasattr(error, "args"):
+            if (
+                "Token is blacklisted" in error.args
+                or "Token is invalid or expired" in error.args
+            ):
+                response.data = {"detail": (error.args[0])}
+                response.status_code = status.HTTP_401_UNAUTHORIZED
+            else:
+                response.data = {"detail": "An error has occurred."}
+                response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
-    #     else:
-    #         response.data = {"detail": "An error has occurred."}
-    #         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        else:
+            response.data = {"detail": "An error has occurred."}
+            response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     return response
 
 
