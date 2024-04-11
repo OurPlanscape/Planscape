@@ -129,7 +129,7 @@ def deactivate_user(request: Request) -> Response:
         token.blacklist()
     except KeyError:
         response.data = {"detail": ("Refresh token removed.")}
-        response.status_code = status.HTTP_205_RESET_CONTENT
+        response.status_code = status.HTTP_200_OK
     except (TokenError, AttributeError, TypeError) as error:
         if hasattr(error, "args"):
             if (

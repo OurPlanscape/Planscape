@@ -6,7 +6,6 @@ import {
 } from '@angular/material/legacy-dialog';
 import { AuthService } from 'src/app/services';
 import { User } from 'src/app/types';
-import { take } from 'rxjs';
 
 @Component({
   selector: 'app-delete-account-dialog',
@@ -40,20 +39,14 @@ export class DeleteAccountDialogComponent {
         this.data.user,
         this.deleteAccountForm.get('currentPassword')?.value
       )
-      .pipe(take(1))
       .subscribe({
-        next: (result) => {
+        next: () => {
           this.dialogRef.close({
             deletedAccount: true,
           });
         },
         error: (err) => {
-          if (err.status === 400 || err.status === 205) {
-            // a 400 here is also good, it means the refresh token failed.
-            this.dialogRef.close({
-              deletedAccount: true,
-            });
-          } else if (err.status === 403) {
+          if (err.status === 403) {
             this.error = 'Password was incorrect.';
             this.disableDeleteButton = false;
           } else if (err.status === 401) {
