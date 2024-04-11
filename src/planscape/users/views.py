@@ -2,9 +2,8 @@ import json
 import logging
 from allauth.account.utils import has_verified_email
 from django.conf import settings
-from django.contrib.auth import get_user_model, logout
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
@@ -120,7 +119,7 @@ def deactivate_user(request: Request) -> Response:
         {"detail": "Successfully logged out."},
         status=status.HTTP_200_OK,
     )
-    # Remove auth cookies
+    # unset auth cookies
     unset_jwt_cookies(response)
 
     # we also need to blacklist the refresh token
