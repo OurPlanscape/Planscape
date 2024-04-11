@@ -108,9 +108,9 @@ def deactivate_user(request: Request) -> Response:
 
     user_email_to_delete = body.get("email", None)
     if user_email_to_delete is None or user_email_to_delete != logged_in_user.email:
-        raise ValueError("User email must be provided as a string")
-    if user_email_to_delete != logged_in_user.email:
-        raise ValueError("Cannot delete another user account")
+        return Response(
+            {"error": "Email given is incorrect"}, status=status.HTTP_403_FORBIDDEN
+        )
 
     # Update DB record
     logged_in_user.is_active = False
@@ -129,7 +129,7 @@ def deactivate_user(request: Request) -> Response:
         token.blacklist()
     except KeyError:
         response.data = {"detail": ("Refresh token removed.")}
-        response.status_code = status.HTTP_401_UNAUTHORIZED
+        response.status_code = status.HTTP_205_RESET_CONTENT
     except (TokenError, AttributeError, TypeError) as error:
         if hasattr(error, "args"):
             if (

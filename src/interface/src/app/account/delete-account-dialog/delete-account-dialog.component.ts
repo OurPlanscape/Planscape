@@ -48,13 +48,16 @@ export class DeleteAccountDialogComponent {
           });
         },
         error: (err) => {
-          if (err.status === 400) {
-            // 400 here is good, it means the refresh token failed.
+          if (err.status === 400 || err.status === 205) {
+            // a 400 here is also good, it means the refresh token failed.
             this.dialogRef.close({
               deletedAccount: true,
             });
           } else if (err.status === 403) {
             this.error = 'Password was incorrect.';
+            this.disableDeleteButton = false;
+          } else if (err.status === 401) {
+            this.error = 'User is not logged in.';
             this.disableDeleteButton = false;
           } else {
             this.error = 'An unknown error has occured.';

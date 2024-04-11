@@ -41,21 +41,21 @@ class DeactivateUserTest(APITransactionTestCase):
         self.user.set_password("12345")
         self.user.save()
 
-    def test_missing_user(self):
+    def test_not_authenticated(self):
         payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
             reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_missing_email(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
             reverse("users:deactivate"), json.dumps({}), content_type="application/json"
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_missing_password(self):
         self.client.force_authenticate(self.user)
@@ -65,7 +65,7 @@ class DeactivateUserTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_different_user(self):
         self.client.force_authenticate(self.user)
@@ -75,9 +75,9 @@ class DeactivateUserTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
-    def test_same_user(self):
+    def test_correct_user(self):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "testuser@test.com", "password": "12345"})
         response = self.client.post(
@@ -85,7 +85,7 @@ class DeactivateUserTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 205)
         self.assertFalse(User.objects.get(pk=self.user.pk).is_active)
 
 
