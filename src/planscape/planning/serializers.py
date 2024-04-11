@@ -164,7 +164,7 @@ class ConfigurationSerializer(serializers.Serializer):
         min_length=1,
     )
     max_treatment_area_ratio = serializers.FloatField(
-        min_value=500,
+        min_value=100,
         required=False,
     )
 
