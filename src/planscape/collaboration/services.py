@@ -76,10 +76,10 @@ def create_invite(
             f"inviter {inviter.email} does not have ownership of {target_entity} object {object_pk}"
         )
 
-    collaborator = User.objects.filter(email=email).first()
+    collaborator = User.objects.filter(email__iexact=email).first()
     collaborator_exists = collaborator is not None
     object_role, created = UserObjectRole.objects.update_or_create(
-        email=email,
+        email=email.lower(),
         content_type=content_type,
         object_pk=object_pk,
         defaults={
@@ -109,6 +109,6 @@ def link_invites(user) -> List[UserObjectRole]:
     Returns all the invitations that were linked.
     """
 
-    object_roles = UserObjectRole.objects.filter(email=user.email)
+    object_roles = UserObjectRole.objects.filter(email__iexact=user.email)
     object_roles.update(collaborator_id=user.pk)
     return UserObjectRole.objects.filter(collaborator_id=user.pk)

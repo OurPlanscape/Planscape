@@ -86,8 +86,10 @@
               scenarioState === 'TIMED_OUT'
             "
             (goBack)="goBackToPlanning()"
+            (tryAgain)="goToConfig()"
             [scenarioName]="scenarioNameFormField?.value"
-            [scenarioId]="scenarioId!"></app-scenario-failure>
+            [scenarioId]="scenarioId!"
+            [scenarioState]="scenarioState"></app-scenario-failure>
         </mat-tab>
       </mat-tab-group>
     </div>
