@@ -1,12 +1,9 @@
-{% if role == 'VIEWER' %}
-{{inviter.get_full_name }} invited you to be a viewer on "{{planning_area.name}}".
-{% elif role == 'COLLABORATOR' %}
-{{inviter.get_full_name }} invited you to be a collaborator on "{{planning_area.name}}".
-{% elif role == 'OWNER' %}
-{{inviter.get_full_name }} invited you to be an owner on "{{planning_area.name}}".
-{% endif %}
+{{inviter.get_full_name }} invited you to be {{ role_article }} {{ role }} on "{{planning_area.name}}".
 
 Log in to Planscape is required to view the planning area.  If you don't have a Planscape account, please click here: {{create_account_link}}.
+
+To find out more about collaboration and roles, click here:
+https://github.com/OurPlanscape/Planscape/wiki/Planscape-User-Guide#collaboration
 
 Can’t access the planning area? Please contact {{inviter.get_full_name }}.
 
