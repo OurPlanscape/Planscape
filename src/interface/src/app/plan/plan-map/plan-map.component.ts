@@ -123,6 +123,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     }).addTo(this.map);
     this.map.fitBounds(this.drawingLayer.getBounds(), {
       paddingTopLeft: this.mapPadding,
+      animate: false,
     });
   }
 
