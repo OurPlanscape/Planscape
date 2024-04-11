@@ -1,15 +1,43 @@
+@import "../../../styles/colors";
+
 :host {
   display: block;
-  text-align: center;
-  margin: auto;
-  padding: 20px 10px;
+  margin: 0;
+  padding-top: 24px
+}
+
+section {
+  border: 1px solid $color-fields-gray;
+  border-radius: 4px;
+  background-color: $color-white;
+  padding: 16px;
+}
+
+.button-left {
+  margin-bottom: 16px;
+  margin-left: auto;
+}
+
+p {
+  color: $color-md-gray;
+}
+
+.warning {
+  color: $color-orange;
+  vertical-align: bottom;
 }
 
 .error {
-  padding: 20px 0;
+  color: $color-error;
+  vertical-align: bottom;
 }
 
 .actions {
-  margin: 20px;
+  margin-top: 24px;
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  padding-bottom: 16px;
 }
+
 

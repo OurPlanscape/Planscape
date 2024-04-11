@@ -5,8 +5,9 @@ import { HttpClient } from '@angular/common/http';
 
 export interface Note {
   id: number;
-  content: string;
+  user_id: number;
   user_name: string;
+  content: string;
   created_at: string;
 }
 
@@ -33,6 +34,17 @@ export class PlanNotesService {
         `/planning/planning_area/${planningAreaId}/note`
       ),
       { content: note },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  deleteNote(planningAreaId: number, noteId: number) {
+    return this.http.delete<Note>(
+      BackendConstants.END_POINT.concat(
+        `/planning/planning_area/${planningAreaId}/note/${noteId}`
+      ),
       {
         withCredentials: true,
       }

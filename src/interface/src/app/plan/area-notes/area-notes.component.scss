@@ -70,3 +70,19 @@ textarea {
   resize: none;
   overflow: hidden;
 }
+
+.delete-note-menu {
+  width: 100px;
+}
+
+.delete-note-button {
+
+  .delete-icon {
+    color: $color-error;
+    line-height: 20px;
+    width: 20px;
+  }
+
+  color: $color-error;
+  @include regular-paragraph()
+}
