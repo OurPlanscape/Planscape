@@ -26,6 +26,10 @@ class E2EScenarioTest:
     scenarios_to_test = []
     test_user_name = "e2etest@sig-gis.com"
     fixtures_path = str(settings.TREATMENTS_TEST_FIXTURES_PATH)
+    async_context = False
+
+    def __init__(self, async_context=True) -> None:
+        self.async_context = async_context
 
     def initiate_tests(self, fixtures_path=None):
         if self.fixtures_path:
@@ -127,4 +131,20 @@ class E2EScenarioTest:
             )
             all_tasks.append(task)
         task_group = group(all_tasks)
-        task_group()
+
+        if self.async_context:
+            print("Task is running via Celery.")
+            task_group()
+        else:
+            print("Task is running as CLI.")
+            task_results = task_group()
+            self.final_results = task_results.get()
+            self.output_results()
+
+    def output_results(self):
+        dt = datetime.now()
+        print(f"\nTest results {dt}:\n")
+        log.info(f"Test results {dt}")
+        for f in self.final_results:
+            log.info(f"{json.loads(f)}")
+            print(f"{json.loads(f)}")
