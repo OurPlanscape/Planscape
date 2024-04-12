@@ -135,10 +135,8 @@ class E2EScenarioTest:
         task_group = group(all_tasks)
 
         if self.async_context:
-            print("Task is running via Celery.")
             task_group()
         else:
-            print("Task is running as CLI.")
             task_results = task_group()
             self.final_results = task_results.get()
             self.output_results()
