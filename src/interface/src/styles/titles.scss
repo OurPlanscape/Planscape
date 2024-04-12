@@ -17,3 +17,7 @@ h4.form-field-title {
   margin: 10px 0;
   color: $color-dark-gray;
 }
+
+.mat-typography h5 {
+  @include h5();
+}
