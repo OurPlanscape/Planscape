@@ -28,12 +28,13 @@ class E2EScenarioTest:
     fixtures_path = str(settings.TREATMENTS_TEST_FIXTURES_PATH)
     async_context = False
 
-    def __init__(self, async_context=True) -> None:
+    def __init__(self, async_context=True, fixtures_path=None) -> None:
         self.async_context = async_context
-
-    def initiate_tests(self, fixtures_path=None):
-        if self.fixtures_path:
+        if fixtures_path:
             log.info(f"Fixtures path is set to: {self.fixtures_path}")
+            self.fixtures_path = fixtures_path
+
+    def initiate_tests(self):
         self.load_test_definitions()
         self.upsert_test_user()
         self.create_areas()
@@ -49,6 +50,7 @@ class E2EScenarioTest:
                 self.fixtures_to_test = json.load(f)
         except Exception as e:
             log.error(f"Failed to read test definitions at {test_defs}- {e}")
+            raise
 
     def upsert_test_user(self):
         """Upserts the same test user for all test records"""

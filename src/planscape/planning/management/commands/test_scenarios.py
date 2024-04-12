@@ -30,5 +30,5 @@ class Command(BaseCommand):
     def handle(self, *args: Any, **options: Any) -> str | None:
         """Runs the CLI command. Outputs results to logs and stdout"""
         fixtures_path = options["fixtures_path"]
-        e2etest = E2EScenarioTest(async_context=False)
-        e2etest.initiate_tests(fixtures_path)
+        e2etest = E2EScenarioTest(async_context=False, fixtures_path=fixtures_path)
+        e2etest.initiate_tests()
