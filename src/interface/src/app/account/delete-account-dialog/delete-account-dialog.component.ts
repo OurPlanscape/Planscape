@@ -48,14 +48,12 @@ export class DeleteAccountDialogComponent {
         error: (err) => {
           if (err.status === 403) {
             this.error = 'Password was incorrect.';
-            this.disableDeleteButton = false;
           } else if (err.status === 401) {
             this.error = 'User is not logged in.';
-            this.disableDeleteButton = false;
           } else {
             this.error = 'An unknown error has occured.';
-            this.disableDeleteButton = false;
           }
+          this.disableDeleteButton = false;
         },
       });
   }
