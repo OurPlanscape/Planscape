@@ -73,7 +73,6 @@
       <a routerLink="/signup">Create Account</a>
     </ng-container>
 
-    <!--  Logged in-->
     <ng-container *ngIf="loggedIn$ | async">
       <a routerLink="/home">Plans</a>
       <a routerLink="/account/information">Account</a>
@@ -96,7 +95,6 @@
       Feedback
     </a>
 
-    <!--  Logged in-->
     <ng-container *ngIf="loggedIn$ | async">
       <a (click)="logout()">Sign Out</a>
     </ng-container>

@@ -64,11 +64,17 @@ export class TopBarComponent implements OnInit {
     this.sidebarOpen = !this.sidebarOpen;
   }
 
+  /**
+   * when showing the mobile menu, we want to avoid the scroll bounce of the main body
+   */
   addBodyClass() {
     const bodyTag = document.body;
     bodyTag.classList.add('no-scroll-bounce');
   }
 
+  /**
+   * When the menu is closed we can remove the class that disables the scroll bounce
+   */
   removeBodyClass() {
     const bodyTag = document.body;
     bodyTag.classList.remove('no-scroll-bounce');
