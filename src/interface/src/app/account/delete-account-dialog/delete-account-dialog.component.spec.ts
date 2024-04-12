@@ -25,7 +25,7 @@ describe('DeleteAccountDialogComponent', () => {
     fakeAuthService = jasmine.createSpyObj(
       'AuthService',
       {
-        deleteUser: of(true),
+        deactivateUser: of(true),
       },
       {}
     );
@@ -108,7 +108,7 @@ describe('DeleteAccountDialogComponent', () => {
 
     await deleteButton.click();
 
-    expect(fakeAuthService.deleteUser).toHaveBeenCalledOnceWith(
+    expect(fakeAuthService.deactivateUser).toHaveBeenCalledOnceWith(
       {
         email: 'test@test.com',
       },

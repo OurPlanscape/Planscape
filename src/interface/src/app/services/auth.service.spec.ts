@@ -458,7 +458,7 @@ describe('AuthService', () => {
     });
   });
 
-  describe('deleteUser', () => {
+  describe('deactivateUser', () => {
     it('makes request to backend', (done) => {
       const user = {
         firstName: 'Foo',
@@ -468,13 +468,13 @@ describe('AuthService', () => {
         id: 10,
       };
 
-      service.deleteUser(user, 'password').subscribe((res) => {
+      service.deactivateUser(user, 'password').subscribe((res) => {
         expect(res).toBeTrue();
         done();
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/users/delete/'
+        BackendConstants.END_POINT + '/users/deactivate/'
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
@@ -494,14 +494,14 @@ describe('AuthService', () => {
       email: 'test@test.com',
     };
 
-    service.deleteUser(user, 'password').subscribe((res) => {
+    service.deactivateUser(user, 'password').subscribe((res) => {
       expect(service.loggedInStatus$.value).toBeFalse();
       expect(service.loggedInUser$.value).toBeNull();
       done();
     });
 
     httpTestingController
-      .expectOne(BackendConstants.END_POINT + '/users/delete/')
+      .expectOne(BackendConstants.END_POINT + '/users/deactivate/')
       .flush({ deleted: true });
   });
 });
