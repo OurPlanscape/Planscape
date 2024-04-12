@@ -10,9 +10,11 @@
   font-weight: 500;
   line-height: 20px;
   border-radius: 4px;
-  padding: 9px 7px;
+  padding: 12px 12px;
   cursor: pointer;
   gap: 8px;
+  text-decoration: none;
+  height: 40px;
 
 }
 
@@ -26,11 +28,12 @@
   &:active, &:hover {
     color: $color-white;
     background-color: $color-main-blue;
+    border-color: $color-main-blue;
   }
 
   mat-icon {
     font-size: 21px;
-    height: 20px;
+    height: 21px;
     width: 20px;
   }
 

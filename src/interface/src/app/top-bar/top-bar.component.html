@@ -1,4 +1,4 @@
-<mat-toolbar [color]="color" class="mat-elevation-z4">
+<mat-toolbar [color]="color">
   <!-- Title and logo-->
   <a class="site-link logo-center" routerLink="/home" data-id="logo">
     <img
@@ -6,8 +6,6 @@
       alt="Planscape"
       class="logo" />
   </a>
-  <!-- Space between left and right elements -->
-  <span class="spacer"></span>
 
   <!-- Show this section once we know if the user is logged in or not to avoid -->
   <!-- flashing guest / default icon and content shifting -->
@@ -15,7 +13,7 @@
     <!-- User or sign in with menu if login enabled -->
     <button
       [matMenuTriggerFor]="dotMenu"
-      class="navbar-item mat-body-2"
+      class="navbar-item mat-body-2 user-menu"
       data-id="menu-trigger">
       {{ displayName$ | async }}
     </button>
@@ -62,4 +60,43 @@
       Feedback
     </a>
   </ng-container>
+
+  <!--  Mobile menu-->
+  <button class="mat-icon-button mobile-menu" (click)="toggleSidePanel()">
+    <mat-icon *ngIf="!sidebarOpen">menu</mat-icon>
+    <mat-icon *ngIf="sidebarOpen">close</mat-icon>
+  </button>
+  <!--  Mobile side panel-->
+  <div class="side-panel" [ngClass]="{ open: sidebarOpen }">
+    <ng-container *ngIf="(loggedIn$ | async) === false">
+      <a routerLink="/login">Log In </a>
+      <a routerLink="/signup">Create Account</a>
+    </ng-container>
+
+    <ng-container *ngIf="loggedIn$ | async">
+      <a routerLink="/home">Plans</a>
+      <a routerLink="/account/information">Account</a>
+    </ng-container>
+
+    <a
+      routerLink="/help"
+      target="_blank"
+      aria-label="help button"
+      rel="noopener noreferrer"
+      data-id="help">
+      Help
+    </a>
+
+    <a
+      routerLink="/feedback"
+      data-id="feedback"
+      target="_blank"
+      rel="noopener noreferrer">
+      Feedback
+    </a>
+
+    <ng-container *ngIf="loggedIn$ | async">
+      <a (click)="logout()">Sign Out</a>
+    </ng-container>
+  </div>
 </mat-toolbar>
