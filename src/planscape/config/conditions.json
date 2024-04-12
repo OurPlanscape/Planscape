@@ -1701,7 +1701,7 @@
               "metrics": [
                 {
                   "display_name": "Potential Total Smoke Production Index",
-                  "data_provider": "San Diego State University, Rocky Mountain Research Station",
+                  "data_provider": "LANDFIRE FCCS 2022, Rocky Mountain Research Station",
                   "data_units": "index",
                   "max_value": 1,
                   "metric_name": "potential_total_smoke",
@@ -1714,7 +1714,7 @@
                 },
                 {
                   "display_name": "Potential Avoided Smoke ProductionIndex",
-                  "data_provider": "San Diego State University, Rocky Mountain Research Station",
+                  "data_provider": "LANDFIRE FCCS 2022, Rocky Mountain Research Station",
                   "data_units": "pounds PM2.5/acre",
                   "max_value": 9000,
                   "metric_name": "potential_avoided_smoke",
@@ -1754,7 +1754,7 @@
                 },
                 {
                   "display_name": "Present Day Connectivity",
-                  "data_provider": "California Department of Fish and Wildlife",
+                  "data_provider": "The Nature Conservancy, Omniscape",
                   "data_units": "Categorical",
                   "max_value": 1,
                   "metric_name": "present_day_connectivity",
@@ -2002,7 +2002,7 @@
                 },
                 {
                   "display_name": "Least Bell's Virio Habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "Conservation Science and Data Visualization",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "least_bells_virio_habitat",
@@ -2015,7 +2015,7 @@
                 },
                 {
                   "display_name": "Marbled Murrelet suitable nesting habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "U.S. Department of Agriculture, Forest Service, Pacific NW Research Station",
                   "data_units": "Relative",
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_nesting_habitat",
@@ -2028,7 +2028,7 @@
                 },
                 {
                   "display_name": "Marbled Murrelet critical habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife CWHR",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "marbled_murrelet_critical_habitat",
@@ -2041,7 +2041,7 @@
                 },
                 {
                   "display_name": "Northern California Coast Coho Salmon distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "coho_salmon_distribution",
@@ -2054,7 +2054,7 @@
                 },
                 {
                   "display_name": "Northern California Coast Coho Salmon critical habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "National Marine Fisheries Service (NOAA Fisheries)",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "coho_salmon_critical_habitat",
@@ -2067,7 +2067,7 @@
                 },
                 {
                   "display_name": "Northern California Winter Steelhead distribution",
-                  "data_provider": "FVEG",
+                  "data_provider": "California Department of Fish and Wildlife",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "winter_steelhead_distribution",
@@ -2080,7 +2080,7 @@
                 },
                 {
                   "display_name": "Northern California DPU Steelhead critical habitat",
-                  "data_provider": "FVEG",
+                  "data_provider": "National Marine Fisheries Service (NOAA Fisheries)",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "steelhead_critical_habitat",
@@ -2093,7 +2093,7 @@
                 },
                 {
                   "display_name": "Distribution of Redwood Structure Classes",
-                  "data_provider": "FVEG",
+                  "data_provider": "Save the Redwoods League",
                   "data_units": "Thematic",
                   "max_value": 1,
                   "metric_name": "distribution_redwood_structure",
@@ -2127,110 +2127,6 @@
                   "min_value": 9,
                   "raw_data_download_path": "central-coast/carbonSeq/Tier1/CStocks_Total_Above_202009.tif",
                   "raw_layer": ":carbonSeq_Tier1_ CStocks_Total_Above_202009",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Aboveground Live Biomass 2001",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "aboveground_live_biomass_2001",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_above_ground_2001_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_above_ground_2001_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Aboveground Live Biomass 2021",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "aboveground_live_biomass_2021",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_above_ground_2021_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_above_ground_2021_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Belowground Live Biomass 2001",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "belowground_live_biomass_2001",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_below_ground_2001_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_below_ground_2001_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Belowground Live Biomass 2021",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "belowground_live_biomass_2021",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_below_ground_2021_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_below_ground_2021_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Litter Biomass 2001",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "litter_biomass_2001",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_litter_2001_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_litter_2001_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Litter Biomass 2021",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "litter_biomass_2021",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_litter_2021_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_litter_2021_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Standing Dead Biomass 2001",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "standing_dead_biomass_2001",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_standing_dead_2001_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_standing_dead_2001_g_m2_v22",
-                  "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
-                  "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
-                },
-                {
-                  "display_name": "Standing Dead Biomass 2021",
-                  "data_provider": "CECS",
-                  "data_units": "kg/m2",
-                  "max_value": 18222,
-                  "metric_name": "standing_dead_biomass_2021",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/carbonSeq/Tier2/WWETAC_UCD_standing_dead_2021_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_standing_dead_2021_g_m2_v22",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
@@ -2416,7 +2312,7 @@
               "metrics": [
                 {
                   "display_name": "Mean % FRI Departure since 1908",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "Fire History (2022), CAL FIRE",
                   "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1908",
@@ -2429,7 +2325,7 @@
                 },
                 {
                   "display_name": "Mean % FRI Departure since 1970",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "Fire History (2022), CAL FIRE",
                   "data_units": "Percent",
                   "max_value": 100,
                   "metric_name": "mean_percentage_fri_departure_since_1970",
@@ -2442,7 +2338,7 @@
                 },
                 {
                   "display_name": "Mean FRI Departure Condition Class",
-                  "data_provider": "CAL FIRE",
+                  "data_provider": "Fire History (2022), CAL FIRE",
                   "data_units": "Categorical",
                   "max_value": 3,
                   "metric_name": "mean_fri_departure_condition_class",
@@ -2455,7 +2351,7 @@
                 },
                 {
                   "display_name": "Time Since Last Fire",
-                  "data_provider": "CAL FIRE",
+                  "data_provider": "Fire History (2022), CAL FIRE",
                   "data_units": "Years",
                   "max_value": 120,
                   "metric_name": "time_since_last_fire",
@@ -2468,7 +2364,7 @@
                 },
                 {
                   "display_name": "FRI Departure since 1908",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "Fire History (2022), CAL FIRE",
                   "data_units": "Average Years",
                   "max_value": 120,
                   "metric_name": "fri_departure_since_1908",
@@ -2481,7 +2377,7 @@
                 },
                 {
                   "display_name": "FRI Departure since 1970",
-                  "data_provider": "Fire History (2021), CAL FIRE",
+                  "data_provider": "Fire History (2022), CAL FIRE",
                   "data_units": "Average Years",
                   "max_value": 55,
                   "metric_name": "fri_departure_since_1970",
@@ -2540,7 +2436,7 @@
               "display_name": "Structure",
               "metrics": [
                 {
-                  "display_name": "Large Trree Density 30 in",
+                  "display_name": "Large Tree Density 30 in",
                   "data_provider": "California Forest Observatory (Salo Sciences)",
                   "data_units": "% Live Trees/Pixel",
                   "max_value": 120,
@@ -2639,7 +2535,7 @@
                 },
                 {
                   "display_name": "Seral Stage",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023",
                   "data_units": "Categorical",
                   "max_value": 1,
                   "metric_name": "seral_stage",
@@ -2652,7 +2548,7 @@
                 },
                 {
                   "display_name": "Early Seral Stage",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023",
                   "data_units": "%",
                   "max_value": 0.57,
                   "metric_name": "seral_stage_early",
@@ -2665,7 +2561,7 @@
                 },
                 {
                   "display_name": "Late Seral Stage",
-                  "data_provider": "FVEG",
+                  "data_provider": "FVEG 2023",
                   "data_units": "Proportion",
                   "max_value": 0.38,
                   "metric_name": "seral_stage_late",
@@ -2842,7 +2738,7 @@
                 },
                 {
                   "display_name": "Hispanic/Latino Population Concentration",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 7,
                   "metric_name": "hispano_latino_concentration",
@@ -2855,7 +2751,7 @@
                 },
                 {
                   "display_name": "Black/African American Population Concentration",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "black_african_concentration",
@@ -2868,7 +2764,7 @@
                 },
                 {
                   "display_name": "Asian Population Concentration",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 8,
                   "metric_name": "asian_concentration",
@@ -2881,7 +2777,7 @@
                 },
                 {
                   "display_name": "Hispanic/Black, Indigenous or People of Color Population Concentration",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 6,
                   "metric_name": "hispanic_black_indigenous_concentration",
@@ -2894,7 +2790,7 @@
                 },
                 {
                   "display_name": "Multi-race except part-American Indian Population Concentration",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 7,
                   "metric_name": "multi_race_not_american_indian_concentration",
@@ -2907,7 +2803,7 @@
                 },
                 {
                   "display_name": "Low Income Population Concentration",
-                  "data_provider": "California Environmental Protection Agency, CalEnviroScreen 4.0",
+                  "data_provider": "U.S. Department of Commerce, Census Bureau",
                   "data_units": "Categorical",
                   "max_value": 9,
                   "metric_name": "low_income_population",
@@ -2960,7 +2856,7 @@
                 },
                 {
                   "display_name": "Groundwater Basin Boundaries",
-                  "data_provider": "CECS",
+                  "data_provider": "California Department of Water Resources",
                   "data_units": "Binary",
                   "max_value": 1,
                   "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
