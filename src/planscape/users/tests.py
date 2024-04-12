@@ -35,53 +35,53 @@ class CreateUserTest(APITransactionTestCase):
         self.assertIn("Team Planscape", mail.outbox[0].body)
 
 
-class DeleteUserTest(APITransactionTestCase):
+class DeactivateUserTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(email="testuser@test.com")
         self.user.set_password("12345")
         self.user.save()
 
-    def test_missing_user(self):
+    def test_not_authenticated(self):
         payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 401)
 
     def test_missing_email(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
-            reverse("users:delete"), json.dumps({}), content_type="application/json"
+            reverse("users:deactivate"), json.dumps({}), content_type="application/json"
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_missing_password(self):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "testuser@test.com"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_different_user(self):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "diffuser@test.com"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
-    def test_same_user(self):
+    def test_correct_user(self):
         self.client.force_authenticate(self.user)
         payload = json.dumps({"email": "testuser@test.com", "password": "12345"})
         response = self.client.post(
-            reverse("users:delete"),
+            reverse("users:deactivate"),
             payload,
             content_type="application/json",
         )
