@@ -44,9 +44,13 @@ class UserPreferencesView(APIView):
             )
 
         try:
-            user_prefs, _ = UserPrefs.objects.get_or_create(user_id=user.id)
+            user_prefs, created = UserPrefs.objects.get_or_create(user_id=user.id)
             # Merge existing preferences with incoming JSON data
-            data = {"preferences": {**user_prefs.preferences, **request.data}}
+
+            data = {"preferences": {**request.data}}
+            if not created:
+                data = {"preferences": {**user_prefs.preferences, **request.data}}
+
             serializer = UserPrefsSerializer(
                 instance=user_prefs, data=data, partial=True
             )
@@ -71,9 +75,10 @@ class UserPreferencesView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         try:
-            user_prefs = UserPrefs.objects.get(user_id=user.id)
-            del user_prefs.preferences[preference_key]
-            user_prefs.save()
+            user_prefs, created = UserPrefs.objects.get_or_create(user_id=user.id)
+            if not created and preference_key in user_prefs.preferences:
+                del user_prefs.preferences[preference_key]
+                user_prefs.save()
         except (UserPrefs.DoesNotExist, KeyError):
             return Response(status=404)
 
