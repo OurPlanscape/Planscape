@@ -25,7 +25,23 @@ export default meta;
 type Story = StoryObj<PagePropsAndCustomArgs>;
 
 export const Default: Story = {
-  args: { content: 'Default button' },
+  render: ({ content, ...args }) => ({
+    props: args,
+    template: `<section class='flex'>
+<button sg-button ${argsToTemplate(args)}>Button ${
+      args.variant || 'Default'
+    }</button>
+<button disabled sg-button ${argsToTemplate(args)}>Disabled ${
+      args.variant || 'Default'
+    }</button>
+<button sg-button ${argsToTemplate(args)} icon='draw'> Icon ${
+      args.variant || 'Default'
+    }</button>
+<button disabled sg-button ${argsToTemplate(args)} icon='draw'> Icon ${
+      args.variant || 'Default'
+    }</button>
+</section>`,
+  }),
 };
 
 export const Primary: Story = {
