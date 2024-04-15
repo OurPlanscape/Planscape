@@ -1,97 +1,112 @@
 <section class="welcome">
-  <h1 class="mat-h2">Welcome to Planscape!</h1>
+  <h1 class="mat-h2">Welcome to Planscape</h1>
 
-  <b>What is Planscape?</b>
   <p>
-    Planscape is a new wildfire resilience planning support tool designed to
-    bring the best available state & federal data together with the latest
-    science to enable better land management. Planscape is built to help
-    regional wildland planners prioritize landscape treatments. With Planscape,
-    you can mitigate fire risk, maximize ecological benefits, and help
-    landscapes adapt to climate change.
-  </p>
-  <p>
-    Planscape includes all data from the
-    <a
-      href="https://wildfiretaskforce.org/regional-resource-kits-page/"
-      target="_blank"
-      class="link">
-      Regional Resource Kit
-    </a>
-    layers for the Sierra Nevada, Southern California, Central Coast and
-    Northern California regions.
+    A wildfire resilience decision support tool for planners designed to bring
+    the best available state and federal data and science together in a
+    user-friendly, accessible format
   </p>
 
-  <b>What can I do with Planscape?</b>
-  <p>
-    You can view and explore the landscape resilience planning data on a set of
-    maps. You can also visualize this data for the four regions alongside other
-    provided data sets such as county and watershed boundaries.
-  </p>
-  <p>
-    Future Planscape releases aim to give you the ability to create and save
-    planning areas, to create scenarios for various treatments, and to
-    collaborate with other stakeholders.
-  </p>
-  <b>Can Planscape actually help with planning?</b>
-  <p>
-    Yes! A lot more functionality, including the ability to create, edit, save,
-    and share plans is coming. The tool will also include integration with
-    ForSys to allow planners to output projects that are optimized within
-    provided constraints.
-  </p>
-  <b>How do I do more?</b>
-  <p>
-    Click on the Help icon on the top right corner of the tool to read the
-    <a routerLink="/help" target="_blank" class="link">user guide</a>
-    or check out the
-    <a
-      href="https://github.com/OurPlanscape/Planscape/wiki/Release-Notes"
-      target="_blank"
-      class="link">
-      Planscape Release Notes
-    </a>
-    or
-    <a href="https://www.planscape.org/faqs" target="_blank" class="link">
-      FAQ
-    </a>
-    . You can also visit
-    <a href="https://www.planscape.org/" target="_blank" class="link">
-      Planscape.org
-    </a>
-    for more information about the tool. If you would like to receive our
-    newsletter for regular updates, you can
-    <a href="https://www.planscape.org/contact" target="_blank" class="link">
-      sign up here
-    </a>
-    .
-  </p>
-  <b>How can I get started?</b>
-  <p>
-    If you want to use the Regional Resource Kit mapping tool, click Explore.
-  </p>
-
-  <div class="flex">
-    <a mat-raised-button color="primary" class="explore" routerLink="/map">
-      Explore
-    </a>
+  <div class="actions">
+    <a class="ghost-button" routerLink="/map">Explore</a>
+    <a routerLink="/login" class="primary-button">Sign in</a>
   </div>
 
-  <p>
-    Already have an account? Click
-    <a routerLink="/login">here</a>
-    to login or
-    <a routerLink="/signup">create an account.</a>
-  </p>
-
-  <div class="disclaimer">
-    Please read our
-    <a
-      href="https://www.planscape.org/conditions-of-use/"
-      target="_blank"
-      class="link">
-      Conditions of Use
-    </a>
-    for information regarding usage of this tool.
+  <div class="secondary">
+    <h5>New to Planscape?</h5>
+    <a routerLink="/signup" class="text-link">Create account</a>
+  </div>
+</section>
+<section class="info">
+  <div class="card">
+    <div class="card-title">
+      <img src="assets/svg/logo-black.svg" alt="planscape" />
+      <h5>What is Planscape?</h5>
+    </div>
+    <p>
+      Planscape is a free, open source decision support tool designed to help
+      teams doing wildland planning identify the optimal areas on their
+      landscape to treat for wildfire resilience. Planscape also helps planners
+      locate where to treat to preserve endangered habitats and optimize for
+      carbon related requirements. Using the latest available data, and by
+      integrating the
+      <a href="http://forsysplanning.org" target="_blank"
+        >ForSys planning tool</a
+      >
+      for treatment area identification and ranking, Planscape ensures planners
+      are using the most up-to-date and vetted resources for their planning
+      needs.
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-title">
+      <img src="assets/svg/groups.svg" alt="teams" />
+      <h5>How can Planscape help my team plan?</h5>
+    </div>
+    <p>
+      Planscape allows teams to plan treatment scenarios together, enabling
+      people to run scenarios according to their area of expertise. Today
+      Planscape uses the
+      <a
+        href="https://wildfiretaskforce.org/regional-resource-kits-page/"
+        target="_blank"
+        >California Regional Resource Kit</a
+      >
+      data, which provides the most recent data for the state. Using this data,
+      planners can identify their area of interest and their treatment goals,
+      and run multiple scenarios together to identify the optimal treatment
+      areas within a landscape. While Planscape is designed for very large
+      landscapes, it can be used on projects of almost any size. data, which
+      provides the most recent data for the state. Using this data, planners can
+      identify their area of interest and their treatment goals, and run
+      multiple scenarios together to identify the optimal treatment areas within
+      a landscape. While Planscape is designed for very large landscapes, it can
+      be used on projects of almost any size.
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-title">
+      <img src="assets/svg/question.svg" alt="help" />
+      <h5>How can I learn more?</h5>
+    </div>
+    <p>
+      At
+      <a href="https://www.planscape.org/" target="_blank">Planscape.org</a> you
+      can access our
+      <a href="https://youtu.be/e2w_tmkl1Es?si=s6ezwGMSADCr8-g5" target="_blank"
+        >training video</a
+      >,
+      <a
+        href="https://www.planscape.org/documentation/user-guide/"
+        target="_blank"
+        >User Guide</a
+      >
+      and our
+      <a href="https://www.planscape.org/documentation/faq/" target="_blank"
+        >FAQ</a
+      >. We also recommend that you sign up for the
+      <a href="https://www.planscape.org/contact-us/" target="_blank"
+        >newsletter</a
+      >
+      if you’d like regular updates on our progress and new functionality.
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-title">
+      <img src="assets/svg/awareness.svg" alt="next on planscape" />
+      <h5>What’s next for Planscape?</h5>
+    </div>
+    <p>
+      We are constantly updating Planscape with new capabilities and additional
+      regional support. Our roadmap includes adding planning capabilities for
+      the Central Coast region, a new Treatment Impact module for analyzing both
+      Direct and Indirect effects of treatments, inclusion of datasets beyond
+      California, and expanded ForSys planning capabilities. Make sure you
+      subscribe to our
+      <a href="https://www.planscape.org/contact-us/" target="_blank"
+        >newsletter</a
+      >
+      for all the latest news.
+    </p>
   </div>
 </section>

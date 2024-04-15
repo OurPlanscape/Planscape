@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostBinding } from '@angular/core';
 import { AuthService } from '@services';
 
 @Component({
@@ -10,4 +10,9 @@ export class HomeComponent {
   loggedIn$ = this.authService.loggedInStatus$;
 
   constructor(private authService: AuthService) {}
+
+  @HostBinding('class.with-background')
+  get isLoggedIn() {
+    return this.loggedIn$.value;
+  }
 }

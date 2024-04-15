@@ -81,6 +81,10 @@ Declare mixins based on styleguide and apply to classes
   @include defToStyles(map.get($styleguide, 'header-4'))
 }
 
+@mixin h5 {
+  @include defToStyles(map.get($styleguide, 'header-5'))
+}
+
 @mixin top-level-label {
   font-size: 16px;
   line-height: 26px;

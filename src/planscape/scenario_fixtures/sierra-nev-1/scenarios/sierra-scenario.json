@@ -1,0 +1,33 @@
+{
+  "created_at": "2024-04-08 01:41:14.066989+00",
+  "updated_at": "2024-04-08 01:41:14.067028+00",
+  "name": "hi severity fire",
+  "configuration": {
+    "weights": [],
+    "est_cost": 2470,
+    "max_slope": null,
+    "stand_size": "LARGE",
+    "question_id": 1,
+    "excluded_areas": [],
+    "stand_thresholds": ["probability_of_fire_severity_high > 0"],
+    "global_thresholds": [],
+    "scenario_priorities": ["probability_of_fire_severity_high"],
+    "min_distance_from_road": null,
+    "scenario_output_fields": [
+      "probability_of_fire_severity_high",
+      "total_fuel_exposed_to_fire",
+      "dead_and_down_carbon",
+      "structure_exposure",
+      "damage_potential_wui",
+      "standing_dead_and_ladder_fuels",
+      "available_standing_biomass",
+      "sawtimber_biomass",
+      "california_spotted_owl_habitat"
+    ],
+    "max_treatment_area_ratio": 607000
+  },
+  "planning_area_id": "18",
+  "notes": null,
+  "uuid": "490ac780-a1e5-49cb-b1f0-469a9fbe6de8",
+  "status": "ACTIVE"
+}

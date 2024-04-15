@@ -4,11 +4,20 @@
     "scenarios": [
       {
         "treatment": "monobasin/scenarios/100pct-slope-scenario.json",
-        "expected": "monobasin/scenarios/100pct-slope-validation.json"
+        "expected": "monobasin/scenarios/100pct-slope-expected.json"
       },
       {
-        "treatment": "monobasin/scenarios/expect-failure-scenario.json",
-        "expected": "monobasin/scenarios/expect-failure-validation.json"
+        "treatment": "monobasin/scenarios/mono-hi-severity-scenario.json",
+        "expected": "monobasin/scenarios/mono-hi-severity-expected.json"
+      }
+    ]
+  },
+  {
+    "planning_area": "sierra-nev-1/sierra-area.json",
+    "scenarios": [
+      {
+        "treatment": "sierra-nev-1/scenarios/sierra-scenario.json",
+        "expected": "sierra-nev-1/scenarios/sierra-expected.json"
       }
     ]
   }
