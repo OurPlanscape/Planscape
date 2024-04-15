@@ -24,6 +24,10 @@
     width: 55%;
     padding: 0 65px;
   }
+
+  p {
+    max-width: 700px;
+  }
 }
 
 
@@ -91,7 +95,7 @@ h5 {
   gap: 10px;
   align-items: center;
   margin-bottom: 8px;
-  
+
   h5 {
     margin: 0;
     color: $color-text-dark;
