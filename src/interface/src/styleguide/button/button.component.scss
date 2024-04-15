@@ -10,10 +10,12 @@
   font-weight: 500;
   line-height: 20px;
   border-radius: 4px;
-  padding: 9px 7px;
+  padding: 12px 12px;
   cursor: pointer;
   gap: 8px;
-  border: 1px solid $color-white;
+  text-decoration: none;
+  height: 40px;
+  border: 1px solid transparent;
 
   &.primary-button {
     color: $color-white;
@@ -57,7 +59,6 @@
     color: $color-white;
 
     &:active, &:hover {
-      border-radius: 4px;
       background: #B40000;
     }
 
