@@ -15,6 +15,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - .:/usr/src/app
+
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -23,6 +24,7 @@ services:
     command: redis-server --save 20 1 --loglevel warning
     volumes:
       - cache:/data/redis
+
   celery_worker:
     build:
       context: .
@@ -37,18 +39,22 @@ services:
       - redis
     volumes:
       - .:/usr/src/app
+
   db:
     image: postgis/postgis:15-3.4
-    environment:
+    # potentially more useful for Apple Silicon
+    # image: kartoza/postgis:15-3.4--v2023.08.31
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
     volumes:
       - postgres:/data/postgres
     ports:
       - 5433:5432
     restart: unless-stopped
     command: -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+
 volumes:
   postgres: null
   cache:
