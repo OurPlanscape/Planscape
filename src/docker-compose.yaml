@@ -1,34 +1,55 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  backend:
-    build: ./planscape
-    image: planscape/backend
-    volumes:
-      - socket:/home/planscape/backend/socket
-    # Expose port 5432 to get access to the PostGIS database
-    expose:
-      - 5432
-    environment:
-      - PLANSCAPE_DATABASE_HOST=host.docker.internal
-      - PLANSCAPE_CORS_ALLOWED_HOSTS='planscape_nginx'
-      - PLANSCAPE_CORS_ALLOWED_ORIGINS='planscape_nginx'
-    depends_on:
-      - frontend
-
-  frontend:
-    build: ./interface
-    image: planscape/frontend
-    volumes:
-      - socket:/django_socket
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     ports:
-      - 80:80
-
-  planscape_r:
-    build: ./planscape_r
-    image: planscape/backend_r
-
-# Shared volume; used to set up communication by sockets from
-# nginx -> uwsgi -> Django.
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - .:/usr/src/app
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - "6380:6379"
+    command: redis-server --save 20 1 --loglevel warning
+    volumes:
+      - cache:/data/redis
+  celery_worker:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    command: celery -A app worker -E --loglevel INFO --concurrency 3
+    deploy:
+      replicas: 2
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - .:/usr/src/app
+  db:
+    image: postgis/postgis:15-3.4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres:/data/postgres
+    ports:
+      - 5433:5432
+    restart: unless-stopped
+    command: -c fsync=off -c synchronous_commit=off -c full_page_writes=off
 volumes:
-  socket:
+  postgres: null
+  cache:
+    driver: local
