@@ -11,7 +11,7 @@
               "long_question_text": "What areas have the highest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "description": [
-                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer “Probability of Fire Severity High”.",
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".",
                 "The threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore."
               ],
               "scenario_priorities": [
@@ -58,8 +58,8 @@
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "description": [
-                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers “Structure Exposure Score” and “Damage Potential”.",
-                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”"
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\".",
+                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\""
               ],
               "scenario_priorities": [
                 "structure_exposure",
@@ -116,7 +116,7 @@
               "long_question_text": "Where are the optimal areas to treat to reduce overall fuel loads?",
               "short_question_text": "Fuel-load Reduction Opportunities",
               "description": [
-                "The output of this treatment goal shows the optimal areas to reduce overall fuel load, and  is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Probability of Fire Severity High”",
+                "The output of this treatment goal shows the optimal areas to reduce overall fuel load, and  is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\"",
                 "The thresholds for this question have both those layers set to be greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape by reviewing them under your planning area in Explore."
               ],
               "scenario_priorities": [
@@ -163,8 +163,8 @@
               "long_question_text": "What areas are both needed and are suitable for prescribed burning?",
               "short_question_text": "Areas for Prescribed Burns",
               "description": [
-                "The output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Standing Dead and Ladder Fuels”.",
-                "The thresholds for this question have “Probability of Fire Severity - High” set to between zero and 0.2, and Mean FRID Condition Class equal to 1, meaning that it is 0-33% departed. Review your planning layer with all of these map layers in Explore before running this query, and ensure that there is coverage. This is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”."
+                "The output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Standing Dead and Ladder Fuels\".",
+                "The thresholds for this question have \"Probability of Fire Severity - High\" set to between zero and 0.2, and Mean FRID Condition Class equal to 1, meaning that it is 0-33% departed. Review your planning layer with all of these map layers in Explore before running this query, and ensure that there is coverage. This is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
               ],
               "scenario_priorities": [
                 "total_fuel_exposed_to_fire",
@@ -225,8 +225,8 @@
               "long_question_text": "Where are the priority opportunities to effectively reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "description": [
-                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Probability of Fire Severity High”.",
-                "The thresholds for this question have both those layers set to be greater than zero, as well as CWHR - Vegetation Types associated with Riparian Habitat set to “0” so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary.</a>"
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this question have both those layers set to be greater than zero, as well as CWHR - Vegetation Types associated with Riparian Habitat set to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary.</a>"
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -282,7 +282,7 @@
               "long_question_text": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "description": [
-                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Probability of Fire Severity High”.",
+                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\".",
                 "The thresholds have both those layers set to be greater than zero, as well as California Spotted Owl Habitat equal to zero.  The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment.  Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CSO Habitat layer as well."
               ],
               "scenario_priorities": [
@@ -336,8 +336,8 @@
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers “Wildlife Species Richness” and “Probability of Fire Severity - High”.",
-                "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape. "
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity - High\".",
+                "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape."
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -385,7 +385,7 @@
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this question is derived from the data from the Explore map layers “Threatened/Endangered Vertebrate Species Richness” and “Probability of Fire Severity - High”. ",
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this question is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity - High\".",
                 "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape. "
               ],
               "scenario_output_fields_paths": {
@@ -436,7 +436,7 @@
               "long_question_text": "What areas should be managed to maximize existing long-term above ground carbon accumulation and storage?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "description": [
-                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layer “Aboveground Live Tree Carbon”.",
+                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layer \"Aboveground Live Tree Carbon\".",
                 "The threshold for this question has Aboveground Live Tree Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Aboveground Live Tree Carbon on the landscape by reviewing it under the map in Explore."
               ],
               "scenario_priorities": [
@@ -485,7 +485,7 @@
               "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Reduce Fire Risk in Carbon Sinks",
               "description": [
-                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers “Aboveground Live Tree Carbon” and “Probability of Fire Severity - High”.",
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers \"Aboveground Live Tree Carbon\" and \"Probability of Fire Severity - High\".",
                 "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -543,7 +543,7 @@
               "long_question_text": "What areas have the greatest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "description": [
-                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer “Probability of High Severity Fire”.",
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\".",
                 "The threshold for this goal is that same layer, Probability of High Severity Fire, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -602,8 +602,8 @@
               "long_question_text": "Where are the best opportunities to reduce fire risk within the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "description": [
-                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers “Probability of High Severity Fire”,  “Structure Exposure Score” and “WUI Damage Potential”.",
-                "There are multiple thresholds for this goal, and additional Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”"
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Probability of High Severity Fire\",  \"Structure Exposure Score\" and \"WUI Damage Potential\".",
+                "There are multiple thresholds for this goal, and additional Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\""
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -672,8 +672,8 @@
               "long_question_text": "Where are the best opportunities to reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "description": [
-                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer “Probability of High Severity Fire”.",
-                "The thresholds for this goal have that layer set to be greater than zero, and includes CWHR - Vegetation Types associated with Riparian Habitat set to “0” so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape by viewing it in Explore, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>"
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\".",
+                "The thresholds for this goal have that layer set to be greater than zero, and includes CWHR - Vegetation Types associated with Riparian Habitat set to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape by viewing it in Explore, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>"
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -733,8 +733,8 @@
               "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk to Owl Habitat",
               "description": [
-                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output of this goal is derived from the data from the Explore map layer “Probability of High Severity Fire”. The thresholds for this goal have both Probability of High Severity Fire and  California Spotted Owl Habitat equal to zero.",
-                "The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment.  Ensure that your planning area has a high concentration of high severity fire landscape, and review the CSO Habitat layer as well."
+                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output of this goal is derived from the data from the Explore map layer \"Probability of High Severity Fire\". The thresholds for this goal have both Probability of High Severity Fire and California Spotted Owl Habitat equal to zero.",
+                "The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape, and review the CSO Habitat layer as well."
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -793,7 +793,7 @@
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers “Wildlife Species Richness” and “Probability of Fire Severity High”.",
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity High\".",
                 "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -854,7 +854,7 @@
               "long_question_text": "What areas support high threatened and endangered species richness and are exposed to to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers “Threatened/Endangered Vertebrate Species Richness” and “Probability of Fire Severity High”.",
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity High\".",
                 "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape."
               ],
               "scenario_output_fields_paths": {
@@ -920,7 +920,7 @@
               "long_question_text": "What areas could be managed for long-term above ground carbon accumulation and storage?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "description": [
-                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layers “Probability of FIre Severity High” and “Aboveground Live Tree Carbon”.",
+                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layers \"Probability of FIre Severity High\" and \"Aboveground Live Tree Carbon\".",
                 "The threshold for this goal has Aboveground Live Tree Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing them in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -980,7 +980,7 @@
               "long_question_text": " What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Reduce Fire Risk in Carbon Sinks",
               "description": [
-                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers “Aboveground Live Tree Carbon” and “Probability of Fire Severity High”.",
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers \"Aboveground Live Tree Carbon\" and \"Probability of Fire Severity High\".",
                 "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -1579,6 +1579,10 @@
               "id": 27,
               "long_question_text": "What areas have the greatest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
+              "description": [
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".",
+                "The threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1660,6 +1664,10 @@
               "id": 28,
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface (WUI)?",
               "short_question_text": "Reduce WUI Fire Risk",
+              "description": [
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\".",
+                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1744,6 +1752,11 @@
               "id": 30,
               "long_question_text": "What areas need and are suitable for prescribed burning?",
               "short_question_text": "Areas for Prescribed Burns",
+              "description": [
+                "The output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layer \"FRID Condition Class for Departure\".",
+                "It will identify where existing conditions would allow for prescribed burning with minimal pre-treatment of vegetation. The thresholds for this question have \"Probability of Fire Severity - High\" set to between zero and 0.2, FRID Condition Class equal to 1, meaning that it is 0-33% departed, and Wildland Urban Interface is not = 0.. Review your planning layer in this map layer in Explore before running this query, especially the FRID CC layer, and ensure that there is coverage.",
+                "This is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1833,6 +1846,10 @@
               "id": 31,
               "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to Pacific Fisher habitat?",
               "short_question_text": "Reduce Fire Risk to Pacific Fisher Habitat",
+              "description": [
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\". ",
+                "The thresholds for this question has \"Probability of High Severity Fire\" set to be greater than zero, and Pacific Fisher Predicted Habitat between >0 and <.25. The goal is to not plan treatments on areas where there is a large amount of Pacific Fisher habitat and instead to treat around that area. Ensure that your planning area has a high concentration of high severity fire landscape and understand the amount of Pacific Fisher habitat as well."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1916,6 +1933,10 @@
               "id": 32,
               "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
+              "description": [
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from equal weighting of the data from the Explore map layers \"Probability of High Severity Fire\" and \"Wildfire Hazard Potential\". ",
+                "The thresholds for this goal set both of those layers to be greater than zero, and include Riparian Habitat equal to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire and wildfire hazard potential landscape by viewing it in Explore, and review the Riparian Habitat data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -2000,6 +2021,10 @@
               "id": 33,
               "long_question_text": "Where are opportunities to reduce high severity fire risk to Northern Spotted Owl (NSPO) nesting/roosting habitat?",
               "short_question_text": "Reduce Fire Risk to Northern Spotted Owl Habitat",
+              "description": [
+                "This treatment goal is designed to identify treatment areas to reduce high severity fire risk to NSPO habitat, and specifically are NOT in NSPO habitat. The output is derived from the data from the Explore map layers \"Probability of Fire Severity High\" and NSPO Nesting/Roosting Forest Cover Type.",
+                "The thresholds have Probability of High Severity Fire set to be greater than zero, and NSPO Nesting/Roosting Forest Cover Type Suitability Index greater than zero and less than 800. The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape, and review the NSPO Nesting/Roosting Forest Cover Type layer as well."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -2083,6 +2108,10 @@
               "id": 34,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
+              "description": [
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species RIchness\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -2166,6 +2195,10 @@
               "id": 35,
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
+              "description": [
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species RIchness\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -2253,7 +2286,11 @@
             {
               "id": 36,
               "long_question_text": "What areas support elevated levels if aboveground carbon?",
-              "short_question_text": "Areas supporting elevated aboveground carbon",
+              "short_question_text": "Areas Supporting Elevated Aboveground Carbon",
+              "description": [
+                "This treatment goal identifies areas with relatively elevated aboveground live tree carbon. The output of this goal is derived from the data from the Explore map layers \"Aboveground Carbon Turnover Time\" and \"Total Aboveground Carbon\".",
+                "The threshold for this goal has Total Aboveground Carbon greater than 0 mg C/ha, and Aboveground Carbon Turnover Time greater than 0 years. Ensure that your planning area has a high concentration of Total Aboveground Carbon and Aboveground Carbon Turnover Time on the landscape by reviewing them in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -2337,6 +2374,10 @@
               "id": 37,
               "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Fire Risk in Carbon Sinks",
+              "description": [
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from equal weighting of the data from the Explore map layers \"Total Aboveground Carbon\", \"Aboveground Carbon Turnover Time\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have Probability of High Severity fire greater than zero, Total Aboveground Carbon greater than 0 mg C/ha, and Aboveground Carbon Turnover Time greater than zero years.. Ensure that your planning area has a high concentration of High Severity Fire and Total Aboveground Carbon on the landscape, as well as Aboveground Carbon Turnover greater than zero, by reviewing them in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
