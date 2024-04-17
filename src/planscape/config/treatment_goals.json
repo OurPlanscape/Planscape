@@ -603,7 +603,7 @@
               "short_question_text": "Reduce WUI Fire Risk",
               "description": [
                 "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers “Probability of High Severity Fire”,  “Structure Exposure Score” and “WUI Damage Potential”.",
-                "There are multiple thresholds for this goal, and add Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”"
+                "There are multiple thresholds for this goal, and additional Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”"
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
