@@ -1610,7 +1610,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=85",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg number of Species"
                 }
               ]
             }
