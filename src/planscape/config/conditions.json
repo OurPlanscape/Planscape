@@ -1611,7 +1611,6 @@
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=85",
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
-                  "output_units": "Avg number of Species"
                 }
               ]
             }
@@ -6407,6 +6406,7 @@
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
                   "output_units": "Avg. Species Richness"
+                  "output_units": "Acres of Riparian Habitat"
                 }
               ]
             }
