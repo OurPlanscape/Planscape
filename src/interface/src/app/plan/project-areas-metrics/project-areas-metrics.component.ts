@@ -11,7 +11,6 @@ import { PlanStateService } from '@services';
 })
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
-  @Input() groupedData: { [category: string]: ChartData[] } | null = null;
   @Input() selectedCharts: ChartData[] = [];
   @Input() priorities: string[] = [];
 
@@ -46,8 +45,13 @@ export class ProjectAreasMetricsComponent {
   filterData(
     data: ChartData[],
     dataToFilter: ChartData[],
-    currentChart: ChartData
+    currentChart: ChartData,
+    isPrimary: boolean
   ): ChartData[] {
     return data.filter((d) => d === currentChart || !dataToFilter.includes(d));
+  }
+
+  myFilter(data: ChartData[], showPrimary: boolean) {
+    return data.filter((d) => d.isPrimary === showPrimary);
   }
 }

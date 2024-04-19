@@ -38,15 +38,30 @@
           <mat-icon>map</mat-icon>
         </button>
       </div>
-      <mat-form-field *ngIf="groupedData">
+      <mat-form-field>
         <mat-select
           [value]="chart"
           (selectionChange)="selectDataPoint($event, i)">
-          <mat-optgroup
-            *ngFor="let group of groupedData | keyvalue"
-            [label]="group.key">
-            <mat-option *ngFor="let data of group.value" [value]="data">
-              {{ data.label }}
+          <mat-optgroup label="Primary Metrics">
+            <mat-option
+              *ngFor="let dataSet of myFilter(data, true)"
+              [value]="dataSet"
+              [disabled]="
+                selectedCharts.includes(dataSet) &&
+                chart.label !== dataSet.label
+              ">
+              {{ dataSet.label }}
+            </mat-option>
+          </mat-optgroup>
+          <mat-optgroup label="Secondary Metrics">
+            <mat-option
+              *ngFor="let dataSet of myFilter(data, false)"
+              [value]="dataSet"
+              [disabled]="
+                selectedCharts.includes(dataSet) &&
+                chart.label !== dataSet.label
+              ">
+              {{ dataSet.label }}
             </mat-option>
           </mat-optgroup>
         </mat-select>

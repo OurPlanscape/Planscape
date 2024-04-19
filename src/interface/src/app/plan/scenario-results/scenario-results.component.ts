@@ -4,7 +4,6 @@ import { ScenarioResult } from '../../types';
 import { parseResultsToProjectAreas } from '../plan-helpers';
 import { ScenarioService } from '@services';
 import { FileSaverService } from '@services/file-saver.service';
-import { ChartData } from '../project-areas-metrics/chart-data';
 
 @Component({
   selector: 'app-scenario-results',
@@ -21,8 +20,6 @@ export class ScenarioResultsComponent implements OnChanges {
   areas: ProjectAreaReport[] = [];
   data: any[] = [];
 
-  groupedData: { [category: string]: ChartData[] } | null = null;
-
   selectedCharts: any[] = [];
 
   constructor(
@@ -35,25 +32,14 @@ export class ScenarioResultsComponent implements OnChanges {
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
 
-      this.groupedData = this.scenarioChartData
-        .sort((a, b) => {
-          if (a.label < b.label) {
-            return -1;
-          }
-          if (a.label > b.label) {
-            return 1;
-          }
-          return 0;
-        })
-        .reduce((categories, data) => {
-          const category = data.isPrimary
-            ? 'Primary Metrics'
-            : 'Secondary Metrics';
-          categories[category] = categories[category] ?? [];
-          categories[category].push(data);
-          return categories;
-        }, {});
-      this.data = this.scenarioChartData;
+      this.data = this.scenarioChartData.sort((a, b) => {
+        // First, compare the isPrimary property
+        if (a.isPrimary !== b.isPrimary) {
+          return a.isPrimary ? -1 : 1;
+        } else {
+          return a.label.localeCompare(b.label);
+        }
+      });
       this.selectedCharts = this.data.slice(0, 4);
     }
   }
