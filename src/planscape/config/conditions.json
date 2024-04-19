@@ -1462,7 +1462,7 @@
                   "data_provider": "U.S. Department of Interior, Bureau of Indian Affairs",
                   "data_units": "Index",
                   "max_value": 49,
-                  "metric_name": "low_income_population",
+                  "metric_name": "american_indian_lands_representation",
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/BIA_AIAN_LAR_202309.tif",
                   "raw_layer": ":socialCultural_Tier2_BIA_AIAN_LAR_202309",
