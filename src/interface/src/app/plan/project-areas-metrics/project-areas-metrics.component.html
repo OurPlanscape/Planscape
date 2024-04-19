@@ -38,18 +38,32 @@
           <mat-icon>map</mat-icon>
         </button>
       </div>
-      <mat-form-field>
+      <mat-form-field *ngIf="groupedData">
         <mat-select
           [value]="chart"
           (selectionChange)="selectDataPoint($event, i)">
-          <mat-option
-            *ngFor="let dataSet of filterData(data, selectedCharts, chart)"
-            [value]="dataSet">
-            {{ priorities.includes(dataSet.key) ? '*' : '' }}
-            {{ dataSet.label }}
-          </mat-option>
+          <mat-optgroup
+            *ngFor="let group of groupedData | keyvalue"
+            [label]="group.key">
+            <mat-option *ngFor="let data of group.value" [value]="data">
+              {{ data.label }}
+            </mat-option>
+          </mat-optgroup>
         </mat-select>
       </mat-form-field>
+
+      <!--      <mat-form-field>-->
+      <!--        <mat-select-->
+      <!--          [value]="chart"-->
+      <!--          (selectionChange)="selectDataPoint($event, i)">-->
+      <!--          <mat-option-->
+      <!--            *ngFor="let dataSet of filterData(data, selectedCharts, chart)"-->
+      <!--            [value]="dataSet">-->
+      <!--            {{ dataSet.isPrimary ? '*' : '' }}-->
+      <!--            {{ dataSet.label }}-->
+      <!--          </mat-option>-->
+      <!--        </mat-select>-->
+      <!--      </mat-form-field>-->
     </div>
     <app-report-chart
       [measurement]="chart.measurement"

@@ -24,6 +24,7 @@ import { SetPrioritiesComponent } from './set-priorities/set-priorities.componen
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { FeatureService } from '../../features/feature.service';
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
+import { ChartData } from '../project-areas-metrics/chart-data';
 
 enum ScenarioTabs {
   CONFIG,
@@ -55,7 +56,7 @@ export class CreateScenariosComponent implements OnInit {
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
   priorities: string[] = [];
-  scenarioChartData: any[] = [];
+  scenarioChartData: ChartData[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
     off: '0ms',
@@ -255,9 +256,11 @@ export class CreateScenariosComponent implements OnInit {
    * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
    */
   processScenarioResults(scenario: Scenario) {
-    var scenario_output_fields_paths =
+    let scenario_output_fields_paths =
       scenario?.configuration.treatment_question?.scenario_output_fields_paths!;
-    var labels: string[][] = [];
+    let labels: string[][] = [];
+    let priorities =
+      scenario.configuration.treatment_question?.scenario_priorities;
     if (scenario && this.scenarioResults) {
       this.planStateService
         .getMetricData(scenario_output_fields_paths)
@@ -290,8 +293,9 @@ export class CreateScenariosComponent implements OnInit {
             label: label[0],
             measurement: label[1],
             metric_layer: label[2],
-            values: label[3],
+            values: label[3] as unknown as number[],
             key: label[4],
+            isPrimary: priorities?.includes(label[4]) || false,
           }));
         });
       this.planStateService.updateStateWithShapes(

@@ -11,6 +11,7 @@ import { PlanStateService } from '@services';
 })
 export class ProjectAreasMetricsComponent {
   @Input() data: ChartData[] = [];
+  @Input() groupedData: { [category: string]: ChartData[] } | null = null;
   @Input() selectedCharts: ChartData[] = [];
   @Input() priorities: string[] = [];
 
