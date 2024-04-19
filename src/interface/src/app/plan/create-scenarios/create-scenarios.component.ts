@@ -295,7 +295,7 @@ export class CreateScenariosComponent implements OnInit {
             metric_layer: label[2],
             values: label[3] as unknown as number[],
             key: label[4],
-            isPrimary: priorities?.includes(label[4]) || false,
+            is_primary: priorities?.includes(label[4]) || false,
           }));
         });
       this.planStateService.updateStateWithShapes(

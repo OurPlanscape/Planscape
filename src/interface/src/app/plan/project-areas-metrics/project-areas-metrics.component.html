@@ -42,20 +42,11 @@
         <mat-select
           [value]="chart"
           (selectionChange)="selectDataPoint($event, i)">
-          <mat-optgroup label="Primary Metrics">
+          <mat-optgroup
+            [label]="group.label"
+            *ngFor="let group of dropdownGroups">
             <mat-option
-              *ngFor="let dataSet of myFilter(data, true)"
-              [value]="dataSet"
-              [disabled]="
-                selectedCharts.includes(dataSet) &&
-                chart.label !== dataSet.label
-              ">
-              {{ dataSet.label }}
-            </mat-option>
-          </mat-optgroup>
-          <mat-optgroup label="Secondary Metrics">
-            <mat-option
-              *ngFor="let dataSet of myFilter(data, false)"
+              *ngFor="let dataSet of myFilter(data, group.primary)"
               [value]="dataSet"
               [disabled]="
                 selectedCharts.includes(dataSet) &&
@@ -66,19 +57,6 @@
           </mat-optgroup>
         </mat-select>
       </mat-form-field>
-
-      <!--      <mat-form-field>-->
-      <!--        <mat-select-->
-      <!--          [value]="chart"-->
-      <!--          (selectionChange)="selectDataPoint($event, i)">-->
-      <!--          <mat-option-->
-      <!--            *ngFor="let dataSet of filterData(data, selectedCharts, chart)"-->
-      <!--            [value]="dataSet">-->
-      <!--            {{ dataSet.isPrimary ? '*' : '' }}-->
-      <!--            {{ dataSet.label }}-->
-      <!--          </mat-option>-->
-      <!--        </mat-select>-->
-      <!--      </mat-form-field>-->
     </div>
     <app-report-chart
       [measurement]="chart.measurement"

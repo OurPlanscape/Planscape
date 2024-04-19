@@ -34,8 +34,8 @@ export class ScenarioResultsComponent implements OnChanges {
 
       this.data = this.scenarioChartData.sort((a, b) => {
         // First, compare the isPrimary property
-        if (a.isPrimary !== b.isPrimary) {
-          return a.isPrimary ? -1 : 1;
+        if (a.is_primary !== b.is_primary) {
+          return a.is_primary ? -1 : 1;
         } else {
           return a.label.localeCompare(b.label);
         }
