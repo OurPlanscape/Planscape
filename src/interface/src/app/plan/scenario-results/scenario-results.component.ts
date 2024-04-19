@@ -19,6 +19,7 @@ export class ScenarioResultsComponent implements OnChanges {
 
   areas: ProjectAreaReport[] = [];
   data: any[] = [];
+
   selectedCharts: any[] = [];
 
   constructor(
@@ -30,7 +31,15 @@ export class ScenarioResultsComponent implements OnChanges {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
-      this.data = this.scenarioChartData;
+
+      this.data = this.scenarioChartData.sort((a, b) => {
+        // First, compare the isPrimary property
+        if (a.is_primary !== b.is_primary) {
+          return a.is_primary ? -1 : 1;
+        } else {
+          return a.label.localeCompare(b.label);
+        }
+      });
       this.selectedCharts = this.data.slice(0, 4);
     }
   }
