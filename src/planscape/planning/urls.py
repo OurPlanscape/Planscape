@@ -12,6 +12,7 @@ from planning.views import (
     delete_scenario,
     get_scenario_by_id,
     list_scenarios_for_planning_area,
+    get_planning_area_scenarios,
     treatment_goals_config,
     update_scenario,
     update_scenario_result,
@@ -60,6 +61,11 @@ urlpatterns = [
         "list_scenarios_for_planning_area/",
         list_scenarios_for_planning_area,
         name="list_scenarios_for_planning_area",
+    ),
+    path(
+        "planning_area/<int:planningarea_pk>/scenarios",
+        get_planning_area_scenarios,
+        name="get_planning_area_scenarios",
     ),
     path(
         "update_scenario/",

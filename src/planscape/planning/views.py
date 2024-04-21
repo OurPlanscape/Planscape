@@ -41,12 +41,19 @@ from planning.services import (
 )
 from planning.tasks import async_forsys_run
 from rest_framework.views import APIView
+from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 
 logger = logging.getLogger(__name__)
+
+
+class ScenarioViewSet(viewsets.ModelViewSet):
+    queryset = Scenario.objects.all()
+    serializer_class = ScenarioSerializer
 
 
 # We always need to store multipolygons, so coerce a single polygon to
@@ -290,7 +297,7 @@ def update_planning_area(request: Request) -> Response:
 
 
 @api_view(["GET"])
-def get_planning_area_by_id(request: Request) -> Response:
+def get_planning_area_by_id(request: Request, planning_area_pk) -> Response:
     """
     Retrieves a planning area by ID.
     Requires a logged in user.  Users can see only their owned planning_areas.
@@ -823,6 +830,53 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
         scenarios = Scenario.objects.filter(planning_area__pk=planning_area_id)
         serializer = ListScenarioSerializer(instance=scenarios, many=True)
         return Response(serializer.data)
+    except PlanningArea.DoesNotExist:
+        return Response(
+            {"error": "Planning Area does not exist."}, status=status.HTTP_404_NOT_FOUND
+        )
+    except Exception as e:
+        logger.error("Error updating scenario result: %s", e)
+        raise
+
+
+## TODO: move this to a class under v2/
+@api_view(["GET"])
+def get_planning_area_scenarios(request: Request, planningarea_pk: int) -> Response:
+    try:
+        # Check that the user is logged in.
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        if planningarea_pk is None:
+            return Response(
+                {"error": "Missing planning_area"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        print(f"We have this planning area id: {planningarea_pk}")
+
+        planning_area = PlanningArea.objects.get(id=planningarea_pk)
+        if not PlanningAreaPermission.can_view(user, planning_area):
+            return Response(
+                {"error": "User has no permission to view planning area"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        paginator = PageNumberPagination()
+        default_page_size = 20
+        max_page_size = 100
+        paginator.page_size = int(request.GET.get("page_size", default_page_size))
+        paginator.page_size = min(
+            paginator.page_size, max_page_size
+        )  # Limit to max_page_size
+        scenarios = Scenario.objects.filter(planning_area__pk=planningarea_pk)
+        print(f"We have this many scenarios: {len(scenarios)}")
+
+        result_page = paginator.paginate_queryset(scenarios, request)
+        serializer = ScenarioSerializer(result_page, many=True)
+        return paginator.get_paginated_response(serializer.data)
+
     except PlanningArea.DoesNotExist:
         return Response(
             {"error": "Planning Area does not exist."}, status=status.HTTP_404_NOT_FOUND

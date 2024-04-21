@@ -13,6 +13,7 @@ from planning.tests.helpers import (
     _create_planning_area,
     _create_scenario,
     _create_test_user_set,
+    _create_multiple_scenarios,
     reset_permissions,
 )
 

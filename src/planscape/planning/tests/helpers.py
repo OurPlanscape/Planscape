@@ -54,6 +54,28 @@ def _create_scenario(
     return scenario
 
 
+def _create_multiple_scenarios(
+    count: int,
+    planning_area: PlanningArea,
+    name_prefix: str,
+    configuration: str,
+    user: User,
+):
+    created_scenarios = []
+
+    for s in range(0, count):
+        created_scenarios.append(
+            _create_scenario(
+                planning_area=planning_area,
+                scenario_name=f"{name_prefix} {s}",
+                configuration=configuration,
+                user=user,
+                notes="",
+            )
+        )
+    return created_scenarios
+
+
 def _create_test_user_set():
     owner_user = User.objects.create(
         username="area_owner",
