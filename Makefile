@@ -15,6 +15,15 @@ PUBLIC_WWW_DIR=/var/www/html/planscape/
 SYS_CTL=systemctl --user
 TAG=main
 
+help:
+	@echo 'Available commands:'
+	@echo ''
+	@echo 'build ................................ Builds image'
+	@echo 'run .................................. Runs the webserver'
+	@echo 'test ................................. Runs all tests except integration'
+	@echo 'lock ................................. Locks the versions of dependencies.'
+	@echo ''
+
 checkout:
 	set -e; \
 	git fetch origin; \
@@ -103,3 +112,32 @@ load-restrictions:
 test-scenarios:
 	cd src/planscape && python3 manage.py test_scenarios
 
+
+
+SERID=$(shell id -u)
+GROUPID=$(shell id -g)
+
+TEST=.
+APP_LABEL=
+DOCKER_BUILDKIT=1
+
+docker-build:
+	docker compose build
+
+docker-test:
+	./bin/run.sh pytest $(TEST)
+
+docker-run: docker-build docker-migrate
+	docker compose up
+
+docker-shell:
+	./bin/run.sh bash
+
+docker-makemigrations:
+	./bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL)  $(OPTIONS)
+	sudo chown -R $(USER): **/migrations/
+
+docker-migrate:
+	./bin/run.sh python manage.py migrate
+
+.PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
