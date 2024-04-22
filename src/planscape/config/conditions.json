@@ -372,7 +372,8 @@
                   "raw_layer": ":bioDiverConserv_Tier3_SpottedOwl_habitat_suitability_CWHR_202304",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=57",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Potential Habitat"
                 },
                 {
                   "display_name": "Mountain Lion",
