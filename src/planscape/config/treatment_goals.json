@@ -1417,20 +1417,27 @@
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_dynamics"
+                  "fire_dynamics",
+                  "biodiversity"
                 ],
                 "elements": [
-                  "severity"
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
-                  "probability_of_fire_severity_high"
+                  "probability_of_fire_severity_high",
+                  "wildlife_species_richness"
                 ]
               },
               "scenario_priorities": [
-                "probability_of_fire_severity_high"
+                "probability_of_fire_severity_high",
+                "wildlife_species_richness"
               ],
               "weights": [],
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "wildlife_species_richness > 0"
+              ],
               "global_thresholds": []
             },
             {
