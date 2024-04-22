@@ -199,4 +199,11 @@ export class SavedScenariosComponent implements OnInit {
     // reset selected row when changing tabs.
     this.highlightedScenarioRow = null;
   }
+
+  get newScenarioDisabled() {
+    if (!this.plan) {
+      return true;
+    }
+    return this.plan?.area_acres < 100;
+  }
 }

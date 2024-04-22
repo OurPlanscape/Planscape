@@ -3,12 +3,13 @@ import {
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { PlanService, SessionService } from '@services';
 import { firstValueFrom } from 'rxjs';
 import { SNACK_ERROR_CONFIG } from '../../../app/shared/constants';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { Region } from '../../types';
+import { calculateAcres } from '../../plan/plan-helpers';
 
 export interface PlanCreateDialogData {
   shape: GeoJSON.GeoJSON;
@@ -19,7 +20,7 @@ export interface PlanCreateDialogData {
   templateUrl: './plan-create-dialog.component.html',
   styleUrls: ['./plan-create-dialog.component.scss'],
 })
-export class PlanCreateDialogComponent {
+export class PlanCreateDialogComponent implements OnInit {
   planForm = new FormGroup({
     planName: new FormControl('', Validators.required),
   });
@@ -34,6 +35,11 @@ export class PlanCreateDialogComponent {
     private matSnackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: PlanCreateDialogData
   ) {}
+
+  ngOnInit() {
+    console.log(this.data.shape);
+    console.log(calculateAcres(this.data.shape));
+  }
 
   async submit() {
     if (this.planForm.valid) {
