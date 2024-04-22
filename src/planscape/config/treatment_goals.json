@@ -1052,64 +1052,21 @@
               "short_question_text": "High-severity Fire Areas",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
+                  "fire_dynamics"
                 ],
                 "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
+                  "severity"
                 ],
                 "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red_legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
                   "probability_of_fire_severity_high"
                 ]
               },
               "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "annual_burn_probability",
-                "predicted_ignition_probability_human_caused",
-                "predicted_ignition_probability_lightening_caused"
+                "probability_of_fire_severity_high"
               ],
               "weights": [],
               "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "predicted_ignition_probability_human_caused > 0",
-                "predicted_ignition_probability_lightening_caused > 0",
-                "(mean_fri_departure_condition_class == 2 | mean_fri_departure_condition_class == 3)"
+                "probability_of_fire_severity_high > 0"
               ],
               "global_thresholds": []
             },
@@ -1460,20 +1417,27 @@
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_dynamics"
+                  "fire_dynamics",
+                  "biodiversity"
                 ],
                 "elements": [
-                  "severity"
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
-                  "probability_of_fire_severity_high"
+                  "probability_of_fire_severity_high",
+                  "wildlife_species_richness"
                 ]
               },
               "scenario_priorities": [
-                "probability_of_fire_severity_high"
+                "probability_of_fire_severity_high",
+                "wildlife_species_richness"
               ],
               "weights": [],
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "wildlife_species_richness > 0"
+              ],
               "global_thresholds": []
             },
             {
