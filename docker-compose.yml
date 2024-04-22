@@ -29,7 +29,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile
     working_dir: /usr/src/app/src/planscape
-    command: celery -A app worker -E --loglevel INFO --concurrency 3
+    command: celery -A planscape worker -E --loglevel INFO --concurrency 3
     deploy:
       replicas: 2
     env_file:

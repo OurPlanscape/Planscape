@@ -125,19 +125,19 @@ docker-build:
 	docker compose build
 
 docker-test:
-	./bin/run.sh pytest $(TEST)
+	./src/planscape/bin/run.sh pytest $(TEST)
 
 docker-run: docker-build docker-migrate
 	docker compose up
 
 docker-shell:
-	./bin/run.sh bash
+	./src/planscape/bin/run.sh bash
 
 docker-makemigrations:
-	./bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL)  $(OPTIONS)
+	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL)  $(OPTIONS)
 	sudo chown -R $(USER): **/migrations/
 
 docker-migrate:
-	./bin/run.sh python manage.py migrate
+	./src/planscape/bin/run.sh python manage.py migrate
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
