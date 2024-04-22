@@ -119,6 +119,22 @@ class GetPlanningAreaTest(APITransactionTestCase):
         # last page should have 10 items
         self.assertEqual(len(planning_areas["results"]), 10)
 
+    def test_filter_planning_areas_by_name(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"name": "10"}
+        response = self.client.get(
+            reverse("planning:get_planning_areas"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 1)  # total results
+        self.assertEqual(len(planning_areas["results"]), 1)
+        self.assertListEqual(
+            list(planning_areas.keys()), ["count", "next", "previous", "results"]
+        )
+
     # TODO: test filtering...
 
     def test_list_planning_areas_ordered(self):

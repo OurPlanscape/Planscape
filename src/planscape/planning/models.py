@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
+from django_filters import rest_framework as filters
 from utils.uuid_utils import generate_short_uuid
 from collaboration.models import UserObjectRole
 from core.models import CreatedAtMixin, UpdatedAtMixin
@@ -91,6 +92,14 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["user", "-created_at"]
+
+
+class PlanningAreaFilter(filters.FilterSet):
+    name = filters.CharFilter(lookup_expr="icontains")  # Case-insensitive exact match
+
+    class Meta:
+        model = PlanningArea
+        fields = ["name"]
 
 
 class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):

@@ -20,6 +20,7 @@ from collaboration.permissions import (
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
+    PlanningAreaFilter,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
@@ -47,6 +48,7 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 logger = logging.getLogger(__name__)
 
@@ -210,6 +212,7 @@ def delete_planning_area(request: Request) -> Response:
         planning_areas = PlanningArea.objects.get_for_user(user).filter(
             pk__in=planning_area_ids
         )
+
         for p in planning_areas:
             if PlanningAreaPermission.can_remove(user, p):
                 p.delete()
@@ -410,6 +413,11 @@ def get_planning_areas(request: Request) -> Response:
         planning_areas = PlanningArea.objects.get_list_for_user(user)
         # TODO: prefetch the planning areas?
 
+        # filter_backend = DjangoFilterBackend()
+        filter_set = PlanningAreaFilter(data=request.GET, queryset=planning_areas)
+        if filter_set.is_valid():
+            planning_areas = filter_set.qs
+
         result_page = paginator.paginate_queryset(planning_areas, request)
         serializer = ListPlanningAreaSerializer(
             result_page, many=True, context={"request": request}
@@ -417,7 +425,7 @@ def get_planning_areas(request: Request) -> Response:
         return paginator.get_paginated_response(serializer.data)
 
     except Exception as e:
-        logger.error("Error updating scenario result: %s", e)
+        logger.error("Error getting Planning Area results: %s", e)
         raise
 
 
