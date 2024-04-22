@@ -411,7 +411,6 @@ def get_planning_areas(request: Request) -> Response:
         # TODO: prefetch the planning areas?
 
         result_page = paginator.paginate_queryset(planning_areas, request)
-        # serializer = PlanningAreaSerializer(result_page, many=True)
         serializer = ListPlanningAreaSerializer(
             result_page, many=True, context={"request": request}
         )
