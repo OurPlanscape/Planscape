@@ -135,8 +135,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
-    # TODO: test filtering...
-
     def test_list_planning_areas_ordered(self):
         ## This tests the logic for ordering areas by most recent scenario date,
         #   or by the plan's most recent update, if it has no scenario
@@ -396,6 +394,13 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
             self.configuration,
             user=self.owner_user,
         )
+        self.area1_scenarios = _create_multiple_scenarios(
+            10,
+            self.planning_area1,
+            "some other name",
+            self.configuration,
+            user=self.owner_user,
+        )
         self.area2_scenarios = _create_multiple_scenarios(
             50,
             self.planning_area2,
@@ -422,14 +427,14 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         create_collaborator_record(
             self.owner_user, self.viewer_user, self.planning_area1, Role.VIEWER
         )
-        self.assertEqual(Scenario.objects.count(), 101)
-        self.assertEqual(ScenarioResult.objects.count(), 101)
+        self.assertEqual(Scenario.objects.count(), 111)
+        self.assertEqual(ScenarioResult.objects.count(), 111)
 
-    def test_list_scenario(self):
+    def test_list_scenarios(self):
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             )
         )
@@ -440,12 +445,12 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
 
-    def test_list_scenario_page2(self):
+    def test_list_scenarios_page2(self):
         self.client.force_authenticate(self.owner_user)
         query_params = {"page": "2"}
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             ),
             query_params,
@@ -457,13 +462,13 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
 
-    def test_list_scenario_page3(self):
+    def test_list_scenarios_page3(self):
         # Added 50 scenarios with a 20-item page size, so 3rd page should have 10 items
         self.client.force_authenticate(self.owner_user)
         query_params = {"page": "3"}
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             ),
             query_params,
@@ -473,11 +478,27 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(scenarios["count"], 50)
         self.assertEqual(len(scenarios["results"]), 10)
 
+    def test_list_scenarios_filter_by_name(self):
+        # Added 50 scenarios with a 20-item page size, so 3rd page should have 10 items
+        self.client.force_authenticate(self.owner_user)
+        query_params = {"name": "other"}
+        response = self.client.get(
+            reverse(
+                "planning:get_planningarea_scenarios",
+                kwargs={"planningarea_pk": self.planning_area1.pk},
+            ),
+            query_params,
+        )
+        self.assertEqual(response.status_code, 200)
+        scenarios = response.json()
+        self.assertEqual(scenarios["count"], 10)
+        self.assertEqual(len(scenarios["results"]), 10)
+
     def test_list_scenario_not_logged_in(self):
         query_params = {"page": "3"}
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             ),
             query_params,
@@ -489,7 +510,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.owner_user2)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             )
         )
@@ -502,7 +523,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.collab_user)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             )
         )
@@ -515,7 +536,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.viewer_user)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             ),
         )
@@ -530,7 +551,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.unprivileged_user)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.planning_area1.pk},
             ),
         )
@@ -543,7 +564,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": self.empty_planning_area.pk},
             )
         )
@@ -555,7 +576,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse(
-                "planning:get_planning_area_scenarios",
+                "planning:get_planningarea_scenarios",
                 kwargs={"planningarea_pk": 9999},
             )
         )

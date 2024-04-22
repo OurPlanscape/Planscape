@@ -95,7 +95,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
 
 class PlanningAreaFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")  # Case-insensitive exact match
+    name = filters.CharFilter(lookup_expr="icontains")
 
     class Meta:
         model = PlanningArea
@@ -176,6 +176,14 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["planning_area", "-created_at"]
+
+
+class ScenarioFilter(filters.FilterSet):
+    name = filters.CharFilter(lookup_expr="icontains")
+
+    class Meta:
+        model = Scenario
+        fields = ["name"]
 
 
 class ScenarioResultStatus(models.TextChoices):

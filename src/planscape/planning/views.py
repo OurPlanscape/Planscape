@@ -23,6 +23,7 @@ from planning.models import (
     PlanningAreaFilter,
     Scenario,
     ScenarioResult,
+    ScenarioFilter,
     ScenarioResultStatus,
     SharedLink,
     ScenarioStatus,
@@ -413,7 +414,6 @@ def get_planning_areas(request: Request) -> Response:
         planning_areas = PlanningArea.objects.get_list_for_user(user)
         # TODO: prefetch the planning areas?
 
-        # filter_backend = DjangoFilterBackend()
         filter_set = PlanningAreaFilter(data=request.GET, queryset=planning_areas)
         if filter_set.is_valid():
             planning_areas = filter_set.qs
@@ -883,7 +883,7 @@ def list_scenarios_for_planning_area(request: Request) -> Response:
 
 ## TODO: move this to a class under v2/
 @api_view(["GET"])
-def get_planning_area_scenarios(request: Request, planningarea_pk: int) -> Response:
+def get_planningarea_scenarios(request: Request, planningarea_pk: int) -> Response:
     try:
         # Check that the user is logged in.
         user = request.user
@@ -908,7 +908,12 @@ def get_planning_area_scenarios(request: Request, planningarea_pk: int) -> Respo
         max_page_size = 100
         paginator.page_size = int(request.GET.get("page_size", default_page_size))
         paginator.page_size = min(paginator.page_size, max_page_size)
+
         scenarios = Scenario.objects.filter(planning_area__pk=planningarea_pk)
+        filter_set = ScenarioFilter(data=request.GET, queryset=scenarios)
+        if filter_set.is_valid():
+            scenarios = filter_set.qs
+
         result_page = paginator.paginate_queryset(scenarios, request)
         serializer = ScenarioSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
