@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.models import Permissions, Role
 from planning.models import PlanningArea, Scenario, ScenarioResult
+from planning.models import RegionChoices
 
 
 # Create test plans.  These are going straight to the test DB without
@@ -17,8 +18,6 @@ def _create_planning_area(
     Creates a planning_area with the given user, name, geometry, notes.  All regions
     are in Sierra Nevada.
     """
-    from planning.models import RegionChoices
-
     planning_area = PlanningArea.objects.create(
         user=user,
         name=name,
@@ -28,6 +27,27 @@ def _create_planning_area(
     )
     planning_area.save()
     return planning_area
+
+
+def _create_multiple_planningareas(
+    count: int,
+    user: User,
+    name_prefix: str,
+    geometry: GEOSGeometry | None = None,
+    notes: str | None = None,
+):
+    created_planningareas = []
+
+    for s in range(0, count):
+        created_planningareas.append(
+            _create_planning_area(
+                user=user,
+                name=f"{name_prefix} {s}",
+                geometry=geometry,
+                notes=notes,
+            )
+        )
+    return created_planningareas
 
 
 # Blindly create a scenario and a scenario result in its default (pending) state.

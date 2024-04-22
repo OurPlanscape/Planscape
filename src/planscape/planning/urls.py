@@ -7,6 +7,7 @@ from planning.views import (
     download_csv,
     download_shapefile,
     list_planning_areas,
+    get_planning_areas,
     update_planning_area,
     create_scenario,
     delete_scenario,
@@ -41,6 +42,8 @@ urlpatterns = [
         name="get_planning_area_by_id",
     ),
     path("list_planning_areas/", list_planning_areas, name="list_planning_areas"),
+    # TODO: move to a V2 API
+    path("get_planning_areas/", get_planning_areas, name="get_planning_areas"),
     path("update_planning_area/", update_planning_area, name="update_planning_area"),
     # Scenarios
     path("create_scenario/", create_scenario, name="create_scenario"),
@@ -62,6 +65,7 @@ urlpatterns = [
         list_scenarios_for_planning_area,
         name="list_scenarios_for_planning_area",
     ),
+    # TODO: move to a V2 API
     path(
         "planning_area/<int:planningarea_pk>/scenarios",
         get_planning_area_scenarios,

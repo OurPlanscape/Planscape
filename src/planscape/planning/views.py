@@ -387,6 +387,41 @@ def list_planning_areas(request: Request) -> Response:
         raise
 
 
+## TODO: move this to a class under v2/
+@api_view(["GET"])
+def get_planning_areas(request: Request) -> Response:
+    try:
+        # Check that the user is logged in.
+        user = request.user
+        if not user.is_authenticated:
+            return Response(
+                {"error": "Authentication Required"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        # TODO: prefetch the planning area permissions, somehow?
+
+        paginator = PageNumberPagination()
+        default_page_size = 20
+        max_page_size = 100
+        paginator.page_size = int(request.GET.get("page_size", default_page_size))
+        paginator.page_size = min(paginator.page_size, max_page_size)
+
+        planning_areas = PlanningArea.objects.get_list_for_user(user)
+        # TODO: prefetch the planning areas?
+
+        result_page = paginator.paginate_queryset(planning_areas, request)
+        # serializer = PlanningAreaSerializer(result_page, many=True)
+        serializer = ListPlanningAreaSerializer(
+            result_page, many=True, context={"request": request}
+        )
+        return paginator.get_paginated_response(serializer.data)
+
+    except Exception as e:
+        logger.error("Error updating scenario result: %s", e)
+        raise
+
+
 @api_view(["GET"])
 def get_scenario_by_id(request: Request) -> Response:
     """
@@ -854,8 +889,6 @@ def get_planning_area_scenarios(request: Request, planningarea_pk: int) -> Respo
             return Response(
                 {"error": "Missing planning_area"}, status=status.HTTP_400_BAD_REQUEST
             )
-        print(f"We have this planning area id: {planningarea_pk}")
-
         planning_area = PlanningArea.objects.get(id=planningarea_pk)
         if not PlanningAreaPermission.can_view(user, planning_area):
             return Response(
@@ -867,12 +900,8 @@ def get_planning_area_scenarios(request: Request, planningarea_pk: int) -> Respo
         default_page_size = 20
         max_page_size = 100
         paginator.page_size = int(request.GET.get("page_size", default_page_size))
-        paginator.page_size = min(
-            paginator.page_size, max_page_size
-        )  # Limit to max_page_size
+        paginator.page_size = min(paginator.page_size, max_page_size)
         scenarios = Scenario.objects.filter(planning_area__pk=planningarea_pk)
-        print(f"We have this many scenarios: {len(scenarios)}")
-
         result_page = paginator.paginate_queryset(scenarios, request)
         serializer = ScenarioSerializer(result_page, many=True)
         return paginator.get_paginated_response(serializer.data)
