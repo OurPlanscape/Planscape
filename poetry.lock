@@ -1013,6 +1013,27 @@ files = [
 python-dateutil = ">=2.7"
 
 [[package]]
+name = "gunicorn"
+version = "22.0.0"
+description = "WSGI HTTP Server for UNIX"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "gunicorn-22.0.0-py3-none-any.whl", hash = "sha256:350679f91b24062c86e386e198a15438d53a7a8207235a78ba1b53df4c4378d9"},
+    {file = "gunicorn-22.0.0.tar.gz", hash = "sha256:4a0b436239ff76fb33f11c07a16482c521a7e09c1ce3cc293c2330afe01bec63"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[package.extras]
+eventlet = ["eventlet (>=0.24.1,!=0.36.0)"]
+gevent = ["gevent (>=1.4.0)"]
+setproctitle = ["setproctitle"]
+testing = ["coverage", "eventlet", "gevent", "pytest", "pytest-cov"]
+tornado = ["tornado (>=0.2)"]
+
+[[package]]
 name = "humanize"
 version = "4.8.0"
 description = "Python humanize utilities"
@@ -2935,4 +2956,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ef82546e59862b2edc54972925540396f68b9ccbaf7eb5427f791e6e2010ec61"
+content-hash = "27596f18adc06131ad80a5385968491a256c1f7b518afde311db3f2bac156c2c"
