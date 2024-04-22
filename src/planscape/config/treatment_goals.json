@@ -1180,280 +1180,12 @@
                 "(mean_fri_departure_condition_class == 2 | mean_fri_departure_condition_class == 3)"
               ],
               "global_thresholds": []
-            },
-            {
-              "id": 20,
-              "long_question_text": "What areas need and are suitable for prescribed burning?",
-              "short_question_text": "Areas for Prescribed Burns",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality",
-                  "forest_and_shrubland_resilience",
-                  "forsys"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter",
-                  "fire_return_interval_departure",
-                  "Forsys"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red_legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high",
-                  "mean_fri_departure_condition_class",
-                  "tree_cover",
-                  "herbaceous_cover",
-                  "distance_to_roads",
-                  "shrub_cover"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "mean_fri_departure_condition_class",
-                "tree_cover",
-                "herbaceous_cover"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "mean_fri_departure_condition_class == 1",
-                "probability_of_fire_severity_high < 0.2",
-                "distance_to_roads < 800",
-                "structure_exposure_score == 1",
-                "annual_burn_probability > 0",
-                "shrub_cover <= 0.1",
-                "herbaceous_cover > 0",
-                "tree_cover > 0"
-              ],
-              "global_thresholds": []
             }
           ]
         },
         {
           "category_name": "Biodiversity",
           "questions": [
-            {
-              "id": 21,
-              "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to terrestrial habitat associated with special status (focal) species?",
-              "short_question_text": "Reduce Fire Risk in Terrestrial Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red_legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "california_spotted_owl == 0",
-                "loggerhead_shrike_habitat == 0",
-                "nuttails_woodpecker_habitat == 0",
-                "ringtail_cat_habitat == 0",
-                "least_bells_virio_habitat == 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 22,
-              "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to riparian habitats?",
-              "short_question_text": "Reduce Fire Risk to Riparian Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red_legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 23,
-              "long_question_text": "Where are the best/priority opportunities to effectively reduce high severity fire risk to California Spotted Owl habitat?",
-              "short_question_text": "Reduce Fire Risk in Owl Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red_legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "california_spotted_owl == 0"
-              ],
-              "global_thresholds": []
-            },
             {
               "id": 24,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
@@ -1562,6 +1294,39 @@
               "weights": [],
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0.1"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 38,
+              "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
+              "short_question_text": "Fire Risk in Carbon Sinks",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "carbon_sequestration"
+                ],
+                "elements": [
+                  "severity",
+                  "carbon_storage",
+                  "carbon_stability"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "total_aboveground_carbon",
+                  "aboveground_carbon_turnover_time"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "total_aboveground_carbon",
+                "aboveground_carbon_turnover_time"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "pro",
+                "total_aboveground_carbon > 0",
+                "aboveground_carbon_turnover_time > 0"
               ],
               "global_thresholds": []
             }
