@@ -74,7 +74,6 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "lockdown.middleware.LockdownMiddleware",
     "allauth.account.middleware.AccountMiddleware",
 ]
 
@@ -119,19 +118,6 @@ DATABASES = {
         },
     }
 }
-
-
-# Locking down API calls to only itself.
-LOCKDOWN_ENABLED = False
-
-# if we ever needed to make some backend APIs (views) available to anyone.
-LOCKDOWN_VIEW_EXCEPTIONS = []
-
-# should put in all IPs matching planscape/trusted hosts
-LOCKDOWN_REMOTE_ADDR_EXCEPTIONS = [
-    "127.0.0.1",
-    "::1",
-]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
