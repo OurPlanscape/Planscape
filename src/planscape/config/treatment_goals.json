@@ -1441,25 +1441,31 @@
               "global_thresholds": []
             },
             {
-              "id": 25,
-              "long_question_text": "What areas support high threatened/endangered species richness and what is their exposure to high severity fire risk?",
+              "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_dynamics"
+                  "fire_dynamics",
+                  "biodiversity"
                 ],
                 "elements": [
-                  "severity"
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
-                  "probability_of_fire_severity_high"
+                  "probability_of_fire_severity_high",
+                  "threatened_endangered_vertebrate_species_richness"
                 ]
               },
               "scenario_priorities": [
-                "probability_of_fire_severity_high"
+                "probability_of_fire_severity_high",
+                "threatened_endangered_vertebrate_species_richness"
               ],
               "weights": [],
-              "stand_thresholds": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "threatened_endangered_vertebrate_species_richness > 0"
+              ],
               "global_thresholds": []
             }
           ]
