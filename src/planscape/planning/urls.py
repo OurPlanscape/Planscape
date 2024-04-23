@@ -42,7 +42,7 @@ urlpatterns = [
         name="get_planning_area_by_id",
     ),
     path("list_planning_areas/", list_planning_areas, name="list_planning_areas"),
-    # TODO: move to a V2 API
+    # TODO: change to a V2 API
     path("get_planning_areas/", get_planning_areas, name="get_planning_areas"),
     path("update_planning_area/", update_planning_area, name="update_planning_area"),
     # Scenarios

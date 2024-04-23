@@ -394,6 +394,8 @@ def list_planning_areas(request: Request) -> Response:
 ## TODO: move this to a class under v2/
 @api_view(["GET"])
 def get_planning_areas(request: Request) -> Response:
+    filter_backends = [DjangoFilterBackend]
+    ordering_fields = ["name", "scenario_count"]
     try:
         # Check that the user is logged in.
         user = request.user
@@ -402,9 +404,6 @@ def get_planning_areas(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-
-        # TODO: prefetch the planning area permissions, somehow?
-
         paginator = PageNumberPagination()
         default_page_size = 20
         max_page_size = 100
@@ -412,9 +411,9 @@ def get_planning_areas(request: Request) -> Response:
         paginator.page_size = min(paginator.page_size, max_page_size)
 
         planning_areas = PlanningArea.objects.get_list_for_user(user)
-        # TODO: prefetch the planning areas?
 
         filter_set = PlanningAreaFilter(data=request.GET, queryset=planning_areas)
+
         if filter_set.is_valid():
             planning_areas = filter_set.qs
 

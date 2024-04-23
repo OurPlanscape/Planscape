@@ -21,8 +21,6 @@ from planning.tests.helpers import (
 
 
 # v2 -
-
-
 class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
@@ -193,8 +191,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
         updates_list = [
             (pa["name"], pa["latest_updated"]) for pa in planning_areas["results"][:5]
         ]
-
-        print(updates_list)
         self.assertEqual(
             updates_list,
             [
@@ -204,6 +200,93 @@ class GetPlanningAreaTest(APITransactionTestCase):
                 ("test plan 0", "2010-09-01T05:01:01Z"),
                 ("test plan 1", "2010-02-01T05:01:01Z"),
             ],
+        )
+
+    def test_list_planning_areas_sort_by_scenario_count(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"sortby": "scenario_count", "page": 3}
+        response = self.client.get(
+            reverse("planning:get_planning_areas"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(len(planning_areas["results"]), 10)
+
+        result_scenario_counts = []
+        for item in planning_areas["results"]:
+            result_scenario_counts.append(item["scenario_count"])
+        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
+        self.assertListEqual(result_scenario_counts, expected_scenario_counts)
+
+    def test_list_planning_areas_sort_by_name(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"sortby": "name"}
+        response = self.client.get(
+            reverse("planning:get_planning_areas"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        area_names = []
+        for item in planning_areas["results"]:
+            area_names.append(item["name"])
+        expected_names = [
+            "test plan 0",
+            "test plan 1",
+            "test plan 10",
+            "test plan 11",
+            "test plan 12",
+            "test plan 13",
+            "test plan 14",
+            "test plan 15",
+            "test plan 16",
+            "test plan 17",
+            "test plan 18",
+            "test plan 19",
+            "test plan 2",
+            "test plan 20",
+            "test plan 21",
+            "test plan 22",
+            "test plan 23",
+            "test plan 24",
+            "test plan 25",
+            "test plan 26",
+        ]
+
+        self.assertEqual(len(planning_areas["results"]), 20)
+        self.assertListEqual(area_names, expected_names)
+
+    def test_filter_planning_areas_by_region1(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"region_name": "sierra-nevada"}
+        response = self.client.get(
+            reverse("planning:get_planning_areas"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 50)  # total results
+        self.assertEqual(len(planning_areas["results"]), 20)
+        self.assertListEqual(
+            list(planning_areas.keys()), ["count", "next", "previous", "results"]
+        )
+
+    def test_filter_planning_areas_by_region2(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"region_name": "central-coast"}
+        response = self.client.get(
+            reverse("planning:get_planning_areas"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 0)  # total results
+        self.assertEqual(len(planning_areas["results"]), 0)
+        self.assertListEqual(
+            list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
     def test_list_planning_areas_not_logged_in(self):

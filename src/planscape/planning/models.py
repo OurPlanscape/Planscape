@@ -16,6 +16,13 @@ import uuid
 User = get_user_model()
 
 
+class RegionChoices(models.TextChoices):
+    SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
+    SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
+    CENTRAL_COAST = "central-coast", "Central Coast"
+    NORTHERN_CALIFORNIA = "northern-california", "Northern California"
+
+
 class PlanningAreaManager(models.Manager):
     def get_for_user(self, user):
         content_type_pk = ContentType.objects.get(model="planningarea").pk
@@ -41,13 +48,6 @@ class PlanningAreaManager(models.Manager):
             )
             .order_by("-scenario_latest_updated_at")
         )
-
-
-class RegionChoices(models.TextChoices):
-    SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
-    SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
-    CENTRAL_COAST = "central-coast", "Central Coast"
-    NORTHERN_CALIFORNIA = "northern-california", "Northern California"
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
@@ -96,10 +96,22 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
 class PlanningAreaFilter(filters.FilterSet):
     name = filters.CharFilter(lookup_expr="icontains")
+    region_name = filters.ChoiceFilter(choices=RegionChoices.choices)
+    sortby = filters.CharFilter(method="filter_by_sortby")
 
     class Meta:
         model = PlanningArea
-        fields = ["name"]
+        fields = ["sortby", "name", "region_name"]
+
+    def filter_by_region_name(self, queryset, value):
+        return super().filter_by_region_name(queryset, value)
+
+    def filter_by_sortby(self, queryset, field, value):
+        if value == "scenario_count":
+            queryset = queryset.order_by("scenario_count")
+        if value == "name":
+            queryset = queryset.order_by("name")
+        return queryset
 
 
 class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
