@@ -1100,7 +1100,7 @@
               "weights": [],
               "stand_thresholds": [
                 "probability_of_fire_severity_high > 0",
-                "structure_exposure_score != 'SES I'",
+                "structure_exposure_score != 1",
                 "wui_damage_potential > 0",
                 "wui_damage_potential < 8",
                 "wildland_urban_interface == 1 || wildland_urban_interface == 2"
