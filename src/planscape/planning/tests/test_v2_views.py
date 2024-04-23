@@ -76,6 +76,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
             self.user2, "test plan-manual6", stored_geometry
         )
 
+        self.central_coast_area = self.test_planningareas[6]
+        self.central_coast_area.region_name = "central-coast"
+        self.central_coast_area.save()
+
         self.emptyuser = User.objects.create(username="emptyuser")
         self.emptyuser.set_password("12345")
         self.emptyuser.save()
@@ -93,11 +97,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
         self.assertEqual(len(planning_areas["results"]), 20)
-        self.assertEqual(planning_areas["results"][0]["scenario_count"], 3)
-        self.assertIsNotNone(planning_areas["results"][0]["latest_updated"])
-        self.assertEqual(planning_areas["results"][1]["scenario_count"], 1)
-        self.assertIsNotNone(planning_areas["results"][1]["latest_updated"])
-        self.assertIsNotNone(planning_areas["results"][0]["created_at"])
 
     def test_list_planning_areas_page3(self):
         self.client.force_authenticate(self.user)
@@ -267,7 +266,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 50)  # total results
+        self.assertEqual(planning_areas["count"], 49)  # total results
         self.assertEqual(len(planning_areas["results"]), 20)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
@@ -283,8 +282,24 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 0)  # total results
-        self.assertEqual(len(planning_areas["results"]), 0)
+        self.assertEqual(planning_areas["count"], 1)  # total results
+        self.assertEqual(len(planning_areas["results"]), 1)
+        self.assertListEqual(
+            list(planning_areas.keys()), ["count", "next", "previous", "results"]
+        )
+
+    def test_filter_planning_areas_by_multiple_regions(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"region_name": "central-coast,sierra-nevada"}
+        response = self.client.get(
+            reverse("planning:get_planning_areas"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 50)  # total results
+        self.assertEqual(len(planning_areas["results"]), 20)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )

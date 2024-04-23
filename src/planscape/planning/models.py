@@ -7,20 +7,12 @@ from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
-from django_filters import rest_framework as filters
 from utils.uuid_utils import generate_short_uuid
 from collaboration.models import UserObjectRole
 from core.models import CreatedAtMixin, UpdatedAtMixin
 import uuid
 
 User = get_user_model()
-
-
-class RegionChoices(models.TextChoices):
-    SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
-    SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
-    CENTRAL_COAST = "central-coast", "Central Coast"
-    NORTHERN_CALIFORNIA = "northern-california", "Northern California"
 
 
 class PlanningAreaManager(models.Manager):
@@ -48,6 +40,13 @@ class PlanningAreaManager(models.Manager):
             )
             .order_by("-scenario_latest_updated_at")
         )
+
+
+class RegionChoices(models.TextChoices):
+    SIERRA_NEVADA = "sierra-nevada", "Sierra Nevada"
+    SOUTHERN_CALIFORNIA = "southern-california", "Southern California"
+    CENTRAL_COAST = "central-coast", "Central Coast"
+    NORTHERN_CALIFORNIA = "northern-california", "Northern California"
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
@@ -92,26 +91,6 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["user", "-created_at"]
-
-
-class PlanningAreaFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
-    region_name = filters.ChoiceFilter(choices=RegionChoices.choices)
-    sortby = filters.CharFilter(method="filter_by_sortby")
-
-    class Meta:
-        model = PlanningArea
-        fields = ["sortby", "name", "region_name"]
-
-    def filter_by_region_name(self, queryset, value):
-        return super().filter_by_region_name(queryset, value)
-
-    def filter_by_sortby(self, queryset, field, value):
-        if value == "scenario_count":
-            queryset = queryset.order_by("scenario_count")
-        if value == "name":
-            queryset = queryset.order_by("name")
-        return queryset
 
 
 class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
@@ -188,14 +167,6 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["planning_area", "-created_at"]
-
-
-class ScenarioFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
-
-    class Meta:
-        model = Scenario
-        fields = ["name"]
 
 
 class ScenarioResultStatus(models.TextChoices):

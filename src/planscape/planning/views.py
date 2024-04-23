@@ -17,13 +17,12 @@ from collaboration.permissions import (
     ScenarioPermission,
     PlanningAreaNotePermission,
 )
+from planning.filters import PlanningAreaFilter, ScenarioFilter
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
-    PlanningAreaFilter,
     Scenario,
     ScenarioResult,
-    ScenarioFilter,
     ScenarioResultStatus,
     SharedLink,
     ScenarioStatus,
