@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
 from collaboration.tests.helpers import create_collaborator_record
+from planning.geometry import coerce_geojson
 from planning.models import PlanningArea, Scenario, ScenarioResult, PlanningAreaNote
 from planning.tests.helpers import (
     _create_planning_area,
@@ -15,13 +16,6 @@ from planning.tests.helpers import (
     _create_test_user_set,
     reset_permissions,
 )
-
-# Yes, we are pulling in an internal just for testing that a geometry write happened.
-from planning.views import _convert_polygon_to_multipolygon
-
-# TODO: Add tests to ensure that users can't have planning areas with the same
-# name in the same region, and that users can't have scenarios with the same
-# name in the same planning area.
 
 
 class CreatePlanningAreaTest(APITransactionTestCase):
@@ -84,11 +78,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         planning_area = PlanningArea.objects.all().first()
         self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(planning_area.region_name, "sierra-nevada")
-        self.assertTrue(
-            planning_area.geometry.equals(
-                _convert_polygon_to_multipolygon(self.geometry)
-            )
-        )
+        self.assertTrue(planning_area.geometry.equals(coerce_geojson(self.geometry)))
         self.assertEqual(planning_area.notes, self.notes)
         self.assertEqual(planning_area.name, "test plan")
         self.assertEqual(planning_area.user.pk, self.user.pk)
@@ -114,11 +104,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(data["id"], planning_area.id)
         self.assertEqual(planning_area.region_name, "sierra-nevada")
-        self.assertTrue(
-            planning_area.geometry.equals(
-                _convert_polygon_to_multipolygon(self.geometry)
-            )
-        )
+        self.assertTrue(planning_area.geometry.equals(coerce_geojson(self.geometry)))
         self.assertIn("id", data)
 
     def test_create_planning_area_multipolygon(self):
@@ -141,9 +127,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(planning_area.region_name, "southern-california")
         self.assertTrue(
-            planning_area.geometry.equals(
-                _convert_polygon_to_multipolygon(self.multipolygon_geometry)
-            )
+            planning_area.geometry.equals(coerce_geojson(self.multipolygon_geometry))
         )
         self.assertIn("id", data)
 
