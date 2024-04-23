@@ -1,7 +1,9 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from collaboration.services import get_role, get_permissions
+from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -86,6 +88,41 @@ class PlanningAreaSerializer(
         )
         model = PlanningArea
         geo_field = "geometry"
+
+
+class ValidatePlanningAreaSerializer(serializers.ModelSerializer):
+
+    def validate_geometry(self, value):
+
+        geometry = GEOSGeometry(
+            value,
+            srid=settings.CRS_INTERNAL_REPRESENTATION,
+        )
+        if geometry.valid():
+            return value
+
+        geojson = {
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": value,
+                },
+            ]
+        }
+        try:
+            _ = coerce_geometry(geojson)
+        except ValueError as valEx:
+            raise serializers.ValidationError(str(valEx))
+        return value
+
+    class Meta:
+        model = PlanningArea
+
+
+class PlanningAreaValidationSerializer(serializers.Serializer):
+
+    area_acres = serializers.FloatField()
 
 
 class PlanningAreaNoteSerializer(serializers.ModelSerializer):

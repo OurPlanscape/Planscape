@@ -125,7 +125,7 @@ docker-build:
 	docker compose build
 
 docker-test:
-	./src/planscape/bin/run.sh pytest $(TEST)
+	./src/planscape/bin/run.sh python manage.py test $(TEST)
 
 docker-run: docker-build docker-migrate
 	docker compose up

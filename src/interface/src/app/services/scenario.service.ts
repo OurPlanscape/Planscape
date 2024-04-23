@@ -15,7 +15,7 @@ import { CreateScenarioError } from './errors';
   providedIn: 'root',
 })
 export class ScenarioService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   /** Fetches the scenarios for a plan from the backend. */
   getScenariosForPlan(planId: number): Observable<Scenario[]> {
@@ -59,7 +59,7 @@ export class ScenarioService {
       .pipe(
         catchError((error) => {
           const message =
-            error.error.reason || 'Please change your settings and try again.';
+            error.error?.global?.[0] || 'Please change your settings and try again.';
           throw new CreateScenarioError(
             'Your scenario config is invalid. ' + message
           );
@@ -121,7 +121,7 @@ export class ScenarioService {
   downloadCsvData(scenarioId: string): Observable<any> {
     return this.http.get(
       BackendConstants.END_POINT +
-        `/planning/get_scenario_download_by_id?id=${scenarioId}`,
+      `/planning/get_scenario_download_by_id?id=${scenarioId}`,
       {
         withCredentials: true,
         responseType: 'arraybuffer',
@@ -132,7 +132,7 @@ export class ScenarioService {
   downloadShapeFiles(scenarioId: string): Observable<any> {
     return this.http.get(
       BackendConstants.END_POINT +
-        `/planning/download_shapefile?id=${scenarioId}`,
+      `/planning/download_shapefile?id=${scenarioId}`,
       {
         withCredentials: true,
         responseType: 'arraybuffer',
@@ -144,9 +144,9 @@ export class ScenarioService {
   getMetricData(metric_paths: any, region: Region): Observable<any> {
     const url = BackendConstants.END_POINT.concat(
       '/conditions/metrics/?region_name=' +
-        `${regionToString(region)}` +
-        '&metric_paths=' +
-        JSON.stringify(metric_paths)
+      `${regionToString(region)}` +
+      '&metric_paths=' +
+      JSON.stringify(metric_paths)
     );
     return this.http.get<any>(url).pipe(take(1));
   }
