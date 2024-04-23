@@ -300,7 +300,7 @@ def update_planning_area(request: Request) -> Response:
 
 
 @api_view(["GET"])
-def get_planning_area_by_id(request: Request, planning_area_pk) -> Response:
+def get_planning_area_by_id(request: Request) -> Response:
     """
     Retrieves a planning area by ID.
     Requires a logged in user.  Users can see only their owned planning_areas.

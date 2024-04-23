@@ -538,7 +538,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 50)
+        self.assertEqual(scenarios["count"], 60)
         self.assertEqual(len(scenarios["results"]), 20)
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
@@ -555,7 +555,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 50)
+        self.assertEqual(scenarios["count"], 60)
         self.assertEqual(len(scenarios["results"]), 20)
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
@@ -573,8 +573,8 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 50)
-        self.assertEqual(len(scenarios["results"]), 10)
+        self.assertEqual(scenarios["count"], 60)
+        self.assertEqual(len(scenarios["results"]), 20)
 
     def test_list_scenarios_filter_by_name(self):
         # Added 50 scenarios with a 20-item page size, so 3rd page should have 10 items
@@ -627,7 +627,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 50)
+        self.assertEqual(scenarios["count"], 60)
         self.assertEqual(len(scenarios["results"]), 20)
 
     def test_list_scenario_viewer_user(self):
@@ -640,7 +640,7 @@ class GetScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 50)
+        self.assertEqual(scenarios["count"], 60)
         self.assertEqual(len(scenarios["results"]), 20)
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
