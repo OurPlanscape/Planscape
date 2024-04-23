@@ -42,12 +42,19 @@
         <mat-select
           [value]="chart"
           (selectionChange)="selectDataPoint($event, i)">
-          <mat-option
-            *ngFor="let dataSet of filterData(data, selectedCharts, chart)"
-            [value]="dataSet">
-            {{ priorities.includes(dataSet.key) ? '*' : '' }}
-            {{ dataSet.label }}
-          </mat-option>
+          <mat-optgroup
+            [label]="group.label"
+            *ngFor="let group of dropdownGroups">
+            <mat-option
+              *ngFor="let dataSet of myFilter(data, group.primary)"
+              [value]="dataSet"
+              [disabled]="
+                selectedCharts.includes(dataSet) &&
+                chart.label !== dataSet.label
+              ">
+              {{ dataSet.label }}
+            </mat-option>
+          </mat-optgroup>
         </mat-select>
       </mat-form-field>
     </div>

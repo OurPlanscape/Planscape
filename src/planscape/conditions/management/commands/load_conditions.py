@@ -24,9 +24,16 @@ class Command(BaseCommand):
             help="Configures if this is a dry-run. If true, no changes will be persisted.",
         )
 
+        parser.add_argument(
+            "--region",
+            default=None,
+            help="Allows you to filter which regions you want to load.",
+        )
+
     def handle(self, *args, **options):
         conditions_file = options["conditions_file"]
         path = Path(conditions_file)
+        target_region = options.get("region")
         if not path.exists():
             self.stderr.write(f"Conditions file {conditions_file} does not exist")
             return
@@ -35,7 +42,10 @@ class Command(BaseCommand):
             conditions = json.load(f)
 
             with transaction.atomic():
-                metrics = self.get_metrics(conditions["regions"])
+                metrics = self.get_metrics(
+                    conditions["regions"],
+                    target_region=target_region,
+                )
 
                 conditions = list([self.process_metric(metric) for metric in metrics])
                 total = len(conditions)
@@ -49,8 +59,15 @@ class Command(BaseCommand):
                 if options["dry_run"]:
                     transaction.set_rollback(True)
 
-    def get_metrics(self, regions):
-        regions = (region for region in regions)
+    def get_metrics(self, regions, target_region=None):
+        if target_region:
+            regions = (
+                region
+                for region in regions
+                if region.get("region_name") == target_region
+            )
+        else:
+            regions = (region for region in regions)
         pillars = self.flatten_inner(regions, "pillars")
         elements = self.flatten_inner(pillars, "elements")
         metrics = self.flatten_inner(elements, "metrics")
@@ -79,13 +96,15 @@ class Command(BaseCommand):
 
         raster_name = metric["raw_data_download_path"]
 
-        condition, _created = Condition.objects.update_or_create(
+        condition, created = Condition.objects.update_or_create(
             condition_dataset=base_condition,
             condition_score_type=score_type,
             is_raw=raw,
             defaults={"raster_name": raster_name},
         )
-
-        self.stdout.write(f"[OK] {metric['region_name']}:{metric['metric_name']}")
+        status_message = "[OK CREATED]" if created else "[OK UPDATED]"
+        self.stdout.write(
+            f"{status_message} {metric['region_name']}:{metric['metric_name']}"
+        )
 
         return condition

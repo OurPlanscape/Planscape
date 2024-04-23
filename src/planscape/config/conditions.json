@@ -298,7 +298,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_wildlife_species_richness_202304",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=42",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg number of Species"
                 },
                 {
                   "display_name": "Threatened/Endangered Vertebrate Species Richness",
@@ -311,7 +312,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_t_e_species_richness_202304",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=42",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg number of Species"
                 },
                 {
                   "display_name": "Forest Raptors Species Richness",
@@ -370,7 +372,8 @@
                   "raw_layer": ":bioDiverConserv_Tier3_SpottedOwl_habitat_suitability_CWHR_202304",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=57",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Potential Habitat"
                 },
                 {
                   "display_name": "Mountain Lion",
@@ -383,20 +386,22 @@
                   "raw_layer": ":bioDiverConserv_Tier2_Mountain_Lion_habitat_suitability_202304",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=46",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Suitable Habitat"
                 },
                 {
                   "display_name": "California Red-Legged Frog",
                   "data_provider": "USGS",
                   "data_units": "Binary",
                   "max_value": 1,
-                  "metric_name": "california_red-legged_frog",
+                  "metric_name": "california_red_legged_frog",
                   "min_value": 0,
-                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/california_red_legged_frog_habitat_200106.tif ",
+                  "raw_data_download_path": "northern-california/bioDiverConserv/Tier1/california_red_legged_frog_habitat_200106.tif",
                   "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat_200106",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=45",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Suitable Habitat"
                 },
                 {
                   "display_name": "Marbled Murrelet Nesting Habitat",
@@ -487,7 +492,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_Northern_Goshawk_habitat_suitability_202304",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=59",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most Common Suitability Value"
                 },
                 {
                   "display_name": "Pacific Fisher Predicted Habitat",
@@ -500,7 +506,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_Pacific_Fisher_habitat_suitability_raw_201306",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=60",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg Probability"
                 },
                 {
                   "display_name": "Humboldt Marten Predicted Distribution",
@@ -526,7 +533,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_ChinookSalmonCriticalHabitat_200509",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=61",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Potential Habitat"
                 },
                 {
                   "display_name": "No. California Coast Coho Salmon Critical Habitat",
@@ -539,7 +547,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_CohoSalmonCriticalHabitat_199905",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=61",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Potential Habitat"
                 },
                 {
                   "display_name": "No. California DPU Steelhead Critical Habitat",
@@ -552,7 +561,8 @@
                   "raw_layer": ":bioDiverConserv_Tier2_SteelheadCriticalHabitat_200509",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=62",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Potential Habitat"
                 },
                 {
                   "display_name": "California Coastal Chinook Salmon Distribution",
@@ -644,7 +654,8 @@
                   "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_202009",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=76",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg grams dry matter/m2"
                 }
               ]
             },
@@ -664,7 +675,8 @@
                   "raw_layer": ":carbonSeq_Tier1_CStocks_Turnovertime_202009",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=77",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Average of Years"
                 }
               ]
             }
@@ -770,7 +782,8 @@
                   "raw_layer": ":fireAdaptComm_Tier1_StructureExposureScore_WUI_202308_reclass",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=9",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Structure Exposure Score"
                 },
                 {
                   "display_name": "WUI Damage Potential",
@@ -783,7 +796,8 @@
                   "raw_layer": ":fireAdaptComm_Tier1_DamagePotential_WUI_202308_reclass",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=11",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "WUI Damage Potential"
                 },
                 {
                   "display_name": "Ember Load Index",
@@ -999,7 +1013,8 @@
                   "raw_layer": ":fireDynamics_Tier1_AnnualBurnProbability_202308",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=26",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg Probability"
                 },
                 {
                   "display_name": "Probability of Fire Severity (High)",
@@ -1012,7 +1027,8 @@
                   "raw_layer": ":fireDynamics_Tier1_ProbabilityHighFireSev_202308",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=27",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg Probability"
                 }
               ]
             }
@@ -1327,7 +1343,8 @@
                   "raw_layer": ":socialCultural_Tier1_Poverty_Pctl_202110",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=86",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Average Poverty Percentile"
                 },
                 {
                   "display_name": "Housing Burden Percentile",
@@ -1340,7 +1357,8 @@
                   "raw_layer": ":socialCultural_Tier1_HousingBurdenPctl_202110",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=87",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Average HBP"
                 },
                 {
                   "display_name": "Unemployment Percentile",
@@ -1353,7 +1371,8 @@
                   "raw_layer": ":socialCultural_Tier1_Unemployment_Pctl_202110",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=86",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Average UP"
                 },
                 {
                   "display_name": "American Indian or Alaska Native Race Alone Population Concentration",
@@ -1366,7 +1385,8 @@
                   "raw_layer": ":socialCultural_Tier2_AmericanIndian_202109",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=90",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most common category"
                 },
                 {
                   "display_name": "Hispanic/Latino Pop. Concentration",
@@ -1379,7 +1399,8 @@
                   "raw_layer": ":socialCultural_Tier2_Hispanic_202109",
                   "reference_link": "",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most common category"
                 },
                 {
                   "display_name": "Black/African American Pop. Concentration",
@@ -1392,7 +1413,8 @@
                   "raw_layer": ":socialCultural_Tier2_Black_202109",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=92",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most common category"
                 },
                 {
                   "display_name": "Hispanic/Black, Indigenous or Person of Color",
@@ -1405,7 +1427,8 @@
                   "raw_layer": ":socialCultural_Tier2_HSPBIPOC_202109",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=97",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most common category"
                 },
                 {
                   "display_name": "Asian Population Concentration",
@@ -1418,7 +1441,8 @@
                   "raw_layer": ":socialCultural_Tier2_Asian_202109",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=99",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most common category"
                 },
                 {
                   "display_name": "Low Income Population",
@@ -1431,14 +1455,15 @@
                   "raw_layer": ":socialCultural_Tier2_LowIncome_202203",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=101",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Most common category"
                 },
                 {
                   "display_name": "American Indian Land Area Representation",
                   "data_provider": "U.S. Department of Interior, Bureau of Indian Affairs",
                   "data_units": "Index",
                   "max_value": 49,
-                  "metric_name": "low_income_population",
+                  "metric_name": "american_indian_lands_representation",
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/socialCultural/Tier2/BIA_AIAN_LAR_202309.tif",
                   "raw_layer": ":socialCultural_Tier2_BIA_AIAN_LAR_202309",
@@ -1457,7 +1482,8 @@
                   "raw_layer": ":socialCultural_Tier2_SB535tribalboundaries202205",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=106",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of American Indian Lands"
                 }
               ]
             }
@@ -1530,7 +1556,8 @@
                   "raw_layer": ":waterSecurity_Tier1_nlcd_2019_imperviousPercent_CA",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=80",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg % of Impervious Surface"
                 }
               ]
             }
@@ -1557,7 +1584,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_aquatic_species_richness_2018",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=84",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Avg number of Species"
                 },
                 {
                   "display_name": "Wetland Diversity",
@@ -1583,7 +1611,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
                   "reference_link": "https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=85",
                   "source": "Northern California Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/"
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
+                  "output_units": "Acres of Riparian Habitat"
                 }
               ]
             }
@@ -1680,6 +1709,19 @@
                   "metric_name": "distance_to_wui",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/forsys/distance_to_wui.tif",
+                  "raw_layer": "",
+                  "reference_link": "",
+                  "source": "SIG-GIS",
+                  "source_link": ""
+                },
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "SIG-GIS",
+                  "data_units": "meters",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/forsys/wildland_urban_interface.tif",
                   "raw_layer": "",
                   "reference_link": "",
                   "source": "SIG-GIS",
@@ -1953,7 +1995,7 @@
                   "data_provider": "USGS",
                   "data_units": "Binary",
                   "max_value": 1,
-                  "metric_name": "california_red-legged_frog",
+                  "metric_name": "california_red_legged_frog",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/bioDiverConserv/Tier1/california_red_legged_frog_habitat.tif",
                   "raw_layer": ":bioDiverConserv_Tier1_california_red_legged_frog_habitat",
