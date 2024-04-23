@@ -1256,7 +1256,7 @@
               ],
               "weights": [],
               "stand_thresholds": [
-                "pro",
+                "probability_of_fire_severity_high > 0",
                 "total_aboveground_carbon > 0",
                 "aboveground_carbon_turnover_time > 0"
               ],
