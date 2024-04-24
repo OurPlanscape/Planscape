@@ -22,7 +22,7 @@ def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeome
             geometry["type"] = "MultiPolygon"
             geometry["coordinates"] = [geometry["coordinates"]]
 
-        geometry = MultiPolygon([GEOSGeometry(json.dumps(geometry))], srid=4326)
+        geometry = GEOSGeometry(json.dumps(geometry), srid=4326)
 
     geometry = geometry.buffer(0).unary_union
 
